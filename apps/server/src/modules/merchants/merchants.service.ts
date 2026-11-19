@@ -98,7 +98,18 @@ export type MerchantsRefusal =
   // AP §9.6.6 «استيراد من Excel» (slice 2.31): a workbook with a row error,
   // or not a workbook at all.
   | 'import_invalid'
-  | 'import_unreadable';
+  | 'import_unreadable'
+  // RA §9.5, AP §9.6.7 (slice 2.32b): a change request that is not the
+  // restaurant's or no longer pending; a new item waiting for its new
+  // category, a new option for its new group; a request form for a new row
+  // sent for a published one, or the other way round.
+  | 'unknown_change_request'
+  | 'request_not_pending'
+  | 'request_changed'
+  | 'category_pending'
+  | 'group_pending'
+  | 'already_published'
+  | 'not_published';
 
 // Slice 2.30c: the same commission «now» again within this is a repeat.
 const COMMISSION_REPEAT_WINDOW_MS = 60_000;

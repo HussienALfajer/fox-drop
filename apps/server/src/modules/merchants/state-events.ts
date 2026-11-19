@@ -45,6 +45,11 @@ export const stateKinds = [
   // (a price, a switch, hiding, the order, a window), so every device reads
   // the menu again; no push.
   'menu_changed',
+  // RA §16 #22, §18 (slice 2.32b): operations approved or rejected a menu
+  // change request (`name`, and a rejection's `reason`), told to the owners
+  // only with a silent push.
+  'menu_change_approved',
+  'menu_change_rejected',
 ] as const;
 export type StateKind = (typeof stateKinds)[number];
 

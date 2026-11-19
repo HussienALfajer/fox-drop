@@ -1012,6 +1012,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/menu/requests/categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuRequestCategory"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/requests/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuRequestNewItem"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/requests/items/{itemId}/text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuRequestItemText"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/requests/items/{itemId}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuRequestItemPhoto"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/requests/option-groups/{groupId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuRequestOptionGroup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/requests/{requestId}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantMenuWithdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/uploads/item-photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantMenuItemPhotoUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/restaurant/status": {
         parameters: {
             query?: never;
@@ -1966,6 +2078,70 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminRestaurantAccountSetCommission"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/menu-change-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminMenuChangeRequestsQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/menu-change-requests/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminMenuChangeRequestsView"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/menu-change-requests/{requestId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminMenuChangeRequestsApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/menu-change-requests/{requestId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminMenuChangeRequestsReject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6839,6 +7015,11 @@ export interface components {
             /** @description When a holiday close or a pause ends. */
             stateUntil: string | null;
         };
+        MerchantPendingMoney_Output: {
+            /** @description Integer minor units (AP §8.6). */
+            amount: string;
+            currency: string;
+        };
         MerchantMenuDto_Output: {
             categories: {
                 /** Format: uuid */
@@ -6862,6 +7043,8 @@ export interface components {
                     code: string;
                     name: string;
                     description: string | null;
+                    /** @description Its published photo in public-media (architecture §5.8). */
+                    photoKey: string | null;
                     price: {
                         /** @description Integer minor units (AP §8.6). */
                         amount: string;
@@ -6898,6 +7081,146 @@ export interface components {
                             } | null;
                         }[];
                     }[];
+                    /** @description The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة». */
+                    pending: {
+                        /** Format: uuid */
+                        requestId: string;
+                        /**
+                         * @description `created`: a new row, unseen by customers until approved; otherwise the field asked.
+                         * @enum {string}
+                         */
+                        field: "created" | "rename" | "description" | "photo" | "choices" | "items";
+                        /** Format: date-time */
+                        createdAt: string;
+                        name: string | null;
+                        description: string | null;
+                        /** @description A photo waiting for review, in public-media. */
+                        photoKey: string | null;
+                        /** @description A new item's price, a new option's delta. */
+                        price: components["schemas"]["MerchantPendingMoney_Output"] | null;
+                        categoryId: string | null;
+                        groupId: string | null;
+                        minChoices: number | null;
+                        maxChoices: number | null;
+                        itemIds: string[] | null;
+                        options: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            priceDelta: components["schemas"]["MerchantPendingMoney_Output"];
+                        }[] | null;
+                    }[];
+                }[];
+                /** @description The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة». */
+                pending: {
+                    /** Format: uuid */
+                    requestId: string;
+                    /**
+                     * @description `created`: a new row, unseen by customers until approved; otherwise the field asked.
+                     * @enum {string}
+                     */
+                    field: "created" | "rename" | "description" | "photo" | "choices" | "items";
+                    /** Format: date-time */
+                    createdAt: string;
+                    name: string | null;
+                    description: string | null;
+                    /** @description A photo waiting for review, in public-media. */
+                    photoKey: string | null;
+                    /** @description A new item's price, a new option's delta. */
+                    price: components["schemas"]["MerchantPendingMoney_Output"] | null;
+                    categoryId: string | null;
+                    groupId: string | null;
+                    minChoices: number | null;
+                    maxChoices: number | null;
+                    itemIds: string[] | null;
+                    options: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        priceDelta: components["schemas"]["MerchantPendingMoney_Output"];
+                    }[] | null;
+                }[];
+            }[];
+            /** @description Every option group of the restaurant, new ones waiting for review included. */
+            optionGroups: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                minChoices: number;
+                maxChoices: number;
+                itemIds: string[];
+                options: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    priceDelta: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description The row's own switch (RA §9.3): null while on. */
+                    switchedOff: {
+                        /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
+                        until: string | null;
+                    } | null;
+                    /** @description The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة». */
+                    pending: {
+                        /** Format: uuid */
+                        requestId: string;
+                        /**
+                         * @description `created`: a new row, unseen by customers until approved; otherwise the field asked.
+                         * @enum {string}
+                         */
+                        field: "created" | "rename" | "description" | "photo" | "choices" | "items";
+                        /** Format: date-time */
+                        createdAt: string;
+                        name: string | null;
+                        description: string | null;
+                        /** @description A photo waiting for review, in public-media. */
+                        photoKey: string | null;
+                        /** @description A new item's price, a new option's delta. */
+                        price: components["schemas"]["MerchantPendingMoney_Output"] | null;
+                        categoryId: string | null;
+                        groupId: string | null;
+                        minChoices: number | null;
+                        maxChoices: number | null;
+                        itemIds: string[] | null;
+                        options: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            priceDelta: components["schemas"]["MerchantPendingMoney_Output"];
+                        }[] | null;
+                    }[];
+                }[];
+                /** @description The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة». */
+                pending: {
+                    /** Format: uuid */
+                    requestId: string;
+                    /**
+                     * @description `created`: a new row, unseen by customers until approved; otherwise the field asked.
+                     * @enum {string}
+                     */
+                    field: "created" | "rename" | "description" | "photo" | "choices" | "items";
+                    /** Format: date-time */
+                    createdAt: string;
+                    name: string | null;
+                    description: string | null;
+                    /** @description A photo waiting for review, in public-media. */
+                    photoKey: string | null;
+                    /** @description A new item's price, a new option's delta. */
+                    price: components["schemas"]["MerchantPendingMoney_Output"] | null;
+                    categoryId: string | null;
+                    groupId: string | null;
+                    minChoices: number | null;
+                    maxChoices: number | null;
+                    itemIds: string[] | null;
+                    options: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        priceDelta: components["schemas"]["MerchantPendingMoney_Output"];
+                    }[] | null;
                 }[];
             }[];
         };
@@ -6987,6 +7310,70 @@ export interface components {
         MerchantMenuBulkPriceResultDto_Output: {
             changed: number;
             unchanged: number;
+        };
+        MerchantCategoryRequestDto: {
+            name: string;
+        };
+        MerchantNewItemRequestDto: {
+            /** Format: uuid */
+            categoryId: string;
+            name: string;
+            description: string | null;
+            /** @description Above 0 (RA §9.4). */
+            price: {
+                /** @description Integer minor units of the base (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description A new photo from POST /v1/merchant/uploads/item-photo; null keeps the one asked. */
+            uploadId: string | null;
+        };
+        MerchantItemTextRequestDto: {
+            name: string;
+            description: string | null;
+        };
+        MerchantItemPhotoRequestDto: {
+            /** Format: uuid */
+            uploadId: string;
+        };
+        MerchantRequestOption: {
+            /**
+             * Format: uuid
+             * @description A new option takes a new id.
+             */
+            id: string;
+            name: string;
+            /** @description 0 or more; a published option's delta changes through «تعديل السعر» only. */
+            priceDelta: {
+                /** @description Integer minor units of the base (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+        };
+        MerchantOptionGroupRequestDto: {
+            name: string;
+            minChoices: number;
+            maxChoices: number;
+            /** @description The items the group is linked to, as a set. */
+            itemIds: string[];
+            /** @description The options asked; a published option left out stays as it is. */
+            options: components["schemas"]["MerchantRequestOption"][];
+        };
+        MerchantNewUploadDto: {
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+            sizeBytes: number;
+        };
+        MerchantUploadDto_Output: {
+            /**
+             * Format: uuid
+             * @description Sent with the request once the file is uploaded.
+             */
+            uploadId: string;
+            /** @description A PUT of the exact bytes, with the same Content-Type. */
+            url: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
         MerchantStatusDto_Output: {
             /**
@@ -7792,6 +8179,125 @@ export interface components {
             /** @description A later moment; null for the new orders from now. */
             effectiveFrom: string | null;
             /** @description Why, for the change log (AP §9.6.5). */
+            reason: string;
+        };
+        AdminChangeRequestRow_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            restaurantId: string;
+            restaurantName: string;
+            /** @enum {string} */
+            targetType: "category" | "item" | "option_group" | "option";
+            /** Format: uuid */
+            targetId: string;
+            /**
+             * @description `created`: a new row; otherwise the field the restaurant asks to change.
+             * @enum {string}
+             */
+            field: "created" | "rename" | "description" | "photo" | "choices" | "items";
+            /** @description The row's name as the restaurant knows it. */
+            targetName: string;
+            /**
+             * Format: date-time
+             * @description Its age: SHOULD be reviewed within 24 hours (RA §9.5).
+             */
+            createdAt: string;
+        };
+        AdminChangeRequestsDto_Output: {
+            /** @description Oldest first (AP §9.6.7). */
+            requests: components["schemas"]["AdminChangeRequestRow_Output"][];
+        };
+        AdminChangeValues_Output: {
+            name: string | null;
+            description: string | null;
+            /** @description In public-media, shown through /media/. */
+            photoKey: string | null;
+            /** @description A new item's price, a new option's delta. */
+            price: components["schemas"]["AdminChangeMoney_Output"] | null;
+            categoryId: string | null;
+            groupId: string | null;
+            minChoices: number | null;
+            maxChoices: number | null;
+            itemIds: string[] | null;
+            options: components["schemas"]["AdminChangeOption_Output"][] | null;
+        };
+        AdminChangeMoney_Output: {
+            /** @description Integer minor units (AP §8.6). */
+            amount: string;
+            currency: string;
+        };
+        AdminChangeOption_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            priceDelta: components["schemas"]["AdminChangeMoney_Output"];
+        };
+        AdminChangeItem_Output: {
+            name: string;
+            description: string | null;
+            photoKey: string | null;
+            price: components["schemas"]["AdminChangeMoney_Output"];
+        };
+        AdminChangeItemName_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        AdminChangeRequestDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            restaurantId: string;
+            restaurantName: string;
+            /** @enum {string} */
+            targetType: "category" | "item" | "option_group" | "option";
+            /** Format: uuid */
+            targetId: string;
+            /**
+             * @description `created`: a new row; otherwise the field the restaurant asks to change.
+             * @enum {string}
+             */
+            field: "created" | "rename" | "description" | "photo" | "choices" | "items";
+            /** @description The row's name as the restaurant knows it. */
+            targetName: string;
+            /**
+             * Format: date-time
+             * @description Its age: SHOULD be reviewed within 24 hours (RA §9.5).
+             */
+            createdAt: string;
+            /** @enum {string} */
+            status: "pending" | "approved" | "rejected" | "withdrawn";
+            /**
+             * Format: date-time
+             * @description The request's version, sent back with «قبول» (409 request_changed).
+             */
+            updatedAt: string;
+            /** @description Null for a new row. */
+            before: components["schemas"]["AdminChangeValues_Output"] | null;
+            after: components["schemas"]["AdminChangeValues_Output"];
+            /** @description An item's category, an option's group. */
+            parentName: string | null;
+            /** @description The item as customers see it now, for the customer preview. */
+            item: components["schemas"]["AdminChangeItem_Output"] | null;
+            itemNames: components["schemas"]["AdminChangeItemName_Output"][];
+        };
+        AdminChangeApproveDto: {
+            /**
+             * Format: date-time
+             * @description The `updatedAt` of the request's view the reviewer saw.
+             */
+            seen: string;
+            /** @description The reviewer's correction of the name asked (RA §9.5). */
+            name?: string;
+            description?: string | null;
+        };
+        AdminChangeDecidedDto_Output: {
+            /** @enum {string} */
+            status: "approved" | "rejected";
+        };
+        AdminChangeRejectDto: {
+            /** @description Required; the restaurant sees it. */
             reason: string;
         };
         AdminCitiesDto_Output: {
@@ -19846,6 +20352,182 @@ export interface operations {
             };
         };
     };
+    merchantMenuRequestCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantCategoryRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuRequestNewItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantNewItemRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuRequestItemText: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantItemTextRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuRequestItemPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantItemPhotoRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuRequestOptionGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantOptionGroupRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuWithdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuItemPhotoUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantUploadDto_Output"];
+                };
+            };
+        };
+    };
     merchantStatusRead: {
         parameters: {
             query?: never;
@@ -21445,6 +22127,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantActionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminMenuChangeRequestsQueue: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChangeRequestsDto_Output"];
+                };
+            };
+        };
+    };
+    adminMenuChangeRequestsView: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChangeRequestDto_Output"];
+                };
+            };
+        };
+    };
+    adminMenuChangeRequestsApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminChangeApproveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChangeDecidedDto_Output"];
+                };
+            };
+        };
+    };
+    adminMenuChangeRequestsReject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminChangeRejectDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChangeDecidedDto_Output"];
                 };
             };
         };

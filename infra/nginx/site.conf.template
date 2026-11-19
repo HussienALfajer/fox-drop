@@ -6,7 +6,8 @@
 # to the API and /media to imgproxy (snippets/foxdrop-${FOXDROP_ENV}-api.conf);
 # the panel's host sends /public-media/incoming/ and /private-docs/incoming/
 # (PUT) and /private-docs/exports/, /tickets/ and /restaurants/ (GET) to the
-# storage; the panel and the
+# storage, the API's host /public-media/incoming/ and /private-docs/incoming/
+# (PUT, the apps' uploads); the panel and the
 # portal send everything else to the web container, which answers unknown
 # paths with index.html. The limit zones `general` and `perip` are the
 # server's own (conf.d/rate-limits.conf).
@@ -111,6 +112,19 @@ server {
     listen [::]:443 ssl http2;
     server_name ${API_HOST};
     include snippets/foxdrop-${FOXDROP_ENV}-server.conf;
+
+    # The restaurant owners' item photos (RA §9.2; slice 2.32b): a PUT signed
+    # by the API for this host into public-media's incoming/, as the panel's.
+    # Its request links it under an unguessable key; the menu shows it only
+    # once operations approve it.
+    location /public-media/incoming/ {
+        limit_except PUT { deny all; }
+        client_max_body_size 9m;
+        access_log off;
+        proxy_pass http://127.0.0.1:${STORAGE_PORT};
+        include snippets/foxdrop-proxy.conf;
+        proxy_set_header Cookie "";
+    }
 
     # The apps' uploads (CU §12.2, §9.5; slice 2.24a): a PUT signed by the API
     # for this host into the private bucket's incoming/, passed to the

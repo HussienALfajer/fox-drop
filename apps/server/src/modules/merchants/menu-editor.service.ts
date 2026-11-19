@@ -249,17 +249,7 @@ export class MenuEditorService {
         badge: fields.badge,
       };
       if (!before) {
-        if (savedCode.length === 0) {
-          // A generated code skips the ones entered by hand.
-          const [{ count }] = (await tx
-            .select({ count: sql<number>`count(*)::int` })
-            .from(items)
-            .where(eq(items.restaurantId, restaurantId))) as [{ count: number }];
-          for (let next = count + 1; ; next += 1) {
-            savedCode = `I${String(next).padStart(4, '0')}`;
-            if (!(await codeTaken(savedCode))) break;
-          }
-        }
+        if (savedCode.length === 0) savedCode = await this.generatedCode(tx, restaurantId);
         await tx.insert(items).values({
           id: itemId,
           restaurantId,
@@ -322,8 +312,27 @@ export class MenuEditorService {
     });
   }
 
-  // AP §9.6.6 «إعادة الترتيب»: every category of the restaurant, once each, in
-  // the new order. Audited as menu.category.order.
+  // Module-internal: a new item's code when none is typed, I0001 onward,
+  // skipping the codes entered by hand (slice 2.30b); the restaurant's new
+  // items share it (slice 2.32b).
+  async generatedCode(tx: Tx, restaurantId: string): Promise<string> {
+    const [{ count }] = (await tx
+      .select({ count: sql<number>`count(*)::int` })
+      .from(items)
+      .where(eq(items.restaurantId, restaurantId))) as [{ count: number }];
+    for (let next = count + 1; ; next += 1) {
+      const code = `I${String(next).padStart(4, '0')}`;
+      const [taken] = await tx
+        .select({ id: items.id })
+        .from(items)
+        .where(and(eq(items.restaurantId, restaurantId), eq(items.code, code)));
+      if (!taken) return code;
+    }
+  }
+
+  // AP §9.6.6 «إعادة الترتيب»: every published category of the restaurant,
+  // once each, in the new order; a new one waiting for review (slice 2.32b)
+  // takes the end when approved. Audited as menu.category.order.
   async orderCategories(
     restaurantId: string,
     categoryIds: string[],
@@ -334,7 +343,13 @@ export class MenuEditorService {
       const current = await tx
         .select({ id: categories.id })
         .from(categories)
-        .where(and(eq(categories.restaurantId, restaurantId), isNull(categories.deletedAt)))
+        .where(
+          and(
+            eq(categories.restaurantId, restaurantId),
+            eq(categories.published, true),
+            isNull(categories.deletedAt),
+          ),
+        )
         .orderBy(asc(categories.position), asc(categories.id));
       const changed = await this.reorder(
         tx,
@@ -350,8 +365,8 @@ export class MenuEditorService {
     });
   }
 
-  // Every item of one category, once each, in the new order. Audited as
-  // menu.item.order.
+  // Every published item of one category, once each, in the new order.
+  // Audited as menu.item.order.
   async orderItems(
     restaurantId: string,
     categoryId: string,
@@ -374,7 +389,9 @@ export class MenuEditorService {
       const current = await tx
         .select({ id: items.id })
         .from(items)
-        .where(and(eq(items.categoryId, categoryId), isNull(items.deletedAt)))
+        .where(
+          and(eq(items.categoryId, categoryId), eq(items.published, true), isNull(items.deletedAt)),
+        )
         .orderBy(asc(items.position), asc(items.id));
       const changed = await this.reorder(
         tx,

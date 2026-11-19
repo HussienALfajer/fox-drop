@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../device.dart';
 import 'menu.dart';
+import 'request_forms.dart';
 import 'texts.dart';
 
 /// Whether the signed-in user is an owner: the menu's commands but
@@ -58,6 +59,25 @@ class MenuScreen extends ConsumerWidget {
               onPressed: () => context.push('/menu/preview'),
               icon: const Icon(Icons.visibility),
             ),
+            // RA §9.2 «New category»: a request.
+            IconButton(
+              key: const Key('menu-add-category'),
+              tooltip: l10n.merchantMenuAddCategory,
+              onPressed: () async {
+                final name = await askName(
+                  context,
+                  title: l10n.merchantMenuAddCategory,
+                );
+                if (name == null || !context.mounted) return;
+                await reportRequest(
+                  context,
+                  ref
+                      .read(menuCommandsProvider)
+                      .requestCategory(ref.read(newMenuIdProvider)(), name),
+                );
+              },
+              icon: const Icon(Icons.create_new_folder),
+            ),
           ],
         ],
       ),
@@ -69,6 +89,7 @@ class MenuScreen extends ConsumerWidget {
                   children: [
                     for (final category in value.categories)
                       _Category(menu: value, category: category, owner: owner),
+                    OptionGroupsSection(menu: value, owner: owner),
                   ],
                 ),
         AsyncError(:final error) => _Failed(
@@ -120,7 +141,12 @@ class _Category extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final commands = ref.read(menuCommandsProvider);
-    final ids = [for (final c in menu.categories) c.id];
+    // RA §9.5: a new category waits for review; only its request changes it.
+    final waiting = isNew(category.pending);
+    final ids = publishedIds([
+      for (final c in menu.categories) (id: c.id, isNew: isNew(c.pending)),
+    ]);
+    final currency = menuCurrency(menu);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -128,20 +154,57 @@ class _Category extends ConsumerWidget {
           key: Key('category-${category.id}'),
           title: Text(category.name),
           subtitle: Text(
-            [
-              switchText(l10n, category.switchedOff),
-              windowText(l10n, category),
-              if (category.hidden) l10n.merchantMenuHidden,
-            ].join(' · '),
+            waiting
+                ? l10n.merchantMenuPendingReview
+                : [
+                    switchText(l10n, category.switchedOff),
+                    windowText(l10n, category),
+                    if (category.hidden) l10n.merchantMenuHidden,
+                  ].join(' · '),
           ),
-          trailing: _Switch(
-            keyName: 'switch-category-${category.id}',
-            type: RowType.category,
-            id: category.id,
-            on: category.switchedOff == null,
-          ),
+          trailing: waiting
+              ? null
+              : _Switch(
+                  keyName: 'switch-category-${category.id}',
+                  type: RowType.category,
+                  id: category.id,
+                  on: category.switchedOff == null,
+                ),
         ),
+        PendingLines(menu: menu, pending: category.pending, owner: owner),
         if (owner)
+          Wrap(
+            children: [
+              TextButton(
+                key: Key('rename-category-${category.id}'),
+                onPressed: () async {
+                  final name = await askName(
+                    context,
+                    title: l10n.merchantMenuRename,
+                    initial: category.name,
+                  );
+                  if (name == null || !context.mounted) return;
+                  await reportRequest(
+                    context,
+                    commands.requestCategory(category.id, name),
+                  );
+                },
+                child: Text(l10n.merchantMenuRename),
+              ),
+              if (currency != null)
+                TextButton(
+                  key: Key('add-item-${category.id}'),
+                  onPressed: () => editNewItem(
+                    context,
+                    ref,
+                    category: category,
+                    currency: currency,
+                  ),
+                  child: Text(l10n.merchantMenuAddItem),
+                ),
+            ],
+          ),
+        if (owner && !waiting)
           Wrap(
             children: [
               TextButton(
@@ -196,7 +259,12 @@ class _Item extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final commands = ref.read(menuCommandsProvider);
-    final ids = [for (final i in category.items) i.id];
+    final menu = ref.watch(menuProvider).value;
+    // RA §9.5: a new item waits for review; only its request changes it.
+    final waiting = isNew(item.pending);
+    final ids = publishedIds([
+      for (final i in category.items) (id: i.id, isNew: isNew(i.pending)),
+    ]);
     return Padding(
       padding: const EdgeInsetsDirectional.only(start: 16),
       child: Column(
@@ -208,22 +276,52 @@ class _Item extends ConsumerWidget {
             subtitle: Text(
               [
                 l10n.formatMoney(item.price.amount, item.price.currency),
-                switchText(l10n, item.switchedOff),
-                if (item.switchedOff == null && !item.available)
-                  l10n.merchantMenuUnavailableToCustomers,
-                if (item.hidden) l10n.merchantMenuHidden,
+                if (waiting)
+                  l10n.merchantMenuPendingReview
+                else ...[
+                  switchText(l10n, item.switchedOff),
+                  if (item.switchedOff == null && !item.available)
+                    l10n.merchantMenuUnavailableToCustomers,
+                  if (item.hidden) l10n.merchantMenuHidden,
+                ],
               ].join(' · '),
             ),
-            trailing: _Switch(
-              keyName: 'switch-item-${item.id}',
-              type: RowType.item,
-              id: item.id,
-              on: item.switchedOff == null,
-            ),
+            trailing: waiting
+                ? null
+                : _Switch(
+                    keyName: 'switch-item-${item.id}',
+                    type: RowType.item,
+                    id: item.id,
+                    on: item.switchedOff == null,
+                  ),
           ),
-          if (owner)
+          if (menu != null)
+            PendingLines(menu: menu, pending: item.pending, owner: owner),
+          if (owner && waiting)
+            TextButton(
+              key: Key('edit-new-item-${item.id}'),
+              onPressed: () => editNewItem(
+                context,
+                ref,
+                category: category,
+                currency: item.price.currency,
+                item: item,
+              ),
+              child: Text(l10n.merchantMenuEditRequest),
+            ),
+          if (owner && !waiting)
             Wrap(
               children: [
+                TextButton(
+                  key: Key('text-item-${item.id}'),
+                  onPressed: () => editItemText(context, ref, item),
+                  child: Text(l10n.merchantMenuEditText),
+                ),
+                TextButton(
+                  key: Key('photo-item-${item.id}'),
+                  onPressed: () => changeItemPhoto(context, ref, item.id),
+                  child: Text(l10n.merchantMenuChangePhoto),
+                ),
                 TextButton(
                   key: Key('price-item-${item.id}'),
                   onPressed: () => editPrice(

@@ -3409,5 +3409,74 @@
       "yes": "نعم",
       "no": "لا"
     }
+  },
+  "menuChanges": {
+    "title": "طلبات تعديل القائمة",
+    "explain": "طلبات المطاعم بانتظار المراجعة، الأقدم أولاً. يُراجع كل طلب خلال {{hours}} ساعة.",
+    "none": "لا طلبات بانتظار المراجعة.",
+    "restaurant": "المطعم",
+    "row": "الصنف",
+    "kindTitle": "نوع التعديل",
+    "age": "العمر",
+    "hours": "{{hours}} ساعة",
+    "late": "(متأخر)",
+    "kind": {
+      "category.created": "تصنيف جديد",
+      "category.rename": "اسم تصنيف",
+      "item.created": "صنف جديد",
+      "item.rename": "اسم صنف",
+      "item.description": "وصف صنف",
+      "item.photo": "صورة صنف",
+      "option_group.created": "مجموعة خيارات جديدة",
+      "option_group.rename": "اسم مجموعة خيارات",
+      "option_group.choices": "اختيارات مجموعة (إلزامي، الحد الأدنى والأقصى)",
+      "option_group.items": "ربط مجموعة بأصناف",
+      "option.created": "خيار جديد",
+      "option.rename": "اسم خيار"
+    },
+    "viewTitle": "طلب تعديل القائمة",
+    "back": "العودة إلى طلبات تعديل القائمة",
+    "restaurantLine": "المطعم: {{name}}",
+    "asked": "طُلب في {{time}}",
+    "status": {
+      "pending": "بانتظار المراجعة",
+      "approved": "قُبل",
+      "rejected": "رُفض",
+      "withdrawn": "سحبه المطعم"
+    },
+    "before": "قبل",
+    "after": "بعد",
+    "newRow": "جديد",
+    "field": {
+      "name": "الاسم",
+      "description": "الوصف",
+      "price": "السعر",
+      "photo": "الصورة",
+      "choices": "الاختيارات",
+      "options": "الخيارات",
+      "items": "الأصناف"
+    },
+    "empty": "(فارغ)",
+    "noPhoto": "بلا صورة",
+    "noItems": "لا أصناف",
+    "choices": "من {{min}} إلى {{max}}",
+    "itemPreview": "الصنف كما سيراه الزبون",
+    "correctName": "تصحيح الاسم (اختياري)",
+    "correctDescription": "تصحيح الوصف (اختياري)",
+    "approve": "قبول",
+    "reject": "رفض",
+    "reason": "سبب الرفض (يراه المطعم)",
+    "decided": "تم القرار، وأُبلغ المطعم.",
+    "refused": {
+      "request_not_pending": "قُرّر هذا الطلب أو سحبه المطعم.",
+      "unknown_change_request": "هذا الطلب غير موجود.",
+      "category_pending": "التصنيف الجديد لهذا الصنف بانتظار المراجعة: اقبله أولاً.",
+      "group_pending": "مجموعة الخيارات الجديدة لهذا الخيار بانتظار المراجعة: اقبلها أولاً.",
+      "invalid_menu": "لا يصلح هذا التعديل كما هو: راجع النص أو اقبل الخيارات الجديدة أولاً.",
+      "restaurant_terminated": "عقد هذا المطعم منتهٍ.",
+      "request_changed": "عدّل المطعم هذا الطلب بعد فتحه: راجع القيمة الجديدة."
+    },
+    "rowIn": "{{name}} · {{parent}}",
+    "separator": "، "
   }
 }

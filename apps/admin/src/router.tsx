@@ -44,6 +44,8 @@ import { canSeeMassPushes } from './mass-pushes.js';
 import { MassPushesPage } from './mass-pushes-page.js';
 import { canSeeLostDemand } from './lost-demand.js';
 import { LostDemandPage } from './lost-demand-page.js';
+import { MenuChangeRequestPage, MenuChangeRequestsPage } from './menu-change-requests-page.js';
+import { canReviewMenuChanges } from './menu-change-requests.js';
 import { canSeeHomeSections } from './home-sections.js';
 import { HomeSectionsPage } from './home-sections-page.js';
 import { canSeePromoCodes } from './promo-codes.js';
@@ -405,6 +407,28 @@ const massPushesRoute = createRoute({
   component: MassPushesPage,
 });
 
+// AP §9.6.7 «طلبات تعديل القائمة» (slice 2.32b): OWN and OPS review the
+// restaurants' menu change requests (menus.review_change_requests).
+const menuChangesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/menu-change-requests',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canReviewMenuChanges(context.session)) throw redirect({ to: '/' });
+  },
+  component: MenuChangeRequestsPage,
+});
+
+const menuChangeRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/menu-change-requests/$requestId',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canReviewMenuChanges(context.session)) throw redirect({ to: '/' });
+  },
+  component: MenuChangeRequestPage,
+});
+
 // AP §9.17 «الطلب الضائع» (slice 2.28a): an operations report, OWN and OPS
 // (reports.all or reports.operations, checked by the server too).
 const lostDemandRoute = createRoute({
@@ -687,6 +711,8 @@ const routeTree = rootRoute.addChildren([
     bannersRoute,
     massPushesRoute,
     lostDemandRoute,
+    menuChangesRoute,
+    menuChangeRoute,
     officeRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,

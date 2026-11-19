@@ -18,6 +18,7 @@ import 'package:core_api/src/model/merchant_acknowledge_edit_dto.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_busy_mode_dto.dart';
+import 'package:core_api/src/model/merchant_category_request_dto.dart';
 import 'package:core_api/src/model/merchant_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_code_sent_dto_output.dart';
 import 'package:core_api/src/model/merchant_content_dto_output.dart';
@@ -26,7 +27,9 @@ import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/merchant_holiday_close_dto.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output.dart';
+import 'package:core_api/src/model/merchant_item_photo_request_dto.dart';
 import 'package:core_api/src/model/merchant_item_report_dto.dart';
+import 'package:core_api/src/model/merchant_item_text_request_dto.dart';
 import 'package:core_api/src/model/merchant_menu_bulk_preview_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_bulk_price_dto.dart';
 import 'package:core_api/src/model/merchant_menu_bulk_price_result_dto_output.dart';
@@ -38,6 +41,9 @@ import 'package:core_api/src/model/merchant_menu_item_price_dto.dart';
 import 'package:core_api/src/model/merchant_menu_option_price_dto.dart';
 import 'package:core_api/src/model/merchant_menu_preview_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_window_dto.dart';
+import 'package:core_api/src/model/merchant_new_item_request_dto.dart';
+import 'package:core_api/src/model/merchant_new_upload_dto.dart';
+import 'package:core_api/src/model/merchant_option_group_request_dto.dart';
 import 'package:core_api/src/model/merchant_order_dto_output.dart';
 import 'package:core_api/src/model/merchant_order_problem_body_dto.dart';
 import 'package:core_api/src/model/merchant_order_settings_dto.dart';
@@ -66,6 +72,7 @@ import 'package:core_api/src/model/merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/merchant_statement_list_dto_output.dart';
 import 'package:core_api/src/model/merchant_status_dto_output.dart';
 import 'package:core_api/src/model/merchant_tokens_dto_output.dart';
+import 'package:core_api/src/model/merchant_upload_dto_output.dart';
 import 'package:core_api/src/model/platform_dto_output.dart';
 import 'package:core_api/src/model/push_token_dto.dart';
 import 'package:core_api/src/model/push_token_registered_dto_output.dart';
@@ -1636,6 +1643,97 @@ class MerchantApi {
     );
   }
 
+  /// merchantMenuItemPhotoUpload
+  ///
+  ///
+  /// Parameters:
+  /// * [merchantNewUploadDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantUploadDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantUploadDtoOutput>> merchantMenuItemPhotoUpload({
+    required MerchantNewUploadDto merchantNewUploadDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/uploads/item-photo';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(MerchantNewUploadDto);
+      _bodyData = _serializers.serialize(
+        merchantNewUploadDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantUploadDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantUploadDtoOutput),
+                )
+                as MerchantUploadDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantUploadDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// merchantMenuItemPrice
   ///
   ///
@@ -1980,6 +2078,518 @@ class MerchantApi {
     );
   }
 
+  /// merchantMenuRequestCategory
+  ///
+  ///
+  /// Parameters:
+  /// * [categoryId]
+  /// * [merchantCategoryRequestDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantMenuDtoOutput>> merchantMenuRequestCategory({
+    required String categoryId,
+    required MerchantCategoryRequestDto merchantCategoryRequestDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/menu/requests/categories/{categoryId}'
+        .replaceAll(
+          '{'
+          r'categoryId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            categoryId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(MerchantCategoryRequestDto);
+      _bodyData = _serializers.serialize(
+        merchantCategoryRequestDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantMenuDtoOutput),
+                )
+                as MerchantMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// merchantMenuRequestItemPhoto
+  ///
+  ///
+  /// Parameters:
+  /// * [itemId]
+  /// * [merchantItemPhotoRequestDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantMenuDtoOutput>> merchantMenuRequestItemPhoto({
+    required String itemId,
+    required MerchantItemPhotoRequestDto merchantItemPhotoRequestDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/menu/requests/items/{itemId}/photo'.replaceAll(
+      '{'
+      r'itemId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        itemId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(MerchantItemPhotoRequestDto);
+      _bodyData = _serializers.serialize(
+        merchantItemPhotoRequestDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantMenuDtoOutput),
+                )
+                as MerchantMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// merchantMenuRequestItemText
+  ///
+  ///
+  /// Parameters:
+  /// * [itemId]
+  /// * [merchantItemTextRequestDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantMenuDtoOutput>> merchantMenuRequestItemText({
+    required String itemId,
+    required MerchantItemTextRequestDto merchantItemTextRequestDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/menu/requests/items/{itemId}/text'.replaceAll(
+      '{'
+      r'itemId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        itemId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(MerchantItemTextRequestDto);
+      _bodyData = _serializers.serialize(
+        merchantItemTextRequestDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantMenuDtoOutput),
+                )
+                as MerchantMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// merchantMenuRequestNewItem
+  ///
+  ///
+  /// Parameters:
+  /// * [itemId]
+  /// * [merchantNewItemRequestDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantMenuDtoOutput>> merchantMenuRequestNewItem({
+    required String itemId,
+    required MerchantNewItemRequestDto merchantNewItemRequestDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/menu/requests/items/{itemId}'.replaceAll(
+      '{'
+      r'itemId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        itemId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(MerchantNewItemRequestDto);
+      _bodyData = _serializers.serialize(
+        merchantNewItemRequestDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantMenuDtoOutput),
+                )
+                as MerchantMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// merchantMenuRequestOptionGroup
+  ///
+  ///
+  /// Parameters:
+  /// * [groupId]
+  /// * [merchantOptionGroupRequestDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantMenuDtoOutput>> merchantMenuRequestOptionGroup({
+    required String groupId,
+    required MerchantOptionGroupRequestDto merchantOptionGroupRequestDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/menu/requests/option-groups/{groupId}'
+        .replaceAll(
+          '{'
+          r'groupId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            groupId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(MerchantOptionGroupRequestDto);
+      _bodyData = _serializers.serialize(
+        merchantOptionGroupRequestDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantMenuDtoOutput),
+                )
+                as MerchantMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// merchantMenuRestaurant
   ///
   ///
@@ -2133,6 +2743,87 @@ class MerchantApi {
     }
 
     return Response<MerchantAvailabilitySavedDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// merchantMenuWithdraw
+  ///
+  ///
+  /// Parameters:
+  /// * [requestId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantMenuDtoOutput>> merchantMenuWithdraw({
+    required String requestId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/menu/requests/{requestId}/withdraw'.replaceAll(
+      '{'
+      r'requestId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        requestId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantMenuDtoOutput),
+                )
+                as MerchantMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantMenuDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

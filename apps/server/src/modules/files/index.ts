@@ -28,4 +28,4 @@ export {
   FilesService,
   MAX_IMAGE_BYTES,
 } from './files.service.js';
-export type { ImageType, UploadPurpose } from './schema.js';
+export { imageTypes, type ImageType, type UploadPurpose } from './schema.js';

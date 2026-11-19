@@ -4302,4 +4302,124 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantMenuInvalidWindow => 'اختر وقتين مختلفين لفترة التوفر.';
+
+  @override
+  String get merchantMenuPendingReview => 'بانتظار المراجعة';
+
+  @override
+  String get merchantMenuPendingNew => 'جديد — لا يراه الزبائن قبل الموافقة';
+
+  @override
+  String merchantMenuPendingName(String name) {
+    return 'الاسم المطلوب: $name';
+  }
+
+  @override
+  String merchantMenuPendingDescription(String description) {
+    return 'الوصف المطلوب: $description';
+  }
+
+  @override
+  String get merchantMenuPendingNoDescription => 'الوصف المطلوب: بلا وصف';
+
+  @override
+  String get merchantMenuPendingPhoto =>
+      'صورة جديدة بانتظار المراجعة؛ تبقى الصورة الحالية حتى الموافقة';
+
+  @override
+  String merchantMenuPendingChoices(String min, String max) {
+    return 'الاختيارات المطلوبة: من $min إلى $max';
+  }
+
+  @override
+  String merchantMenuPendingItems(String items) {
+    return 'الأصناف المطلوبة: $items';
+  }
+
+  @override
+  String get merchantMenuPendingNoItems => 'الأصناف المطلوبة: لا أصناف';
+
+  @override
+  String get merchantMenuWithdraw => 'سحب الطلب';
+
+  @override
+  String get merchantMenuRequestGone => 'قُرّر هذا الطلب أو سُحب.';
+
+  @override
+  String get merchantMenuPhotoFailed => 'تعذّر رفع الصورة، حاول مرة أخرى.';
+
+  @override
+  String get merchantMenuRequestInvalid => 'تحقق من الحقول وحاول مرة أخرى.';
+
+  @override
+  String get merchantMenuReviewNote =>
+      'تظهر هذه التعديلات للزبائن بعد موافقة FOX DROP.';
+
+  @override
+  String get merchantMenuAddCategory => 'إضافة تصنيف';
+
+  @override
+  String get merchantMenuAddItem => 'إضافة صنف';
+
+  @override
+  String get merchantMenuRename => 'تعديل الاسم';
+
+  @override
+  String get merchantMenuEditText => 'تعديل الاسم والوصف';
+
+  @override
+  String get merchantMenuChangePhoto => 'تغيير الصورة';
+
+  @override
+  String get merchantMenuEditRequest => 'تعديل الطلب';
+
+  @override
+  String get merchantMenuName => 'الاسم';
+
+  @override
+  String get merchantMenuDescription => 'الوصف (اختياري)';
+
+  @override
+  String get merchantMenuChoosePhoto => 'اختيار صورة';
+
+  @override
+  String get merchantMenuPhotoChosen => 'تم اختيار صورة';
+
+  @override
+  String get merchantMenuPhotoCamera => 'الكاميرا';
+
+  @override
+  String get merchantMenuPhotoGallery => 'المعرض';
+
+  @override
+  String get merchantMenuSendForReview => 'إرسال للمراجعة';
+
+  @override
+  String get merchantMenuGroups => 'مجموعات الخيارات';
+
+  @override
+  String get merchantMenuAddGroup => 'إضافة مجموعة خيارات';
+
+  @override
+  String get merchantMenuEditGroup => 'تعديل المجموعة';
+
+  @override
+  String merchantMenuGroupChoices(String min, String max) {
+    return 'من $min إلى $max اختيار';
+  }
+
+  @override
+  String get merchantMenuMinChoices => 'الحد الأدنى';
+
+  @override
+  String get merchantMenuMaxChoices => 'الحد الأقصى';
+
+  @override
+  String get merchantMenuGroupItems => 'الأصناف المرتبطة';
+
+  @override
+  String get merchantMenuAddOption => 'إضافة خيار';
+
+  @override
+  String get merchantMenuOptionName => 'اسم الخيار';
 }

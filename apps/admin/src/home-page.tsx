@@ -18,6 +18,7 @@ import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeDrafts } from './restaurant-drafts.js';
 import { canSeeRestaurantList } from './restaurant-list.js';
 import { canSeeLostDemand } from './lost-demand.js';
+import { canReviewMenuChanges } from './menu-change-requests.js';
 import { canSeeRatings } from './ratings.js';
 import { CUSTOMERS_READ } from './customers.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
@@ -74,6 +75,11 @@ export function HomePage() {
           {canSeeDrafts(session) && (
             <li>
               <Link to="/restaurant-drafts">{t('drafts.title')}</Link>
+            </li>
+          )}
+          {canReviewMenuChanges(session) && (
+            <li>
+              <Link to="/menu-change-requests">{t('menuChanges.title')}</Link>
             </li>
           )}
           {canSeeRatings(session) && (

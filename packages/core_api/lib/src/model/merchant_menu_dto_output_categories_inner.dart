@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_window.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_pending_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_switched_off.dart';
@@ -22,6 +23,7 @@ part 'merchant_menu_dto_output_categories_inner.g.dart';
 /// * [switchedOff]
 /// * [window]
 /// * [items]
+/// * [pending] - The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة».
 @BuiltValue()
 abstract class MerchantMenuDtoOutputCategoriesInner
     implements
@@ -49,6 +51,11 @@ abstract class MerchantMenuDtoOutputCategoriesInner
 
   @BuiltValueField(wireName: r'items')
   BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInner> get items;
+
+  /// The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة».
+  @BuiltValueField(wireName: r'pending')
+  BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner>
+  get pending;
 
   MerchantMenuDtoOutputCategoriesInner._();
 
@@ -123,6 +130,13 @@ class _$MerchantMenuDtoOutputCategoriesInnerSerializer
       object.items,
       specifiedType: const FullType(BuiltList, [
         FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
+      ]),
+    );
+    yield r'pending';
+    yield serializers.serialize(
+      object.pending,
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner),
       ]),
     );
   }
@@ -222,6 +236,21 @@ class _$MerchantMenuDtoOutputCategoriesInnerSerializer
                   )
                   as BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInner>;
           result.items.replace(valueDes);
+          break;
+        case r'pending':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
+                  >;
+          result.pending.replace(valueDes);
           break;
         default:
           unhandled.add(key);

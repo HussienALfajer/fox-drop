@@ -7111,6 +7111,222 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'اختر وقتين مختلفين لفترة التوفر.'**
   String get merchantMenuInvalidWindow;
+
+  /// The badge of a row with a change request waiting for review (RA §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار المراجعة'**
+  String get merchantMenuPendingReview;
+
+  /// A new row waiting for review (RA §9.2, §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'جديد — لا يراه الزبائن قبل الموافقة'**
+  String get merchantMenuPendingNew;
+
+  /// A name waiting for review (RA §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم المطلوب: {name}'**
+  String merchantMenuPendingName(String name);
+
+  /// A description waiting for review (RA §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الوصف المطلوب: {description}'**
+  String merchantMenuPendingDescription(String description);
+
+  /// An emptied description waiting for review.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوصف المطلوب: بلا وصف'**
+  String get merchantMenuPendingNoDescription;
+
+  /// A photo waiting for review (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة جديدة بانتظار المراجعة؛ تبقى الصورة الحالية حتى الموافقة'**
+  String get merchantMenuPendingPhoto;
+
+  /// An option group's choices waiting for review.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاختيارات المطلوبة: من {min} إلى {max}'**
+  String merchantMenuPendingChoices(String min, String max);
+
+  /// An option group's items waiting for review.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأصناف المطلوبة: {items}'**
+  String merchantMenuPendingItems(String items);
+
+  /// An option group linked to no item, waiting for review.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأصناف المطلوبة: لا أصناف'**
+  String get merchantMenuPendingNoItems;
+
+  /// Withdraw a pending change request, owners (RA §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'سحب الطلب'**
+  String get merchantMenuWithdraw;
+
+  /// A withdrawal of a request already decided or withdrawn.
+  ///
+  /// In ar, this message translates to:
+  /// **'قُرّر هذا الطلب أو سُحب.'**
+  String get merchantMenuRequestGone;
+
+  /// A photo the server did not take.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر رفع الصورة، حاول مرة أخرى.'**
+  String get merchantMenuPhotoFailed;
+
+  /// A change request the server refused as invalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من الحقول وحاول مرة أخرى.'**
+  String get merchantMenuRequestInvalid;
+
+  /// Under a change request's form (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تظهر هذه التعديلات للزبائن بعد موافقة FOX DROP.'**
+  String get merchantMenuReviewNote;
+
+  /// Ask for a new category, owners (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة تصنيف'**
+  String get merchantMenuAddCategory;
+
+  /// Ask for a new item, owners (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة صنف'**
+  String get merchantMenuAddItem;
+
+  /// Ask for a new name, owners (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الاسم'**
+  String get merchantMenuRename;
+
+  /// Ask for an item's new name or description (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الاسم والوصف'**
+  String get merchantMenuEditText;
+
+  /// Ask for a new or replaced photo (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير الصورة'**
+  String get merchantMenuChangePhoto;
+
+  /// Edit a new item waiting for review.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الطلب'**
+  String get merchantMenuEditRequest;
+
+  /// A name field.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم'**
+  String get merchantMenuName;
+
+  /// A description field.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوصف (اختياري)'**
+  String get merchantMenuDescription;
+
+  /// Pick a photo for an item.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار صورة'**
+  String get merchantMenuChoosePhoto;
+
+  /// A photo picked, not sent yet.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم اختيار صورة'**
+  String get merchantMenuPhotoChosen;
+
+  /// Take the photo with the camera.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكاميرا'**
+  String get merchantMenuPhotoCamera;
+
+  /// Pick the photo from the gallery or a file.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعرض'**
+  String get merchantMenuPhotoGallery;
+
+  /// Send a change request (RA §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال للمراجعة'**
+  String get merchantMenuSendForReview;
+
+  /// The option groups of the menu (RA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'مجموعات الخيارات'**
+  String get merchantMenuGroups;
+
+  /// Ask for a new option group (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة مجموعة خيارات'**
+  String get merchantMenuAddGroup;
+
+  /// Ask for an option group's changes (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل المجموعة'**
+  String get merchantMenuEditGroup;
+
+  /// An option group's minimum and maximum choices.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {min} إلى {max} اختيار'**
+  String merchantMenuGroupChoices(String min, String max);
+
+  /// An option group's minimum choices (0: optional).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى'**
+  String get merchantMenuMinChoices;
+
+  /// An option group's maximum choices.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأقصى'**
+  String get merchantMenuMaxChoices;
+
+  /// The items an option group is linked to.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأصناف المرتبطة'**
+  String get merchantMenuGroupItems;
+
+  /// Add an option to the group's request.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة خيار'**
+  String get merchantMenuAddOption;
+
+  /// An option's name field.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم الخيار'**
+  String get merchantMenuOptionName;
 }
 
 class _AppLocalizationsDelegate

@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_option_groups_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,11 +15,16 @@ part 'merchant_menu_dto_output.g.dart';
 ///
 /// Properties:
 /// * [categories]
+/// * [optionGroups] - Every option group of the restaurant, new ones waiting for review included.
 @BuiltValue()
 abstract class MerchantMenuDtoOutput
     implements Built<MerchantMenuDtoOutput, MerchantMenuDtoOutputBuilder> {
   @BuiltValueField(wireName: r'categories')
   BuiltList<MerchantMenuDtoOutputCategoriesInner> get categories;
+
+  /// Every option group of the restaurant, new ones waiting for review included.
+  @BuiltValueField(wireName: r'optionGroups')
+  BuiltList<MerchantMenuDtoOutputOptionGroupsInner> get optionGroups;
 
   MerchantMenuDtoOutput._();
 
@@ -55,6 +61,13 @@ class _$MerchantMenuDtoOutputSerializer
       object.categories,
       specifiedType: const FullType(BuiltList, [
         FullType(MerchantMenuDtoOutputCategoriesInner),
+      ]),
+    );
+    yield r'optionGroups';
+    yield serializers.serialize(
+      object.optionGroups,
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantMenuDtoOutputOptionGroupsInner),
       ]),
     );
   }
@@ -94,6 +107,17 @@ class _$MerchantMenuDtoOutputSerializer
                   )
                   as BuiltList<MerchantMenuDtoOutputCategoriesInner>;
           result.categories.replace(valueDes);
+          break;
+        case r'optionGroups':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(MerchantMenuDtoOutputOptionGroupsInner),
+                    ]),
+                  )
+                  as BuiltList<MerchantMenuDtoOutputOptionGroupsInner>;
+          result.optionGroups.replace(valueDes);
           break;
         default:
           unhandled.add(key);
