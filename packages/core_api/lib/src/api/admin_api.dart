@@ -19,6 +19,7 @@ import 'package:core_api/src/model/admin_alerts_dto_output.dart';
 import 'package:core_api/src/model/admin_all_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_approve_compensation_dto.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
+import 'package:core_api/src/model/admin_audit_log_dto_output.dart';
 import 'package:core_api/src/model/admin_banner_city_dto.dart';
 import 'package:core_api/src/model/admin_banners_dto_output.dart';
 import 'package:core_api/src/model/admin_banners_order_dto.dart';
@@ -522,6 +523,140 @@ class AdminApi {
     }
 
     return Response<AdminAlertsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminAuditLogList
+  ///
+  ///
+  /// Parameters:
+  /// * [actorType]
+  /// * [actorId] - An actor's account id.
+  /// * [action] - An action, such as setting.update.
+  /// * [targetType] - A target type, such as setting or order.
+  /// * [targetId]
+  /// * [from] - Included.
+  /// * [to] - Excluded.
+  /// * [cursor] - The page's nextCursor: the page after it.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminAuditLogDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminAuditLogDtoOutput>> adminAuditLogList({
+    String? actorType,
+    String? actorId,
+    String? action,
+    String? targetType,
+    String? targetId,
+    DateTime? from,
+    DateTime? to,
+    String? cursor,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/audit-log';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (actorType != null)
+        r'actorType': encodeQueryParameter(
+          _serializers,
+          actorType,
+          const FullType(String),
+        ),
+      if (actorId != null)
+        r'actorId': encodeQueryParameter(
+          _serializers,
+          actorId,
+          const FullType(String),
+        ),
+      if (action != null)
+        r'action': encodeQueryParameter(
+          _serializers,
+          action,
+          const FullType(String),
+        ),
+      if (targetType != null)
+        r'targetType': encodeQueryParameter(
+          _serializers,
+          targetType,
+          const FullType(String),
+        ),
+      if (targetId != null)
+        r'targetId': encodeQueryParameter(
+          _serializers,
+          targetId,
+          const FullType(String),
+        ),
+      if (from != null)
+        r'from': encodeQueryParameter(
+          _serializers,
+          from,
+          const FullType(DateTime),
+        ),
+      if (to != null)
+        r'to': encodeQueryParameter(_serializers, to, const FullType(DateTime)),
+      if (cursor != null)
+        r'cursor': encodeQueryParameter(
+          _serializers,
+          cursor,
+          const FullType(String),
+        ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminAuditLogDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminAuditLogDtoOutput),
+                )
+                as AdminAuditLogDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminAuditLogDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

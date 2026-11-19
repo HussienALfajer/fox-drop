@@ -20030,6 +20030,124 @@
         ]
       }
     },
+    "/v1/admin/audit-log": {
+      "get": {
+        "operationId": "adminAuditLogList",
+        "parameters": [
+          {
+            "name": "actorType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "admin",
+                "merchant",
+                "captain",
+                "customer",
+                "system"
+              ]
+            }
+          },
+          {
+            "name": "actorId",
+            "required": false,
+            "in": "query",
+            "description": "An actor's account id.",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "description": "An action, such as setting.update.",
+            "schema": {
+              "maxLength": 100,
+              "pattern": "^[a-z_]+(\\.[a-z_]+)*$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "targetType",
+            "required": false,
+            "in": "query",
+            "description": "A target type, such as setting or order.",
+            "schema": {
+              "maxLength": 100,
+              "pattern": "^[a-z_]+(\\.[a-z_]+)*$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "targetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Included.",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Excluded.",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "The page's nextCursor: the page after it.",
+            "schema": {
+              "maxLength": 80,
+              "pattern": "^[0-9T:.-]+Z_[0-9a-f-]{36}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAuditLogDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/captain-list": {
       "post": {
         "operationId": "adminCaptainListCaptainList",
@@ -77497,6 +77615,183 @@
           "lines",
           "dueBefore",
           "dueAfter"
+        ],
+        "additionalProperties": false
+      },
+      "AdminAuditLogDto_Output": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "write",
+                    "view"
+                  ],
+                  "description": "view: a sensitive view, without changes."
+                },
+                "cityId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "None for an action on the whole platform (D28)."
+                },
+                "actorType": {
+                  "type": "string",
+                  "enum": [
+                    "admin",
+                    "merchant",
+                    "captain",
+                    "customer",
+                    "system"
+                  ]
+                },
+                "actorId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "None for the system."
+                },
+                "actorName": {
+                  "description": "An admin's name; null for the others.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "actorRole": {
+                  "description": "The role when it acted (D27).",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "action": {
+                  "type": "string"
+                },
+                "targetType": {
+                  "type": "string"
+                },
+                "targetId": {
+                  "type": "string"
+                },
+                "changes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "field": {
+                        "type": "string"
+                      },
+                      "before": {
+                        "description": "JSON; null for none.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "after": {
+                        "description": "JSON; null for none.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "field",
+                      "before",
+                      "after"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The changed fields of a write."
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "ipAddress": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "device": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "at",
+                "kind",
+                "cityId",
+                "actorType",
+                "actorId",
+                "actorName",
+                "actorRole",
+                "action",
+                "targetType",
+                "targetId",
+                "changes",
+                "reason",
+                "ipAddress",
+                "device"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first."
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "pattern": "^[0-9T:.-]+Z_[0-9a-f-]{36}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null on the last page."
+          }
+        },
+        "required": [
+          "events",
+          "nextCursor"
         ],
         "additionalProperties": false
       },

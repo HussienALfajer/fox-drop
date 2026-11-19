@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { and, desc, eq, inArray, notLike, or } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lt, notLike, or, type SQL } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type Changes, changedFields } from './changes.js';
-import { type actorTypes, events } from './schema.js';
+import { type actorTypes, type eventKinds, events } from './schema.js';
 
 export interface AuditActor {
   type: (typeof actorTypes)[number];
@@ -48,6 +48,28 @@ export interface AuditEntry {
   target: { type: string; id: string };
   changes: Changes | null;
   reason: string | null;
+}
+
+// An event as «سجل التدقيق» shows it (AP §9.16): every field.
+export interface AuditLogEvent extends AuditEntry {
+  kind: (typeof eventKinds)[number];
+  cityId: string | null;
+  ipAddress: string | null;
+  device: string | null;
+}
+
+// The filters of «سجل التدقيق» (AP §9.16): each one left null matches all.
+// `from` is included and `to` excluded; `after` is the last event of the
+// page before, so the next page starts below it.
+export interface AuditLogFilter {
+  actorType: (typeof actorTypes)[number] | null;
+  actorId: string | null;
+  action: string | null;
+  targetType: string | null;
+  targetId: string | null;
+  from: Date | null;
+  to: Date | null;
+  after: { occurredAt: Date; id: string } | null;
 }
 
 // The database or the open transaction of the write being audited, so the
@@ -127,6 +149,62 @@ export class AuditService {
       target: { type: row.targetType, id: row.targetId },
       changes: row.changes,
       reason: row.reason,
+    }));
+  }
+
+  // «سجل التدقيق» (AP §9.16, slice 2.38a): the events matching the filter,
+  // writes and views, newest first, at most `limit`.
+  async search(filter: AuditLogFilter, limit: number): Promise<AuditLogEvent[]> {
+    const conditions: SQL[] = [];
+    if (filter.actorType !== null) conditions.push(eq(events.actorType, filter.actorType));
+    if (filter.actorId !== null) conditions.push(eq(events.actorId, filter.actorId));
+    if (filter.action !== null) conditions.push(eq(events.action, filter.action));
+    if (filter.targetType !== null) conditions.push(eq(events.targetType, filter.targetType));
+    if (filter.targetId !== null) conditions.push(eq(events.targetId, filter.targetId));
+    if (filter.from !== null) conditions.push(gte(events.occurredAt, filter.from));
+    if (filter.to !== null) conditions.push(lt(events.occurredAt, filter.to));
+    if (filter.after !== null) {
+      const { occurredAt, id } = filter.after;
+      conditions.push(
+        or(
+          lt(events.occurredAt, occurredAt),
+          and(eq(events.occurredAt, occurredAt), lt(events.id, id)),
+        )!,
+      );
+    }
+    const rows = await this.database.db
+      .select({
+        id: events.id,
+        occurredAt: events.occurredAt,
+        kind: events.kind,
+        cityId: events.cityId,
+        actorType: events.actorType,
+        actorId: events.actorId,
+        actorRole: events.actorRole,
+        action: events.action,
+        targetType: events.targetType,
+        targetId: events.targetId,
+        changes: events.changes,
+        reason: events.reason,
+        ipAddress: events.ipAddress,
+        device: events.device,
+      })
+      .from(events)
+      .where(and(...conditions))
+      .orderBy(desc(events.occurredAt), desc(events.id))
+      .limit(limit);
+    return rows.map((row) => ({
+      id: row.id,
+      occurredAt: row.occurredAt,
+      kind: row.kind,
+      cityId: row.cityId,
+      actor: { type: row.actorType, id: row.actorId, role: row.actorRole },
+      action: row.action,
+      target: { type: row.targetType, id: row.targetId },
+      changes: row.changes,
+      reason: row.reason,
+      ipAddress: row.ipAddress,
+      device: row.device,
     }));
   }
 

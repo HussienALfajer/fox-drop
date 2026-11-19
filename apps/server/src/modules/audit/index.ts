@@ -21,6 +21,8 @@ export {
   type AuditActor,
   type AuditEntry,
   type AuditExecutor,
+  type AuditLogEvent,
+  type AuditLogFilter,
   type AuditRequestContext,
   type AuditView,
   type AuditWrite,

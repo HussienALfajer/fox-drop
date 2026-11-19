@@ -360,3 +360,88 @@ describe("the apps' platform read (CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, 
     expect((await read('captain', '1.4')).json()).toMatchObject({ updateNeed: 'required' });
   });
 });
+
+// Slice 2.38a: «سجل التدقيق» (AP §9.16) reads what a settings change records.
+describe('the audit log of a settings change (AP §9.16)', () => {
+  interface AuditEvent {
+    at: string;
+    kind: string;
+    cityId: string | null;
+    actorType: string;
+    actorId: string | null;
+    actorName: string | null;
+    actorRole: string | null;
+    action: string;
+    targetType: string;
+    targetId: string;
+    changes: { field: string; before: string | null; after: string | null }[];
+    reason: string | null;
+    ipAddress: string | null;
+    device: string | null;
+  }
+
+  it('lets OWN find a setting it edited, with the diff, reason, IP and device', async () => {
+    const own = await admin(['OWN']);
+    expect(
+      (
+        await own.put('/v1/admin/settings/order.eta_buffer_min', {
+          cityId: azaz,
+          value: 12,
+          reason: 'زحام المساء',
+        })
+      ).statusCode,
+    ).toBe(200);
+
+    const response = await own.get(
+      `/v1/admin/audit-log?actorId=${own.accountId}&targetType=setting`,
+    );
+    expect(response.statusCode).toBe(200);
+    const { events, nextCursor } = response.json<{
+      events: AuditEvent[];
+      nextCursor: string | null;
+    }>();
+    expect(nextCursor).toBeNull();
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      kind: 'write',
+      cityId: azaz,
+      actorType: 'admin',
+      actorId: own.accountId,
+      actorName: expect.stringMatching(/^Settings \d+$/),
+      actorRole: 'OWN',
+      action: 'setting.update',
+      targetType: 'setting',
+      reason: 'زحام المساء',
+      ipAddress: expect.any(String),
+    });
+    expect(events[0]!.changes).toContainEqual({ field: 'value', before: '10', after: '12' });
+  });
+
+  it('pages newest first and refuses a cursor it cannot read', async () => {
+    const own = await admin(['OWN']);
+    for (const value of [11, 13, 14]) {
+      await own.put('/v1/admin/settings/order.eta_buffer_min', { cityId: azaz, value });
+    }
+    const url = `/v1/admin/audit-log?actorId=${own.accountId}&action=setting.update`;
+    const first = (await own.get(url)).json<{ events: AuditEvent[]; nextCursor: string | null }>();
+    expect(
+      first.events.map((event) => event.changes.find((c) => c.field === 'value')?.after),
+    ).toEqual(['14', '13', '11']);
+    expect(first.nextCursor).toBeNull();
+    expect((await own.get(`/v1/admin/audit-log?cursor=not-a-cursor`)).statusCode).toBe(400);
+    expect(
+      (
+        await own.get(
+          `/v1/admin/audit-log?from=${new Date(Date.now() + 60_000).toISOString()}&actorId=${own.accountId}`,
+        )
+      ).json<{ events: AuditEvent[] }>().events,
+    ).toEqual([]);
+  });
+
+  it('is OWN only', async () => {
+    for (const role of ['OPS', 'SUP', 'FIN', 'DATA']) {
+      const user = await admin([role]);
+      expect((await user.get('/v1/admin/audit-log')).statusCode).toBe(403);
+    }
+  });
+});

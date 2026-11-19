@@ -32,6 +32,11 @@ Serializers _$serializers =
           ..add(AdminApproveCompensationDtoValue.serializer)
           ..add(AdminApproveCompensationDtoValueKindEnum.serializer)
           ..add(AdminAssignDto.serializer)
+          ..add(AdminAuditLogDtoOutput.serializer)
+          ..add(AdminAuditLogDtoOutputEventsInner.serializer)
+          ..add(AdminAuditLogDtoOutputEventsInnerActorTypeEnum.serializer)
+          ..add(AdminAuditLogDtoOutputEventsInnerChangesInner.serializer)
+          ..add(AdminAuditLogDtoOutputEventsInnerKindEnum.serializer)
           ..add(AdminBannerCityDto.serializer)
           ..add(AdminBannersDtoOutput.serializer)
           ..add(AdminBannersDtoOutputBannersInner.serializer)
@@ -1995,6 +2000,18 @@ Serializers _$serializers =
               const FullType(AdminAllCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminAllCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminAuditLogDtoOutputEventsInner),
+            ]),
+            () => ListBuilder<AdminAuditLogDtoOutputEventsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminAuditLogDtoOutputEventsInnerChangesInner),
+            ]),
+            () => ListBuilder<AdminAuditLogDtoOutputEventsInnerChangesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

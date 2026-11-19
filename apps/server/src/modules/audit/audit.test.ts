@@ -125,6 +125,105 @@ describe('AuditService', () => {
   });
 });
 
+describe('AuditService.search', () => {
+  const ops = { type: 'admin', id: '0190f3a0-0000-7000-8000-000000000002', role: 'OPS' } as const;
+  const city = '0190f3a0-0000-7000-8000-0000000000c1';
+  const none = {
+    actorType: null,
+    actorId: null,
+    action: null,
+    targetType: null,
+    targetId: null,
+    from: null,
+    to: null,
+    after: null,
+  };
+
+  it('filters by actor, action, target and dates, newest first, a page at a time', async () => {
+    await withAudit(async (audit, { db }) => {
+      const write = (actor: typeof owner | typeof ops, action: string, id: string) =>
+        db.transaction((tx) =>
+          audit.recordWrite(
+            {
+              actor,
+              context,
+              cityId: city,
+              action,
+              target: { type: 'search_test', id },
+              before: { value: 1 },
+              after: { value: 2 },
+              reason: 'تجربة',
+            },
+            tx,
+          ),
+        );
+      const start = new Date();
+      await write(owner, 'search_test.update', 'a');
+      await write(ops, 'search_test.update', 'b');
+      await write(owner, 'search_test.reset', 'a');
+      await audit.recordView({
+        actor: ops,
+        context,
+        cityId: null,
+        action: 'search_test.view',
+        target: { type: 'search_test', id: 'b' },
+      });
+
+      const all = await audit.search({ ...none, targetType: 'search_test' }, 10);
+      expect(all.map((event) => event.action)).toEqual([
+        'search_test.view',
+        'search_test.reset',
+        'search_test.update',
+        'search_test.update',
+      ]);
+      expect(all[1]).toMatchObject({
+        kind: 'write',
+        cityId: city,
+        actor: owner,
+        target: { type: 'search_test', id: 'a' },
+        changes: { value: { before: 1, after: 2 } },
+        reason: 'تجربة',
+        ipAddress: '203.0.113.7',
+        device: 'Firefox 140 on Windows',
+      });
+      expect(all[0]).toMatchObject({ kind: 'view', cityId: null, changes: null });
+
+      const byActor = await audit.search(
+        { ...none, targetType: 'search_test', actorId: ops.id },
+        10,
+      );
+      expect(byActor.map((event) => event.target.id)).toEqual(['b', 'b']);
+      const byAction = await audit.search({ ...none, action: 'search_test.update' }, 10);
+      expect(byAction.map((event) => event.target.id)).toEqual(['b', 'a']);
+      const byTarget = await audit.search(
+        { ...none, targetType: 'search_test', targetId: 'a' },
+        10,
+      );
+      expect(byTarget.map((event) => event.action)).toEqual([
+        'search_test.reset',
+        'search_test.update',
+      ]);
+      const byType = await audit.search(
+        { ...none, targetType: 'search_test', actorType: 'system' },
+        10,
+      );
+      expect(byType).toEqual([]);
+      expect(await audit.search({ ...none, targetType: 'search_test', to: start }, 10)).toEqual([]);
+      expect(
+        await audit.search({ ...none, targetType: 'search_test', from: start }, 10),
+      ).toHaveLength(4);
+
+      const first = await audit.search({ ...none, targetType: 'search_test' }, 3);
+      const last = first.at(-1)!;
+      const next = await audit.search(
+        { ...none, targetType: 'search_test', after: { occurredAt: last.occurredAt, id: last.id } },
+        3,
+      );
+      expect([...first, ...next].map((event) => event.id)).toEqual(all.map((event) => event.id));
+    });
+  });
+});
+
 describe('AuditWorkerModule', () => {
   // Next month's partition, dropped by the migration role so the worker has to
   // create it, as it will every month.
