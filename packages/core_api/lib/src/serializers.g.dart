@@ -526,6 +526,21 @@ Serializers _$serializers =
           ..add(AdminImageSetDtoOutput.serializer)
           ..add(AdminImagesWaiverDto.serializer)
           ..add(AdminLiftCustomerDeviceBlockDto.serializer)
+          ..add(AdminLiveMapDtoOutput.serializer)
+          ..add(AdminLiveMapDtoOutputCaptainsInner.serializer)
+          ..add(AdminLiveMapDtoOutputCaptainsInnerBlocksEnum.serializer)
+          ..add(AdminLiveMapDtoOutputCaptainsInnerCustody.serializer)
+          ..add(AdminLiveMapDtoOutputCaptainsInnerCustodyUsage.serializer)
+          ..add(AdminLiveMapDtoOutputCaptainsInnerOrder.serializer)
+          ..add(AdminLiveMapDtoOutputCaptainsInnerStateEnum.serializer)
+          ..add(AdminLiveMapDtoOutputCaptainsInnerVehicleEnum.serializer)
+          ..add(AdminLiveMapDtoOutputOrdersInner.serializer)
+          ..add(AdminLiveMapDtoOutputOrdersInnerFrom.serializer)
+          ..add(AdminLiveMapDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(AdminLiveMapDtoOutputOrdersInnerTo.serializer)
+          ..add(AdminLiveMapDtoOutputRestaurantsInner.serializer)
+          ..add(AdminLiveMapDtoOutputRestaurantsInnerStateEnum.serializer)
+          ..add(AdminLiveMapDtoOutputZonesInner.serializer)
           ..add(AdminLostDemandDtoOutput.serializer)
           ..add(AdminLostDemandDtoOutputSearchesInner.serializer)
           ..add(AdminLostDemandDtoOutputSuggestionsInner.serializer)
@@ -2379,6 +2394,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputAddressesInnerLocation),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputAddressesInnerLocation>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminCustomerDtoOutputBlockReasonsInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>(),
@@ -2756,6 +2777,36 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminLiveMapDtoOutputCaptainsInnerBlocksEnum),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputCaptainsInnerBlocksEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminLiveMapDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminLiveMapDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminLiveMapDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminLiveMapDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

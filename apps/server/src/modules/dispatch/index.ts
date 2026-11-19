@@ -22,6 +22,8 @@ import { OrderAssignmentsModule } from '../ordering/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminDispatchController, CaptainOffersController } from './dispatch.controller.js';
 import { AcceptanceReviews, AcceptanceReviewsWorker } from './acceptance-reviews.js';
+import { AdminLiveMapController } from './admin-live-map.controller.js';
+import { LiveMap, LiveMapPublisher } from './live-map.js';
 import { DispatchService, type OfferExpiryJob } from './dispatch.service.js';
 
 const imports = [
@@ -40,8 +42,8 @@ const imports = [
 // dispatch run in the dispatcher role (DispatcherModule).
 @Module({
   imports,
-  controllers: [AdminDispatchController, CaptainOffersController],
-  providers: [DispatchService],
+  controllers: [AdminDispatchController, CaptainOffersController, AdminLiveMapController],
+  providers: [DispatchService, LiveMap],
   exports: [DispatchService],
 })
 export class DispatchModule {}
@@ -75,10 +77,18 @@ export class OfferTimersWorker implements OnModuleInit {
 }
 
 // The worker also runs the acceptance review (AP §9.7.6, slice 2.36b), which
-// raises operations' alert.
+// raises operations' alert, and publishes the live map's captains (AP §9.4,
+// slice 2.39).
 @Module({
   imports: [...imports, NotificationsWorkerModule],
-  providers: [DispatchService, OfferTimersWorker, AcceptanceReviews, AcceptanceReviewsWorker],
+  providers: [
+    DispatchService,
+    OfferTimersWorker,
+    AcceptanceReviews,
+    AcceptanceReviewsWorker,
+    LiveMap,
+    LiveMapPublisher,
+  ],
 })
 export class DispatchWorkerModule {}
 

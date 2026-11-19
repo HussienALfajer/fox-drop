@@ -318,6 +318,21 @@ export interface PayTableAnnounced {
 type PayTableListener = (tx: Tx, announced: PayTableAnnounced) => Promise<void>;
 
 // A captain's cash now (AP §8.5.3–8.5.4), in the city's base currency.
+// AP §9.4 «الخريطة الحية» (slice 2.39): a captain of the city as the live
+// map shows them: the state (green available, orange busy, grey offline),
+// what blocks them for cash (the red outline), the cash-limit usage and the
+// newest real point, whatever its age (an offline captain's last known
+// position and its time).
+export interface MapCaptain {
+  captainId: string;
+  name: string;
+  vehicle: Vehicle;
+  state: Availability['state'];
+  blocks: ('closed_due' | 'cash_limit')[];
+  custody: { usage: Money; limit: Money };
+  position: (Point & { recordedAt: Date }) | null;
+}
+
 export interface Custody {
   // The positive custody positions, converted at current rates.
   usage: Money;
@@ -1991,6 +2006,77 @@ export class CaptainsService implements OnModuleInit {
       }),
     );
     return states.flat();
+  }
+
+  // AP §9.4 (slice 2.39): every captain of the city not terminated, by
+  // name, with the state, the cash blocks and the newest real point of any
+  // online period. A captain whose state cannot be read now (a currency
+  // without a rate) is logged and left out, as cashLimits does.
+  async mapCaptains(cityId: string, now: Date): Promise<MapCaptain[]> {
+    const rows = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), ne(captainRecords.status, 'terminated')))
+      .orderBy(captainRecords.name);
+    if (rows.length === 0) return [];
+    const rules = await this.cityRules(cityId, now);
+    const points = await this.newestPoints(rows.map((row) => row.id));
+    const listed: MapCaptain[] = [];
+    for (const row of rows) {
+      try {
+        const { availability: input, custody, grace } = await this.input(
+          this.database.db,
+          row,
+          rules,
+        );
+        const graced = grace !== null && now < grace.until;
+        const blocks: MapCaptain['blocks'] = [];
+        if (custody.closedDue.amount > rules.remitTolerance && !graced) blocks.push('closed_due');
+        if (custody.usage.amount >= custody.limit.amount) blocks.push('cash_limit');
+        listed.push({
+          captainId: row.id,
+          name: row.name,
+          vehicle: row.vehicle,
+          state: availability(input, now).state,
+          blocks,
+          custody: { usage: custody.usage, limit: custody.limit },
+          position: points.get(row.id) ?? null,
+        });
+      } catch (error) {
+        this.logger.warn({ err: error, captainId: row.id }, 'a map captain was left out');
+      }
+    }
+    return listed;
+  }
+
+  // Each captain's newest real point, whatever its age, in one read.
+  private async newestPoints(
+    captainIds: string[],
+  ): Promise<Map<string, Point & { recordedAt: Date }>> {
+    const { rows } = await this.database.db.execute<{
+      captain_id: string;
+      latitude: number;
+      longitude: number;
+      recorded_at: Date | string;
+    }>(sql`
+      SELECT c.id AS captain_id, ST_Y(newest.location) AS latitude,
+          ST_X(newest.location) AS longitude, newest.recorded_at
+        FROM unnest(${sql.param(captainIds)}::uuid[]) AS c(id)
+        CROSS JOIN LATERAL (
+          SELECT l.location, l.recorded_at FROM ${locations} l
+            WHERE l.captain_id = c.id AND NOT l.simulated
+            ORDER BY l.recorded_at DESC LIMIT 1
+        ) newest`);
+    return new Map(
+      rows.map((row) => [
+        row.captain_id,
+        {
+          latitude: Number(row.latitude),
+          longitude: Number(row.longitude),
+          recordedAt: new Date(row.recorded_at),
+        },
+      ]),
+    );
   }
 
   // CA §10.4, AP §8.5.3 (slice 2.17d): the worker's sweep of the city's

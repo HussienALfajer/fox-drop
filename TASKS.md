@@ -9,12 +9,12 @@ Slice 2.39, the live map (`docs/roadmap.md`, Phase 2).
 - **Roadmap line:** 2.39 The live map: zones, restaurants, captains and orders over `ops_map:`, assignment from the map; its styling waits for the design (AP §9.4). The owner assigns a captain from the map.
 - **Specs:** AP §9.4 (docs/product/v1/admin-panel/09-modules/04-live-map.md), AP §9.3.2 (the assignment it reuses), AP §7.5 (the phone must work for monitoring), architecture §6.2 (the `ops_map:` channel), §7.2 (the map tiles).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Ask the owner first:** whether the map stays unstyled (MapLibre's default look with the opacities that tell the layers apart, as «مناطق الخدمة»), and whether one pull request is enough or it splits (the channel and the read, then the map and the assignment).
+- **Owner decisions 2026-11-19:** the map stays unstyled until the design (MapLibre's default look, the spec's colours only to tell the layers apart, as «مناطق الخدمة»); one pull request.
 - **Already built (reuse):** `ZoneMap` and `PinMap` (MapLibre, the local style, `prepare`, `drawable`), `zonesData`, the picker `/orders/$orderId/assign` (`useAssignCaptain`), `useOpsChannel` and `live.ts`, the captains' latest point (`CaptainsService.latestPoint`), the side menu (`MENU_LINKS`: add «الخريطة الحية» with its module).
 
 ### Plan
 
-- [ ] Server: the map's read (zones, restaurants with their state, captains with their state and last point, the active orders) and the `ops_map:` channel's publications (AP §9.4, architecture §6.2).
+- [x] Server: the map's read (zones, restaurants with their state, captains with their state and last point, the active orders) and the `ops_map:` channel's publications (AP §9.4, architecture §6.2).
 - [ ] Panel: `/live-map` with its layers, the side menu's «الخريطة الحية», and the assignment from the map.
 - [ ] Review, fixes, hand over to 2.40.
 

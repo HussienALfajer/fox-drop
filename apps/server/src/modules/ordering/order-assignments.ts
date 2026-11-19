@@ -399,6 +399,15 @@ export class OrderAssignments implements OnModuleInit {
     );
   }
 
+  // AP §9.4 (slice 2.39): the city's active orders, placed to arrived, for
+  // the live map's lines from the restaurant to the customer.
+  async active(cityId: string): Promise<DispatchOrder[]> {
+    return selectOrders(
+      this.database.db,
+      and(eq(orders.cityId, cityId), inArray(orders.status, ['placed', ...CAPTAIN_ACTIVE])),
+    );
+  }
+
   // The order locked for a change, in the command's transaction.
   async lock(tx: Tx, orderId: string, placedAt: Date): Promise<DispatchOrder | null> {
     const [order] = await selectOrders(

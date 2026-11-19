@@ -12,3 +12,7 @@ export const orderChannel = (orderId: string): string => `order:${orderId}`;
 
 // Panel users with access to the city: its orders and alerts (§6.2).
 export const opsChannel = (cityId: string): string => `ops:city.${cityId}`;
+
+// The live map screen (AP §9.4): the city's captains, their positions and
+// states, every 10 seconds (§6.2).
+export const opsMapChannel = (cityId: string): string => `ops_map:city.${cityId}`;

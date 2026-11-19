@@ -133,6 +133,7 @@ export {
   type HandInGrace,
   type IneligibleReason,
   type LocationPoint,
+  type MapCaptain,
   type Money,
   type NewCaptain,
   PAY_TABLE_NOTICE_DAYS,

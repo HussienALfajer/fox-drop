@@ -739,6 +739,28 @@ describe("the panel's city channel (architecture §6.2, §10.3)", () => {
     });
   });
 
+  it('lets the live map readers into ops_map:city.{city_id} (AP §9.4, §6.2)', async () => {
+    const channel = `ops_map:city.${await azazId()}`;
+    for (const roles of [['OPS'], ['OWN'], ['SUP']]) {
+      const token = await panelToken(await operator(roles));
+      expect((await proxied('admin', token, channel)).json(), roles.join()).toEqual({ result: {} });
+    }
+    for (const roles of [['FIN'], ['DATA']]) {
+      const token = await panelToken(await operator(roles));
+      expect((await proxied('admin', token, channel)).json(), roles.join()).toMatchObject({
+        error: { code: 403 },
+      });
+    }
+    const ops = await panelToken(await operator(['OPS']));
+    expect((await proxied('admin', ops, 'ops_map:city.x')).json()).toMatchObject({
+      error: { code: 403 },
+    });
+    const merchant = await realtimeToken('merchant', await signedIn('merchant'));
+    expect((await proxied('merchant', merchant, channel)).json()).toMatchObject({
+      error: { code: 403 },
+    });
+  });
+
   it('disconnects a panel session past its idle end or of a disabled account, without recording activity (AP §5.2)', async () => {
     const channel = `ops:city.${await azazId()}`;
     const idle = await operatorAccount(['OPS']);

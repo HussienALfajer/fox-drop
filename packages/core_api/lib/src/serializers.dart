@@ -324,6 +324,16 @@ import 'package:core_api/src/model/admin_home_sections_order_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
 import 'package:core_api/src/model/admin_images_waiver_dto.dart';
 import 'package:core_api/src/model/admin_lift_customer_device_block_dto.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_captains_inner.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_captains_inner_custody.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_captains_inner_custody_usage.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_captains_inner_order.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_orders_inner_from.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_orders_inner_to.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_restaurants_inner.dart';
+import 'package:core_api/src/model/admin_live_map_dto_output_zones_inner.dart';
 import 'package:core_api/src/model/admin_lost_demand_dto_output.dart';
 import 'package:core_api/src/model/admin_lost_demand_dto_output_searches_inner.dart';
 import 'package:core_api/src/model/admin_lost_demand_dto_output_suggestions_inner.dart';
@@ -1504,6 +1514,16 @@ part 'serializers.g.dart';
   AdminImageSetDtoOutput,
   AdminImagesWaiverDto,
   AdminLiftCustomerDeviceBlockDto,
+  AdminLiveMapDtoOutput,
+  AdminLiveMapDtoOutputCaptainsInner,
+  AdminLiveMapDtoOutputCaptainsInnerCustody,
+  AdminLiveMapDtoOutputCaptainsInnerCustodyUsage,
+  AdminLiveMapDtoOutputCaptainsInnerOrder,
+  AdminLiveMapDtoOutputOrdersInner,
+  AdminLiveMapDtoOutputOrdersInnerFrom,
+  AdminLiveMapDtoOutputOrdersInnerTo,
+  AdminLiveMapDtoOutputRestaurantsInner,
+  AdminLiveMapDtoOutputZonesInner,
   AdminLostDemandDtoOutput,
   AdminLostDemandDtoOutputSearchesInner,
   AdminLostDemandDtoOutputSuggestionsInner,
@@ -2405,6 +2425,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminLiveMapDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminRestaurantOverviewDtoOutputRejectionReasonsInner),
             ]),
             () =>
@@ -3012,6 +3038,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminLiveMapDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCaptainBalancesDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner>(),
@@ -3566,6 +3598,12 @@ Serializers serializers =
               FullType(AdminCaptainApplicationDtoOutputEventsInner),
             ]),
             () => ListBuilder<AdminCaptainApplicationDtoOutputEventsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminLiveMapDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputCaptainsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -4276,6 +4314,12 @@ Serializers serializers =
               FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminLiveMapDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminLiveMapDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

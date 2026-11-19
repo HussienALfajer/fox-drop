@@ -15,15 +15,16 @@ import type { ConnectionMeta } from './realtime-tokens.js';
 export type ChannelCheck = (session: AppSession, id: string) => Promise<boolean>;
 
 // The namespaces of architecture §6.2 served so far, and the app whose
-// sessions subscribe to each (ops: the panel's).
+// sessions subscribe to each (ops: and ops_map: the panel's).
 const NAMESPACE_PARTY = {
   merchant: 'merchant',
   order: 'customer',
   captain: 'captain',
   ops: 'admin',
+  ops_map: 'admin',
 } as const;
 type Namespace = keyof typeof NAMESPACE_PARTY;
-type AppNamespace = Exclude<Namespace, 'ops'>;
+type AppNamespace = Exclude<Namespace, 'ops' | 'ops_map'>;
 
 // What Centrifugo sends to the subscription proxy: user is the connection
 // token's subject, the session.
@@ -56,6 +57,12 @@ const CITY = new RegExp(String.raw`^city\.(${UUID_PATTERN})$`);
 // trigger answer what the session may see. Every user has every city in V1.
 export function readsOps(session: Pick<AdminSession, 'roles' | 'permissions'>): boolean {
   return session.permissions.includes('operations.read') || receivesAlerts(session.roles);
+}
+
+// AP §9.4, §6.2: the city's live map channel is for the users who read the
+// live map (OWN, OPS, SUP).
+export function readsOpsMap(session: Pick<AdminSession, 'permissions'>): boolean {
+  return session.permissions.includes('live_map.read');
 }
 
 // Architecture §6.1: the API checks every subscription Centrifugo is asked
@@ -107,7 +114,8 @@ export class RealtimeAccess {
       if (!CITY.test(id)) return REFUSED;
       const session = await this.adminSessions.openSession(request.user, meta.accountId, now);
       if (session === null) return SESSION_ENDED;
-      return readsOps(session) ? ALLOWED : REFUSED;
+      const reads = namespace === 'ops_map' ? readsOpsMap(session) : readsOps(session);
+      return reads ? ALLOWED : REFUSED;
     }
     if (!UUID.test(id)) return REFUSED;
     const session = await this.sessions.openSession(party, meta.accountId, request.user, now);
