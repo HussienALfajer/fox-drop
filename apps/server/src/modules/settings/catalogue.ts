@@ -417,6 +417,14 @@ export const catalogue = {
     schema: positiveInt,
     default: 12,
   }),
+  // Offered when the deposit is recorded, in the city's base currency
+  // (owner decision 2026-11-19).
+  'captain.kit_deposit_amount': beforeLaunch({
+    type: 'money',
+    scope: 'city',
+    schema: money,
+    reasonRequired: true,
+  }),
   'customer.no_answer_pings': count(3),
   'customer.no_answer_ping_interval_min': minutes(5, 1),
   'customer.new_max_active_orders': count(1),

@@ -84,6 +84,9 @@ const AdminReasonListsDtoOutputListsInnerListEnum
 _$adminReasonListsDtoOutputListsInnerListEnum_compensation =
     const AdminReasonListsDtoOutputListsInnerListEnum._('compensation');
 const AdminReasonListsDtoOutputListsInnerListEnum
+_$adminReasonListsDtoOutputListsInnerListEnum_kitItem =
+    const AdminReasonListsDtoOutputListsInnerListEnum._('kitItem');
+const AdminReasonListsDtoOutputListsInnerListEnum
 _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome =
     const AdminReasonListsDtoOutputListsInnerListEnum._('failedOutcome');
 const AdminReasonListsDtoOutputListsInnerListEnum
@@ -143,6 +146,8 @@ _$adminReasonListsDtoOutputListsInnerListEnumValueOf(String name) {
       return _$adminReasonListsDtoOutputListsInnerListEnum_emergencyStop;
     case 'compensation':
       return _$adminReasonListsDtoOutputListsInnerListEnum_compensation;
+    case 'kitItem':
+      return _$adminReasonListsDtoOutputListsInnerListEnum_kitItem;
     case 'failedOutcome':
       return _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome;
     case 'systemCancellation':
@@ -181,6 +186,7 @@ _$adminReasonListsDtoOutputListsInnerListEnumValues =
         _$adminReasonListsDtoOutputListsInnerListEnum_customerBlock,
         _$adminReasonListsDtoOutputListsInnerListEnum_emergencyStop,
         _$adminReasonListsDtoOutputListsInnerListEnum_compensation,
+        _$adminReasonListsDtoOutputListsInnerListEnum_kitItem,
         _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome,
         _$adminReasonListsDtoOutputListsInnerListEnum_systemCancellation,
       ],
@@ -256,6 +262,7 @@ class _$AdminReasonListsDtoOutputListsInnerListEnumSerializer
     'customerBlock': 'customer_block',
     'emergencyStop': 'emergency_stop',
     'compensation': 'compensation',
+    'kitItem': 'kit_item',
     'failedOutcome': 'failed_outcome',
     'systemCancellation': 'system_cancellation',
   };
@@ -285,6 +292,7 @@ class _$AdminReasonListsDtoOutputListsInnerListEnumSerializer
     'customer_block': 'customerBlock',
     'emergency_stop': 'emergencyStop',
     'compensation': 'compensation',
+    'kit_item': 'kitItem',
     'failed_outcome': 'failedOutcome',
     'system_cancellation': 'systemCancellation',
   };

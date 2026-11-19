@@ -28536,6 +28536,7 @@
                     "customer_block",
                     "emergency_stop",
                     "compensation",
+                    "kit_item",
                     "failed_outcome",
                     "system_cancellation"
                   ]

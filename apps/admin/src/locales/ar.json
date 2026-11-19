@@ -793,6 +793,7 @@
       "customer_block": "حظر الزبون",
       "emergency_stop": "الإيقاف الطارئ",
       "compensation": "تعويض الزبون",
+      "kit_item": "عناصر العدة",
       "failed_outcome": "نتائج الطلب الفاشل",
       "system_cancellation": "الإلغاء التلقائي"
     },

@@ -13,7 +13,7 @@ Slice 2.35a, activation, the contract and the documents (`docs/roadmap.md`, Phas
 - **Decided by us (to confirm):** the kit list is a content list (`kit_item`, «حقيبة حرارية» · «سترة»), the size typed at issue; a new captain's id is its application's id, so the deposit paid at the desk before activation is already the captain's account; the panel's captain file for this slice is the application's page (the captain list and profile are 2.36).
 - **Plan (one step per commit):**
   - [x] 1. Docs: the split, the owner's decisions in the specs (Appendix A `captain.kit_deposit_amount`, Appendix B the kit list), this plan.
-  - [ ] 2. Server: the kit list and the setting `captain.kit_deposit_amount`.
+  - [x] 2. Server: the kit list and the setting `captain.kit_deposit_amount`.
   - [ ] 3. Server: the records at «بانتظار العدة»: «تسليم العدة», the cash limit, «تسجيل العقد» with the signed contract and its dates, the deposit's plan (migration).
   - [ ] 4. Server: the deposit paid at the cash desk with its receipt (`deposit.payment`) and push.
   - [ ] 5. Server: «تفعيل»: its conditions, the captain made from the application, the account linked, the push device rebound, the push.
