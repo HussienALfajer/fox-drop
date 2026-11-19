@@ -24,6 +24,7 @@ function alert(overrides: Partial<AdminAlert>): AdminAlert {
     restaurantId: null,
     currency: null,
     statementId: null,
+    applicationId: null,
     location: null,
     raisedAt: '2026-11-08T09:00:00.000Z',
     acknowledged: null,

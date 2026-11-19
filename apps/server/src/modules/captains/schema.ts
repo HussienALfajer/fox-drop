@@ -344,6 +344,9 @@ export const custodyWarnings = captains.table(
   ],
 );
 
+// AP §9.7.2 (slice 2.35a): the contract's phases.
+export const contractPhases = ['probation', 'commitment', 'open'] as const;
+
 // CA §5.4, AP §9.7.1 (slice 2.34a): an application's stage. `draft` is the
 // form before «إرسال الطلب» (CA §5.1: saved after every step); the others are
 // the panel's stages and its two side stages.
@@ -420,6 +423,15 @@ export const applications = captains.table(
     // new captain (so the deposit paid before is already its account).
     captainId: uuid('captain_id'),
     activatedAt: timestamp('activated_at', { withTimezone: true }),
+    // The probation's confirmation (AP §9.7.2): by whom and on which day of
+    // the city, and the commitment it starts (`commitmentOf`).
+    probationConfirmedOn: date('probation_confirmed_on', { mode: 'string' }),
+    probationConfirmedBy: uuid('probation_confirmed_by'),
+    commitmentStartsOn: date('commitment_starts_on', { mode: 'string' }),
+    commitmentEndsOn: date('commitment_ends_on', { mode: 'string' }),
+    // The phase the captain was last told of (CA §14 #28), so each change
+    // pushes once.
+    phaseNotified: text('phase_notified', { enum: contractPhases }),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -469,6 +481,14 @@ export const applications = captains.table(
       sql`(${table.stage} = 'active') = (${table.activatedAt} IS NOT NULL) AND (${table.activatedAt} IS NULL) = (${table.captainId} IS NULL)`,
     ),
     uniqueIndex('applications_captain').on(table.captainId),
+    check(
+      'applications_probation_confirmed',
+      sql`(${table.probationConfirmedOn} IS NULL) = (${table.probationConfirmedBy} IS NULL) AND (${table.probationConfirmedOn} IS NULL) = (${table.commitmentStartsOn} IS NULL) AND (${table.commitmentStartsOn} IS NULL) = (${table.commitmentEndsOn} IS NULL) AND (${table.probationConfirmedOn} IS NULL OR ${table.activatedAt} IS NOT NULL)`,
+    ),
+    check(
+      'applications_phase_notified',
+      sql`${table.phaseNotified} IN ('probation', 'commitment', 'open')`,
+    ),
   ],
 );
 
@@ -596,6 +616,7 @@ export const applicationEventKinds = [
   'cash_limit',
   'contract',
   'deposit',
+  'probation_confirmed',
 ] as const;
 const eventKindValues = sql.raw(applicationEventKinds.map((kind) => `'${kind}'`).join(', '));
 

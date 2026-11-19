@@ -76,6 +76,12 @@ _$adminAlertDtoOutputCodeEnum_largePriceChange =
 const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_captainApplication =
     const AdminAlertDtoOutputCodeEnum._('captainApplication');
+const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_probationEnding =
+    const AdminAlertDtoOutputCodeEnum._('probationEnding');
+const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_probationOverdue =
+    const AdminAlertDtoOutputCodeEnum._('probationOverdue');
 
 AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
   switch (name) {
@@ -131,6 +137,10 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_largePriceChange;
     case 'captainApplication':
       return _$adminAlertDtoOutputCodeEnum_captainApplication;
+    case 'probationEnding':
+      return _$adminAlertDtoOutputCodeEnum_probationEnding;
+    case 'probationOverdue':
+      return _$adminAlertDtoOutputCodeEnum_probationOverdue;
     default:
       throw ArgumentError(name);
   }
@@ -165,6 +175,8 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket,
       _$adminAlertDtoOutputCodeEnum_largePriceChange,
       _$adminAlertDtoOutputCodeEnum_captainApplication,
+      _$adminAlertDtoOutputCodeEnum_probationEnding,
+      _$adminAlertDtoOutputCodeEnum_probationOverdue,
     ]);
 
 const AdminAlertDtoOutputSeverityEnum
@@ -318,6 +330,8 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'urgentDisputeTicket': 'urgent_dispute_ticket',
     'largePriceChange': 'large_price_change',
     'captainApplication': 'captain_application',
+    'probationEnding': 'probation_ending',
+    'probationOverdue': 'probation_overdue',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -346,6 +360,8 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'urgent_dispute_ticket': 'urgentDisputeTicket',
     'large_price_change': 'largePriceChange',
     'captain_application': 'captainApplication',
+    'probation_ending': 'probationEnding',
+    'probation_overdue': 'probationOverdue',
   };
 
   @override
@@ -480,6 +496,8 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
   @override
   final String? statementId;
   @override
+  final String? applicationId;
+  @override
   final AdminAlertsDtoOutputAlertsInnerLocation? location;
   @override
   final DateTime raisedAt;
@@ -505,6 +523,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     this.currency,
     this.ticketNumber,
     this.statementId,
+    this.applicationId,
     this.location,
     required this.raisedAt,
     this.acknowledged,
@@ -535,6 +554,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
         currency == other.currency &&
         ticketNumber == other.ticketNumber &&
         statementId == other.statementId &&
+        applicationId == other.applicationId &&
         location == other.location &&
         raisedAt == other.raisedAt &&
         acknowledged == other.acknowledged &&
@@ -556,6 +576,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, ticketNumber.hashCode);
     _$hash = $jc(_$hash, statementId.hashCode);
+    _$hash = $jc(_$hash, applicationId.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, raisedAt.hashCode);
     _$hash = $jc(_$hash, acknowledged.hashCode);
@@ -579,6 +600,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
           ..add('currency', currency)
           ..add('ticketNumber', ticketNumber)
           ..add('statementId', statementId)
+          ..add('applicationId', applicationId)
           ..add('location', location)
           ..add('raisedAt', raisedAt)
           ..add('acknowledged', acknowledged)
@@ -642,6 +664,11 @@ class AdminAlertDtoOutputBuilder
   String? get statementId => _$this._statementId;
   set statementId(String? statementId) => _$this._statementId = statementId;
 
+  String? _applicationId;
+  String? get applicationId => _$this._applicationId;
+  set applicationId(String? applicationId) =>
+      _$this._applicationId = applicationId;
+
   AdminAlertsDtoOutputAlertsInnerLocationBuilder? _location;
   AdminAlertsDtoOutputAlertsInnerLocationBuilder get location =>
       _$this._location ??= AdminAlertsDtoOutputAlertsInnerLocationBuilder();
@@ -683,6 +710,7 @@ class AdminAlertDtoOutputBuilder
       _currency = $v.currency;
       _ticketNumber = $v.ticketNumber;
       _statementId = $v.statementId;
+      _applicationId = $v.applicationId;
       _location = $v.location?.toBuilder();
       _raisedAt = $v.raisedAt;
       _acknowledged = $v.acknowledged?.toBuilder();
@@ -743,6 +771,7 @@ class AdminAlertDtoOutputBuilder
             currency: currency,
             ticketNumber: ticketNumber,
             statementId: statementId,
+            applicationId: applicationId,
             location: _location?.build(),
             raisedAt: BuiltValueNullFieldError.checkNotNull(
               raisedAt,

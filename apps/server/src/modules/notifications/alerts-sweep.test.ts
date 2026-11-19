@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Database } from '../../database/database.js';
-import type { CaptainsService } from '../captains/index.js';
+import type {
+  ApplicationPipelineService,
+  CaptainsService,
+  ProbationReview,
+} from '../captains/index.js';
 import type { FxService } from '../fx/index.js';
 import type { GeoService } from '../geo/index.js';
 import type { OtpSenderPoolService } from '../identity/index.js';
@@ -24,6 +28,7 @@ function sweep(options: {
   openSubjects?: string[];
   autoPaused?: { id: string; nameAr: string }[];
   staleRates?: string[];
+  probations?: ProbationReview[];
 }) {
   const synced: Synced[] = [];
   const alerts = {
@@ -56,8 +61,11 @@ function sweep(options: {
   const fx = {
     staleRates: async () => (options.staleRates ?? []).map((currency) => ({ currency })),
   } as unknown as FxService;
+  const pipeline = {
+    probationReviews: async () => options.probations ?? [],
+  } as unknown as ApplicationPipelineService;
   return {
-    sweep: new AlertsSweep(database, alerts, pool, captains, geo, restaurants, fx),
+    sweep: new AlertsSweep(database, alerts, pool, captains, geo, restaurants, fx, pipeline),
     synced,
   };
 }
@@ -157,6 +165,31 @@ describe('the alerts sweep (AP §9.1.3)', () => {
     expect(synced).toEqual([
       { subject: 'currency:city:USD', evaluated: ['rate_stale'], open: ['rate_stale'] },
       { subject: 'currency:city:SYP', evaluated: ['rate_stale'], open: [] },
+    ]);
+  });
+
+  it('raises «نهاية فترة تجربة» from the notice, the warning past the end (AP §9.7.2)', async () => {
+    const review = (captainId: string, state: 'due' | 'overdue'): ProbationReview => ({
+      captainId,
+      applicationId: captainId,
+      fullName: 'كابتن',
+      probationEndsOn: '2026-12-20',
+      review: state,
+    });
+    const { sweep: run, synced } = sweep({
+      numbers: [],
+      alerts: [],
+      captains: [],
+      probations: [review('c1', 'due'), review('c2', 'overdue')],
+      openSubjects: ['c1', 'c3'],
+    });
+    await run.probations(new Date());
+    const codes = ['probation_ending', 'probation_overdue'];
+    expect(synced).toEqual([
+      { subject: 'captain:c1', evaluated: codes, open: ['probation_ending'] },
+      { subject: 'captain:c2', evaluated: codes, open: ['probation_overdue'] },
+      // Confirmed since: c3 has no review left.
+      { subject: 'captain:c3', evaluated: codes, open: [] },
     ]);
   });
 });

@@ -251,9 +251,9 @@ class _$CaptainActiveOrderDtoOutputEnded
   @override
   final CaptainActiveOrderDtoOutputEndedFoodEnum? food;
   @override
-  final CaptainActiveOrderDtoOutputEndedPay? pay;
+  final CaptainContractDtoOutputDepositAmount? pay;
   @override
-  final CaptainActiveOrderDtoOutputEndedPay? charge;
+  final CaptainContractDtoOutputDepositAmount? charge;
   @override
   final DateTime at;
 
@@ -355,15 +355,16 @@ class CaptainActiveOrderDtoOutputEndedBuilder
   set food(CaptainActiveOrderDtoOutputEndedFoodEnum? food) =>
       _$this._food = food;
 
-  CaptainActiveOrderDtoOutputEndedPayBuilder? _pay;
-  CaptainActiveOrderDtoOutputEndedPayBuilder get pay =>
-      _$this._pay ??= CaptainActiveOrderDtoOutputEndedPayBuilder();
-  set pay(CaptainActiveOrderDtoOutputEndedPayBuilder? pay) => _$this._pay = pay;
+  CaptainContractDtoOutputDepositAmountBuilder? _pay;
+  CaptainContractDtoOutputDepositAmountBuilder get pay =>
+      _$this._pay ??= CaptainContractDtoOutputDepositAmountBuilder();
+  set pay(CaptainContractDtoOutputDepositAmountBuilder? pay) =>
+      _$this._pay = pay;
 
-  CaptainActiveOrderDtoOutputEndedPayBuilder? _charge;
-  CaptainActiveOrderDtoOutputEndedPayBuilder get charge =>
-      _$this._charge ??= CaptainActiveOrderDtoOutputEndedPayBuilder();
-  set charge(CaptainActiveOrderDtoOutputEndedPayBuilder? charge) =>
+  CaptainContractDtoOutputDepositAmountBuilder? _charge;
+  CaptainContractDtoOutputDepositAmountBuilder get charge =>
+      _$this._charge ??= CaptainContractDtoOutputDepositAmountBuilder();
+  set charge(CaptainContractDtoOutputDepositAmountBuilder? charge) =>
       _$this._charge = charge;
 
   DateTime? _at;

@@ -7756,6 +7756,32 @@
         ]
       }
     },
+    "/v1/captain/contract": {
+      "get": {
+        "operationId": "captainContractContract",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainContractDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/admin/captains/{captainId}/availability": {
       "get": {
         "operationId": "adminCaptainsAvailability",
@@ -8564,6 +8590,43 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captain-applications/{applicationId}/confirm-probation": {
+      "post": {
+        "operationId": "adminCaptainApplicationsConfirmProbation",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -31129,6 +31192,174 @@
         ],
         "additionalProperties": false
       },
+      "CaptainContractDto_Output": {
+        "type": "object",
+        "properties": {
+          "contract": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "signedOn": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "startsOn": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "probationEndsOn": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "commitmentStartsOn": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "commitmentEndsOn": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "probationConfirmed": {
+                    "type": "boolean"
+                  },
+                  "phase": {
+                    "type": "string",
+                    "enum": [
+                      "probation",
+                      "commitment",
+                      "open"
+                    ]
+                  }
+                },
+                "required": [
+                  "signedOn",
+                  "startsOn",
+                  "probationEndsOn",
+                  "commitmentStartsOn",
+                  "commitmentEndsOn",
+                  "probationConfirmed",
+                  "phase"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null for a captain who joined before the contracts."
+          },
+          "kit": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "label",
+                "size",
+                "quantity"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The items issued, with their labels as issued."
+          },
+          "deposit": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d+$"
+                      },
+                      "currency": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      }
+                    },
+                    "required": [
+                      "amount",
+                      "currency"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "paid": {
+                "type": "string",
+                "pattern": "^\\d+$",
+                "description": "Minor units in the city's base."
+              },
+              "instalment": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d+$"
+                      },
+                      "currency": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      }
+                    },
+                    "required": [
+                      "amount",
+                      "currency"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Deducted each Thursday until paid; null for none."
+              }
+            },
+            "required": [
+              "amount",
+              "paid",
+              "instalment"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "contract",
+          "kit",
+          "deposit"
+        ],
+        "additionalProperties": false
+      },
       "AdminCaptainAvailabilityDto_Output": {
         "type": "object",
         "properties": {
@@ -31850,7 +32081,8 @@
                     "kit",
                     "cash_limit",
                     "contract",
-                    "deposit"
+                    "deposit",
+                    "probation_confirmed"
                   ]
                 },
                 "stage": {
@@ -32060,11 +32292,45 @@
                         "format": "date",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
                       },
-                      "commitmentEndsOn": {
+                      "commitmentStartsOn": {
                         "type": "string",
                         "format": "date",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-                        "description": "When the probation is confirmed on its end."
+                        "description": "As confirmed, or expected on the probation end."
+                      },
+                      "commitmentEndsOn": {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      "probationConfirmedOn": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "phase": {
+                        "type": "string",
+                        "enum": [
+                          "probation",
+                          "commitment",
+                          "open"
+                        ]
+                      },
+                      "review": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "due",
+                          "overdue"
+                        ],
+                        "description": "The probation review: due from its notice, overdue past its end."
                       }
                     },
                     "required": [
@@ -32073,7 +32339,11 @@
                       "probationDays",
                       "commitmentMonths",
                       "probationEndsOn",
-                      "commitmentEndsOn"
+                      "commitmentStartsOn",
+                      "commitmentEndsOn",
+                      "probationConfirmedOn",
+                      "phase",
+                      "review"
                     ],
                     "additionalProperties": false
                   },
@@ -41333,7 +41603,9 @@
                     "urgent_ticket",
                     "urgent_dispute_ticket",
                     "large_price_change",
-                    "captain_application"
+                    "captain_application",
+                    "probation_ending",
+                    "probation_overdue"
                   ],
                   "description": "The rule of AP §9.1.3."
                 },
@@ -41425,6 +41697,19 @@
                     }
                   ],
                   "description": "«مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others."
+                },
+                "applicationId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«نهاية فترة تجربة» (AP §9.1.3, slice 2.35a): the captain’s application, whose page holds the contract; null for the others."
                 },
                 "location": {
                   "anyOf": [
@@ -41522,6 +41807,7 @@
                 "currency",
                 "ticketNumber",
                 "statementId",
+                "applicationId",
                 "location",
                 "raisedAt",
                 "acknowledged",
@@ -41572,7 +41858,9 @@
               "urgent_ticket",
               "urgent_dispute_ticket",
               "large_price_change",
-              "captain_application"
+              "captain_application",
+              "probation_ending",
+              "probation_overdue"
             ],
             "description": "The rule of AP §9.1.3."
           },
@@ -41664,6 +41952,19 @@
               }
             ],
             "description": "«مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others."
+          },
+          "applicationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«نهاية فترة تجربة» (AP §9.1.3, slice 2.35a): the captain’s application, whose page holds the contract; null for the others."
           },
           "location": {
             "anyOf": [
@@ -41761,6 +42062,7 @@
           "currency",
           "ticketNumber",
           "statementId",
+          "applicationId",
           "location",
           "raisedAt",
           "acknowledged",

@@ -14,7 +14,11 @@ import {
   addDays,
   type ApplicationDocumentKind,
   cityDay,
+  commitmentOf,
+  type ContractPhase,
   contractDates,
+  contractPhase,
+  probationReview,
   type ApplicationStage,
   isMotorVehicle,
   type PipelineAction,
@@ -65,7 +69,8 @@ export type PipelineRefusal =
   | 'not_in_base_currency'
   | 'invalid_contract'
   | 'invalid_deposit'
-  | 'activation_incomplete';
+  | 'activation_incomplete'
+  | 'already_confirmed';
 
 export class PipelineRefusedError extends Error {
   constructor(
@@ -101,8 +106,34 @@ export interface Contract {
   probationDays: number;
   commitmentMonths: number;
   probationEndsOn: string;
-  // When the probation is confirmed on its end (AP §9.7.2).
+  // The commitment's start and end: as confirmed, or, before the
+  // confirmation, as they would be when confirmed on the probation's end
+  // (AP §9.7.2).
+  commitmentStartsOn: string;
   commitmentEndsOn: string;
+  probationConfirmedOn: string | null;
+  // Once activated: the phase today, and the probation review's state.
+  phase: ContractPhase;
+  review: 'none' | 'due' | 'overdue';
+}
+
+// A phase reached that the captain was not told of yet (CA §14 #28).
+export interface ContractPhaseChange {
+  captainId: string;
+  cityId: string;
+  phase: ContractPhase;
+  // The day it started on the city's clock.
+  from: string;
+  timeZone: string;
+}
+
+// A captain whose probation review is due or overdue (AP §9.1.3).
+export interface ProbationReview {
+  captainId: string;
+  applicationId: string;
+  fullName: string;
+  probationEndsOn: string;
+  review: 'due' | 'overdue';
 }
 
 // What the activation shows at «بانتظار العدة» (slice 2.35a).
@@ -419,7 +450,7 @@ export class ApplicationPipelineService {
           ? null
           : { amount: row.custodyLimit, currency: row.custodyLimitCurrency! },
       suggestedCashLimit: moneySetting(suggestedLimit),
-      contract: contractOf(row),
+      contract: contractOf(row, cityDay(now, timeZone), await this.noticeDays(row.cityId)),
       deposit,
       suggestedDeposit: moneySetting(suggestedDeposit),
       missing:
@@ -899,7 +930,12 @@ export class ApplicationPipelineService {
         },
         event: { kind: 'contract' },
         audit: 'contract',
-        before: { contract: locked.contractSignedOn === null ? null : contractOf(locked) },
+        before: {
+          contract:
+            locked.contractSignedOn === null
+              ? null
+              : { signedOn: locked.contractSignedOn, startsOn: locked.contractStartsOn },
+        },
         after: {
           contract: {
             signedOn: contract.signedOn,
@@ -1109,12 +1145,163 @@ export class ApplicationPipelineService {
         tx,
       );
       return {
-        set: { captainId, activatedAt: now },
+        set: { captainId, activatedAt: now, phaseNotified: 'probation' },
         audit: 'activate',
         after: { captainId },
       };
     });
     return captainId;
+  }
+
+  // AP §9.7.2: OPS confirms the probation; the commitment starts on its end,
+  // or on this day once it has passed (`commitmentOf`). Once only
+  // (`409 already_confirmed`).
+  async confirmProbation(
+    applicationId: string,
+    admin: PipelineAdmin,
+    now = new Date(),
+  ): Promise<void> {
+    const { cityId } = await this.row(applicationId);
+    const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    const today = cityDay(now, timeZone);
+    await this.act(applicationId, admin, 'confirm_probation', now, async (_tx, row) => {
+      if (row.probationConfirmedOn !== null) throw new PipelineRefusedError('already_confirmed');
+      const commitment = commitmentOf({
+        probationEndsOn: row.probationEndsOn!,
+        confirmedOn: today,
+        months: row.commitmentMonths!,
+      });
+      return {
+        set: {
+          probationConfirmedOn: today,
+          probationConfirmedBy: admin.actor.id!,
+          commitmentStartsOn: commitment.startsOn,
+          commitmentEndsOn: commitment.endsOn,
+        },
+        event: { kind: 'probation_confirmed' },
+        audit: 'probation_confirmed',
+        after: { commitmentStartsOn: commitment.startsOn, commitmentEndsOn: commitment.endsOn },
+      };
+    });
+  }
+
+  // CA §14 #28, AP §9.7.2 (the worker's, every minute): each activated
+  // captain of the city whose phase today is not the one they were told of
+  // is told once, in a transaction of its own under the application's lock
+  // (`notify`: the push). Commitment to open-ended happens so on its day.
+  async sweepContractPhases(
+    cityId: string,
+    now: Date,
+    notify: (tx: Tx, change: ContractPhaseChange) => Promise<void>,
+  ): Promise<number> {
+    const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    const today = cityDay(now, timeZone);
+    const rows = await this.activeContracts(cityId);
+    let told = 0;
+    for (const candidate of rows) {
+      if (contractPhase(candidate, today) === candidate.phaseNotified) continue;
+      await this.database.db.transaction(async (tx) => {
+        const [row] = await tx
+          .select()
+          .from(applications)
+          .where(eq(applications.id, candidate.id))
+          .for('update');
+        if (!row || row.captainId === null) return;
+        const phase = contractPhase(row, today);
+        if (phase === row.phaseNotified) return;
+        await tx
+          .update(applications)
+          .set({ phaseNotified: phase, updatedAt: now })
+          .where(eq(applications.id, row.id));
+        await notify(tx, {
+          captainId: row.captainId,
+          cityId: row.cityId,
+          phase,
+          from:
+            phase === 'probation'
+              ? row.contractStartsOn!
+              : phase === 'commitment'
+                ? row.commitmentStartsOn!
+                : row.commitmentEndsOn!,
+          timeZone,
+        });
+        told += 1;
+      });
+    }
+    return told;
+  }
+
+  // AP §9.1.3 «نهاية فترة تجربة» (the worker's alerts sweep): the city's
+  // captains whose probation review is due or overdue.
+  async probationReviews(cityId: string, now: Date): Promise<ProbationReview[]> {
+    const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    const today = cityDay(now, timeZone);
+    const noticeDays = await this.noticeDays(cityId);
+    const found: ProbationReview[] = [];
+    for (const row of await this.activeContracts(cityId)) {
+      const review = probationReview({
+        probationEndsOn: row.probationEndsOn!,
+        noticeDays,
+        confirmed: row.probationConfirmedOn !== null,
+        today,
+      });
+      if (review === 'none') continue;
+      found.push({
+        captainId: row.captainId!,
+        applicationId: row.id,
+        fullName: row.fullName,
+        probationEndsOn: row.probationEndsOn!,
+        review,
+      });
+    }
+    return found;
+  }
+
+  // CA §12.3–12.4: the captain's own contract, kit and deposit, from its
+  // latest activated application; null for a captain the seed made. The
+  // contract's scan waits for a signed GET on the API's host (nginx serves
+  // private-docs reads on the panel's only).
+  async captainContract(
+    captainId: string,
+    now: Date,
+  ): Promise<{
+    contract: Contract | null;
+    kit: { items: KitItem[]; issuedAt: Date } | null;
+    deposit: DepositState;
+  } | null> {
+    const [row] = await this.database.db
+      .select()
+      .from(applications)
+      .where(eq(applications.captainId, captainId))
+      .orderBy(desc(applications.activatedAt))
+      .limit(1);
+    if (!row) return null;
+    const timeZone = (await this.geo.cityTimeZone(row.cityId)) ?? 'UTC';
+    return {
+      contract: contractOf(row, cityDay(now, timeZone), await this.noticeDays(row.cityId)),
+      kit: row.kitItems === null ? null : { items: row.kitItems, issuedAt: row.kitIssuedAt! },
+      deposit: await this.depositOf(row, this.database.db),
+    };
+  }
+
+  // The activated applications of a city whose captain is not terminated.
+  private async activeContracts(cityId: string): Promise<Row[]> {
+    return this.database.db
+      .select({ application: applications })
+      .from(applications)
+      .innerJoin(captainRecords, eq(captainRecords.id, applications.captainId))
+      .where(
+        and(
+          eq(applications.cityId, cityId),
+          eq(applications.stage, 'active'),
+          ne(captainRecords.status, 'terminated'),
+        ),
+      )
+      .then((rows) => rows.map((each) => each.application));
+  }
+
+  private noticeDays(cityId: string): Promise<number> {
+    return this.settings.get('captain.probation_review_notice_days', { cityId });
   }
 
   private async act(
@@ -1253,19 +1440,32 @@ function captainIdOf(row: { id: string; captainId: string | null }): string {
   return row.captainId ?? row.id;
 }
 
-function contractOf(row: Row): Contract | null {
+function contractOf(row: Row, today: string, noticeDays: number): Contract | null {
   if (row.contractSignedOn === null) return null;
+  const expected = contractDates({
+    startsOn: row.contractStartsOn!,
+    probationDays: row.probationDays!,
+    commitmentMonths: row.commitmentMonths!,
+  });
   return {
     signedOn: row.contractSignedOn,
     startsOn: row.contractStartsOn!,
     probationDays: row.probationDays!,
     commitmentMonths: row.commitmentMonths!,
     probationEndsOn: row.probationEndsOn!,
-    commitmentEndsOn: contractDates({
-      startsOn: row.contractStartsOn!,
-      probationDays: row.probationDays!,
-      commitmentMonths: row.commitmentMonths!,
-    }).commitmentEndsOn,
+    commitmentStartsOn: row.commitmentStartsOn ?? expected.probationEndsOn,
+    commitmentEndsOn: row.commitmentEndsOn ?? expected.commitmentEndsOn,
+    probationConfirmedOn: row.probationConfirmedOn,
+    phase: contractPhase(row, today),
+    review:
+      row.activatedAt === null
+        ? 'none'
+        : probationReview({
+            probationEndsOn: row.probationEndsOn!,
+            noticeDays,
+            confirmed: row.probationConfirmedOn !== null,
+            today,
+          }),
   };
 }
 

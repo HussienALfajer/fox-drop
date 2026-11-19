@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   activationMissing,
+  commitmentOf,
+  contractPhase,
+  probationReview,
   addDays,
   addMonths,
   contractDates,
@@ -253,5 +256,37 @@ describe('the activation rules', () => {
     );
     expect(depositInstalmentDue({ amount: 50_000n, paid: 50_000n, instalment: 15_000n })).toBe(0n);
     expect(depositInstalmentDue({ amount: 50_000n, paid: 0n, instalment: null })).toBe(0n);
+  });
+});
+
+// The contract's phases (AP §9.7.2, D24; slice 2.35a).
+describe('the contract phases', () => {
+  it('starts the commitment at the probation end when confirmed on time, else at the confirmation', () => {
+    expect(
+      commitmentOf({ probationEndsOn: '2026-12-20', confirmedOn: '2026-12-18', months: 3 }),
+    ).toEqual({ startsOn: '2026-12-20', endsOn: '2027-03-20' });
+    expect(
+      commitmentOf({ probationEndsOn: '2026-12-20', confirmedOn: '2026-12-27', months: 3 }),
+    ).toEqual({ startsOn: '2026-12-27', endsOn: '2027-03-27' });
+  });
+
+  it('stays in «فترة تجربة» until the commitment starts, then «مفتوح» at its end', () => {
+    const confirmed = { commitmentStartsOn: '2026-12-20', commitmentEndsOn: '2027-03-20' };
+    const none = { commitmentStartsOn: null, commitmentEndsOn: null };
+    expect(contractPhase(none, '2027-06-01')).toBe('probation');
+    expect(contractPhase(confirmed, '2026-12-19')).toBe('probation');
+    expect(contractPhase(confirmed, '2026-12-20')).toBe('commitment');
+    expect(contractPhase(confirmed, '2027-03-19')).toBe('commitment');
+    expect(contractPhase(confirmed, '2027-03-20')).toBe('open');
+  });
+
+  it('asks the review from the notice, and warns once the probation ended without it', () => {
+    const review = (today: string, confirmed = false) =>
+      probationReview({ probationEndsOn: '2026-12-20', noticeDays: 3, confirmed, today });
+    expect(review('2026-12-16')).toBe('none');
+    expect(review('2026-12-17')).toBe('due');
+    expect(review('2026-12-19')).toBe('due');
+    expect(review('2026-12-20')).toBe('overdue');
+    expect(review('2026-12-25', true)).toBe('none');
   });
 });

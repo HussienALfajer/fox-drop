@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/date.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -17,7 +18,11 @@ part 'admin_captain_application_dto_output_activation_contract.g.dart';
 /// * [probationDays]
 /// * [commitmentMonths]
 /// * [probationEndsOn]
-/// * [commitmentEndsOn] - When the probation is confirmed on its end.
+/// * [commitmentStartsOn] - As confirmed, or expected on the probation end.
+/// * [commitmentEndsOn]
+/// * [probationConfirmedOn]
+/// * [phase]
+/// * [review] - The probation review: due from its notice, overdue past its end.
 @BuiltValue()
 abstract class AdminCaptainApplicationDtoOutputActivationContract
     implements
@@ -40,9 +45,24 @@ abstract class AdminCaptainApplicationDtoOutputActivationContract
   @BuiltValueField(wireName: r'probationEndsOn')
   Date get probationEndsOn;
 
-  /// When the probation is confirmed on its end.
+  /// As confirmed, or expected on the probation end.
+  @BuiltValueField(wireName: r'commitmentStartsOn')
+  Date get commitmentStartsOn;
+
   @BuiltValueField(wireName: r'commitmentEndsOn')
   Date get commitmentEndsOn;
+
+  @BuiltValueField(wireName: r'probationConfirmedOn')
+  Date? get probationConfirmedOn;
+
+  @BuiltValueField(wireName: r'phase')
+  AdminCaptainApplicationDtoOutputActivationContractPhaseEnum get phase;
+  // enum phaseEnum {  probation,  commitment,  open,  };
+
+  /// The probation review: due from its notice, overdue past its end.
+  @BuiltValueField(wireName: r'review')
+  AdminCaptainApplicationDtoOutputActivationContractReviewEnum get review;
+  // enum reviewEnum {  none,  due,  overdue,  };
 
   AdminCaptainApplicationDtoOutputActivationContract._();
 
@@ -105,10 +125,36 @@ class _$AdminCaptainApplicationDtoOutputActivationContractSerializer
       object.probationEndsOn,
       specifiedType: const FullType(Date),
     );
+    yield r'commitmentStartsOn';
+    yield serializers.serialize(
+      object.commitmentStartsOn,
+      specifiedType: const FullType(Date),
+    );
     yield r'commitmentEndsOn';
     yield serializers.serialize(
       object.commitmentEndsOn,
       specifiedType: const FullType(Date),
+    );
+    yield r'probationConfirmedOn';
+    yield object.probationConfirmedOn == null
+        ? null
+        : serializers.serialize(
+            object.probationConfirmedOn,
+            specifiedType: const FullType.nullable(Date),
+          );
+    yield r'phase';
+    yield serializers.serialize(
+      object.phase,
+      specifiedType: const FullType(
+        AdminCaptainApplicationDtoOutputActivationContractPhaseEnum,
+      ),
+    );
+    yield r'review';
+    yield serializers.serialize(
+      object.review,
+      specifiedType: const FullType(
+        AdminCaptainApplicationDtoOutputActivationContractReviewEnum,
+      ),
     );
   }
 
@@ -176,6 +222,15 @@ class _$AdminCaptainApplicationDtoOutputActivationContractSerializer
                   as Date;
           result.probationEndsOn = valueDes;
           break;
+        case r'commitmentStartsOn':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(Date),
+                  )
+                  as Date;
+          result.commitmentStartsOn = valueDes;
+          break;
         case r'commitmentEndsOn':
           final valueDes =
               serializers.deserialize(
@@ -184,6 +239,38 @@ class _$AdminCaptainApplicationDtoOutputActivationContractSerializer
                   )
                   as Date;
           result.commitmentEndsOn = valueDes;
+          break;
+        case r'probationConfirmedOn':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(Date),
+                  )
+                  as Date?;
+          if (valueDes == null) continue;
+          result.probationConfirmedOn = valueDes;
+          break;
+        case r'phase':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminCaptainApplicationDtoOutputActivationContractPhaseEnum,
+                    ),
+                  )
+                  as AdminCaptainApplicationDtoOutputActivationContractPhaseEnum;
+          result.phase = valueDes;
+          break;
+        case r'review':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminCaptainApplicationDtoOutputActivationContractReviewEnum,
+                    ),
+                  )
+                  as AdminCaptainApplicationDtoOutputActivationContractReviewEnum;
+          result.review = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -212,4 +299,70 @@ class _$AdminCaptainApplicationDtoOutputActivationContractSerializer
     );
     return result.build();
   }
+}
+
+class AdminCaptainApplicationDtoOutputActivationContractPhaseEnum
+    extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'probation')
+  static const AdminCaptainApplicationDtoOutputActivationContractPhaseEnum
+  probation =
+      _$adminCaptainApplicationDtoOutputActivationContractPhaseEnum_probation;
+  @BuiltValueEnumConst(wireName: r'commitment')
+  static const AdminCaptainApplicationDtoOutputActivationContractPhaseEnum
+  commitment =
+      _$adminCaptainApplicationDtoOutputActivationContractPhaseEnum_commitment;
+  @BuiltValueEnumConst(wireName: r'open')
+  static const AdminCaptainApplicationDtoOutputActivationContractPhaseEnum
+  open = _$adminCaptainApplicationDtoOutputActivationContractPhaseEnum_open;
+
+  static Serializer<AdminCaptainApplicationDtoOutputActivationContractPhaseEnum>
+  get serializer =>
+      _$adminCaptainApplicationDtoOutputActivationContractPhaseEnumSerializer;
+
+  const AdminCaptainApplicationDtoOutputActivationContractPhaseEnum._(
+    String name,
+  ) : super(name);
+
+  static BuiltSet<AdminCaptainApplicationDtoOutputActivationContractPhaseEnum>
+  get values =>
+      _$adminCaptainApplicationDtoOutputActivationContractPhaseEnumValues;
+  static AdminCaptainApplicationDtoOutputActivationContractPhaseEnum valueOf(
+    String name,
+  ) => _$adminCaptainApplicationDtoOutputActivationContractPhaseEnumValueOf(
+    name,
+  );
+}
+
+/// The probation review: due from its notice, overdue past its end.
+class AdminCaptainApplicationDtoOutputActivationContractReviewEnum
+    extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'none')
+  static const AdminCaptainApplicationDtoOutputActivationContractReviewEnum
+  none = _$adminCaptainApplicationDtoOutputActivationContractReviewEnum_none;
+  @BuiltValueEnumConst(wireName: r'due')
+  static const AdminCaptainApplicationDtoOutputActivationContractReviewEnum
+  due = _$adminCaptainApplicationDtoOutputActivationContractReviewEnum_due;
+  @BuiltValueEnumConst(wireName: r'overdue')
+  static const AdminCaptainApplicationDtoOutputActivationContractReviewEnum
+  overdue =
+      _$adminCaptainApplicationDtoOutputActivationContractReviewEnum_overdue;
+
+  static Serializer<
+    AdminCaptainApplicationDtoOutputActivationContractReviewEnum
+  >
+  get serializer =>
+      _$adminCaptainApplicationDtoOutputActivationContractReviewEnumSerializer;
+
+  const AdminCaptainApplicationDtoOutputActivationContractReviewEnum._(
+    String name,
+  ) : super(name);
+
+  static BuiltSet<AdminCaptainApplicationDtoOutputActivationContractReviewEnum>
+  get values =>
+      _$adminCaptainApplicationDtoOutputActivationContractReviewEnumValues;
+  static AdminCaptainApplicationDtoOutputActivationContractReviewEnum valueOf(
+    String name,
+  ) => _$adminCaptainApplicationDtoOutputActivationContractReviewEnumValueOf(
+    name,
+  );
 }

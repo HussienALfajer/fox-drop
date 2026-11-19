@@ -15,6 +15,7 @@ import { AdminPeakBonusController } from './admin-peak-bonus.controller.js';
 import { ApplicationsService } from './applications.service.js';
 import { CaptainApplicationController } from './captain-application.controller.js';
 import { CaptainAvailabilityController } from './captain-availability.controller.js';
+import { CaptainContractController } from './captain-contract.controller.js';
 import { CaptainPeakBonusController } from './captain-peak-bonus.controller.js';
 import { CaptainsService } from './captains.service.js';
 import { LivePositions } from './live-positions.js';
@@ -42,6 +43,7 @@ import { PeakBonusService } from './peak-bonus.service.js';
     CaptainApplicationController,
     CaptainAvailabilityController,
     CaptainPeakBonusController,
+    CaptainContractController,
     AdminCaptainsController,
     AdminCaptainApplicationsController,
     AdminPeakBonusController,
@@ -84,7 +86,9 @@ export {
 } from './applications.service.js';
 export {
   ApplicationPipelineService,
+  type ContractPhaseChange,
   type DepositAwaiting,
+  type ProbationReview,
   type PipelineIdentity,
   PipelineRefusedError,
 } from './application-pipeline.service.js';

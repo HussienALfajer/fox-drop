@@ -101,6 +101,11 @@ export const alertCodes = [
   // «طلب انضمام كابتن»: an application sent (AP §9.7.1, slice 2.34b), until
   // it leaves «جديد».
   'captain_application',
+  // «نهاية فترة تجربة» (AP §9.1.3, §9.7.2; slice 2.35a): from
+  // captain.probation_review_notice_days before a captain's probation ends
+  // until OPS confirms it; past its end, the warning of AP §9.7.2 instead.
+  'probation_ending',
+  'probation_overdue',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -149,6 +154,8 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
     resolvesItself: false,
   },
   captain_application: rule('information', OPERATIONS, 'captain_application'),
+  probation_ending: rule('information', OPERATIONS, 'captain'),
+  probation_overdue: rule('warning', OPERATIONS, 'captain'),
 };
 
 function rule(

@@ -68,6 +68,14 @@ Serializers _$serializers =
           ..add(AdminCaptainApplicationDtoOutputActivation.serializer)
           ..add(AdminCaptainApplicationDtoOutputActivationCashLimit.serializer)
           ..add(AdminCaptainApplicationDtoOutputActivationContract.serializer)
+          ..add(
+            AdminCaptainApplicationDtoOutputActivationContractPhaseEnum
+                .serializer,
+          )
+          ..add(
+            AdminCaptainApplicationDtoOutputActivationContractReviewEnum
+                .serializer,
+          )
           ..add(AdminCaptainApplicationDtoOutputActivationDeposit.serializer)
           ..add(AdminCaptainApplicationDtoOutputActivationKit.serializer)
           ..add(
@@ -1049,7 +1057,6 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputEnded.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedFoodEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedOutcomeEnum.serializer)
-          ..add(CaptainActiveOrderDtoOutputEndedPay.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedStatusEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputHandedOver.serializer)
           ..add(CaptainActiveOrderDtoOutputOrder.serializer)
@@ -1158,6 +1165,12 @@ Serializers _$serializers =
           ..add(CaptainCodeSentDtoOutputChannelEnum.serializer)
           ..add(CaptainContentDtoOutput.serializer)
           ..add(CaptainContentDtoOutputReasons.serializer)
+          ..add(CaptainContractDtoOutput.serializer)
+          ..add(CaptainContractDtoOutputContract.serializer)
+          ..add(CaptainContractDtoOutputContractPhaseEnum.serializer)
+          ..add(CaptainContractDtoOutputDeposit.serializer)
+          ..add(CaptainContractDtoOutputDepositAmount.serializer)
+          ..add(CaptainContractDtoOutputKitInner.serializer)
           ..add(CaptainCurrentOfferDtoOutput.serializer)
           ..add(CaptainCurrentOfferDtoOutputOffer.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferCollect.serializer)
@@ -3537,6 +3550,12 @@ Serializers _$serializers =
               const FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainContractDtoOutputKitInner),
+            ]),
+            () => ListBuilder<CaptainContractDtoOutputKitInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

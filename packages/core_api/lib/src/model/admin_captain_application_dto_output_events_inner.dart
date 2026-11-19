@@ -39,7 +39,7 @@ abstract class AdminCaptainApplicationDtoOutputEventsInner
 
   @BuiltValueField(wireName: r'kind')
   AdminCaptainApplicationDtoOutputEventsInnerKindEnum get kind;
-  // enum kindEnum {  submitted,  stage,  note,  document_review,  document_request,  document_upload,  interview,  kit,  cash_limit,  contract,  deposit,  };
+  // enum kindEnum {  submitted,  stage,  note,  document_review,  document_request,  document_upload,  interview,  kit,  cash_limit,  contract,  deposit,  probation_confirmed,  };
 
   @BuiltValueField(wireName: r'stage')
   AdminCaptainApplicationDtoOutputEventsInnerStageEnum get stage;
@@ -322,6 +322,10 @@ class AdminCaptainApplicationDtoOutputEventsInnerKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'deposit')
   static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum deposit =
       _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit;
+  @BuiltValueEnumConst(wireName: r'probation_confirmed')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+  probationConfirmed =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_probationConfirmed;
 
   static Serializer<AdminCaptainApplicationDtoOutputEventsInnerKindEnum>
   get serializer =>

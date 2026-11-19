@@ -89,6 +89,7 @@ export const eventKindKeys = {
   cash_limit: 'captainApplications.event.cash_limit',
   contract: 'captainApplications.event.contract',
   deposit: 'captainApplications.event.deposit',
+  probation_confirmed: 'captainApplications.event.probation_confirmed',
 } as const satisfies Record<ApplicationEvent['kind'], string>;
 
 export const duplicateFieldKeys = {
@@ -169,6 +170,11 @@ export function documentsOf(application: Pick<Application, 'documents'>, kind: D
 
 // The alert «طلب انضمام كابتن»: its application, for the review page.
 export function applicationOfAlert(alert: AdminAlert): string | null {
+  if (alert.code === 'probation_ending' || alert.code === 'probation_overdue') {
+    // «نهاية فترة تجربة» (slice 2.35a): the captain's application holds the
+    // contract.
+    return alert.applicationId;
+  }
   return alert.code === 'captain_application' && alert.subjectType === 'captain_application'
     ? alert.subjectId
     : null;

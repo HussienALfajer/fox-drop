@@ -111,7 +111,8 @@
     "ticket": "التذكرة {{number}}",
     "openTicket": "فتح التذكرة",
     "openPriceLog": "فتح سجل الأسعار",
-    "openApplication": "فتح طلب الانضمام"
+    "openApplication": "فتح طلب الانضمام",
+    "openContract": "فتح العقد"
   },
   "board": {
     "title": "غرفة العمليات",
@@ -178,6 +179,8 @@
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
       "largePriceChange": "تغيير أسعار كبير",
       "captainApplication": "طلب انضمام كابتن",
+      "probationEnding": "نهاية فترة تجربة",
+      "probationOverdue": "انتهت فترة التجربة دون مراجعة",
       "restaurantSettlementOverdue": "مطعم متأخر في التسوية",
       "rateStale": "سعر صرف قديم",
       "compensationApproval": "طلب موافقة تعويض",
@@ -3599,7 +3602,8 @@
       "kit": "سلّم العدة",
       "cash_limit": "حدّد حد النقد",
       "contract": "سجّل العقد",
-      "deposit": "سجّل التأمين"
+      "deposit": "سجّل التأمين",
+      "probation_confirmed": "أكّد فترة التجربة"
     },
     "duplicate": {
       "id_number": "رقم الهوية",

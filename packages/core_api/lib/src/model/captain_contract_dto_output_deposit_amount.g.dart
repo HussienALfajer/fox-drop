@@ -1,40 +1,40 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'captain_active_order_dto_output_ended_pay.dart';
+part of 'captain_contract_dto_output_deposit_amount.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$CaptainActiveOrderDtoOutputEndedPay
-    extends CaptainActiveOrderDtoOutputEndedPay {
+class _$CaptainContractDtoOutputDepositAmount
+    extends CaptainContractDtoOutputDepositAmount {
   @override
   final String amount;
   @override
   final String currency;
 
-  factory _$CaptainActiveOrderDtoOutputEndedPay([
-    void Function(CaptainActiveOrderDtoOutputEndedPayBuilder)? updates,
-  ]) =>
-      (CaptainActiveOrderDtoOutputEndedPayBuilder()..update(updates))._build();
+  factory _$CaptainContractDtoOutputDepositAmount([
+    void Function(CaptainContractDtoOutputDepositAmountBuilder)? updates,
+  ]) => (CaptainContractDtoOutputDepositAmountBuilder()..update(updates))
+      ._build();
 
-  _$CaptainActiveOrderDtoOutputEndedPay._({
+  _$CaptainContractDtoOutputDepositAmount._({
     required this.amount,
     required this.currency,
   }) : super._();
   @override
-  CaptainActiveOrderDtoOutputEndedPay rebuild(
-    void Function(CaptainActiveOrderDtoOutputEndedPayBuilder) updates,
+  CaptainContractDtoOutputDepositAmount rebuild(
+    void Function(CaptainContractDtoOutputDepositAmountBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CaptainActiveOrderDtoOutputEndedPayBuilder toBuilder() =>
-      CaptainActiveOrderDtoOutputEndedPayBuilder()..replace(this);
+  CaptainContractDtoOutputDepositAmountBuilder toBuilder() =>
+      CaptainContractDtoOutputDepositAmountBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CaptainActiveOrderDtoOutputEndedPay &&
+    return other is CaptainContractDtoOutputDepositAmount &&
         amount == other.amount &&
         currency == other.currency;
   }
@@ -50,20 +50,22 @@ class _$CaptainActiveOrderDtoOutputEndedPay
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CaptainActiveOrderDtoOutputEndedPay')
+    return (newBuiltValueToStringHelper(
+            r'CaptainContractDtoOutputDepositAmount',
+          )
           ..add('amount', amount)
           ..add('currency', currency))
         .toString();
   }
 }
 
-class CaptainActiveOrderDtoOutputEndedPayBuilder
+class CaptainContractDtoOutputDepositAmountBuilder
     implements
         Builder<
-          CaptainActiveOrderDtoOutputEndedPay,
-          CaptainActiveOrderDtoOutputEndedPayBuilder
+          CaptainContractDtoOutputDepositAmount,
+          CaptainContractDtoOutputDepositAmountBuilder
         > {
-  _$CaptainActiveOrderDtoOutputEndedPay? _$v;
+  _$CaptainContractDtoOutputDepositAmount? _$v;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -73,11 +75,11 @@ class CaptainActiveOrderDtoOutputEndedPayBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  CaptainActiveOrderDtoOutputEndedPayBuilder() {
-    CaptainActiveOrderDtoOutputEndedPay._defaults(this);
+  CaptainContractDtoOutputDepositAmountBuilder() {
+    CaptainContractDtoOutputDepositAmount._defaults(this);
   }
 
-  CaptainActiveOrderDtoOutputEndedPayBuilder get _$this {
+  CaptainContractDtoOutputDepositAmountBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
@@ -88,32 +90,32 @@ class CaptainActiveOrderDtoOutputEndedPayBuilder
   }
 
   @override
-  void replace(CaptainActiveOrderDtoOutputEndedPay other) {
-    _$v = other as _$CaptainActiveOrderDtoOutputEndedPay;
+  void replace(CaptainContractDtoOutputDepositAmount other) {
+    _$v = other as _$CaptainContractDtoOutputDepositAmount;
   }
 
   @override
   void update(
-    void Function(CaptainActiveOrderDtoOutputEndedPayBuilder)? updates,
+    void Function(CaptainContractDtoOutputDepositAmountBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  CaptainActiveOrderDtoOutputEndedPay build() => _build();
+  CaptainContractDtoOutputDepositAmount build() => _build();
 
-  _$CaptainActiveOrderDtoOutputEndedPay _build() {
+  _$CaptainContractDtoOutputDepositAmount _build() {
     final _$result =
         _$v ??
-        _$CaptainActiveOrderDtoOutputEndedPay._(
+        _$CaptainContractDtoOutputDepositAmount._(
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'CaptainActiveOrderDtoOutputEndedPay',
+            r'CaptainContractDtoOutputDepositAmount',
             'amount',
           ),
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'CaptainActiveOrderDtoOutputEndedPay',
+            r'CaptainContractDtoOutputDepositAmount',
             'currency',
           ),
         );

@@ -45,6 +45,11 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract =
 const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
 _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit =
     const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._('deposit');
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_probationConfirmed =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._(
+      'probationConfirmed',
+    );
 
 AdminCaptainApplicationDtoOutputEventsInnerKindEnum
 _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValueOf(String name) {
@@ -71,6 +76,8 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValueOf(String name) {
       return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract;
     case 'deposit':
       return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit;
+    case 'probationConfirmed':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_probationConfirmed;
     default:
       throw ArgumentError(name);
   }
@@ -78,21 +85,22 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValueOf(String name) {
 
 final BuiltSet<AdminCaptainApplicationDtoOutputEventsInnerKindEnum>
 _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValues =
-    BuiltSet<AdminCaptainApplicationDtoOutputEventsInnerKindEnum>(
-      const <AdminCaptainApplicationDtoOutputEventsInnerKindEnum>[
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_submitted,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_stage,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_note,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentReview,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentRequest,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentUpload,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_interview,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kit,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_cashLimit,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract,
-        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit,
-      ],
-    );
+    BuiltSet<AdminCaptainApplicationDtoOutputEventsInnerKindEnum>(const <
+      AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+    >[
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_submitted,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_stage,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_note,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentReview,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentRequest,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentUpload,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_interview,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kit,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_cashLimit,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_probationConfirmed,
+    ]);
 
 const AdminCaptainApplicationDtoOutputEventsInnerStageEnum
 _$adminCaptainApplicationDtoOutputEventsInnerStageEnum_draft =
@@ -304,6 +312,7 @@ class _$AdminCaptainApplicationDtoOutputEventsInnerKindEnumSerializer
     'cashLimit': 'cash_limit',
     'contract': 'contract',
     'deposit': 'deposit',
+    'probationConfirmed': 'probation_confirmed',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'submitted': 'submitted',
@@ -317,6 +326,7 @@ class _$AdminCaptainApplicationDtoOutputEventsInnerKindEnumSerializer
     'cash_limit': 'cashLimit',
     'contract': 'contract',
     'deposit': 'deposit',
+    'probation_confirmed': 'probationConfirmed',
   };
 
   @override

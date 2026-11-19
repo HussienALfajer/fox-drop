@@ -9,7 +9,7 @@ import {
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
-import { CaptainsService } from '../captains/index.js';
+import { ApplicationPipelineService, CaptainsService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import { OtpSenderPoolService } from '../identity/index.js';
@@ -40,6 +40,7 @@ export class AlertsSweep {
     private readonly geo: GeoService,
     private readonly restaurants: RestaurantStatusService,
     private readonly fx: FxService,
+    private readonly pipeline: ApplicationPipelineService,
   ) {}
 
   async run(now: Date): Promise<void> {
@@ -48,6 +49,7 @@ export class AlertsSweep {
       this.cashLimits(now).catch((error: unknown) => this.failed('cash limits', error)),
       this.autoPauses(now).catch((error: unknown) => this.failed('auto-pauses', error)),
       this.staleRates(now).catch((error: unknown) => this.failed('stale rates', error)),
+      this.probations(now).catch((error: unknown) => this.failed('probations', error)),
     ]);
   }
 
@@ -100,6 +102,42 @@ export class AlertsSweep {
     for (const subject of await this.alerts.openSubjects(code)) {
       if (seen.has(subject.id)) continue;
       await this.sync({ type: 'captain', id: subject.id, cityId: subject.cityId }, [code], [], now);
+    }
+  }
+
+  // AP §9.1.3 «نهاية فترة تجربة», AP §9.7.2 (slice 2.35a): open from the
+  // review's notice until the probation is confirmed, as a warning once it
+  // ended without one; the subject's application opens the contract.
+  async probations(now: Date): Promise<void> {
+    const codes: AlertCode[] = ['probation_ending', 'probation_overdue'];
+    const seen = new Set<string>();
+    for (const city of await this.geo.activeCities()) {
+      for (const review of await this.pipeline.probationReviews(city.id, now)) {
+        seen.add(review.captainId);
+        await this.sync(
+          {
+            type: 'captain',
+            id: review.captainId,
+            cityId: city.id,
+            details: { captainName: review.fullName, applicationId: review.applicationId },
+          },
+          codes,
+          [review.review === 'due' ? 'probation_ending' : 'probation_overdue'],
+          now,
+        );
+      }
+    }
+    for (const code of codes) {
+      for (const subject of await this.alerts.openSubjects(code)) {
+        if (seen.has(subject.id)) continue;
+        seen.add(subject.id);
+        await this.sync(
+          { type: 'captain', id: subject.id, cityId: subject.cityId },
+          codes,
+          [],
+          now,
+        );
+      }
     }
   }
 

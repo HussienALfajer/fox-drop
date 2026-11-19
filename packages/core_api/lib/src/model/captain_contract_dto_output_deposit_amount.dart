@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'captain_active_order_dto_output_ended_pay.g.dart';
+part 'captain_contract_dto_output_deposit_amount.g.dart';
 
-/// The pay the order still brings (CA §9.12).
+/// Deducted each Thursday until paid; null for none.
 ///
 /// Properties:
 /// * [amount]
 /// * [currency]
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputEndedPay
+abstract class CaptainContractDtoOutputDepositAmount
     implements
         Built<
-          CaptainActiveOrderDtoOutputEndedPay,
-          CaptainActiveOrderDtoOutputEndedPayBuilder
+          CaptainContractDtoOutputDepositAmount,
+          CaptainContractDtoOutputDepositAmountBuilder
         > {
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -26,34 +26,34 @@ abstract class CaptainActiveOrderDtoOutputEndedPay
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  CaptainActiveOrderDtoOutputEndedPay._();
+  CaptainContractDtoOutputDepositAmount._();
 
-  factory CaptainActiveOrderDtoOutputEndedPay([
-    void updates(CaptainActiveOrderDtoOutputEndedPayBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputEndedPay;
+  factory CaptainContractDtoOutputDepositAmount([
+    void updates(CaptainContractDtoOutputDepositAmountBuilder b),
+  ]) = _$CaptainContractDtoOutputDepositAmount;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainActiveOrderDtoOutputEndedPayBuilder b) => b;
+  static void _defaults(CaptainContractDtoOutputDepositAmountBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputEndedPay> get serializer =>
-      _$CaptainActiveOrderDtoOutputEndedPaySerializer();
+  static Serializer<CaptainContractDtoOutputDepositAmount> get serializer =>
+      _$CaptainContractDtoOutputDepositAmountSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputEndedPaySerializer
-    implements PrimitiveSerializer<CaptainActiveOrderDtoOutputEndedPay> {
+class _$CaptainContractDtoOutputDepositAmountSerializer
+    implements PrimitiveSerializer<CaptainContractDtoOutputDepositAmount> {
   @override
   final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputEndedPay,
-    _$CaptainActiveOrderDtoOutputEndedPay,
+    CaptainContractDtoOutputDepositAmount,
+    _$CaptainContractDtoOutputDepositAmount,
   ];
 
   @override
-  final String wireName = r'CaptainActiveOrderDtoOutputEndedPay';
+  final String wireName = r'CaptainContractDtoOutputDepositAmount';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CaptainActiveOrderDtoOutputEndedPay object, {
+    CaptainContractDtoOutputDepositAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -71,7 +71,7 @@ class _$CaptainActiveOrderDtoOutputEndedPaySerializer
   @override
   Object serialize(
     Serializers serializers,
-    CaptainActiveOrderDtoOutputEndedPay object, {
+    CaptainContractDtoOutputDepositAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +86,7 @@ class _$CaptainActiveOrderDtoOutputEndedPaySerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CaptainActiveOrderDtoOutputEndedPayBuilder result,
+    required CaptainContractDtoOutputDepositAmountBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -120,12 +120,12 @@ class _$CaptainActiveOrderDtoOutputEndedPaySerializer
   }
 
   @override
-  CaptainActiveOrderDtoOutputEndedPay deserialize(
+  CaptainContractDtoOutputDepositAmount deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CaptainActiveOrderDtoOutputEndedPayBuilder();
+    final result = CaptainContractDtoOutputDepositAmountBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

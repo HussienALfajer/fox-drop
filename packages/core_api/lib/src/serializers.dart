@@ -620,7 +620,6 @@ import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_ended.dart';
-import 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_handed_over.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
@@ -681,6 +680,11 @@ import 'package:core_api/src/model/captain_code_request_dto.dart';
 import 'package:core_api/src/model/captain_code_sent_dto_output.dart';
 import 'package:core_api/src/model/captain_content_dto_output.dart';
 import 'package:core_api/src/model/captain_content_dto_output_reasons.dart';
+import 'package:core_api/src/model/captain_contract_dto_output.dart';
+import 'package:core_api/src/model/captain_contract_dto_output_contract.dart';
+import 'package:core_api/src/model/captain_contract_dto_output_deposit.dart';
+import 'package:core_api/src/model/captain_contract_dto_output_deposit_amount.dart';
+import 'package:core_api/src/model/captain_contract_dto_output_kit_inner.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_collect.dart';
@@ -1677,7 +1681,6 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutput,
   CaptainActiveOrderDtoOutputCancelled,
   CaptainActiveOrderDtoOutputEnded,
-  CaptainActiveOrderDtoOutputEndedPay,
   CaptainActiveOrderDtoOutputHandedOver,
   CaptainActiveOrderDtoOutputOrder,
   CaptainActiveOrderDtoOutputOrderArrival,
@@ -1738,6 +1741,11 @@ part 'serializers.g.dart';
   CaptainCodeSentDtoOutput,
   CaptainContentDtoOutput,
   CaptainContentDtoOutputReasons,
+  CaptainContractDtoOutput,
+  CaptainContractDtoOutputContract,
+  CaptainContractDtoOutputDeposit,
+  CaptainContractDtoOutputDepositAmount,
+  CaptainContractDtoOutputKitInner,
   CaptainCurrentOfferDtoOutput,
   CaptainCurrentOfferDtoOutputOffer,
   CaptainCurrentOfferDtoOutputOfferCollect,
@@ -2831,6 +2839,12 @@ Serializers serializers =
               FullType(AdminCaptainApplicationDtoOutputDocumentsInner),
             ]),
             () => ListBuilder<AdminCaptainApplicationDtoOutputDocumentsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainContractDtoOutputKitInner),
+            ]),
+            () => ListBuilder<CaptainContractDtoOutputKitInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

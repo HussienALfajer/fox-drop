@@ -1,5 +1,5 @@
 import type { Vehicle } from '../settings/index.js';
-import type { applicationDocumentKinds, applicationStages } from './schema.js';
+import type { applicationDocumentKinds, applicationStages, contractPhases } from './schema.js';
 
 // The pure rules of the application form (CA §5.2–5.3, AP §9.7.1; slice
 // 2.34a). Dates are the city's calendar days as YYYY-MM-DD.
@@ -166,6 +166,48 @@ export function activationMissing(application: {
   return found;
 }
 
+// AP §9.7.2, D24: the contract's phases. «فترة تجربة» until the
+// commitment starts: on the probation's end when OPS confirmed it by then,
+// else on the confirmation's day; «فترة التزام» for
+// `captain.min_commitment_months` from that start; «مفتوح» after.
+export type ContractPhase = (typeof contractPhases)[number];
+
+export function commitmentOf(contract: {
+  probationEndsOn: string;
+  confirmedOn: string;
+  months: number;
+}): { startsOn: string; endsOn: string } {
+  const startsOn =
+    contract.confirmedOn > contract.probationEndsOn
+      ? contract.confirmedOn
+      : contract.probationEndsOn;
+  return { startsOn, endsOn: addMonths(startsOn, contract.months) };
+}
+
+export function contractPhase(
+  contract: { commitmentStartsOn: string | null; commitmentEndsOn: string | null },
+  today: string,
+): ContractPhase {
+  if (contract.commitmentStartsOn === null || today < contract.commitmentStartsOn) {
+    return 'probation';
+  }
+  return today < contract.commitmentEndsOn! ? 'commitment' : 'open';
+}
+
+// AP §9.7.2: the probation review is OPS's task from
+// `captain.probation_review_notice_days` before the probation ends, and a
+// warning once it ended without one, until someone decides.
+export function probationReview(review: {
+  probationEndsOn: string;
+  noticeDays: number;
+  confirmed: boolean;
+  today: string;
+}): 'none' | 'due' | 'overdue' {
+  if (review.confirmed) return 'none';
+  if (review.today >= review.probationEndsOn) return 'overdue';
+  return review.today >= addDays(review.probationEndsOn, -review.noticeDays) ? 'due' : 'none';
+}
+
 // AP §8.5.5 step 2: the instalment a Thursday settlement posts, never more
 // than what is left of the deposit (owner decision 2026-11-19).
 export function depositInstalmentDue(deposit: {
@@ -212,7 +254,9 @@ export type PipelineAction =
   | 'set_cash_limit'
   | 'record_contract'
   | 'record_deposit'
-  | 'activate';
+  | 'activate'
+  // After it (AP §9.7.2): the probation confirmed.
+  | 'confirm_probation';
 
 // The stages each action takes an application in, and where it leaves it
 // (null: where it was). «مفعّل» is the activation's (2.35).
@@ -242,6 +286,7 @@ const PIPELINE: Record<
   record_contract: { from: ['awaiting_kit'], to: null },
   record_deposit: { from: ['awaiting_kit'], to: null },
   activate: { from: ['awaiting_kit'], to: 'active' },
+  confirm_probation: { from: ['active'], to: null },
 };
 
 // The stages an action passes through from `stage`, in order, or null when

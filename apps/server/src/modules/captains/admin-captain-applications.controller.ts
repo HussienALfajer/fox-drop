@@ -32,7 +32,12 @@ import {
 } from './application-pipeline.service.js';
 import { ApplicationRefusedError } from './applications.service.js';
 import { interview } from './captain-application.controller.js';
-import { applicationDocumentKinds, applicationEventKinds, applicationStages } from './schema.js';
+import {
+  applicationDocumentKinds,
+  applicationEventKinds,
+  applicationStages,
+  contractPhases,
+} from './schema.js';
 
 const documentKind = z.enum(applicationDocumentKinds);
 const stage = z.enum(applicationStages);
@@ -182,7 +187,15 @@ class AdminCaptainApplicationDto extends createZodDto(
             probationDays: z.int(),
             commitmentMonths: z.int(),
             probationEndsOn: z.iso.date(),
-            commitmentEndsOn: z.iso.date().describe('When the probation is confirmed on its end.'),
+            commitmentStartsOn: z.iso
+              .date()
+              .describe('As confirmed, or expected on the probation end.'),
+            commitmentEndsOn: z.iso.date(),
+            probationConfirmedOn: z.iso.date().nullable(),
+            phase: z.enum(contractPhases),
+            review: z
+              .enum(['none', 'due', 'overdue'])
+              .describe('The probation review: due from its notice, overdue past its end.'),
           })
           .nullable(),
         deposit: z.object({
@@ -555,6 +568,22 @@ export class AdminCaptainApplicationsController {
         startsOn: body.startsOn,
         document: { uploadIds: body.uploadIds },
       }),
+    );
+  }
+
+  // AP §9.7.2: the probation confirmed. 409 already_confirmed; wrong_stage
+  // before the activation.
+  @Post(':applicationId/confirm-probation')
+  @RequirePermission('captains.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
+  confirmProbation(
+    @Param() params: AdminCaptainApplicationParamsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.page(params.applicationId, session, request, () =>
+      this.pipeline.confirmProbation(params.applicationId, adminOf(session, request)),
     );
   }
 

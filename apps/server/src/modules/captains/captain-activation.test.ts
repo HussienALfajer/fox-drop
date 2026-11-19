@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { LedgerService } from '../ledger/index.js';
+import { ApplicationPipelineService } from './application-pipeline.service.js';
 import {
   admin,
   app,
@@ -368,5 +369,87 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
     expect(settled.json().statement).toMatchObject({ instalments: '4000', balance: '0' });
     const after = (await ops('GET', `captain-applications/${id}`)).json().activation.deposit;
     expect(after.paid).toBe('14000');
+  });
+});
+
+// An activated captain: every record in, the deposit with instalments.
+async function activated(): Promise<{ who: Applicant; id: string; ops: Admin }> {
+  const { who, id, ops } = await awaitingKit();
+  const own = await admin('OWN');
+  await ops('PUT', `captain-applications/${id}/kit`, {
+    items: [
+      { code: 'thermal_bag', quantity: 1 },
+      { code: 'vest', size: 'L', quantity: 1 },
+    ],
+  });
+  await ops('PUT', `captain-applications/${id}/contract`, {
+    signedOn: day(0),
+    startsOn: day(0),
+    uploadIds: await scan(ops, 1),
+  });
+  await own('PUT', `captain-applications/${id}/cash-limit`, {
+    cashLimit: { amount: '40000', currency: 'TRY' },
+  });
+  await deposit(own, id, { amount: '30000', instalment: '10000', paidNow: '0' });
+  expect((await ops('POST', `captain-applications/${id}/activate`)).statusCode).toBe(200);
+  return { who, id, ops };
+}
+
+describe('the contract phases (AP §9.7.2, CA §12.3, §14 #28)', () => {
+  it('asks the review, confirms it and tells each phase once', async () => {
+    const { who, id, ops } = await activated();
+    const pipeline = app.get(ApplicationPipelineService);
+    const inDays = (days: number) => new Date(Date.now() + days * 86_400_000);
+    const reviewOf = async (days: number) =>
+      (await pipeline.probationReviews(azaz, inDays(days))).find((each) => each.captainId === id)
+        ?.review;
+    expect(await reviewOf(0)).toBeUndefined();
+    expect(await reviewOf(28)).toBe('due');
+    expect(await reviewOf(31)).toBe('overdue');
+
+    const page = (await ops('GET', `captain-applications/${id}`)).json();
+    expect(page.activation.contract).toMatchObject({
+      phase: 'probation',
+      probationEndsOn: day(30),
+      commitmentStartsOn: day(30),
+      probationConfirmedOn: null,
+      review: 'none',
+    });
+    const confirmed = await ops('POST', `captain-applications/${id}/confirm-probation`);
+    expect(confirmed.statusCode).toBe(200);
+    expect(confirmed.json().activation.contract).toMatchObject({
+      probationConfirmedOn: day(0),
+      commitmentStartsOn: day(30),
+      phase: 'probation',
+    });
+    expect(await reviewOf(31)).toBeUndefined();
+    const again = await ops('POST', `captain-applications/${id}/confirm-probation`);
+    expect(again.json().error).toBe('already_confirmed');
+
+    // The phase changes on its day, told once.
+    const told: { captainId: string; phase: string; from: string }[] = [];
+    const notify = async (_tx: unknown, change: (typeof told)[number]) => {
+      if (change.captainId === id) told.push(change);
+    };
+    await pipeline.sweepContractPhases(azaz, inDays(1), notify);
+    expect(told).toEqual([]);
+    await pipeline.sweepContractPhases(azaz, inDays(31), notify);
+    await pipeline.sweepContractPhases(azaz, inDays(31), notify);
+    expect(told).toEqual([expect.objectContaining({ phase: 'commitment', from: day(30) })]);
+
+    const mine = await who.call('GET', '/contract');
+    expect(mine.statusCode).toBe(200);
+    expect(mine.json()).toEqual({
+      contract: expect.objectContaining({ phase: 'probation', probationConfirmed: true }),
+      kit: [
+        { label: 'حقيبة حرارية', size: null, quantity: 1 },
+        { label: 'سترة', size: 'L', quantity: 1 },
+      ],
+      deposit: {
+        amount: { amount: '30000', currency: 'TRY' },
+        paid: '0',
+        instalment: { amount: '10000', currency: 'TRY' },
+      },
+    });
   });
 });
