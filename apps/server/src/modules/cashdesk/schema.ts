@@ -125,6 +125,9 @@ export const captainReceiptTypes = [
   // (deposit.payment), before or after the activation; its captain is the
   // one the application makes.
   'captain_deposit',
+  // «استرداد التأمين» (AP §9.7.5 step 4, §9.10.3; slice 2.35b): the deposit
+  // paid back in cash at termination (deposit.refund).
+  'captain_deposit_refund',
 ] as const;
 
 export const receiptTypes = [
@@ -192,11 +195,11 @@ export const receipts = cashdesk.table(
     check('receipts_sequence', sql`${table.sequence} > 0`),
     check(
       'receipts_type_values',
-      sql`${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection', 'captain_deposit', 'merchant_settlement', 'merchant_payout', 'customer_dues_payment')`,
+      sql`${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection', 'captain_deposit', 'captain_deposit_refund', 'merchant_settlement', 'merchant_payout', 'customer_dues_payment')`,
     ),
     check(
       'receipts_party',
-      sql`CASE WHEN ${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection', 'captain_deposit') THEN ${table.captainId} IS NOT NULL AND ${table.captainName} IS NOT NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.customerId} IS NULL AND ${table.customerName} IS NULL AND ${table.dueBefore} IS NULL AND ${table.dueCurrency} IS NULL WHEN ${table.type} = 'customer_dues_payment' THEN ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.customerId} IS NOT NULL AND ${table.customerName} IS NOT NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL ELSE ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NOT NULL AND ${table.restaurantName} IS NOT NULL AND ${table.customerId} IS NULL AND ${table.customerName} IS NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL END`,
+      sql`CASE WHEN ${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection', 'captain_deposit', 'captain_deposit_refund') THEN ${table.captainId} IS NOT NULL AND ${table.captainName} IS NOT NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.customerId} IS NULL AND ${table.customerName} IS NULL AND ${table.dueBefore} IS NULL AND ${table.dueCurrency} IS NULL WHEN ${table.type} = 'customer_dues_payment' THEN ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.customerId} IS NOT NULL AND ${table.customerName} IS NOT NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL ELSE ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NOT NULL AND ${table.restaurantName} IS NOT NULL AND ${table.customerId} IS NULL AND ${table.customerName} IS NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL END`,
     ),
     check('receipts_method_values', sql`${table.method} IN ('office', 'field')`),
     check(

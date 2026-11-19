@@ -36,6 +36,8 @@ class _$AdminDailyReportDtoOutput extends AdminDailyReportDtoOutput {
   @override
   final String adjustments;
   @override
+  final String withheldDeposits;
+  @override
   final String margin;
   @override
   final BuiltList<AdminDailyReportDtoOutputCashInner> cash;
@@ -69,6 +71,7 @@ class _$AdminDailyReportDtoOutput extends AdminDailyReportDtoOutput {
     required this.testCost,
     required this.fxRounding,
     required this.adjustments,
+    required this.withheldDeposits,
     required this.margin,
     required this.cash,
     required this.restaurants,
@@ -104,6 +107,7 @@ class _$AdminDailyReportDtoOutput extends AdminDailyReportDtoOutput {
         testCost == other.testCost &&
         fxRounding == other.fxRounding &&
         adjustments == other.adjustments &&
+        withheldDeposits == other.withheldDeposits &&
         margin == other.margin &&
         cash == other.cash &&
         restaurants == other.restaurants &&
@@ -130,6 +134,7 @@ class _$AdminDailyReportDtoOutput extends AdminDailyReportDtoOutput {
     _$hash = $jc(_$hash, testCost.hashCode);
     _$hash = $jc(_$hash, fxRounding.hashCode);
     _$hash = $jc(_$hash, adjustments.hashCode);
+    _$hash = $jc(_$hash, withheldDeposits.hashCode);
     _$hash = $jc(_$hash, margin.hashCode);
     _$hash = $jc(_$hash, cash.hashCode);
     _$hash = $jc(_$hash, restaurants.hashCode);
@@ -158,6 +163,7 @@ class _$AdminDailyReportDtoOutput extends AdminDailyReportDtoOutput {
           ..add('testCost', testCost)
           ..add('fxRounding', fxRounding)
           ..add('adjustments', adjustments)
+          ..add('withheldDeposits', withheldDeposits)
           ..add('margin', margin)
           ..add('cash', cash)
           ..add('restaurants', restaurants)
@@ -237,6 +243,11 @@ class AdminDailyReportDtoOutputBuilder
   String? get adjustments => _$this._adjustments;
   set adjustments(String? adjustments) => _$this._adjustments = adjustments;
 
+  String? _withheldDeposits;
+  String? get withheldDeposits => _$this._withheldDeposits;
+  set withheldDeposits(String? withheldDeposits) =>
+      _$this._withheldDeposits = withheldDeposits;
+
   String? _margin;
   String? get margin => _$this._margin;
   set margin(String? margin) => _$this._margin = margin;
@@ -294,6 +305,7 @@ class AdminDailyReportDtoOutputBuilder
       _testCost = $v.testCost;
       _fxRounding = $v.fxRounding;
       _adjustments = $v.adjustments;
+      _withheldDeposits = $v.withheldDeposits;
       _margin = $v.margin;
       _cash = $v.cash.toBuilder();
       _restaurants = $v.restaurants.toBuilder();
@@ -382,6 +394,11 @@ class AdminDailyReportDtoOutputBuilder
               adjustments,
               r'AdminDailyReportDtoOutput',
               'adjustments',
+            ),
+            withheldDeposits: BuiltValueNullFieldError.checkNotNull(
+              withheldDeposits,
+              r'AdminDailyReportDtoOutput',
+              'withheldDeposits',
             ),
             margin: BuiltValueNullFieldError.checkNotNull(
               margin,

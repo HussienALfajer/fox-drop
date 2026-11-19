@@ -8754,6 +8754,137 @@
         ]
       }
     },
+    "/v1/admin/captain-applications/{applicationId}/terminate": {
+      "post": {
+        "operationId": "adminCaptainApplicationsTerminate",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCaptainApplicationTerminateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captain-applications/{applicationId}/offboarding/kit": {
+      "put": {
+        "operationId": "adminCaptainApplicationsKitReturn",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCaptainApplicationKitReturnDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captain-applications/{applicationId}/offboarding/close": {
+      "post": {
+        "operationId": "adminCaptainApplicationsClose",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/peak-bonus": {
       "get": {
         "operationId": "adminPeakBonusState",
@@ -17273,6 +17404,88 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminDepositsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/cash-desk/deposit-refunds": {
+      "get": {
+        "operationId": "adminCashDeskDepositRefunds",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDepositRefundsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "adminCashDeskSettleDeposit",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSettleDepositDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRecordDepositAnswerDto_Output"
                 }
               }
             },
@@ -32363,6 +32576,10 @@
                       "type": "null"
                     }
                   ]
+                },
+                "earlyExit": {
+                  "type": "boolean",
+                  "description": "Its contract ended in «فترة التزام»: «خروج مبكر»."
                 }
               },
               "required": [
@@ -32370,7 +32587,8 @@
                 "applicationId",
                 "captainId",
                 "fullName",
-                "stage"
+                "stage",
+                "earlyExit"
               ],
               "additionalProperties": false
             },
@@ -32412,7 +32630,11 @@
                     "cash_limit",
                     "contract",
                     "deposit",
-                    "probation_confirmed"
+                    "probation_confirmed",
+                    "terminated",
+                    "kit_returned",
+                    "deposit_settled",
+                    "contract_ended"
                   ]
                 },
                 "stage": {
@@ -32827,6 +33049,138 @@
             ],
             "additionalProperties": false,
             "description": "«بانتظار العدة» and «تفعيل» (slice 2.35a)."
+          },
+          "offboarding": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "terminatedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "terminatedBy": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "earlyExit": {
+                    "type": "boolean",
+                    "description": "Ended in «فترة التزام»: the flag «خروج مبكر»."
+                  },
+                  "kitReturned": {
+                    "description": "Step 1; null until checked.",
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "custodyZero": {
+                    "type": "boolean",
+                    "description": "Step 2: every custody currency at zero."
+                  },
+                  "earningsZero": {
+                    "type": "boolean",
+                    "description": "Step 3: the earnings settled."
+                  },
+                  "depositHeld": {
+                    "type": "string",
+                    "description": "Minor units in the city’s base still held."
+                  },
+                  "depositSettled": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "refunded",
+                          "withheld"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Step 4, at the desk."
+                  },
+                  "missing": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "kit",
+                        "custody",
+                        "earnings",
+                        "deposit"
+                      ]
+                    },
+                    "description": "What «إغلاق الحساب» waits for."
+                  },
+                  "endedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Step 5: the account closed."
+                  }
+                },
+                "required": [
+                  "terminatedAt",
+                  "terminatedBy",
+                  "reason",
+                  "earlyExit",
+                  "kitReturned",
+                  "custodyZero",
+                  "earningsZero",
+                  "depositHeld",
+                  "depositSettled",
+                  "missing",
+                  "endedAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«إنهاء التعاقد» and its checklist (AP §9.7.5, slice 2.35b)."
+          },
+          "formerCaptain": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "captainId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "earlyExit": {
+                    "type": "boolean",
+                    "description": "Flagged «خروج مبكر»: OWN activates (C17)."
+                  }
+                },
+                "required": [
+                  "captainId",
+                  "earlyExit"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A former captain applying again on the same account."
           }
         },
         "required": [
@@ -32849,7 +33203,9 @@
           "rejection",
           "duplicates",
           "events",
-          "activation"
+          "activation",
+          "offboarding",
+          "formerCaptain"
         ],
         "additionalProperties": false
       },
@@ -33086,6 +33442,31 @@
           "signedOn",
           "startsOn",
           "uploadIds"
+        ]
+      },
+      "AdminCaptainApplicationTerminateDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "AdminCaptainApplicationKitReturnDto": {
+        "type": "object",
+        "properties": {
+          "returned": {
+            "type": "boolean",
+            "description": "In good condition; false withholds the deposit."
+          }
+        },
+        "required": [
+          "returned"
         ]
       },
       "AdminPeakBonusDto_Output": {
@@ -65889,7 +66270,82 @@
           "cashLimit"
         ]
       },
-      "AdminRecordDepositDto": {
+      "AdminDepositRefundsDto_Output": {
+        "type": "object",
+        "properties": {
+          "contracts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "applicationId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "captainId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "fullName": {
+                  "type": "string"
+                },
+                "terminatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "earlyExit": {
+                  "type": "boolean",
+                  "description": "Ended in «فترة التزام»: «خروج مبكر»."
+                },
+                "kitReturned": {
+                  "description": "The checklist’s step 1; null until OPS checked the kit.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "held": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,18}$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "The deposit the platform holds, in the base."
+                }
+              },
+              "required": [
+                "applicationId",
+                "captainId",
+                "fullName",
+                "terminatedAt",
+                "earlyExit",
+                "kitReturned",
+                "held"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "contracts"
+        ],
+        "additionalProperties": false
+      },
+      "AdminSettleDepositDto": {
         "type": "object",
         "properties": {
           "cityId": {
@@ -65902,35 +66358,19 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
-          "amount": {
+          "settlement": {
             "type": "string",
-            "pattern": "^\\d{1,18}$",
-            "description": "The deposit, in the city's base."
-          },
-          "instalment": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^\\d{1,18}$"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "refunded",
+              "withheld"
             ],
-            "description": "Deducted each Thursday until paid; null for none."
-          },
-          "paidNow": {
-            "type": "string",
-            "pattern": "^\\d{1,18}$",
-            "description": "The cash received now; 0 records the plan alone."
+            "description": "refunded when the kit came back (cash, a receipt), withheld otherwise."
           }
         },
         "required": [
           "cityId",
           "applicationId",
-          "amount",
-          "instalment",
-          "paidNow"
+          "settlement"
         ]
       },
       "AdminRecordDepositAnswerDto_Output": {
@@ -65962,7 +66402,8 @@
                       "captain_reimbursement",
                       "captain_payout",
                       "captain_earnings_collection",
-                      "captain_deposit"
+                      "captain_deposit",
+                      "captain_deposit_refund"
                     ]
                   },
                   "sessionId": {
@@ -66086,6 +66527,50 @@
           "receipt"
         ],
         "additionalProperties": false
+      },
+      "AdminRecordDepositDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "applicationId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "The deposit, in the city's base."
+          },
+          "instalment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deducted each Thursday until paid; null for none."
+          },
+          "paidNow": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "The cash received now; 0 records the plan alone."
+          }
+        },
+        "required": [
+          "cityId",
+          "applicationId",
+          "amount",
+          "instalment",
+          "paidNow"
+        ]
       },
       "AdminDeskCaptainSearchDto": {
         "type": "object",
@@ -67424,7 +67909,8 @@
                     "captain_reimbursement",
                     "captain_payout",
                     "captain_earnings_collection",
-                    "captain_deposit"
+                    "captain_deposit",
+                    "captain_deposit_refund"
                   ]
                 },
                 "sessionId": {
@@ -68466,7 +68952,8 @@
                     "captain_reimbursement",
                     "captain_payout",
                     "captain_earnings_collection",
-                    "captain_deposit"
+                    "captain_deposit",
+                    "captain_deposit_refund"
                   ]
                 },
                 "sessionId": {
@@ -68716,7 +69203,8 @@
               "captain_reimbursement",
               "captain_payout",
               "captain_earnings_collection",
-              "captain_deposit"
+              "captain_deposit",
+              "captain_deposit_refund"
             ]
           },
           "sessionId": {
@@ -74283,6 +74771,11 @@
             "pattern": "^-?\\d{1,18}$",
             "description": "+ a gain for the platform."
           },
+          "withheldDeposits": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "Kit deposits withheld at termination, a revenue."
+          },
           "margin": {
             "type": "string",
             "pattern": "^-?\\d{1,18}$"
@@ -74569,6 +75062,11 @@
                   "pattern": "^-?\\d{1,18}$",
                   "description": "+ a gain for the platform."
                 },
+                "withheldDeposits": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$",
+                  "description": "Kit deposits withheld at termination, a revenue."
+                },
                 "margin": {
                   "type": "string",
                   "pattern": "^-?\\d{1,18}$"
@@ -74668,6 +75166,7 @@
                 "testCost",
                 "fxRounding",
                 "adjustments",
+                "withheldDeposits",
                 "margin",
                 "cash",
                 "restaurants"
@@ -74692,6 +75191,7 @@
           "testCost",
           "fxRounding",
           "adjustments",
+          "withheldDeposits",
           "margin",
           "cash",
           "restaurants",

@@ -932,6 +932,20 @@
       "when": 1795090598649,
       "tag": "0132_captains_contract_phases",
       "breakpoints": true
+    },
+    {
+      "idx": 133,
+      "version": "7",
+      "when": 1795096926302,
+      "tag": "0133_captains_offboarding",
+      "breakpoints": true
+    },
+    {
+      "idx": 134,
+      "version": "7",
+      "when": 1795097285934,
+      "tag": "0134_cashdesk_deposit_settlement",
+      "breakpoints": true
     }
   ]
 }

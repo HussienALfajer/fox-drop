@@ -94,10 +94,17 @@ export async function put(url: string): Promise<void> {
   expect(answer.status).toBe(200);
 }
 
-// A new number's «انضم ككابتن», signed in: the applicant's calls.
-export async function applicant() {
-  const phone = `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
+// A new number's «انضم ككابتن», signed in: the applicant's calls; or a
+// number already known (a former captain's, slice 2.35b) signing in again.
+export async function applicant(known?: string) {
+  const phone = known ?? `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
   const deviceId = randomUUID();
+  // A known number's last code is past its resend wait (otp.resend_after_sec).
+  if (known) {
+    await sql.query(
+      "UPDATE identity.app_sign_in_codes SET created_at = created_at - interval '2 minutes' WHERE party = 'captain'",
+    );
+  }
   await app.inject({
     method: 'POST',
     url: '/v1/captain/auth/code',
@@ -135,9 +142,9 @@ export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Da
 // An applicant whose application is sent: a car with its plate and every
 // required document.
 export async function sent(
-  options: { idNumber?: string; plate?: string } = {},
+  options: { idNumber?: string; plate?: string; phone?: string } = {},
 ): Promise<Applicant> {
-  const who = await applicant();
+  const who = await applicant(options.phone);
   await who.call('PUT', '/application/personal', {
     fullName: `محمد أحمد ${randomUUID().slice(0, 6)}`,
     birthDate: '2000-05-01',
@@ -209,4 +216,96 @@ export async function alertOf(applicationId: string) {
     [applicationId],
   );
   return rows;
+}
+
+// The activation's helpers (captain-activation.test.ts, captain-offboarding.test.ts).
+
+export type Admin = Awaited<ReturnType<typeof admin>>;
+
+// An application at «بانتظار العدة»: every document accepted, the interview
+// held, the training passed.
+export async function awaitingKit(
+  options: { phone?: string } = {},
+): Promise<{ who: Applicant; id: string; ops: Admin }> {
+  const who = await sent(options);
+  const id = await applicationOf(who);
+  const ops = await admin('OPS');
+  const page = (await ops('GET', `captain-applications/${id}`)).json();
+  for (const document of page.documents) {
+    const reviewed = await ops(
+      'POST',
+      `captain-applications/${id}/documents/${document.id}/review`,
+      { status: 'accepted' },
+    );
+    expect(reviewed.statusCode).toBe(200);
+  }
+  await ops('PUT', `captain-applications/${id}/interview`, {
+    at: new Date(Date.now() + 86_400_000).toISOString(),
+    place: 'مكتب أعزاز',
+    latitude: 36.586,
+    longitude: 37.046,
+  });
+  const passed = await ops('POST', `captain-applications/${id}/training-passed`);
+  expect(passed.json().stage).toBe('awaiting_kit');
+  return { who, id, ops };
+}
+
+// The office's scan of the contract's pages, uploaded as the panel does.
+export async function scan(ops: Admin, pages = 2): Promise<string[]> {
+  const uploadIds: string[] = [];
+  for (let page = 0; page < pages; page += 1) {
+    const asked = await ops('POST', 'uploads', {
+      purpose: 'captain_document',
+      contentType: 'image/jpeg',
+      sizeBytes: jpeg.length,
+    });
+    expect(asked.statusCode).toBe(201);
+    await put(asked.json().url);
+    uploadIds.push(asked.json().uploadId);
+  }
+  return uploadIds;
+}
+
+export const day = (offsetDays: number) =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).format(
+    new Date(Date.now() + offsetDays * 86_400_000),
+  );
+
+// The deposit as FIN records it at the desk (AP §9.7.1), with what is paid
+// now from an open drawer.
+export async function deposit(
+  fin: Admin,
+  id: string,
+  body: { amount: string; instalment: string | null; paidNow: string },
+) {
+  return fin(
+    'POST',
+    'cash-desk/deposits',
+    { cityId: azaz, applicationId: id, ...body },
+    { 'idempotency-key': randomUUID() },
+  );
+}
+
+// An activated captain: every record in, the deposit with instalments.
+export async function activated(): Promise<{ who: Applicant; id: string; ops: Admin }> {
+  const { who, id, ops } = await awaitingKit();
+  const own = await admin('OWN');
+  await ops('PUT', `captain-applications/${id}/kit`, {
+    items: [
+      { code: 'thermal_bag', quantity: 1 },
+      { code: 'vest', size: 'L', quantity: 1 },
+    ],
+  });
+  await ops('PUT', `captain-applications/${id}/contract`, {
+    signedOn: day(0),
+    startsOn: day(0),
+    uploadIds: await scan(ops, 1),
+  });
+  await own('PUT', `cash-desk/deposits/${id}/cash-limit`, {
+    cityId: azaz,
+    cashLimit: { amount: '40000', currency: 'TRY' },
+  });
+  await deposit(own, id, { amount: '30000', instalment: '10000', paidNow: '0' });
+  expect((await ops('POST', `captain-applications/${id}/activate`)).statusCode).toBe(200);
+  return { who, id, ops };
 }

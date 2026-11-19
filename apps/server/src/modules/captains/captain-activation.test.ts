@@ -5,85 +5,24 @@ import { SettingsService } from '../settings/index.js';
 import { ApplicationPipelineService } from './application-pipeline.service.js';
 import { CaptainsService } from './captains.service.js';
 import {
+  activated,
   admin,
   app,
-  applicationOf,
+  awaitingKit,
   azaz,
+  day,
   db,
+  deposit,
   jpeg,
   put,
-  sent,
+  scan,
   sql,
-  type Applicant,
+  type Admin,
 } from './application-pipeline.fixture.js';
 
 // AP §9.7.1–9.7.2, CA §5.4–5.5, D24 (slice 2.35a): the activation's records
 // at «بانتظار العدة» (the kit, the cash limit, the contract with its scan,
 // the deposit) and «تفعيل», which makes the applicant a captain.
-
-type Admin = Awaited<ReturnType<typeof admin>>;
-
-// An application at «بانتظار العدة»: every document accepted, the interview
-// held, the training passed.
-async function awaitingKit(): Promise<{ who: Applicant; id: string; ops: Admin }> {
-  const who = await sent();
-  const id = await applicationOf(who);
-  const ops = await admin('OPS');
-  const page = (await ops('GET', `captain-applications/${id}`)).json();
-  for (const document of page.documents) {
-    const reviewed = await ops(
-      'POST',
-      `captain-applications/${id}/documents/${document.id}/review`,
-      { status: 'accepted' },
-    );
-    expect(reviewed.statusCode).toBe(200);
-  }
-  await ops('PUT', `captain-applications/${id}/interview`, {
-    at: new Date(Date.now() + 86_400_000).toISOString(),
-    place: 'مكتب أعزاز',
-    latitude: 36.586,
-    longitude: 37.046,
-  });
-  const passed = await ops('POST', `captain-applications/${id}/training-passed`);
-  expect(passed.json().stage).toBe('awaiting_kit');
-  return { who, id, ops };
-}
-
-// The office's scan of the contract's pages, uploaded as the panel does.
-async function scan(ops: Admin, pages = 2): Promise<string[]> {
-  const uploadIds: string[] = [];
-  for (let page = 0; page < pages; page += 1) {
-    const asked = await ops('POST', 'uploads', {
-      purpose: 'captain_document',
-      contentType: 'image/jpeg',
-      sizeBytes: jpeg.length,
-    });
-    expect(asked.statusCode).toBe(201);
-    await put(asked.json().url);
-    uploadIds.push(asked.json().uploadId);
-  }
-  return uploadIds;
-}
-
-const day = (offsetDays: number) =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).format(
-    new Date(Date.now() + offsetDays * 86_400_000),
-  );
-
-// The deposit as FIN records it at the desk (AP §9.7.1), with what is paid
-// now from an open drawer.
-async function deposit(
-  fin: Admin,
-  id: string,
-  body: { amount: string; instalment: string | null; paidNow: string },
-) {
-  return fin(
-    'POST',
-    'cash-desk/deposits',
-    { cityId: azaz, applicationId: id, ...body },
-    { 'idempotency-key': randomUUID() },
-  );
-}
 
 describe('the records at «بانتظار العدة» (AP §9.7.1)', () => {
   it('issues the kit from the list, with the labels and sizes as issued', async () => {
@@ -407,30 +346,6 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
     expect(after.paid).toBe('14000');
   });
 });
-
-// An activated captain: every record in, the deposit with instalments.
-async function activated(): Promise<{ who: Applicant; id: string; ops: Admin }> {
-  const { who, id, ops } = await awaitingKit();
-  const own = await admin('OWN');
-  await ops('PUT', `captain-applications/${id}/kit`, {
-    items: [
-      { code: 'thermal_bag', quantity: 1 },
-      { code: 'vest', size: 'L', quantity: 1 },
-    ],
-  });
-  await ops('PUT', `captain-applications/${id}/contract`, {
-    signedOn: day(0),
-    startsOn: day(0),
-    uploadIds: await scan(ops, 1),
-  });
-  await own('PUT', `cash-desk/deposits/${id}/cash-limit`, {
-    cityId: azaz,
-    cashLimit: { amount: '40000', currency: 'TRY' },
-  });
-  await deposit(own, id, { amount: '30000', instalment: '10000', paidNow: '0' });
-  expect((await ops('POST', `captain-applications/${id}/activate`)).statusCode).toBe(200);
-  return { who, id, ops };
-}
 
 describe('the contract phases (AP §9.7.2, CA §12.3, §14 #28)', () => {
   it('asks the review, confirms it and tells each phase once', async () => {

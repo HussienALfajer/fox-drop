@@ -61,15 +61,19 @@ import 'package:core_api/src/model/admin_captain_application_dto_output_activati
 import 'package:core_api/src/model/admin_captain_application_dto_output_documents_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_duplicates_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_events_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_former_captain.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_offboarding.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_rejection.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_requests_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_interview_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_kit_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_kit_dto_items_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_kit_return_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_note_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_reject_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_request_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_review_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_terminate_dto.dart';
 import 'package:core_api/src/model/admin_captain_applications_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_applications_dto_output_applications_inner.dart';
 import 'package:core_api/src/model/admin_captain_availability_dto_output.dart';
@@ -180,6 +184,9 @@ import 'package:core_api/src/model/admin_daily_report_dto_output_restaurants.dar
 import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
 import 'package:core_api/src/model/admin_deposit_cash_limit_dto.dart';
 import 'package:core_api/src/model/admin_deposit_cash_limit_dto_cash_limit.dart';
+import 'package:core_api/src/model/admin_deposit_refunds_dto_output.dart';
+import 'package:core_api/src/model/admin_deposit_refunds_dto_output_contracts_inner.dart';
+import 'package:core_api/src/model/admin_deposit_refunds_dto_output_contracts_inner_held.dart';
 import 'package:core_api/src/model/admin_deposits_dto_output.dart';
 import 'package:core_api/src/model/admin_deposits_dto_output_applications_inner.dart';
 import 'package:core_api/src/model/admin_deposits_dto_output_applications_inner_deposit.dart';
@@ -545,6 +552,7 @@ import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto_windows_inner.dart';
+import 'package:core_api/src/model/admin_settle_deposit_dto.dart';
 import 'package:core_api/src/model/admin_settle_dto.dart';
 import 'package:core_api/src/model/admin_settle_dto_custody_inner.dart';
 import 'package:core_api/src/model/admin_settle_dto_payout.dart';
@@ -1127,15 +1135,19 @@ part 'serializers.g.dart';
   AdminCaptainApplicationDtoOutputDocumentsInner,
   AdminCaptainApplicationDtoOutputDuplicatesInner,
   AdminCaptainApplicationDtoOutputEventsInner,
+  AdminCaptainApplicationDtoOutputFormerCaptain,
+  AdminCaptainApplicationDtoOutputOffboarding,
   AdminCaptainApplicationDtoOutputRejection,
   AdminCaptainApplicationDtoOutputRequestsInner,
   AdminCaptainApplicationInterviewDto,
   AdminCaptainApplicationKitDto,
   AdminCaptainApplicationKitDtoItemsInner,
+  AdminCaptainApplicationKitReturnDto,
   AdminCaptainApplicationNoteDto,
   AdminCaptainApplicationRejectDto,
   AdminCaptainApplicationRequestDto,
   AdminCaptainApplicationReviewDto,
+  AdminCaptainApplicationTerminateDto,
   AdminCaptainApplicationsDtoOutput,
   AdminCaptainApplicationsDtoOutputApplicationsInner,
   AdminCaptainAvailabilityDtoOutput,
@@ -1246,6 +1258,9 @@ part 'serializers.g.dart';
   AdminDailyReportExportDto,
   AdminDepositCashLimitDto,
   AdminDepositCashLimitDtoCashLimit,
+  AdminDepositRefundsDtoOutput,
+  AdminDepositRefundsDtoOutputContractsInner,
+  AdminDepositRefundsDtoOutputContractsInnerHeld,
   AdminDepositsDtoOutput,
   AdminDepositsDtoOutputApplicationsInner,
   AdminDepositsDtoOutputApplicationsInnerDeposit,
@@ -1611,6 +1626,7 @@ part 'serializers.g.dart';
   AdminSetOutcomeDto,
   AdminSetPeakBonusDto,
   AdminSetPeakBonusDtoWindowsInner,
+  AdminSettleDepositDto,
   AdminSettleDto,
   AdminSettleDtoCustodyInner,
   AdminSettleDtoPayout,
@@ -3446,6 +3462,12 @@ Serializers serializers =
               FullType(CustomerCategoriesDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<CustomerCategoriesDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDepositRefundsDtoOutputContractsInner),
+            ]),
+            () => ListBuilder<AdminDepositRefundsDtoOutputContractsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

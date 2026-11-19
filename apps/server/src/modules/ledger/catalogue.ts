@@ -30,6 +30,9 @@ export const accountPurposes = {
   // AP §8.11, revenues shown positive.
   'platform.revenue_commission': { owned: false, sign: -1n },
   'platform.revenue_delivery': { owned: false, sign: -1n },
+  // A kit deposit withheld at termination when the kit did not come back
+  // (C17, AP §9.7.5; owner decision 2026-11-19: all of it, to revenue).
+  'platform.revenue_deposits': { owned: false, sign: -1n },
   // AP §8.11, costs shown positive.
   'platform.discount_cost': { owned: false, sign: 1n },
   'platform.compensation_cost': { owned: false, sign: 1n },
@@ -120,6 +123,11 @@ export const journalRules = {
   // The kit deposit paid in cash at the desk (AP §9.7.1, slice 2.35a): the
   // captain's deposit against the drawer's cash, in the base.
   'deposit.payment': { account: 'captain.deposit', ...desk },
+  // At termination (AP §9.7.5 step 4, §9.10.3 «التأمينات»; slice 2.35b): the
+  // deposit paid back in cash from the drawer when the kit came back, or
+  // withheld to the platform's revenue when it did not (C17).
+  'deposit.refund': { account: 'captain.deposit', ...desk },
+  'deposit.withhold': { account: 'captain.deposit', counters: ['platform.revenue_deposits'] },
   'earn.payout': { account: 'captain.earnings', ...deskInAnyCurrency },
   'earn.adjustment': { account: 'captain.earnings', ...adjustment },
   // Revenue on a normal order. On an order that failed after pickup it

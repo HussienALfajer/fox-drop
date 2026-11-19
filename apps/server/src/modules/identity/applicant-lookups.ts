@@ -4,6 +4,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { ApplicationPipelineService } from '../captains/index.js';
 import { AdminSessionsService } from './admin-sessions.service.js';
+import { AppSessionsService } from './app-sessions.service.js';
 import { captainAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
@@ -20,6 +21,7 @@ export class ApplicantLookups implements OnModuleInit {
     @Inject(IDENTITY_SECRETS) private readonly secrets: IdentitySecrets,
     private readonly pipeline: ApplicationPipelineService,
     private readonly admins: AdminSessionsService,
+    private readonly sessions: AppSessionsService,
   ) {}
 
   onModuleInit(): void {
@@ -28,7 +30,27 @@ export class ApplicantLookups implements OnModuleInit {
       adminNames: (accountIds) => this.admins.names(accountIds),
       activate: (tx, accountId, captainId, cityId) =>
         this.activate(tx, accountId, captainId, cityId),
+      release: (tx, accountId, now) => this.release(tx, accountId, now),
     });
+  }
+
+  // «إغلاق الحساب» (AP §9.7.5 step 5, C17; slice 2.35b): every session of the
+  // captain's account ends with `account_closed`, and the account is an
+  // applicant's again (no captain, no city), so the same number signs in to
+  // apply again. The devices are disconnected once the close commits.
+  private async release(
+    tx: Pick<Database['db'], 'update'>,
+    accountId: string,
+    now: Date,
+  ): Promise<() => void> {
+    const ended = await this.sessions.endAll(tx, 'captain', accountId, 'account_closed', now);
+    const updated = await tx
+      .update(captainAccounts)
+      .set({ captainId: null, cityId: null })
+      .where(eq(captainAccounts.id, accountId))
+      .returning({ id: captainAccounts.id });
+    if (updated.length !== 1) throw new Error(`no captain account ${accountId}`);
+    return () => this.sessions.notifyEnded(ended);
   }
 
   // «تفعيل» (AP §9.7.1, slice 2.35a): the applicant's account becomes the

@@ -79,7 +79,16 @@ export type CashDeskRefusal =
   | 'balance_not_zero'
   | 'orders_unfinished'
   // «تسجيل التأمين» (slice 2.35a): the application is not at «بانتظار العدة».
-  | 'wrong_stage';
+  | 'wrong_stage'
+  // «التأمينات» at termination (slice 2.35b): the contract is not being
+  // ended, or is closed; the deposit is settled already, or the kit not
+  // checked yet; the settlement shown is not the kit's; nothing is held.
+  | 'not_terminated'
+  | 'contract_ended'
+  | 'deposit_settled'
+  | 'kit_not_checked'
+  | 'wrong_settlement'
+  | 'nothing_held';
 
 export class CashDeskRefusedError extends Error {
   override readonly name = 'CashDeskRefusedError';
@@ -224,6 +233,9 @@ const kinds: Record<CaptainReceiptType, { journal: JournalType; sign: 1n | -1n }
   captain_earnings_collection: { journal: 'earn.payout', sign: 1n },
   // The deposit's line expects what was left to pay (slice 2.35a).
   captain_deposit: { journal: 'deposit.payment', sign: 1n },
+  // The deposit paid back at termination (slice 2.35b): its line expects
+  // what the platform held.
+  captain_deposit_refund: { journal: 'deposit.refund', sign: -1n },
 };
 
 // What an earnings receipt moves in the base (the payout's value when paid

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   ConflictException,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -37,7 +38,9 @@ import {
   applicationEventKinds,
   applicationStages,
   contractPhases,
+  depositSettlements,
 } from './schema.js';
+import { offboardingSteps } from './applications.js';
 
 const documentKind = z.enum(applicationDocumentKinds);
 const stage = z.enum(applicationStages);
@@ -149,6 +152,7 @@ class AdminCaptainApplicationDto extends createZodDto(
           captainId: z.uuid().nullable(),
           fullName: z.string(),
           stage: stage.nullable(),
+          earlyExit: z.boolean().describe('Its contract ended in «فترة التزام»: «خروج مبكر».'),
         }),
       )
       .describe('Another applicant or captain with the same ID number, phone or plate.'),
@@ -213,7 +217,36 @@ class AdminCaptainApplicationDto extends createZodDto(
         activatedAt: z.iso.datetime().nullable(),
       })
       .describe('«بانتظار العدة» and «تفعيل» (slice 2.35a).'),
+    offboarding: z
+      .object({
+        terminatedAt: z.iso.datetime(),
+        terminatedBy: z.string().nullable(),
+        reason: z.string(),
+        earlyExit: z.boolean().describe('Ended in «فترة التزام»: the flag «خروج مبكر».'),
+        kitReturned: z.boolean().nullable().describe('Step 1; null until checked.'),
+        custodyZero: z.boolean().describe('Step 2: every custody currency at zero.'),
+        earningsZero: z.boolean().describe('Step 3: the earnings settled.'),
+        depositHeld: z.string().describe('Minor units in the city’s base still held.'),
+        depositSettled: z.enum(depositSettlements).nullable().describe('Step 4, at the desk.'),
+        missing: z.array(z.enum(offboardingSteps)).describe('What «إغلاق الحساب» waits for.'),
+        endedAt: z.iso.datetime().nullable().describe('Step 5: the account closed.'),
+      })
+      .nullable()
+      .describe('«إنهاء التعاقد» and its checklist (AP §9.7.5, slice 2.35b).'),
+    formerCaptain: z
+      .object({
+        captainId: z.uuid(),
+        earlyExit: z.boolean().describe('Flagged «خروج مبكر»: OWN activates (C17).'),
+      })
+      .nullable()
+      .describe('A former captain applying again on the same account.'),
   }),
+) {}
+
+class AdminCaptainApplicationTerminateDto extends createZodDto(z.object({ reason })) {}
+
+class AdminCaptainApplicationKitReturnDto extends createZodDto(
+  z.object({ returned: z.boolean().describe('In good condition; false withholds the deposit.') }),
 ) {}
 
 class AdminCaptainApplicationKitDto extends createZodDto(
@@ -578,8 +611,63 @@ export class AdminCaptainApplicationsController {
     @Req() request: FastifyRequest,
   ) {
     return this.page(params.applicationId, session, request, async () => {
-      await this.pipeline.activate(params.applicationId, adminOf(session, request));
+      await this.pipeline.activate(
+        params.applicationId,
+        adminOf(session, request),
+        new Date(),
+        session.permissions.includes('captains.activate_early_exit'),
+      );
     });
+  }
+
+  // «إنهاء التعاقد» (AP §9.7.5, §9.7.2, C17; slice 2.35b): starts the
+  // checklist and suspends the captain. 409 already_terminated, so a repeat
+  // is refused; wrong_stage before the activation.
+  @Post(':applicationId/terminate')
+  @RequirePermission('captains.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
+  terminate(
+    @Param() params: AdminCaptainApplicationParamsDto,
+    @Body() body: AdminCaptainApplicationTerminateDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.page(params.applicationId, session, request, () =>
+      this.pipeline.terminate(params.applicationId, adminOf(session, request), body.reason),
+    );
+  }
+
+  // The checklist's step 1: the kit returned or not; sets a value, so no
+  // key. 409 not_terminated, contract_ended, deposit_settled.
+  @Put(':applicationId/offboarding/kit')
+  @RequirePermission('captains.manage')
+  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
+  kitReturn(
+    @Param() params: AdminCaptainApplicationParamsDto,
+    @Body() body: AdminCaptainApplicationKitReturnDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.page(params.applicationId, session, request, () =>
+      this.pipeline.recordKitReturn(params.applicationId, adminOf(session, request), body.returned),
+    );
+  }
+
+  // Step 5 «إغلاق الحساب». 409 offboarding_incomplete with `missing`,
+  // active_order; contract_ended once closed, so a repeat is refused.
+  @Post(':applicationId/offboarding/close')
+  @RequirePermission('captains.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
+  close(
+    @Param() params: AdminCaptainApplicationParamsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.page(params.applicationId, session, request, () =>
+      this.pipeline.close(params.applicationId, adminOf(session, request)),
+    );
   }
 }
 
@@ -641,6 +729,12 @@ function body(review: Review, session: AdminSession) {
       suggestedDeposit: moneyBody(review.activation.suggestedDeposit),
       activatedAt: iso(review.activation.activatedAt),
     },
+    offboarding: review.offboarding && {
+      ...review.offboarding,
+      terminatedAt: review.offboarding.terminatedAt.toISOString(),
+      depositHeld: review.offboarding.depositHeld.toString(),
+      endedAt: iso(review.offboarding.endedAt),
+    },
   };
 }
 
@@ -658,6 +752,7 @@ const badRequests = new Set([
   'document_expired',
   'invalid_kit',
   'invalid_contract',
+  'reason_required',
 ]);
 
 function refused(error: unknown): unknown {
@@ -676,6 +771,9 @@ function refused(error: unknown): unknown {
   if (badRequests.has(refusal)) {
     return new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: refusal });
   }
+  if (refusal === 'owner_approval_required') {
+    return new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: refusal });
+  }
   return new ConflictException({
     statusCode: HttpStatus.CONFLICT,
     error: refusal,
@@ -684,6 +782,9 @@ function refused(error: unknown): unknown {
       : {}),
     ...(error instanceof PipelineRefusedError && error.missing.length > 0
       ? { missing: error.missing }
+      : {}),
+    ...(error instanceof PipelineRefusedError && error.steps.length > 0
+      ? { missing: error.steps }
       : {}),
   });
 }

@@ -21,6 +21,9 @@ _$adminReceiptDtoOutputTypeEnum_captainEarningsCollection =
 const AdminReceiptDtoOutputTypeEnum
 _$adminReceiptDtoOutputTypeEnum_captainDeposit =
     const AdminReceiptDtoOutputTypeEnum._('captainDeposit');
+const AdminReceiptDtoOutputTypeEnum
+_$adminReceiptDtoOutputTypeEnum_captainDepositRefund =
+    const AdminReceiptDtoOutputTypeEnum._('captainDepositRefund');
 
 AdminReceiptDtoOutputTypeEnum _$adminReceiptDtoOutputTypeEnumValueOf(
   String name,
@@ -36,6 +39,8 @@ AdminReceiptDtoOutputTypeEnum _$adminReceiptDtoOutputTypeEnumValueOf(
       return _$adminReceiptDtoOutputTypeEnum_captainEarningsCollection;
     case 'captainDeposit':
       return _$adminReceiptDtoOutputTypeEnum_captainDeposit;
+    case 'captainDepositRefund':
+      return _$adminReceiptDtoOutputTypeEnum_captainDepositRefund;
     default:
       throw ArgumentError(name);
   }
@@ -49,6 +54,7 @@ _$adminReceiptDtoOutputTypeEnumValues = BuiltSet<AdminReceiptDtoOutputTypeEnum>(
     _$adminReceiptDtoOutputTypeEnum_captainPayout,
     _$adminReceiptDtoOutputTypeEnum_captainEarningsCollection,
     _$adminReceiptDtoOutputTypeEnum_captainDeposit,
+    _$adminReceiptDtoOutputTypeEnum_captainDepositRefund,
   ],
 );
 
@@ -64,6 +70,7 @@ class _$AdminReceiptDtoOutputTypeEnumSerializer
     'captainPayout': 'captain_payout',
     'captainEarningsCollection': 'captain_earnings_collection',
     'captainDeposit': 'captain_deposit',
+    'captainDepositRefund': 'captain_deposit_refund',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'captain_hand_in': 'captainHandIn',
@@ -71,6 +78,7 @@ class _$AdminReceiptDtoOutputTypeEnumSerializer
     'captain_payout': 'captainPayout',
     'captain_earnings_collection': 'captainEarningsCollection',
     'captain_deposit': 'captainDeposit',
+    'captain_deposit_refund': 'captainDepositRefund',
   };
 
   @override

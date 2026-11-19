@@ -1,0 +1,18 @@
+ALTER TABLE "captains"."application_events" DROP CONSTRAINT "application_events_kind_values";--> statement-breakpoint
+DROP INDEX "captains"."applications_open_account";--> statement-breakpoint
+DROP INDEX "captains"."applications_captain";--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "terminated_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "terminated_by" uuid;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "termination_reason" text;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "early_exit" boolean;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "kit_returned" boolean;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "kit_checked_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "deposit_settled" text;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "deposit_settled_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "ended_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "former_captain_id" uuid;--> statement-breakpoint
+CREATE UNIQUE INDEX "applications_open_account" ON "captains"."applications" USING btree ("account_id") WHERE "captains"."applications"."stage" <> 'rejected' AND "captains"."applications"."ended_at" IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "applications_captain" ON "captains"."applications" USING btree ("captain_id") WHERE "captains"."applications"."ended_at" IS NULL;--> statement-breakpoint
+ALTER TABLE "captains"."application_events" ADD CONSTRAINT "application_events_kind_values" CHECK ("captains"."application_events"."kind" IN ('submitted', 'stage', 'note', 'document_review', 'document_request', 'document_upload', 'interview', 'kit', 'cash_limit', 'contract', 'deposit', 'probation_confirmed', 'terminated', 'kit_returned', 'deposit_settled', 'contract_ended'));--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD CONSTRAINT "applications_terminated" CHECK (("captains"."applications"."terminated_at" IS NULL) = ("captains"."applications"."terminated_by" IS NULL) AND ("captains"."applications"."terminated_at" IS NULL) = ("captains"."applications"."termination_reason" IS NULL) AND ("captains"."applications"."terminated_at" IS NULL) = ("captains"."applications"."early_exit" IS NULL) AND ("captains"."applications"."terminated_at" IS NULL OR "captains"."applications"."activated_at" IS NOT NULL));--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD CONSTRAINT "applications_offboarding" CHECK (("captains"."applications"."kit_returned" IS NULL) = ("captains"."applications"."kit_checked_at" IS NULL) AND ("captains"."applications"."deposit_settled" IS NULL) = ("captains"."applications"."deposit_settled_at" IS NULL) AND ("captains"."applications"."deposit_settled" IS NULL OR "captains"."applications"."deposit_settled" IN ('refunded', 'withheld')) AND ("captains"."applications"."deposit_settled" IS NULL OR "captains"."applications"."kit_returned" = ("captains"."applications"."deposit_settled" = 'refunded')) AND ("captains"."applications"."kit_returned" IS NULL OR "captains"."applications"."terminated_at" IS NOT NULL) AND ("captains"."applications"."ended_at" IS NULL OR ("captains"."applications"."terminated_at" IS NOT NULL AND "captains"."applications"."kit_returned" IS NOT NULL)));

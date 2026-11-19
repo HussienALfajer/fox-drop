@@ -79,7 +79,9 @@ export type { LivePosition } from './live-positions.js';
 export {
   type ApplicationDocumentKind,
   type ApplicationStage,
+  type DepositSettlement,
   depositInstalmentDue,
+  depositSettlements,
 } from './applications.js';
 export {
   type ApplicationChange,
@@ -90,6 +92,7 @@ export {
   ApplicationPipelineService,
   type ContractPhaseChange,
   type DepositAwaiting,
+  type DepositToSettle,
   type ExpiringDocuments,
   type ProbationReview,
   type PipelineIdentity,

@@ -91,6 +91,7 @@ export const dailyReportLabels = {
     testCost: 'كلفة الطلبات التجريبية',
     fxRounding: 'فروقات التقريب والصرف',
     adjustments: 'القيود التصحيحية',
+    withheldDeposits: 'تأمينات محتجزة',
     margin: 'هامش المنصة',
     custodyCreated: 'عهدة نشأت اليوم',
     handedIn: 'سُلّم اليوم',

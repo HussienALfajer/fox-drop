@@ -108,6 +108,15 @@ Serializers _$serializers =
           )
           ..add(AdminCaptainApplicationDtoOutputEventsInnerKindEnum.serializer)
           ..add(AdminCaptainApplicationDtoOutputEventsInnerStageEnum.serializer)
+          ..add(AdminCaptainApplicationDtoOutputFormerCaptain.serializer)
+          ..add(AdminCaptainApplicationDtoOutputOffboarding.serializer)
+          ..add(
+            AdminCaptainApplicationDtoOutputOffboardingDepositSettledEnum
+                .serializer,
+          )
+          ..add(
+            AdminCaptainApplicationDtoOutputOffboardingMissingEnum.serializer,
+          )
           ..add(AdminCaptainApplicationDtoOutputRejection.serializer)
           ..add(AdminCaptainApplicationDtoOutputRequestsInner.serializer)
           ..add(
@@ -121,12 +130,14 @@ Serializers _$serializers =
           ..add(AdminCaptainApplicationInterviewDto.serializer)
           ..add(AdminCaptainApplicationKitDto.serializer)
           ..add(AdminCaptainApplicationKitDtoItemsInner.serializer)
+          ..add(AdminCaptainApplicationKitReturnDto.serializer)
           ..add(AdminCaptainApplicationNoteDto.serializer)
           ..add(AdminCaptainApplicationRejectDto.serializer)
           ..add(AdminCaptainApplicationRequestDto.serializer)
           ..add(AdminCaptainApplicationRequestDtoKindEnum.serializer)
           ..add(AdminCaptainApplicationReviewDto.serializer)
           ..add(AdminCaptainApplicationReviewDtoStatusEnum.serializer)
+          ..add(AdminCaptainApplicationTerminateDto.serializer)
           ..add(AdminCaptainApplicationsDtoOutput.serializer)
           ..add(AdminCaptainApplicationsDtoOutputApplicationsInner.serializer)
           ..add(
@@ -296,6 +307,9 @@ Serializers _$serializers =
           ..add(AdminDailyReportExportDto.serializer)
           ..add(AdminDepositCashLimitDto.serializer)
           ..add(AdminDepositCashLimitDtoCashLimit.serializer)
+          ..add(AdminDepositRefundsDtoOutput.serializer)
+          ..add(AdminDepositRefundsDtoOutputContractsInner.serializer)
+          ..add(AdminDepositRefundsDtoOutputContractsInnerHeld.serializer)
           ..add(AdminDepositsDtoOutput.serializer)
           ..add(AdminDepositsDtoOutputApplicationsInner.serializer)
           ..add(AdminDepositsDtoOutputApplicationsInnerDeposit.serializer)
@@ -954,6 +968,8 @@ Serializers _$serializers =
           ..add(AdminSetOutcomeDtoResponsibleEnum.serializer)
           ..add(AdminSetPeakBonusDto.serializer)
           ..add(AdminSetPeakBonusDtoWindowsInner.serializer)
+          ..add(AdminSettleDepositDto.serializer)
+          ..add(AdminSettleDepositDtoSettlementEnum.serializer)
           ..add(AdminSettleDto.serializer)
           ..add(AdminSettleDtoCustodyInner.serializer)
           ..add(AdminSettleDtoPayout.serializer)
@@ -1902,6 +1918,17 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
+                AdminCaptainApplicationDtoOutputOffboardingMissingEnum,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainApplicationDtoOutputOffboardingMissingEnum
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
                 AdminCaptainApplicationDtoOutputRequiredDocumentsEnum,
               ),
             ]),
@@ -2221,6 +2248,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminDailyReportDtoOutputNowOverdueRestaurantsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDepositRefundsDtoOutputContractsInner),
+            ]),
+            () => ListBuilder<AdminDepositRefundsDtoOutputContractsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

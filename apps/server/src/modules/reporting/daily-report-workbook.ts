@@ -26,6 +26,7 @@ const earnedLines: [Line, (figures: DailyFigures) => bigint | number][] = [
   ['testCost', (f) => f.testCost],
   ['fxRounding', (f) => f.fxRounding],
   ['adjustments', (f) => f.adjustments],
+  ['withheldDeposits', (f) => f.withheldDeposits],
   ['margin', (f) => f.margin],
   ['restaurantCommission', (f) => f.restaurants.commission],
   ['restaurantDiscountShare', (f) => f.restaurants.discountShare],

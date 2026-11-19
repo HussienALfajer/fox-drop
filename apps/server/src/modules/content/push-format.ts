@@ -44,6 +44,8 @@ export const receiptTypeLabels = {
   captain_earnings_collection: 'تحصيل رصيد سالب',
   // «تأمين العدة» (slice 2.35a): the kit deposit paid at the desk.
   captain_deposit: 'تأمين العدة',
+  // «استرداد التأمين» (slice 2.35b): the deposit paid back at termination.
+  captain_deposit_refund: 'استرداد التأمين',
   // «تسوية المطاعم» (slice 2.19b): the restaurant's payment, and the desk
   // paying a restaurant the platform owes.
   merchant_settlement: 'تسوية حساب المطعم',

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, count, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, ne, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
@@ -19,6 +19,11 @@ import {
   type ContractPhase,
   contractDates,
   contractPhase,
+  type DepositSettlement,
+  depositSettlementOf,
+  earlyExit,
+  type OffboardingStep,
+  offboardingMissing,
   type DocumentState,
   documentStates,
   probationReview,
@@ -51,7 +56,7 @@ import {
   captainRecords,
   type KitItem,
 } from './schema.js';
-import { CaptainsService, type Money } from './captains.service.js';
+import { CaptainsService, type Money, type StatusChanged } from './captains.service.js';
 
 export type PipelineRefusal =
   | 'unknown_application'
@@ -78,13 +83,28 @@ export type PipelineRefusal =
   // activation, a terminated captain's probation.
   | 'deposit_paid'
   | 'document_in_force'
-  | 'captain_terminated';
+  | 'captain_terminated'
+  // Slice 2.35b, the offboarding (AP §9.7.5): «إنهاء التعاقد» once, with a
+  // reason; its steps while it is open, in order; «إغلاق الحساب» once every
+  // step is done (`steps`) and no order is active; a flagged captain's
+  // activation is OWN's (C17).
+  | 'reason_required'
+  | 'already_terminated'
+  | 'not_terminated'
+  | 'contract_ended'
+  | 'deposit_settled'
+  | 'kit_not_checked'
+  | 'wrong_settlement'
+  | 'offboarding_incomplete'
+  | 'active_order'
+  | 'owner_approval_required';
 
 export class PipelineRefusedError extends Error {
   constructor(
     readonly refusal: PipelineRefusal,
     readonly stage: ApplicationStage | null = null,
     readonly missing: ActivationMissing[] = [],
+    readonly steps: OffboardingStep[] = [],
   ) {
     super(`pipeline refused: ${refusal}`);
   }
@@ -234,6 +254,47 @@ export interface Duplicate {
   captainId: string | null;
   fullName: string;
   stage: ApplicationStage | null;
+  // A contract that ended in «فترة التزام» (C17, slice 2.35b).
+  earlyExit: boolean;
+}
+
+// AP §9.7.5 (slice 2.35b): the offboarding checklist of a contract being
+// ended, or ended.
+export interface Offboarding {
+  terminatedAt: Date;
+  terminatedBy: string | null;
+  reason: string;
+  earlyExit: boolean;
+  // Step 1: null until OPS checked the kit.
+  kitReturned: boolean | null;
+  // Steps 2 and 3, read from the ledger.
+  custodyZero: boolean;
+  earningsZero: boolean;
+  // Step 4: what the platform still holds of the deposit, and how it was
+  // settled at the desk.
+  depositHeld: bigint;
+  depositSettled: DepositSettlement | null;
+  missing: OffboardingStep[];
+  // Step 5.
+  endedAt: Date | null;
+}
+
+// The desk's «التأمينات» row (AP §9.10.3, slice 2.35b).
+export interface DepositToSettle {
+  applicationId: string;
+  captainId: string;
+  fullName: string;
+  terminatedAt: Date;
+  earlyExit: boolean;
+  kitReturned: boolean | null;
+  held: Money;
+}
+
+// A former captain's application (C17): the captain it makes again, and
+// whether any of the account's contracts ended early (OWN activates it).
+export interface FormerCaptain {
+  captainId: string;
+  earlyExit: boolean;
 }
 
 export interface ReviewEvent {
@@ -270,6 +331,8 @@ export interface Review {
   duplicates: Duplicate[];
   events: ReviewEvent[];
   activation: Activation;
+  offboarding: Offboarding | null;
+  formerCaptain: FormerCaptain | null;
 }
 
 // What identity answers this module (architecture §4.3: identity imports
@@ -281,6 +344,11 @@ export interface PipelineIdentity {
   // «تفعيل» (slice 2.35a): the applicant's sign-in account becomes the
   // captain's, in the activation's transaction.
   activate(tx: Tx, accountId: string, captainId: string, cityId: string): Promise<void>;
+  // «إغلاق الحساب» (AP §9.7.5 step 5, slice 2.35b): the captain's sessions
+  // end and its account is an applicant's again (C17: the same number
+  // applies again), in the close's transaction; the answer runs after it
+  // commits (the devices are disconnected).
+  release(tx: Tx, accountId: string, now: Date): Promise<() => void>;
 }
 
 // The bounds of «تسليم العدة» (decided by us).
@@ -340,12 +408,24 @@ export class ApplicationPipelineService {
     const counted = await this.database.db
       .select({ stage: applications.stage, n: count() })
       .from(applications)
-      .where(and(eq(applications.cityId, cityId), ne(applications.stage, 'draft')))
+      .where(
+        and(
+          eq(applications.cityId, cityId),
+          ne(applications.stage, 'draft'),
+          isNull(applications.endedAt),
+        ),
+      )
       .groupBy(applications.stage);
     const rows = await this.database.db
       .select()
       .from(applications)
-      .where(and(eq(applications.cityId, cityId), eq(applications.stage, stage)))
+      .where(
+        and(
+          eq(applications.cityId, cityId),
+          eq(applications.stage, stage),
+          isNull(applications.endedAt),
+        ),
+      )
       .orderBy(asc(applications.submittedAt), asc(applications.id));
     return {
       counts: Object.fromEntries(counted.map((row) => [row.stage, row.n])) as Partial<
@@ -457,6 +537,8 @@ export class ApplicationPipelineService {
         note: event.note,
       })),
       activation: await this.activationOf(row, uploads, now),
+      offboarding: await this.offboardingOf(row, names),
+      formerCaptain: await this.formerCaptainOf(row),
     };
   }
 
@@ -525,7 +607,7 @@ export class ApplicationPipelineService {
   // What the captain to be paid towards the deposit: its captain.deposit
   // account in the city's base (the desk's receipts, slice 2.35a).
   async depositPaid(
-    row: { id: string; cityId: string; captainId: string | null },
+    row: { id: string; cityId: string; captainId: string | null; formerCaptainId?: string | null },
     executor: Executor = this.database.db,
   ): Promise<bigint> {
     let paid = 0n;
@@ -562,6 +644,7 @@ export class ApplicationPipelineService {
           id: applications.id,
           fullName: applications.fullName,
           stage: applications.stage,
+          earlyExit: applications.earlyExit,
         })
         .from(applicationDocuments)
         .innerJoin(applications, eq(applications.id, applicationDocuments.applicationId))
@@ -575,14 +658,24 @@ export class ApplicationPipelineService {
       for (const other of others) found.push(duplicate('id_number', other));
     }
     const sameAccount = await this.database.db
-      .select({ id: applications.id, fullName: applications.fullName, stage: applications.stage })
+      .select({
+        id: applications.id,
+        fullName: applications.fullName,
+        stage: applications.stage,
+        earlyExit: applications.earlyExit,
+      })
       .from(applications)
       .where(and(eq(applications.accountId, row.accountId), ne(applications.id, row.id)));
     for (const other of sameAccount) found.push(duplicate('phone', other));
     if (row.plate !== null) {
       const key = plateKey(row.plate);
       const others = await this.database.db
-        .select({ id: applications.id, fullName: applications.fullName, stage: applications.stage })
+        .select({
+          id: applications.id,
+          fullName: applications.fullName,
+          stage: applications.stage,
+          earlyExit: applications.earlyExit,
+        })
         .from(applications)
         .where(
           and(
@@ -603,6 +696,7 @@ export class ApplicationPipelineService {
           captainId: captain.id,
           fullName: captain.name,
           stage: null,
+          earlyExit: false,
         });
       }
     }
@@ -1107,7 +1201,9 @@ export class ApplicationPipelineService {
       .where(eq(applications.captainId, captainId))
       .orderBy(desc(applications.activatedAt))
       .limit(1);
-    return row ? this.depositOf(row, executor) : null;
+    // No instalment is taken once the contract is being ended (slice
+    // 2.35b, decided by us): the deposit is settled at the desk.
+    return row && row.terminatedAt === null ? this.depositOf(row, executor) : null;
   }
 
   // The desk's tab (slice 2.35a): the city's applications at «بانتظار
@@ -1150,7 +1246,16 @@ export class ApplicationPipelineService {
   // application becomes a captain whose id is the application's, with its
   // name, vehicle, plate and cash limit; the applicant's sign-in account
   // becomes the captain's. «مفعّل» tells the applicant (CA §5.4).
-  async activate(applicationId: string, admin: PipelineAdmin, now = new Date()): Promise<string> {
+  // A former captain's application makes that captain again (C17, slice
+  // 2.35b), with its id, ledger accounts and history; when any of the
+  // account's contracts ended early, only OWN activates it
+  // (`ownerApproval`: `captains.activate_early_exit`).
+  async activate(
+    applicationId: string,
+    admin: PipelineAdmin,
+    now = new Date(),
+    ownerApproval = false,
+  ): Promise<string> {
     const { cityId } = await this.row(applicationId);
     const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
     let captainId = '';
@@ -1181,24 +1286,42 @@ export class ApplicationPipelineService {
         throw new PipelineRefusedError('not_in_base_currency');
       }
       captainId = captainIdOf(row);
-      await tx.insert(captainRecords).values({
-        id: captainId,
+      const record = {
         cityId: row.cityId,
         name: row.fullName,
         vehicle: row.vehicle!,
         plateNumber: row.plate,
         custodyLimit: row.custodyLimit!,
         custodyLimitCurrency: row.custodyLimitCurrency!,
-      });
+      };
+      if (row.formerCaptainId === null) {
+        await tx.insert(captainRecords).values({ id: captainId, ...record });
+      } else {
+        if ((await this.flagged(tx, row.accountId)) && !ownerApproval) {
+          throw new PipelineRefusedError('owner_approval_required');
+        }
+        const rehired = await tx
+          .update(captainRecords)
+          .set({
+            ...record,
+            status: 'active',
+            suspensionReason: null,
+            suspendedUntil: null,
+            updatedAt: sql`now()`,
+          })
+          .where(and(eq(captainRecords.id, captainId), eq(captainRecords.status, 'terminated')))
+          .returning({ id: captainRecords.id });
+        if (rehired.length !== 1) throw new PipelineRefusedError('captain_terminated');
+      }
       await this.lookups().activate(tx, row.accountId, captainId, row.cityId);
       await this.audit.recordWrite(
         {
           actor: admin.actor,
           context: admin.context,
           cityId: row.cityId,
-          action: 'captain.create',
+          action: row.formerCaptainId === null ? 'captain.create' : 'captain.rehire',
           target: { type: 'captain', id: captainId },
-          before: null,
+          before: row.formerCaptainId === null ? null : { status: 'terminated' },
           after: {
             name: row.fullName,
             vehicle: row.vehicle,
@@ -1231,6 +1354,7 @@ export class ApplicationPipelineService {
     const today = cityDay(now, timeZone);
     await this.act(applicationId, admin, 'confirm_probation', now, async (tx, row) => {
       if (row.probationConfirmedOn !== null) throw new PipelineRefusedError('already_confirmed');
+      if (row.terminatedAt !== null) throw new PipelineRefusedError('already_terminated');
       const [captain] = await tx
         .select({ status: captainRecords.status })
         .from(captainRecords)
@@ -1484,6 +1608,279 @@ export class ApplicationPipelineService {
   }
 
   // The activated applications of a city whose captain is not terminated.
+  // «إنهاء التعاقد» (AP §9.7.5, §9.7.2, C17; slice 2.35b): OPS or OWN end an
+  // activated captain's contract with a reason, at the probation review or
+  // any time after. The captain is suspended until further notice with that
+  // reason (offline at once, or in last-order mode during an order), so its
+  // custody and earnings stop moving while the checklist runs and the app
+  // still shows them (decided by us). Ended in «فترة التزام», the contract
+  // flags «خروج مبكر».
+  async terminate(
+    applicationId: string,
+    admin: PipelineAdmin,
+    reason: string,
+    now = new Date(),
+  ): Promise<void> {
+    const trimmed = reason.trim();
+    if (trimmed === '') throw new PipelineRefusedError('reason_required');
+    const { cityId } = await this.row(applicationId);
+    const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    let changed: StatusChanged | null = null;
+    let captainId = '';
+    await this.act(applicationId, admin, 'terminate', now, async (tx, row) => {
+      if (row.terminatedAt !== null) throw new PipelineRefusedError('already_terminated');
+      captainId = row.captainId!;
+      const [captain] = await tx
+        .select({ status: captainRecords.status })
+        .from(captainRecords)
+        .where(eq(captainRecords.id, captainId));
+      if (captain?.status === 'terminated') throw new PipelineRefusedError('captain_terminated');
+      const early = earlyExit(row, cityDay(now, timeZone));
+      changed = await this.captains.setStatusIn(
+        tx,
+        captainId,
+        'suspended',
+        { actor: admin.actor, context: admin.context, reason: trimmed, until: null },
+        now,
+      );
+      return {
+        set: {
+          terminatedAt: now,
+          terminatedBy: admin.actor.id!,
+          terminationReason: trimmed,
+          earlyExit: early,
+        },
+        event: { kind: 'terminated', note: trimmed },
+        audit: 'terminate',
+        after: { earlyExit: early },
+        reason: trimmed,
+      };
+    });
+    if (changed !== null) await this.captains.afterStatus(captainId, changed, now);
+  }
+
+  // The checklist's step 1 (OPS, OWN): the kit came back in good condition
+  // or not. Changed until the deposit is settled by it.
+  async recordKitReturn(
+    applicationId: string,
+    admin: PipelineAdmin,
+    returned: boolean,
+    now = new Date(),
+  ): Promise<void> {
+    await this.act(applicationId, admin, 'return_kit', now, async (_tx, row) => {
+      openOffboarding(row);
+      if (row.depositSettled !== null) throw new PipelineRefusedError('deposit_settled');
+      if (row.kitReturned === returned) return null;
+      return {
+        set: { kitReturned: returned, kitCheckedAt: now },
+        event: { kind: 'kit_returned' },
+        audit: 'kit_return',
+        before: { kitReturned: row.kitReturned },
+        after: { kitReturned: returned },
+      };
+    });
+  }
+
+  // The desk's read of a contract whose deposit it settles (AP §9.7.5 step
+  // 4, §9.10.3 «التأمينات»), locked in its transaction: being ended, the kit
+  // checked, not settled yet.
+  async lockForSettlement(
+    tx: Tx,
+    applicationId: string,
+  ): Promise<{
+    id: string;
+    accountId: string;
+    cityId: string;
+    fullName: string;
+    captainId: string;
+    settlement: DepositSettlement;
+    held: bigint;
+  }> {
+    const [row] = await tx
+      .select()
+      .from(applications)
+      .where(eq(applications.id, applicationId))
+      .for('update');
+    if (!row || row.stage === 'draft') throw new PipelineRefusedError('unknown_application');
+    openOffboarding(row);
+    if (row.depositSettled !== null) throw new PipelineRefusedError('deposit_settled');
+    if (row.kitReturned === null) throw new PipelineRefusedError('kit_not_checked');
+    return {
+      id: row.id,
+      accountId: row.accountId,
+      cityId: row.cityId,
+      fullName: row.fullName,
+      captainId: row.captainId!,
+      settlement: depositSettlementOf(row.kitReturned),
+      held: await this.depositPaid(row, tx),
+    };
+  }
+
+  // Step 4 recorded in the desk's transaction, once its journal is posted.
+  async recordSettlement(
+    tx: Tx,
+    applicationId: string,
+    admin: PipelineAdmin,
+    settlement: DepositSettlement,
+    amount: Money,
+    now: Date,
+  ): Promise<void> {
+    const timeZone = (await this.geo.cityTimeZone((await this.row(applicationId)).cityId)) ?? 'UTC';
+    await this.actIn(tx, applicationId, admin, 'settle_deposit', now, timeZone, async () => ({
+      set: { depositSettled: settlement, depositSettledAt: now },
+      event: { kind: 'deposit_settled' },
+      audit: `deposit_${settlement}`,
+      after: { amount: amount.amount.toString(), currency: amount.currency },
+    }));
+  }
+
+  // The desk's «التأمينات» (AP §9.10.3): the city's contracts being ended
+  // whose deposit is still held, the earliest ended first, with the kit's
+  // step (null until OPS checked it).
+  async depositsToSettle(cityId: string): Promise<DepositToSettle[]> {
+    const rows = await this.database.db
+      .select()
+      .from(applications)
+      .where(
+        and(
+          eq(applications.cityId, cityId),
+          isNotNull(applications.terminatedAt),
+          isNull(applications.endedAt),
+          isNull(applications.depositSettled),
+        ),
+      )
+      .orderBy(asc(applications.terminatedAt), asc(applications.id));
+    const found: DepositToSettle[] = [];
+    for (const row of rows) {
+      const held = await this.depositPaid(row);
+      if (held === 0n) continue;
+      found.push({
+        applicationId: row.id,
+        captainId: row.captainId!,
+        fullName: row.fullName,
+        terminatedAt: row.terminatedAt!,
+        earlyExit: row.earlyExit!,
+        kitReturned: row.kitReturned,
+        held: { amount: held, currency: row.depositCurrency! },
+      });
+    }
+    return found;
+  }
+
+  // «إغلاق الحساب» (AP §9.7.5 step 5): once the kit is checked, the custody
+  // is zero in every currency, the earnings are settled and the deposit is
+  // refunded or withheld, and no order is active, the captain is
+  // terminated (it can no longer go online), its sessions end and its
+  // sign-in account is an applicant's again, so the same number applies
+  // again (C17).
+  async close(applicationId: string, admin: PipelineAdmin, now = new Date()): Promise<void> {
+    let changed: StatusChanged | null = null;
+    let captainId = '';
+    let released: (() => void) | null = null;
+    await this.act(applicationId, admin, 'close', now, async (tx, row) => {
+      openOffboarding(row);
+      captainId = row.captainId!;
+      const state = await this.offboardingState(row, tx);
+      if (state.missing.length > 0) {
+        throw new PipelineRefusedError('offboarding_incomplete', null, [], state.missing);
+      }
+      if (await this.captains.hasActiveOrder(captainId, tx)) {
+        throw new PipelineRefusedError('active_order');
+      }
+      changed = await this.captains.setStatusIn(
+        tx,
+        captainId,
+        'terminated',
+        { actor: admin.actor, context: admin.context, reason: row.terminationReason! },
+        now,
+      );
+      released = await this.lookups().release(tx, row.accountId, now);
+      return {
+        set: { endedAt: now },
+        event: { kind: 'contract_ended' },
+        audit: 'close',
+        after: { captainId },
+      };
+    });
+    if (changed !== null) await this.captains.afterStatus(captainId, changed, now);
+    (released as (() => void) | null)?.();
+  }
+
+  private async offboardingOf(row: Row, names: Map<string, string>): Promise<Offboarding | null> {
+    if (row.terminatedAt === null) return null;
+    const state = await this.offboardingState(row, this.database.db);
+    return {
+      terminatedAt: row.terminatedAt,
+      terminatedBy: names.get(row.terminatedBy!) ?? null,
+      reason: row.terminationReason!,
+      earlyExit: row.earlyExit!,
+      kitReturned: row.kitReturned,
+      custodyZero: state.custodyZero,
+      earningsZero: state.earningsZero,
+      depositHeld: state.depositHeld,
+      depositSettled: row.depositSettled,
+      missing: row.endedAt === null ? state.missing : [],
+      endedAt: row.endedAt,
+    };
+  }
+
+  // Steps 2 to 4 read from the ledger: every custody and earnings balance of
+  // the captain at zero, and what the platform holds of the deposit.
+  private async offboardingState(
+    row: Row,
+    executor: Executor,
+  ): Promise<{
+    custodyZero: boolean;
+    earningsZero: boolean;
+    depositHeld: bigint;
+    missing: OffboardingStep[];
+  }> {
+    const zero = async (purpose: 'captain.custody' | 'captain.earnings') => {
+      for (const account of await this.ledger.ownerAccounts(
+        row.cityId,
+        row.captainId!,
+        purpose,
+        executor,
+      )) {
+        if ((await this.ledger.balance(account.id, executor)).amount !== 0n) return false;
+      }
+      return true;
+    };
+    const custodyZero = await zero('captain.custody');
+    const earningsZero = await zero('captain.earnings');
+    const depositHeld = await this.depositPaid(row, executor);
+    return {
+      custodyZero,
+      earningsZero,
+      depositHeld,
+      missing: offboardingMissing({
+        kitReturned: row.kitReturned,
+        custodyZero,
+        earningsZero,
+        depositHeld,
+      }),
+    };
+  }
+
+  // C17: a former captain applying again; flagged when any contract of the
+  // account ended early.
+  private async formerCaptainOf(row: Row): Promise<FormerCaptain | null> {
+    if (row.formerCaptainId === null) return null;
+    return {
+      captainId: row.formerCaptainId,
+      earlyExit: await this.flagged(this.database.db, row.accountId),
+    };
+  }
+
+  private async flagged(executor: Executor, accountId: string): Promise<boolean> {
+    const [found] = await executor
+      .select({ id: applications.id })
+      .from(applications)
+      .where(and(eq(applications.accountId, accountId), eq(applications.earlyExit, true)))
+      .limit(1);
+    return found !== undefined;
+  }
+
   private async activeContracts(cityId: string): Promise<Row[]> {
     return this.database.db
       .select({ application: applications })
@@ -1493,6 +1890,7 @@ export class ApplicationPipelineService {
         and(
           eq(applications.cityId, cityId),
           eq(applications.stage, 'active'),
+          isNull(applications.terminatedAt),
           ne(captainRecords.status, 'terminated'),
         ),
       )
@@ -1648,9 +2046,20 @@ function eventActorOf(admin: PipelineAdmin): string | null {
 
 const NO_CONTEXT = { ipAddress: null, device: null };
 
-// The captain an application makes: its own id for a new captain.
-function captainIdOf(row: { id: string; captainId: string | null }): string {
-  return row.captainId ?? row.id;
+// The offboarding's steps are taken while the contract is being ended.
+function openOffboarding(row: Row): void {
+  if (row.terminatedAt === null) throw new PipelineRefusedError('not_terminated');
+  if (row.endedAt !== null) throw new PipelineRefusedError('contract_ended');
+}
+
+// The captain an application makes: its own id for a new captain, the
+// former captain's for one applying again (C17, slice 2.35b).
+function captainIdOf(row: {
+  id: string;
+  captainId: string | null;
+  formerCaptainId?: string | null;
+}): string {
+  return row.captainId ?? row.formerCaptainId ?? row.id;
 }
 
 function contractOf(row: Row, today: string, noticeDays: number): Contract | null {
@@ -1700,7 +2109,7 @@ function moneySetting(
 
 function duplicate(
   field: Duplicate['field'],
-  other: { id: string; fullName: string; stage: ApplicationStage },
+  other: { id: string; fullName: string; stage: ApplicationStage; earlyExit: boolean | null },
 ): Duplicate {
   return {
     field,
@@ -1708,5 +2117,6 @@ function duplicate(
     captainId: null,
     fullName: other.fullName,
     stage: other.stage,
+    earlyExit: other.earlyExit === true,
   };
 }

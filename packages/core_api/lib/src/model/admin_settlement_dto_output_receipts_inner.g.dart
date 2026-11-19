@@ -25,6 +25,11 @@ _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection =
 const AdminSettlementDtoOutputReceiptsInnerTypeEnum
 _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDeposit =
     const AdminSettlementDtoOutputReceiptsInnerTypeEnum._('captainDeposit');
+const AdminSettlementDtoOutputReceiptsInnerTypeEnum
+_$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDepositRefund =
+    const AdminSettlementDtoOutputReceiptsInnerTypeEnum._(
+      'captainDepositRefund',
+    );
 
 AdminSettlementDtoOutputReceiptsInnerTypeEnum
 _$adminSettlementDtoOutputReceiptsInnerTypeEnumValueOf(String name) {
@@ -39,6 +44,8 @@ _$adminSettlementDtoOutputReceiptsInnerTypeEnumValueOf(String name) {
       return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection;
     case 'captainDeposit':
       return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDeposit;
+    case 'captainDepositRefund':
+      return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDepositRefund;
     default:
       throw ArgumentError(name);
   }
@@ -54,6 +61,7 @@ _$adminSettlementDtoOutputReceiptsInnerTypeEnumValues =
       _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainPayout,
       _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection,
       _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDeposit,
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDepositRefund,
     ]);
 
 Serializer<AdminSettlementDtoOutputReceiptsInnerTypeEnum>
@@ -69,6 +77,7 @@ class _$AdminSettlementDtoOutputReceiptsInnerTypeEnumSerializer
     'captainPayout': 'captain_payout',
     'captainEarningsCollection': 'captain_earnings_collection',
     'captainDeposit': 'captain_deposit',
+    'captainDepositRefund': 'captain_deposit_refund',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'captain_hand_in': 'captainHandIn',
@@ -76,6 +85,7 @@ class _$AdminSettlementDtoOutputReceiptsInnerTypeEnumSerializer
     'captain_payout': 'captainPayout',
     'captain_earnings_collection': 'captainEarningsCollection',
     'captain_deposit': 'captainDeposit',
+    'captain_deposit_refund': 'captainDepositRefund',
   };
 
   @override

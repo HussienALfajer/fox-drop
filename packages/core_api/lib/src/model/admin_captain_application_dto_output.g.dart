@@ -369,6 +369,10 @@ class _$AdminCaptainApplicationDtoOutput
   final BuiltList<AdminCaptainApplicationDtoOutputEventsInner> events;
   @override
   final AdminCaptainApplicationDtoOutputActivation activation;
+  @override
+  final AdminCaptainApplicationDtoOutputOffboarding? offboarding;
+  @override
+  final AdminCaptainApplicationDtoOutputFormerCaptain? formerCaptain;
 
   factory _$AdminCaptainApplicationDtoOutput([
     void Function(AdminCaptainApplicationDtoOutputBuilder)? updates,
@@ -395,6 +399,8 @@ class _$AdminCaptainApplicationDtoOutput
     required this.duplicates,
     required this.events,
     required this.activation,
+    this.offboarding,
+    this.formerCaptain,
   }) : super._();
   @override
   AdminCaptainApplicationDtoOutput rebuild(
@@ -428,7 +434,9 @@ class _$AdminCaptainApplicationDtoOutput
         rejection == other.rejection &&
         duplicates == other.duplicates &&
         events == other.events &&
-        activation == other.activation;
+        activation == other.activation &&
+        offboarding == other.offboarding &&
+        formerCaptain == other.formerCaptain;
   }
 
   @override
@@ -454,6 +462,8 @@ class _$AdminCaptainApplicationDtoOutput
     _$hash = $jc(_$hash, duplicates.hashCode);
     _$hash = $jc(_$hash, events.hashCode);
     _$hash = $jc(_$hash, activation.hashCode);
+    _$hash = $jc(_$hash, offboarding.hashCode);
+    _$hash = $jc(_$hash, formerCaptain.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -480,7 +490,9 @@ class _$AdminCaptainApplicationDtoOutput
           ..add('rejection', rejection)
           ..add('duplicates', duplicates)
           ..add('events', events)
-          ..add('activation', activation))
+          ..add('activation', activation)
+          ..add('offboarding', offboarding)
+          ..add('formerCaptain', formerCaptain))
         .toString();
   }
 }
@@ -607,6 +619,22 @@ class AdminCaptainApplicationDtoOutputBuilder
     AdminCaptainApplicationDtoOutputActivationBuilder? activation,
   ) => _$this._activation = activation;
 
+  AdminCaptainApplicationDtoOutputOffboardingBuilder? _offboarding;
+  AdminCaptainApplicationDtoOutputOffboardingBuilder get offboarding =>
+      _$this._offboarding ??=
+          AdminCaptainApplicationDtoOutputOffboardingBuilder();
+  set offboarding(
+    AdminCaptainApplicationDtoOutputOffboardingBuilder? offboarding,
+  ) => _$this._offboarding = offboarding;
+
+  AdminCaptainApplicationDtoOutputFormerCaptainBuilder? _formerCaptain;
+  AdminCaptainApplicationDtoOutputFormerCaptainBuilder get formerCaptain =>
+      _$this._formerCaptain ??=
+          AdminCaptainApplicationDtoOutputFormerCaptainBuilder();
+  set formerCaptain(
+    AdminCaptainApplicationDtoOutputFormerCaptainBuilder? formerCaptain,
+  ) => _$this._formerCaptain = formerCaptain;
+
   AdminCaptainApplicationDtoOutputBuilder() {
     AdminCaptainApplicationDtoOutput._defaults(this);
   }
@@ -634,6 +662,8 @@ class AdminCaptainApplicationDtoOutputBuilder
       _duplicates = $v.duplicates.toBuilder();
       _events = $v.events.toBuilder();
       _activation = $v.activation.toBuilder();
+      _offboarding = $v.offboarding?.toBuilder();
+      _formerCaptain = $v.formerCaptain?.toBuilder();
       _$v = null;
     }
     return this;
@@ -706,6 +736,8 @@ class AdminCaptainApplicationDtoOutputBuilder
             duplicates: duplicates.build(),
             events: events.build(),
             activation: activation.build(),
+            offboarding: _offboarding?.build(),
+            formerCaptain: _formerCaptain?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -726,6 +758,10 @@ class AdminCaptainApplicationDtoOutputBuilder
         events.build();
         _$failedField = 'activation';
         activation.build();
+        _$failedField = 'offboarding';
+        _offboarding?.build();
+        _$failedField = 'formerCaptain';
+        _formerCaptain?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminCaptainApplicationDtoOutput',

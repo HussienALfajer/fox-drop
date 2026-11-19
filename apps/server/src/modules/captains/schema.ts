@@ -347,6 +347,10 @@ export const custodyWarnings = captains.table(
 // AP §9.7.2 (slice 2.35a): the contract's phases.
 export const contractPhases = ['probation', 'commitment', 'open'] as const;
 
+// AP §9.7.5 step 4 (slice 2.35b): the deposit paid back in cash when the kit
+// came back, withheld otherwise (C17; owner decision 2026-11-19).
+export const depositSettlements = ['refunded', 'withheld'] as const;
+
 // CA §5.4, AP §9.7.1 (slice 2.34a): an application's stage. `draft` is the
 // form before «إرسال الطلب» (CA §5.1: saved after every step); the others are
 // the panel's stages and its two side stages.
@@ -432,6 +436,24 @@ export const applications = captains.table(
     // The phase the captain was last told of (CA §14 #28), so each change
     // pushes once.
     phaseNotified: text('phase_notified', { enum: contractPhases }),
+    // «إنهاء التعاقد» (AP §9.7.5, C17; slice 2.35b): who ended the contract,
+    // when and why, and whether it ended in «فترة التزام» (the flag «خروج
+    // مبكر»; owner decision 2026-11-19: not in probation nor once open).
+    terminatedAt: timestamp('terminated_at', { withTimezone: true }),
+    terminatedBy: uuid('terminated_by'),
+    terminationReason: text('termination_reason'),
+    earlyExit: boolean('early_exit'),
+    // The checklist's step 1: the kit returned in good condition or not
+    // (then the deposit is withheld); step 4: the deposit refunded or
+    // withheld at the desk; step 5: the account closed.
+    kitReturned: boolean('kit_returned'),
+    kitCheckedAt: timestamp('kit_checked_at', { withTimezone: true }),
+    depositSettled: text('deposit_settled', { enum: depositSettlements }),
+    depositSettledAt: timestamp('deposit_settled_at', { withTimezone: true }),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    // A former captain's new application (C17): the captain it makes again,
+    // so the deposit it pays is that captain's account from the start.
+    formerCaptainId: uuid('former_captain_id'),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -460,9 +482,11 @@ export const applications = captains.table(
       'applications_submitted',
       sql`(${table.stage} = 'draft') = (${table.submittedAt} IS NULL) AND (${table.stage} = 'draft' OR ${table.vehicle} IS NOT NULL)`,
     ),
+    // A contract ended (slice 2.35b) is history too: the account applies
+    // again (C17).
     uniqueIndex('applications_open_account')
       .on(table.accountId)
-      .where(sql`${table.stage} <> 'rejected'`),
+      .where(sql`${table.stage} <> 'rejected' AND ${table.endedAt} IS NULL`),
     check('applications_kit', sql`(${table.kitItems} IS NULL) = (${table.kitIssuedAt} IS NULL)`),
     check(
       'applications_custody_limit',
@@ -480,7 +504,18 @@ export const applications = captains.table(
       'applications_activated',
       sql`(${table.stage} = 'active') = (${table.activatedAt} IS NOT NULL) AND (${table.activatedAt} IS NULL) = (${table.captainId} IS NULL)`,
     ),
-    uniqueIndex('applications_captain').on(table.captainId),
+    // One contract in force per captain; a rehired captain's ended ones stay.
+    uniqueIndex('applications_captain')
+      .on(table.captainId)
+      .where(sql`${table.endedAt} IS NULL`),
+    check(
+      'applications_terminated',
+      sql`(${table.terminatedAt} IS NULL) = (${table.terminatedBy} IS NULL) AND (${table.terminatedAt} IS NULL) = (${table.terminationReason} IS NULL) AND (${table.terminatedAt} IS NULL) = (${table.earlyExit} IS NULL) AND (${table.terminatedAt} IS NULL OR ${table.activatedAt} IS NOT NULL)`,
+    ),
+    check(
+      'applications_offboarding',
+      sql`(${table.kitReturned} IS NULL) = (${table.kitCheckedAt} IS NULL) AND (${table.depositSettled} IS NULL) = (${table.depositSettledAt} IS NULL) AND (${table.depositSettled} IS NULL OR ${table.depositSettled} IN ('refunded', 'withheld')) AND (${table.depositSettled} IS NULL OR ${table.kitReturned} = (${table.depositSettled} = 'refunded')) AND (${table.kitReturned} IS NULL OR ${table.terminatedAt} IS NOT NULL) AND (${table.endedAt} IS NULL OR (${table.terminatedAt} IS NOT NULL AND ${table.kitReturned} IS NOT NULL))`,
+    ),
     check(
       'applications_probation_confirmed',
       sql`(${table.probationConfirmedOn} IS NULL) = (${table.probationConfirmedBy} IS NULL) AND (${table.probationConfirmedOn} IS NULL) = (${table.commitmentStartsOn} IS NULL) AND (${table.commitmentStartsOn} IS NULL) = (${table.commitmentEndsOn} IS NULL) AND (${table.probationConfirmedOn} IS NULL OR ${table.activatedAt} IS NOT NULL)`,
@@ -617,6 +652,11 @@ export const applicationEventKinds = [
   'contract',
   'deposit',
   'probation_confirmed',
+  // The offboarding (slice 2.35b).
+  'terminated',
+  'kit_returned',
+  'deposit_settled',
+  'contract_ended',
 ] as const;
 const eventKindValues = sql.raw(applicationEventKinds.map((kind) => `'${kind}'`).join(', '));
 

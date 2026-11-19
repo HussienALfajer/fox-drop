@@ -1,5 +1,12 @@
 import type { Vehicle } from '../settings/index.js';
-import type { applicationDocumentKinds, applicationStages, contractPhases } from './schema.js';
+import type {
+  applicationDocumentKinds,
+  applicationStages,
+  contractPhases,
+  depositSettlements,
+} from './schema.js';
+
+export { depositSettlements } from './schema.js';
 
 // The pure rules of the application form (CA §5.2–5.3, AP §9.7.1; slice
 // 2.34a). Dates are the city's calendar days as YYYY-MM-DD.
@@ -171,6 +178,7 @@ export function activationMissing(application: {
 // else on the confirmation's day; «فترة التزام» for
 // `captain.min_commitment_months` from that start; «مفتوح» after.
 export type ContractPhase = (typeof contractPhases)[number];
+export type DepositSettlement = (typeof depositSettlements)[number];
 
 export function commitmentOf(contract: {
   probationEndsOn: string;
@@ -192,6 +200,43 @@ export function contractPhase(
     return 'probation';
   }
   return today < contract.commitmentEndsOn! ? 'commitment' : 'open';
+}
+
+// C17, AP §9.7.2 (slice 2.35b): a contract ended in «فترة التزام» flags
+// the captain «خروج مبكر»; not in probation nor once open (owner decision
+// 2026-11-19).
+export function earlyExit(
+  contract: { commitmentStartsOn: string | null; commitmentEndsOn: string | null },
+  today: string,
+): boolean {
+  return contractPhase(contract, today) === 'commitment';
+}
+
+// AP §9.7.5 step 4, C17: the deposit is paid back when the kit came back in
+// good condition and withheld otherwise, all of it (owner decision
+// 2026-11-19: no partial withholding in V1).
+export function depositSettlementOf(kitReturned: boolean): DepositSettlement {
+  return kitReturned ? 'refunded' : 'withheld';
+}
+
+// AP §9.7.5: the checklist's steps left before «إغلاق الحساب», in order: the
+// kit checked, the custody zero in every currency, the earnings settled,
+// the deposit the platform still holds refunded or withheld.
+export const offboardingSteps = ['kit', 'custody', 'earnings', 'deposit'] as const;
+export type OffboardingStep = (typeof offboardingSteps)[number];
+
+export function offboardingMissing(state: {
+  kitReturned: boolean | null;
+  custodyZero: boolean;
+  earningsZero: boolean;
+  depositHeld: bigint;
+}): OffboardingStep[] {
+  const missing: OffboardingStep[] = [];
+  if (state.kitReturned === null) missing.push('kit');
+  if (!state.custodyZero) missing.push('custody');
+  if (!state.earningsZero) missing.push('earnings');
+  if (state.depositHeld !== 0n) missing.push('deposit');
+  return missing;
 }
 
 // AP §9.7.2: the probation review is OPS's task from
@@ -314,7 +359,13 @@ export type PipelineAction =
   | 'record_deposit'
   | 'activate'
   // After it (AP §9.7.2): the probation confirmed.
-  | 'confirm_probation';
+  | 'confirm_probation'
+  // The offboarding (AP §9.7.5, slice 2.35b): «إنهاء التعاقد», the kit
+  // checked, the deposit settled at the desk, «إغلاق الحساب».
+  | 'terminate'
+  | 'return_kit'
+  | 'settle_deposit'
+  | 'close';
 
 // The stages each action takes an application in, and where it leaves it
 // (null: where it was). «مفعّل» is the activation's (2.35).
@@ -346,6 +397,10 @@ const PIPELINE: Record<
   record_deposit: { from: ['awaiting_kit'], to: null },
   activate: { from: ['awaiting_kit'], to: 'active' },
   confirm_probation: { from: ['active'], to: null },
+  terminate: { from: ['active'], to: null },
+  return_kit: { from: ['active'], to: null },
+  settle_deposit: { from: ['active'], to: null },
+  close: { from: ['active'], to: null },
 };
 
 // The stages an action passes through from `stage`, in order, or null when
