@@ -40,6 +40,7 @@ CREATE TABLE "captains"."applications" (
 ALTER TABLE "files"."uploads" DROP CONSTRAINT "uploads_purpose_values";--> statement-breakpoint
 ALTER TABLE "captains"."application_documents" ADD CONSTRAINT "application_documents_application_id_applications_id_fk" FOREIGN KEY ("application_id") REFERENCES "captains"."applications"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "application_documents_in_force" ON "captains"."application_documents" USING btree ("application_id","kind") WHERE "captains"."application_documents"."replaced_at" IS NULL;--> statement-breakpoint
+CREATE INDEX "application_documents_application" ON "captains"."application_documents" USING btree ("application_id","created_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "applications_open_account" ON "captains"."applications" USING btree ("account_id") WHERE "captains"."applications"."stage" <> 'rejected';--> statement-breakpoint
 ALTER TABLE "files"."uploads" ADD CONSTRAINT "uploads_purpose_values" CHECK ("files"."uploads"."purpose" IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image', 'restaurant_contract', 'restaurant_licence', 'menu_import', 'captain_document')) NOT VALID;--> statement-breakpoint
 ALTER TABLE "files"."uploads" VALIDATE CONSTRAINT "uploads_purpose_values";

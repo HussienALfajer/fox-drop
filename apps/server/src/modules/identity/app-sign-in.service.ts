@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -251,7 +251,12 @@ export class AppSignInService {
           party: request.party,
           phoneHash,
           deviceId: request.deviceId,
-          codeHash: this.secrets.signInCodeHash(request.phone, code),
+          // A code never sent is stored as a value no code matches, so a
+          // guessed code is a wrong code and never makes an applicant
+          // (slice 2.34a).
+          codeHash: silent
+            ? randomBytes(32).toString('hex')
+            : this.secrets.signInCodeHash(request.phone, code),
           expiresAt,
           createdAt: now,
         });
@@ -304,9 +309,11 @@ export class AppSignInService {
         if (account === null) return new MerchantSignInRefusedError('not_registered');
       } else if (captain === 'not_registered') {
         // CA §5.1 (slice 2.34a): the number proved by its code applies. Only
-        // «انضم ككابتن» sent it a code (`requestCode`).
-        captainAccount = await this.captainAccounts.createApplicant(tx, request.phone, now);
-        account = { id: captainAccount.id, created: true };
+        // «انضم ككابتن» sent it a code (`requestCode`); a code sent to no one
+        // matches no code.
+        const applied = await this.captainAccounts.createApplicant(tx, request.phone, now);
+        captainAccount = applied.account;
+        account = { id: applied.account.id, created: applied.created };
       } else if (captain !== null) {
         if (
           captain.captainId !== null &&

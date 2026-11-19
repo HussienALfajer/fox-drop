@@ -56,13 +56,24 @@ describe('setUpStorage', () => {
         new GetObjectCommand({ Bucket: PRIVATE_DOCS_BUCKET, Key: 'exports/one.xlsx' }),
       ),
     ).rejects.toThrow();
+    // The nightly copy reads it and writes nowhere (slice 2.34a).
+    const copied = await client(storage.backup).send(
+      new GetObjectCommand({ Bucket: PRIVATE_DOCS_BUCKET, Key: 'exports/one.xlsx' }),
+    );
+    expect(await copied.Body?.transformToString()).toBe('x');
+    await expect(
+      client(storage.backup).send(
+        new PutObjectCommand({ Bucket: PRIVATE_DOCS_BUCKET, Key: 'exports/two.xlsx', Body: 'x' }),
+      ),
+    ).rejects.toThrow();
+    await expect(put(storage.backup, 'test/five.txt')).rejects.toThrow();
   });
 
   it('runs again without changing anything', async () => {
     const options = {
       adminUrl: storage.adminUrl,
       adminToken: storage.adminToken,
-      keys: [storage.key, storage.reader],
+      keys: [storage.key, storage.reader, storage.backup],
     };
     await setUpStorage(options);
     await put(storage.key, 'test/three.txt');

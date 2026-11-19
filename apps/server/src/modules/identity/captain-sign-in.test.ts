@@ -19,6 +19,7 @@ import { AdminSessionsService } from './admin-sessions.service.js';
 import { AppSessionsService } from './app-sessions.service.js';
 import { changePlaceholderPhone } from './placeholder-phone.js';
 import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
+import { createOpenApiDocument } from '../../http/openapi.js';
 import { IDENTITY_SECRETS, type IdentitySecrets } from './secrets.js';
 
 // The captain app's sign-in (CA §4.9) on the app sign-in engine, served by the
@@ -369,6 +370,83 @@ describe('joining (CA §5.1, slice 2.34a; owner decision 2026-11-19)', () => {
     });
     expect(refreshed.statusCode).toBe(200);
   });
+
+  it('stores a code sent to no one as no code, so a guess never makes an applicant', async () => {
+    const phone = newPhone();
+    const deviceId = randomUUID();
+    expect((await requestCode(phone, deviceId)).statusCode).toBe(200);
+    const secrets = app.get<IdentitySecrets>(IDENTITY_SECRETS);
+    const { rows } = await sql.query(
+      'SELECT code_hash FROM identity.app_sign_in_codes WHERE phone_hash = $1 AND ended_at IS NULL',
+      [secrets.phoneHash(phone)],
+    );
+    const stored: string = rows[0].code_hash;
+    // No 6-digit code matches it.
+    for (let code = 0; code < 1_000_000; code += 1) {
+      if (secrets.signInCodeHash(phone, code.toString().padStart(6, '0')) === stored) {
+        throw new Error('a code matches the silent code');
+      }
+    }
+    const guessed = await app.inject({
+      method: 'POST',
+      url: '/v1/captain/auth/sign-in',
+      payload: { phone, deviceId, code: '123456' },
+    });
+    expect(guessed.json()).toMatchObject({ error: 'wrong_code' });
+    const accounts = await sql.query(
+      'SELECT count(*)::int AS n FROM identity.captain_accounts WHERE phone_hash = $1',
+      [secrets.phoneHash(phone)],
+    );
+    expect(accounts.rows).toEqual([{ n: 0 }]);
+  }, 60_000);
+
+  it('answers an applicant 403 applicant on every captain route but its own', async () => {
+    const { accessToken } = (await join(newPhone())).json();
+    const document = createOpenApiDocument(app);
+    // The routes an applicant may call (CA §5.1–5.2): the session, the
+    // terms and the application (and the sign-out, left out here since it
+    // ends the session; the next test calls it).
+    const allowed = [
+      'GET /v1/captain/auth/session',
+      'POST /v1/captain/terms/accept',
+      'GET /v1/captain/application',
+      'GET /v1/captain/application/zones',
+      'PUT /v1/captain/application/personal',
+      'PUT /v1/captain/application/vehicle',
+      'POST /v1/captain/application/documents/upload',
+      'PUT /v1/captain/application/documents/{kind}',
+      'POST /v1/captain/application/submit',
+    ];
+    const reached: string[] = [];
+    for (const [path, item] of Object.entries(document.paths)) {
+      if (!path.startsWith('/v1/captain/')) continue;
+      for (const method of ['get', 'put', 'post'] as const) {
+        const operation = item[method];
+        if (!operation || path === '/v1/captain/auth/sign-out') continue;
+        const response = await app.inject({
+          method: method.toUpperCase() as 'GET',
+          url: path.replaceAll(/\{[^}]+\}/g, randomUUID()),
+          headers: { authorization: `Bearer ${accessToken}` },
+          ...(method === 'get' ? {} : { payload: {} }),
+        });
+        const refused = response.statusCode === 403 && response.json().error === 'applicant';
+        if (!refused) reached.push(`${method.toUpperCase()} ${path}`);
+      }
+    }
+    const open = reached.filter((route) => !allowed.includes(route));
+    // The rest it reaches are the public and guest routes, which take no
+    // session.
+    for (const route of open) {
+      const [method, path] = route.split(' ') as [string, string];
+      const anonymous = await app.inject({
+        method: method as 'GET',
+        url: path.replaceAll(/\{[^}]+\}/g, randomUUID()),
+        ...(method === 'GET' ? {} : { payload: {} }),
+      });
+      expect([route, anonymous.statusCode === 401]).toEqual([route, false]);
+    }
+    expect(allowed.filter((route) => !reached.includes(route))).toEqual([]);
+  }, 120_000);
 
   it('keeps an applicant to the routes that take applicants', async () => {
     const { accessToken } = (await join(newPhone())).json();

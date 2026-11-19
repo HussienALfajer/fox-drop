@@ -1,5 +1,5 @@
 {
-  "id": "ba8428ad-63c9-474f-9d55-3433df0dcc77",
+  "id": "a30db63b-1601-44d6-80d4-8d605566aa73",
   "prevId": "43535719-5d27-4a7d-ad5a-9745faaafb1c",
   "version": "7",
   "dialect": "postgresql",
@@ -266,6 +266,27 @@
           ],
           "isUnique": true,
           "where": "\"captains\".\"application_documents\".\"replaced_at\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "application_documents_application": {
+          "name": "application_documents_application",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}

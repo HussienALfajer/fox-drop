@@ -268,6 +268,13 @@ export class ApplicationsService {
     }
     await this.database.db.transaction(async (tx) => {
       const draft = await this.lockedDraft(tx, applicant.accountId);
+      // Checked again under the lock: a vehicle changed since the read.
+      if (
+        kind === 'vehicle_papers' &&
+        (draft!.vehicle === null || !isMotorVehicle(draft!.vehicle))
+      ) {
+        throw new ApplicationRefusedError('document_not_needed');
+      }
       const fileKeys: string[] = [];
       for (const uploadId of document.uploadIds) {
         const { key, alreadyLinked } = await this.files.link(tx, uploadId, now);
@@ -325,14 +332,36 @@ export class ApplicationsService {
     if (current.missing.length > 0) {
       throw new ApplicationRefusedError('incomplete', current.missing);
     }
-    await this.database.db.transaction(async (tx) => {
-      const draft = await this.lockedDraft(tx, applicant.accountId);
-      // A document saved since the read above was checked by its own save.
-      await tx
-        .update(applications)
-        .set({ stage: 'new', submittedAt: now, updatedAt: now })
-        .where(and(eq(applications.id, draft!.id), eq(applications.stage, 'draft')));
-    });
+    // Read before the transaction: each takes a connection of its own. The
+    // terms, once accepted, stay so.
+    const termsPending = await this.terms.pending('captain', applicant.accountId);
+    const today = cityDay(now, (await this.geo.cityTimeZone(current.cityId)) ?? 'UTC');
+    try {
+      await this.database.db.transaction(async (tx) => {
+        const draft = await this.lockedDraft(tx, applicant.accountId);
+        // What is missing, again under the lock: a vehicle or a document
+        // changed since the read above.
+        const found = missing({
+          vehicle: draft!.vehicle,
+          documents: await this.documents(tx, draft!.id),
+          termsPending,
+          today,
+        });
+        if (found.length > 0) throw new ApplicationRefusedError('incomplete', found);
+        await tx
+          .update(applications)
+          .set({ stage: 'new', submittedAt: now, updatedAt: now })
+          .where(eq(applications.id, draft!.id));
+      });
+    } catch (error) {
+      // A submission at the same time sent it: answer it.
+      if (
+        !(error instanceof ApplicationRefusedError) ||
+        error.refusal !== 'application_submitted'
+      ) {
+        throw error;
+      }
+    }
     return (await this.application(applicant.accountId, now))!;
   }
 
@@ -343,12 +372,12 @@ export class ApplicationsService {
     tx: Tx,
     accountId: string,
     options: { orNone?: boolean } = {},
-  ): Promise<{ id: string } | null> {
+  ): Promise<{ id: string; vehicle: Vehicle | null } | null> {
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(hashtextextended(${`captains.application:${accountId}`}, 0))`,
     );
     const [row] = await tx
-      .select({ id: applications.id, stage: applications.stage })
+      .select({ id: applications.id, stage: applications.stage, vehicle: applications.vehicle })
       .from(applications)
       .where(and(eq(applications.accountId, accountId), ne(applications.stage, 'rejected')))
       .for('update');
@@ -357,7 +386,7 @@ export class ApplicationsService {
       throw new ApplicationRefusedError('no_application');
     }
     if (row.stage !== 'draft') throw new ApplicationRefusedError('application_submitted');
-    return { id: row.id };
+    return { id: row.id, vehicle: row.vehicle };
   }
 
   private async documents(

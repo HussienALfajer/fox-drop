@@ -835,7 +835,9 @@ function routes(cityId: string = randomUUID()): {
 }
 
 describe('every route with every role (architecture §15.2, AP §14 item 2)', () => {
-  it('declares its access in this test', () => {
+  // It builds the whole OpenAPI document (about 2 s alone, more than 5 s
+  // under the full parallel run of `pnpm verify`), so it has its own budget.
+  it('declares its access in this test', { timeout: 30_000 }, () => {
     const found = routes().map((route) => `${route.method} ${route.path}`);
     expect(found.sort()).toEqual(Object.keys(routeAccess).sort());
     for (const route of found) {

@@ -133,25 +133,34 @@ export class CaptainAccountsService {
   }
 
   // CA §5.1 (slice 2.34a): a number proved by its code that has no account
-  // gets an applicant's account, in the sign-in's transaction. The code row's
-  // lock serialises the sign-ins of one number and the unique index on the
-  // hash refuses a second account. Not audited, as a customer's first
-  // sign-in is not: the applicant's own number, proved.
+  // gets an applicant's account, in the sign-in's transaction. It takes the
+  // number's lock `addAccount` takes, so an account OPS added meanwhile is
+  // found and answered instead. Not audited, as a customer's first sign-in
+  // is not: the applicant's own number, proved.
   async createApplicant(
-    tx: Pick<Database['db'], 'insert'>,
+    tx: Pick<Database['db'], 'insert' | 'select' | 'execute'>,
     phone: string,
     now: Date,
-  ): Promise<CaptainApplicantAccount> {
+  ): Promise<{ account: AnyCaptainAccount; created: boolean }> {
+    const phoneHash = this.secrets.phoneHash(phone);
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${`identity.captain_phone:${phoneHash}`}, 0))`,
+    );
+    const [existing] = await tx
+      .select({ id: captainAccounts.id, captainId: captainAccounts.captainId })
+      .from(captainAccounts)
+      .where(eq(captainAccounts.phoneHash, phoneHash));
+    if (existing) return { account: accountOfRow(existing), created: false };
     const [created] = await tx
       .insert(captainAccounts)
       .values({
         phoneEncrypted: this.secrets.encrypt(phone),
-        phoneHash: this.secrets.phoneHash(phone),
+        phoneHash,
         createdAt: now,
       })
       .returning({ id: captainAccounts.id });
     if (!created) throw new Error('the account was not created');
-    return { id: created.id, captainId: null };
+    return { account: { id: created.id, captainId: null }, created: true };
   }
 
   // AP §9.10.3 step 1 (slice 2.17a): the captain a number belongs to, for

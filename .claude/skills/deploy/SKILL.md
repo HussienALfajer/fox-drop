@@ -139,7 +139,7 @@ docker exec -i foxdrop-staging-postgres-1 psql -U postgres -d fox_drop -v number
 
 ## Restore a backup
 
-The images: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does (`foxdropcrypt` and `foxdropstorage`, the latter with the server's key `STORAGE_KEY_ID`/`STORAGE_SECRET`, since the reader may not write), then `rclone copy foxdropcrypt:public-media foxdropstorage:public-media`. It only adds missing objects. The database:
+The files: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does (`foxdropcrypt` and `foxdropstorage`, the latter with the server's key `STORAGE_KEY_ID`/`STORAGE_SECRET`, since the backup key may not write), then `rclone copy foxdropcrypt:public-media foxdropstorage:public-media` and `rclone copy foxdropcrypt:private-docs foxdropstorage:private-docs` (the captain documents, the restaurants' scans and the report photos; slice 2.34a). It only adds missing objects. The database:
 
 1. Copy the dump back, if it is not in `/var/backups/foxdrop-staging/`: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does, then `rclone copyto foxdropcrypt:<name> /var/backups/foxdrop-staging/<name>`.
 2. Try it on a throwaway database first: `docker run -d --name foxdrop-restore-test -e POSTGRES_PASSWORD=x <the postgis image>`, then `docker exec -i foxdrop-restore-test pg_restore --username postgres --dbname postgres --create --no-owner --no-privileges < <dump>` and check the tables; remove the container.

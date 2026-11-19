@@ -453,5 +453,8 @@ export const applicationDocuments = captains.table(
     uniqueIndex('application_documents_in_force')
       .on(table.applicationId, table.kind)
       .where(sql`${table.replacedAt} IS NULL`),
+    // Every upload of an application, the history included (slice 2.34b's
+    // review reads it).
+    index('application_documents_application').on(table.applicationId, table.createdAt),
   ],
 );

@@ -15,6 +15,8 @@ export interface TestStorage {
   // The server's key (read and write) and the reader key (read only).
   key: StorageKey;
   reader: StorageKey;
+  // The nightly copy's: reads both buckets, writes none.
+  backup: StorageKey;
   stop(): Promise<void>;
 }
 
@@ -45,6 +47,13 @@ export async function startTestStorage(): Promise<TestStorage> {
     `http://${container.getHost()}:${container.getMappedPort(port)}`;
   const key = { id: `GK${hex(12)}`, secret: hex(32), name: 'server', write: true };
   const reader = { id: `GK${hex(12)}`, secret: hex(32), name: 'reader', write: false };
+  const backup = {
+    id: `GK${hex(12)}`,
+    secret: hex(32),
+    name: 'backup',
+    write: false,
+    readsPrivate: true,
+  };
   const storage = {
     url: address(3900),
     adminUrl: address(3903),
@@ -52,10 +61,11 @@ export async function startTestStorage(): Promise<TestStorage> {
     adminToken,
     key,
     reader,
+    backup,
     stop: async () => {
       await container.stop();
     },
   };
-  await setUpStorage({ adminUrl: storage.adminUrl, adminToken, keys: [key, reader] });
+  await setUpStorage({ adminUrl: storage.adminUrl, adminToken, keys: [key, reader, backup] });
   return storage;
 }

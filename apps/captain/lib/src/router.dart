@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:core_api/core_api.dart';
 import 'package:core_auth/core_auth.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:core_platform/core_platform.dart';
@@ -40,26 +43,39 @@ final routerProvider = Provider<GoRouter>((ref) {
     (previous, next) => work.value = next.value?.value,
     fireImmediately: true,
   );
-  // CA §5.1: the session's read tells an applicant (no captain yet).
-  final applicant = ValueNotifier<bool>(false);
+  // CA §5.1: the session's read tells an applicant (no captain yet). Until
+  // it first answers, a signed-in app waits on `/starting` (a read again
+  // keeps the last answer meanwhile), and a failed read is tried again.
+  final read = ValueNotifier<CaptainSessionDtoOutput?>(null);
+  Timer? again;
   ref.listen(captainSessionProvider, (previous, next) {
-    final value = next.value;
-    applicant.value = value != null && value.captainId == null;
+    if (next.hasValue) read.value = next.value;
+    again?.cancel();
+    if (next.hasError && !next.isLoading) {
+      again = Timer(
+        const Duration(seconds: 5),
+        () => ref.invalidate(captainSessionProvider),
+      );
+    }
   }, fireImmediately: true);
   final platform = ref.watch(platformCheckProvider);
   // The root navigator, which shows a tab's screens above the tabs.
   final root = GlobalKey<NavigatorState>();
   final router = GoRouter(
     navigatorKey: root,
-    refreshListenable: Listenable.merge([session, work, applicant, platform]),
+    refreshListenable: Listenable.merge([session, work, read, platform]),
     redirect: (context, state) {
       final current = session.value;
       final at = state.matchedLocation;
       if (!current.hasValue) return at == '/starting' ? null : '/starting';
       final signedIn = current.value is SignedIn;
+      final captainSession = read.value;
+      if (signedIn && captainSession == null) {
+        return at == '/starting' ? null : '/starting';
+      }
       // An applicant reaches the application, the terms and the work rules
       // (CA §5.2 step 4); maintenance or a required update blocks it.
-      if (signedIn && applicant.value) {
+      if (signedIn && captainSession?.captainId == null) {
         if (platform.status.blocks) return at == '/blocked' ? null : '/blocked';
         return _applicantRoutes.contains(at) ? null : '/application';
       }
@@ -204,7 +220,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     router.dispose();
     session.dispose();
     work.dispose();
-    applicant.dispose();
+    read.dispose();
+    again?.cancel();
   });
   return router;
 });
