@@ -10,9 +10,12 @@ Slice 2.33, staff and devices (`docs/roadmap.md`, Phase 2).
 - **Specs:** RA §14 (staff and devices), RA §5.1–5.4 (accounts, sign-in and roles), RA §6 (who does what), RA §18 (the commands), AP §9.6.4 «الحسابات».
 - **Branch:** the cloud session's branch.
 - **Already built (reuse, do not rebuild):** identity's restaurant accounts (`MerchantAccountsService.addAccount`, the panel's «الحسابات» add and remove, slices 2.30a and 2.30d, `restaurants.owner_accounts`), the devices tab and «تسجيل خروج الجهاز» in the panel (2.30d), `merchants.devices` with `nameDevice` (a cashier names a device the first time only; renaming is an owner's, `device_rename_not_allowed`), the restaurant app's settings screen (`lib/src/settings/`, owners only, slice 2.14b).
-- **To ask the owner first:** whether the owners' staff and devices screens go in the app's «الإعدادات» (RA §14) now, the cashier limit if any, and what a removed cashier's device shows.
-- **Plan:** to write as a checklist once the spec sections are read (one step per commit): the owners' routes under `/v1/merchant/` (add and remove a cashier, rename and sign out a device), the app's screens, the panel's owner accounts if anything is missing, tests, `checker`, `reviewer`, the pull request.
-- **Stopped at:** 2.32b done; 2.33 not started.
+- **Owner decisions 2026-11-19:** «الموظفون» and «الأجهزة» are two rows at the top of the owners' «الإعدادات»; no cashier limit (RA §5.1 «any number»); a removed cashier's device, or a device an owner signs out, goes straight back to sign-in (no reason screen; a removed cashier who tries again sees «هذا الرقم غير مسجّل…»).
+- **Plan** (one step per commit):
+  - [x] Server: the owners' routes `GET`/`POST /v1/merchant/staff`, `POST …/staff/{accountId}/remove` (cashiers only), `GET /v1/merchant/devices`, `PUT …/devices/{deviceId}/name`, `POST …/devices/{deviceId}/sign-out` (the end reason `signed_out_by_owner`, migration 0125); a cashier gets `403 owner_only`, a terminated restaurant `403 restaurant_terminated`; audited; the tests; the regenerated clients.
+  - [ ] Restaurant app: «الموظفون» (list, «إضافة كاشير», «حذف» with a confirmation, owners read-only with «لإضافة مالك أو إزالته تواصل مع FOX DROP») and «الأجهزة» (list, «إعادة تسمية», «تسجيل خروج الجهاز» with a confirmation) from «الإعدادات»; the strings; the widget tests.
+  - [ ] `reviewer`, fixes, hand over to 2.34.
+- **Stopped at:** 2.33 started.
 
 ### Left from 2.32b (the cloud session's branch)
 

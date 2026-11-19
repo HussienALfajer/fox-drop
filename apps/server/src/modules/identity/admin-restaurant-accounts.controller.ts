@@ -203,7 +203,7 @@ export class AdminRestaurantAccountsController {
         params.restaurantId,
         body,
         { actor: actorOf(session), context: requestContext(request) },
-        { fromPanel: true },
+        { notTerminated: true },
       );
     } catch (error) {
       refusalAsHttp(error);

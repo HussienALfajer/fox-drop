@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
@@ -29,7 +29,9 @@ export class MerchantAccountRefusedError extends Error {
       | 'invalid_account'
       | 'unknown_account'
       | 'restaurant_terminated'
-      | 'last_owner',
+      | 'last_owner'
+      // RA §5.1, S5 (slice 2.33): an owner removes cashiers only.
+      | 'not_a_cashier',
     message: string,
   ) {
     super(message);
@@ -90,14 +92,15 @@ export class MerchantAccountsService implements OnModuleInit {
 
   // An owner or a cashier of a restaurant. A number belongs to at most one
   // restaurant (S6): one taken by an account not removed is refused. With
-  // `fromPanel` (the wizard's step 6, slice 2.30a, and the profile's
-  // «الحسابات», slice 2.30d) the restaurant must not be terminated, read
-  // under its row's share lock in the add's transaction.
+  // `notTerminated` (the wizard's step 6, slice 2.30a, the profile's
+  // «الحسابات», slice 2.30d, and the owners' «الموظفون», slice 2.33) the
+  // restaurant must not be terminated, read under its row's share lock in
+  // the add's transaction.
   async addAccount(
     restaurantId: string,
     account: { role: MerchantRole; name: string; phone: string },
     change: { actor: AuditActor; context: AuditRequestContext },
-    { fromPanel = false }: { fromPanel?: boolean } = {},
+    { notTerminated = false }: { notTerminated?: boolean } = {},
   ): Promise<string> {
     const name = account.name.trim();
     if (name.length === 0 || !APP_PHONE_PATTERN.test(account.phone)) {
@@ -112,7 +115,7 @@ export class MerchantAccountsService implements OnModuleInit {
     }
     const phoneHash = this.secrets.phoneHash(account.phone);
     return this.database.db.transaction(async (tx) => {
-      if (fromPanel) await this.checkOpen(tx, restaurantId);
+      if (notTerminated) await this.checkOpen(tx, restaurantId);
       // The partial unique index refuses a second account; the lock turns
       // that into a refusal instead of an error.
       await tx.execute(
@@ -198,11 +201,13 @@ export class MerchantAccountsService implements OnModuleInit {
   // not terminated: its sessions end at once in the same transaction
   // (`account_removed`, RA §14.1); the caller passes their ids to
   // notifyEnded once it commits. Removing one already removed is
-  // unknown_account.
+  // unknown_account. With `cashierOnly` (an owner in the app, RA §14.1,
+  // slice 2.33) an owner's account is refused with not_a_cashier.
   async removeAccount(
     restaurantId: string,
     accountId: string,
     change: { actor: AuditActor; context: AuditRequestContext },
+    { cashierOnly = false }: { cashierOnly?: boolean } = {},
     now = new Date(),
   ): Promise<string[]> {
     return this.database.db.transaction(async (tx) => {
@@ -229,6 +234,10 @@ export class MerchantAccountsService implements OnModuleInit {
         });
       if (!removed) {
         throw new MerchantAccountRefusedError('unknown_account', 'no such account');
+      }
+      // The transaction rolls the removal back.
+      if (cashierOnly && removed.role !== 'cashier') {
+        throw new MerchantAccountRefusedError('not_a_cashier', 'owners are FOX DROP’s to remove');
       }
       // RA §5.1: past the draft a restaurant keeps one owner or more.
       if (removed.role === 'owner' && status !== 'draft') {
@@ -287,6 +296,43 @@ export class MerchantAccountsService implements OnModuleInit {
       throw new MerchantAccountRefusedError('restaurant_terminated', 'the contract has ended');
     }
     return status;
+  }
+
+  // RA §14.1 (slice 2.33): the owners' «الموظفون»: every account not
+  // removed, owners first, with its number, the devices it is signed in on
+  // now and its last activity (its latest session's last refresh or end,
+  // null before any sign-in).
+  async staff(
+    restaurantId: string,
+  ): Promise<(MerchantAccount & { phone: string; devices: number; lastActiveAt: Date | null })[]> {
+    const accounts = await this.accountsWithPhones(restaurantId);
+    if (accounts.length === 0) return [];
+    const rows = await this.database.db
+      .select({
+        accountId: appSessions.accountId,
+        devices: sql<number>`(count(*) FILTER (WHERE ${appSessions.endedAt} IS NULL))::int`,
+        lastActiveAt: sql<Date | null>`max(coalesce(${appSessions.endedAt}, ${appSessions.lastRefreshedAt}))`,
+      })
+      .from(appSessions)
+      .where(
+        and(
+          eq(appSessions.party, 'merchant'),
+          inArray(
+            appSessions.accountId,
+            accounts.map((account) => account.id),
+          ),
+        ),
+      )
+      .groupBy(appSessions.accountId);
+    const byAccount = new Map(rows.map((row) => [row.accountId, row]));
+    return accounts.map((account) => {
+      const row = byAccount.get(account.id);
+      return {
+        ...account,
+        devices: row?.devices ?? 0,
+        lastActiveAt: row?.lastActiveAt ? new Date(row.lastActiveAt) : null,
+      };
+    });
   }
 
   // AP §9.6.4 «سجل التغييرات» (slice 2.30d): every account the restaurant

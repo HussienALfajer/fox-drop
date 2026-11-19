@@ -876,7 +876,10 @@ import 'package:core_api/src/model/merchant_content_dto_output_faq_inner.dart';
 import 'package:core_api/src/model/merchant_content_dto_output_reasons.dart';
 import 'package:core_api/src/model/merchant_content_dto_output_reasons_merchant_rejection_inner.dart';
 import 'package:core_api/src/model/merchant_device_dto.dart';
+import 'package:core_api/src/model/merchant_device_name_dto.dart';
 import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
+import 'package:core_api/src/model/merchant_devices_dto_output.dart';
+import 'package:core_api/src/model/merchant_devices_dto_output_devices_inner.dart';
 import 'package:core_api/src/model/merchant_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/merchant_holiday_close_dto.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output.dart';
@@ -912,6 +915,7 @@ import 'package:core_api/src/model/merchant_menu_preview_category_output.dart';
 import 'package:core_api/src/model/merchant_menu_preview_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_window_dto.dart';
 import 'package:core_api/src/model/merchant_menu_window_dto_window.dart';
+import 'package:core_api/src/model/merchant_new_cashier_dto.dart';
 import 'package:core_api/src/model/merchant_new_item_request_dto.dart';
 import 'package:core_api/src/model/merchant_new_upload_dto.dart';
 import 'package:core_api/src/model/merchant_option_group_request_dto.dart';
@@ -972,6 +976,8 @@ import 'package:core_api/src/model/merchant_set_pickup_currencies_dto.dart';
 import 'package:core_api/src/model/merchant_sign_in_dto.dart';
 import 'package:core_api/src/model/merchant_signed_in_dto_output.dart';
 import 'package:core_api/src/model/merchant_signed_out_dto_output.dart';
+import 'package:core_api/src/model/merchant_staff_dto_output.dart';
+import 'package:core_api/src/model/merchant_staff_dto_output_staff_inner.dart';
 import 'package:core_api/src/model/merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/merchant_statement_dto_output_lines_inner_pickup_lines_inner.dart';
@@ -1881,7 +1887,10 @@ part 'serializers.g.dart';
   MerchantContentDtoOutputReasons,
   MerchantContentDtoOutputReasonsMerchantRejectionInner,
   MerchantDeviceDto,
+  MerchantDeviceNameDto,
   MerchantDeviceSavedDtoOutput,
+  MerchantDevicesDtoOutput,
+  MerchantDevicesDtoOutputDevicesInner,
   MerchantEmergencyStopDtoOutput,
   MerchantHolidayCloseDto,
   MerchantHoursDtoOutput,
@@ -1917,6 +1926,7 @@ part 'serializers.g.dart';
   MerchantMenuPreviewDtoOutput,
   MerchantMenuWindowDto,
   MerchantMenuWindowDtoWindow,
+  MerchantNewCashierDto,
   MerchantNewItemRequestDto,
   MerchantNewUploadDto,
   MerchantOptionGroupRequestDto,
@@ -1977,6 +1987,8 @@ part 'serializers.g.dart';
   MerchantSignInDto,
   MerchantSignedInDtoOutput,
   MerchantSignedOutDtoOutput,
+  MerchantStaffDtoOutput,
+  MerchantStaffDtoOutputStaffInner,
   MerchantStatementDtoOutput,
   MerchantStatementDtoOutputLinesInner,
   MerchantStatementDtoOutputLinesInnerPickupLinesInner,
@@ -2290,6 +2302,12 @@ Serializers serializers =
               FullType(AdminRestaurantListDtoOutputRestaurantsInner),
             ]),
             () => ListBuilder<AdminRestaurantListDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantStaffDtoOutputStaffInner),
+            ]),
+            () => ListBuilder<MerchantStaffDtoOutputStaffInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2813,6 +2831,12 @@ Serializers serializers =
               FullType(CaptainCustodyDtoOutputEntriesInner),
             ]),
             () => ListBuilder<CaptainCustodyDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantDevicesDtoOutputDevicesInner),
+            ]),
+            () => ListBuilder<MerchantDevicesDtoOutputDevicesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

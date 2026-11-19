@@ -1598,6 +1598,215 @@
         ]
       }
     },
+    "/v1/merchant/staff": {
+      "get": {
+        "operationId": "merchantStaffStaff",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantStaffDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      },
+      "post": {
+        "operationId": "merchantStaffAddCashier",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantNewCashierDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantStaffDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/staff/{accountId}/remove": {
+      "post": {
+        "operationId": "merchantStaffRemoveCashier",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantStaffDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/devices": {
+      "get": {
+        "operationId": "merchantStaffListDevices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantDevicesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/devices/{deviceId}/name": {
+      "put": {
+        "operationId": "merchantStaffRenameDevice",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "required": true,
+            "in": "path",
+            "description": "The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantDeviceNameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantDevicesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/devices/{deviceId}/sign-out": {
+      "post": {
+        "operationId": "merchantStaffSignOutDevice",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "required": true,
+            "in": "path",
+            "description": "The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantDevicesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/admin/settings": {
       "get": {
         "operationId": "settingsList",
@@ -19742,6 +19951,213 @@
         "required": [
           "deviceId",
           "reason"
+        ]
+      },
+      "MerchantStaffDto_Output": {
+        "type": "object",
+        "properties": {
+          "staff": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "accountId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "owner",
+                    "cashier"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "phone": {
+                  "type": "string",
+                  "description": "The number the user signs in with, in E.164."
+                },
+                "devices": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "The devices the user is signed in on now."
+                },
+                "lastActiveAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The latest session’s last refresh or end; null before any sign-in."
+                }
+              },
+              "required": [
+                "accountId",
+                "role",
+                "name",
+                "phone",
+                "devices",
+                "lastActiveAt"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Owners first (read-only in the app, RA §5.1), then cashiers, oldest first."
+          }
+        },
+        "required": [
+          "staff"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantNewCashierDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+            "description": "A Syrian or Turkish mobile in E.164, as at sign-in."
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
+      "MerchantDevicesDto_Output": {
+        "type": "object",
+        "properties": {
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "deviceId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "platform": {
+                  "type": "string",
+                  "enum": [
+                    "android",
+                    "ios",
+                    "windows"
+                  ]
+                },
+                "appVersion": {
+                  "type": "string"
+                },
+                "user": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "owner",
+                            "cashier"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "role"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Signed in on it now, else the latest who was; null before any sign-in."
+                },
+                "signedIn": {
+                  "type": "boolean"
+                },
+                "lastSeenAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Its session’s last refresh (every 15 minutes while open), or its end."
+                },
+                "ringing": {
+                  "description": "Null until the devices report it (2.42).",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "deviceCheck": {
+                  "description": "Null until the device check (2.42).",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "thisDevice": {
+                  "type": "boolean",
+                  "description": "The device making the request."
+                }
+              },
+              "required": [
+                "deviceId",
+                "name",
+                "platform",
+                "appVersion",
+                "user",
+                "signedIn",
+                "lastSeenAt",
+                "ringing",
+                "deviceCheck",
+                "thisDevice"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every device named on the restaurant, the latest named first."
+          }
+        },
+        "required": [
+          "devices"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantDeviceNameDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "name"
         ]
       },
       "SettingListDto_Output": {

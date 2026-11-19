@@ -708,6 +708,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantStaffStaff"];
+        put?: never;
+        post: operations["merchantStaffAddCashier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/staff/{accountId}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantStaffRemoveCashier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantStaffListDevices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/devices/{deviceId}/name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantStaffRenameDevice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/devices/{deviceId}/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantStaffSignOutDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -6915,6 +6995,55 @@ export interface components {
             /** @description One device; null for every one. */
             deviceId: string | null;
             reason: string;
+        };
+        MerchantStaffDto_Output: {
+            /** @description Owners first (read-only in the app, RA §5.1), then cashiers, oldest first. */
+            staff: {
+                /** Format: uuid */
+                accountId: string;
+                /** @enum {string} */
+                role: "owner" | "cashier";
+                name: string;
+                /** @description The number the user signs in with, in E.164. */
+                phone: string;
+                /** @description The devices the user is signed in on now. */
+                devices: number;
+                /** @description The latest session’s last refresh or end; null before any sign-in. */
+                lastActiveAt: string | null;
+            }[];
+        };
+        MerchantNewCashierDto: {
+            name: string;
+            /** @description A Syrian or Turkish mobile in E.164, as at sign-in. */
+            phone: string;
+        };
+        MerchantDevicesDto_Output: {
+            /** @description Every device named on the restaurant, the latest named first. */
+            devices: {
+                deviceId: string;
+                name: string;
+                /** @enum {string} */
+                platform: "android" | "ios" | "windows";
+                appVersion: string;
+                /** @description Signed in on it now, else the latest who was; null before any sign-in. */
+                user: {
+                    name: string;
+                    /** @enum {string} */
+                    role: "owner" | "cashier";
+                } | null;
+                signedIn: boolean;
+                /** @description Its session’s last refresh (every 15 minutes while open), or its end. */
+                lastSeenAt: string | null;
+                /** @description Null until the devices report it (2.42). */
+                ringing: boolean | null;
+                /** @description Null until the device check (2.42). */
+                deviceCheck: string | null;
+                /** @description The device making the request. */
+                thisDevice: boolean;
+            }[];
+        };
+        MerchantDeviceNameDto: {
+            name: string;
         };
         SettingListDto_Output: {
             settings: {
@@ -19881,6 +20010,142 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantDevicesDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStaffDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffAddCashier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantNewCashierDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStaffDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffRemoveCashier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStaffDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffListDevices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantDevicesDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffRenameDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed. */
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantDeviceNameDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantDevicesDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffSignOutDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed. */
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantDevicesDto_Output"];
                 };
             };
         };

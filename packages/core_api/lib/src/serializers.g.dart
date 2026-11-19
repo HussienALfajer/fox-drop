@@ -1435,8 +1435,12 @@ Serializers _$serializers =
           )
           ..add(MerchantDeviceDto.serializer)
           ..add(MerchantDeviceDtoPlatformEnum.serializer)
+          ..add(MerchantDeviceNameDto.serializer)
           ..add(MerchantDeviceSavedDtoOutput.serializer)
           ..add(MerchantDeviceSavedDtoOutputStatusEnum.serializer)
+          ..add(MerchantDevicesDtoOutput.serializer)
+          ..add(MerchantDevicesDtoOutputDevicesInner.serializer)
+          ..add(MerchantDevicesDtoOutputDevicesInnerPlatformEnum.serializer)
           ..add(MerchantEmergencyStopDtoOutput.serializer)
           ..add(MerchantHolidayCloseDto.serializer)
           ..add(MerchantHoursDtoOutput.serializer)
@@ -1491,6 +1495,7 @@ Serializers _$serializers =
           ..add(MerchantMenuPreviewDtoOutput.serializer)
           ..add(MerchantMenuWindowDto.serializer)
           ..add(MerchantMenuWindowDtoWindow.serializer)
+          ..add(MerchantNewCashierDto.serializer)
           ..add(MerchantNewItemRequestDto.serializer)
           ..add(MerchantNewUploadDto.serializer)
           ..add(MerchantNewUploadDtoContentTypeEnum.serializer)
@@ -1595,6 +1600,9 @@ Serializers _$serializers =
           ..add(MerchantSignedInDtoOutputRoleEnum.serializer)
           ..add(MerchantSignedOutDtoOutput.serializer)
           ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
+          ..add(MerchantStaffDtoOutput.serializer)
+          ..add(MerchantStaffDtoOutputStaffInner.serializer)
+          ..add(MerchantStaffDtoOutputStaffInnerRoleEnum.serializer)
           ..add(MerchantStatementDtoOutput.serializer)
           ..add(MerchantStatementDtoOutputLinesInner.serializer)
           ..add(MerchantStatementDtoOutputLinesInnerCauseEnum.serializer)
@@ -3973,6 +3981,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantDevicesDtoOutputDevicesInner),
+            ]),
+            () => ListBuilder<MerchantDevicesDtoOutputDevicesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantHoursDtoOutputPeriodsInner),
             ]),
             () => ListBuilder<MerchantHoursDtoOutputPeriodsInner>(),
@@ -4230,6 +4244,12 @@ Serializers _$serializers =
               const FullType(MerchantScheduleDtoPeriodsInner),
             ]),
             () => ListBuilder<MerchantScheduleDtoPeriodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantStaffDtoOutputStaffInner),
+            ]),
+            () => ListBuilder<MerchantStaffDtoOutputStaffInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

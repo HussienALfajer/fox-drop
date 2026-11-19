@@ -82,16 +82,20 @@ export class RestaurantDevicesService {
   }
 
   // Ends the open sessions of the restaurant's users on one device, or on
-  // every device (null), with `signed_out_by_operations`, audited
-  // `merchant_devices.sign_out` with the reason. The ids it ended, which the
-  // caller passes to notifyEnded once it commits. 409 no_device when none
-  // was signed in, so a repeat changes nothing.
+  // every device (null), with `signed_out_by_operations`, or
+  // `signed_out_by_owner` when an owner signs one out in the app (RA §14.2,
+  // slice 2.33), audited `merchant_devices.sign_out` with the reason if any.
+  // The ids it ended, which the caller passes to notifyEnded once it
+  // commits. 409 no_device when none was signed in, so a repeat changes
+  // nothing.
   async signOut(
     restaurantId: string,
     deviceId: string | null,
-    change: { actor: AuditActor; context: AuditRequestContext; reason: string },
+    change: { actor: AuditActor; context: AuditRequestContext; reason: string | null },
     now = new Date(),
   ): Promise<string[]> {
+    const endReason =
+      change.actor.type === 'merchant' ? 'signed_out_by_owner' : 'signed_out_by_operations';
     const restaurant = await this.merchants.cityAndStatus(restaurantId);
     if (restaurant === null) {
       throw new RestaurantDevicesRefusedError('unknown_restaurant', 'no such restaurant');
@@ -103,7 +107,7 @@ export class RestaurantDevicesService {
         .where(eq(merchantAccounts.restaurantId, restaurantId));
       const ended = await tx
         .update(appSessions)
-        .set({ endedAt: now, endReason: 'signed_out_by_operations' })
+        .set({ endedAt: now, endReason })
         .where(
           and(
             eq(appSessions.party, 'merchant'),
