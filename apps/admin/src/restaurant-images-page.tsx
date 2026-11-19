@@ -1,23 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
 import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { chosenCity, citiesQuery } from './cities.js';
 import { mediaUrl, type MediaWidth } from './media.js';
 import {
   IMAGE_TYPES,
   type ImageRefusal,
   type ImageTarget,
-  canSetProfileImages,
-  RESTAURANTS_MENUS,
-  restaurantImagesQuery,
-  restaurantsQuery,
   useSetImage,
 } from './restaurant-images.js';
-import { type AdminSession, can } from './session.js';
-
-const route = getRouteApi('/signed-in/images');
-const signedIn = getRouteApi('/signed-in');
 
 const refusalKeys = {
   type: 'images.refused.type',
@@ -26,112 +15,8 @@ const refusalKeys = {
   upload_failed: 'images.refused.uploadFailed',
 } as const satisfies Record<ImageRefusal, string>;
 
-// «الصور» (slice 2.5, owner decision 2026-11-09): pick a restaurant, then set
-// its logo and cover (AP §9.6.3) and each item's photo (AP §9.6.6). A new
-// image is published at once. The onboarding wizard (2.30) and the menu
-// editor (2.31) take this over. Unstyled until the design.
-export function RestaurantImagesPage() {
-  const { t } = useTranslation();
-  const { session } = signedIn.useRouteContext();
-  const search = route.useSearch();
-  const navigate = useNavigate();
-  const cities = useQuery(citiesQuery);
-  const city = cities.data ? chosenCity(cities.data, search.city) : undefined;
-  const restaurants = useQuery({
-    ...restaurantsQuery(city?.id ?? ''),
-    enabled: city !== undefined,
-  });
-  const choose = (event: ChangeEvent<HTMLSelectElement>) =>
-    void navigate({
-      to: '/images',
-      search: {
-        ...(search.city ? { city: search.city } : {}),
-        ...(event.target.value ? { restaurant: event.target.value } : {}),
-      },
-    });
-  return (
-    <main>
-      <h1>{t('images.title')}</h1>
-      <p>
-        <Link to="/">{t('common.home')}</Link>
-      </p>
-      <p>{t('images.explain')}</p>
-      {restaurants.isError || cities.isError ? (
-        <p role="alert">{t('common.failed')}</p>
-      ) : !restaurants.data ? (
-        <p role="status">{t('status.loading')}</p>
-      ) : (
-        <label>
-          {t('images.restaurant')}
-          <select value={search.restaurant ?? ''} onChange={choose}>
-            <option value="">{t('images.choose')}</option>
-            {restaurants.data.map((restaurant) => (
-              <option key={restaurant.id} value={restaurant.id}>
-                {restaurant.nameAr}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      {search.restaurant && (
-        <RestaurantImages
-          key={search.restaurant}
-          restaurantId={search.restaurant}
-          session={session}
-        />
-      )}
-    </main>
-  );
-}
-
-function RestaurantImages({
-  restaurantId,
-  session,
-}: {
-  restaurantId: string;
-  session: AdminSession;
-}) {
-  const { t } = useTranslation();
-  const images = useQuery(restaurantImagesQuery(restaurantId));
-  if (images.isPending) return <p role="status">{t('status.loading')}</p>;
-  if (images.isError) return <p role="alert">{t('common.failed')}</p>;
-  const profile = canSetProfileImages(session);
-  const menu = can(session, RESTAURANTS_MENUS);
-  return (
-    <>
-      <ImageField
-        label={t('images.logo')}
-        imageKey={images.data.logoKey}
-        width={160}
-        target={{ kind: 'logo', restaurantId }}
-        editable={profile}
-      />
-      <ImageField
-        label={t('images.cover')}
-        imageKey={images.data.coverKey}
-        width={640}
-        target={{ kind: 'cover', restaurantId }}
-        editable={profile}
-      />
-      {images.data.categories.map((category) => (
-        <section key={category.id} aria-label={category.name}>
-          <h2>{category.name}</h2>
-          {category.items.map((item) => (
-            <ImageField
-              key={item.id}
-              label={item.name}
-              imageKey={item.photoKey}
-              width={160}
-              target={{ kind: 'item', restaurantId, itemId: item.id }}
-              editable={menu}
-            />
-          ))}
-        </section>
-      ))}
-    </>
-  );
-}
-
+// An image of a restaurant, a category or an item with its upload (slice 2.5;
+// «الصور» itself moved into the restaurant profile, slice 2.30d).
 export function ImageField(props: {
   label: string;
   imageKey: string | null;

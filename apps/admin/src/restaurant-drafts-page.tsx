@@ -11,6 +11,7 @@ import {
   basicsBody,
   basicsFormOf,
   canConfirmContract,
+  canEditProfile,
   canReadAccounts,
   canSaveStep,
   commissionBody,
@@ -29,6 +30,7 @@ import {
   operationsFormOf,
   type OperationsForm,
   type SaveResult,
+  type SaveWhere,
   STEPS,
   type Step,
   stepsDone,
@@ -235,7 +237,7 @@ export function RestaurantDraftPage() {
 }
 
 // The answer of a save: saved, the server's refusal, or a failure.
-function SaveStatus({
+export function SaveStatus({
   pending,
   failed,
   result,
@@ -271,7 +273,9 @@ function SaveStatus({
   return null;
 }
 
-function BasicsStep(props: {
+export function BasicsStep(props: {
+  // The profile's tab past the draft (slice 2.30d); the wizard by default.
+  where?: SaveWhere;
   restaurantId: string;
   draft: Draft | null;
   city: City;
@@ -282,8 +286,11 @@ function BasicsStep(props: {
   const navigate = useNavigate();
   const [form, setForm] = useState(() => basicsFormOf(props.draft));
   const [problem, setProblem] = useState<string | null>(null);
-  const save = useSaveStep(props.restaurantId);
-  const editable = canSaveStep(props.session, 'basics');
+  const save = useSaveStep(props.restaurantId, props.where);
+  const editable =
+    props.where === 'profile'
+      ? canEditProfile(props.session)
+      : canSaveStep(props.session, 'basics');
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const body = basicsBody(form, props.draft?.cityId ?? props.city.id);
@@ -393,7 +400,9 @@ function BasicsStep(props: {
   );
 }
 
-function LocationStep(props: {
+export function LocationStep(props: {
+  // The profile's tab past the draft (slice 2.30d); the wizard by default.
+  where?: SaveWhere;
   restaurantId: string;
   draft: Draft;
   choices: DraftChoices;
@@ -402,8 +411,11 @@ function LocationStep(props: {
   const { t } = useTranslation();
   const [form, setForm] = useState(() => locationFormOf(props.draft));
   const [problem, setProblem] = useState<string | null>(null);
-  const save = useSaveStep(props.restaurantId);
-  const editable = canSaveStep(props.session, 'location');
+  const save = useSaveStep(props.restaurantId, props.where);
+  const editable =
+    props.where === 'profile'
+      ? canEditProfile(props.session)
+      : canSaveStep(props.session, 'location');
   const latitude = degreesOf(form.latitude, 90);
   const longitude = degreesOf(form.longitude, 180);
   const pin = latitude !== null && longitude !== null ? { latitude, longitude } : null;
@@ -491,7 +503,9 @@ function LocationStep(props: {
   );
 }
 
-function OperationsStep(props: {
+export function OperationsStep(props: {
+  // The profile's tab past the draft (slice 2.30d); the wizard by default.
+  where?: SaveWhere;
   restaurantId: string;
   draft: Draft;
   choices: DraftChoices;
@@ -503,8 +517,11 @@ function OperationsStep(props: {
   );
   const [problem, setProblem] = useState<string | null>(null);
   const [problemDay, setProblemDay] = useState<string | undefined>();
-  const save = useSaveStep(props.restaurantId);
-  const editable = canSaveStep(props.session, 'operations');
+  const save = useSaveStep(props.restaurantId, props.where);
+  const editable =
+    props.where === 'profile'
+      ? canEditProfile(props.session)
+      : canSaveStep(props.session, 'operations');
   const setPeriod = (
     day: (typeof weekDays)[number],
     index: number,
@@ -878,7 +895,7 @@ function AccountsHidden() {
   return <p>{t('drafts.accounts.opsOnly')}</p>;
 }
 
-function Accounts(props: { restaurantId: string; session: AdminSession }) {
+export function Accounts(props: { restaurantId: string; session: AdminSession }) {
   const { t } = useTranslation();
   const accounts = useQuery(accountsQuery(props.restaurantId));
   const command = useAccountCommand(props.restaurantId);

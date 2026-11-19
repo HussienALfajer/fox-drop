@@ -67,6 +67,15 @@ export function canSaveStep(session: AdminSession | null | undefined, step: Step
   }
 }
 
+// Who saves a step: the wizard, a draft only; the restaurant profile (AP
+// §9.6.4, slice 2.30d) the data, location and hours past the draft, OWN and
+// OPS (restaurants.manage).
+export type SaveWhere = 'draft' | 'profile';
+
+export function canEditProfile(session: AdminSession | null | undefined): boolean {
+  return can(session, 'restaurants.manage');
+}
+
 // OWN and OPS confirm the contract with the pledge.
 // Who reads step 6's accounts (DATA does not: AP §6.2).
 export function canReadAccounts(session: AdminSession | null | undefined): boolean {
@@ -121,22 +130,25 @@ export const draftChoicesQuery = (cityId: string) =>
     },
   });
 
-const draftKey = (restaurantId: string) => ['restaurant-draft', restaurantId] as const;
+const draftKey = (restaurantId: string, scans = true) =>
+  ['restaurant-draft', restaurantId, scans ? 'scans' : 'plain'] as const;
 
 // A draft, or null before step 1 is saved (the id the panel just named).
-export const draftQuery = (restaurantId: string) =>
+// Without `scans` (the profile's tabs, slice 2.30d) the scans' signed links
+// are left out; past the draft the server audits a read with them (AP §14).
+export const draftQuery = (restaurantId: string, scans = true) =>
   queryOptions({
-    queryKey: draftKey(restaurantId),
+    queryKey: draftKey(restaurantId, scans),
     queryFn: async (): Promise<Draft | null> => {
       const { data, response } = await api.GET('/v1/admin/restaurant-drafts/{restaurantId}', {
-        params: { path: { restaurantId } },
+        params: { path: { restaurantId }, query: { scans: scans ? 'true' : 'false' } },
       });
       if (response.status === 404) return null;
       if (!data) throw new Error('The draft read failed.');
       return data;
     },
     // The scans' signed links last 10 minutes: read them again before.
-    refetchInterval: 5 * 60_000,
+    ...(scans ? { refetchInterval: 5 * 60_000 } : {}),
   });
 
 const accountsKey = (restaurantId: string) => ['restaurant-accounts', restaurantId] as const;
@@ -451,7 +463,7 @@ type Answer = { data?: Draft; error?: unknown; response: Response };
 function outcome(answer: Answer): SaveResult {
   if (answer.data) return { status: 'saved', draft: answer.data };
   const status = answer.response.status;
-  if (status === 400 || status === 404 || status === 409) {
+  if (status === 400 || status === 403 || status === 404 || status === 409) {
     const refusal = (answer.error as { error?: unknown } | undefined)?.error;
     return { status: 'refused', refusal: typeof refusal === 'string' ? refusal : 'invalid' };
   }
@@ -466,8 +478,37 @@ export type StepSave =
   | { step: 'contract'; form: ContractForm }
   | { step: 'confirm' };
 
-async function run(restaurantId: string, save: StepSave): Promise<SaveResult> {
+async function run(restaurantId: string, save: StepSave, where: SaveWhere): Promise<SaveResult> {
   const path = { restaurantId };
+  if (where === 'profile') {
+    switch (save.step) {
+      case 'basics': {
+        const { nameAr, nameEn, categoryIds, description } = save.body;
+        return outcome(
+          await api.PUT('/v1/admin/restaurants/{restaurantId}/profile/basics', {
+            params: { path },
+            body: { nameAr, nameEn, categoryIds, description },
+          }),
+        );
+      }
+      case 'location':
+        return outcome(
+          await api.PUT('/v1/admin/restaurants/{restaurantId}/profile/location', {
+            params: { path },
+            body: save.body,
+          }),
+        );
+      case 'operations':
+        return outcome(
+          await api.PUT('/v1/admin/restaurants/{restaurantId}/profile/operations', {
+            params: { path },
+            body: save.body,
+          }),
+        );
+      default:
+        throw new Error(`The profile does not save ${save.step}.`);
+    }
+  }
   switch (save.step) {
     case 'basics':
       return outcome(
@@ -535,14 +576,23 @@ async function run(restaurantId: string, save: StepSave): Promise<SaveResult> {
 
 // Saves a step; the draft it answers replaces the read, and the city's list
 // of drafts is read again.
-export function useSaveStep(restaurantId: string) {
+export function useSaveStep(restaurantId: string, where: SaveWhere = 'draft') {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (save: StepSave) => run(restaurantId, save),
+    mutationFn: (save: StepSave) => run(restaurantId, save, where),
     onSuccess: (result) => {
       if (result.status !== 'saved') return;
-      queryClient.setQueryData(draftKey(restaurantId), result.draft);
+      // The wizard's saves answer with the scans, the profile's without.
+      queryClient.setQueryData(draftKey(restaurantId, where === 'draft'), result.draft);
+      void queryClient.invalidateQueries({
+        queryKey: draftKey(restaurantId, where !== 'draft'),
+        exact: true,
+      });
       void queryClient.invalidateQueries({ queryKey: ['restaurant-drafts'] });
+      if (where === 'profile') {
+        void queryClient.invalidateQueries({ queryKey: ['restaurant-list'] });
+        void queryClient.invalidateQueries({ queryKey: ['restaurant-change-log', restaurantId] });
+      }
     },
   });
 }
@@ -568,7 +618,7 @@ export function useAccountCommand(restaurantId: string) {
             });
       if (answer.data) return { status: 'saved', accounts: answer.data.accounts };
       const status = answer.response.status;
-      if (status === 400 || status === 404 || status === 409) {
+      if (status === 400 || status === 403 || status === 404 || status === 409) {
         const refusal = (answer.error as { error?: unknown } | undefined)?.error;
         return { status: 'refused', refusal: typeof refusal === 'string' ? refusal : 'invalid' };
       }
@@ -577,6 +627,8 @@ export function useAccountCommand(restaurantId: string) {
     onSuccess: (result) => {
       if (result.status === 'saved') {
         queryClient.setQueryData(accountsKey(restaurantId), result.accounts);
+        void queryClient.invalidateQueries({ queryKey: ['restaurant-devices', restaurantId] });
+        void queryClient.invalidateQueries({ queryKey: ['restaurant-change-log', restaurantId] });
       }
     },
   });

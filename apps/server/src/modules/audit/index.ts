@@ -19,6 +19,7 @@ export class AuditWorkerModule {}
 export {
   AuditService,
   type AuditActor,
+  type AuditEntry,
   type AuditExecutor,
   type AuditRequestContext,
   type AuditView,

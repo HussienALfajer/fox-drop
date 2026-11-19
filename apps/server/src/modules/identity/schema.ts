@@ -389,6 +389,10 @@ export const appSessionEndReasons = [
   'device_released',
   'phone_changed',
   'account_closed',
+  // AP §9.6.4 (slice 2.30d): a restaurant user removed from the panel, and a
+  // restaurant's device signed out by operations.
+  'account_removed',
+  'signed_out_by_operations',
 ] as const;
 
 // A signed-in app installation (architecture §15.1): one refresh token family.
@@ -431,7 +435,7 @@ export const appSessions = identity.table(
     check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'app_sessions_end_reason_values',
-      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released', 'phone_changed', 'account_closed')`,
+      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released', 'phone_changed', 'account_closed', 'account_removed', 'signed_out_by_operations')`,
     ),
     check(
       'app_sessions_ended_with_reason',

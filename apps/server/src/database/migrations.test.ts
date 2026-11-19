@@ -393,6 +393,7 @@ describe('the merchants tables (AP §9.6, RA §9–10)', () => {
     ['change a schedule version', 'UPDATE merchants.weekly_schedules SET changed_by_id = NULL'],
     ['change an opening period', 'UPDATE merchants.opening_periods SET opens_at = 0'],
     ['change the price log', 'UPDATE merchants.price_changes SET new_price = 1'],
+    ['change a restaurant note', "UPDATE merchants.restaurant_notes SET body = 'x'"],
     ['delete a restaurant', 'DELETE FROM merchants.restaurants'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);

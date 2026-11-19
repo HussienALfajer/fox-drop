@@ -6,10 +6,11 @@ const { canSeeRatings, nextRatingsPage, ratingsSearch } = await import('./rating
 
 const session = (permissions: string[]) => ({ permissions }) as never;
 
-// AP §9.6.4, §9.7.4 (slice 2.26c): the panel's «التقييمات».
+// AP §9.7.4 (slice 2.26c): the panel's «التقييمات» of captains; a
+// restaurant's moved into its profile (slice 2.30d).
 describe('canSeeRatings', () => {
-  it('needs restaurants.read or captains.read', () => {
-    expect(canSeeRatings(session(['restaurants.read']))).toBe(true);
+  it('needs captains.read', () => {
+    expect(canSeeRatings(session(['restaurants.read']))).toBe(false);
     expect(canSeeRatings(session(['captains.read']))).toBe(true);
     // FIN reads neither (AP §6.2).
     expect(canSeeRatings(session(['captains.money', 'restaurants.statements']))).toBe(false);
@@ -18,16 +19,16 @@ describe('canSeeRatings', () => {
 });
 
 describe('ratingsSearch', () => {
-  it('keeps a restaurant or a captain, the period and the stars', () => {
+  it('keeps a captain, the period and the stars', () => {
     expect(ratingsSearch({ city: 'azaz', captain: 'c1', period: 'today', stars: '2' })).toEqual({
       city: 'azaz',
       captain: 'c1',
       period: 'today',
       stars: 2,
     });
-    // The restaurant wins over a captain; «الكل» is the default.
+    // A restaurant is no longer this page's; «الكل» is the default.
     expect(ratingsSearch({ restaurant: 'r1', captain: 'c1', period: 'all' })).toEqual({
-      restaurant: 'r1',
+      captain: 'c1',
     });
   });
 

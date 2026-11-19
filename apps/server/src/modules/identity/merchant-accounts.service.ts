@@ -5,7 +5,7 @@ import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { type AccountStatus, MerchantsService } from '../merchants/index.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
-import { merchantAccounts, merchantRoles } from './schema.js';
+import { appSessions, merchantAccounts, merchantRoles } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
 export type MerchantRole = (typeof merchantRoles)[number];
@@ -24,7 +24,12 @@ export class MerchantSignInRefusedError extends Error {
 export class MerchantAccountRefusedError extends Error {
   constructor(
     readonly refusal:
-      'unknown_restaurant' | 'phone_taken' | 'invalid_account' | 'unknown_account' | 'not_a_draft',
+      | 'unknown_restaurant'
+      | 'phone_taken'
+      | 'invalid_account'
+      | 'unknown_account'
+      | 'restaurant_terminated'
+      | 'last_owner',
     message: string,
   ) {
     super(message);
@@ -85,13 +90,14 @@ export class MerchantAccountsService implements OnModuleInit {
 
   // An owner or a cashier of a restaurant. A number belongs to at most one
   // restaurant (S6): one taken by an account not removed is refused. With
-  // `draftOnly` (the wizard's step 6, slice 2.30a) the restaurant must still
-  // be a draft, read under its row's share lock in the add's transaction.
+  // `fromPanel` (the wizard's step 6, slice 2.30a, and the profile's
+  // «الحسابات», slice 2.30d) the restaurant must not be terminated, read
+  // under its row's share lock in the add's transaction.
   async addAccount(
     restaurantId: string,
     account: { role: MerchantRole; name: string; phone: string },
     change: { actor: AuditActor; context: AuditRequestContext },
-    { draftOnly = false }: { draftOnly?: boolean } = {},
+    { fromPanel = false }: { fromPanel?: boolean } = {},
   ): Promise<string> {
     const name = account.name.trim();
     if (name.length === 0 || !APP_PHONE_PATTERN.test(account.phone)) {
@@ -106,7 +112,7 @@ export class MerchantAccountsService implements OnModuleInit {
     }
     const phoneHash = this.secrets.phoneHash(account.phone);
     return this.database.db.transaction(async (tx) => {
-      if (draftOnly) await this.checkDraft(tx, restaurantId);
+      if (fromPanel) await this.checkOpen(tx, restaurantId);
       // The partial unique index refuses a second account; the lock turns
       // that into a refusal instead of an error.
       await tx.execute(
@@ -187,18 +193,25 @@ export class MerchantAccountsService implements OnModuleInit {
     }));
   }
 
-  // Removes an account of a draft restaurant (the wizard's step 6). A
-  // draft's users never signed in (RA §5.2 item 3), so no session ends; the
-  // other restaurants' accounts are removed with staff and devices (2.33).
-  // Removing one already removed is unknown_account.
-  async removeDraftAccount(
+  // Removes a restaurant user from the panel (the wizard's step 6, slice
+  // 2.30a; the profile's «الحسابات», AP §9.6.4, slice 2.30d), of a restaurant
+  // not terminated: its sessions end at once in the same transaction
+  // (`account_removed`, RA §14.1); the caller passes their ids to
+  // notifyEnded once it commits. Removing one already removed is
+  // unknown_account.
+  async removeAccount(
     restaurantId: string,
     accountId: string,
     change: { actor: AuditActor; context: AuditRequestContext },
     now = new Date(),
-  ): Promise<void> {
-    await this.database.db.transaction(async (tx) => {
-      await this.checkDraft(tx, restaurantId);
+  ): Promise<string[]> {
+    return this.database.db.transaction(async (tx) => {
+      const status = await this.checkOpen(tx, restaurantId);
+      // Two removals of one restaurant's users take turns, so the owner
+      // count below never misses the other's.
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`identity.merchant_users:${restaurantId}`}, 0))`,
+      );
       const [removed] = await tx
         .update(merchantAccounts)
         .set({ removedAt: now })
@@ -217,6 +230,33 @@ export class MerchantAccountsService implements OnModuleInit {
       if (!removed) {
         throw new MerchantAccountRefusedError('unknown_account', 'no such account');
       }
+      // RA §5.1: past the draft a restaurant keeps one owner or more.
+      if (removed.role === 'owner' && status !== 'draft') {
+        const [left] = await tx
+          .select({ count: sql<number>`count(*)::int` })
+          .from(merchantAccounts)
+          .where(
+            and(
+              eq(merchantAccounts.restaurantId, restaurantId),
+              eq(merchantAccounts.role, 'owner'),
+              isNull(merchantAccounts.removedAt),
+            ),
+          );
+        if ((left?.count ?? 0) === 0) {
+          throw new MerchantAccountRefusedError('last_owner', 'the restaurant keeps one owner');
+        }
+      }
+      const ended = await tx
+        .update(appSessions)
+        .set({ endedAt: now, endReason: 'account_removed' })
+        .where(
+          and(
+            eq(appSessions.party, 'merchant'),
+            eq(appSessions.accountId, accountId),
+            isNull(appSessions.endedAt),
+          ),
+        )
+        .returning({ id: appSessions.id });
       await this.audit.recordWrite(
         {
           actor: change.actor,
@@ -229,12 +269,13 @@ export class MerchantAccountsService implements OnModuleInit {
         },
         tx,
       );
+      return ended.map((row) => row.id);
     });
   }
 
-  // 404 unknown_restaurant, 409 not_a_draft, read under the restaurant
-  // row's share lock until the caller's transaction ends.
-  private async checkDraft(
+  // 404 unknown_restaurant, 403 restaurant_terminated, read under the
+  // restaurant row's share lock until the caller's transaction ends.
+  private async checkOpen(
     tx: Parameters<MerchantsService['lockedAccountStatus']>[0],
     restaurantId: string,
   ) {
@@ -242,9 +283,20 @@ export class MerchantAccountsService implements OnModuleInit {
     if (status === null) {
       throw new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant');
     }
-    if (status !== 'draft') {
-      throw new MerchantAccountRefusedError('not_a_draft', 'only a draft changes accounts here');
+    if (status === 'terminated') {
+      throw new MerchantAccountRefusedError('restaurant_terminated', 'the contract has ended');
     }
+    return status;
+  }
+
+  // AP §9.6.4 «سجل التغييرات» (slice 2.30d): every account the restaurant
+  // ever had, removed ones included, by id with its name.
+  async everyAccount(restaurantId: string): Promise<Map<string, string>> {
+    const rows = await this.database.db
+      .select({ id: merchantAccounts.id, name: merchantAccounts.name })
+      .from(merchantAccounts)
+      .where(eq(merchantAccounts.restaurantId, restaurantId));
+    return new Map(rows.map((row) => [row.id, row.name]));
   }
 
   // The restaurant's accounts not removed, owners first.

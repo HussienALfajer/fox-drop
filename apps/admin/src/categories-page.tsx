@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
+import { getRouteApi, Link } from '@tanstack/react-router';
 import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -7,28 +7,16 @@ import {
   type CategoryRefusal,
   type CategoryResult,
   canEditCategories,
-  canSetRestaurantCategories,
   categoriesQuery,
-  chosenCategories,
-  RESTAURANT_CATEGORIES_MAX,
-  restaurantCategoriesQuery,
   useAddCategory,
   useReorderCategories,
-  useSetRestaurantCategories,
   useUpdateCategory,
 } from './categories.js';
-import { chosenCity, citiesQuery } from './cities.js';
 import { moved } from './content.js';
 import { mediaUrl } from './media.js';
-import {
-  IMAGE_TYPES,
-  type ImageRefusal,
-  restaurantsQuery,
-  useSetImage,
-} from './restaurant-images.js';
+import { IMAGE_TYPES, type ImageRefusal, useSetImage } from './restaurant-images.js';
 
 const signedIn = getRouteApi('/signed-in');
-const restaurantRoute = getRouteApi('/signed-in/restaurant-categories');
 
 const refusalKeys = {
   duplicate_label: 'categories.refused.duplicate',
@@ -220,100 +208,5 @@ function AddCategory() {
       </button>
       <Outcome result={add.data} failed={add.isError} />
     </form>
-  );
-}
-
-// AP §9.6.3 step 1 (slice 2.27a, until the restaurant profile of 2.30): pick
-// a restaurant of the city and tick its categories, up to
-// RESTAURANT_CATEGORIES_MAX, in the platform's order. Unstyled until the
-// design.
-export function RestaurantCategoriesPage() {
-  const { t } = useTranslation();
-  const { session } = signedIn.useRouteContext();
-  const search = restaurantRoute.useSearch();
-  const navigate = useNavigate();
-  const cities = useQuery(citiesQuery);
-  const city = cities.data ? chosenCity(cities.data, search.city) : undefined;
-  const restaurants = useQuery({
-    ...restaurantsQuery(city?.id ?? ''),
-    enabled: city !== undefined,
-  });
-  const choose = (event: ChangeEvent<HTMLSelectElement>) =>
-    void navigate({
-      to: '/restaurant-categories',
-      search: {
-        ...(search.city ? { city: search.city } : {}),
-        ...(event.target.value ? { restaurant: event.target.value } : {}),
-      },
-    });
-  return (
-    <main>
-      <h1>{t('restaurantCategories.title')}</h1>
-      <p>
-        <Link to="/">{t('common.home')}</Link>
-      </p>
-      <p>{t('restaurantCategories.explain', { max: RESTAURANT_CATEGORIES_MAX })}</p>
-      {restaurants.isError || cities.isError ? (
-        <p role="alert">{t('common.failed')}</p>
-      ) : !restaurants.data ? (
-        <p role="status">{t('status.loading')}</p>
-      ) : (
-        <label>
-          {t('images.restaurant')}
-          <select value={search.restaurant ?? ''} onChange={choose}>
-            <option value="">{t('images.choose')}</option>
-            {restaurants.data.map((restaurant) => (
-              <option key={restaurant.id} value={restaurant.id}>
-                {restaurant.nameAr}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      {search.restaurant && (
-        <RestaurantCategories
-          key={search.restaurant}
-          restaurantId={search.restaurant}
-          edit={canSetRestaurantCategories(session)}
-        />
-      )}
-    </main>
-  );
-}
-
-function RestaurantCategories({ restaurantId, edit }: { restaurantId: string; edit: boolean }) {
-  const { t } = useTranslation();
-  const categories = useQuery(categoriesQuery);
-  const chosen = useQuery(restaurantCategoriesQuery(restaurantId));
-  const set = useSetRestaurantCategories(restaurantId);
-  if (categories.isPending || chosen.isPending) return <p role="status">{t('status.loading')}</p>;
-  if (categories.isError || chosen.isError) return <p role="alert">{t('common.failed')}</p>;
-  const ticked = new Set(chosen.data);
-  const full = chosen.data.length >= RESTAURANT_CATEGORIES_MAX;
-  const shown = categories.data.filter((category) => category.active || ticked.has(category.id));
-  return (
-    <fieldset>
-      <legend>{t('restaurantCategories.choose')}</legend>
-      {shown.length === 0 && <p>{t('categories.empty')}</p>}
-      {shown.map((category) => (
-        <label key={category.id}>
-          <input
-            type="checkbox"
-            checked={ticked.has(category.id)}
-            disabled={
-              !edit || set.isPending || (!ticked.has(category.id) && (full || !category.active))
-            }
-            onChange={(event) =>
-              set.mutate(
-                chosenCategories(categories.data, chosen.data, category.id, event.target.checked),
-              )
-            }
-          />
-          {category.name}
-          {!category.active && <span> {t('categories.removed')}</span>}
-        </label>
-      ))}
-      <Outcome result={set.data} failed={set.isError} />
-    </fieldset>
   );
 }

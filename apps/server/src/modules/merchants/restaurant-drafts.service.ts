@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { Jobs } from '../../jobs/jobs.module.js';
 import { AuditService } from '../audit/index.js';
 import { FilesService } from '../files/index.js';
 import { commissionAt } from './commission.js';
@@ -28,6 +29,13 @@ import {
   restaurants,
   weeklySchedules,
 } from './schema.js';
+import { recordStateChange } from './state-events.js';
+
+// Who saves: the wizard saves a draft only; the restaurant profile (AP
+// §9.6.4, slice 2.30d, owner decision 2026-11-18) edits the data, the
+// location and the operations of a restaurant past its draft, never a
+// terminated one.
+export type EditScope = 'draft' | 'profile';
 
 // The texts' bounds (decided by us, slice 2.30a).
 export const DRAFT_NAME_MAX = 80;
@@ -151,6 +159,7 @@ export class RestaurantDraftsService {
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
     private readonly files: FilesService,
+    private readonly jobs: Jobs,
   ) {}
 
   // Step 4 (OWN): the commission of the new restaurant. Every version not
@@ -175,7 +184,7 @@ export class RestaurantDraftsService {
       }
     }
     await this.database.db.transaction(async (tx) => {
-      const row = await this.lockDraft(tx, restaurantId);
+      const row = await this.lockFor(tx, restaurantId, 'draft');
       // One clock for the read, the withdrawal and the new version.
       const before = await this.commissionOf(tx, restaurantId, now);
       if (JSON.stringify(before) === JSON.stringify(commission)) return;
@@ -253,7 +262,7 @@ export class RestaurantDraftsService {
       await this.files.prepare(fields.licenceUploadId, 'restaurant_licence', now);
     }
     await this.database.db.transaction(async (tx) => {
-      const row = await this.lockDraft(tx, restaurantId);
+      const row = await this.lockFor(tx, restaurantId, 'draft');
       const before = await this.contractOf(tx, restaurantId);
       const linked = async (uploadId: string | null, kept: string | null) => {
         if (uploadId === null) return kept;
@@ -313,7 +322,7 @@ export class RestaurantDraftsService {
   // nothing.
   async confirmContract(restaurantId: string, change: MerchantChange): Promise<void> {
     await this.database.db.transaction(async (tx) => {
-      const row = await this.lockDraft(tx, restaurantId);
+      const row = await this.lockFor(tx, restaurantId, 'draft');
       const contract = await this.contractOf(tx, restaurantId);
       if (
         contract === null ||
@@ -411,7 +420,7 @@ export class RestaurantDraftsService {
         });
         return;
       }
-      const row = await this.lockDraft(tx, restaurantId);
+      const row = await this.lockFor(tx, restaurantId, 'draft');
       if (row.cityId !== cityId) {
         throw new MerchantsRefusedError('not_a_draft', 'the draft belongs to another city');
       }
@@ -437,6 +446,7 @@ export class RestaurantDraftsService {
     restaurantId: string,
     location: DraftLocation,
     change: MerchantChange,
+    scope: EditScope = 'draft',
   ): Promise<void> {
     if (!validPoint(location.location)) {
       throw new MerchantsRefusedError('invalid_restaurant', 'the pin is not on the map');
@@ -454,7 +464,7 @@ export class RestaurantDraftsService {
       ownerName,
     };
     await this.database.db.transaction(async (tx) => {
-      const row = await this.lockDraft(tx, restaurantId);
+      const row = await this.lockFor(tx, restaurantId, scope);
       const before = {
         latitude: row.latitude,
         longitude: row.longitude,
@@ -473,21 +483,23 @@ export class RestaurantDraftsService {
           updatedAt: sql`now()`,
         })
         .where(eq(restaurants.id, restaurantId));
-      // The numbers stay out of the audit log, which keeps no phone.
+      // The numbers stay out of the audit log, which keeps no phone; a new
+      // number shows as phoneChanged.
       const audited = (value: typeof after) => ({
         latitude: value.latitude,
         longitude: value.longitude,
         address: value.address,
         ownerName: value.ownerName,
       });
+      const phoneChanged = before.phone !== after.phone;
       await this.record(
         tx,
         change,
         row.cityId,
         restaurantId,
         'restaurant.location',
-        row.latitude === null ? null : audited(before as typeof after),
-        audited(after),
+        row.latitude === null ? null : { ...audited(before as typeof after), phoneChanged: false },
+        { ...audited(after), phoneChanged },
       );
     });
   }
@@ -498,6 +510,7 @@ export class RestaurantDraftsService {
     restaurantId: string,
     operations: DraftOperations,
     change: MerchantChange,
+    scope: EditScope = 'draft',
   ): Promise<void> {
     if (operations.periods.length === 0) {
       throw new MerchantsRefusedError('invalid_schedule', 'the hours need one opening period');
@@ -532,7 +545,7 @@ export class RestaurantDraftsService {
         ? { kind: 'zones', zoneIds: [...operations.coverage.zoneIds].sort() }
         : operations.coverage;
     await this.database.db.transaction(async (tx) => {
-      const row = await this.lockDraft(tx, restaurantId);
+      const row = await this.lockFor(tx, restaurantId, scope);
       await this.merchants.checkBaseCurrency(tx, row.cityId, operations.minimumOrder.currency);
       const before = await this.operationsOf(tx, row);
       const after = {
@@ -593,6 +606,51 @@ export class RestaurantDraftsService {
         before.minimumOrder === null ? null : forAudit(before),
         forAudit(after),
       );
+      // Past the draft the devices read their status again (RA §18), as
+      // after the owners' own hours and order settings.
+      if (row.accountStatus !== 'draft') {
+        const kinds = [
+          ...(sameHours ? [] : (['hours'] as const)),
+          ...(before.defaultPrepMin === after.defaultPrepMin ? [] : (['order_settings'] as const)),
+        ];
+        for (const kind of kinds) {
+          await recordStateChange(tx, this.jobs, {
+            restaurantId,
+            cityId: row.cityId,
+            kind,
+            at: new Date(),
+          });
+        }
+      }
+    });
+  }
+
+  // AP §9.6.4 «البيانات» (slice 2.30d): the names, the categories and the
+  // description of a restaurant past its draft (the logo and cover keep their
+  // own routes), audited as step 1's save.
+  async editBasics(
+    restaurantId: string,
+    basics: DraftBasics,
+    change: MerchantChange,
+  ): Promise<void> {
+    const checked = checkBasics(basics);
+    await this.merchants.checkCategories(checked.categoryIds);
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lockFor(tx, restaurantId, 'profile');
+      const before = {
+        nameAr: row.nameAr,
+        nameEn: row.nameEn,
+        categoryIds: row.categoryIds,
+        description: row.description,
+      };
+      if (JSON.stringify(before) === JSON.stringify(checked)) return;
+      await tx
+        .update(restaurants)
+        .set({ ...checked, updatedAt: sql`now()` })
+        .where(eq(restaurants.id, restaurantId));
+      await this.record(tx, change, row.cityId, restaurantId, 'restaurant.basics', before, {
+        ...checked,
+      });
     });
   }
 
@@ -774,12 +832,20 @@ export class RestaurantDraftsService {
     return row.cityId;
   }
 
-  // The draft under its row lock; any other status is 409 not_a_draft.
-  private async lockDraft(tx: Tx, restaurantId: string) {
+  // The restaurant under its row lock. The wizard saves a draft only (any
+  // other status is 409 not_a_draft); the profile any restaurant past it
+  // (409 still_a_draft, 403 restaurant_terminated).
+  private async lockFor(tx: Tx, restaurantId: string, scope: EditScope) {
     const [row] = await this.rows(tx, eq(restaurants.id, restaurantId)).for('update');
     if (!row) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
-    if (row.accountStatus !== 'draft') {
+    if (scope === 'draft' && row.accountStatus !== 'draft') {
       throw new MerchantsRefusedError('not_a_draft', 'only a draft is saved by the wizard');
+    }
+    if (scope === 'profile' && row.accountStatus === 'draft') {
+      throw new MerchantsRefusedError('still_a_draft', 'a draft is saved by the wizard');
+    }
+    if (scope === 'profile' && row.accountStatus === 'terminated') {
+      throw new MerchantsRefusedError('restaurant_terminated', 'the contract has ended');
     }
     return row;
   }

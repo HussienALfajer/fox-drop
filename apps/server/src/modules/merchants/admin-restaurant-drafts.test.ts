@@ -272,7 +272,7 @@ describe('the wizard routes past the draft', () => {
     });
   });
 
-  it('refuses accounts once the restaurant left its draft, and hides it from DATA once active', async () => {
+  it('keeps accounts open past the draft (slice 2.30d), and hides it from DATA once active', async () => {
     const data = await admin('DATA');
     const id = randomUUID();
     await data('PUT', `/${id}/basics`, { cityId: azaz, ...basics });
@@ -292,12 +292,9 @@ describe('the wizard routes past the draft', () => {
     expect(
       (
         await accountsOf(ops, id, '', { role: 'owner', name: 'مالك', phone: '+963944000413' })
-      ).json(),
-    ).toMatchObject({ statusCode: 409, error: 'not_a_draft' });
-    expect((await accountsOf(ops, id, `/${cashierId}/remove`)).json()).toMatchObject({
-      statusCode: 409,
-      error: 'not_a_draft',
-    });
+      ).json().accounts,
+    ).toHaveLength(2);
+    expect((await accountsOf(ops, id, `/${cashierId}/remove`)).json().accounts).toHaveLength(1);
     expect((await accountsOf(ops, randomUUID(), `/${cashierId}/remove`)).json()).toMatchObject({
       statusCode: 404,
       error: 'unknown_restaurant',

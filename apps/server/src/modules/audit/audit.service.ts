@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { and, desc, eq, inArray, or } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type Changes, changedFields } from './changes.js';
@@ -38,6 +39,17 @@ export interface AuditWrite extends AuditEvent {
 
 export type AuditView = AuditEvent;
 
+// An event as a target's history reads it.
+export interface AuditEntry {
+  id: string;
+  occurredAt: Date;
+  actor: AuditActor;
+  action: string;
+  target: { type: string; id: string };
+  changes: Changes | null;
+  reason: string | null;
+}
+
 // The database or the open transaction of the write being audited, so the
 // event commits or rolls back with it.
 export type AuditExecutor = Pick<NodePgDatabase, 'insert'>;
@@ -55,6 +67,48 @@ export class AuditService {
 
   async recordView(event: AuditView, executor?: AuditExecutor): Promise<void> {
     await this.insert(event, 'view', null, executor);
+  }
+
+  // AP §9.6.4 «سجل التغييرات» (slice 2.30d): the write events of these
+  // targets of one type each, newest first, at most `limit`.
+  async history(targets: { type: string; ids: string[] }[], limit: number): Promise<AuditEntry[]> {
+    const wanted = targets.filter((target) => target.ids.length > 0);
+    if (wanted.length === 0) return [];
+    const rows = await this.database.db
+      .select({
+        id: events.id,
+        occurredAt: events.occurredAt,
+        actorType: events.actorType,
+        actorId: events.actorId,
+        actorRole: events.actorRole,
+        action: events.action,
+        targetType: events.targetType,
+        targetId: events.targetId,
+        changes: events.changes,
+        reason: events.reason,
+      })
+      .from(events)
+      .where(
+        and(
+          eq(events.kind, 'write'),
+          or(
+            ...wanted.map((target) =>
+              and(eq(events.targetType, target.type), inArray(events.targetId, target.ids)),
+            ),
+          ),
+        ),
+      )
+      .orderBy(desc(events.occurredAt), desc(events.id))
+      .limit(limit);
+    return rows.map((row) => ({
+      id: row.id,
+      occurredAt: row.occurredAt,
+      actor: { type: row.actorType, id: row.actorId, role: row.actorRole },
+      action: row.action,
+      target: { type: row.targetType, id: row.targetId },
+      changes: row.changes,
+      reason: row.reason,
+    }));
   }
 
   private async insert(

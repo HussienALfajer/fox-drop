@@ -81,7 +81,10 @@ export type MerchantsRefusal =
   // missing.
   | 'checklist_incomplete'
   // AP §9.6.5 «تثبيت» (slice 2.30c): outside 0 to SORT_WEIGHT_MAX.
-  | 'invalid_sort_weight';
+  | 'invalid_sort_weight'
+  // AP §9.6.4 (slice 2.30d): the profile edits a restaurant past its draft;
+  // a draft is the wizard's.
+  | 'still_a_draft';
 
 // Slice 2.30c: the same commission «now» again within this is a repeat.
 const COMMISSION_REPEAT_WINDOW_MS = 60_000;
@@ -126,6 +129,16 @@ export class MerchantsRefusedError extends Error {
   ) {
     super(message);
   }
+}
+
+// A restaurant's device (RA §5.2 item 5), as named.
+export interface RestaurantDevice {
+  deviceId: string;
+  name: string;
+  platform: DevicePlatform;
+  appVersion: string;
+  namedById: string;
+  updatedAt: Date;
 }
 
 // Who changes a restaurant and why, for the audit log.
@@ -319,6 +332,10 @@ export class MerchantsService implements OnModuleInit {
     await this.checkCategories(categoryIds);
     return this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
+      // AP §9.6.4 (slice 2.30d): a terminated restaurant's data is read only.
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
       const [{ before }] = (await tx
         .select({ before: restaurants.categoryIds })
         .from(restaurants)
@@ -1556,6 +1573,23 @@ export class MerchantsService implements OnModuleInit {
     return new Map(rows.map((row) => [row.deviceId, row.name]));
   }
 
+  // AP §9.6.4, RA §14.2 (slice 2.30d): the restaurant's devices as named,
+  // the latest named first.
+  async devices(restaurantId: string): Promise<RestaurantDevice[]> {
+    return this.database.db
+      .select({
+        deviceId: devices.deviceId,
+        name: devices.name,
+        platform: devices.platform,
+        appVersion: devices.appVersion,
+        namedById: devices.namedById,
+        updatedAt: devices.updatedAt,
+      })
+      .from(devices)
+      .where(eq(devices.restaurantId, restaurantId))
+      .orderBy(desc(devices.updatedAt));
+  }
+
   async deviceNamed(restaurantId: string, deviceId: string): Promise<boolean> {
     const [device] = await this.database.db
       .select({ id: devices.id })
@@ -1795,6 +1829,10 @@ export class MerchantsService implements OnModuleInit {
     await this.files.prepare(uploadId, purpose);
     return this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
+      // AP §9.6.4 (slice 2.30d): a terminated restaurant's data is read only.
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
       const column = image === 'logo' ? restaurants.logoKey : restaurants.coverKey;
       const [{ before }] = (await tx
         .select({ before: column })

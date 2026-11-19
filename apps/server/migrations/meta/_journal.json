@@ -834,6 +834,20 @@
       "when": 1795042174491,
       "tag": "0118_identity_restaurants_terminate",
       "breakpoints": true
+    },
+    {
+      "idx": 119,
+      "version": "7",
+      "when": 1795046478721,
+      "tag": "0119_identity_restaurant_staff",
+      "breakpoints": true
+    },
+    {
+      "idx": 120,
+      "version": "7",
+      "when": 1795046835297,
+      "tag": "0120_merchants_restaurant_notes",
+      "breakpoints": true
     }
   ]
 }

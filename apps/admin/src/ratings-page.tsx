@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatAverage, formatDateTime } from './format.js';
 import { OPERATIONS_READ } from './orders-board.js';
-import { RESTAURANTS_READ, restaurantsQuery } from './restaurant-images.js';
 import {
   CAPTAINS_READ,
   ratedCaptainsQuery,
@@ -20,10 +19,10 @@ import { can } from './session.js';
 const route = getRouteApi('/signed-in/ratings');
 const signedIn = getRouteApi('/signed-in');
 
-// AP §9.6.4 «التقييمات», §9.7.4 «التقييمات والشكاوى», CU §12.1 (slice
-// 2.26c; owner decision 2026-11-18): a restaurant's or a captain's ratings
-// with everything, comments included, never the customer's name, until the
-// profiles of 2.30 and 2.36. Unstyled until the design.
+// AP §9.7.4 «التقييمات والشكاوى», CU §12.1 (slice 2.26c; owner decision
+// 2026-11-18): a captain's ratings with everything, comments included, never
+// the customer's name, until the captain profile of 2.36; a restaurant's
+// moved into its profile (slice 2.30d). Unstyled until the design.
 export function RatingsPage() {
   const { t } = useTranslation();
   const search = route.useSearch();
@@ -31,12 +30,7 @@ export function RatingsPage() {
   const { session } = signedIn.useRouteContext();
   const cities = useQuery(citiesQuery);
   const city = cities.data ? chosenCity(cities.data, search.city) : undefined;
-  const readsRestaurants = can(session, RESTAURANTS_READ);
   const readsCaptains = can(session, CAPTAINS_READ);
-  const restaurants = useQuery({
-    ...restaurantsQuery(city?.id ?? ''),
-    enabled: city !== undefined && readsRestaurants,
-  });
   const captains = useQuery({
     ...ratedCaptainsQuery(city?.id ?? ''),
     enabled: city !== undefined && readsCaptains,
@@ -50,11 +44,9 @@ export function RatingsPage() {
     ...(search.period ? { period: search.period } : {}),
     ...(search.stars ? { stars: search.stars } : {}),
   };
-  const target: RatingTarget | null = search.restaurant
-    ? { party: 'restaurant', id: search.restaurant }
-    : search.captain
-      ? { party: 'captain', id: search.captain }
-      : null;
+  const target: RatingTarget | null = search.captain
+    ? { party: 'captain', id: search.captain }
+    : null;
   return (
     <main>
       <h1>{t('ratings.title')}</h1>
@@ -62,27 +54,7 @@ export function RatingsPage() {
         <Link to="/">{t('common.home')}</Link>
       </p>
       <p>{t('ratings.explain')}</p>
-      {cities.isError || restaurants.isError || captains.isError ? (
-        <p role="alert">{t('common.failed')}</p>
-      ) : null}
-      {readsRestaurants && restaurants.data && (
-        <label>
-          {t('ratings.restaurant')}
-          <select
-            value={search.restaurant ?? ''}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-              go(event.target.value ? { ...filters, restaurant: event.target.value } : {})
-            }
-          >
-            <option value="">{t('ratings.chooseRestaurant')}</option>
-            {restaurants.data.map((restaurant) => (
-              <option key={restaurant.id} value={restaurant.id}>
-                {restaurant.nameAr}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
+      {cities.isError || captains.isError ? <p role="alert">{t('common.failed')}</p> : null}
       {readsCaptains && captains.data && (
         <label>
           {t('ratings.captain')}
@@ -108,7 +80,7 @@ export function RatingsPage() {
         </label>
       )}
       {city && target && (
-        <Ratings
+        <RatingsSection
           key={target.party + target.id}
           target={target}
           city={city}
@@ -116,9 +88,7 @@ export function RatingsPage() {
           stars={search.stars ?? null}
           onFilters={(next) =>
             go({
-              ...(target.party === 'restaurant'
-                ? { restaurant: target.id }
-                : { captain: target.id }),
+              captain: target.id,
               ...(next.period !== 'all' ? { period: next.period } : {}),
               ...(next.stars !== null ? { stars: next.stars } : {}),
             })
@@ -129,7 +99,9 @@ export function RatingsPage() {
   );
 }
 
-function Ratings({
+// The ratings of a restaurant (its profile's «التقييمات», slice 2.30d) or a
+// captain, with their period and stars.
+export function RatingsSection({
   target,
   city,
   period,

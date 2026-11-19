@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
-import { type ChangeEvent, type FormEvent, useState } from 'react';
+import { getRouteApi } from '@tanstack/react-router';
+import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type City, chosenCity, citiesQuery } from './cities.js';
+import type { City } from './cities.js';
 import { formatDateTime } from './format.js';
 import { useOpsChannel } from './live.js';
 import { RestaurantAccountSection } from './restaurant-account-page.js';
-import { restaurantsQuery } from './restaurant-images.js';
 import {
   canChangeRestaurantStatus,
   type PauseLength,
@@ -23,7 +22,6 @@ import {
   useSetPickupCurrencies,
 } from './restaurant-status.js';
 
-const route = getRouteApi('/signed-in/restaurant-status');
 const signedIn = getRouteApi('/signed-in');
 
 const lengths = [
@@ -35,58 +33,15 @@ const lengths = [
 ] as const satisfies readonly (readonly [PauseLength, string])[];
 
 // AP §9.6.5, slice 2.6b: a restaurant's state and the panel's actions on it,
-// on the restaurants of the first city (as «الصور») until the restaurant
-// profile (2.30). Live over the city's channel. Unstyled until the design.
-export function RestaurantStatusPage() {
-  const { t } = useTranslation();
-  const search = route.useSearch();
-  const navigate = useNavigate();
-  const cities = useQuery(citiesQuery);
-  const city = cities.data ? chosenCity(cities.data, search.city) : undefined;
-  const restaurants = useQuery({
-    ...restaurantsQuery(city?.id ?? ''),
-    enabled: city !== undefined,
-  });
-  const choose = (event: ChangeEvent<HTMLSelectElement>) =>
-    void navigate({
-      to: '/restaurant-status',
-      search: {
-        ...(search.city ? { city: search.city } : {}),
-        ...(event.target.value ? { restaurant: event.target.value } : {}),
-      },
-    });
-  return (
-    <main>
-      <h1>{t('restaurantStatus.title')}</h1>
-      <p>
-        <Link to="/">{t('common.home')}</Link>
-      </p>
-      <p>{t('restaurantStatus.explain')}</p>
-      {restaurants.isError || cities.isError ? (
-        <p role="alert">{t('common.failed')}</p>
-      ) : !restaurants.data ? (
-        <p role="status">{t('status.loading')}</p>
-      ) : (
-        <label>
-          {t('restaurantStatus.restaurant')}
-          <select value={search.restaurant ?? ''} onChange={choose}>
-            <option value="">{t('restaurantStatus.choose')}</option>
-            {restaurants.data.map((restaurant) => (
-              <option key={restaurant.id} value={restaurant.id}>
-                {restaurant.nameAr}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      {city && search.restaurant && (
-        <Restaurant key={search.restaurant} restaurantId={search.restaurant} city={city} />
-      )}
-    </main>
-  );
-}
-
-function Restaurant({ restaurantId, city }: { restaurantId: string; city: City }) {
+// with its account (slice 2.30c); the profile's «الحالة» tab (slice 2.30d).
+// Live over the city's channel. Unstyled until the design.
+export function RestaurantStatusSection({
+  restaurantId,
+  city,
+}: {
+  restaurantId: string;
+  city: City;
+}) {
   const { t } = useTranslation();
   const { session } = signedIn.useRouteContext();
   useOpsChannel(city.id);

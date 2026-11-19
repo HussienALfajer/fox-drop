@@ -623,3 +623,31 @@ export const contracts = merchants.table(
     ),
   ],
 );
+
+// AP §9.6.4 «ملاحظات» (slice 2.30d, owner decision 2026-11-18): an admin's
+// internal note on a restaurant, written by any reader of restaurants.
+// Never changed; the command's Idempotency-Key is kept with it, so a retry
+// adds no second note.
+export const restaurantNotes = merchants.table(
+  'restaurant_notes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    restaurantId: uuid('restaurant_id')
+      .notNull()
+      .references(() => restaurants.id),
+    body: text('body').notNull(),
+    // The admin account that wrote it (identity's id, a plain column).
+    authorId: uuid('author_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestHash: text('request_hash').notNull(),
+  },
+  (table) => [
+    uniqueIndex('restaurant_notes_key').on(table.authorId, table.idempotencyKey),
+    index('restaurant_notes_restaurant').on(table.restaurantId, table.createdAt),
+    check('restaurant_notes_body', sql`length(${table.body}) BETWEEN 1 AND 500`),
+  ],
+);

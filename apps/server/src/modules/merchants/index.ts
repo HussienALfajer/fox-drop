@@ -7,7 +7,10 @@ import { JobsModule } from '../../jobs/jobs.module.js';
 import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { SettingsModule } from '../settings/index.js';
-import { AdminRestaurantDraftsController } from './admin-restaurant-drafts.controller.js';
+import {
+  AdminRestaurantDraftsController,
+  AdminRestaurantProfileController,
+} from './admin-restaurant-drafts.controller.js';
 import { AdminRestaurantAccountController } from './admin-restaurant-account.controller.js';
 import { AdminRestaurantActivationController } from './admin-restaurant-activation.controller.js';
 import { ActivationService } from './activation.service.js';
@@ -15,6 +18,7 @@ import { AdminRestaurantMenuController } from './admin-restaurant-menu.controlle
 import { AdminRestaurantImagesController } from './admin-restaurant-images.controller.js';
 import { AdminRestaurantStatusController } from './admin-restaurant-status.controller.js';
 import { MerchantMenuController } from './merchant-menu.controller.js';
+import { RestaurantNotesService } from './restaurant-notes.service.js';
 import { MenuEditorService } from './menu-editor.service.js';
 import { MerchantsService } from './merchants.service.js';
 import { RestaurantDraftsService } from './restaurant-drafts.service.js';
@@ -42,6 +46,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     AdminRestaurantImagesController,
     AdminRestaurantStatusController,
     AdminRestaurantDraftsController,
+    AdminRestaurantProfileController,
     AdminRestaurantMenuController,
     AdminRestaurantActivationController,
     AdminRestaurantAccountController,
@@ -52,8 +57,14 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     RestaurantDraftsService,
     MenuEditorService,
     ActivationService,
+    RestaurantNotesService,
   ],
-  exports: [MerchantsService, RestaurantStatusService, RestaurantDraftsService],
+  exports: [
+    MerchantsService,
+    RestaurantStatusService,
+    RestaurantDraftsService,
+    RestaurantNotesService,
+  ],
 })
 export class MerchantsModule {}
 
@@ -86,6 +97,7 @@ export {
   type Money,
   type NewRestaurant,
   type Restaurant,
+  type RestaurantDevice,
   type RestaurantListRow,
   type StorefrontState,
   type SwitchedOff,
@@ -107,3 +119,9 @@ export {
   type RestaurantDraft,
   RestaurantDraftsService,
 } from './restaurant-drafts.service.js';
+export {
+  RESTAURANT_NOTE_MAX,
+  type RestaurantNote,
+  RestaurantNoteKeyReusedError,
+  RestaurantNotesService,
+} from './restaurant-notes.service.js';

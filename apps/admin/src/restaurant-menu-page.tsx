@@ -55,6 +55,7 @@ export function MenuStep(props: {
           category={category}
           currency={props.currency}
           editable={editable}
+          photos={canEditMenu(props.session)}
           busy={command.isPending}
           onMove={(step) =>
             command.mutate({
@@ -109,6 +110,8 @@ function CategorySection(props: {
   category: MenuCategory;
   currency: string | null;
   editable: boolean;
+  // «الصور» (slice 2.5): the photos stay editable past test mode.
+  photos: boolean;
   busy: boolean;
   onMove: (step: -1 | 1) => void;
 }) {
@@ -181,6 +184,7 @@ function CategorySection(props: {
               item={item}
               currency={props.currency}
               editable={props.editable}
+              photos={props.photos}
               onMove={(step) =>
                 command.mutate({
                   kind: 'itemOrder',
@@ -221,6 +225,7 @@ function ItemRow(props: {
   item: MenuItem;
   currency: string | null;
   editable: boolean;
+  photos: boolean;
   onMove: (step: -1 | 1) => void;
 }) {
   const { t } = useTranslation();
@@ -241,7 +246,7 @@ function ItemRow(props: {
         imageKey={item.photoKey}
         width={160}
         target={{ kind: 'item', restaurantId: props.restaurantId, itemId: item.id }}
-        editable={props.editable}
+        editable={props.photos}
       />
       {props.editable && (
         <p>
