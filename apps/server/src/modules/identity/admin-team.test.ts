@@ -234,13 +234,7 @@ const specifiedGrants: Record<string, AdminPermission[]> = {
     'ledger.manual_adjustment',
     'fx.edit_rates',
   ],
-  DATA: [
-    'restaurants.create',
-    'restaurants.menus',
-    'menus.edit_prices',
-    'marketing.banners',
-    'content.categories',
-  ],
+  DATA: ['restaurants.create', 'restaurants.menus', 'marketing.banners', 'content.categories'],
 };
 
 function grantsOf(role: string): string[] {
@@ -389,6 +383,22 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}/item-order':
     'restaurants.menus',
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/availability': 'restaurants.menus',
+  'POST /v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price/preview': 'restaurants.menus',
+  'POST /v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price': 'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-availability': 'restaurants.menus',
+  'GET /v1/admin/restaurant-drafts/{restaurantId}/menu/import-template': 'restaurants.menus',
+  'POST /v1/admin/restaurant-drafts/{restaurantId}/menu/import/dry-run': 'restaurants.menus',
+  'POST /v1/admin/restaurant-drafts/{restaurantId}/menu/import': 'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/options/{optionId}':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/option-order':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/items':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}/option-groups':
+    'restaurants.menus',
   'GET /v1/admin/restaurant-drafts/{restaurantId}/checklist': {
     anyOf: ['restaurants.read', 'restaurants.create'],
   },
@@ -430,6 +440,12 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/restaurants/{restaurantId}/notes': 'restaurants.read',
   'POST /v1/admin/restaurants/{restaurantId}/notes': 'restaurants.read',
   'GET /v1/admin/restaurants/{restaurantId}/change-log': 'restaurants.read',
+  'GET /v1/admin/restaurants/{restaurantId}/menu/customer-preview': {
+    anyOf: ['restaurants.read', 'restaurants.menus'],
+  },
+  'GET /v1/admin/restaurants/{restaurantId}/menu/price-log': {
+    anyOf: ['restaurants.read', 'restaurants.menus'],
+  },
   'PUT /v1/admin/restaurants/{restaurantId}/profile/basics': 'restaurants.manage',
   'PUT /v1/admin/restaurants/{restaurantId}/profile/location': 'restaurants.manage',
   'PUT /v1/admin/restaurants/{restaurantId}/profile/operations': 'restaurants.manage',

@@ -2,8 +2,19 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
-const { canEditMenu, categoryBody, categoryFormOf, itemBody, itemFormOf, moved } =
-  await import('./restaurant-menu.js');
+const {
+  canEditMenu,
+  categoryBody,
+  categoryFormOf,
+  groupBody,
+  groupFormOf,
+  itemBody,
+  itemFormOf,
+  moved,
+  optionBody,
+  optionFormOf,
+  toggled,
+} = await import('./restaurant-menu.js');
 const { activationDone, canActivate, canWaiveImages, menuDone } =
   await import('./restaurant-activation.js');
 const { canSaveStep, stepsDone } = await import('./restaurant-drafts.js');
@@ -87,6 +98,7 @@ describe('step 7, the menu (slice 2.30b)', () => {
           hidden: false,
           badge: 'new',
           switchedOff: null,
+          optionGroupIds: [],
         },
         'cat',
       ),
@@ -119,5 +131,60 @@ describe('the steps done by the checklist (slice 2.30b)', () => {
       menu: true,
       activation: false,
     });
+  });
+});
+
+describe('option groups and add-ons (slice 2.31)', () => {
+  it('builds a group: a minimum of 0 is add-ons, the maximum at least 1 and the minimum', () => {
+    expect(groupFormOf(null)).toEqual({ name: '', minChoices: '0', maxChoices: '1' });
+    expect(groupBody({ name: ' الحجم ', minChoices: '1', maxChoices: '1' }, 80)).toEqual({
+      name: 'الحجم',
+      minChoices: 1,
+      maxChoices: 1,
+    });
+    expect(groupBody({ name: 'إضافات', minChoices: '0', maxChoices: '3' }, 80)).toMatchObject({
+      minChoices: 0,
+      maxChoices: 3,
+    });
+    expect(groupBody({ name: '', minChoices: '0', maxChoices: '1' }, 80)).toEqual({
+      problem: 'group_name',
+    });
+    expect(groupBody({ name: 'x', minChoices: '2', maxChoices: '1' }, 80)).toEqual({
+      problem: 'choices',
+    });
+    expect(groupBody({ name: 'x', minChoices: '0', maxChoices: '0' }, 80)).toEqual({
+      problem: 'choices',
+    });
+    expect(groupBody({ name: 'x', minChoices: '-1', maxChoices: '2' }, 80)).toEqual({
+      problem: 'choices',
+    });
+  });
+
+  it('builds an option with its delta in minor units, 0 for free', () => {
+    expect(optionFormOf(null)).toEqual({ name: '', delta: '0' });
+    expect(
+      optionFormOf({
+        id: 'o',
+        name: 'جبنة',
+        priceDelta: { amount: '750', currency: 'TRY' },
+        switchedOff: null,
+      }),
+    ).toEqual({ name: 'جبنة', delta: '7.50' });
+    expect(optionBody({ name: 'جبنة', delta: '7.5' }, 'TRY', 80)).toEqual({
+      name: 'جبنة',
+      priceDelta: { amount: '750', currency: 'TRY' },
+      removed: false,
+    });
+    expect(optionBody({ name: 'صغير', delta: '0' }, 'TRY', 80)).toMatchObject({
+      priceDelta: { amount: '0' },
+    });
+    expect(optionBody({ name: 'x', delta: '-1' }, 'TRY', 80)).toEqual({ problem: 'delta' });
+    expect(optionBody({ name: ' ', delta: '1' }, 'TRY', 80)).toEqual({ problem: 'option_name' });
+  });
+
+  it('keeps the ticked groups in the order they were ticked', () => {
+    expect(toggled(['a'], 'b', true)).toEqual(['a', 'b']);
+    expect(toggled(['a', 'b'], 'a', false)).toEqual(['b']);
+    expect(toggled(['a', 'b'], 'a', true)).toEqual(['b', 'a']);
   });
 });

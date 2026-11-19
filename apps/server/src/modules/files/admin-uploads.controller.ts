@@ -1,11 +1,18 @@
-import { Body, ForbiddenException, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  ForbiddenException,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { CurrentAdminSession, RequireAnyPermission } from '../../http/access.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminPermission, AdminSession } from '../identity/index.js';
-import { FilesService, MAX_IMAGE_BYTES } from './files.service.js';
-import { imageTypes } from './schema.js';
+import { FilesService, MAX_IMAGE_BYTES, uploadAllowed } from './files.service.js';
+import { uploadTypes } from './schema.js';
 
 // What the panel uploads; a report's photo is the customer app's.
 const adminPurposes = [
@@ -16,6 +23,7 @@ const adminPurposes = [
   'banner_image',
   'restaurant_contract',
   'restaurant_licence',
+  'menu_import',
 ] as const;
 type AdminPurpose = (typeof adminPurposes)[number];
 
@@ -25,7 +33,9 @@ export const RESTAURANT_PROFILE = ['restaurants.manage', 'restaurants.create'] a
 class AdminNewUploadDto extends createZodDto(
   z.object({
     purpose: z.enum(adminPurposes).describe('The record the file is for (architecture §5.8).'),
-    contentType: z.enum(imageTypes),
+    contentType: z
+      .enum(uploadTypes)
+      .describe('An image (8 MB at most); for menu_import an .xlsx workbook (2 MB at most).'),
     sizeBytes: z.int().min(1).max(MAX_IMAGE_BYTES),
   }),
 ) {}
@@ -54,6 +64,8 @@ const purposePermissions: Record<AdminPurpose, AdminPermission[]> = {
   // A restaurant's scans (AP §9.6.3 step 5, slice 2.30a): DATA uploads them.
   restaurant_contract: ['restaurants.create'],
   restaurant_licence: ['restaurants.create'],
+  // A menu's Excel import (AP §9.6.6, slice 2.31).
+  menu_import: ['restaurants.menus'],
 };
 
 // Architecture §5.8: a pre-signed upload to public-media. No Idempotency-Key:
@@ -75,6 +87,12 @@ export class AdminUploadsController {
   async create(@Body() body: AdminNewUploadDto, @CurrentAdminSession() session: AdminSession) {
     if (!purposePermissions[body.purpose].some((p) => session.permissions.includes(p))) {
       throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'forbidden' });
+    }
+    if (!uploadAllowed(body.purpose, body.contentType, body.sizeBytes)) {
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'invalid_upload',
+      });
     }
     const upload = await this.files.createUpload(body, session.accountId);
     return { ...upload, expiresAt: upload.expiresAt.toISOString() };

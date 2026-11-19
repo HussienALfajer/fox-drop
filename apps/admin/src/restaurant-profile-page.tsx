@@ -163,7 +163,12 @@ function Tab(props: {
       );
     case 'menu':
       return (
-        <MenuStep restaurantId={restaurantId} currency={choices.baseCurrency} session={session} />
+        <MenuStep
+          restaurantId={restaurantId}
+          currency={choices.baseCurrency}
+          timeZone={city.timeZone}
+          session={session}
+        />
       );
     case 'orders':
       return <Orders restaurantId={restaurantId} city={city} session={session} />;

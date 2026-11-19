@@ -343,6 +343,14 @@ Serializers _$serializers =
           ..add(AdminMenuAvailabilityDto.serializer)
           ..add(AdminMenuAvailabilityDtoTypeEnum.serializer)
           ..add(AdminMenuAvailabilityDtoUntilEnum.serializer)
+          ..add(AdminMenuBulkAvailabilityDto.serializer)
+          ..add(AdminMenuBulkAvailabilityDtoUntilEnum.serializer)
+          ..add(AdminMenuBulkPreviewDtoOutput.serializer)
+          ..add(AdminMenuBulkPreviewDtoOutputRowsInner.serializer)
+          ..add(AdminMenuBulkPriceDto.serializer)
+          ..add(AdminMenuBulkPriceDtoDirectionEnum.serializer)
+          ..add(AdminMenuBulkPriceDtoKindEnum.serializer)
+          ..add(AdminMenuBulkPriceResultDtoOutput.serializer)
           ..add(AdminMenuCategoryDto.serializer)
           ..add(AdminMenuCategoryOrderDto.serializer)
           ..add(AdminMenuDtoOutput.serializer)
@@ -350,11 +358,36 @@ Serializers _$serializers =
           ..add(AdminMenuDtoOutputCategoriesInner.serializer)
           ..add(AdminMenuDtoOutputCategoriesInnerItemsInner.serializer)
           ..add(AdminMenuDtoOutputCategoriesInnerItemsInnerBadgeEnum.serializer)
+          ..add(AdminMenuDtoOutputOptionGroupsInner.serializer)
+          ..add(AdminMenuDtoOutputOptionGroupsInnerOptionsInner.serializer)
+          ..add(AdminMenuGroupItemsDto.serializer)
+          ..add(AdminMenuImportPlanDtoOutput.serializer)
+          ..add(AdminMenuImportPlanDtoOutputAddedInner.serializer)
+          ..add(AdminMenuImportPlanDtoOutputChangedInner.serializer)
+          ..add(AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum.serializer)
+          ..add(AdminMenuImportPlanDtoOutputErrorsInner.serializer)
+          ..add(AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum.serializer)
+          ..add(AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum.serializer)
+          ..add(AdminMenuImportPlanDtoOutputFileErrorEnum.serializer)
+          ..add(AdminMenuImportResultDtoOutput.serializer)
+          ..add(AdminMenuImportTemplateDtoOutput.serializer)
+          ..add(AdminMenuImportUploadDto.serializer)
           ..add(AdminMenuItemDto.serializer)
           ..add(AdminMenuItemDtoBadgeEnum.serializer)
+          ..add(AdminMenuItemGroupsDto.serializer)
           ..add(AdminMenuItemOrderDto.serializer)
           ..add(AdminMenuMoney.serializer)
           ..add(AdminMenuMoneyOutput.serializer)
+          ..add(AdminMenuOptionDto.serializer)
+          ..add(AdminMenuOptionGroupDto.serializer)
+          ..add(AdminMenuOptionOrderDto.serializer)
+          ..add(AdminMenuPreviewDtoOutput.serializer)
+          ..add(AdminMenuPreviewDtoOutputMenuInner.serializer)
+          ..add(AdminMenuPreviewDtoOutputMenuInnerItemsInner.serializer)
+          ..add(
+            AdminMenuPreviewDtoOutputMenuInnerItemsInnerUnavailableReasonEnum
+                .serializer,
+          )
           ..add(AdminMenuSwitchedOffOutput.serializer)
           ..add(AdminMenuWindow.serializer)
           ..add(AdminMenuWindowOutput.serializer)
@@ -606,6 +639,7 @@ Serializers _$serializers =
           ..add(AdminPickerDtoOutputCaptainsInnerCustodyUsage.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerReasonsEnum.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerVehicleEnum.serializer)
+          ..add(AdminPriceLogMoneyOutput.serializer)
           ..add(AdminProfileBasicsDto.serializer)
           ..add(AdminPromoCodeCityDto.serializer)
           ..add(AdminPromoCodeDtoOutput.serializer)
@@ -751,6 +785,15 @@ Serializers _$serializers =
                 .serializer,
           )
           ..add(AdminRestaurantPickupCurrenciesDto.serializer)
+          ..add(AdminRestaurantPriceLogDtoOutput.serializer)
+          ..add(AdminRestaurantPriceLogDtoOutputEntriesInner.serializer)
+          ..add(
+            AdminRestaurantPriceLogDtoOutputEntriesInnerByTypeEnum.serializer,
+          )
+          ..add(
+            AdminRestaurantPriceLogDtoOutputEntriesInnerTargetTypeEnum
+                .serializer,
+          )
           ..add(AdminRestaurantReasonDto.serializer)
           ..add(AdminRestaurantReceiptDtoOutput.serializer)
           ..add(AdminRestaurantReceiptDtoOutputLinesInner.serializer)
@@ -2170,15 +2213,87 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminMenuBulkPreviewDtoOutputRowsInner),
+            ]),
+            () => ListBuilder<AdminMenuBulkPreviewDtoOutputRowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<AdminMenuDtoOutputCategoriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminMenuDtoOutputOptionGroupsInner),
+            ]),
+            () => ListBuilder<AdminMenuDtoOutputOptionGroupsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminMenuDtoOutputCategoriesInnerItemsInner),
             ]),
             () => ListBuilder<AdminMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuDtoOutputOptionGroupsInnerOptionsInner),
+            ]),
+            () =>
+                ListBuilder<AdminMenuDtoOutputOptionGroupsInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuImportPlanDtoOutputErrorsInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputErrorsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuImportPlanDtoOutputAddedInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputAddedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuImportPlanDtoOutputChangedInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputChangedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuPreviewDtoOutputMenuInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuPreviewDtoOutputMenuInnerItemsInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInnerItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2698,6 +2813,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminRestaurantPeriodStatementDtoOutputLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantPriceLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantPriceLogDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3486,6 +3607,17 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
+                CustomerSearchDtoOutputItemsInnerOptionGroupsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerSearchDtoOutputItemsInnerOptionGroupsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
                 CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner,
               ),
             ]),
@@ -4024,6 +4156,30 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

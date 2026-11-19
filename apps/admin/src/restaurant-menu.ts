@@ -5,8 +5,10 @@ import { decimalOf, minorOf } from './format.js';
 import { minuteOf, timeOf } from './peak-bonus.js';
 import { type AdminSession, can } from './session.js';
 
-// The wizard's step 7 «القائمة» (AP §9.6.3, §9.6.6; slice 2.30b): the basic
-// menu of a draft or a restaurant in test mode. The server checks everything.
+// The menu editor «القائمة» (AP §9.6.3, §9.6.6): the wizard's step 7 (slice
+// 2.30b) and the profile's tab past it (slice 2.31), with the option groups.
+// Past test mode a price needs `menus.edit_prices` (the menu's
+// `pricesLocked`). The server checks everything.
 export const RESTAURANTS_MENUS = 'restaurants.menus';
 
 export function canEditMenu(session: AdminSession | null | undefined): boolean {
@@ -19,10 +21,14 @@ export type MenuItem = MenuCategory['items'][number];
 type CategoryBody = components['schemas']['AdminMenuCategoryDto'];
 type ItemBody = components['schemas']['AdminMenuItemDto'];
 export type Badge = NonNullable<MenuItem['badge']>;
+export type OptionGroup = Menu['optionGroups'][number];
+export type GroupOption = OptionGroup['options'][number];
+type GroupBody = components['schemas']['AdminMenuOptionGroupDto'];
+type OptionBody = components['schemas']['AdminMenuOptionDto'];
 
 export const BADGES = ['new', 'most_ordered', 'spicy'] as const satisfies readonly Badge[];
 
-const menuKey = (restaurantId: string) => ['restaurant-menu', restaurantId] as const;
+export const menuKey = (restaurantId: string) => ['restaurant-menu', restaurantId] as const;
 
 export const menuQuery = (restaurantId: string) =>
   queryOptions({
@@ -121,6 +127,71 @@ export function itemBody(
   };
 }
 
+// AP §9.6.6 «مجموعات الخيارات»: a group as typed. A minimum of 0 makes it an
+// add-on group («إضافات»), 1 or more a required one.
+export interface GroupForm {
+  name: string;
+  minChoices: string;
+  maxChoices: string;
+}
+
+export function groupFormOf(group: OptionGroup | null): GroupForm {
+  return {
+    name: group?.name ?? '',
+    minChoices: String(group?.minChoices ?? 0),
+    maxChoices: String(group?.maxChoices ?? 1),
+  };
+}
+
+export type GroupProblem = 'group_name' | 'choices';
+
+export function groupBody(form: GroupForm, nameMax: number): GroupBody | { problem: GroupProblem } {
+  const name = form.name.trim();
+  if (name === '' || name.length > nameMax) return { problem: 'group_name' };
+  const whole = (typed: string) => (/^\d{1,2}$/.test(typed.trim()) ? Number(typed) : null);
+  const minChoices = whole(form.minChoices);
+  const maxChoices = whole(form.maxChoices);
+  if (minChoices === null || maxChoices === null || maxChoices < 1 || maxChoices < minChoices) {
+    return { problem: 'choices' };
+  }
+  return { name, minChoices, maxChoices };
+}
+
+// An option as typed: its price delta in the base's major units, 0 for free.
+export interface OptionForm {
+  name: string;
+  delta: string;
+}
+
+export function optionFormOf(option: GroupOption | null): OptionForm {
+  return {
+    name: option?.name ?? '',
+    delta: option ? decimalOf(option.priceDelta.amount, option.priceDelta.currency) : '0',
+  };
+}
+
+export type OptionProblem = 'option_name' | 'delta';
+
+export function optionBody(
+  form: OptionForm,
+  currency: string,
+  nameMax: number,
+  removed = false,
+): OptionBody | { problem: OptionProblem } {
+  const name = form.name.trim();
+  if (name === '' || name.length > nameMax) return { problem: 'option_name' };
+  const amount = minorOf(form.delta, currency);
+  if (amount === null) return { problem: 'delta' };
+  return { name, priceDelta: { amount, currency }, removed };
+}
+
+// An item's groups as a set chosen in the item's form, in the order they
+// were ticked (the item's order for the customer).
+export function toggled(ids: readonly string[], id: string, on: boolean): string[] {
+  const without = ids.filter((each) => each !== id);
+  return on ? [...without, id] : without;
+}
+
 // One place up or down; the list as it was at the ends.
 export function moved(ids: readonly string[], id: string, step: -1 | 1): string[] {
   const from = ids.indexOf(id);
@@ -137,7 +208,18 @@ export type MenuCommand =
   | { kind: 'item'; id: string; body: ItemBody }
   | { kind: 'categoryOrder'; categoryIds: string[] }
   | { kind: 'itemOrder'; categoryId: string; itemIds: string[] }
-  | { kind: 'availability'; type: 'category' | 'item'; id: string; available: boolean };
+  | { kind: 'availability'; type: 'category' | 'item' | 'option'; id: string; available: boolean }
+  | { kind: 'group'; id: string; body: GroupBody }
+  | { kind: 'option'; groupId: string; id: string; body: OptionBody }
+  | { kind: 'optionOrder'; groupId: string; optionIds: string[] }
+  | { kind: 'groupItems'; groupId: string; itemIds: string[] }
+  | { kind: 'itemGroups'; itemId: string; groupIds: string[] }
+  | {
+      kind: 'bulkAvailability';
+      itemIds: string[];
+      available: boolean;
+      until?: 'tomorrow' | 'turned_back_on';
+    };
 
 export type MenuResult = { status: 'saved'; menu: Menu } | { status: 'refused'; refusal: string };
 
@@ -146,7 +228,7 @@ type Answer = { data?: Menu; error?: unknown; response: Response };
 function outcome(answer: Answer): MenuResult {
   if (answer.data) return { status: 'saved', menu: answer.data };
   const status = answer.response.status;
-  if (status === 400 || status === 404 || status === 409) {
+  if (status === 400 || status === 403 || status === 404 || status === 409) {
     const refusal = (answer.error as { error?: unknown } | undefined)?.error;
     return { status: 'refused', refusal: typeof refusal === 'string' ? refusal : 'invalid' };
   }
@@ -193,6 +275,64 @@ async function run(restaurantId: string, command: MenuCommand): Promise<MenuResu
           body: { type: command.type, id: command.id, available: command.available },
         }),
       );
+    case 'group':
+      return outcome(
+        await api.PUT('/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}', {
+          params: { path: { restaurantId, groupId: command.id } },
+          body: command.body,
+        }),
+      );
+    case 'option':
+      return outcome(
+        await api.PUT(
+          '/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/options/{optionId}',
+          {
+            params: { path: { restaurantId, groupId: command.groupId, optionId: command.id } },
+            body: command.body,
+          },
+        ),
+      );
+    case 'optionOrder':
+      return outcome(
+        await api.PUT(
+          '/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/option-order',
+          {
+            params: { path: { restaurantId, groupId: command.groupId } },
+            body: { optionIds: command.optionIds },
+          },
+        ),
+      );
+    case 'groupItems':
+      return outcome(
+        await api.PUT(
+          '/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/items',
+          {
+            params: { path: { restaurantId, groupId: command.groupId } },
+            body: { itemIds: command.itemIds },
+          },
+        ),
+      );
+    case 'itemGroups':
+      return outcome(
+        await api.PUT(
+          '/v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}/option-groups',
+          {
+            params: { path: { restaurantId, itemId: command.itemId } },
+            body: { groupIds: command.groupIds },
+          },
+        ),
+      );
+    case 'bulkAvailability':
+      return outcome(
+        await api.PUT('/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-availability', {
+          params: { path: { restaurantId } },
+          body: {
+            itemIds: command.itemIds,
+            available: command.available,
+            ...(command.until ? { until: command.until } : {}),
+          },
+        }),
+      );
   }
 }
 
@@ -206,6 +346,7 @@ export function useMenuCommand(restaurantId: string) {
       if (result.status !== 'saved') return;
       queryClient.setQueryData(menuKey(restaurantId), result.menu);
       void queryClient.invalidateQueries({ queryKey: ['restaurant-checklist', restaurantId] });
+      void queryClient.invalidateQueries({ queryKey: ['restaurant-price-log', restaurantId] });
     },
   });
 }

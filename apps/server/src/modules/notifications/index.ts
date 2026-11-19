@@ -150,7 +150,15 @@ export class AlertsWorkerModule {}
 // restaurants', captains' and panel's channels, and of the restaurants' state
 // changes (restaurant-state-relay.ts) with their pushes.
 @Module({
-  imports: [DatabaseModule, JobsModule, CaptainsModule, GeoModule, MerchantsModule, ContentModule],
+  imports: [
+    DatabaseModule,
+    JobsModule,
+    CaptainsModule,
+    GeoModule,
+    MerchantsModule,
+    ContentModule,
+    FxModule,
+  ],
   providers: [
     RealtimePublisher,
     PushQueue,

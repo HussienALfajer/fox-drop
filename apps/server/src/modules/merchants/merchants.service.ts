@@ -36,6 +36,7 @@ import {
   optionGroups,
   options,
   pauses,
+  priceChanges,
   restaurants,
   weeklySchedules,
 } from './schema.js';
@@ -84,7 +85,20 @@ export type MerchantsRefusal =
   | 'invalid_sort_weight'
   // AP §9.6.4 (slice 2.30d): the profile edits a restaurant past its draft;
   // a draft is the wizard's.
-  | 'still_a_draft';
+  | 'still_a_draft'
+  // AP §9.6.5, §6.3 (slice 2.31): a price set past test mode without
+  // `menus.edit_prices`.
+  | 'price_edit_not_allowed'
+  // AP §9.6.6 «تعديل جماعي» (slice 2.31): a change that brings a price to 0
+  // or below, or a city whose base has no rounding unit yet.
+  | 'price_reaches_zero'
+  | 'rounding_unit_missing'
+  // Architecture §5.3: a key sent again with another command.
+  | 'idempotency_key_reused'
+  // AP §9.6.6 «استيراد من Excel» (slice 2.31): a workbook with a row error,
+  // or not a workbook at all.
+  | 'import_invalid'
+  | 'import_unreadable';
 
 // Slice 2.30c: the same commission «now» again within this is a repeat.
 const COMMISSION_REPEAT_WINDOW_MS = 60_000;
@@ -279,6 +293,19 @@ export interface MenuCategory {
 
 export interface Menu {
   categories: MenuCategory[];
+}
+
+// AP §9.6.6 «سجل الأسعار»: one price change of an item or an option.
+export interface PriceLogEntry {
+  id: string;
+  target:
+    | { type: 'item'; id: string; name: string }
+    | { type: 'option'; id: string; name: string; groupName: string };
+  oldPrice: Money;
+  newPrice: Money;
+  changedByType: 'admin' | 'merchant' | 'system';
+  changedById: string | null;
+  at: Date;
 }
 
 // AP §9.6.1, §9.6.3 step 8 and §9.6.5: the account status changes allowed.
@@ -1441,14 +1468,20 @@ export class MerchantsService implements OnModuleInit {
   // marked; deleted rows are left out. A switch off «حتى الغد» is on again
   // from its time. A category outside its daily window, on the city's clock,
   // is unavailable with its items (CU §9.3).
-  async menu(restaurantId: string, now = new Date()): Promise<Menu> {
-    const db = this.database.db;
+  // `executor`: a command's transaction that reads the menu under its lock
+  // (the Excel import, slice 2.31); the pool otherwise.
+  async menu(
+    restaurantId: string,
+    now = new Date(),
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<Menu> {
+    const db = executor;
     const [restaurant] = await db
       .select({ id: restaurants.id, cityId: restaurants.cityId })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId));
     if (!restaurant) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
-    const timeZone = await this.geo.cityTimeZone(restaurant.cityId);
+    const timeZone = await this.geo.cityTimeZone(restaurant.cityId, db);
     if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
     const published = (table: { published: AnyPgColumn; deletedAt: AnyPgColumn }) =>
       and(eq(table.published, true), isNull(table.deletedAt));
@@ -1559,6 +1592,82 @@ export class MerchantsService implements OnModuleInit {
     };
   }
 
+  // AP §9.6.6 «سجل الأسعار» (slice 2.31): the latest price changes of the
+  // restaurant's items and options, newest first, with the row's name and
+  // who made it (an admin's or a restaurant user's id; reporting names them).
+  async priceLog(restaurantId: string, limit: number): Promise<PriceLogEntry[]> {
+    const rows = await this.database.db
+      .select({
+        id: priceChanges.id,
+        itemId: priceChanges.itemId,
+        optionId: priceChanges.optionId,
+        itemName: items.name,
+        optionName: options.name,
+        groupName: optionGroups.name,
+        currency: priceChanges.currency,
+        oldPrice: priceChanges.oldPrice,
+        newPrice: priceChanges.newPrice,
+        changedByType: priceChanges.changedByType,
+        changedById: priceChanges.changedById,
+        createdAt: priceChanges.createdAt,
+      })
+      .from(priceChanges)
+      .leftJoin(items, eq(items.id, priceChanges.itemId))
+      .leftJoin(options, eq(options.id, priceChanges.optionId))
+      .leftJoin(optionGroups, eq(optionGroups.id, options.groupId))
+      .where(eq(priceChanges.restaurantId, restaurantId))
+      .orderBy(desc(priceChanges.id))
+      .limit(limit);
+    return rows.map((row) => ({
+      id: row.id,
+      target:
+        row.itemId !== null
+          ? { type: 'item' as const, id: row.itemId, name: row.itemName ?? '' }
+          : {
+              type: 'option' as const,
+              id: row.optionId!,
+              name: row.optionName ?? '',
+              groupName: row.groupName ?? '',
+            },
+      oldPrice: { amount: row.oldPrice, currency: row.currency },
+      newPrice: { amount: row.newPrice, currency: row.currency },
+      changedByType: row.changedByType,
+      changedById: row.changedById,
+      at: row.createdAt,
+    }));
+  }
+
+  // The ids of every menu row the restaurant ever had, by its audit target
+  // type, for «سجل التغييرات» (slice 2.31).
+  async menuRowIds(restaurantId: string): Promise<{ type: string; ids: string[] }[]> {
+    const db = this.database.db;
+    const [categoryRows, itemRows, groupRows] = await Promise.all([
+      db
+        .select({ id: categories.id })
+        .from(categories)
+        .where(eq(categories.restaurantId, restaurantId)),
+      db.select({ id: items.id }).from(items).where(eq(items.restaurantId, restaurantId)),
+      db
+        .select({ id: optionGroups.id })
+        .from(optionGroups)
+        .where(eq(optionGroups.restaurantId, restaurantId)),
+    ]);
+    const groupIds = groupRows.map((row) => row.id);
+    const optionRows =
+      groupIds.length === 0
+        ? []
+        : await db
+            .select({ id: options.id })
+            .from(options)
+            .where(inArray(options.groupId, groupIds));
+    return [
+      { type: 'menu_category', ids: categoryRows.map((row) => row.id) },
+      { type: 'menu_item', ids: itemRows.map((row) => row.id) },
+      { type: 'menu_option_group', ids: groupIds },
+      { type: 'menu_option', ids: optionRows.map((row) => row.id) },
+    ];
+  }
+
   // Whether this app installation has its name in the restaurant (RA §5.2
   // item 5).
   // RA §4.7, §8.4: the names of the restaurant's devices by their app
@@ -1648,9 +1757,19 @@ export class MerchantsService implements OnModuleInit {
     availability: { available: true } | { available: false; until: 'tomorrow' | 'turned_back_on' },
     change: MerchantChange,
     now = new Date(),
-    // The statuses this caller edits (the wizard's step 7: a draft or test
-    // mode), checked under the lock; `menu_locked` otherwise.
-    onlyIn: readonly AccountStatus[] | null = null,
+  ): Promise<SwitchedOff> {
+    return this.setAvailabilities(restaurantId, [target], availability, change, now);
+  }
+
+  // AP §9.6.6 «توفر جماعي» (slice 2.31): many rows switched at once, in one
+  // transaction, each audited as its own switch; a row not the restaurant's
+  // refuses them all.
+  async setAvailabilities(
+    restaurantId: string,
+    targets: { type: 'category' | 'item' | 'option'; id: string }[],
+    availability: { available: true } | { available: false; until: 'tomorrow' | 'turned_back_on' },
+    change: MerchantChange,
+    now = new Date(),
   ): Promise<SwitchedOff> {
     const until = availability.available
       ? null
@@ -1661,21 +1780,20 @@ export class MerchantsService implements OnModuleInit {
       if (row.accountStatus === 'terminated') {
         throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
       }
-      if (onlyIn !== null && !onlyIn.includes(row.accountStatus)) {
-        throw new MerchantsRefusedError('menu_locked', 'this menu is not edited here now');
-      }
-      const switched = await this.writeAvailability(
-        tx,
-        row.cityId,
-        restaurantId,
-        target,
-        availability.available,
-        until,
-        change,
-        now,
-      );
-      if (!switched) {
-        throw new MerchantsRefusedError('unknown_menu_row', `no such ${target.type} here`);
+      for (const target of targets) {
+        const switched = await this.writeAvailability(
+          tx,
+          row.cityId,
+          restaurantId,
+          target,
+          availability.available,
+          until,
+          change,
+          now,
+        );
+        if (!switched) {
+          throw new MerchantsRefusedError('unknown_menu_row', `no such ${target.type} here`);
+        }
       }
       return availability.available ? null : { until };
     });

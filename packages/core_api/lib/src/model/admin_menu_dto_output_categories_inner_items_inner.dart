@@ -23,6 +23,7 @@ part 'admin_menu_dto_output_categories_inner_items_inner.g.dart';
 /// * [hidden]
 /// * [badge] - «جديد», «الأكثر طلباً» or «حار».
 /// * [switchedOff] - Its own switch off (RA §9.3); null while on.
+/// * [optionGroupIds] - Its option groups, in order.
 @BuiltValue()
 abstract class AdminMenuDtoOutputCategoriesInnerItemsInner
     implements
@@ -60,6 +61,10 @@ abstract class AdminMenuDtoOutputCategoriesInnerItemsInner
   /// Its own switch off (RA §9.3); null while on.
   @BuiltValueField(wireName: r'switchedOff')
   AdminMenuSwitchedOffOutput? get switchedOff;
+
+  /// Its option groups, in order.
+  @BuiltValueField(wireName: r'optionGroupIds')
+  BuiltList<String> get optionGroupIds;
 
   AdminMenuDtoOutputCategoriesInnerItemsInner._();
 
@@ -148,6 +153,11 @@ class _$AdminMenuDtoOutputCategoriesInnerItemsInnerSerializer
             object.switchedOff,
             specifiedType: const FullType.nullable(AdminMenuSwitchedOffOutput),
           );
+    yield r'optionGroupIds';
+    yield serializers.serialize(
+      object.optionGroupIds,
+      specifiedType: const FullType(BuiltList, [FullType(String)]),
+    );
   }
 
   @override
@@ -263,6 +273,17 @@ class _$AdminMenuDtoOutputCategoriesInnerItemsInnerSerializer
                   as AdminMenuSwitchedOffOutput?;
           if (valueDes == null) continue;
           result.switchedOff.replace(valueDes);
+          break;
+        case r'optionGroupIds':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
+          result.optionGroupIds.replace(valueDes);
           break;
         default:
           unhandled.add(key);

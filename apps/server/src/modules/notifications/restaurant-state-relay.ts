@@ -10,7 +10,8 @@ import type { Database } from '../../database/database.js';
 import { QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { reportError } from '../../observability/error-tracking.js';
-import { NotificationTexts } from '../content/index.js';
+import { formatMoney, NotificationTexts } from '../content/index.js';
+import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import {
   type RelayedStateChange,
@@ -33,6 +34,9 @@ export function restaurantStatePush(
   kind: StateKind,
   values: RelayedStateChange['values'],
   timeZone: string,
+  // An amount in minor units as the apps show it (formatMoney).
+  money: (minor: bigint, currency: string) => string = (minor, currency) =>
+    `${minor.toString()} ${currency}`,
 ): { templateKey: string; values: Record<string, string>; owners?: boolean } | null {
   switch (kind) {
     // #3: «أُوقف مطعمك تلقائياً بعد {العدد} طلبات دون رد…»
@@ -74,10 +78,38 @@ export function restaurantStatePush(
         },
         owners: true,
       };
+    // #21, D17 (slice 2.31), owners only: «عدّلت FOX DROP سعر {الصنف}: {القديم}
+    // ← {الجديد}»; a bulk change or an import as one summary (AP §9.6.6).
+    case 'price_change': {
+      const currency = String(values.currency);
+      return {
+        templateKey: 'merchant.admin_price_change',
+        values: {
+          الصنف: String(values.name),
+          القديم: money(BigInt(String(values.oldPrice)), currency),
+          الجديد: money(BigInt(String(values.newPrice)), currency),
+        },
+        owners: true,
+      };
+    }
+    case 'price_change_bulk':
+      return {
+        templateKey: 'merchant.admin_price_change_bulk',
+        values: { العدد: String(values.count) },
+        owners: true,
+      };
     default:
       return null;
   }
 }
+
+// What only the owners hear (R10): the channel every device of the
+// restaurant hears carries the kind without its values.
+const OWNERS_ONLY: ReadonlySet<StateKind> = new Set([
+  'commission_change',
+  'price_change',
+  'price_change_bulk',
+]);
 
 // Basis points as a percentage with Western digits: 1500 is «15», 1250
 // «12.5», 1234 «12.34».
@@ -116,16 +148,23 @@ export class RestaurantStateRelay {
     private readonly texts: NotificationTexts,
     private readonly alerts: AlertsService,
     private readonly geo: GeoService,
+    private readonly fx: FxService,
   ) {}
+
+  private currencies: Map<string, { symbol: string; decimals: number }> | undefined;
 
   async drain(now: Date): Promise<number> {
     return this.status.relayStateChanges(async (change) => {
+      const known = change.kind === 'price_change' ? await this.knownCurrencies() : null;
       const push = restaurantStatePush(
         change.kind,
         change.values,
         change.kind === 'commission_change'
           ? ((await this.geo.cityTimeZone(change.cityId)) ?? 'UTC')
           : 'UTC',
+        known === null
+          ? undefined
+          : (minor: bigint, currency: string) => formatMoney(minor, currency, known),
       );
       if (push !== null) {
         const rendered = await this.texts.render(push.templateKey, push.values);
@@ -177,15 +216,26 @@ export class RestaurantStateRelay {
           restaurantId: change.restaurantId,
           kind: change.kind,
           // What its notice says, as its push: the count, the minutes. The
-          // commission is the owners' alone (RA §16 #33, R10), so its values
-          // stay off the channel every device of the restaurant hears.
-          values: change.kind === 'commission_change' ? {} : change.values,
+          // commission and an admin's price change are the owners' alone (RA
+          // §16 #21, #33, R10), so their values stay off the channel every
+          // device of the restaurant hears.
+          values: OWNERS_ONLY.has(change.kind) ? {} : change.values,
           at: change.at.toISOString(),
         },
         `merchants-state:${change.id}`,
       );
       this.logger.debug({ restaurantId: change.restaurantId, kind: change.kind }, 'relayed');
     }, now);
+  }
+
+  private async knownCurrencies(): Promise<Map<string, { symbol: string; decimals: number }>> {
+    this.currencies ??= new Map(
+      (await this.fx.currencies()).map((currency) => [
+        currency.code,
+        { symbol: currency.symbol, decimals: currency.decimals },
+      ]),
+    );
+    return this.currencies;
   }
 }
 

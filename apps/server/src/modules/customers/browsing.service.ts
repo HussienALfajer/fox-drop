@@ -426,6 +426,14 @@ export class BrowsingService {
     return cards.filter((card) => card.state.state.state === 'open');
   }
 
+  // AP §9.6.6 «معاينة كما يراها الزبون» (slice 2.31): the menu exactly as the
+  // restaurant page shows it, read for an admin whatever the restaurant's
+  // status; null for an unknown restaurant.
+  async previewMenu(id: string, now: Date): Promise<StorefrontCategory[] | null> {
+    if ((await this.merchants.cityAndStatus(id)) === null) return null;
+    return storefrontMenu((await this.merchants.menu(id, now)).categories);
+  }
+
   // CU §9.1–9.4; null for a restaurant customers do not see (CU §8.2).
   async restaurantPage(
     id: string,

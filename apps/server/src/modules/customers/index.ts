@@ -10,6 +10,7 @@ import { MarketingModule } from '../marketing/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminCustomersController } from './admin-customers.controller.js';
+import { AdminMenuPreviewController } from './admin-menu-preview.controller.js';
 import { AdminLostDemandController } from './admin-lost-demand.controller.js';
 import { BrowsingService } from './browsing.service.js';
 import { CustomerClosureController } from './customer-closure.controller.js';
@@ -48,6 +49,7 @@ import { MassPushAudienceSource } from './mass-push-audience.js';
     CustomerSearchController,
     CustomerFavouritesController,
     AdminCustomersController,
+    AdminMenuPreviewController,
     AdminLostDemandController,
   ],
   providers: [

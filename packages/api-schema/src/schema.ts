@@ -1396,6 +1396,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantMenuBulkPricePreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantMenuBulkPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuBulkAvailability"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurant-drafts/{restaurantId}/menu": {
         parameters: {
             query?: never;
@@ -1486,6 +1534,134 @@ export interface paths {
         get?: never;
         put: operations["adminRestaurantMenuAvailability"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuOptionGroup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/options/{optionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuOption"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/option-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuOptionOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuGroupItems"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}/option-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuItemGroups"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantMenuImportTemplate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import/dry-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantMenuImportDryRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantMenuImportCommit"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2862,6 +3038,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminCustomersEndReviewStop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/menu/customer-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminMenuPreviewPreview"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5732,6 +5924,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/menu/price-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantProfileReadsPriceLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurants/{restaurantId}/change-log": {
         parameters: {
             query?: never;
@@ -7001,6 +7209,50 @@ export interface components {
             categoryIds: string[];
             description: string | null;
         };
+        AdminMenuBulkPriceDto: {
+            /** @description One category; null: the whole menu. */
+            categoryId: string | null;
+            /** @enum {string} */
+            kind: "percent" | "amount";
+            /** @enum {string} */
+            direction: "up" | "down";
+            /** @description Basis points for a percentage (1000 is 10%); minor units of the base for an amount. */
+            value: string;
+        };
+        AdminMenuBulkPreviewDto_Output: {
+            currency: string;
+            /** @description The base's rounding unit each new price is rounded to. */
+            roundingUnit: string;
+            rows: {
+                /** Format: uuid */
+                itemId: string;
+                code: string;
+                name: string;
+                /** Format: uuid */
+                categoryId: string;
+                /** @description Integer minor units of the currency, as a string. */
+                before: string;
+                /** @description null: the change would bring it to 0 (refused). */
+                after: string | null;
+            }[];
+            changed: number;
+            unchanged: number;
+            /** @description Above 0, the change cannot be applied. */
+            refused: number;
+        };
+        AdminMenuBulkPriceResultDto_Output: {
+            changed: number;
+            unchanged: number;
+        };
+        AdminMenuBulkAvailabilityDto: {
+            itemIds: string[];
+            available: boolean;
+            /**
+             * @description When switching off: «حتى الغد» or «حتى أعيده» (the default).
+             * @enum {string}
+             */
+            until?: "tomorrow" | "turned_back_on";
+        };
         AdminMenuSwitchedOff_Output: {
             /** @description «حتى الغد» ends at the next business-day cutoff; null is «حتى أعيده». */
             until: string | null;
@@ -7019,8 +7271,10 @@ export interface components {
         AdminMenuDto_Output: {
             /** @enum {string} */
             accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
-            /** @description Whether step 7 edits it: a draft or a restaurant in test mode (until 2.31). */
+            /** @description Whether the editor edits it: any status but terminated. */
             editable: boolean;
+            /** @description Past test mode, prices need menus.edit_prices: true when this session lacks it. */
+            pricesLocked: boolean;
             nameMax: number;
             descriptionMax: number;
             codeMax: number;
@@ -7047,7 +7301,28 @@ export interface components {
                     badge: ("new" | "most_ordered" | "spicy") | null;
                     /** @description Its own switch off (RA §9.3); null while on. */
                     switchedOff: components["schemas"]["AdminMenuSwitchedOff_Output"];
+                    /** @description Its option groups, in order. */
+                    optionGroupIds: string[];
                 }[];
+            }[];
+            /** @description Every option group of the restaurant, by name. */
+            optionGroups: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @description 0: an add-on group; 1 or more: required. */
+                minChoices: number;
+                maxChoices: number;
+                options: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    priceDelta: components["schemas"]["AdminMenuMoney_Output"];
+                    /** @description Its own switch off (RA §9.3); null while on. */
+                    switchedOff: components["schemas"]["AdminMenuSwitchedOff_Output"];
+                }[];
+                /** @description The items it is linked to, in menu order. */
+                itemIds: string[];
             }[];
         };
         AdminMenuWindow: {
@@ -7090,7 +7365,7 @@ export interface components {
         };
         AdminMenuAvailabilityDto: {
             /** @enum {string} */
-            type: "category" | "item";
+            type: "category" | "item" | "option";
             /** Format: uuid */
             id: string;
             available: boolean;
@@ -7099,6 +7374,90 @@ export interface components {
              * @enum {string}
              */
             until?: "tomorrow" | "turned_back_on";
+        };
+        AdminMenuOptionGroupDto: {
+            name: string;
+            /** @description 0: an add-on group; 1 or more: required. */
+            minChoices: number;
+            /** @description At least the minimum; once it has options, at most their count. */
+            maxChoices: number;
+        };
+        AdminMenuOptionDto: {
+            name: string;
+            /** @description 0 or more, in the city's base currency. */
+            priceDelta: components["schemas"]["AdminMenuMoney"];
+            /** @description true removes the option for good. */
+            removed: boolean;
+        };
+        AdminMenuOptionOrderDto: {
+            /** @description Every option of the group once, in order. */
+            optionIds: string[];
+        };
+        AdminMenuGroupItemsDto: {
+            /** @description Every item the group is linked to. */
+            itemIds: string[];
+        };
+        AdminMenuItemGroupsDto: {
+            /** @description The item's groups, in order. */
+            groupIds: string[];
+        };
+        AdminMenuImportTemplateDto_Output: {
+            fileName: string;
+            /** @description The .xlsx workbook, filled with the current menu. */
+            contentBase64: string;
+        };
+        AdminMenuImportUploadDto: {
+            /**
+             * Format: uuid
+             * @description A menu_import upload of POST /v1/admin/uploads.
+             */
+            uploadId: string;
+        };
+        AdminMenuImportPlanDto_Output: {
+            /** @description The file cannot be read as the template (2000 rows at most). */
+            fileError: ("missing_headers" | "no_rows" | "too_many_rows") | null;
+            /** @description Every row error; the import runs only without any. */
+            errors: {
+                /** @description The sheet's row number, the header being 1. */
+                row: number;
+                /** @enum {string} */
+                column: "code" | "category" | "item_name" | "description" | "price" | "groups";
+                /** @enum {string} */
+                error: "required" | "too_long" | "invalid_price" | "repeated_code" | "unknown_group" | "ambiguous_name";
+            }[];
+            categoriesAdded: string[];
+            added: {
+                row: number;
+                /** @description null: generated. */
+                code: string | null;
+                categoryName: string;
+                name: string;
+                description: string | null;
+                /** @description In the city's base currency. */
+                price: string;
+                groupIds: string[];
+            }[];
+            changed: {
+                row: number;
+                /** Format: uuid */
+                itemId: string;
+                code: string;
+                fields: ("category" | "item_name" | "description" | "price" | "groups")[];
+                categoryName: string;
+                name: string;
+                description: string | null;
+                /** @description In the city's base currency. */
+                price: string;
+                groupIds: string[];
+                oldPrice: string;
+            }[];
+            unchanged: number;
+        };
+        AdminMenuImportResultDto_Output: {
+            added: number;
+            changed: number;
+            unchanged: number;
+            categoriesAdded: number;
         };
         AdminChecklistDto_Output: {
             /** @enum {string} */
@@ -7243,9 +7602,12 @@ export interface components {
              * @description The record the file is for (architecture §5.8).
              * @enum {string}
              */
-            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image" | "restaurant_contract" | "restaurant_licence";
-            /** @enum {string} */
-            contentType: "image/jpeg" | "image/png" | "image/webp";
+            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image" | "restaurant_contract" | "restaurant_licence" | "menu_import";
+            /**
+             * @description An image (8 MB at most); for menu_import an .xlsx workbook (2 MB at most).
+             * @enum {string}
+             */
+            contentType: "image/jpeg" | "image/png" | "image/webp" | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             sizeBytes: number;
         };
         AdminUploadDto_Output: {
@@ -9161,6 +9523,61 @@ export interface components {
             stopId: string;
             /** @description The required reason. */
             note: string;
+        };
+        AdminMenuPreviewDto_Output: {
+            /** @description The restaurant page's menu (CU §9.3): hidden rows left out. */
+            menu: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @description Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it. */
+                window: {
+                    startsAt: number;
+                    endsAt: number;
+                } | null;
+                items: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    description: string | null;
+                    /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                    photoKey: string | null;
+                    price: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description «من {أقل سعر}» when a required group changes it. */
+                    fromPrice: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    available: boolean;
+                    /** @description «يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً». */
+                    unavailableReason: ("tomorrow" | "window" | "unavailable") | null;
+                    optionGroups: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        /** @description 0 is an add-on group; 1 or more is «إجباري». */
+                        minChoices: number;
+                        maxChoices: number;
+                        options: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            priceDelta: {
+                                /** @description Integer minor units (AP §8.6). */
+                                amount: string;
+                                currency: string;
+                            };
+                            /** @description Faded and not pickable when false. */
+                            available: boolean;
+                        }[];
+                    }[];
+                }[];
+            }[];
         };
         AdminLostDemandDto_Output: {
             /**
@@ -17213,6 +17630,33 @@ export interface components {
         AdminAddRestaurantNoteDto: {
             body: string;
         };
+        AdminPriceLogMoney_Output: {
+            amount: string;
+            currency: string;
+        };
+        AdminRestaurantPriceLogDto_Output: {
+            /** @description The latest 200, newest first. */
+            entries: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                targetType: "item" | "option";
+                /** Format: uuid */
+                targetId: string;
+                /** @description The item's name, or the option's. */
+                name: string;
+                /** @description An option's group; null for an item. */
+                groupName: string | null;
+                oldPrice: components["schemas"]["AdminPriceLogMoney_Output"];
+                newPrice: components["schemas"]["AdminPriceLogMoney_Output"];
+                /** @enum {string} */
+                byType: "admin" | "merchant" | "system";
+                /** @description The admin's name, or the restaurant user's; null when unknown. */
+                byName: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
+        };
         AdminRestaurantChangeLogDto_Output: {
             /** @description The latest 200 changes, newest first. */
             entries: {
@@ -19738,6 +20182,87 @@ export interface operations {
             };
         };
     };
+    adminRestaurantMenuBulkPricePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuBulkPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuBulkPreviewDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuBulkPrice: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuBulkPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuBulkPriceResultDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuBulkAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuBulkAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
     adminRestaurantMenuRead: {
         parameters: {
             query?: never;
@@ -19889,6 +20414,219 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuOptionGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuOptionGroupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuOption: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                groupId: string;
+                optionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuOptionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuOptionOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuOptionOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuGroupItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuGroupItemsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuItemGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuItemGroupsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuImportTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuImportTemplateDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuImportDryRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuImportUploadDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuImportPlanDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuImportCommit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuImportUploadDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuImportResultDto_Output"];
                 };
             };
         };
@@ -22142,6 +22880,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminMenuPreviewPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuPreviewDto_Output"];
                 };
             };
         };
@@ -26982,6 +27742,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantNotesDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantProfileReadsPriceLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantPriceLogDto_Output"];
                 };
             };
         };

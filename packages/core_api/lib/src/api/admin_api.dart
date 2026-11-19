@@ -125,11 +125,25 @@ import 'package:core_api/src/model/admin_mass_push_audience_dto_output.dart';
 import 'package:core_api/src/model/admin_mass_push_city_dto.dart';
 import 'package:core_api/src/model/admin_mass_pushes_dto_output.dart';
 import 'package:core_api/src/model/admin_menu_availability_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_availability_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_bulk_price_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_price_result_dto_output.dart';
 import 'package:core_api/src/model/admin_menu_category_dto.dart';
 import 'package:core_api/src/model/admin_menu_category_order_dto.dart';
 import 'package:core_api/src/model/admin_menu_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_group_items_dto.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_result_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_template_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_upload_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_dto.dart';
+import 'package:core_api/src/model/admin_menu_item_groups_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_order_dto.dart';
+import 'package:core_api/src/model/admin_menu_option_dto.dart';
+import 'package:core_api/src/model/admin_menu_option_group_dto.dart';
+import 'package:core_api/src/model/admin_menu_option_order_dto.dart';
+import 'package:core_api/src/model/admin_menu_preview_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_new_banner_dto.dart';
 import 'package:core_api/src/model/admin_new_category_dto.dart';
@@ -202,6 +216,7 @@ import 'package:core_api/src/model/admin_restaurant_overview_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_price_log_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_reason_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_settle_dto.dart';
@@ -9809,6 +9824,88 @@ class AdminApi {
     );
   }
 
+  /// adminMenuPreviewPreview
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuPreviewDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuPreviewDtoOutput>> adminMenuPreviewPreview({
+    required String restaurantId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/restaurants/{restaurantId}/menu/customer-preview'
+        .replaceAll(
+          '{'
+          r'restaurantId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            restaurantId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuPreviewDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuPreviewDtoOutput),
+                )
+                as AdminMenuPreviewDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuPreviewDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminOrderCompensationsCompensate
   ///
   ///
@@ -17269,6 +17366,326 @@ class AdminApi {
     );
   }
 
+  /// adminRestaurantMenuBulkAvailability
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [adminMenuBulkAvailabilityDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuDtoOutput>> adminRestaurantMenuBulkAvailability({
+    required String restaurantId,
+    required AdminMenuBulkAvailabilityDto adminMenuBulkAvailabilityDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-availability'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuBulkAvailabilityDto);
+      _bodyData = _serializers.serialize(
+        adminMenuBulkAvailabilityDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuDtoOutput),
+                )
+                as AdminMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantMenuBulkPrice
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminMenuBulkPriceDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuBulkPriceResultDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuBulkPriceResultDtoOutput>>
+  adminRestaurantMenuBulkPrice({
+    required String restaurantId,
+    required String idempotencyKey,
+    required AdminMenuBulkPriceDto adminMenuBulkPriceDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price'
+        .replaceAll(
+          '{'
+          r'restaurantId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            restaurantId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuBulkPriceDto);
+      _bodyData = _serializers.serialize(
+        adminMenuBulkPriceDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuBulkPriceResultDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminMenuBulkPriceResultDtoOutput,
+                  ),
+                )
+                as AdminMenuBulkPriceResultDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuBulkPriceResultDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantMenuBulkPricePreview
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [adminMenuBulkPriceDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuBulkPreviewDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuBulkPreviewDtoOutput>>
+  adminRestaurantMenuBulkPricePreview({
+    required String restaurantId,
+    required AdminMenuBulkPriceDto adminMenuBulkPriceDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price/preview'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuBulkPriceDto);
+      _bodyData = _serializers.serialize(
+        adminMenuBulkPriceDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuBulkPreviewDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuBulkPreviewDtoOutput),
+                )
+                as AdminMenuBulkPreviewDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuBulkPreviewDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminRestaurantMenuCategory
   ///
   ///
@@ -17489,6 +17906,422 @@ class AdminApi {
     );
   }
 
+  /// adminRestaurantMenuGroupItems
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [groupId]
+  /// * [adminMenuGroupItemsDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuDtoOutput>> adminRestaurantMenuGroupItems({
+    required String restaurantId,
+    required String groupId,
+    required AdminMenuGroupItemsDto adminMenuGroupItemsDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/items'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            )
+            .replaceAll(
+              '{'
+              r'groupId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                groupId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuGroupItemsDto);
+      _bodyData = _serializers.serialize(
+        adminMenuGroupItemsDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuDtoOutput),
+                )
+                as AdminMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantMenuImportCommit
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminMenuImportUploadDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuImportResultDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuImportResultDtoOutput>>
+  adminRestaurantMenuImportCommit({
+    required String restaurantId,
+    required String idempotencyKey,
+    required AdminMenuImportUploadDto adminMenuImportUploadDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/restaurant-drafts/{restaurantId}/menu/import'
+        .replaceAll(
+          '{'
+          r'restaurantId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            restaurantId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuImportUploadDto);
+      _bodyData = _serializers.serialize(
+        adminMenuImportUploadDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuImportResultDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuImportResultDtoOutput),
+                )
+                as AdminMenuImportResultDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuImportResultDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantMenuImportDryRun
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [adminMenuImportUploadDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuImportPlanDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuImportPlanDtoOutput>>
+  adminRestaurantMenuImportDryRun({
+    required String restaurantId,
+    required AdminMenuImportUploadDto adminMenuImportUploadDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/import/dry-run'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuImportUploadDto);
+      _bodyData = _serializers.serialize(
+        adminMenuImportUploadDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuImportPlanDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuImportPlanDtoOutput),
+                )
+                as AdminMenuImportPlanDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuImportPlanDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantMenuImportTemplate
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuImportTemplateDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuImportTemplateDtoOutput>>
+  adminRestaurantMenuImportTemplate({
+    required String restaurantId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/import-template'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuImportTemplateDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminMenuImportTemplateDtoOutput,
+                  ),
+                )
+                as AdminMenuImportTemplateDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuImportTemplateDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminRestaurantMenuItem
   ///
   ///
@@ -17605,6 +18438,122 @@ class AdminApi {
     );
   }
 
+  /// adminRestaurantMenuItemGroups
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [itemId]
+  /// * [adminMenuItemGroupsDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuDtoOutput>> adminRestaurantMenuItemGroups({
+    required String restaurantId,
+    required String itemId,
+    required AdminMenuItemGroupsDto adminMenuItemGroupsDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}/option-groups'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            )
+            .replaceAll(
+              '{'
+              r'itemId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                itemId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuItemGroupsDto);
+      _bodyData = _serializers.serialize(
+        adminMenuItemGroupsDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuDtoOutput),
+                )
+                as AdminMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminRestaurantMenuItemOrder
   ///
   ///
@@ -17668,6 +18617,366 @@ class AdminApi {
       const _type = FullType(AdminMenuItemOrderDto);
       _bodyData = _serializers.serialize(
         adminMenuItemOrderDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuDtoOutput),
+                )
+                as AdminMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantMenuOption
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [groupId]
+  /// * [optionId]
+  /// * [adminMenuOptionDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuDtoOutput>> adminRestaurantMenuOption({
+    required String restaurantId,
+    required String groupId,
+    required String optionId,
+    required AdminMenuOptionDto adminMenuOptionDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/options/{optionId}'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            )
+            .replaceAll(
+              '{'
+              r'groupId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                groupId,
+                const FullType(String),
+              ).toString(),
+            )
+            .replaceAll(
+              '{'
+              r'optionId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                optionId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuOptionDto);
+      _bodyData = _serializers.serialize(
+        adminMenuOptionDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuDtoOutput),
+                )
+                as AdminMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantMenuOptionGroup
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [groupId]
+  /// * [adminMenuOptionGroupDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuDtoOutput>> adminRestaurantMenuOptionGroup({
+    required String restaurantId,
+    required String groupId,
+    required AdminMenuOptionGroupDto adminMenuOptionGroupDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            )
+            .replaceAll(
+              '{'
+              r'groupId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                groupId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuOptionGroupDto);
+      _bodyData = _serializers.serialize(
+        adminMenuOptionGroupDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminMenuDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminMenuDtoOutput),
+                )
+                as AdminMenuDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminMenuDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantMenuOptionOrder
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [groupId]
+  /// * [adminMenuOptionOrderDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminMenuDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminMenuDtoOutput>> adminRestaurantMenuOptionOrder({
+    required String restaurantId,
+    required String groupId,
+    required AdminMenuOptionOrderDto adminMenuOptionOrderDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/option-order'
+            .replaceAll(
+              '{'
+              r'restaurantId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                restaurantId,
+                const FullType(String),
+              ).toString(),
+            )
+            .replaceAll(
+              '{'
+              r'groupId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                groupId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMenuOptionOrderDto);
+      _bodyData = _serializers.serialize(
+        adminMenuOptionOrderDto,
         specifiedType: _type,
       );
     } catch (error, stackTrace) {
@@ -18554,6 +19863,91 @@ class AdminApi {
     }
 
     return Response<AdminRestaurantNotesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantProfileReadsPriceLog
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminRestaurantPriceLogDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminRestaurantPriceLogDtoOutput>>
+  adminRestaurantProfileReadsPriceLog({
+    required String restaurantId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/restaurants/{restaurantId}/menu/price-log'
+        .replaceAll(
+          '{'
+          r'restaurantId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            restaurantId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminRestaurantPriceLogDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminRestaurantPriceLogDtoOutput,
+                  ),
+                )
+                as AdminRestaurantPriceLogDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminRestaurantPriceLogDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

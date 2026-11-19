@@ -22,7 +22,7 @@ abstract class AdminMenuAvailabilityDto
         Built<AdminMenuAvailabilityDto, AdminMenuAvailabilityDtoBuilder> {
   @BuiltValueField(wireName: r'type')
   AdminMenuAvailabilityDtoTypeEnum get type;
-  // enum typeEnum {  category,  item,  };
+  // enum typeEnum {  category,  item,  option,  };
 
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -191,6 +191,9 @@ class AdminMenuAvailabilityDtoTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'item')
   static const AdminMenuAvailabilityDtoTypeEnum item =
       _$adminMenuAvailabilityDtoTypeEnum_item;
+  @BuiltValueEnumConst(wireName: r'option')
+  static const AdminMenuAvailabilityDtoTypeEnum option =
+      _$adminMenuAvailabilityDtoTypeEnum_option;
 
   static Serializer<AdminMenuAvailabilityDtoTypeEnum> get serializer =>
       _$adminMenuAvailabilityDtoTypeEnumSerializer;

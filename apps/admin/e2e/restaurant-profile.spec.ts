@@ -164,7 +164,8 @@ test('uploads an item photo from the menu tab', async ({ page }) => {
     route.fulfill({
       json: {
         accountStatus: 'active',
-        editable: false,
+        editable: true,
+        pricesLocked: true,
         nameMax: 80,
         descriptionMax: 300,
         codeMax: 20,
@@ -186,10 +187,12 @@ test('uploads an item photo from the menu tab', async ({ page }) => {
                 badge: null,
                 photoKey,
                 switchedOff: null,
+                optionGroupIds: [],
               },
             ],
           },
         ],
+        optionGroups: [],
       },
     }),
   );

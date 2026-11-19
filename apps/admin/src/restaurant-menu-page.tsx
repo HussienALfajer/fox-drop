@@ -4,6 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { formatMoney } from './format.js';
 import { timeOf } from './peak-bonus.js';
 import { ImageField } from './restaurant-images-page.js';
+import { MenuImportSection } from './restaurant-menu-import-page.js';
+import { MenuPreviewSection } from './restaurant-menu-preview-page.js';
+import {
+  BulkAvailabilitySection,
+  BulkPriceSection,
+  PriceLogSection,
+} from './restaurant-menu-bulk-page.js';
+import { CommandStatus } from './restaurant-menu-status.js';
+import { OptionGroupsSection } from './restaurant-option-groups-page.js';
 import {
   BADGES,
   type Badge,
@@ -17,19 +26,22 @@ import {
   type Menu,
   type MenuCategory,
   type MenuItem,
-  type MenuResult,
   menuQuery,
   moved,
+  toggled,
   useMenuCommand,
 } from './restaurant-menu.js';
 import type { AdminSession } from './session.js';
 
-// The wizard's step 7 «القائمة» (AP §9.6.3, §9.6.6; slice 2.30b): categories
-// and items in order, each edited in place. Up and down stand for the drag
-// until the design. Unstyled until the design.
+// «القائمة» (AP §9.6.3, §9.6.6): the wizard's step 7 (slice 2.30b) and the
+// profile's tab past it (slice 2.31): categories and items in order, each
+// edited in place, then the option groups. Up and down stand for the drag
+// until the design. Past test mode the prices are read only without
+// `menus.edit_prices` (`pricesLocked`). Unstyled until the design.
 export function MenuStep(props: {
   restaurantId: string;
   currency: string | null;
+  timeZone: string;
   session: AdminSession;
 }) {
   const { t } = useTranslation();
@@ -44,6 +56,7 @@ export function MenuStep(props: {
     <section aria-label={t('drafts.step.menu')}>
       <p>{t('menu.explain')}</p>
       {!menu.data.editable && <p>{t('menu.locked')}</p>}
+      {menu.data.editable && menu.data.pricesLocked && <p>{t('menu.pricesLocked')}</p>}
       {props.currency === null && <p role="alert">{t('drafts.problem.no_base')}</p>}
       <CommandStatus pending={command.isPending} failed={command.isError} result={command.data} />
       {menu.data.categories.length === 0 && <p>{t('menu.none')}</p>}
@@ -80,28 +93,31 @@ export function MenuStep(props: {
             onDone={() => setAdding(null)}
           />
         ))}
+      <OptionGroupsSection
+        restaurantId={props.restaurantId}
+        menu={menu.data}
+        currency={props.currency}
+        editable={editable}
+      />
+      {editable && menu.data.categories.length > 0 && (
+        <>
+          {props.currency !== null && !menu.data.pricesLocked && (
+            <BulkPriceSection
+              restaurantId={props.restaurantId}
+              menu={menu.data}
+              currency={props.currency}
+            />
+          )}
+          <BulkAvailabilitySection restaurantId={props.restaurantId} menu={menu.data} />
+        </>
+      )}
+      {editable && props.currency !== null && (
+        <MenuImportSection restaurantId={props.restaurantId} currency={props.currency} />
+      )}
+      <MenuPreviewSection restaurantId={props.restaurantId} />
+      <PriceLogSection restaurantId={props.restaurantId} timeZone={props.timeZone} />
     </section>
   );
-}
-
-function CommandStatus(props: {
-  pending: boolean;
-  failed: boolean;
-  result: MenuResult | undefined;
-}) {
-  const { t } = useTranslation();
-  if (props.pending) return <p role="status">{t('drafts.saving')}</p>;
-  if (props.failed) return <p role="alert">{t('common.failed')}</p>;
-  if (props.result?.status === 'refused') {
-    return (
-      <p role="alert">
-        {t(`menu.refused.${props.result.refusal}` as 'menu.refused.invalid_menu', {
-          defaultValue: t('drafts.refused.invalid'),
-        })}
-      </p>
-    );
-  }
-  return null;
 }
 
 function CategorySection(props: {
@@ -198,6 +214,7 @@ function CategorySection(props: {
       )}
       {props.editable &&
         props.currency !== null &&
+        !props.menu.pricesLocked &&
         (adding === null ? (
           <button type="button" onClick={() => setAdding(crypto.randomUUID())}>
             {t('menu.addItem')}
@@ -241,6 +258,15 @@ function ItemRow(props: {
         {item.switchedOff !== null && ` · ${t('menu.off')}`}
       </p>
       {item.description !== null && <p>{item.description}</p>}
+      {item.optionGroupIds.length > 0 && (
+        <p>
+          {t('menu.groups.list', {
+            names: item.optionGroupIds
+              .map((id) => props.menu.optionGroups.find((group) => group.id === id)?.name ?? '')
+              .join('، '),
+          })}
+        </p>
+      )}
       <ImageField
         label={t('menu.photo', { name: item.name })}
         imageKey={item.photoKey}
@@ -381,16 +407,29 @@ function ItemEditor(props: {
   const { t } = useTranslation();
   const command = useMenuCommand(props.restaurantId);
   const [form, setForm] = useState<ItemForm>(itemFormOf(props.item, props.categoryId));
+  const [groupIds, setGroupIds] = useState<string[]>(props.item?.optionGroupIds ?? []);
   const [problem, setProblem] = useState<string | null>(null);
   const change = (next: Partial<ItemForm>) => setForm({ ...form, ...next });
+  // The item first, then its groups when they changed (a new item exists
+  // only once saved).
   const save = (event: FormEvent) => {
     event.preventDefault();
     const body = itemBody(form, props.currency, props.menu);
     if ('problem' in body) return setProblem(body.problem);
     setProblem(null);
+    const groupsChanged = groupIds.join() !== (props.item?.optionGroupIds ?? []).join();
     command.mutate(
       { kind: 'item', id: props.itemId, body },
-      { onSuccess: (result) => result.status === 'saved' && props.onDone() },
+      {
+        onSuccess: (result) => {
+          if (result.status !== 'saved') return;
+          if (!groupsChanged) return props.onDone();
+          command.mutate(
+            { kind: 'itemGroups', itemId: props.itemId, groupIds },
+            { onSuccess: (next) => next.status === 'saved' && props.onDone() },
+          );
+        },
+      },
     );
   };
   return (
@@ -428,9 +467,25 @@ function ItemEditor(props: {
         <input
           inputMode="decimal"
           value={form.price}
+          readOnly={props.menu.pricesLocked}
           onChange={(event) => change({ price: event.target.value })}
         />
       </label>
+      {props.menu.optionGroups.length > 0 && (
+        <fieldset>
+          <legend>{t('menu.groups.ofItem')}</legend>
+          {props.menu.optionGroups.map((group) => (
+            <label key={group.id}>
+              <input
+                type="checkbox"
+                checked={groupIds.includes(group.id)}
+                onChange={(event) => setGroupIds(toggled(groupIds, group.id, event.target.checked))}
+              />
+              {group.name}
+            </label>
+          ))}
+        </fieldset>
+      )}
       <label>
         {t('menu.badgeLabel')}
         <select

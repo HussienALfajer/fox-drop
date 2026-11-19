@@ -227,6 +227,7 @@ export function RestaurantDraftPage() {
         <MenuStep
           restaurantId={restaurantId}
           currency={choices.data.baseCurrency}
+          timeZone={city.timeZone}
           session={session}
         />
       ) : (

@@ -20,12 +20,20 @@ export const uploadPurposes = [
   // commercial registration or licence, scanned, in private-docs.
   'restaurant_contract',
   'restaurant_licence',
+  // AP §9.6.6 «استيراد من Excel» (slice 2.31): a menu's workbook, read by the
+  // server, in private-docs.
+  'menu_import',
 ] as const;
 export type UploadPurpose = (typeof uploadPurposes)[number];
 
 // The image types the panel may upload; the server checks the stored bytes.
 export const imageTypes = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export type ImageType = (typeof imageTypes)[number];
+
+// An Excel workbook (slice 2.31: the menu's import).
+export const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+export const uploadTypes = [...imageTypes, XLSX_TYPE] as const;
+export type UploadType = (typeof uploadTypes)[number];
 
 // One pre-signed upload, to public-media or (a report's photo) private-docs. The object's key is new for every
 // upload and never reused, so a cached image never goes stale. linked_at is
@@ -39,7 +47,7 @@ export const uploads = files.table(
       .default(sql`uuidv7()`),
     purpose: text('purpose', { enum: uploadPurposes }).notNull(),
     key: text('key').notNull().unique(),
-    contentType: text('content_type', { enum: imageTypes }).notNull(),
+    contentType: text('content_type', { enum: uploadTypes }).notNull(),
     sizeBytes: integer('size_bytes').notNull(),
     // The account (identity's id, a plain column) that asked for it: an
     // admin's, or the customer's for a report's photo.
@@ -50,11 +58,11 @@ export const uploads = files.table(
   (table) => [
     check(
       'uploads_purpose_values',
-      sql`${table.purpose} IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image', 'restaurant_contract', 'restaurant_licence')`,
+      sql`${table.purpose} IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image', 'restaurant_contract', 'restaurant_licence', 'menu_import')`,
     ),
     check(
       'uploads_content_type_values',
-      sql`${table.contentType} IN ('image/jpeg', 'image/png', 'image/webp')`,
+      sql`${table.contentType} IN ('image/jpeg', 'image/png', 'image/webp', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')`,
     ),
     check('uploads_size_positive', sql`${table.sizeBytes} > 0`),
     // A customer's photos asked in the last hour (slice 2.24a).

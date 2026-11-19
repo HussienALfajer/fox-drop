@@ -1,0 +1,187 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'admin_menu_bulk_preview_dto_output_rows_inner.dart';
+
+// **************************************************************************
+// BuiltValueGenerator
+// **************************************************************************
+
+class _$AdminMenuBulkPreviewDtoOutputRowsInner
+    extends AdminMenuBulkPreviewDtoOutputRowsInner {
+  @override
+  final String itemId;
+  @override
+  final String code;
+  @override
+  final String name;
+  @override
+  final String categoryId;
+  @override
+  final String before;
+  @override
+  final String? after;
+
+  factory _$AdminMenuBulkPreviewDtoOutputRowsInner([
+    void Function(AdminMenuBulkPreviewDtoOutputRowsInnerBuilder)? updates,
+  ]) => (AdminMenuBulkPreviewDtoOutputRowsInnerBuilder()..update(updates))
+      ._build();
+
+  _$AdminMenuBulkPreviewDtoOutputRowsInner._({
+    required this.itemId,
+    required this.code,
+    required this.name,
+    required this.categoryId,
+    required this.before,
+    this.after,
+  }) : super._();
+  @override
+  AdminMenuBulkPreviewDtoOutputRowsInner rebuild(
+    void Function(AdminMenuBulkPreviewDtoOutputRowsInnerBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
+
+  @override
+  AdminMenuBulkPreviewDtoOutputRowsInnerBuilder toBuilder() =>
+      AdminMenuBulkPreviewDtoOutputRowsInnerBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is AdminMenuBulkPreviewDtoOutputRowsInner &&
+        itemId == other.itemId &&
+        code == other.code &&
+        name == other.name &&
+        categoryId == other.categoryId &&
+        before == other.before &&
+        after == other.after;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, itemId.hashCode);
+    _$hash = $jc(_$hash, code.hashCode);
+    _$hash = $jc(_$hash, name.hashCode);
+    _$hash = $jc(_$hash, categoryId.hashCode);
+    _$hash = $jc(_$hash, before.hashCode);
+    _$hash = $jc(_$hash, after.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(
+            r'AdminMenuBulkPreviewDtoOutputRowsInner',
+          )
+          ..add('itemId', itemId)
+          ..add('code', code)
+          ..add('name', name)
+          ..add('categoryId', categoryId)
+          ..add('before', before)
+          ..add('after', after))
+        .toString();
+  }
+}
+
+class AdminMenuBulkPreviewDtoOutputRowsInnerBuilder
+    implements
+        Builder<
+          AdminMenuBulkPreviewDtoOutputRowsInner,
+          AdminMenuBulkPreviewDtoOutputRowsInnerBuilder
+        > {
+  _$AdminMenuBulkPreviewDtoOutputRowsInner? _$v;
+
+  String? _itemId;
+  String? get itemId => _$this._itemId;
+  set itemId(String? itemId) => _$this._itemId = itemId;
+
+  String? _code;
+  String? get code => _$this._code;
+  set code(String? code) => _$this._code = code;
+
+  String? _name;
+  String? get name => _$this._name;
+  set name(String? name) => _$this._name = name;
+
+  String? _categoryId;
+  String? get categoryId => _$this._categoryId;
+  set categoryId(String? categoryId) => _$this._categoryId = categoryId;
+
+  String? _before;
+  String? get before => _$this._before;
+  set before(String? before) => _$this._before = before;
+
+  String? _after;
+  String? get after => _$this._after;
+  set after(String? after) => _$this._after = after;
+
+  AdminMenuBulkPreviewDtoOutputRowsInnerBuilder() {
+    AdminMenuBulkPreviewDtoOutputRowsInner._defaults(this);
+  }
+
+  AdminMenuBulkPreviewDtoOutputRowsInnerBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _itemId = $v.itemId;
+      _code = $v.code;
+      _name = $v.name;
+      _categoryId = $v.categoryId;
+      _before = $v.before;
+      _after = $v.after;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(AdminMenuBulkPreviewDtoOutputRowsInner other) {
+    _$v = other as _$AdminMenuBulkPreviewDtoOutputRowsInner;
+  }
+
+  @override
+  void update(
+    void Function(AdminMenuBulkPreviewDtoOutputRowsInnerBuilder)? updates,
+  ) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  AdminMenuBulkPreviewDtoOutputRowsInner build() => _build();
+
+  _$AdminMenuBulkPreviewDtoOutputRowsInner _build() {
+    final _$result =
+        _$v ??
+        _$AdminMenuBulkPreviewDtoOutputRowsInner._(
+          itemId: BuiltValueNullFieldError.checkNotNull(
+            itemId,
+            r'AdminMenuBulkPreviewDtoOutputRowsInner',
+            'itemId',
+          ),
+          code: BuiltValueNullFieldError.checkNotNull(
+            code,
+            r'AdminMenuBulkPreviewDtoOutputRowsInner',
+            'code',
+          ),
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'AdminMenuBulkPreviewDtoOutputRowsInner',
+            'name',
+          ),
+          categoryId: BuiltValueNullFieldError.checkNotNull(
+            categoryId,
+            r'AdminMenuBulkPreviewDtoOutputRowsInner',
+            'categoryId',
+          ),
+          before: BuiltValueNullFieldError.checkNotNull(
+            before,
+            r'AdminMenuBulkPreviewDtoOutputRowsInner',
+            'before',
+          ),
+          after: after,
+        );
+    replace(_$result);
+    return _$result;
+  }
+}
+
+// ignore_for_file: deprecated_member_use_from_same_package,type=lint

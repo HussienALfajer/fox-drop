@@ -16,11 +16,27 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { PRIVATE_DOCS_BUCKET, PUBLIC_MEDIA_BUCKET } from '../../storage/storage-setup.js';
 import { imageSize } from './image-size.js';
-import { type ImageType, type UploadPurpose, uploads } from './schema.js';
+import {
+  type ImageType,
+  type UploadPurpose,
+  type UploadType,
+  uploads,
+  XLSX_TYPE,
+} from './schema.js';
 
 // Architecture §5.8: the largest image the panel may upload. A phone photo is
 // 2 to 5 MB; imgproxy serves it at most 1280 pixels wide.
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+// AP §9.6.6 (slice 2.31, decided by us): the largest menu workbook.
+export const MAX_IMPORT_BYTES = 2 * 1024 * 1024;
+
+// What each purpose takes: a menu's import an Excel workbook of 2 MB at
+// most, every other an image of 8 MB at most.
+export function uploadAllowed(purpose: UploadPurpose, type: UploadType, size: number): boolean {
+  return purpose === 'menu_import'
+    ? type === XLSX_TYPE && size <= MAX_IMPORT_BYTES
+    : type !== XLSX_TYPE && size <= MAX_IMAGE_BYTES;
+}
 // How long the pre-signed PUT stays valid, and how long after asking an
 // upload may still be linked.
 export const UPLOAD_URL_SECONDS = 10 * 60;
@@ -52,7 +68,7 @@ export class FilesRefusedError extends Error {
 
 export interface NewUpload {
   purpose: UploadPurpose;
-  contentType: ImageType;
+  contentType: UploadType;
   sizeBytes: number;
 }
 
@@ -81,6 +97,7 @@ const folders: Record<UploadPurpose, string> = {
   banner_image: 'marketing/banners',
   restaurant_contract: 'restaurants/contracts',
   restaurant_licence: 'restaurants/licences',
+  menu_import: 'menus/imports',
 };
 
 // The purposes whose image must have an exact size in pixels: a banner is
@@ -101,15 +118,17 @@ const PRIVATE_PURPOSES: readonly UploadPurpose[] = [
   'report_photo',
   'restaurant_contract',
   'restaurant_licence',
+  'menu_import',
 ];
 
 function bucketOf(purpose: UploadPurpose): string {
   return PRIVATE_PURPOSES.includes(purpose) ? PRIVATE_DOCS_BUCKET : PUBLIC_MEDIA_BUCKET;
 }
-const extensions: Record<ImageType, string> = {
+const extensions: Record<UploadType, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
+  [XLSX_TYPE]: 'xlsx',
 };
 
 // The published key of an upload: its file's name in its purpose's folder.
@@ -117,7 +136,12 @@ function publishedKey(row: { purpose: UploadPurpose; key: string }): string {
   return `${folders[row.purpose]}/${row.key.slice(INCOMING.length + 1)}`;
 }
 
-// The first bytes of each type (its file signature).
+// The first bytes of each type (its file signature); a workbook is a ZIP.
+export function hasSignature(type: UploadType, head: Uint8Array): boolean {
+  if (type === XLSX_TYPE) return [0x50, 0x4b, 0x03, 0x04].every((byte, i) => head[i] === byte);
+  return hasImageSignature(type, head);
+}
+
 export function hasImageSignature(type: ImageType, head: Uint8Array): boolean {
   const starts = (bytes: number[], at = 0) => bytes.every((byte, i) => head[at + i] === byte);
   switch (type) {
@@ -352,6 +376,17 @@ export class FilesService {
     );
   }
 
+  // The bytes of a private upload `prepare` checked (a menu's workbook, read
+  // by the server; slice 2.31).
+  async preparedBytes(uploadId: string): Promise<Uint8Array> {
+    const [row] = await this.database.db.select().from(uploads).where(eq(uploads.id, uploadId));
+    if (!row) throw new FilesRefusedError('upload_not_found', `no upload ${uploadId}`);
+    const file = await this.store.internal.send(
+      new GetObjectCommand({ Bucket: bucketOf(row.purpose), Key: publishedKey(row) }),
+    );
+    return (await file.Body?.transformToByteArray()) ?? new Uint8Array();
+  }
+
   // Removes a private file; one already gone is fine.
   async deletePrivate(key: string): Promise<void> {
     await this.store.internal.send(
@@ -363,7 +398,7 @@ export class FilesService {
   private async check(
     bucket: string,
     key: string,
-    type: ImageType,
+    type: UploadType,
     size: number,
     exact?: { width: number; height: number },
   ): Promise<void> {
@@ -387,10 +422,10 @@ export class FilesService {
       }),
     );
     const bytes = (await start.Body?.transformToByteArray()) ?? new Uint8Array();
-    if (!hasImageSignature(type, bytes)) {
-      throw new FilesRefusedError('upload_invalid', `the file is not a ${type} image`);
+    if (!hasSignature(type, bytes)) {
+      throw new FilesRefusedError('upload_invalid', `the file is not a ${type}`);
     }
-    if (exact === undefined) return;
+    if (exact === undefined || type === XLSX_TYPE) return;
     const found = imageSize(type, bytes);
     if (found === null) {
       throw new FilesRefusedError('upload_invalid', `the ${type} image has no readable size`);

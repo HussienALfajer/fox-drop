@@ -25,6 +25,8 @@ _$adminNewUploadDtoPurposeEnum_restaurantContract =
 const AdminNewUploadDtoPurposeEnum
 _$adminNewUploadDtoPurposeEnum_restaurantLicence =
     const AdminNewUploadDtoPurposeEnum._('restaurantLicence');
+const AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnum_menuImport =
+    const AdminNewUploadDtoPurposeEnum._('menuImport');
 
 AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnumValueOf(
   String name,
@@ -44,6 +46,8 @@ AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnumValueOf(
       return _$adminNewUploadDtoPurposeEnum_restaurantContract;
     case 'restaurantLicence':
       return _$adminNewUploadDtoPurposeEnum_restaurantLicence;
+    case 'menuImport':
+      return _$adminNewUploadDtoPurposeEnum_menuImport;
     default:
       throw ArgumentError(name);
   }
@@ -59,6 +63,7 @@ _$adminNewUploadDtoPurposeEnumValues =
       _$adminNewUploadDtoPurposeEnum_bannerImage,
       _$adminNewUploadDtoPurposeEnum_restaurantContract,
       _$adminNewUploadDtoPurposeEnum_restaurantLicence,
+      _$adminNewUploadDtoPurposeEnum_menuImport,
     ]);
 
 const AdminNewUploadDtoContentTypeEnum
@@ -70,6 +75,11 @@ _$adminNewUploadDtoContentTypeEnum_imageSlashPng =
 const AdminNewUploadDtoContentTypeEnum
 _$adminNewUploadDtoContentTypeEnum_imageSlashWebp =
     const AdminNewUploadDtoContentTypeEnum._('imageSlashWebp');
+const AdminNewUploadDtoContentTypeEnum
+_$adminNewUploadDtoContentTypeEnum_applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet =
+    const AdminNewUploadDtoContentTypeEnum._(
+      'applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet',
+    );
 
 AdminNewUploadDtoContentTypeEnum _$adminNewUploadDtoContentTypeEnumValueOf(
   String name,
@@ -81,6 +91,8 @@ AdminNewUploadDtoContentTypeEnum _$adminNewUploadDtoContentTypeEnumValueOf(
       return _$adminNewUploadDtoContentTypeEnum_imageSlashPng;
     case 'imageSlashWebp':
       return _$adminNewUploadDtoContentTypeEnum_imageSlashWebp;
+    case 'applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet':
+      return _$adminNewUploadDtoContentTypeEnum_applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet;
     default:
       throw ArgumentError(name);
   }
@@ -88,13 +100,14 @@ AdminNewUploadDtoContentTypeEnum _$adminNewUploadDtoContentTypeEnumValueOf(
 
 final BuiltSet<AdminNewUploadDtoContentTypeEnum>
 _$adminNewUploadDtoContentTypeEnumValues =
-    BuiltSet<AdminNewUploadDtoContentTypeEnum>(
-      const <AdminNewUploadDtoContentTypeEnum>[
-        _$adminNewUploadDtoContentTypeEnum_imageSlashJpeg,
-        _$adminNewUploadDtoContentTypeEnum_imageSlashPng,
-        _$adminNewUploadDtoContentTypeEnum_imageSlashWebp,
-      ],
-    );
+    BuiltSet<AdminNewUploadDtoContentTypeEnum>(const <
+      AdminNewUploadDtoContentTypeEnum
+    >[
+      _$adminNewUploadDtoContentTypeEnum_imageSlashJpeg,
+      _$adminNewUploadDtoContentTypeEnum_imageSlashPng,
+      _$adminNewUploadDtoContentTypeEnum_imageSlashWebp,
+      _$adminNewUploadDtoContentTypeEnum_applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet,
+    ]);
 
 Serializer<AdminNewUploadDtoPurposeEnum>
 _$adminNewUploadDtoPurposeEnumSerializer =
@@ -113,6 +126,7 @@ class _$AdminNewUploadDtoPurposeEnumSerializer
     'bannerImage': 'banner_image',
     'restaurantContract': 'restaurant_contract',
     'restaurantLicence': 'restaurant_licence',
+    'menuImport': 'menu_import',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_logo': 'restaurantLogo',
@@ -122,6 +136,7 @@ class _$AdminNewUploadDtoPurposeEnumSerializer
     'banner_image': 'bannerImage',
     'restaurant_contract': 'restaurantContract',
     'restaurant_licence': 'restaurantLicence',
+    'menu_import': 'menuImport',
   };
 
   @override
@@ -152,11 +167,15 @@ class _$AdminNewUploadDtoContentTypeEnumSerializer
     'imageSlashJpeg': 'image/jpeg',
     'imageSlashPng': 'image/png',
     'imageSlashWebp': 'image/webp',
+    'applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'image/jpeg': 'imageSlashJpeg',
     'image/png': 'imageSlashPng',
     'image/webp': 'imageSlashWebp',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        'applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet',
   };
 
   @override

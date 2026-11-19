@@ -62,6 +62,27 @@ describe('restaurantStatePush', () => {
     expect(dateOn(new Date('2026-02-01T10:00:00Z'), 'UTC')).toBe('01/02/2026');
   });
 
+  it('tells the owners only of an admin price change, with the amounts (RA §16 #21, D17)', () => {
+    const money = (minor: bigint, currency: string) => `${minor / 100n} ${currency}`;
+    expect(
+      restaurantStatePush(
+        'price_change',
+        { itemId: 'i', name: 'شاورما', oldPrice: '12000', newPrice: '15000', currency: 'TRY' },
+        'UTC',
+        money,
+      ),
+    ).toEqual({
+      templateKey: 'merchant.admin_price_change',
+      values: { الصنف: 'شاورما', القديم: '120 TRY', الجديد: '150 TRY' },
+      owners: true,
+    });
+    expect(restaurantStatePush('price_change_bulk', { count: 12 }, 'UTC', money)).toEqual({
+      templateKey: 'merchant.admin_price_change_bulk',
+      values: { العدد: '12' },
+      owners: true,
+    });
+  });
+
   it('stays silent for a pause that ended with the opening period, and for commands', () => {
     expect(restaurantStatePush('pause_ended', { push: false }, 'UTC')).toBe(null);
     for (const kind of ['paused', 'resumed', 'busy_mode', 'holiday_close', 'hours'] as const) {
@@ -80,8 +101,13 @@ describe('restaurantStatePush', () => {
           reason: 'x',
           rateBp: 1500,
           from: '2026-11-18T00:00:00Z',
+          name: 'x',
+          oldPrice: '100',
+          newPrice: '200',
+          currency: 'TRY',
         },
         'UTC',
+        (minor) => minor.toString(),
       );
       if (push) expect(notificationTemplate(push.templateKey)).toBeDefined();
     }

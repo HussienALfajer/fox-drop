@@ -11,6 +11,9 @@ _$adminMenuAvailabilityDtoTypeEnum_category =
     const AdminMenuAvailabilityDtoTypeEnum._('category');
 const AdminMenuAvailabilityDtoTypeEnum _$adminMenuAvailabilityDtoTypeEnum_item =
     const AdminMenuAvailabilityDtoTypeEnum._('item');
+const AdminMenuAvailabilityDtoTypeEnum
+_$adminMenuAvailabilityDtoTypeEnum_option =
+    const AdminMenuAvailabilityDtoTypeEnum._('option');
 
 AdminMenuAvailabilityDtoTypeEnum _$adminMenuAvailabilityDtoTypeEnumValueOf(
   String name,
@@ -20,6 +23,8 @@ AdminMenuAvailabilityDtoTypeEnum _$adminMenuAvailabilityDtoTypeEnumValueOf(
       return _$adminMenuAvailabilityDtoTypeEnum_category;
     case 'item':
       return _$adminMenuAvailabilityDtoTypeEnum_item;
+    case 'option':
+      return _$adminMenuAvailabilityDtoTypeEnum_option;
     default:
       throw ArgumentError(name);
   }
@@ -31,6 +36,7 @@ _$adminMenuAvailabilityDtoTypeEnumValues =
       const <AdminMenuAvailabilityDtoTypeEnum>[
         _$adminMenuAvailabilityDtoTypeEnum_category,
         _$adminMenuAvailabilityDtoTypeEnum_item,
+        _$adminMenuAvailabilityDtoTypeEnum_option,
       ],
     );
 
@@ -75,10 +81,12 @@ class _$AdminMenuAvailabilityDtoTypeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'category': 'category',
     'item': 'item',
+    'option': 'option',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'category': 'category',
     'item': 'item',
+    'option': 'option',
   };
 
   @override

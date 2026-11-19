@@ -15,11 +15,15 @@ import { AdminRestaurantAccountController } from './admin-restaurant-account.con
 import { AdminRestaurantActivationController } from './admin-restaurant-activation.controller.js';
 import { ActivationService } from './activation.service.js';
 import { AdminRestaurantMenuController } from './admin-restaurant-menu.controller.js';
+import { AdminRestaurantMenuImportController } from './admin-restaurant-menu-import.controller.js';
 import { AdminRestaurantImagesController } from './admin-restaurant-images.controller.js';
 import { AdminRestaurantStatusController } from './admin-restaurant-status.controller.js';
 import { MerchantMenuController } from './merchant-menu.controller.js';
 import { RestaurantNotesService } from './restaurant-notes.service.js';
+import { MenuBulkService } from './menu-bulk.service.js';
 import { MenuEditorService } from './menu-editor.service.js';
+import { MenuImportService } from './menu-import.service.js';
+import { OptionGroupsService } from './option-groups.service.js';
 import { MerchantsService } from './merchants.service.js';
 import { RestaurantDraftsService } from './restaurant-drafts.service.js';
 import { RestaurantStatusService } from './restaurant-status.service.js';
@@ -48,6 +52,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     AdminRestaurantDraftsController,
     AdminRestaurantProfileController,
     AdminRestaurantMenuController,
+    AdminRestaurantMenuImportController,
     AdminRestaurantActivationController,
     AdminRestaurantAccountController,
   ],
@@ -56,6 +61,9 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     RestaurantStatusService,
     RestaurantDraftsService,
     MenuEditorService,
+    OptionGroupsService,
+    MenuBulkService,
+    MenuImportService,
     ActivationService,
     RestaurantNotesService,
   ],
@@ -92,6 +100,7 @@ export {
   type Menu,
   type MenuCategory,
   type MenuItem,
+  type PriceLogEntry,
   type MenuOption,
   type MenuOptionGroup,
   type Money,

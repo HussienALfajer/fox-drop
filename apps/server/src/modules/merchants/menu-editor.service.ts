@@ -2,8 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, isNull, ne, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { Jobs } from '../../jobs/jobs.module.js';
 import { AuditService } from '../audit/index.js';
 import {
+  changedBy,
   forAudit,
   type MerchantChange,
   MerchantsRefusedError,
@@ -12,7 +14,8 @@ import {
   type Tx,
 } from './merchants.service.js';
 import type { AccountStatus } from './operating-state.js';
-import { categories, items } from './schema.js';
+import { categories, items, priceChanges } from './schema.js';
+import { recordStateChange } from './state-events.js';
 
 // The texts' bounds (decided by us, slice 2.30b).
 export const MENU_NAME_MAX = 80;
@@ -23,10 +26,25 @@ export const ITEM_CODE_MAX = 20;
 export const itemBadges = ['new', 'most_ordered', 'spicy'] as const;
 export type ItemBadge = (typeof itemBadges)[number];
 
-// Step 7 edits the menu while the restaurant is onboarded: a draft or in test
-// mode. Past activation the menu editor of 2.31 takes over, with the price log
-// and the owners' notice of an admin's price change (AP §9.6.6, D17).
-const EDITABLE: readonly AccountStatus[] = ['draft', 'test'];
+// AP §9.6.6 (slice 2.31): the editor edits the menu of a restaurant in any
+// status but terminated (RA §5.5: its owners keep the money section only).
+// Past test mode a price needs `menus.edit_prices` (OWN, OPS; AP §9.6.5 «DATA
+// only before activation»), and the owners hear of it (D17).
+const SERVING: readonly AccountStatus[] = ['active', 'suspended'];
+
+// Who edits the menu: an admin's change, and whether their roles hold
+// `menus.edit_prices`.
+export interface MenuChange extends MerchantChange {
+  mayEditPrices: boolean;
+}
+
+// One price changed by an admin: an item's price or an option's delta.
+export interface PriceChange {
+  target: { type: 'item' | 'option'; id: string };
+  name: string;
+  old: Money;
+  new: Money;
+}
 
 // AP §9.6.6 «الفئات»: a category as the wizard saves it. The window is minutes
 // after midnight on the city's clock (breakfast until 12:00 is 0 to 720); one
@@ -49,9 +67,9 @@ export interface ItemFields {
   badge: ItemBadge | null;
 }
 
-// The onboarding wizard's step 7 (AP §9.6.3, §9.6.6; slice 2.30b): the basic
-// menu, categories and items, published at once (an admin's edit, AP
-// §9.6.7). The panel names each new row's id, so a save is a set: creating
+// The menu editor (AP §9.6.6): the onboarding wizard's step 7 (slice 2.30b)
+// and, past it, the profile's «القائمة» (slice 2.31): categories and items,
+// published at once (an admin's edit, AP §9.6.7). The panel names each new row's id, so a save is a set: creating
 // it the first time and setting its fields after, and a retry changes
 // nothing. Every write takes the restaurant's lock and is audited.
 @Injectable()
@@ -60,6 +78,7 @@ export class MenuEditorService {
     @Inject(DATABASE) private readonly database: Database,
     private readonly merchants: MerchantsService,
     private readonly audit: AuditService,
+    private readonly jobs: Jobs,
   ) {}
 
   // Creates the category with this id at the end of the menu, or sets its
@@ -134,7 +153,7 @@ export class MenuEditorService {
     restaurantId: string,
     itemId: string,
     fields: ItemFields,
-    change: MerchantChange,
+    change: MenuChange,
   ): Promise<void> {
     const name = checkedText(fields.name, MENU_NAME_MAX, 'an item needs a name');
     const description = optionalText(fields.description, MENU_DESCRIPTION_MAX);
@@ -182,6 +201,12 @@ export class MenuEditorService {
         .where(eq(items.id, itemId));
       if (before && (before.restaurantId !== restaurantId || before.deletedAt !== null)) {
         throw new MerchantsRefusedError('unknown_menu_row', 'no such item here');
+      }
+      const priceChanged =
+        before !== undefined &&
+        (before.price !== fields.price.amount || before.currency !== fields.price.currency);
+      if (before === undefined || priceChanged) {
+        MenuEditorService.checkPriceEdit(row.accountStatus, change);
       }
       const codeTaken = async (candidate: string) =>
         (
@@ -269,6 +294,22 @@ export class MenuEditorService {
         })
         .where(eq(items.id, itemId));
       await this.record(tx, change, row.cityId, 'menu.item.update', itemId, was, after);
+      if (priceChanged) {
+        await this.logPrices(
+          tx,
+          restaurantId,
+          row,
+          [
+            {
+              target: { type: 'item', id: itemId },
+              name,
+              old: { amount: before.price, currency: before.currency },
+              new: fields.price,
+            },
+          ],
+          change,
+        );
+      }
     });
   }
 
@@ -334,37 +375,91 @@ export class MenuEditorService {
     });
   }
 
-  // Whether step 7 edits a restaurant's menu in this status.
+  // Whether the editor edits a restaurant's menu in this status.
   static editable(status: AccountStatus): boolean {
-    return EDITABLE.includes(status);
+    return status !== 'terminated';
   }
 
-  // RA §9.3: a category or an item switched on, or off «حتى الغد» or «حتى
-  // أعيده», as the restaurant app does; only while step 7 edits the menu.
+  // Whether a price set in this status needs `menus.edit_prices`: past test
+  // mode (AP §9.6.5 «DATA only before activation»).
+  static pricesNeedPermission(status: AccountStatus): boolean {
+    return SERVING.includes(status) || status === 'terminated';
+  }
+
+  // Module-internal: refuses a price set past test mode without
+  // `menus.edit_prices`.
+  static checkPriceEdit(status: AccountStatus, change: MenuChange): void {
+    if (MenuEditorService.pricesNeedPermission(status) && !change.mayEditPrices) {
+      throw new MerchantsRefusedError(
+        'price_edit_not_allowed',
+        'past test mode a price needs menus.edit_prices',
+      );
+    }
+  }
+
+  // Module-internal: «سجل الأسعار» (AP §9.6.6) gets a row for every changed
+  // price in any status, so the log is whole; while the restaurant serves
+  // customers its owners hear of it (D17, RA §16 #21): one change by its
+  // item, several (a bulk change, an import) as one summary.
+  async logPrices(
+    tx: Tx,
+    restaurantId: string,
+    row: { cityId: string; accountStatus: AccountStatus },
+    changes: PriceChange[],
+    change: MerchantChange,
+  ): Promise<void> {
+    if (changes.length === 0) return;
+    const by = changedBy(change.actor);
+    await tx.insert(priceChanges).values(
+      changes.map((each) => ({
+        restaurantId,
+        itemId: each.target.type === 'item' ? each.target.id : null,
+        optionId: each.target.type === 'option' ? each.target.id : null,
+        currency: each.new.currency,
+        oldPrice: each.old.amount,
+        newPrice: each.new.amount,
+        ...by,
+      })),
+    );
+    if (!SERVING.includes(row.accountStatus)) return;
+    const [only] = changes;
+    await recordStateChange(tx, this.jobs, {
+      restaurantId,
+      cityId: row.cityId,
+      at: new Date(),
+      ...(changes.length === 1 && only
+        ? {
+            kind: 'price_change',
+            values: {
+              [`${only.target.type}Id`]: only.target.id,
+              name: only.name,
+              oldPrice: only.old.amount.toString(),
+              newPrice: only.new.amount.toString(),
+              currency: only.new.currency,
+              ...(change.actor.id === null ? {} : { changedById: change.actor.id }),
+            },
+          }
+        : { kind: 'price_change_bulk', values: { count: changes.length } }),
+    });
+  }
+
+  // RA §9.3: a category, an item or an option switched on, or off «حتى الغد»
+  // or «حتى أعيده», as the restaurant app does; never on a terminated
+  // restaurant.
   async setAvailability(
     restaurantId: string,
-    target: { type: 'category' | 'item'; id: string },
+    target: { type: 'category' | 'item' | 'option'; id: string },
     availability: { available: true } | { available: false; until: 'tomorrow' | 'turned_back_on' },
     change: MerchantChange,
   ): Promise<void> {
-    await this.merchants.setAvailability(
-      restaurantId,
-      target,
-      availability,
-      change,
-      new Date(),
-      EDITABLE,
-    );
+    await this.merchants.setAvailability(restaurantId, target, availability, change, new Date());
   }
 
-  // The restaurant under its lock, while step 7 may edit its menu.
-  private async lockEditable(tx: Tx, restaurantId: string) {
+  // Module-internal: the restaurant under its lock, unless terminated.
+  async lockEditable(tx: Tx, restaurantId: string) {
     const row = await this.merchants.lockRestaurant(tx, restaurantId);
-    if (!EDITABLE.includes(row.accountStatus)) {
-      throw new MerchantsRefusedError(
-        'menu_locked',
-        'the wizard edits the menu of a draft or a restaurant in test mode only',
-      );
+    if (!MenuEditorService.editable(row.accountStatus)) {
+      throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
     }
     return row;
   }

@@ -156,6 +156,7 @@ function relay(): RestaurantStateRelay {
     app.get(NotificationTexts),
     app.get(AlertsService),
     app.get(GeoService),
+    app.get(FxService),
   );
 }
 

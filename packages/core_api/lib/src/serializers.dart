@@ -241,15 +241,37 @@ import 'package:core_api/src/model/admin_mass_push_city_dto.dart';
 import 'package:core_api/src/model/admin_mass_pushes_dto_output.dart';
 import 'package:core_api/src/model/admin_mass_pushes_dto_output_pushes_inner.dart';
 import 'package:core_api/src/model/admin_menu_availability_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_availability_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_bulk_preview_dto_output_rows_inner.dart';
+import 'package:core_api/src/model/admin_menu_bulk_price_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_price_result_dto_output.dart';
 import 'package:core_api/src/model/admin_menu_category_dto.dart';
 import 'package:core_api/src/model/admin_menu_category_order_dto.dart';
 import 'package:core_api/src/model/admin_menu_dto_output.dart';
 import 'package:core_api/src/model/admin_menu_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/admin_menu_dto_output_categories_inner_items_inner.dart';
+import 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner.dart';
+import 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner_options_inner.dart';
+import 'package:core_api/src/model/admin_menu_group_items_dto.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output_added_inner.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output_changed_inner.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output_errors_inner.dart';
+import 'package:core_api/src/model/admin_menu_import_result_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_template_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_upload_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_dto.dart';
+import 'package:core_api/src/model/admin_menu_item_groups_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_order_dto.dart';
 import 'package:core_api/src/model/admin_menu_money.dart';
 import 'package:core_api/src/model/admin_menu_money_output.dart';
+import 'package:core_api/src/model/admin_menu_option_dto.dart';
+import 'package:core_api/src/model/admin_menu_option_group_dto.dart';
+import 'package:core_api/src/model/admin_menu_option_order_dto.dart';
+import 'package:core_api/src/model/admin_menu_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_preview_dto_output_menu_inner.dart';
+import 'package:core_api/src/model/admin_menu_preview_dto_output_menu_inner_items_inner.dart';
 import 'package:core_api/src/model/admin_menu_switched_off_output.dart';
 import 'package:core_api/src/model/admin_menu_window.dart';
 import 'package:core_api/src/model/admin_menu_window_output.dart';
@@ -367,6 +389,7 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
+import 'package:core_api/src/model/admin_price_log_money_output.dart';
 import 'package:core_api/src/model/admin_profile_basics_dto.dart';
 import 'package:core_api/src/model/admin_promo_code_city_dto.dart';
 import 'package:core_api/src/model/admin_promo_code_dto_output.dart';
@@ -444,6 +467,8 @@ import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_price_log_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_price_log_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_reason_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_receipt_dto_output_lines_inner.dart';
@@ -1178,15 +1203,37 @@ part 'serializers.g.dart';
   AdminMassPushesDtoOutput,
   AdminMassPushesDtoOutputPushesInner,
   AdminMenuAvailabilityDto,
+  AdminMenuBulkAvailabilityDto,
+  AdminMenuBulkPreviewDtoOutput,
+  AdminMenuBulkPreviewDtoOutputRowsInner,
+  AdminMenuBulkPriceDto,
+  AdminMenuBulkPriceResultDtoOutput,
   AdminMenuCategoryDto,
   AdminMenuCategoryOrderDto,
   AdminMenuDtoOutput,
   AdminMenuDtoOutputCategoriesInner,
   AdminMenuDtoOutputCategoriesInnerItemsInner,
+  AdminMenuDtoOutputOptionGroupsInner,
+  AdminMenuDtoOutputOptionGroupsInnerOptionsInner,
+  AdminMenuGroupItemsDto,
+  AdminMenuImportPlanDtoOutput,
+  AdminMenuImportPlanDtoOutputAddedInner,
+  AdminMenuImportPlanDtoOutputChangedInner,
+  AdminMenuImportPlanDtoOutputErrorsInner,
+  AdminMenuImportResultDtoOutput,
+  AdminMenuImportTemplateDtoOutput,
+  AdminMenuImportUploadDto,
   AdminMenuItemDto,
+  AdminMenuItemGroupsDto,
   AdminMenuItemOrderDto,
   AdminMenuMoney,
   AdminMenuMoneyOutput,
+  AdminMenuOptionDto,
+  AdminMenuOptionGroupDto,
+  AdminMenuOptionOrderDto,
+  AdminMenuPreviewDtoOutput,
+  AdminMenuPreviewDtoOutputMenuInner,
+  AdminMenuPreviewDtoOutputMenuInnerItemsInner,
   AdminMenuSwitchedOffOutput,
   AdminMenuWindow,
   AdminMenuWindowOutput,
@@ -1304,6 +1351,7 @@ part 'serializers.g.dart';
   AdminPickerDtoOutputCaptainsInnerCustody,
   AdminPickerDtoOutputCaptainsInnerCustodyLimit,
   AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+  AdminPriceLogMoneyOutput,
   AdminProfileBasicsDto,
   AdminPromoCodeCityDto,
   AdminPromoCodeDtoOutput,
@@ -1381,6 +1429,8 @@ part 'serializers.g.dart';
   AdminRestaurantPeriodStatementDtoOutput,
   AdminRestaurantPeriodStatementDtoOutputLinesInner,
   AdminRestaurantPickupCurrenciesDto,
+  AdminRestaurantPriceLogDtoOutput,
+  AdminRestaurantPriceLogDtoOutputEntriesInner,
   AdminRestaurantReasonDto,
   AdminRestaurantReceiptDtoOutput,
   AdminRestaurantReceiptDtoOutputLinesInner,
@@ -2261,6 +2311,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMenuDtoOutputOptionGroupsInnerOptionsInner),
+            ]),
+            () =>
+                ListBuilder<AdminMenuDtoOutputOptionGroupsInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminFaqsDtoOutputCustomerInner),
             ]),
             () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
@@ -2401,6 +2458,18 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminRestaurantPriceLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantPriceLogDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuDtoOutputOptionGroupsInner),
+            ]),
+            () => ListBuilder<AdminMenuDtoOutputOptionGroupsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCaptainBalancesDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner>(),
@@ -2489,6 +2558,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMenuPreviewDtoOutputMenuInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType.nullable(
                 AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
               ),
@@ -2520,6 +2595,12 @@ Serializers serializers =
                 ListBuilder<
                   MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuImportPlanDtoOutputChangedInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputChangedInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2683,6 +2764,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMenuImportPlanDtoOutputAddedInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputAddedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
@@ -2703,6 +2790,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderPickupRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuImportPlanDtoOutputErrorsInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputErrorsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2766,6 +2859,12 @@ Serializers serializers =
               FullType(AdminShortfallsDtoOutputShortfallsInner),
             ]),
             () => ListBuilder<AdminShortfallsDtoOutputShortfallsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuBulkPreviewDtoOutputRowsInner),
+            ]),
+            () => ListBuilder<AdminMenuBulkPreviewDtoOutputRowsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3030,6 +3129,12 @@ Serializers serializers =
               FullType(AdminRestaurantChangeLogDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuPreviewDtoOutputMenuInnerItemsInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInnerItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
