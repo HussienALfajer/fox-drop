@@ -1018,6 +1018,26 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputWithdrawn.serializer)
           ..add(CaptainActiveOrderDtoOutputWithdrawnCashEnum.serializer)
+          ..add(CaptainApplicationDocumentDto.serializer)
+          ..add(CaptainApplicationDtoOutput.serializer)
+          ..add(CaptainApplicationDtoOutputApplication.serializer)
+          ..add(CaptainApplicationDtoOutputApplicationDocumentsInner.serializer)
+          ..add(
+            CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnum
+                .serializer,
+          )
+          ..add(
+            CaptainApplicationDtoOutputApplicationDocumentsInnerStatusEnum
+                .serializer,
+          )
+          ..add(CaptainApplicationDtoOutputApplicationMissingEnum.serializer)
+          ..add(CaptainApplicationDtoOutputApplicationStageEnum.serializer)
+          ..add(CaptainApplicationDtoOutputApplicationVehicleEnum.serializer)
+          ..add(CaptainApplicationPersonalDto.serializer)
+          ..add(CaptainApplicationVehicleDto.serializer)
+          ..add(CaptainApplicationVehicleDtoVehicleEnum.serializer)
+          ..add(CaptainApplicationZonesDtoOutput.serializer)
+          ..add(CaptainApplicationZonesDtoOutputZonesInner.serializer)
           ..add(CaptainArriveAtCustomerDto.serializer)
           ..add(CaptainArriveAtCustomerDtoAway.serializer)
           ..add(CaptainArriveDto.serializer)
@@ -3202,6 +3222,32 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
+                CaptainApplicationDtoOutputApplicationDocumentsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainApplicationDtoOutputApplicationDocumentsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainApplicationDtoOutputApplicationMissingEnum),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainApplicationDtoOutputApplicationMissingEnum
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainApplicationZonesDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<CaptainApplicationZonesDtoOutputZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
                 CaptainAvailabilityDtoOutputAvailabilityReasonsEnum,
               ),
             ]),
@@ -4315,6 +4361,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

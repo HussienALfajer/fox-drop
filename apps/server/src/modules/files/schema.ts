@@ -23,6 +23,9 @@ export const uploadPurposes = [
   // AP §9.6.6 «استيراد من Excel» (slice 2.31): a menu's workbook, read by the
   // server, in private-docs.
   'menu_import',
+  // CA §5.3 (slice 2.34a): an applicant's document photo, uploaded from the
+  // captain app, in private-docs (architecture §15.3).
+  'captain_document',
 ] as const;
 export type UploadPurpose = (typeof uploadPurposes)[number];
 
@@ -58,7 +61,7 @@ export const uploads = files.table(
   (table) => [
     check(
       'uploads_purpose_values',
-      sql`${table.purpose} IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image', 'restaurant_contract', 'restaurant_licence', 'menu_import')`,
+      sql`${table.purpose} IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image', 'restaurant_contract', 'restaurant_licence', 'menu_import', 'captain_document')`,
     ),
     check(
       'uploads_content_type_values',

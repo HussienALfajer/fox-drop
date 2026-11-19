@@ -616,6 +616,14 @@ export 'package:core_api/src/model/captain_active_order_dto_output_order_radii.d
 export 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
+export 'package:core_api/src/model/captain_application_document_dto.dart';
+export 'package:core_api/src/model/captain_application_dto_output.dart';
+export 'package:core_api/src/model/captain_application_dto_output_application.dart';
+export 'package:core_api/src/model/captain_application_dto_output_application_documents_inner.dart';
+export 'package:core_api/src/model/captain_application_personal_dto.dart';
+export 'package:core_api/src/model/captain_application_vehicle_dto.dart';
+export 'package:core_api/src/model/captain_application_zones_dto_output.dart';
+export 'package:core_api/src/model/captain_application_zones_dto_output_zones_inner.dart';
 export 'package:core_api/src/model/captain_arrive_at_customer_dto.dart';
 export 'package:core_api/src/model/captain_arrive_at_customer_dto_away.dart';
 export 'package:core_api/src/model/captain_arrive_dto.dart';

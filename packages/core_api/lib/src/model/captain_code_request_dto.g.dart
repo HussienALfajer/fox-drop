@@ -11,13 +11,18 @@ class _$CaptainCodeRequestDto extends CaptainCodeRequestDto {
   final String phone;
   @override
   final String deviceId;
+  @override
+  final bool? join;
 
   factory _$CaptainCodeRequestDto([
     void Function(CaptainCodeRequestDtoBuilder)? updates,
   ]) => (CaptainCodeRequestDtoBuilder()..update(updates))._build();
 
-  _$CaptainCodeRequestDto._({required this.phone, required this.deviceId})
-    : super._();
+  _$CaptainCodeRequestDto._({
+    required this.phone,
+    required this.deviceId,
+    this.join,
+  }) : super._();
   @override
   CaptainCodeRequestDto rebuild(
     void Function(CaptainCodeRequestDtoBuilder) updates,
@@ -32,7 +37,8 @@ class _$CaptainCodeRequestDto extends CaptainCodeRequestDto {
     if (identical(other, this)) return true;
     return other is CaptainCodeRequestDto &&
         phone == other.phone &&
-        deviceId == other.deviceId;
+        deviceId == other.deviceId &&
+        join == other.join;
   }
 
   @override
@@ -40,6 +46,7 @@ class _$CaptainCodeRequestDto extends CaptainCodeRequestDto {
     var _$hash = 0;
     _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jc(_$hash, deviceId.hashCode);
+    _$hash = $jc(_$hash, join.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -48,7 +55,8 @@ class _$CaptainCodeRequestDto extends CaptainCodeRequestDto {
   String toString() {
     return (newBuiltValueToStringHelper(r'CaptainCodeRequestDto')
           ..add('phone', phone)
-          ..add('deviceId', deviceId))
+          ..add('deviceId', deviceId)
+          ..add('join', join))
         .toString();
   }
 }
@@ -65,6 +73,10 @@ class CaptainCodeRequestDtoBuilder
   String? get deviceId => _$this._deviceId;
   set deviceId(String? deviceId) => _$this._deviceId = deviceId;
 
+  bool? _join;
+  bool? get join => _$this._join;
+  set join(bool? join) => _$this._join = join;
+
   CaptainCodeRequestDtoBuilder() {
     CaptainCodeRequestDto._defaults(this);
   }
@@ -74,6 +86,7 @@ class CaptainCodeRequestDtoBuilder
     if ($v != null) {
       _phone = $v.phone;
       _deviceId = $v.deviceId;
+      _join = $v.join;
       _$v = null;
     }
     return this;
@@ -106,6 +119,7 @@ class CaptainCodeRequestDtoBuilder
             r'CaptainCodeRequestDto',
             'deviceId',
           ),
+          join: join,
         );
     replace(_$result);
     return _$result;
