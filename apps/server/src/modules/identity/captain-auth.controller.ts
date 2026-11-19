@@ -36,13 +36,30 @@ import {
 import { AppSignInService, SignInCodeRefusedError } from './app-sign-in.service.js';
 import { CaptainSignInRefusedError } from './captain-accounts.service.js';
 
-class CaptainCodeRequestDto extends createZodDto(z.object({ phone, deviceId })) {}
+class CaptainCodeRequestDto extends createZodDto(
+  z.object({
+    phone,
+    deviceId,
+    join: z
+      .boolean()
+      .optional()
+      .describe(
+        '«انضم ككابتن» (CA §5.1): a number without an account gets the code too, to apply. Without it only a captain or an applicant does.',
+      ),
+  }),
+) {}
 
 class CaptainCodeSentDto extends createZodDto(codeSent) {}
 
 class CaptainSignInDto extends createZodDto(z.object({ phone, deviceId, code: signInCode })) {}
 
-const user = { accountId: z.uuid(), captainId: z.uuid() };
+const user = {
+  accountId: z.uuid(),
+  captainId: z
+    .uuid()
+    .nullable()
+    .describe('Null for an applicant (CA §5.1): the app opens the application, not home.'),
+};
 
 class CaptainSignedInDto extends createZodDto(z.object({ ...user, ...tokens })) {}
 
@@ -55,9 +72,12 @@ class CaptainSessionDto extends createZodDto(z.object({ ...user, sessionId: z.uu
 class CaptainSignedOutDto extends createZodDto(z.object({ status: z.literal('signed_out') })) {}
 
 // CA §4.9: the captain app's sign-in with a WhatsApp code, its tokens and
-// sign-out, on the same engine as the other apps. There is no self-signup:
+// sign-out, on the same engine as the other apps. Sign-in never makes a captain:
 // the code request answers alike for every number, and only a captain who may
-// sign in gets a code (owner decision 2026-11-06). A sign-in on a new device
+// sign in gets a code (owner decision 2026-11-06), except with `join`
+// («انضم ككابتن», CA §5.1; owner decision 2026-11-19), which sends to a number
+// without an account; its sign-in makes an applicant's account (`captainId`
+// null). A sign-in on a new device
 // signs the old one out (K5): its next call answers 401 other_device, and the
 // app shows «سُجّل دخولك من جهاز آخر».
 @CaptainController('auth')
@@ -80,7 +100,13 @@ export class CaptainAuthController {
   ) {
     try {
       const sent = await this.signInService.requestCode(
-        { party: 'captain', phone: body.phone, deviceId: body.deviceId, appCheckToken },
+        {
+          party: 'captain',
+          phone: body.phone,
+          deviceId: body.deviceId,
+          appCheckToken,
+          join: body.join,
+        },
         requestContext(request),
       );
       return { ...sent, expiresAt: sent.expiresAt.toISOString() };
@@ -135,15 +161,18 @@ export class CaptainAuthController {
   }
 
   @Get('session')
-  @AppSignedIn()
+  @AppSignedIn({ applicants: true })
   @ZodResponse({ status: 200, type: CaptainSessionDto })
   current(@CurrentAppSession() session: AppSession) {
-    const captain = session.captain!;
-    return { accountId: captain.id, captainId: captain.captainId, sessionId: session.id };
+    return {
+      accountId: session.accountId,
+      captainId: session.captain?.captainId ?? null,
+      sessionId: session.id,
+    };
   }
 
   @Post('sign-out')
-  @AppSignedIn()
+  @AppSignedIn({ applicants: true })
   @HttpCode(200)
   @ZodResponse({ status: 200, type: CaptainSignedOutDto })
   async signOut(@CurrentAppSession() session: AppSession) {

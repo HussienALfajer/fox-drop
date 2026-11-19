@@ -59,6 +59,11 @@ export class EmergencySignInService {
         ? await this.captainAccounts.signInAccount(phoneHash, now)
         : await this.merchantAccounts.signInAccount(phoneHash);
     if (typeof account === 'string') throw new EmergencyCodeRefusedError(account);
+    // W4 serves captains and restaurant users: an applicant (CA §5.1) waits
+    // for a WhatsApp code.
+    if ('captainId' in account && account.captainId === null) {
+      throw new EmergencyCodeRefusedError('not_registered');
+    }
     if (
       'captainId' in account &&
       (await this.captainAccounts.activeOrderElsewhere(this.database.db, account, ''))

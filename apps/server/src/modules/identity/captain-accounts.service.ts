@@ -34,6 +34,16 @@ export interface CaptainAccount {
   captainId: string;
 }
 
+// CA §5.1 (slice 2.34a): the account of a number that applies, before
+// activation gives it a captain (2.35). Its sessions call the application's
+// routes only (`AppSignedIn({ applicants: true })`).
+export interface CaptainApplicantAccount {
+  id: string;
+  captainId: null;
+}
+
+export type AnyCaptainAccount = CaptainAccount | CaptainApplicantAccount;
+
 type Executor = Pick<Database['db'], 'select'>;
 
 // The captains' sign-in accounts (CA §4.9): one number per captain record,
@@ -116,10 +126,32 @@ export class CaptainAccountsService {
   // The captain's account, or null.
   async accountOf(captainId: string): Promise<CaptainAccount | null> {
     const [account] = await this.database.db
-      .select({ id: captainAccounts.id, captainId: captainAccounts.captainId })
+      .select({ id: captainAccounts.id })
       .from(captainAccounts)
       .where(eq(captainAccounts.captainId, captainId));
-    return account ?? null;
+    return account ? { id: account.id, captainId } : null;
+  }
+
+  // CA §5.1 (slice 2.34a): a number proved by its code that has no account
+  // gets an applicant's account, in the sign-in's transaction. The code row's
+  // lock serialises the sign-ins of one number and the unique index on the
+  // hash refuses a second account. Not audited, as a customer's first
+  // sign-in is not: the applicant's own number, proved.
+  async createApplicant(
+    tx: Pick<Database['db'], 'insert'>,
+    phone: string,
+    now: Date,
+  ): Promise<CaptainApplicantAccount> {
+    const [created] = await tx
+      .insert(captainAccounts)
+      .values({
+        phoneEncrypted: this.secrets.encrypt(phone),
+        phoneHash: this.secrets.phoneHash(phone),
+        createdAt: now,
+      })
+      .returning({ id: captainAccounts.id });
+    if (!created) throw new Error('the account was not created');
+    return { id: created.id, captainId: null };
   }
 
   // AP §9.10.3 step 1 (slice 2.17a): the captain a number belongs to, for
@@ -147,24 +179,26 @@ export class CaptainAccountsService {
   // codes to real users only); the sign-in checks it again. Read outside any
   // transaction, since the captain's status takes a pool connection of its
   // own.
+  // An applicant's account (CA §5.1) signs in as a captain's does.
   async signInAccount(
     phoneHash: string,
     now: Date,
-  ): Promise<CaptainAccount | CaptainSignInRefusal> {
+  ): Promise<AnyCaptainAccount | CaptainSignInRefusal> {
     const [account] = await this.database.db
       .select({ id: captainAccounts.id, captainId: captainAccounts.captainId })
       .from(captainAccounts)
       .where(eq(captainAccounts.phoneHash, phoneHash));
     if (!account) return 'not_registered';
-    return (await this.refusal(account, now)) ?? account;
+    const typed = accountOfRow(account);
+    return (await this.refusal(typed, now)) ?? typed;
   }
 
-  async account(executor: Executor, accountId: string): Promise<CaptainAccount | null> {
+  async account(executor: Executor, accountId: string): Promise<AnyCaptainAccount | null> {
     const [account] = await executor
       .select({ id: captainAccounts.id, captainId: captainAccounts.captainId })
       .from(captainAccounts)
       .where(eq(captainAccounts.id, accountId));
-    return account ?? null;
+    return account ? accountOfRow(account) : null;
   }
 
   // CA §4.9 «During an active order»: the captain cannot sign in on a second
@@ -193,13 +227,24 @@ export class CaptainAccountsService {
 
   // Whether the account may still sign in, refresh and call the routes: a
   // terminated captain's sessions end with the contract (CA §4.9).
-  async mayUse(account: CaptainAccount, now: Date): Promise<boolean> {
+  async mayUse(account: AnyCaptainAccount, now: Date): Promise<boolean> {
     return (await this.refusal(account, now)) === null;
   }
 
-  private async refusal(account: CaptainAccount, now: Date): Promise<CaptainSignInRefusal | null> {
+  // An applicant may always use the application's routes.
+  private async refusal(
+    account: AnyCaptainAccount,
+    now: Date,
+  ): Promise<CaptainSignInRefusal | null> {
+    if (account.captainId === null) return null;
     const captain = await this.captains.captain(account.captainId, now);
     if (captain === null) return 'not_registered';
     return captain.status === 'terminated' ? 'contract_ended' : null;
   }
+}
+
+function accountOfRow(row: { id: string; captainId: string | null }): AnyCaptainAccount {
+  return row.captainId === null
+    ? { id: row.id, captainId: null }
+    : { id: row.id, captainId: row.captainId };
 }

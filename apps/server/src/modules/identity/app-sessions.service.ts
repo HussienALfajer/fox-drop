@@ -30,8 +30,12 @@ export interface AppSession {
   // request; null for the other apps.
   merchant: MerchantAccount | null;
   // A captain's record (CA §4.9), read at every request; null for the other
-  // apps.
+  // apps and for an applicant.
   captain: CaptainAccount | null;
+  // CA §5.1 (slice 2.34a): a captain app account that has applied and has no
+  // captain yet. The guard lets it call only the routes declared
+  // `AppSignedIn({ applicants: true })`.
+  applicant: boolean;
 }
 
 export interface AppTokens {
@@ -265,10 +269,13 @@ export class AppSessionsService {
       if (merchant === null || !(await this.merchantAccounts.mayUse(merchant))) return null;
     }
     let captain: CaptainAccount | null = null;
+    let applicant = false;
     if (party === 'captain') {
       // CA §4.9: a terminated captain's sessions end with the contract.
-      captain = await this.captainAccounts.account(this.database.db, accountId);
-      if (captain === null || !(await this.captainAccounts.mayUse(captain, now))) return null;
+      const account = await this.captainAccounts.account(this.database.db, accountId);
+      if (account === null || !(await this.captainAccounts.mayUse(account, now))) return null;
+      if (account.captainId === null) applicant = true;
+      else captain = account;
     }
     return {
       id: sessionId,
@@ -277,6 +284,7 @@ export class AppSessionsService {
       deviceId: open.deviceId,
       merchant,
       captain,
+      applicant,
     };
   }
 

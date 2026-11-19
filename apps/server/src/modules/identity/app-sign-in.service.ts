@@ -10,7 +10,7 @@ import type { AuditRequestContext } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
 import { type AppParty, AppSessionsService, type AppTokens } from './app-sessions.service.js';
 import {
-  type CaptainAccount,
+  type AnyCaptainAccount,
   CaptainAccountsService,
   CaptainSignInRefusedError,
 } from './captain-accounts.service.js';
@@ -81,6 +81,9 @@ export interface CodeRequest {
   // The restaurant app says which platform it runs on: Windows has no App
   // Check provider (owner decision 2026-11-07).
   platform?: DevicePlatform | undefined;
+  // CA §5.1 «انضم ككابتن» (slice 2.34a; owner decision 2026-11-19): the
+  // captain app's join sends the code to a number without an account too.
+  join?: boolean | undefined;
 }
 
 export interface AppSignIn extends AppTokens {
@@ -89,8 +92,9 @@ export interface AppSignIn extends AppTokens {
   newAccount: boolean;
   // The restaurant user's account (RA §5.1), for the restaurant app.
   merchant: MerchantAccount | null;
-  // The captain's account (CA §4.9), for the captain app.
-  captain: CaptainAccount | null;
+  // The captain's account (CA §4.9), for the captain app; an applicant's has
+  // no captain (CA §5.1).
+  captain: AnyCaptainAccount | null;
 }
 
 // Architecture §8.3.2: app sign-in with a 6-digit code sent to the phone. The
@@ -176,12 +180,15 @@ export class AppSignInService {
     // A captain is never created by sign-in, and the answer never tells
     // whether a number belongs to a captain (architecture §8.3.2; owner
     // decision 2026-11-06): every step runs, the limits and the resend wait
-    // included, but a number that cannot sign in gets nothing (§8.3.3). The
-    // joining slice sends codes to new numbers for the application form
-    // (CA §5.1).
+    // included, but a number that cannot sign in gets nothing (§8.3.3). Only
+    // «انضم ككابتن» sends to a number without an account, for the
+    // application form (CA §5.1; owner decision 2026-11-19); a terminated
+    // captain's number gets nothing either way.
+    const captainRefusal =
+      request.party === 'captain' ? await this.captainAccounts.signInAccount(phoneHash, now) : null;
     const silent =
-      request.party === 'captain' &&
-      typeof (await this.captainAccounts.signInAccount(phoneHash, now)) === 'string';
+      typeof captainRefusal === 'string' &&
+      !(request.join === true && captainRefusal === 'not_registered');
 
     return this.database.db.transaction(async (tx) => {
       // One request per number at a time, so the resend wait and the one open
@@ -289,15 +296,25 @@ export class AppSignInService {
       if (refused !== null) return refused;
 
       if (typeof merchant === 'string') return new MerchantSignInRefusedError(merchant);
-      if (typeof captain === 'string') return new CaptainSignInRefusedError(captain);
+      if (captain === 'contract_ended') return new CaptainSignInRefusedError(captain);
       let account: { id: string; created: boolean } | null;
+      let captainAccount: AnyCaptainAccount | null = null;
       if (merchant !== null) {
         account = await this.stillNotRemoved(tx, merchant);
         if (account === null) return new MerchantSignInRefusedError('not_registered');
+      } else if (captain === 'not_registered') {
+        // CA §5.1 (slice 2.34a): the number proved by its code applies. Only
+        // «انضم ككابتن» sent it a code (`requestCode`).
+        captainAccount = await this.captainAccounts.createApplicant(tx, request.phone, now);
+        account = { id: captainAccount.id, created: true };
       } else if (captain !== null) {
-        if (await this.captainAccounts.activeOrderElsewhere(tx, captain, request.deviceId)) {
+        if (
+          captain.captainId !== null &&
+          (await this.captainAccounts.activeOrderElsewhere(tx, captain, request.deviceId))
+        ) {
           return new CaptainSignInRefusedError('active_order_elsewhere');
         }
+        captainAccount = captain;
         account = { id: captain.id, created: false };
       } else {
         account = await this.findOrCreateCustomer(tx, request.phone, phoneHash, now);
@@ -316,7 +333,7 @@ export class AppSignInService {
         accountId: account.id,
         newAccount: account.created,
         merchant,
-        captain,
+        captain: captainAccount,
         ...tokens,
       };
     });

@@ -13,7 +13,7 @@ export type RouteAccess =
   | { kind: 'admin_session' }
   | { kind: 'admin_permission'; permission: string }
   | { kind: 'admin_any_permission'; permissions: string[] }
-  | { kind: 'app_session' }
+  | { kind: 'app_session'; applicants?: true }
   | { kind: 'optional_app_session' }
   | { kind: 'realtime_proxy' };
 
@@ -56,10 +56,16 @@ export const CurrentAdminSession = createParamDecorator(
   },
 );
 
-// An app route (customer so far) that needs the bearer access token of a
-// signed-in user of that app (architecture §15.1).
-export const AppSignedIn = () =>
-  SetMetadata(ROUTE_ACCESS, { kind: 'app_session' } satisfies RouteAccess);
+// An app route that needs the bearer access token of a signed-in user of
+// that app (architecture §15.1). A captain app's applicant (CA §5.1, slice
+// 2.34a) is refused with 403 applicant unless the route says
+// `{ applicants: true }`: the application's routes, the session and the
+// sign-out, the terms.
+export const AppSignedIn = (options: { applicants?: true } = {}) =>
+  SetMetadata(ROUTE_ACCESS, {
+    kind: 'app_session',
+    ...(options.applicants ? { applicants: true as const } : {}),
+  } satisfies RouteAccess);
 
 // An app route open to guests that answers more to a signed-in user, such as
 // the customer's quote (CU §5.1, §10.6): without a token it runs as a guest;

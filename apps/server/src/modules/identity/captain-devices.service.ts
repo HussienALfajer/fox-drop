@@ -94,8 +94,8 @@ export class CaptainDevicesService {
       .select({ id: captainAccounts.id, cityId: captainAccounts.cityId })
       .from(captainAccounts)
       .where(eq(captainAccounts.captainId, captainId));
-    if (!account) throw new DeviceReleaseRefusedError('unknown_captain');
-    return account;
+    if (!account?.cityId) throw new DeviceReleaseRefusedError('unknown_captain');
+    return { id: account.id, cityId: account.cityId };
   }
 
   private async openDevice(executor: Executor, accountId: string): Promise<CaptainDevice | null> {

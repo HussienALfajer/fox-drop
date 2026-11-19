@@ -4,15 +4,20 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.34, captain application (`docs/roadmap.md`, Phase 2).
+Slice 2.34a, captain application: the app's form (`docs/roadmap.md`, Phase 2; owner decision 2026-11-19 splits 2.34 in two).
 
 - **Roadmap line:** 2.34 Captain application: the form in the captain app, documents with quality checks, status updates and document requests, rejection with re-apply after 30 days, the waitlist, the panel's pipeline with duplicate detection and its alert (CA §5, AP §9.7.1). A new number applies and the application appears in the panel.
-- **Specs:** CA §5 (joining), CA §4.9 (sign-in), CA §15 (server commands), CA Appendix B, AP §9.7.1 (the applications' pipeline), AP §6 (who may review), the identity module's captain sign-in (a new number's code, CA §5.1).
+- **2.34a (this pull request):** «انضم ككابتن» sends a code to a new number, the sign-in makes an applicant account, the five steps of the form saved on the server after every step, the documents with the photo checks before upload, «إرسال الطلب», and the status page at «جديد» with each document's status (CA §5.1–5.4, §15).
+- **2.34b (next):** the panel's pipeline and review page, the duplicate check and the alert «طلب انضمام كابتن», the documents' verification, «طلب مستند», «تحديد مقابلة», training passed, «رفض» with re-apply after 30 days, «قائمة انتظار», the applicant's push at every change and the status page's other stages (AP §9.7.1, CA §5.4).
+- **Specs:** CA §5, CA §4.9, CA §15, CA Appendix B, AP §9.7.1, AP Appendix A (`captain.min_age`, `captain.criminal_record_validity_months`).
 - **Branch:** the cloud session's branch.
-- **Already built (reuse, do not rebuild):** identity's captain accounts and sign-in (`captain-accounts.service.ts`; the code request answers alike for every number and sends only to a captain who may sign in: «The joining slice sends codes to new numbers for the application form», identity `CLAUDE.md`), the captains module, files' uploads (`POST /v1/<app>/uploads/...`, the report photo's pattern), the panel's alerts (`notifications`).
-- **To ask the owner first:** how a new number gets its code without opening the sign-in's guard to every number (architecture §8.3.3 sends codes to real users only); the documents and their quality checks if CA §5 leaves any open; the size of the waitlist and who lifts it; whether the slice splits in two (the app's form, then the panel's pipeline).
-- **Plan:** to write as a checklist once the spec sections are read (one step per commit).
-- **Stopped at:** 2.33 done; 2.34 not started.
+- **Owner decisions 2026-11-19:** two pull requests (above); only «انضم ككابتن» sends a code to a number without an account (the limits and App Check as for every code), «تسجيل الدخول» still sends only to a captain or an applicant; the waitlist is manual with no size (OPS or OWN put an application there and take it back to «قيد المراجعة»); the neighbourhood is one of the city's active zones.
+- **Plan:**
+  - [ ] 1. Server, identity: an applicant's account (a `captain_accounts` row without a captain), the join code, the sign-in that makes it, applicant sessions on the captain routes.
+  - [ ] 2. Server, captains: the application and its documents, the routes of the form, the documents' upload, the submission.
+  - [ ] 3. The captain app: «انضم ككابتن», the form's five steps, the documents with the photo checks, the status page.
+  - [ ] 4. Review, docs and handover.
+- **Stopped at:** 2.34a step 1.
 
 ### Left from 2.33 (the cloud session's branch)
 

@@ -71,6 +71,11 @@ export class RouteAccessGuard implements CanActivate {
           })
         : null;
       if (!session) throw new UnauthorizedException();
+      // CA §5.1 (slice 2.34a): an applicant has no captain, so it reaches
+      // only the routes that take applicants, and those guests may call.
+      if (session.applicant && access.kind === 'app_session' && !access.applicants) {
+        throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'applicant' });
+      }
       request.appSession = session;
       return true;
     }
