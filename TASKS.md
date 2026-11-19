@@ -16,7 +16,7 @@ Slice 2.30d, the profile (`docs/roadmap.md`, Phase 2; owner decision 2026-11-18:
   - [x] 2. Server: the edits past the draft for data, location and operations (`PUT /v1/admin/restaurants/{id}/profile/*`), audited, the devices told of new hours.
   - [x] 3. Server: accounts past the draft (add and remove, a removed user signed out), the devices list and their force sign-out.
   - [x] 4. Server: the notes (a new table) and the change log over the audit log; the restaurant's orders.
-  - [ ] 5. Panel: the profile `/restaurants/$restaurantId` with its tabs, replacing «حالة المطاعم», «الصور» and «تصنيفات المطعم», the restaurant ratings moved in.
+  - [x] 5. Panel: the profile `/restaurants/$restaurantId` with its tabs, replacing «حالة المطاعم», «الصور» and «تصنيفات المطعم», the restaurant ratings moved in.
   - [ ] 6. Review, module notes and the handover.
 
 ### Left from 2.30c (the cloud session's branch)

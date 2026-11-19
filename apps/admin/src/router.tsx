@@ -59,18 +59,16 @@ import { RestaurantStatementsPage } from './restaurant-statements-page.js';
 import { SettleCaptainPage, SettlementsPage, StatementPage } from './settlement-page.js';
 import { RestaurantReceiptPage, RestaurantSettlePage } from './restaurant-settle-page.js';
 import { MerchantStatementPage, RestaurantSettlementsPage } from './restaurant-settlement-page.js';
-import { canSeeCategories, canSeeRestaurantCategories } from './categories.js';
-import { CategoriesPage, RestaurantCategoriesPage } from './categories-page.js';
+import { canSeeCategories } from './categories.js';
+import { CategoriesPage } from './categories-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
 import { canSeeDrafts, isStep, type Step } from './restaurant-drafts.js';
 import { RestaurantDraftPage, RestaurantDraftsPage } from './restaurant-drafts-page.js';
-import { canSeeImages } from './restaurant-images.js';
-import { RestaurantImagesPage } from './restaurant-images-page.js';
-import { canSeeRestaurantStatus } from './restaurant-status.js';
 import { canSeeRestaurantList, type ListFilter, listFilterOf } from './restaurant-list.js';
 import { RestaurantListPage } from './restaurant-list-page.js';
-import { RestaurantStatusPage } from './restaurant-status-page.js';
+import { isProfileTab, type ProfileTab } from './restaurant-profile.js';
+import { RestaurantProfilePage } from './restaurant-profile-page.js';
 import { RatingsPage } from './ratings-page.js';
 import { canSeeRatings, ratingsSearch } from './ratings.js';
 import { can, sessionQuery } from './session.js';
@@ -243,36 +241,6 @@ const categoriesRoute = createRoute({
   component: CategoriesPage,
 });
 
-// A restaurant's categories (slice 2.27a, AP §9.6.3 step 1), picked as on
-// «الصور»; restaurants.manage or restaurants.create sets them.
-const restaurantCategoriesRoute = createRoute({
-  getParentRoute: () => signedInRoute,
-  path: '/restaurant-categories',
-  validateSearch: (search: Record<string, unknown>): { city?: string; restaurant?: string } => ({
-    ...citySearch(search),
-    ...(typeof search.restaurant === 'string' ? { restaurant: search.restaurant } : {}),
-  }),
-  beforeLoad: ({ context }) => {
-    if (!canSeeRestaurantCategories(context.session)) throw redirect({ to: '/' });
-  },
-  component: RestaurantCategoriesPage,
-});
-
-// «الصور» (slice 2.5): logos and covers (restaurants.manage) and item photos
-// (restaurants.menus); the server checks each.
-const imagesRoute = createRoute({
-  getParentRoute: () => signedInRoute,
-  path: '/images',
-  validateSearch: (search: Record<string, unknown>): { city?: string; restaurant?: string } => ({
-    ...citySearch(search),
-    ...(typeof search.restaurant === 'string' ? { restaurant: search.restaurant } : {}),
-  }),
-  beforeLoad: ({ context }) => {
-    if (!canSeeImages(context.session)) throw redirect({ to: '/' });
-  },
-  component: RestaurantImagesPage,
-});
-
 // «إضافة مطعم» (AP §9.6.3, slice 2.30a): the city's drafts, and one draft's
 // steps; restaurants.read or restaurants.create read them, and each step's
 // own permission saves it (the server checks).
@@ -314,24 +282,24 @@ const restaurantListRoute = createRoute({
   component: RestaurantListPage,
 });
 
-// «حالة المطاعم» (slice 2.6b, AP §9.6.5): every restaurants.read session
-// sees the state; restaurants.manage changes it (the server checks).
-const restaurantStatusRoute = createRoute({
+// AP §9.6.4 «ملف المطعم» (slice 2.30d): restaurants.read opens it; each
+// tab's commands check their own permission (the server too). It took over
+// «حالة المطاعم», «الصور» and «تصنيفات المطعم».
+const restaurantProfileRoute = createRoute({
   getParentRoute: () => signedInRoute,
-  path: '/restaurant-status',
-  validateSearch: (search: Record<string, unknown>): { city?: string; restaurant?: string } => ({
+  path: '/restaurants/$restaurantId',
+  validateSearch: (search: Record<string, unknown>): { city?: string; tab?: ProfileTab } => ({
     ...citySearch(search),
-    ...(typeof search.restaurant === 'string' ? { restaurant: search.restaurant } : {}),
+    ...(isProfileTab(search.tab) ? { tab: search.tab } : {}),
   }),
   beforeLoad: ({ context }) => {
-    if (!canSeeRestaurantStatus(context.session)) throw redirect({ to: '/' });
+    if (!canSeeRestaurantList(context.session)) throw redirect({ to: '/' });
   },
-  component: RestaurantStatusPage,
+  component: RestaurantProfilePage,
 });
 
-// «التقييمات» (slice 2.26c; AP §9.6.4, §9.7.4): restaurants.read or
-// captains.read, each choice by its own (the server checks), until the
-// restaurant and captain profiles (2.30, 2.36).
+// «التقييمات» (slice 2.26c; AP §9.7.4): a captain's, captains.read, until
+// the captain profile (2.36); a restaurant's are in its profile (2.30d).
 const ratingsRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/ratings',
@@ -739,13 +707,11 @@ const routeTree = rootRoute.addChildren([
     restaurantSettleRoute,
     restaurantReceiptRoute,
     restaurantStatementsRoute,
-    imagesRoute,
     restaurantDraftsRoute,
     restaurantDraftRoute,
     categoriesRoute,
-    restaurantCategoriesRoute,
     restaurantListRoute,
-    restaurantStatusRoute,
+    restaurantProfileRoute,
     ratingsRoute,
     alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute, handoverRoute])]),

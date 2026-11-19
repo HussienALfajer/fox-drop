@@ -107,6 +107,31 @@ test('lists the restaurants, filters them, suspends one and changes its commissi
   await page.route('**/v1/admin/restaurants?*', (route) =>
     route.fulfill({ json: { restaurants: [{ id: restaurantId, nameAr: 'مطعم الشام' }] } }),
   );
+  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}`, (route) =>
+    route.fulfill({
+      json: {
+        id: restaurantId,
+        cityId,
+        accountStatus: 'active',
+        basics: {
+          nameAr: 'مطعم الشام',
+          nameEn: null,
+          categoryIds: [],
+          description: null,
+          logoKey: null,
+          coverKey: null,
+        },
+        location: { location: null, address: null, phone: null, ownerName: null },
+        operations: { periods: [], defaultPrepMin: 20, minimumOrder: null, coverage: null },
+        commission: null,
+        contract: null,
+        steps: { basics: true, location: true, operations: true, commission: true, contract: true },
+      },
+    }),
+  );
+  await page.route(`**/v1/admin/restaurants/${restaurantId}/overview?*`, (route) =>
+    route.fulfill({ status: 503, json: { statusCode: 503 } }),
+  );
   await page.route(`**/v1/admin/restaurants/${restaurantId}/status`, (route) =>
     route.fulfill({ json: status }),
   );
@@ -150,6 +175,8 @@ test('lists the restaurants, filters them, suspends one and changes its commissi
   expect(page.url()).not.toContain('0944');
 
   await table.getByRole('link', { name: 'مطعم الشام' }).click();
+  // The name opens the profile (slice 2.30d), whose «الحالة والحساب» holds the actions.
+  await page.getByRole('link', { name: 'الحالة والحساب' }).click();
   const section = page.getByRole('region', { name: 'الحساب والعمولة' });
   await expect(section.getByText('حالة الحساب: فعّال')).toBeVisible();
   const suspend = section.getByRole('form', { name: 'تعليق' });

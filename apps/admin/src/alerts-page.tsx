@@ -96,7 +96,11 @@ function ResumeRestaurant({ alert, city }: { alert: AdminAlert; city: City }) {
           {t('alerts.resumeRestaurant')}
         </button>
       )}{' '}
-      <Link to="/restaurant-status" search={{ city: city.code, restaurant: restaurantId }}>
+      <Link
+        to="/restaurants/$restaurantId"
+        params={{ restaurantId }}
+        search={{ city: city.code, tab: 'status' }}
+      >
         {t('alerts.openRestaurant')}
       </Link>
       {(resume.isError || resume.data?.status === 'refused') && (

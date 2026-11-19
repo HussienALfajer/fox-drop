@@ -1,7 +1,6 @@
 import type { components } from '@fox-drop/api-schema';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { api } from './api.js';
-import { RESTAURANTS_READ } from './restaurant-images.js';
 import { type AdminSession, can } from './session.js';
 
 export type RatingsPage = components['schemas']['AdminRatingsDto_Output'];
@@ -12,8 +11,9 @@ export const CAPTAINS_READ = 'captains.read';
 
 // AP §9.6.4, §9.7.4 (slice 2.26c): restaurants.read reads a restaurant's
 // ratings, captains.read a captain's (OWN, OPS, SUP; AP §6.2).
+// A captain's ratings (a restaurant's are in its profile, slice 2.30d).
 export function canSeeRatings(session: AdminSession | null | undefined): boolean {
-  return can(session, RESTAURANTS_READ) || can(session, CAPTAINS_READ);
+  return can(session, CAPTAINS_READ);
 }
 
 export const ratingPeriods = ['all', 'today', 'yesterday', 'last_7_days', 'last_30_days'] as const;
@@ -21,24 +21,21 @@ export type RatingPeriod = (typeof ratingPeriods)[number];
 
 export interface RatingsSearch {
   city?: string;
-  restaurant?: string;
   captain?: string;
   period?: RatingPeriod;
   stars?: number;
 }
 
-// The page's search: a restaurant or a captain (the restaurant wins when a
-// link names both), the period and the stars; anything else is dropped.
+// The page's search: a captain, the period and the stars; anything else is
+// dropped.
 export function ratingsSearch(search: Record<string, unknown>): RatingsSearch {
   const text = (key: string) => (typeof search[key] === 'string' ? search[key] : undefined);
   const city = text('city');
-  const restaurant = text('restaurant');
-  const captain = restaurant === undefined ? text('captain') : undefined;
+  const captain = text('captain');
   const period = ratingPeriods.find((each) => each === search.period);
   const stars = Number(search.stars);
   return {
     ...(city ? { city } : {}),
-    ...(restaurant ? { restaurant } : {}),
     ...(captain ? { captain } : {}),
     ...(period && period !== 'all' ? { period } : {}),
     ...(Number.isInteger(stars) && stars >= 1 && stars <= 5 ? { stars } : {}),

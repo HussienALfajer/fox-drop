@@ -205,7 +205,11 @@ function Row({
             {restaurant.nameAr}
           </Link>
         ) : (
-          <Link to="/restaurant-status" search={{ city: city.code, restaurant: restaurant.id }}>
+          <Link
+            to="/restaurants/$restaurantId"
+            params={{ restaurantId: restaurant.id }}
+            search={{ city: city.code }}
+          >
             {restaurant.nameAr}
           </Link>
         )}

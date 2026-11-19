@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SETTINGS_READ } from './app-settings.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { ApprovalsLink } from './compensation-approvals-page.js';
-import { canSeeCategories, canSeeRestaurantCategories } from './categories.js';
+import { canSeeCategories } from './categories.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
@@ -16,9 +16,7 @@ import { canSeeHomeSections } from './home-sections.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeDrafts } from './restaurant-drafts.js';
-import { canSeeImages } from './restaurant-images.js';
 import { canSeeRestaurantList } from './restaurant-list.js';
-import { canSeeRestaurantStatus } from './restaurant-status.js';
 import { canSeeLostDemand } from './lost-demand.js';
 import { canSeeRatings } from './ratings.js';
 import { CUSTOMERS_READ } from './customers.js';
@@ -68,11 +66,6 @@ export function HomePage() {
               <Link to="/categories">{t('categories.title')}</Link>
             </li>
           )}
-          {canSeeRestaurantCategories(session) && (
-            <li>
-              <Link to="/restaurant-categories">{t('restaurantCategories.title')}</Link>
-            </li>
-          )}
           {canSeeRestaurantList(session) && (
             <li>
               <Link to="/restaurants">{t('restaurantList.title')}</Link>
@@ -81,16 +74,6 @@ export function HomePage() {
           {canSeeDrafts(session) && (
             <li>
               <Link to="/restaurant-drafts">{t('drafts.title')}</Link>
-            </li>
-          )}
-          {canSeeImages(session) && (
-            <li>
-              <Link to="/images">{t('images.title')}</Link>
-            </li>
-          )}
-          {canSeeRestaurantStatus(session) && (
-            <li>
-              <Link to="/restaurant-status">{t('restaurantStatus.title')}</Link>
             </li>
           )}
           {canSeeRatings(session) && (
