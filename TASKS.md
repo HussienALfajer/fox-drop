@@ -12,11 +12,11 @@ Slice 2.37b, captain pay in the panel (`docs/roadmap.md`, Phase 2; 2.37 in three
 - **Already built (reuse):** the pay table versions with `setPayTable`, `payTable`, `announcedPayTables`, `samplePay` and the captain's «ملفي» with «احسب أجري» (captains, 2.36c); the settings `dispatch.max_distance_km.<vehicle>` and `captain.waiting_threshold_min`; the peak bonus page and routes (2.16); the fee screen's patterns (`delivery-fees.ts`, `admin-delivery-fees.controller.ts`, 2.37a).
 - **Plan (to check against the spec first):**
   - [x] Server: the panel's routes for the pay table in force, the announced ones and their history, publishing a new one (`pricing.edit_pay_tables`, effective at least 7 days later), the preview for a sample trip, and the maximum distance per vehicle; the captains' push announcing a new table; tests first for the effective date.
-  - [ ] Panel: «أجور الكباتن» per vehicle with the calculator and the link to «مكافأة ساعة الذروة»; unit and Playwright tests.
+  - [x] Panel: «أجور الكباتن» per vehicle with the calculator and the link to «مكافأة ساعة الذروة»; unit and Playwright tests.
   - [ ] Review (`reviewer`), fixes, then hand over to 2.37c.
 - **Ask the owner first:** the push's wording (CA §14 may name it; else ours, to confirm), and whether the maximum distance per vehicle changes with the table's date or at once (it is a setting today).
 - **Owner decisions 2026-11-19:** the maximum distance per vehicle stays the setting `dispatch.max_distance_km.<vehicle>`, changed at once (the page edits it through the settings route); the push's date reads with its weekday and time («الخميس 26/11/2026 الساعة 2:30 م»).
-- **Stopped at:** the server's routes and the push are done; the panel's page is next.
+- **Stopped at:** the server and the panel are done; the review is next.
 
 ### Left from 2.37a (the cloud session's branch)
 

@@ -38,6 +38,7 @@ import { DepositsPage } from './cash-desk-deposits-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
 import { DeliveryFeesPage } from './delivery-fees-page.js';
+import { PayTablesPage } from './pay-tables-page.js';
 import { CompensationApprovalsPage } from './compensation-approvals-page.js';
 import { canApproveCompensations } from './order-compensation.js';
 import { canSeeBanners } from './banners.js';
@@ -398,6 +399,19 @@ const deliveryFeesRoute = createRoute({
     if (!can(context.session, ZONES_READ)) throw redirect({ to: '/' });
   },
   component: DeliveryFeesPage,
+});
+
+// AP §9.12.5 «أجور الكباتن» (slice 2.37b): read with zones.read (OWN, OPS,
+// FIN); OWN publishes a table (pricing.edit_pay_tables, checked by the page
+// and the server).
+const payTablesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/pay-tables',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, ZONES_READ)) throw redirect({ to: '/' });
+  },
+  component: PayTablesPage,
 });
 
 // AP §6.4 «طلبات الموافقة» (slice 2.22a): OWN approves, edits or rejects
@@ -790,6 +804,7 @@ const routeTree = rootRoute.addChildren([
     appSettingsRoute,
     peakBonusRoute,
     deliveryFeesRoute,
+    payTablesRoute,
     compensationsRoute,
     ticketsRoute,
     ticketRoute,
