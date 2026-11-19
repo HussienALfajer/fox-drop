@@ -833,6 +833,22 @@ Serializers _$serializers =
           ..add(AdminOutcomePreviewDtoFoodEnum.serializer)
           ..add(AdminOutcomePreviewDtoOutcomeEnum.serializer)
           ..add(AdminOutcomePreviewDtoResponsibleEnum.serializer)
+          ..add(AdminPayTablePreviewDtoOutput.serializer)
+          ..add(AdminPayTablePreviewDtoOutputAnnouncedInner.serializer)
+          ..add(AdminPayTablePreviewDtoOutputDraft.serializer)
+          ..add(AdminPayTablePreviewDtoOutputInForce.serializer)
+          ..add(AdminPayTablePreviewDtoOutputInForceBase.serializer)
+          ..add(AdminPayTablePreviewDtoOutputInForceTotal.serializer)
+          ..add(AdminPayTablesDtoOutput.serializer)
+          ..add(AdminPayTablesDtoOutputMaxDistanceKmInner.serializer)
+          ..add(AdminPayTablesDtoOutputMaxDistanceKmInnerVehicleEnum.serializer)
+          ..add(AdminPayTablesDtoOutputVersionsInner.serializer)
+          ..add(AdminPayTablesDtoOutputVersionsInnerRatesInner.serializer)
+          ..add(
+            AdminPayTablesDtoOutputVersionsInnerRatesInnerVehicleEnum
+                .serializer,
+          )
+          ..add(AdminPayTablesDtoOutputVersionsInnerStateEnum.serializer)
           ..add(AdminPeakBonusDtoOutput.serializer)
           ..add(AdminPeakBonusDtoOutputInForce.serializer)
           ..add(AdminPeakBonusDtoOutputInForceWindowsInner.serializer)
@@ -868,6 +884,9 @@ Serializers _$serializers =
           ..add(AdminPromoCodesDtoOutputCodesInnerStateEnum.serializer)
           ..add(AdminPromoCodesDtoOutputCodesInnerStatusEnum.serializer)
           ..add(AdminPromoCodesDtoOutputCodesInnerVisibilityEnum.serializer)
+          ..add(AdminPublishPayTableDto.serializer)
+          ..add(AdminPublishPayTableDtoRatesInner.serializer)
+          ..add(AdminPublishPayTableDtoRatesInnerVehicleEnum.serializer)
           ..add(AdminPublishTermsDto.serializer)
           ..add(AdminRatedCaptainsDtoOutput.serializer)
           ..add(AdminRatedCaptainsDtoOutputCaptainsInner.serializer)
@@ -3140,6 +3159,30 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminPayTablePreviewDtoOutputAnnouncedInner),
+            ]),
+            () => ListBuilder<AdminPayTablePreviewDtoOutputAnnouncedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPayTablesDtoOutputMaxDistanceKmInner),
+            ]),
+            () => ListBuilder<AdminPayTablesDtoOutputMaxDistanceKmInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPayTablesDtoOutputVersionsInner),
+            ]),
+            () => ListBuilder<AdminPayTablesDtoOutputVersionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPayTablesDtoOutputVersionsInnerRatesInner),
+            ]),
+            () => ListBuilder<AdminPayTablesDtoOutputVersionsInnerRatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminPeakBonusDtoOutputInForceWindowsInner),
             ]),
             () => ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInner>(),
@@ -3196,6 +3239,12 @@ Serializers _$serializers =
               const FullType(AdminPeakBonusDtoOutputZonesInner),
             ]),
             () => ListBuilder<AdminPeakBonusDtoOutputZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPublishPayTableDtoRatesInner),
+            ]),
+            () => ListBuilder<AdminPublishPayTableDtoRatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

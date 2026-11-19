@@ -55,7 +55,10 @@ export function PeakBonusPage() {
     <main>
       <h1>{t('peakBonus.title')}</h1>
       <p>
-        <Link to="/">{t('common.home')}</Link>
+        <Link to="/">{t('common.home')}</Link>{' '}
+        <Link to="/pay-tables" search={city ? { city: city.code } : {}}>
+          {t('payTables.title')}
+        </Link>
       </p>
       <p>{t('peakBonus.explain')}</p>
       {bonus.isError || cities.isError ? (

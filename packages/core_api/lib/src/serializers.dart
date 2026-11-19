@@ -474,6 +474,16 @@ import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entri
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entries_inner_party.dart';
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_loss.dart';
 import 'package:core_api/src/model/admin_outcome_preview_dto.dart';
+import 'package:core_api/src/model/admin_pay_table_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_pay_table_preview_dto_output_announced_inner.dart';
+import 'package:core_api/src/model/admin_pay_table_preview_dto_output_draft.dart';
+import 'package:core_api/src/model/admin_pay_table_preview_dto_output_in_force.dart';
+import 'package:core_api/src/model/admin_pay_table_preview_dto_output_in_force_base.dart';
+import 'package:core_api/src/model/admin_pay_table_preview_dto_output_in_force_total.dart';
+import 'package:core_api/src/model/admin_pay_tables_dto_output.dart';
+import 'package:core_api/src/model/admin_pay_tables_dto_output_max_distance_km_inner.dart';
+import 'package:core_api/src/model/admin_pay_tables_dto_output_versions_inner.dart';
+import 'package:core_api/src/model/admin_pay_tables_dto_output_versions_inner_rates_inner.dart';
 import 'package:core_api/src/model/admin_peak_bonus_dto_output.dart';
 import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force.dart';
 import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner.dart';
@@ -495,6 +505,8 @@ import 'package:core_api/src/model/admin_promo_code_report_dto_output_report.dar
 import 'package:core_api/src/model/admin_promo_codes_created_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_dto_output_codes_inner.dart';
+import 'package:core_api/src/model/admin_publish_pay_table_dto.dart';
+import 'package:core_api/src/model/admin_publish_pay_table_dto_rates_inner.dart';
 import 'package:core_api/src/model/admin_publish_terms_dto.dart';
 import 'package:core_api/src/model/admin_rated_captains_dto_output.dart';
 import 'package:core_api/src/model/admin_rated_captains_dto_output_captains_inner.dart';
@@ -1619,6 +1631,16 @@ part 'serializers.g.dart';
   AdminOutcomePreviewAnswerDtoOutputEntriesInnerParty,
   AdminOutcomePreviewAnswerDtoOutputLoss,
   AdminOutcomePreviewDto,
+  AdminPayTablePreviewDtoOutput,
+  AdminPayTablePreviewDtoOutputAnnouncedInner,
+  AdminPayTablePreviewDtoOutputDraft,
+  AdminPayTablePreviewDtoOutputInForce,
+  AdminPayTablePreviewDtoOutputInForceBase,
+  AdminPayTablePreviewDtoOutputInForceTotal,
+  AdminPayTablesDtoOutput,
+  AdminPayTablesDtoOutputMaxDistanceKmInner,
+  AdminPayTablesDtoOutputVersionsInner,
+  AdminPayTablesDtoOutputVersionsInnerRatesInner,
   AdminPeakBonusDtoOutput,
   AdminPeakBonusDtoOutputInForce,
   AdminPeakBonusDtoOutputInForceWindowsInner,
@@ -1640,6 +1662,8 @@ part 'serializers.g.dart';
   AdminPromoCodesCreatedDtoOutput,
   AdminPromoCodesDtoOutput,
   AdminPromoCodesDtoOutputCodesInner,
+  AdminPublishPayTableDto,
+  AdminPublishPayTableDtoRatesInner,
   AdminPublishTermsDto,
   AdminRatedCaptainsDtoOutput,
   AdminRatedCaptainsDtoOutputCaptainsInner,
@@ -2654,6 +2678,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminPublishPayTableDtoRatesInner),
+            ]),
+            () => ListBuilder<AdminPublishPayTableDtoRatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainApplicationDtoOutputApplicationHistoryInner),
             ]),
             () =>
@@ -3056,6 +3086,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminPayTablesDtoOutputVersionsInner),
+            ]),
+            () => ListBuilder<AdminPayTablesDtoOutputVersionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderEditsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderEditsInner>(),
@@ -3113,6 +3149,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderItemReportItemsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderItemReportItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminPayTablesDtoOutputMaxDistanceKmInner),
+            ]),
+            () => ListBuilder<AdminPayTablesDtoOutputMaxDistanceKmInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3692,9 +3734,21 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminPayTablesDtoOutputVersionsInnerRatesInner),
+            ]),
+            () => ListBuilder<AdminPayTablesDtoOutputVersionsInnerRatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminNotificationTextsDtoOutputTemplatesInner),
             ]),
             () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminPayTablePreviewDtoOutputAnnouncedInner),
+            ]),
+            () => ListBuilder<AdminPayTablePreviewDtoOutputAnnouncedInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

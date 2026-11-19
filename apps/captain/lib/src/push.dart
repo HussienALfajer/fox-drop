@@ -10,6 +10,7 @@ import 'api.dart';
 import 'auth.dart';
 import 'joining/application.dart';
 import 'performance/performance.dart';
+import 'profile/my_profile.dart';
 import 'profile/profile.dart';
 import 'router.dart';
 
@@ -90,6 +91,8 @@ String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
   'documents' => '/documents',
   // CA §14 #25 (slice 2.36b): a violation opens «أدائي».
   'performance' => '/performance',
+  // CA §14 #22 (slice 2.37b): a new pay table announced opens «ملفي».
+  'pay_table' => '/profile',
   _ => null,
 };
 
@@ -114,6 +117,8 @@ final pushTapsProvider = Provider<void>((ref) {
         ref.invalidate(captainDocumentsProvider);
       case 'performance':
         ref.invalidate(performanceProvider);
+      case 'pay_table':
+        ref.invalidate(payTableProvider);
     }
   }
 

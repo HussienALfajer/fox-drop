@@ -17,6 +17,7 @@ import {
   CaptainsService,
   type NewCaptain,
   type PayRate,
+  type PayTableAnnounced,
 } from './index.js';
 import { LivePositions } from './live-positions.js';
 
@@ -380,6 +381,123 @@ describe('CaptainsService.setPayTable', () => {
       captains.setPayTable(cityId, { currency: 'USD', rates: everyVehicle(rate) }, change),
     ).rejects.toMatchObject({ refusal: 'not_in_base_currency' });
     expect(await captains.payTable(cityId, new Date())).toBeNull();
+  });
+
+  it('answers a repeat of the newest version at the same start with that version', async () => {
+    const cityId = await city();
+    const first = await captains.setPayTable(
+      cityId,
+      { currency: 'TRY', rates: everyVehicle(rate) },
+      change,
+    );
+    const start = new Date(Date.now() + 8 * day);
+    const raised = { currency: 'TRY', rates: everyVehicle({ ...rate, basePay: 3_000n }) };
+    const second = await captains.setPayTable(cityId, { ...raised, effectiveFrom: start }, change);
+    expect(await captains.setPayTable(cityId, { ...raised, effectiveFrom: start }, change)).toBe(
+      second,
+    );
+    // Another start or other rates is a new version.
+    const third = await captains.setPayTable(
+      cityId,
+      { ...raised, effectiveFrom: new Date(start.getTime() + day) },
+      change,
+    );
+    expect(new Set([first, second, third]).size).toBe(3);
+  });
+
+  it('announces in its transaction a table that starts later, not one starting now', async () => {
+    const cityId = await city();
+    const heard: PayTableAnnounced[] = [];
+    captains.onPayTableAnnounced(async (tx, announced) => {
+      if (announced.cityId !== cityId) return;
+      // In the publishing transaction: the version is already there.
+      const { rows } = await tx.execute<{ count: number }>(
+        `SELECT count(*)::int AS count FROM captains.pay_tables WHERE id = '${announced.tableId}'`,
+      );
+      expect(rows[0]!.count).toBe(1);
+      heard.push(announced);
+    });
+    await captains.setPayTable(cityId, { currency: 'TRY', rates: everyVehicle(rate) }, change);
+    expect(heard).toEqual([]);
+    // The city's captains hear it, a suspended one too, a terminated one not.
+    const active = { id: await captains.createCaptain(cityId, motorbike, change) };
+    const ended = await captains.createCaptain(
+      cityId,
+      { ...motorbike, plateNumber: 'B 2' },
+      change,
+    );
+    await captains.setStatus(ended, 'terminated', change, new Date());
+    const suspended = await captains.createCaptain(
+      cityId,
+      { ...motorbike, plateNumber: 'B 3' },
+      change,
+    );
+    await captains.setStatus(suspended, 'suspended', { ...change, until: null }, new Date());
+    const start = new Date(Date.now() + 8 * day);
+    const id = await captains.setPayTable(
+      cityId,
+      { currency: 'TRY', rates: everyVehicle(rate), effectiveFrom: start },
+      change,
+    );
+    expect(heard).toEqual([
+      {
+        cityId,
+        tableId: id,
+        effectiveFrom: start,
+        timeZone: expect.any(String),
+        captainIds: expect.any(Array),
+        at: expect.any(Date),
+      },
+    ]);
+    expect([...heard[0]!.captainIds].sort()).toEqual([active.id, suspended].sort());
+    // A repeat is not announced again.
+    await captains.setPayTable(
+      cityId,
+      { currency: 'TRY', rates: everyVehicle(rate), effectiveFrom: start },
+      change,
+    );
+    expect(heard).toHaveLength(1);
+  });
+
+  it('lists the versions newest first, each with its state', async () => {
+    const cityId = await city();
+    const now = new Date();
+    const first = await captains.setPayTable(
+      cityId,
+      { currency: 'TRY', rates: everyVehicle(rate) },
+      change,
+    );
+    const start = new Date(now.getTime() + 8 * day);
+    const replaced = await captains.setPayTable(
+      cityId,
+      { currency: 'TRY', rates: everyVehicle(rate), effectiveFrom: start },
+      change,
+    );
+    const announced = await captains.setPayTable(
+      cityId,
+      {
+        currency: 'TRY',
+        rates: everyVehicle({ ...rate, minimumPay: 9_000n }),
+        effectiveFrom: start,
+      },
+      { ...change, reason: 'رفع الحد الأدنى' },
+    );
+    const versions = await captains.payTableVersions(cityId, now);
+    expect(versions.map((version) => [version.id, version.state])).toEqual([
+      [announced, 'announced'],
+      [replaced, 'replaced'],
+      [first, 'in_force'],
+    ]);
+    expect(versions[0]).toMatchObject({
+      currency: 'TRY',
+      effectiveFrom: start,
+      editorId: change.actor.id,
+      reason: 'رفع الحد الأدنى',
+      rates: { car: { ...rate, minimumPay: 9_000n } },
+    });
+    // Once the new one starts, the first has ended.
+    const later = await captains.payTableVersions(cityId, new Date(start.getTime() + 1));
+    expect(later.map((version) => version.state)).toEqual(['in_force', 'replaced', 'ended']);
   });
 });
 

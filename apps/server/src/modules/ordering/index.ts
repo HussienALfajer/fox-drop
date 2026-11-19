@@ -60,6 +60,7 @@ import { CaptainFiguresService } from './captain-figures.js';
 import { RestaurantFiguresService } from './restaurant-figures.js';
 import { AdminRestaurantOverviewController } from './admin-restaurant-overview.controller.js';
 import { AdminDeliveryFeesController } from './admin-delivery-fees.controller.js';
+import { AdminPayTablesController } from './admin-pay-tables.controller.js';
 import {
   AdminEmergencyStopController,
   CaptainEmergencyStopController,
@@ -111,6 +112,7 @@ import {
     AdminRatingsController,
     AdminRestaurantOverviewController,
     AdminDeliveryFeesController,
+    AdminPayTablesController,
     CaptainOrderRouteController,
     CustomerOrderRouteController,
   ],

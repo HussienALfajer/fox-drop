@@ -114,6 +114,11 @@ export function HomePage() {
               <Link to="/delivery-fees">{t('deliveryFees.title')}</Link>
             </li>
           )}
+          {can(session, ZONES_READ) && (
+            <li>
+              <Link to="/pay-tables">{t('payTables.title')}</Link>
+            </li>
+          )}
           {canReadTickets(session) && (
             <li>
               <Link to="/tickets">{t('tickets.title')}</Link>
