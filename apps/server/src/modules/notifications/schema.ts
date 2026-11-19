@@ -150,10 +150,9 @@ export const pushDevices = notifications.table(
       'push_devices_merchant',
       sql`(${table.party} = 'merchant') = (${table.restaurantId} IS NOT NULL AND ${table.merchantRole} IS NOT NULL)`,
     ),
-    check(
-      'push_devices_captain',
-      sql`(${table.party} = 'captain') = (${table.captainId} IS NOT NULL)`,
-    ),
+    // A captain applicant's device has no captain yet (CA §14 #29, slice
+    // 2.34b): it is found by its account.
+    check('push_devices_captain', sql`${table.captainId} IS NULL OR ${table.party} = 'captain'`),
     check(
       'push_devices_ended',
       sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL) AND (${table.endReason} IS NULL OR ${table.endReason} IN ('token_invalid', 'token_moved'))`,
@@ -233,7 +232,9 @@ export const pushMessages = notifications.table(
     check('push_messages_party', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'push_messages_recipient',
-      sql`(${table.party} <> 'customer' OR ${table.accountId} IS NOT NULL) AND (${table.accountId} IS NULL OR ${table.party} = 'customer' OR (${table.party} = 'merchant' AND ${table.ownersOnly})) AND (${table.party} = 'merchant') = (${table.restaurantId} IS NOT NULL) AND (${table.party} = 'captain') = (${table.captainId} IS NOT NULL) AND (NOT ${table.ownersOnly} OR ${table.party} = 'merchant')`,
+      // A captain's push names the captain, or for an applicant (CA §14 #29,
+      // slice 2.34b) the account alone.
+      sql`(${table.party} <> 'customer' OR ${table.accountId} IS NOT NULL) AND (${table.accountId} IS NULL OR ${table.party} = 'customer' OR (${table.party} = 'merchant' AND ${table.ownersOnly}) OR (${table.party} = 'captain' AND ${table.captainId} IS NULL)) AND (${table.party} = 'merchant') = (${table.restaurantId} IS NOT NULL) AND (${table.captainId} IS NULL OR ${table.party} = 'captain') AND (${table.party} <> 'captain' OR (${table.captainId} IS NOT NULL) <> (${table.accountId} IS NOT NULL)) AND (NOT ${table.ownersOnly} OR ${table.party} = 'merchant')`,
     ),
     check('push_messages_priority', sql`${table.priority} IN ('high', 'normal')`),
     check('push_messages_done', sql`${table.sentAt} IS NULL OR ${table.gaveUpAt} IS NULL`),

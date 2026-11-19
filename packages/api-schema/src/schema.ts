@@ -3092,6 +3092,182 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captain-applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainApplicationsBoard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainApplicationsReview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/documents/{documentId}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsReviewDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/documents/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainApplicationsUploadDocument"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/document-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsRequestDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsAddNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/interview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainApplicationsScheduleInterview"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/training-passed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsTrainingPassed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsReject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/waitlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsWaitlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/back-from-waitlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsBackFromWaitlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/peak-bonus": {
         parameters: {
             query?: never;
@@ -8600,7 +8776,7 @@ export interface components {
              * @description The record the file is for (architecture §5.8).
              * @enum {string}
              */
-            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image" | "restaurant_contract" | "restaurant_licence" | "menu_import";
+            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image" | "restaurant_contract" | "restaurant_licence" | "menu_import" | "captain_document";
             /**
              * @description An image (8 MB at most); for menu_import an .xlsx workbook (2 MB at most).
              * @enum {string}
@@ -9216,6 +9392,38 @@ export interface components {
                 /** @description What «إرسال الطلب» waits for, in the form’s order. */
                 missing: ("vehicle" | "document:national_id" | "document:personal_photo" | "document:civil_registry" | "document:criminal_record" | "document:vehicle_papers" | "document:driving_licence" | "terms")[];
                 submittedAt: string | null;
+                /** @description What the panel asked for: «يرجى رفع {المستند}: {السبب}». */
+                requests: {
+                    /** @enum {string} */
+                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                    reason: string;
+                    /** Format: date-time */
+                    requestedAt: string;
+                }[];
+                interview: {
+                    /** Format: date-time */
+                    at: string;
+                    place: string;
+                    latitude: number;
+                    longitude: number;
+                } | null;
+                rejection: {
+                    reason: string;
+                    /** Format: date-time */
+                    at: string;
+                    /**
+                     * Format: date-time
+                     * @description A new application from then (K11).
+                     */
+                    reapplyFrom: string;
+                } | null;
+                /** @description The stages since «إرسال الطلب», oldest first. */
+                history: {
+                    /** @enum {string} */
+                    stage: "draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
+                    /** Format: date-time */
+                    at: string;
+                }[];
             } | null;
         };
         CaptainApplicationZonesDto_Output: {
@@ -9505,6 +9713,157 @@ export interface components {
             };
             /** @description The captains blocked by cash due who were told; none on a repeat. */
             captainIds: string[];
+        };
+        AdminCaptainApplicationsDto_Output: {
+            /** @description The applications of each stage; a stage without any is left out. */
+            counts: {
+                [key: string]: number;
+            };
+            applications: {
+                /** Format: uuid */
+                id: string;
+                fullName: string;
+                /** @enum {string} */
+                vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                /** Format: uuid */
+                zoneId: string;
+                /** @enum {string} */
+                stage: "draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
+                /** Format: date-time */
+                submittedAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+        };
+        AdminCaptainApplicationDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            stage: "draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
+            /** Format: uuid */
+            cityId: string;
+            fullName: string;
+            /** Format: date */
+            birthDate: string;
+            /** Format: uuid */
+            zoneId: string;
+            zoneName: string | null;
+            vehicle: ("walking" | "bicycle" | "motorbike" | "car") | null;
+            plate: string | null;
+            /** @description In full for captains.manage, masked otherwise (architecture §15.3). */
+            phone: string | null;
+            submittedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description The documents activation waits for (D24). */
+            requiredDocuments: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence")[];
+            /** @description Every upload, newest first. */
+            documents: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                /** @enum {string} */
+                status: "pending" | "accepted" | "rejected";
+                reason: string | null;
+                number: string | null;
+                issueDate: string | null;
+                expiresOn: string | null;
+                /** Format: date-time */
+                uploadedAt: string;
+                uploadedByOffice: boolean;
+                /** @description The office's admin; null for the applicant. */
+                uploadedBy: string | null;
+                reviewedBy: string | null;
+                reviewedAt: string | null;
+                /** @description False for an upload a newer one replaced. */
+                inForce: boolean;
+                /** @description Signed GETs on the panel’s origin, 10 minutes. */
+                fileUrls: string[];
+            }[];
+            requests: {
+                /** @enum {string} */
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                reason: string;
+                /** Format: date-time */
+                requestedAt: string;
+                requestedBy: string | null;
+            }[];
+            interview: {
+                /** Format: date-time */
+                at: string;
+                place: string;
+                latitude: number;
+                longitude: number;
+            } | null;
+            rejection: {
+                reason: string;
+                /** Format: date-time */
+                at: string;
+                /** Format: date-time */
+                reapplyFrom: string;
+            } | null;
+            /** @description Another applicant or captain with the same ID number, phone or plate. */
+            duplicates: {
+                /** @enum {string} */
+                field: "id_number" | "phone" | "plate";
+                applicationId: string | null;
+                captainId: string | null;
+                fullName: string;
+                stage: ("draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected") | null;
+            }[];
+            events: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                at: string;
+                /** @description The admin; null for the applicant. */
+                actor: string | null;
+                /** @enum {string} */
+                kind: "submitted" | "stage" | "note" | "document_review" | "document_request" | "document_upload" | "interview";
+                /** @enum {string} */
+                stage: "draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
+                documentKind: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence") | null;
+                documentStatus: ("pending" | "accepted" | "rejected") | null;
+                note: string | null;
+            }[];
+        };
+        AdminCaptainApplicationReviewDto: {
+            /** @enum {string} */
+            status: "accepted" | "rejected";
+            /** @description Required for «مرفوض»; sent to the applicant. */
+            reason?: string | null;
+        };
+        AdminCaptainApplicationDocumentDto: {
+            /** @description From POST /v1/admin/uploads (captain_document), once uploaded. */
+            uploadIds: string[];
+            /** @description The national ID’s number. */
+            number?: string | null;
+            /** @description The criminal record's issue date. */
+            issueDate?: string | null;
+        };
+        AdminCaptainApplicationRequestDto: {
+            /** @enum {string} */
+            kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+            /** @description Sent to the applicant. */
+            reason: string;
+        };
+        AdminCaptainApplicationNoteDto: {
+            note: string;
+        };
+        AdminCaptainApplicationInterviewDto: {
+            /**
+             * Format: date-time
+             * @description In the future.
+             */
+            at: string;
+            place: string;
+            latitude: number;
+            longitude: number;
+        };
+        AdminCaptainApplicationRejectDto: {
+            /** @description Sent to the applicant (CA §5.4). */
+            reason: string;
         };
         AdminPeakBonusDto_Output: {
             /** @description Null until the owner first saves it: off (D15). */
@@ -11532,14 +11891,14 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
                  */
                 severity: "critical" | "warning" | "information";
                 /** @enum {string} */
-                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket" | "price_change";
+                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket" | "price_change" | "captain_application";
                 /** @description The order, captain or sending number it is about. */
                 subjectId: string;
                 /** @description For an alert about an order. */
@@ -11583,14 +11942,14 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
              */
             severity: "critical" | "warning" | "information";
             /** @enum {string} */
-            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket" | "price_change";
+            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket" | "price_change" | "captain_application";
             /** @description The order, captain or sending number it is about. */
             subjectId: string;
             /** @description For an alert about an order. */
@@ -24013,6 +24372,278 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminBulkHandInGraceAnswerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsBoard: {
+        parameters: {
+            query: {
+                cityId: string;
+                stage?: "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsReviewDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationReviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsUploadDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationDocumentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsRequestDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsAddNote: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationNoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsScheduleInterview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationInterviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsTrainingPassed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsReject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationRejectDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsBackFromWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
                 };
             };
         };

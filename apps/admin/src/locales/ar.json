@@ -176,6 +176,7 @@
       "codeNumberStopped": "رقم إرسال الرموز متوقف",
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
       "largePriceChange": "تغيير أسعار كبير",
+      "captainApplication": "طلب انضمام كابتن",
       "restaurantSettlementOverdue": "مطعم متأخر في التسوية",
       "rateStale": "سعر صرف قديم",
       "compensationApproval": "طلب موافقة تعويض",
@@ -957,6 +958,12 @@
           "document_expiring": "قرب انتهاء مستند",
           "document_rejected": "رفض مستند",
           "contract_phase": "مرحلة العقد",
+          "application_under_review": "طلب الانضمام قيد المراجعة",
+          "application_document_requested": "طلب مستند من المتقدّم",
+          "application_interview": "موعد المقابلة والتدريب",
+          "application_awaiting_kit": "اجتياز التدريب",
+          "application_waitlist": "طلب الانضمام في قائمة الانتظار",
+          "application_rejected": "رفض طلب الانضمام",
           "ticket_resolved": "الرد على بلاغ",
           "pickup_corrected": "تصحيح دفعة استلام"
         }

@@ -48,6 +48,20 @@ import 'package:core_api/src/model/admin_canned_replies_dto.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_output.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_output_replies_inner.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_replies_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_document_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_documents_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_duplicates_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_events_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_rejection.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_requests_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_interview_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_note_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_reject_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_request_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_review_dto.dart';
+import 'package:core_api/src/model/admin_captain_applications_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_applications_dto_output_applications_inner.dart';
 import 'package:core_api/src/model/admin_captain_availability_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner.dart';
@@ -619,6 +633,10 @@ import 'package:core_api/src/model/captain_application_document_dto.dart';
 import 'package:core_api/src/model/captain_application_dto_output.dart';
 import 'package:core_api/src/model/captain_application_dto_output_application.dart';
 import 'package:core_api/src/model/captain_application_dto_output_application_documents_inner.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application_history_inner.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application_interview.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application_rejection.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application_requests_inner.dart';
 import 'package:core_api/src/model/captain_application_personal_dto.dart';
 import 'package:core_api/src/model/captain_application_vehicle_dto.dart';
 import 'package:core_api/src/model/captain_application_zones_dto_output.dart';
@@ -1067,6 +1085,20 @@ part 'serializers.g.dart';
   AdminCannedRepliesDtoOutput,
   AdminCannedRepliesDtoOutputRepliesInner,
   AdminCannedRepliesDtoRepliesInner,
+  AdminCaptainApplicationDocumentDto,
+  AdminCaptainApplicationDtoOutput,
+  AdminCaptainApplicationDtoOutputDocumentsInner,
+  AdminCaptainApplicationDtoOutputDuplicatesInner,
+  AdminCaptainApplicationDtoOutputEventsInner,
+  AdminCaptainApplicationDtoOutputRejection,
+  AdminCaptainApplicationDtoOutputRequestsInner,
+  AdminCaptainApplicationInterviewDto,
+  AdminCaptainApplicationNoteDto,
+  AdminCaptainApplicationRejectDto,
+  AdminCaptainApplicationRequestDto,
+  AdminCaptainApplicationReviewDto,
+  AdminCaptainApplicationsDtoOutput,
+  AdminCaptainApplicationsDtoOutputApplicationsInner,
   AdminCaptainAvailabilityDtoOutput,
   AdminCaptainBalancesDtoOutput,
   AdminCaptainBalancesDtoOutputCaptainsInner,
@@ -1638,6 +1670,10 @@ part 'serializers.g.dart';
   CaptainApplicationDtoOutput,
   CaptainApplicationDtoOutputApplication,
   CaptainApplicationDtoOutputApplicationDocumentsInner,
+  CaptainApplicationDtoOutputApplicationHistoryInner,
+  CaptainApplicationDtoOutputApplicationInterview,
+  CaptainApplicationDtoOutputApplicationRejection,
+  CaptainApplicationDtoOutputApplicationRequestsInner,
   CaptainApplicationPersonalDto,
   CaptainApplicationVehicleDto,
   CaptainApplicationZonesDtoOutput,
@@ -2121,6 +2157,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCaptainApplicationDtoOutputRequestsInner),
+            ]),
+            () => ListBuilder<AdminCaptainApplicationDtoOutputRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerRestaurantPageDtoOutputMenuInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
@@ -2219,6 +2261,15 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminFaqDtoItemsInner)]),
             () => ListBuilder<AdminFaqDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainApplicationsDtoOutputApplicationsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainApplicationsDtoOutputApplicationsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2375,6 +2426,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CaptainApplicationDtoOutputApplicationHistoryInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainApplicationDtoOutputApplicationHistoryInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantOrdersDtoOutputOrdersInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInner>(),
@@ -2384,6 +2444,13 @@ Serializers serializers =
               FullType(AdminMerchantStatementDtoOutputLinesInner),
             ]),
             () => ListBuilder<AdminMerchantStatementDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainApplicationDtoOutputDuplicatesInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainApplicationDtoOutputDuplicatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2641,6 +2708,10 @@ Serializers serializers =
             () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltMap, [FullType(String), FullType(int)]),
+            () => MapBuilder<String, int>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(AdminCustomerDtoOutputDevicesInner),
             ]),
@@ -2694,6 +2765,12 @@ Serializers serializers =
               FullType(AdminCustomerDtoOutputRatingsInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputRatingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainApplicationDtoOutputDocumentsInner),
+            ]),
+            () => ListBuilder<AdminCaptainApplicationDtoOutputDocumentsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3016,6 +3093,12 @@ Serializers serializers =
                 ListBuilder<
                   CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainApplicationDtoOutputEventsInner),
+            ]),
+            () => ListBuilder<AdminCaptainApplicationDtoOutputEventsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3636,6 +3719,15 @@ Serializers serializers =
             () =>
                 ListBuilder<
                   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainApplicationDtoOutputApplicationRequestsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainApplicationDtoOutputApplicationRequestsInner
                 >(),
           )
           ..addBuilderFactory(

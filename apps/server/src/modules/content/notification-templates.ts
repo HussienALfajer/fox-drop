@@ -266,6 +266,19 @@ const captain: Entry[] = [
   ['document_expiring', '27', 'تنتهي صلاحية {المستند} في {التاريخ}', 'silent'],
   ['document_rejected', '27', 'رُفض {المستند}: {السبب}', 'silent'],
   ['contract_phase', '28', 'بدأت {المرحلة} من {التاريخ}', 'silent'],
+  // CA §5.4, §14 #29 (slice 2.34b): the application's stage, silent, in the
+  // status page's words; a rejected document is #27's.
+  ['application_under_review', '29', 'طلبك قيد المراجعة.', 'silent'],
+  ['application_document_requested', '29', 'يرجى رفع {المستند}: {السبب}', 'silent'],
+  ['application_interview', '29', 'موعد المقابلة والتدريب: {اليوم} {الساعة} في {المكان}', 'silent'],
+  ['application_awaiting_kit', '29', 'اجتزت التدريب. استلم العدة ووقّع العقد في المكتب.', 'silent'],
+  ['application_waitlist', '29', 'لا نحتاج كباتن جدداً حالياً. طلبك محفوظ وسنتواصل معك.', 'silent'],
+  [
+    'application_rejected',
+    '29',
+    'نعتذر، لم يُقبل طلبك: {السبب}. يمكنك التقديم مجدداً بعد {التاريخ}.',
+    'silent',
+  ],
   ['ticket_resolved', '30', 'تم الرد على بلاغك T-{رقم}', 'silent'],
   // AP §9.9.3 «تصحيح في الحسابات» (slice 2.23b, owner decision 2026-11-17):
   // the captain's custody changed per currency; the wording is ours.

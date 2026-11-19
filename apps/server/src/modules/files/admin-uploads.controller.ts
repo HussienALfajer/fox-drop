@@ -24,6 +24,7 @@ const adminPurposes = [
   'restaurant_contract',
   'restaurant_licence',
   'menu_import',
+  'captain_document',
 ] as const;
 type AdminPurpose = (typeof adminPurposes)[number];
 
@@ -66,6 +67,9 @@ const purposePermissions: Record<AdminPurpose, AdminPermission[]> = {
   restaurant_licence: ['restaurants.create'],
   // A menu's Excel import (AP §9.6.6, slice 2.31).
   menu_import: ['restaurants.menus'],
+  // The office's scan of a captain applicant's document (AP §9.7.1, slice
+  // 2.34b): captains.manage (OWN, OPS).
+  captain_document: ['captains.manage'],
 };
 
 // Architecture §5.8: a pre-signed upload to public-media. No Idempotency-Key:
@@ -81,6 +85,7 @@ export class AdminUploadsController {
     'restaurants.menus',
     'content.categories',
     'marketing.banners',
+    'captains.manage',
   )
   @HttpCode(201)
   @ZodResponse({ status: 201, type: AdminUploadDto })
@@ -94,7 +99,8 @@ export class AdminUploadsController {
         error: 'invalid_upload',
       });
     }
-    const upload = await this.files.createUpload(body, session.accountId);
+    // Signed for the panel's origin, the office's scans included.
+    const upload = await this.files.createUpload(body, session.accountId, new Date(), 'panel');
     return { ...upload, expiresAt: upload.expiresAt.toISOString() };
   }
 }

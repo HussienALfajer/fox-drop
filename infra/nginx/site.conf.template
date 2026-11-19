@@ -86,6 +86,16 @@ server {
         include snippets/foxdrop-proxy.conf;
         proxy_set_header Cookie "";
     }
+    # The captain applicants' documents and the office's scans (AP §9.7.1;
+    # slice 2.34b): the GET the API signs for this host, valid 10 minutes,
+    # under captains/ only. The scans' PUT goes through incoming/ above.
+    location /private-docs/captains/ {
+        limit_except GET { deny all; }
+        access_log off;
+        proxy_pass http://127.0.0.1:${STORAGE_PORT};
+        include snippets/foxdrop-proxy.conf;
+        proxy_set_header Cookie "";
+    }
 
     location / {
         proxy_pass http://127.0.0.1:${ADMIN_PORT};

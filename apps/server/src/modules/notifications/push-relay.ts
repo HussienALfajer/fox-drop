@@ -35,7 +35,11 @@ type Row = typeof pushMessages.$inferSelect;
 
 function recipientOf(row: Row): PushRecipient {
   if (row.party === 'customer') return { party: 'customer', accountId: row.accountId! };
-  if (row.party === 'captain') return { party: 'captain', captainId: row.captainId! };
+  if (row.party === 'captain') {
+    return row.captainId === null
+      ? { party: 'applicant', accountId: row.accountId! }
+      : { party: 'captain', captainId: row.captainId };
+  }
   return {
     party: 'merchant',
     restaurantId: row.restaurantId!,

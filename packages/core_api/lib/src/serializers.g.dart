@@ -60,6 +60,60 @@ Serializers _$serializers =
           ..add(AdminCannedRepliesDtoOutput.serializer)
           ..add(AdminCannedRepliesDtoOutputRepliesInner.serializer)
           ..add(AdminCannedRepliesDtoRepliesInner.serializer)
+          ..add(AdminCaptainApplicationDocumentDto.serializer)
+          ..add(AdminCaptainApplicationDtoOutput.serializer)
+          ..add(AdminCaptainApplicationDtoOutputDocumentsInner.serializer)
+          ..add(
+            AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum.serializer,
+          )
+          ..add(
+            AdminCaptainApplicationDtoOutputDocumentsInnerStatusEnum.serializer,
+          )
+          ..add(AdminCaptainApplicationDtoOutputDuplicatesInner.serializer)
+          ..add(
+            AdminCaptainApplicationDtoOutputDuplicatesInnerFieldEnum.serializer,
+          )
+          ..add(
+            AdminCaptainApplicationDtoOutputDuplicatesInnerStageEnum.serializer,
+          )
+          ..add(AdminCaptainApplicationDtoOutputEventsInner.serializer)
+          ..add(
+            AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum
+                .serializer,
+          )
+          ..add(
+            AdminCaptainApplicationDtoOutputEventsInnerDocumentStatusEnum
+                .serializer,
+          )
+          ..add(AdminCaptainApplicationDtoOutputEventsInnerKindEnum.serializer)
+          ..add(AdminCaptainApplicationDtoOutputEventsInnerStageEnum.serializer)
+          ..add(AdminCaptainApplicationDtoOutputRejection.serializer)
+          ..add(AdminCaptainApplicationDtoOutputRequestsInner.serializer)
+          ..add(
+            AdminCaptainApplicationDtoOutputRequestsInnerKindEnum.serializer,
+          )
+          ..add(
+            AdminCaptainApplicationDtoOutputRequiredDocumentsEnum.serializer,
+          )
+          ..add(AdminCaptainApplicationDtoOutputStageEnum.serializer)
+          ..add(AdminCaptainApplicationDtoOutputVehicleEnum.serializer)
+          ..add(AdminCaptainApplicationInterviewDto.serializer)
+          ..add(AdminCaptainApplicationNoteDto.serializer)
+          ..add(AdminCaptainApplicationRejectDto.serializer)
+          ..add(AdminCaptainApplicationRequestDto.serializer)
+          ..add(AdminCaptainApplicationRequestDtoKindEnum.serializer)
+          ..add(AdminCaptainApplicationReviewDto.serializer)
+          ..add(AdminCaptainApplicationReviewDtoStatusEnum.serializer)
+          ..add(AdminCaptainApplicationsDtoOutput.serializer)
+          ..add(AdminCaptainApplicationsDtoOutputApplicationsInner.serializer)
+          ..add(
+            AdminCaptainApplicationsDtoOutputApplicationsInnerStageEnum
+                .serializer,
+          )
+          ..add(
+            AdminCaptainApplicationsDtoOutputApplicationsInnerVehicleEnum
+                .serializer,
+          )
           ..add(AdminCaptainAvailabilityDtoOutput.serializer)
           ..add(AdminCaptainAvailabilityDtoOutputLastOrderByEnum.serializer)
           ..add(AdminCaptainAvailabilityDtoOutputStateEnum.serializer)
@@ -1030,7 +1084,19 @@ Serializers _$serializers =
             CaptainApplicationDtoOutputApplicationDocumentsInnerStatusEnum
                 .serializer,
           )
+          ..add(CaptainApplicationDtoOutputApplicationHistoryInner.serializer)
+          ..add(
+            CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum
+                .serializer,
+          )
+          ..add(CaptainApplicationDtoOutputApplicationInterview.serializer)
           ..add(CaptainApplicationDtoOutputApplicationMissingEnum.serializer)
+          ..add(CaptainApplicationDtoOutputApplicationRejection.serializer)
+          ..add(CaptainApplicationDtoOutputApplicationRequestsInner.serializer)
+          ..add(
+            CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum
+                .serializer,
+          )
           ..add(CaptainApplicationDtoOutputApplicationStageEnum.serializer)
           ..add(CaptainApplicationDtoOutputApplicationVehicleEnum.serializer)
           ..add(CaptainApplicationPersonalDto.serializer)
@@ -1775,6 +1841,42 @@ Serializers _$serializers =
               const FullType(AdminCannedRepliesDtoRepliesInner),
             ]),
             () => ListBuilder<AdminCannedRepliesDtoRepliesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCaptainApplicationDtoOutputRequiredDocumentsEnum,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainApplicationDtoOutputRequiredDocumentsEnum
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainApplicationDtoOutputDocumentsInner),
+            ]),
+            () => ListBuilder<AdminCaptainApplicationDtoOutputDocumentsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainApplicationDtoOutputRequestsInner),
+            ]),
+            () => ListBuilder<AdminCaptainApplicationDtoOutputRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainApplicationDtoOutputDuplicatesInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainApplicationDtoOutputDuplicatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainApplicationDtoOutputEventsInner),
+            ]),
+            () => ListBuilder<AdminCaptainApplicationDtoOutputEventsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3241,6 +3343,28 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(
+                CaptainApplicationDtoOutputApplicationRequestsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainApplicationDtoOutputApplicationRequestsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainApplicationDtoOutputApplicationHistoryInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainApplicationDtoOutputApplicationHistoryInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainApplicationZonesDtoOutputZonesInner),
             ]),
             () => ListBuilder<CaptainApplicationZonesDtoOutputZonesInner>(),
@@ -4559,6 +4683,14 @@ Serializers _$serializers =
             () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(AdminChangeOptionOutput),
             ]),
@@ -5086,6 +5218,24 @@ Serializers _$serializers =
               const FullType(String),
             ]),
             () => MapBuilder<String, String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltMap, const [
+              const FullType(String),
+              const FullType(int),
+            ]),
+            () => MapBuilder<String, int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCaptainApplicationsDtoOutputApplicationsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainApplicationsDtoOutputApplicationsInner
+                >(),
           ))
         .build();
 

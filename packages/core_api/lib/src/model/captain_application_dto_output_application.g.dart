@@ -355,6 +355,14 @@ class _$CaptainApplicationDtoOutputApplication
   final BuiltList<CaptainApplicationDtoOutputApplicationMissingEnum> missing;
   @override
   final DateTime? submittedAt;
+  @override
+  final BuiltList<CaptainApplicationDtoOutputApplicationRequestsInner> requests;
+  @override
+  final CaptainApplicationDtoOutputApplicationInterview? interview;
+  @override
+  final CaptainApplicationDtoOutputApplicationRejection? rejection;
+  @override
+  final BuiltList<CaptainApplicationDtoOutputApplicationHistoryInner> history;
 
   factory _$CaptainApplicationDtoOutputApplication([
     void Function(CaptainApplicationDtoOutputApplicationBuilder)? updates,
@@ -372,6 +380,10 @@ class _$CaptainApplicationDtoOutputApplication
     required this.documents,
     required this.missing,
     this.submittedAt,
+    required this.requests,
+    this.interview,
+    this.rejection,
+    required this.history,
   }) : super._();
   @override
   CaptainApplicationDtoOutputApplication rebuild(
@@ -395,7 +407,11 @@ class _$CaptainApplicationDtoOutputApplication
         plate == other.plate &&
         documents == other.documents &&
         missing == other.missing &&
-        submittedAt == other.submittedAt;
+        submittedAt == other.submittedAt &&
+        requests == other.requests &&
+        interview == other.interview &&
+        rejection == other.rejection &&
+        history == other.history;
   }
 
   @override
@@ -411,6 +427,10 @@ class _$CaptainApplicationDtoOutputApplication
     _$hash = $jc(_$hash, documents.hashCode);
     _$hash = $jc(_$hash, missing.hashCode);
     _$hash = $jc(_$hash, submittedAt.hashCode);
+    _$hash = $jc(_$hash, requests.hashCode);
+    _$hash = $jc(_$hash, interview.hashCode);
+    _$hash = $jc(_$hash, rejection.hashCode);
+    _$hash = $jc(_$hash, history.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -429,7 +449,11 @@ class _$CaptainApplicationDtoOutputApplication
           ..add('plate', plate)
           ..add('documents', documents)
           ..add('missing', missing)
-          ..add('submittedAt', submittedAt))
+          ..add('submittedAt', submittedAt)
+          ..add('requests', requests)
+          ..add('interview', interview)
+          ..add('rejection', rejection)
+          ..add('history', history))
         .toString();
   }
 }
@@ -494,6 +518,38 @@ class CaptainApplicationDtoOutputApplicationBuilder
   DateTime? get submittedAt => _$this._submittedAt;
   set submittedAt(DateTime? submittedAt) => _$this._submittedAt = submittedAt;
 
+  ListBuilder<CaptainApplicationDtoOutputApplicationRequestsInner>? _requests;
+  ListBuilder<CaptainApplicationDtoOutputApplicationRequestsInner>
+  get requests => _$this._requests ??=
+      ListBuilder<CaptainApplicationDtoOutputApplicationRequestsInner>();
+  set requests(
+    ListBuilder<CaptainApplicationDtoOutputApplicationRequestsInner>? requests,
+  ) => _$this._requests = requests;
+
+  CaptainApplicationDtoOutputApplicationInterviewBuilder? _interview;
+  CaptainApplicationDtoOutputApplicationInterviewBuilder get interview =>
+      _$this._interview ??=
+          CaptainApplicationDtoOutputApplicationInterviewBuilder();
+  set interview(
+    CaptainApplicationDtoOutputApplicationInterviewBuilder? interview,
+  ) => _$this._interview = interview;
+
+  CaptainApplicationDtoOutputApplicationRejectionBuilder? _rejection;
+  CaptainApplicationDtoOutputApplicationRejectionBuilder get rejection =>
+      _$this._rejection ??=
+          CaptainApplicationDtoOutputApplicationRejectionBuilder();
+  set rejection(
+    CaptainApplicationDtoOutputApplicationRejectionBuilder? rejection,
+  ) => _$this._rejection = rejection;
+
+  ListBuilder<CaptainApplicationDtoOutputApplicationHistoryInner>? _history;
+  ListBuilder<CaptainApplicationDtoOutputApplicationHistoryInner> get history =>
+      _$this._history ??=
+          ListBuilder<CaptainApplicationDtoOutputApplicationHistoryInner>();
+  set history(
+    ListBuilder<CaptainApplicationDtoOutputApplicationHistoryInner>? history,
+  ) => _$this._history = history;
+
   CaptainApplicationDtoOutputApplicationBuilder() {
     CaptainApplicationDtoOutputApplication._defaults(this);
   }
@@ -511,6 +567,10 @@ class CaptainApplicationDtoOutputApplicationBuilder
       _documents = $v.documents.toBuilder();
       _missing = $v.missing.toBuilder();
       _submittedAt = $v.submittedAt;
+      _requests = $v.requests.toBuilder();
+      _interview = $v.interview?.toBuilder();
+      _rejection = $v.rejection?.toBuilder();
+      _history = $v.history.toBuilder();
       _$v = null;
     }
     return this;
@@ -567,6 +627,10 @@ class CaptainApplicationDtoOutputApplicationBuilder
             documents: documents.build(),
             missing: missing.build(),
             submittedAt: submittedAt,
+            requests: requests.build(),
+            interview: _interview?.build(),
+            rejection: _rejection?.build(),
+            history: history.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -575,6 +639,15 @@ class CaptainApplicationDtoOutputApplicationBuilder
         documents.build();
         _$failedField = 'missing';
         missing.build();
+
+        _$failedField = 'requests';
+        requests.build();
+        _$failedField = 'interview';
+        _interview?.build();
+        _$failedField = 'rejection';
+        _rejection?.build();
+        _$failedField = 'history';
+        history.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainApplicationDtoOutputApplication',

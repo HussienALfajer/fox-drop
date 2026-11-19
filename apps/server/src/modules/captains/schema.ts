@@ -5,6 +5,7 @@ import {
   check,
   customType,
   date,
+  doublePrecision,
   index,
   integer,
   pgSchema,
@@ -380,10 +381,34 @@ export const applications = captains.table(
     vehicle: text('vehicle', { enum: vehicles }),
     plate: text('plate'),
     submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    // «تحديد مقابلة» (AP §9.7.1, slice 2.34b): the time, and the place typed
+    // with each interview with its point (owner decision 2026-11-19).
+    interviewAt: timestamp('interview_at', { withTimezone: true }),
+    interviewPlace: text('interview_place'),
+    interviewLatitude: doublePrecision('interview_latitude'),
+    interviewLongitude: doublePrecision('interview_longitude'),
+    // «رفض» (slice 2.34b): its reason, sent to the applicant; a new
+    // application follows 30 days after it (K11).
+    rejectedAt: timestamp('rejected_at', { withTimezone: true }),
+    rejectionReason: text('rejection_reason'),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   (table) => [
+    check(
+      'applications_interview',
+      sql`(${table.interviewAt} IS NULL) = (${table.interviewPlace} IS NULL) AND (${table.interviewAt} IS NULL) = (${table.interviewLatitude} IS NULL) AND (${table.interviewLatitude} IS NULL) = (${table.interviewLongitude} IS NULL)`,
+    ),
+    check(
+      'applications_rejected',
+      sql`(${table.stage} = 'rejected') = (${table.rejectedAt} IS NOT NULL) AND (${table.rejectedAt} IS NULL) = (${table.rejectionReason} IS NULL)`,
+    ),
+    // The panel's list by stage, oldest sent first.
+    index('applications_stage').on(table.cityId, table.stage, table.submittedAt),
+    // The duplicate check by the plate, without spaces in lower case.
+    index('applications_plate_key')
+      .on(sql`lower(replace(${table.plate}, ' ', ''))`)
+      .where(sql`${table.plate} IS NOT NULL`),
     check('applications_stage_values', sql`${table.stage} IN (${stageValues})`),
     check('applications_vehicle_values', sql`${table.vehicle} IN (${vehicleValues})`),
     check(
@@ -456,5 +481,84 @@ export const applicationDocuments = captains.table(
     // Every upload of an application, the history included (slice 2.34b's
     // review reads it).
     index('application_documents_application').on(table.applicationId, table.createdAt),
+    // The duplicate check by the ID's number (AP §9.7.1, slice 2.34b).
+    index('application_documents_number')
+      .on(table.number)
+      .where(sql`${table.number} IS NOT NULL`),
+  ],
+);
+
+// AP §9.7.1 «طلب مستند» (slice 2.34b): a document or a correction the panel
+// asked for, open until the applicant uploads that kind again
+// (`fulfilled_at`).
+export const applicationDocumentRequests = captains.table(
+  'application_document_requests',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    applicationId: uuid('application_id')
+      .notNull()
+      .references(() => applications.id),
+    kind: text('kind', { enum: applicationDocumentKinds }).notNull(),
+    reason: text('reason').notNull(),
+    requestedBy: uuid('requested_by').notNull(),
+    requestedAt: timestamp('requested_at', { withTimezone: true }).notNull(),
+    fulfilledAt: timestamp('fulfilled_at', { withTimezone: true }),
+  },
+  (table) => [
+    check(
+      'application_document_requests_kind_values',
+      sql`${table.kind} IN (${documentKindValues})`,
+    ),
+    uniqueIndex('application_document_requests_open')
+      .on(table.applicationId, table.kind)
+      .where(sql`${table.fulfilledAt} IS NULL`),
+  ],
+);
+
+// AP §9.7.1 (slice 2.34b): the application's history and the reviewers'
+// notes, never changed (the application role may only insert). The actor is
+// an admin's account, or null for the applicant; `stage` is the stage after
+// the event.
+export const applicationEventKinds = [
+  'submitted',
+  'stage',
+  'note',
+  'document_review',
+  'document_request',
+  'document_upload',
+  'interview',
+] as const;
+const eventKindValues = sql.raw(applicationEventKinds.map((kind) => `'${kind}'`).join(', '));
+
+export const applicationEvents = captains.table(
+  'application_events',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    applicationId: uuid('application_id')
+      .notNull()
+      .references(() => applications.id),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    actorId: uuid('actor_id'),
+    kind: text('kind', { enum: applicationEventKinds }).notNull(),
+    stage: text('stage', { enum: applicationStages }).notNull(),
+    documentKind: text('document_kind', { enum: applicationDocumentKinds }),
+    documentStatus: text('document_status', { enum: documentStatuses }),
+    // The note, the reason of a rejection or a request.
+    note: text('note'),
+    // A note's Idempotency-Key (apps/server/CLAUDE.md), so a repeat answers
+    // the note made.
+    idempotencyKey: text('idempotency_key'),
+  },
+  (table) => [
+    check('application_events_kind_values', sql`${table.kind} IN (${eventKindValues})`),
+    uniqueIndex('application_events_key')
+      .on(table.actorId, table.idempotencyKey)
+      .where(sql`${table.idempotencyKey} IS NOT NULL`),
+    check('application_events_stage_values', sql`${table.stage} IN (${stageValues})`),
+    index('application_events_application').on(table.applicationId, table.at),
   ],
 );

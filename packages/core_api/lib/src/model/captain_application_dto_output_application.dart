@@ -3,9 +3,13 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_application_dto_output_application_interview.dart';
 import 'package:core_api/src/model/date.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application_history_inner.dart';
 import 'package:core_api/src/model/captain_application_dto_output_application_documents_inner.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application_requests_inner.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application_rejection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -24,6 +28,10 @@ part 'captain_application_dto_output_application.g.dart';
 /// * [documents]
 /// * [missing] - What «إرسال الطلب» waits for, in the form’s order.
 /// * [submittedAt]
+/// * [requests] - What the panel asked for: «يرجى رفع {المستند}: {السبب}».
+/// * [interview]
+/// * [rejection]
+/// * [history] - The stages since «إرسال الطلب», oldest first.
 @BuiltValue()
 abstract class CaptainApplicationDtoOutputApplication
     implements
@@ -66,6 +74,20 @@ abstract class CaptainApplicationDtoOutputApplication
 
   @BuiltValueField(wireName: r'submittedAt')
   DateTime? get submittedAt;
+
+  /// What the panel asked for: «يرجى رفع {المستند}: {السبب}».
+  @BuiltValueField(wireName: r'requests')
+  BuiltList<CaptainApplicationDtoOutputApplicationRequestsInner> get requests;
+
+  @BuiltValueField(wireName: r'interview')
+  CaptainApplicationDtoOutputApplicationInterview? get interview;
+
+  @BuiltValueField(wireName: r'rejection')
+  CaptainApplicationDtoOutputApplicationRejection? get rejection;
+
+  /// The stages since «إرسال الطلب», oldest first.
+  @BuiltValueField(wireName: r'history')
+  BuiltList<CaptainApplicationDtoOutputApplicationHistoryInner> get history;
 
   CaptainApplicationDtoOutputApplication._();
 
@@ -161,6 +183,38 @@ class _$CaptainApplicationDtoOutputApplicationSerializer
             object.submittedAt,
             specifiedType: const FullType.nullable(DateTime),
           );
+    yield r'requests';
+    yield serializers.serialize(
+      object.requests,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainApplicationDtoOutputApplicationRequestsInner),
+      ]),
+    );
+    yield r'interview';
+    yield object.interview == null
+        ? null
+        : serializers.serialize(
+            object.interview,
+            specifiedType: const FullType.nullable(
+              CaptainApplicationDtoOutputApplicationInterview,
+            ),
+          );
+    yield r'rejection';
+    yield object.rejection == null
+        ? null
+        : serializers.serialize(
+            object.rejection,
+            specifiedType: const FullType.nullable(
+              CaptainApplicationDtoOutputApplicationRejection,
+            ),
+          );
+    yield r'history';
+    yield serializers.serialize(
+      object.history,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainApplicationDtoOutputApplicationHistoryInner),
+      ]),
+    );
   }
 
   @override
@@ -296,6 +350,60 @@ class _$CaptainApplicationDtoOutputApplicationSerializer
                   as DateTime?;
           if (valueDes == null) continue;
           result.submittedAt = valueDes;
+          break;
+        case r'requests':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        CaptainApplicationDtoOutputApplicationRequestsInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    CaptainApplicationDtoOutputApplicationRequestsInner
+                  >;
+          result.requests.replace(valueDes);
+          break;
+        case r'interview':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainApplicationDtoOutputApplicationInterview,
+                    ),
+                  )
+                  as CaptainApplicationDtoOutputApplicationInterview?;
+          if (valueDes == null) continue;
+          result.interview.replace(valueDes);
+          break;
+        case r'rejection':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainApplicationDtoOutputApplicationRejection,
+                    ),
+                  )
+                  as CaptainApplicationDtoOutputApplicationRejection?;
+          if (valueDes == null) continue;
+          result.rejection.replace(valueDes);
+          break;
+        case r'history':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        CaptainApplicationDtoOutputApplicationHistoryInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    CaptainApplicationDtoOutputApplicationHistoryInner
+                  >;
+          result.history.replace(valueDes);
           break;
         default:
           unhandled.add(key);

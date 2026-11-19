@@ -49,3 +49,24 @@ export const receiptTypeLabels = {
   // «تسجيل دفع المستحق» (slice 2.25a): a customer's dues paid at the desk.
   customer_dues_payment: 'دفع مستحقات زبون',
 } as const;
+
+// CA §5.3, AP §9.7.1 (slice 2.34b): a captain applicant's documents as the
+// app names them, for the pushes that name one.
+export const applicationDocumentLabels = {
+  national_id: 'الهوية',
+  personal_photo: 'الصورة الشخصية',
+  civil_registry: 'إخراج القيد',
+  criminal_record: 'لا حكم عليه',
+  vehicle_papers: 'أوراق المركبة',
+  driving_licence: 'شهادة القيادة',
+} as const;
+
+const WEEKDAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+// A day on the city's clock as the apps show it, «الخميس 2026-11-20», with
+// Western digits (slice 2.34b).
+export function formatDay(moment: Date, timeZone: string): string {
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone }).format(moment);
+  const weekday = new Date(`${day}T12:00:00Z`).getUTCDay();
+  return `${WEEKDAYS[weekday]} ${day}`;
+}

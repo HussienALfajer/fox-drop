@@ -4,11 +4,15 @@ import {
   cityDay,
   criminalRecordExpiry,
   fileCountAllowed,
+  mayUploadAgain,
   missing,
   normaliseFullName,
   normaliseIdNumber,
   normalisePlate,
   oldEnough,
+  pipelineSteps,
+  plateKey,
+  reapplyFrom,
   requiredDocuments,
 } from './applications.js';
 
@@ -88,5 +92,67 @@ describe('the application rules', () => {
 
   it("reads the day on the city's clock", () => {
     expect(cityDay(new Date('2026-11-18T21:30:00Z'), 'Asia/Damascus')).toBe('2026-11-19');
+  });
+});
+
+// The panel's pipeline (AP §9.7.1, CA §5.4; slice 2.34b).
+describe('the pipeline rules', () => {
+  it('moves a new application to «قيد المراجعة» at the first staff action', () => {
+    expect(pipelineSteps('review_document', 'new')).toEqual(['under_review']);
+    expect(pipelineSteps('note', 'new')).toEqual(['under_review']);
+    expect(pipelineSteps('note', 'interview')).toEqual([]);
+    expect(pipelineSteps('schedule_interview', 'new')).toEqual(['under_review', 'interview']);
+    expect(pipelineSteps('reject', 'new')).toEqual(['under_review', 'rejected']);
+  });
+
+  it('records training passed from the interview only', () => {
+    expect(pipelineSteps('training_passed', 'interview')).toEqual(['awaiting_kit']);
+    expect(pipelineSteps('training_passed', 'under_review')).toBeNull();
+    expect(pipelineSteps('training_passed', 'new')).toBeNull();
+  });
+
+  it('schedules an interview again, but not once training is passed', () => {
+    expect(pipelineSteps('schedule_interview', 'interview')).toEqual(['interview']);
+    expect(pipelineSteps('schedule_interview', 'awaiting_kit')).toBeNull();
+  });
+
+  it('takes a waitlisted application back to «قيد المراجعة»', () => {
+    expect(pipelineSteps('waitlist', 'awaiting_kit')).toEqual(['waitlist']);
+    expect(pipelineSteps('waitlist', 'waitlist')).toBeNull();
+    expect(pipelineSteps('back_from_waitlist', 'waitlist')).toEqual(['under_review']);
+    expect(pipelineSteps('back_from_waitlist', 'under_review')).toBeNull();
+    expect(pipelineSteps('reject', 'waitlist')).toEqual(['rejected']);
+  });
+
+  it('takes nothing on a draft, a rejected or an active application', () => {
+    for (const stage of ['draft', 'rejected', 'active'] as const) {
+      for (const action of [
+        'review_document',
+        'upload_document',
+        'request_document',
+        'note',
+        'schedule_interview',
+        'reject',
+        'waitlist',
+      ] as const) {
+        expect(pipelineSteps(action, stage)).toBeNull();
+      }
+    }
+  });
+
+  it('lets the applicant apply again 30 days after a rejection (K11)', () => {
+    expect(reapplyFrom(new Date('2026-11-19T10:00:00Z'))).toEqual(new Date('2026-12-19T10:00:00Z'));
+  });
+
+  it('lets the applicant upload again only what was asked for or rejected', () => {
+    expect(mayUploadAgain('under_review', { requested: true, rejected: false })).toBe(true);
+    expect(mayUploadAgain('interview', { requested: false, rejected: true })).toBe(true);
+    expect(mayUploadAgain('under_review', { requested: false, rejected: false })).toBe(false);
+    expect(mayUploadAgain('rejected', { requested: true, rejected: true })).toBe(false);
+    expect(mayUploadAgain('draft', { requested: true, rejected: false })).toBe(false);
+  });
+
+  it('compares plates without spaces in lower case', () => {
+    expect(plateKey('AB 12 34')).toBe(plateKey('ab1234'));
   });
 });
