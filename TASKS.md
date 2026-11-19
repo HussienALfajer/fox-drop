@@ -4,14 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.32, the menu in the restaurant app (`docs/roadmap.md`, Phase 2).
+Slice 2.32a, everything the restaurant app publishes at once (`docs/roadmap.md`, Phase 2). Slice 2.32b (change requests and their review) follows.
 
-- **Roadmap line:** 2.32 The menu in the restaurant app: availability, price changes, the 30% alert, change requests and their review (RA §9, AP §9.6.7). A price raised by more than 30% raises the alert.
-- **Specs:** RA §9 (9.1–9.7: structure, what publishes at once and what needs review, availability, prices with the parity reminder, bulk change and the 30% alert, change requests, «تعديل سريع», the customer preview), RA §16 #21–#22 (the owners' pushes), RA §18 (commands), AP §9.6.7 (the review queue: oldest first with the age, before and after side by side with the customer preview, approve with a correction, reject with a reason, audited), AP §9.1.3 «تغيير أسعار كبير» (information, OWN and OPS), AP §9.6.6 «Restaurant edits» (in the price log and the change log with the restaurant user's name), `merchant.price_change_alert_pct` (30, Appendix A).
+- **Roadmap line:** 2.32a The «القائمة» tab: availability (owners and cashiers), hiding, ordering and the category window (owners), «تعديل سريع», «معاينة كما يراها الزبون», prices with the parity reminder, the bulk price change, «سجل الأسعار» in the app and the alert «تغيير أسعار كبير».
+- **Specs:** RA §9.1 (structure), §9.3 (availability), §9.4 (prices, the parity reminder, the bulk change, the 30% alert, the price log), §9.6 («تعديل سريع»), §9.7 (the customer preview), RA §6 (the «القائمة» tab: cashiers availability only), RA §18 (the commands), AP §9.1.3 «تغيير أسعار كبير» (information, OWN and OPS), AP §9.6.6 «Restaurant edits» (in the price log and the change log with the restaurant user's name), `merchant.price_change_alert_pct` (30, Appendix A). Left for 2.32b: RA §9.2, §9.5, §16 #22, AP §9.6.7.
+- **Owner decisions 2026-11-19:** 2.32 in two slices (2.32a, 2.32b); the alert fires when a price rises or falls by more than `merchant.price_change_alert_pct`; one alert per edit or bulk change, however many prices crossed it.
 - **Branch:** the cloud session's branch.
 - **Already built (reuse, do not rebuild):** the restaurant app's menu read and availability switch (`GET /v1/merchant/menu`, `PUT /v1/merchant/menu/availability`, slices 1.x); the admin editor of 2.31 (`MenuEditorService`, `OptionGroupsService`, `MenuBulkService` with `bulkPrices`, `logPrices` and the price log, which already names a restaurant user for `changed_by_type` merchant); `merchants.change_requests` (schema only: one pending request per field of a target, a partial unique index; never written yet); the templates `merchant.menu_change_approved` and `merchant.menu_change_rejected` (RA #22) in content; the customer preview route of 2.31 (`BrowsingService.previewMenu`).
-- **Plan:** not written yet. The slice spans the server, the restaurant app (Flutter) and the panel: first plan it with the owner (the `slice-plan` skill: likely 2.32a the owners' prices, bulk change, quick edit and the 30% alert in the app; 2.32b the change requests in the app and the panel's review queue), then build it step by step.
-- **Stopped at:** 2.31 merged (2026-11-19); 2.32 not started.
+- **Plan:**
+  - [ ] Server, failing tests first: the owners' commands (hide and show, category and item order, the category window, the item price, the option delta, the bulk price preview and commit) under `/v1/merchant/menu`, owners only (`403` for a cashier), each with `Idempotency-Key`, through the 2.31 services with a merchant actor; the price log and the change log name the restaurant user.
+  - [ ] Server: the alert code `large_price_change` («تغيير أسعار كبير», information, OWN and OPS, subject the restaurant) raised in the same transaction as the price change when any price moves by more than `merchant.price_change_alert_pct` in either direction; one alert per edit or bulk change; its action opens the price log.
+  - [ ] Server: `GET /v1/merchant/menu/price-log` and `GET /v1/merchant/menu/customer-preview` (owners), reusing 2.31's reads; the menu-changed event on the restaurant channel after each change so every device reads the menu again.
+  - [ ] `pnpm generate:api`; the panel's alert list shows the new code with its Arabic label.
+  - [ ] Restaurant app: the «القائمة» tab (categories, items, options) with the availability switch and its «حتى الغد» / «حتى أعيده» sheet for owners and cashiers; owners' hide, order (up and down until the design) and window; the strings in `core_l10n`.
+  - [ ] Restaurant app: «تعديل سريع» (search by name, filter by category, inline price for owners, the switch for all), the price edit with «تذكير: سعر التطبيق يجب ألا يزيد على سعر المحل», the bulk change with its before-and-after preview, «سجل الأسعار», «معاينة كما يراها الزبون».
+  - [ ] Tests (server and widget), `checker`, `reviewer` against RA §9 and AP §9.1.3, §9.6.6; the pull request.
+- **Stopped at:** 2.32 planned with the owner (2026-11-19); 2.32a not started.
 
 ### Left from 2.31 (the cloud session's branch)
 
