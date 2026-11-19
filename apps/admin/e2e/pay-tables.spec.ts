@@ -92,7 +92,9 @@ test('publishes a new pay table and previews a trip by it', async ({ page }) => 
   await page.goto('/');
 
   await page.getByRole('link', { name: 'أجور الكباتن' }).click();
-  await expect(page.getByRole('link', { name: 'مكافأة ساعة الذروة' })).toBeVisible();
+  await expect(
+    page.getByRole('main').getByRole('link', { name: 'مكافأة ساعة الذروة' }),
+  ).toBeVisible();
   await expect(page.getByText(/يشمل أول 3 كم/).first()).toBeVisible();
   for (const vehicle of ['مشياً', 'دراجة هوائية أو كهربائية', 'دراجة نارية', 'سيارة']) {
     await page.getByRole('group', { name: vehicle }).getByLabel('الأجر الأساسي (TRY)').fill('30');

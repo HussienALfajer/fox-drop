@@ -4,20 +4,28 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.38b, the admin team and the layout (`docs/roadmap.md`, Phase 2; 2.38 split in two, owner decision 2026-11-19).
+Slice 2.39, the live map (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.38b The admin team and the layout: «فريق الإدارة» (the users, create with a setup link, roles, disable and enable, force sign-out, reset TOTP, the read-only role matrix with the compensation cap per role), the side menu by role and the top bar (city selector, platform status, dispatch mode, global search, alerts bell, approvals badge, user menu). The owner creates a user, and an OPS user's menu leaves Finance out.
-- **Specs:** AP §7.1–7.2 (docs/product/v1/admin-panel/07-global-layout-and-navigation.md), AP §9.15 (09-modules/15-admin-team.md), AP §5.2–5.3 (access and security), AP §6 (roles and permissions), AP §9.5 (the phone search rule the global search follows).
+- **Roadmap line:** 2.39 The live map: zones, restaurants, captains and orders over `ops_map:`, assignment from the map; its styling waits for the design (AP §9.4). The owner assigns a captain from the map.
+- **Specs:** AP §9.4 (docs/product/v1/admin-panel/09-modules/04-live-map.md), AP §9.3.2 (the assignment it reuses), AP §7.5 (the phone must work for monitoring), architecture §6.2 (the `ops_map:` channel), §7.2 (the map tiles).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Owner decisions 2026-11-19:** no design yet: the side menu and the top bar are built for structure and behaviour only, unstyled (no tokens, no shared UI package).
-- **Already built (reuse):** the admin team routes (`/v1/admin/team/users`, roles, disable, enable, sign-out, totp-reset, setup-link; `GET /v1/admin/team/roles`), the setup page (`/setup`), the compensation caps as the settings `support.compensation_cap_pct.SUP` and `.OPS` (edited through `useSettingCommand`, `apps/admin/src/settings.ts`), `EmergencyStopBar`, `AlertsMonitor` and its bell, «طلبات الموافقة» (`/compensations`), `citiesQuery` and the `city` search parameter every page reads, the home page's links (to become the side menu).
+- **Ask the owner first:** whether the map stays unstyled (MapLibre's default look with the opacities that tell the layers apart, as «مناطق الخدمة»), and whether one pull request is enough or it splits (the channel and the read, then the map and the assignment).
+- **Already built (reuse):** `ZoneMap` and `PinMap` (MapLibre, the local style, `prepare`, `drawable`), `zonesData`, the picker `/orders/$orderId/assign` (`useAssignCaptain`), `useOpsChannel` and `live.ts`, the captains' latest point (`CaptainsService.latestPoint`), the side menu (`MENU_LINKS`: add «الخريطة الحية» with its module).
 
 ### Plan
 
-- [ ] Panel: «فريق الإدارة» (`/team`): the users with AP §9.15's columns and actions, «مستخدم جديد» with its setup link, the role matrix with the caps.
-- [ ] Server: the global search (`GET` or `POST /v1/admin/search`): an order number, a restaurant name, a captain name or phone, a ticket number, a customer phone for OWN, OPS and SUP only, masked numbers (AP §7.2, §9.5).
-- [ ] Panel: the layout: the side menu of AP §7.1 by permission, the top bar (city selector kept in the search, platform status, dispatch mode, the search, the bell, the approvals badge for OWN, the user menu with sign-out).
-- [ ] Review, fixes, hand over to 2.39.
+- [ ] Server: the map's read (zones, restaurants with their state, captains with their state and last point, the active orders) and the `ops_map:` channel's publications (AP §9.4, architecture §6.2).
+- [ ] Panel: `/live-map` with its layers, the side menu's «الخريطة الحية», and the assignment from the map.
+- [ ] Review, fixes, hand over to 2.40.
+
+### Left from 2.38b (the cloud session's branch)
+
+- **Before deploying to staging:** no migration. New routes: `POST /v1/admin/search`, `GET /v1/admin/settings/dispatch-mode`. Deploy the server before the panel. No app needs a new build.
+- **To check on staging (after the merge and the deploy):** 1. The side menu: «فريق الإدارة» › «مستخدم جديد»: a name, an email or a phone, «الدعم», «إنشاء ورابط الإعداد»: the link shows once; open it in a private window and finish the setup. 2. The new user in the list «نشط» with TOTP «مفعّل»; change their roles to «العمليات والتوزيع», «حفظ الأدوار». 3. Sign in as them: the side menu has no «المالية» and no «فريق الإدارة»; the top bar shows «المنصة تعمل» and «طريقة التوزيع: …». 4. In the top bar search an order number (`#10001`) and a customer's number: the order and the customer with the number masked. 5. As the owner: «تعطيل» then «تأكيد التعطيل…»: their session ends at once. 6. «مصفوفة الأدوار» and «سقف التعويض لكل دور»: change «سقف تعويض الدعم» with a reason.
+- **Owner decisions 2026-11-19:** no design yet: the side menu and the top bar are built for structure and behaviour only, unstyled.
+- **Decided by us (to confirm with the owner):** «تعطيل» and «إعادة ضبط رمز التحقق» take a second press, not a dialog with a reason (the server takes no reason, AP §7.4 asks one for a destructive action); the permissions' Arabic names in the role matrix are ours; the search reads `#10001` and `T-5521` (digits alone are both an order's and a ticket's number), a phone before a number, and a name from two characters; FIN finds captains (through `captains.money`) but no restaurants; the side menu lists only the modules with a page (no «لوحة التحكم», «الخريطة الحية», «سجل الطلبات» until 2.39 and 2.40), and «طلبات الموافقة» sits in the top bar only.
+- **Open (ask the owner):** AP §7.2's user menu has «الملف الشخصي» and «الجلسات»; only sign-out is built, and no slice holds them. The owner cannot end their own other sessions (a lost device) from the panel: their own card offers no action (the server refuses only the own disable). Which slice takes them?
+- **Not checked locally:** Turborepo does not run in the cloud container, so the parts ran one by one: the server's search, settings controller, admin team route table, permission labels, OpenAPI and module boundaries tests, its type check and lint; `dart analyze` of `core_api`; the panel's type checks, lint, unit tests (366) and every Playwright spec (122, with the container's Chromium). The other server files and the Flutter tests did not run here; CI runs them.
 
 ### Left from 2.38a (the cloud session's branch)
 

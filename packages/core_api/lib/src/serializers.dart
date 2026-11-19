@@ -614,6 +614,11 @@ import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inne
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_save_zone_dto.dart';
 import 'package:core_api/src/model/admin_save_zone_dto_area_inner.dart';
+import 'package:core_api/src/model/admin_search_query_dto.dart';
+import 'package:core_api/src/model/admin_search_results_dto_output.dart';
+import 'package:core_api/src/model/admin_search_results_dto_output_customers_inner.dart';
+import 'package:core_api/src/model/admin_search_results_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/admin_search_results_dto_output_tickets_inner.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_set_base_currency_dto.dart';
 import 'package:core_api/src/model/admin_set_city_currency_dto.dart';
@@ -1017,6 +1022,7 @@ import 'package:core_api/src/model/customer_upload_dto_output.dart';
 import 'package:core_api/src/model/customer_zone_vote_dto.dart';
 import 'package:core_api/src/model/customer_zone_vote_dto_location.dart';
 import 'package:core_api/src/model/customer_zone_voted_dto_output.dart';
+import 'package:core_api/src/model/dispatch_mode_dto_output.dart';
 import 'package:core_api/src/model/done_dto_output.dart';
 import 'package:core_api/src/model/emergency_sign_in_code_dto_output.dart';
 import 'package:core_api/src/model/emergency_sign_in_code_request_dto.dart';
@@ -1788,6 +1794,11 @@ part 'serializers.g.dart';
   AdminResumeEmergencyStopDto,
   AdminSaveZoneDto,
   AdminSaveZoneDtoAreaInner,
+  AdminSearchQueryDto,
+  AdminSearchResultsDtoOutput,
+  AdminSearchResultsDtoOutputCustomersInner,
+  AdminSearchResultsDtoOutputOrdersInner,
+  AdminSearchResultsDtoOutputTicketsInner,
   AdminSessionDtoOutput,
   AdminSetBaseCurrencyDto,
   AdminSetCityCurrencyDto,
@@ -2191,6 +2202,7 @@ part 'serializers.g.dart';
   CustomerZoneVoteDto,
   CustomerZoneVoteDtoLocation,
   CustomerZoneVotedDtoOutput,
+  DispatchModeDtoOutput,
   DoneDtoOutput,
   EmergencySignInCodeDtoOutput,
   EmergencySignInCodeRequestDto,
@@ -2755,6 +2767,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminSearchResultsDtoOutputCustomersInner),
+            ]),
+            () => ListBuilder<AdminSearchResultsDtoOutputCustomersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminRestaurantSettlementsDtoOutputRestaurantsInner),
             ]),
             () =>
@@ -3006,6 +3024,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminSearchResultsDtoOutputTicketsInner),
+            ]),
+            () => ListBuilder<AdminSearchResultsDtoOutputTicketsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantStatementDtoOutputLinesInner),
             ]),
             () => ListBuilder<MerchantStatementDtoOutputLinesInner>(),
@@ -3092,6 +3116,12 @@ Serializers serializers =
                 ListBuilder<
                   AdminRecordDepositAnswerDtoOutputReceiptConversionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminSearchResultsDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminSearchResultsDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

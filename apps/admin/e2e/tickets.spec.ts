@@ -82,7 +82,7 @@ test('opens a manual ticket on a restaurant and lists it', async ({ page }) => {
   const select = (name: string) => page.getByRole('combobox', { name, exact: true }).first();
   await select('الطرف').selectOption('restaurant');
   await page.getByLabel('الاسم أو الرقم').fill('الساحة');
-  await page.getByRole('button', { name: 'بحث' }).click();
+  await page.getByRole('main').getByRole('button', { name: 'بحث' }).click();
   await select('اختر').selectOption(restaurantId);
   await select('النوع').selectOption('finance_inquiry');
   await page.getByLabel('ما قاله الطرف').fill('يسأل عن الكشف');

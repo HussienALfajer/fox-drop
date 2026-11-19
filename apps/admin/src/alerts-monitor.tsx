@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
 import { type ReactNode, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlertAlarm } from './alert-alarm.js';
@@ -8,31 +7,25 @@ import { chosenCity, citiesQuery } from './cities.js';
 import { useOpsChannel } from './live.js';
 import { alertKeys } from './order-labels.js';
 
-// AP §7.2–7.3: on every page of a recipient, the blocking banner that enables
-// the alert sound (the page shows again once the sound is on) and the bell
-// with the count of open alerts. V1 has one city, so the alarm watches the
-// first; the city selector's choice comes with the top bar. Until the cities
-// load the page shows, so a failed read never locks the panel.
-export function AlertsMonitor({ children }: { children: ReactNode }) {
-  const cities = useQuery(citiesQuery);
-  const city = cities.data && chosenCity(cities.data, undefined);
-  if (!city) return children;
-  return (
-    <CityAlarm cityId={city.id} cityCode={city.code}>
-      {children}
-    </CityAlarm>
-  );
-}
-
-function CityAlarm({
-  cityId,
+// AP §7.3: on every page of a recipient, the blocking banner that enables
+// the alert sound (the page shows again once the sound is on), for the city
+// the top bar's selector chose (the bell is the top bar's, `AlertsBell`).
+// Until the cities load the page shows, so a failed read never locks the
+// panel.
+export function AlertsMonitor({
   cityCode,
   children,
 }: {
-  cityId: string;
-  cityCode: string;
+  cityCode: string | undefined;
   children: ReactNode;
 }) {
+  const cities = useQuery(citiesQuery);
+  const city = cities.data && chosenCity(cities.data, cityCode);
+  if (!city) return children;
+  return <CityAlarm cityId={city.id}>{children}</CityAlarm>;
+}
+
+function CityAlarm({ cityId, children }: { cityId: string; children: ReactNode }) {
   const { t } = useTranslation();
   const alerts = useQuery(alertsQuery(cityId));
   useOpsChannel(cityId);
@@ -61,14 +54,5 @@ function CityAlarm({
       </main>
     );
   }
-  return (
-    <>
-      <header>
-        <Link to="/alerts" search={{ city: cityCode }}>
-          {t('alerts.bell', { count: alerts.data?.length ?? 0 })}
-        </Link>
-      </header>
-      {children}
-    </>
-  );
+  return children;
 }

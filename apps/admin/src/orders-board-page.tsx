@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getRouteApi, Link, Outlet, useNavigate } from '@tanstack/react-router';
+import { getRouteApi, Link, Outlet } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { chosenCity, citiesQuery } from './cities.js';
@@ -29,7 +29,6 @@ const route = getRouteApi('/signed-in/orders');
 export function OrdersBoardPage() {
   const { t } = useTranslation();
   const { city: cityCode } = route.useSearch();
-  const navigate = useNavigate();
   const cities = useQuery(citiesQuery);
   const city = cities.data && chosenCity(cities.data, cityCode);
   const board = useQuery({ ...boardQuery(city?.id ?? ''), enabled: city !== undefined });
@@ -51,23 +50,6 @@ export function OrdersBoardPage() {
   return (
     <main>
       <h1>{t('board.title')}</h1>
-      <p>
-        <label>
-          {t('board.city')}
-          <select
-            value={city.code}
-            onChange={(event) =>
-              void navigate({ to: '/orders', search: { city: event.target.value } })
-            }
-          >
-            {cities.data.map((each) => (
-              <option key={each.id} value={each.code}>
-                {each.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </p>
       <fieldset>
         <legend>{t('board.filters')}</legend>
         <label>

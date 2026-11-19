@@ -170,7 +170,7 @@ test('lists the restaurants, filters them, suspends one and changes its commissi
   await expect(page).toHaveURL(/status=suspended/);
   // A number searched goes in the body only, never in the URL.
   await page.getByLabel('بحث بالاسم أو الرقم').fill('0944 000 111');
-  await page.getByRole('button', { name: 'بحث' }).click();
+  await page.getByRole('main').getByRole('button', { name: 'بحث' }).click();
   await expect.poll(() => asked.at(-1)?.q).toBe('0944 000 111');
   expect(page.url()).not.toContain('0944');
 

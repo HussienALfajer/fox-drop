@@ -15,11 +15,17 @@ import { type AdminSession, can } from './session.js';
 
 // AP §7: the top bar's platform status on every signed-in page: «المنصة
 // تعمل», or «إيقاف طارئ» with how long it has lasted and the attempts (AP
-// §9.1.6 item 4). V1 has one city, so it shows the first until the top bar's
-// selector. Its red, flashing look waits for the design.
-export function EmergencyStopBar({ session }: { session: AdminSession }) {
+// §9.1.6 item 4), for the city the top bar's selector chose. Its red,
+// flashing look waits for the design.
+export function EmergencyStopBar({
+  session,
+  cityCode,
+}: {
+  session: AdminSession;
+  cityCode: string | undefined;
+}) {
   const cities = useQuery(citiesQuery);
-  const city = cities.data && chosenCity(cities.data, undefined);
+  const city = cities.data && chosenCity(cities.data, cityCode);
   if (!city) return null;
   return <CityStatus session={session} cityId={city.id} />;
 }
@@ -32,14 +38,14 @@ function CityStatus({ session, cityId }: { session: AdminSession; cityId: string
   const toggles = can(session, EMERGENCY_STOP_TOGGLE);
   const { stop } = state.data;
   return (
-    <header data-platform={stop ? 'emergency-stop' : 'running'}>
+    <div data-platform={stop ? 'emergency-stop' : 'running'}>
       {stop ? <StoppedStatus stop={stop} /> : <p role="status">{t('emergencyStop.running')}</p>}
       {toggles && (
         <Link to="/emergency-stop">
           {stop ? t('emergencyStop.resume') : t('emergencyStop.title')}
         </Link>
       )}
-    </header>
+    </div>
   );
 }
 

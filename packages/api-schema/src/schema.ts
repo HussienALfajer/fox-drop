@@ -804,6 +804,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/settings/dispatch-mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["settingsDispatchMode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings/{key}": {
         parameters: {
             query?: never;
@@ -6020,6 +6036,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminSearchSearch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/route": {
         parameters: {
             query?: never;
@@ -8029,6 +8061,13 @@ export interface components {
                 value: unknown;
                 isDefault: boolean;
             }[];
+        };
+        DispatchModeDto_Output: {
+            /**
+             * @description «يدوي», «آلي» or «مختلط».
+             * @enum {string}
+             */
+            mode: "manual" | "auto" | "mixed";
         };
         UpdateSettingDto: {
             cityId?: string | null;
@@ -17780,6 +17819,49 @@ export interface components {
                 };
             } | null;
         };
+        AdminSearchQueryDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description An order or ticket number (#10001, T-5521), a phone, or a part of a restaurant or captain name. */
+            q: string;
+        };
+        AdminSearchResultsDto_Output: {
+            /** @description By number, for operations.read. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+            }[];
+            /** @description By a part of the name, for restaurants.read. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            /** @description By a part of the name or the phone, for captains.read or captains.money. */
+            captains: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            /** @description By number, for support.read. */
+            tickets: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** @enum {string} */
+                status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+            }[];
+            /** @description By the phone, for customers.read with customers.reveal_phone (OWN, OPS, SUP). */
+            customers: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                maskedPhone: string;
+            }[];
+        };
         CaptainOrderRouteDto_Output: {
             /** @enum {string} */
             leg: "to_restaurant" | "to_customer";
@@ -22671,6 +22753,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingListDto_Output"];
+                };
+            };
+        };
+    };
+    settingsDispatchMode: {
+        parameters: {
+            query: {
+                /** @description The city of a city setting; none for a global one. */
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DispatchModeDto_Output"];
                 };
             };
         };
@@ -31352,6 +31457,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminPayTablePreviewDto_Output"];
+                };
+            };
+        };
+    };
+    adminSearchSearch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSearchQueryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSearchResultsDto_Output"];
                 };
             };
         };

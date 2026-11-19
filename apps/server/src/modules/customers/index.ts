@@ -86,5 +86,6 @@ export {
   type Profile,
   type UnsavedAddressFields,
 } from './customers.service.js';
+export { maskedPhone } from './blocks.js';
 export { pointQuery } from './point-query.js';
 export { trustBasis, type TrustMark } from './trust.js';

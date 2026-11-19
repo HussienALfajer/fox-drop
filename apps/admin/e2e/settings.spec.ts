@@ -68,6 +68,8 @@ test('edits a setting of each group and restores a default', async ({ page }) =>
   );
   const sent: { url: string; body: unknown }[] = [];
   await page.route('**/v1/admin/settings/**', (route) => {
+    // The top bar's dispatch mode (AP §7.2).
+    if (route.request().method() === 'GET') return route.fulfill({ json: { mode: 'manual' } });
     const url = new URL(route.request().url()).pathname;
     const body = route.request().postDataJSON() as { value?: unknown; reason?: string | null };
     sent.push({ url, body });
