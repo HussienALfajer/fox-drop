@@ -8,7 +8,9 @@ import { GeoModule } from '../geo/index.js';
 import { LedgerModule } from '../ledger/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { ValkeyModule } from '../../valkey/valkey.module.js';
+import { AdminCaptainApplicationsController } from './admin-captain-applications.controller.js';
 import { AdminCaptainsController } from './admin-captains.controller.js';
+import { ApplicationPipelineService } from './application-pipeline.service.js';
 import { AdminPeakBonusController } from './admin-peak-bonus.controller.js';
 import { ApplicationsService } from './applications.service.js';
 import { CaptainApplicationController } from './captain-application.controller.js';
@@ -19,8 +21,8 @@ import { LivePositions } from './live-positions.js';
 import { LocationPartitions } from './location-partitions.js';
 import { PeakBonusService } from './peak-bonus.service.js';
 
-// The captains module (architecture §4.2): the applications (slice 2.34a),
-// the captain record, its cash
+// The captains module (architecture §4.2): the applications (slices 2.34a,
+// 2.34b), the captain record, its cash
 // limit, availability and location, and the city's pay table and peak
 // bonus. Other modules read them through CaptainsService and PeakBonusService
 // only.
@@ -41,10 +43,19 @@ import { PeakBonusService } from './peak-bonus.service.js';
     CaptainAvailabilityController,
     CaptainPeakBonusController,
     AdminCaptainsController,
+    AdminCaptainApplicationsController,
     AdminPeakBonusController,
   ],
-  providers: [CaptainsService, PeakBonusService, LivePositions, ApplicationsService],
-  exports: [CaptainsService, PeakBonusService],
+  providers: [
+    CaptainsService,
+    PeakBonusService,
+    LivePositions,
+    ApplicationsService,
+    ApplicationPipelineService,
+  ],
+  // ApplicationsService for notifications' listener, the pipeline for
+  // identity's lookups (slice 2.34b).
+  exports: [CaptainsService, PeakBonusService, ApplicationsService, ApplicationPipelineService],
 })
 export class CaptainsModule {}
 
@@ -61,6 +72,16 @@ export type {
   OnlineBlock,
 } from './availability.js';
 export type { LivePosition } from './live-positions.js';
+export { type ApplicationDocumentKind, type ApplicationStage } from './applications.js';
+export {
+  type ApplicationChange,
+  type ApplicationNotice,
+  ApplicationsService,
+} from './applications.service.js';
+export {
+  ApplicationPipelineService,
+  type PipelineIdentity,
+} from './application-pipeline.service.js';
 export { orderPay, type PayParts, type PayRate } from './pay.js';
 export { localClock, type PeakWindow } from './peak-bonus.js';
 export {

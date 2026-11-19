@@ -3,19 +3,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../api.dart';
 import '../auth.dart';
 import '../support/report_photo.dart';
+import '../work/order_view.dart' show navigationTo;
 import 'application.dart';
 import 'texts.dart';
 
-/// CA §5.1–5.4 (slice 2.34a): the applicant's screen, the form while a
-/// draft, the status page once sent. Unstyled until the design (the design
-/// stop): plain Material widgets showing [applicationProvider].
-class ApplicationScreen extends ConsumerWidget {
+/// CA §5.1–5.4 (slices 2.34a–b): the applicant's screen, the form while a
+/// draft (or a new application after a rejection, K11), the status page
+/// once sent. Unstyled until the design (the design stop): plain Material
+/// widgets showing [applicationProvider].
+class ApplicationScreen extends ConsumerStatefulWidget {
   const ApplicationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ApplicationScreen> createState() => _ApplicationScreenState();
+}
+
+class _ApplicationScreenState extends ConsumerState<ApplicationScreen> {
+  /// «تقديم طلب جديد» was tapped: the form shows until step 1 starts the
+  /// new draft on the server.
+  bool _reapplying = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final application = ref.watch(applicationProvider);
     return Scaffold(
@@ -33,7 +45,12 @@ class ApplicationScreen extends ConsumerWidget {
         AsyncData(:final value) =>
           value == null || value.stage == ApplicationStage.draft
               ? ApplicationForm(application: value)
-              : _Status(application: value),
+              : _reapplying && value.stage == ApplicationStage.rejected
+              ? ApplicationForm(application: null, previous: value)
+              : _Status(
+                  application: value,
+                  onReapply: () => setState(() => _reapplying = true),
+                ),
         AsyncError() => Center(
           child: TextButton(
             onPressed: () => ref.invalidate(applicationProvider),
@@ -55,29 +72,72 @@ String _day(DateTime date) =>
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
 
-/// CA §5.4: the stage, what to do, and each document's status.
-class _Status extends StatelessWidget {
-  const _Status({required this.application});
+/// CA §5.4: the stage, what to do, each document's status (a requested or
+/// rejected one uploaded again here) and the history.
+class _Status extends ConsumerWidget {
+  const _Status({required this.application, required this.onReapply});
 
   final Application application;
+  final VoidCallback onReapply;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final interview = application.interview;
+    final now = ref.watch(serverClockProvider).now();
     return ListView(
       padding: const EdgeInsetsDirectional.all(16),
       children: [
         Text(
-          stageText(l10n, application.stage),
+          stageText(l10n, application),
           key: const Key('application-stage'),
           style: Theme.of(context).textTheme.titleMedium,
         ),
-        const SizedBox(height: 16),
-        for (final document in application.documents)
-          ListTile(
-            title: Text(documentText(l10n, document.kind)),
-            subtitle: Text(documentStatusText(l10n, document)),
+        for (final request in application.requests)
+          Text(requestText(l10n, request)),
+        if (application.stage == ApplicationStage.interview &&
+            interview != null)
+          TextButton(
+            key: const Key('application-interview-map'),
+            onPressed: () => ref.read(captainAuth.launch)(
+              navigationTo(interview.latitude, interview.longitude),
+            ),
+            child: Text(l10n.captainOfficeMap),
           ),
+        if (canReapply(application, now))
+          FilledButton(
+            key: const Key('application-reapply'),
+            onPressed: onReapply,
+            child: Text(l10n.captainApplicationReapply),
+          ),
+        const SizedBox(height: 16),
+        for (final kind in statusDocuments(application))
+          ListTile(
+            key: Key('application-document-${kind.wire}'),
+            title: Text(documentText(l10n, kind)),
+            subtitle: Text(
+              documentStatusText(l10n, application.document(kind)),
+            ),
+            trailing: canUploadAgain(application, kind)
+                ? TextButton(
+                    onPressed: () => showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) => DocumentSheet(kind: kind),
+                    ),
+                    child: Text(l10n.captainDocumentUploadAgain),
+                  )
+                : null,
+          ),
+        if (application.history.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text(
+            l10n.captainApplicationHistory,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          for (final change in application.history)
+            Text(historyText(l10n, change)),
+        ],
       ],
     );
   }
@@ -85,9 +145,13 @@ class _Status extends StatelessWidget {
 
 /// CA §5.2: the five steps, each saved on the server before the next.
 class ApplicationForm extends ConsumerStatefulWidget {
-  const ApplicationForm({super.key, required this.application});
+  const ApplicationForm({super.key, required this.application, this.previous});
 
   final Application? application;
+
+  /// The rejected application a new one follows (K11): step 1 starts from
+  /// its name, date of birth and neighbourhood.
+  final Application? previous;
 
   @override
   ConsumerState<ApplicationForm> createState() => _ApplicationFormState();
@@ -114,7 +178,10 @@ class _ApplicationFormState extends ConsumerState<ApplicationForm> {
         Step(
           title: Text(l10n.captainApplicationStepPersonal),
           isActive: _step == personalStep,
-          content: _PersonalStep(application: application, onSaved: next),
+          content: _PersonalStep(
+            application: application ?? widget.previous,
+            onSaved: next,
+          ),
         ),
         Step(
           title: Text(l10n.captainApplicationStepVehicle),

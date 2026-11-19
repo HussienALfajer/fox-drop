@@ -43,7 +43,7 @@ abstract class AdminAlertsDtoOutputAlertsInner
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertsDtoOutputAlertsInnerCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  restaurant_settlement_overdue,  rate_stale,  compensation_approval,  urgent_ticket,  urgent_dispute_ticket,  large_price_change,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  restaurant_settlement_overdue,  rate_stale,  compensation_approval,  urgent_ticket,  urgent_dispute_ticket,  large_price_change,  captain_application,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -52,7 +52,7 @@ abstract class AdminAlertsDtoOutputAlertsInner
 
   @BuiltValueField(wireName: r'subjectType')
   AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum get subjectType;
-  // enum subjectTypeEnum {  order,  captain,  otp_pool,  otp_number,  restaurant,  currency,  compensation,  ticket,  price_change,  };
+  // enum subjectTypeEnum {  order,  captain,  otp_pool,  otp_number,  restaurant,  currency,  compensation,  ticket,  price_change,  captain_application,  };
 
   /// The order, captain or sending number it is about.
   @BuiltValueField(wireName: r'subjectId')
@@ -534,6 +534,9 @@ class AdminAlertsDtoOutputAlertsInnerCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'large_price_change')
   static const AdminAlertsDtoOutputAlertsInnerCodeEnum largePriceChange =
       _$adminAlertsDtoOutputAlertsInnerCodeEnum_largePriceChange;
+  @BuiltValueEnumConst(wireName: r'captain_application')
+  static const AdminAlertsDtoOutputAlertsInnerCodeEnum captainApplication =
+      _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainApplication;
 
   static Serializer<AdminAlertsDtoOutputAlertsInnerCodeEnum> get serializer =>
       _$adminAlertsDtoOutputAlertsInnerCodeEnumSerializer;
@@ -598,6 +601,10 @@ class AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'price_change')
   static const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum priceChange =
       _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_priceChange;
+  @BuiltValueEnumConst(wireName: r'captain_application')
+  static const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum
+  captainApplication =
+      _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_captainApplication;
 
   static Serializer<AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum>
   get serializer => _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnumSerializer;

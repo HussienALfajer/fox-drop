@@ -404,7 +404,7 @@ describe('joining (CA §5.1, slice 2.34a; owner decision 2026-11-19)', () => {
     const { accessToken } = (await join(newPhone())).json();
     const document = createOpenApiDocument(app);
     // The routes an applicant may call (CA §5.1–5.2): the session, the
-    // terms and the application (and the sign-out, left out here since it
+    // terms, the application and its pushes (and the sign-out, left out here since it
     // ends the session; the next test calls it).
     const allowed = [
       'GET /v1/captain/auth/session',
@@ -416,6 +416,8 @@ describe('joining (CA §5.1, slice 2.34a; owner decision 2026-11-19)', () => {
       'POST /v1/captain/application/documents/upload',
       'PUT /v1/captain/application/documents/{kind}',
       'POST /v1/captain/application/submit',
+      // The stage pushes (CA §14 #29, slice 2.34b).
+      'PUT /v1/captain/push-token',
     ];
     const reached: string[] = [];
     for (const [path, item] of Object.entries(document.paths)) {

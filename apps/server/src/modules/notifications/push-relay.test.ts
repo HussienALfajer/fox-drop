@@ -28,7 +28,7 @@ const devicesOf = new Map<string, string[]>();
 const invalidated: string[] = [];
 
 const keyOf = (recipient: PushRecipient) =>
-  recipient.party === 'customer'
+  recipient.party === 'customer' || recipient.party === 'applicant'
     ? recipient.accountId
     : recipient.party === 'captain'
       ? recipient.captainId

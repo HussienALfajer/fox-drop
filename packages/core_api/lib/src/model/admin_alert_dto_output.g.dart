@@ -73,6 +73,9 @@ _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket =
 const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_largePriceChange =
     const AdminAlertDtoOutputCodeEnum._('largePriceChange');
+const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_captainApplication =
+    const AdminAlertDtoOutputCodeEnum._('captainApplication');
 
 AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
   switch (name) {
@@ -126,6 +129,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket;
     case 'largePriceChange':
       return _$adminAlertDtoOutputCodeEnum_largePriceChange;
+    case 'captainApplication':
+      return _$adminAlertDtoOutputCodeEnum_captainApplication;
     default:
       throw ArgumentError(name);
   }
@@ -159,6 +164,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_urgentTicket,
       _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket,
       _$adminAlertDtoOutputCodeEnum_largePriceChange,
+      _$adminAlertDtoOutputCodeEnum_captainApplication,
     ]);
 
 const AdminAlertDtoOutputSeverityEnum
@@ -223,6 +229,9 @@ _$adminAlertDtoOutputSubjectTypeEnum_ticket =
 const AdminAlertDtoOutputSubjectTypeEnum
 _$adminAlertDtoOutputSubjectTypeEnum_priceChange =
     const AdminAlertDtoOutputSubjectTypeEnum._('priceChange');
+const AdminAlertDtoOutputSubjectTypeEnum
+_$adminAlertDtoOutputSubjectTypeEnum_captainApplication =
+    const AdminAlertDtoOutputSubjectTypeEnum._('captainApplication');
 
 AdminAlertDtoOutputSubjectTypeEnum _$adminAlertDtoOutputSubjectTypeEnumValueOf(
   String name,
@@ -246,6 +255,8 @@ AdminAlertDtoOutputSubjectTypeEnum _$adminAlertDtoOutputSubjectTypeEnumValueOf(
       return _$adminAlertDtoOutputSubjectTypeEnum_ticket;
     case 'priceChange':
       return _$adminAlertDtoOutputSubjectTypeEnum_priceChange;
+    case 'captainApplication':
+      return _$adminAlertDtoOutputSubjectTypeEnum_captainApplication;
     default:
       throw ArgumentError(name);
   }
@@ -264,6 +275,7 @@ _$adminAlertDtoOutputSubjectTypeEnumValues =
         _$adminAlertDtoOutputSubjectTypeEnum_compensation,
         _$adminAlertDtoOutputSubjectTypeEnum_ticket,
         _$adminAlertDtoOutputSubjectTypeEnum_priceChange,
+        _$adminAlertDtoOutputSubjectTypeEnum_captainApplication,
       ],
     );
 
@@ -305,6 +317,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'urgentTicket': 'urgent_ticket',
     'urgentDisputeTicket': 'urgent_dispute_ticket',
     'largePriceChange': 'large_price_change',
+    'captainApplication': 'captain_application',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -332,6 +345,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'urgent_ticket': 'urgentTicket',
     'urgent_dispute_ticket': 'urgentDisputeTicket',
     'large_price_change': 'largePriceChange',
+    'captain_application': 'captainApplication',
   };
 
   @override
@@ -403,6 +417,7 @@ class _$AdminAlertDtoOutputSubjectTypeEnumSerializer
     'compensation': 'compensation',
     'ticket': 'ticket',
     'priceChange': 'price_change',
+    'captainApplication': 'captain_application',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
@@ -414,6 +429,7 @@ class _$AdminAlertDtoOutputSubjectTypeEnumSerializer
     'compensation': 'compensation',
     'ticket': 'ticket',
     'price_change': 'priceChange',
+    'captain_application': 'captainApplication',
   };
 
   @override

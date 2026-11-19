@@ -59,7 +59,14 @@ export {
 export { GENERIC_CUSTOMER_TEXT, NOTE_MAX, type ReasonList } from './lists.js';
 export { NotificationTexts, type RenderedNotification } from './notification-texts.service.js';
 export { costReportLabels, dailyReportLabels, restaurantStatementLabels } from './export-labels.js';
-export { formatMoney, formatTime, receiptTypeLabels } from './push-format.js';
+export {
+  applicationDocumentLabels,
+  formatDate,
+  formatDay,
+  formatMoney,
+  formatTime,
+  receiptTypeLabels,
+} from './push-format.js';
 export {
   type NotificationLevel,
   type NotificationPriority,

@@ -140,7 +140,8 @@ export class PushQueue {
   async resend(
     executor: Executor,
     orderId: string,
-    recipient: PushRecipient,
+    // An order's recipients: never an applicant.
+    recipient: Exclude<PushRecipient, { party: 'applicant' }>,
     templateKeys: string[],
     now: Date,
   ): Promise<{ templateKey: string; body: string } | null> {
@@ -216,9 +217,9 @@ function rowOf(push: QueuedPush, now: Date): typeof pushMessages.$inferInsert {
   return {
     createdAt: at,
     source: push.source,
-    party: push.recipient.party,
+    party: push.recipient.party === 'applicant' ? 'captain' : push.recipient.party,
     accountId:
-      push.recipient.party === 'customer'
+      push.recipient.party === 'customer' || push.recipient.party === 'applicant'
         ? push.recipient.accountId
         : push.recipient.party === 'merchant'
           ? (push.recipient.reporter ?? null)

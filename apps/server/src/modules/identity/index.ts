@@ -16,6 +16,7 @@ import { AdminTeamService } from './admin-team.service.js';
 import { AppSessionsService } from './app-sessions.service.js';
 import { AppSignInService } from './app-sign-in.service.js';
 import { AppSigningKeys } from './app-signing-keys.js';
+import { ApplicantLookups } from './applicant-lookups.js';
 import { CaptainAccountsService } from './captain-accounts.service.js';
 import { CaptainAuthController } from './captain-auth.controller.js';
 import { CaptainDevicesController } from './captain-devices.controller.js';
@@ -85,6 +86,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     OtpSenderPoolService,
     EmergencySignInService,
     CaptainDevicesService,
+    ApplicantLookups,
   ],
   exports: [
     AdminSessionsService,

@@ -450,6 +450,7 @@ describe('the captains tables (AP §9.7, §9.12.5; CA §7)', () => {
     ['change a hand-in grace', "UPDATE captains.hand_in_graces SET reason = 'x'"],
     ['move a custody warning', 'UPDATE captains.custody_warnings SET warned_at = now()'],
     ['change a peak window', 'UPDATE captains.peak_bonus_windows SET amount = 1'],
+    ['change an application event', "UPDATE captains.application_events SET note = 'x'"],
     ['delete a captain', 'DELETE FROM captains.captains'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);

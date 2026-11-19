@@ -1,5 +1,5 @@
 import type { Vehicle } from '../settings/index.js';
-import type { applicationDocumentKinds } from './schema.js';
+import type { applicationDocumentKinds, applicationStages } from './schema.js';
 
 // The pure rules of the application form (CA §5.2–5.3, AP §9.7.1; slice
 // 2.34a). Dates are the city's calendar days as YYYY-MM-DD.
@@ -104,4 +104,82 @@ export function criminalRecordExpiry(issueDate: string, validityMonths: number):
 // The calendar day of a moment on a city's clock.
 export function cityDay(at: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone }).format(at);
+}
+
+// AP §9.7.1, CA §5.4 (slice 2.34b): the panel's pipeline.
+
+export type ApplicationStage = (typeof applicationStages)[number];
+
+// K11: a rejected applicant applies again 30 days after the rejection
+// (fixed).
+export const REAPPLY_DAYS = 30;
+
+export function reapplyFrom(rejectedAt: Date): Date {
+  return new Date(rejectedAt.getTime() + REAPPLY_DAYS * 24 * 60 * 60 * 1000);
+}
+
+// The panel's actions on a sent application.
+export type PipelineAction =
+  | 'review_document'
+  | 'upload_document'
+  | 'request_document'
+  | 'note'
+  | 'schedule_interview'
+  | 'training_passed'
+  | 'reject'
+  | 'waitlist'
+  | 'back_from_waitlist';
+
+// The stages each action takes an application in, and where it leaves it
+// (null: where it was). «مفعّل» is the activation's (2.35).
+const OPEN: readonly ApplicationStage[] = [
+  'new',
+  'under_review',
+  'interview',
+  'awaiting_kit',
+  'waitlist',
+];
+const PIPELINE: Record<
+  PipelineAction,
+  { from: readonly ApplicationStage[]; to: ApplicationStage | null }
+> = {
+  review_document: { from: OPEN, to: null },
+  upload_document: { from: OPEN, to: null },
+  request_document: { from: OPEN, to: null },
+  note: { from: OPEN, to: null },
+  schedule_interview: { from: ['new', 'under_review', 'interview'], to: 'interview' },
+  training_passed: { from: ['interview'], to: 'awaiting_kit' },
+  reject: { from: OPEN, to: 'rejected' },
+  waitlist: { from: ['new', 'under_review', 'interview', 'awaiting_kit'], to: 'waitlist' },
+  // Owner decision 2026-11-19: back to «قيد المراجعة».
+  back_from_waitlist: { from: ['waitlist'], to: 'under_review' },
+};
+
+// The stages an action passes through from `stage`, in order, or null when
+// it may not be taken there. The first staff action on a «جديد»
+// application moves it to «قيد المراجعة» first (owner decision 2026-11-19).
+export function pipelineSteps(
+  action: PipelineAction,
+  stage: ApplicationStage,
+): ApplicationStage[] | null {
+  const rule = PIPELINE[action];
+  if (!rule.from.includes(stage)) return null;
+  const steps: ApplicationStage[] = stage === 'new' ? ['under_review'] : [];
+  if (rule.to !== null && rule.to !== steps.at(-1)) steps.push(rule.to);
+  return steps;
+}
+
+// CA §5.3 (slice 2.34b): after «إرسال الطلب» the applicant uploads again only
+// a document the panel asked for or rejected, while the application is
+// open.
+export function mayUploadAgain(
+  stage: ApplicationStage,
+  document: { requested: boolean; rejected: boolean },
+): boolean {
+  return OPEN.includes(stage) && (document.requested || document.rejected);
+}
+
+// The duplicate check compares plates without spaces, in lower case.
+export function plateKey(plate: string): string {
+  return plate.replace(/\s+/gu, '').toLowerCase();
 }

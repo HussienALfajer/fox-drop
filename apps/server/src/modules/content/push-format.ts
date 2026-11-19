@@ -49,3 +49,32 @@ export const receiptTypeLabels = {
   // «تسجيل دفع المستحق» (slice 2.25a): a customer's dues paid at the desk.
   customer_dues_payment: 'دفع مستحقات زبون',
 } as const;
+
+// CA §5.3, AP §9.7.1 (slice 2.34b): a captain applicant's documents in
+// CA §5.3's words, as the app names them, for the pushes that name one.
+export const applicationDocumentLabels = {
+  national_id: 'الهوية',
+  personal_photo: 'صورة شخصية',
+  civil_registry: 'إخراج قيد',
+  criminal_record: 'لا حكم عليه',
+  vehicle_papers: 'أوراق المركبة',
+  driving_licence: 'شهادة قيادة',
+} as const;
+
+const WEEKDAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+// A date on the city's clock as the apps show it (core_l10n's formatDate),
+// «20/11/2026», with Western digits (slice 2.34b).
+export function formatDate(moment: Date, timeZone: string): string {
+  const [year, month, day] = new Intl.DateTimeFormat('en-CA', { timeZone })
+    .format(moment)
+    .split('-');
+  return `${day}/${month}/${year}`;
+}
+
+// The same with its weekday, «الخميس 20/11/2026».
+export function formatDay(moment: Date, timeZone: string): string {
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone }).format(moment);
+  const weekday = new Date(`${day}T12:00:00Z`).getUTCDay();
+  return `${WEEKDAYS[weekday]} ${formatDate(moment, timeZone)}`;
+}

@@ -63,8 +63,10 @@ export class MerchantPushTokenController {
 export class CaptainPushTokenController {
   constructor(private readonly devices: PushDevices) {}
 
+  // An applicant's too: the application's stage pushes (CA §14 #29, slice
+  // 2.34b) reach the account's devices.
   @Put()
-  @AppSignedIn()
+  @AppSignedIn({ applicants: true })
   @HttpCode(HttpStatus.OK)
   @ZodResponse({ status: HttpStatus.OK, type: PushTokenRegisteredDto })
   register(@CurrentAppSession() session: AppSession, @Body() body: PushTokenDto) {

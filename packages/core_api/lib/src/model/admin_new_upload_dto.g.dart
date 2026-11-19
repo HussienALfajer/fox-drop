@@ -27,6 +27,9 @@ _$adminNewUploadDtoPurposeEnum_restaurantLicence =
     const AdminNewUploadDtoPurposeEnum._('restaurantLicence');
 const AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnum_menuImport =
     const AdminNewUploadDtoPurposeEnum._('menuImport');
+const AdminNewUploadDtoPurposeEnum
+_$adminNewUploadDtoPurposeEnum_captainDocument =
+    const AdminNewUploadDtoPurposeEnum._('captainDocument');
 
 AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnumValueOf(
   String name,
@@ -48,6 +51,8 @@ AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnumValueOf(
       return _$adminNewUploadDtoPurposeEnum_restaurantLicence;
     case 'menuImport':
       return _$adminNewUploadDtoPurposeEnum_menuImport;
+    case 'captainDocument':
+      return _$adminNewUploadDtoPurposeEnum_captainDocument;
     default:
       throw ArgumentError(name);
   }
@@ -64,6 +69,7 @@ _$adminNewUploadDtoPurposeEnumValues =
       _$adminNewUploadDtoPurposeEnum_restaurantContract,
       _$adminNewUploadDtoPurposeEnum_restaurantLicence,
       _$adminNewUploadDtoPurposeEnum_menuImport,
+      _$adminNewUploadDtoPurposeEnum_captainDocument,
     ]);
 
 const AdminNewUploadDtoContentTypeEnum
@@ -127,6 +133,7 @@ class _$AdminNewUploadDtoPurposeEnumSerializer
     'restaurantContract': 'restaurant_contract',
     'restaurantLicence': 'restaurant_licence',
     'menuImport': 'menu_import',
+    'captainDocument': 'captain_document',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_logo': 'restaurantLogo',
@@ -137,6 +144,7 @@ class _$AdminNewUploadDtoPurposeEnumSerializer
     'restaurant_contract': 'restaurantContract',
     'restaurant_licence': 'restaurantLicence',
     'menu_import': 'menuImport',
+    'captain_document': 'captainDocument',
   };
 
   @override

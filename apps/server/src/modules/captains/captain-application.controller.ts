@@ -34,6 +34,13 @@ const day = z.iso.date().describe('A calendar day, YYYY-MM-DD.');
 
 const documentKind = z.enum(applicationDocumentKinds);
 
+export const interview = z.object({
+  at: z.iso.datetime(),
+  place: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+});
+
 const application = z.object({
   id: z.uuid(),
   stage: z
@@ -66,6 +73,21 @@ const application = z.object({
     )
     .describe('What «إرسال الطلب» waits for, in the form’s order.'),
   submittedAt: z.iso.datetime().nullable(),
+  // The panel's (CA §5.4, slice 2.34b).
+  requests: z
+    .array(z.object({ kind: documentKind, reason: z.string(), requestedAt: z.iso.datetime() }))
+    .describe('What the panel asked for: «يرجى رفع {المستند}: {السبب}».'),
+  interview: interview.nullable(),
+  rejection: z
+    .object({
+      reason: z.string(),
+      at: z.iso.datetime(),
+      reapplyFrom: z.iso.datetime().describe('A new application from then (K11).'),
+    })
+    .nullable(),
+  history: z
+    .array(z.object({ stage: z.enum(applicationStages), at: z.iso.datetime() }))
+    .describe('The stages since «إرسال الطلب», oldest first.'),
 });
 
 class CaptainApplicationDto extends createZodDto(
@@ -137,7 +159,8 @@ export class CaptainApplicationController {
   }
 
   // Step 1. 400 invalid_name, too_young (`captain.min_age`), unknown_zone;
-  // 409 already_captain, application_submitted.
+  // 409 already_captain, application_submitted, reapply_wait with
+  // `reapplyFrom` (K11: 30 days after a rejection).
   @Put('personal')
   @AppSignedIn({ applicants: true })
   @ZodResponse({ status: 200, type: CaptainApplicationDto })
@@ -176,8 +199,9 @@ export class CaptainApplicationController {
   // issue_date_required, issue_date_in_future, document_expired and the
   // uploads' upload_not_found, upload_wrong_purpose, upload_expired,
   // upload_missing, upload_invalid; 409 no_application,
-  // application_submitted, document_not_needed (vehicle papers without a
-  // motor vehicle).
+  // application_submitted (once sent, only a document asked for or rejected
+  // is uploaded again), document_not_needed (vehicle papers without a motor
+  // vehicle).
   @Put('documents/:kind')
   @AppSignedIn({ applicants: true })
   @ZodResponse({ status: 200, type: CaptainApplicationDto })
@@ -220,6 +244,17 @@ function body(found: Application) {
       uploadedAt: document.uploadedAt.toISOString(),
     })),
     submittedAt: found.submittedAt?.toISOString() ?? null,
+    requests: found.requests.map((request) => ({
+      ...request,
+      requestedAt: request.requestedAt.toISOString(),
+    })),
+    interview: found.interview && { ...found.interview, at: found.interview.at.toISOString() },
+    rejection: found.rejection && {
+      reason: found.rejection.reason,
+      at: found.rejection.at.toISOString(),
+      reapplyFrom: found.rejection.reapplyFrom.toISOString(),
+    },
+    history: found.history.map((entry) => ({ ...entry, at: entry.at.toISOString() })),
   };
 }
 
@@ -229,12 +264,14 @@ const conflicts = new Set([
   'application_submitted',
   'document_not_needed',
   'incomplete',
+  'reapply_wait',
 ]);
 
 function refused(error: ApplicationRefusedError): HttpException {
   const response = {
     error: error.refusal,
     ...(error.refusal === 'incomplete' ? { missing: error.missing } : {}),
+    ...(error.reapplyFrom === null ? {} : { reapplyFrom: error.reapplyFrom.toISOString() }),
   };
   return conflicts.has(error.refusal)
     ? new ConflictException({ statusCode: HttpStatus.CONFLICT, ...response })

@@ -71,6 +71,8 @@ import { canSeeRestaurantList, type ListFilter, listFilterOf } from './restauran
 import { RestaurantListPage } from './restaurant-list-page.js';
 import { isProfileTab, type ProfileTab } from './restaurant-profile.js';
 import { RestaurantProfilePage } from './restaurant-profile-page.js';
+import { boardSearch, canSeeApplications } from './captain-applications.js';
+import { CaptainApplicationPage, CaptainApplicationsPage } from './captain-applications-page.js';
 import { RatingsPage } from './ratings-page.js';
 import { canSeeRatings, ratingsSearch } from './ratings.js';
 import { can, sessionQuery } from './session.js';
@@ -310,6 +312,29 @@ const ratingsRoute = createRoute({
     if (!canSeeRatings(context.session)) throw redirect({ to: '/' });
   },
   component: RatingsPage,
+});
+
+// AP §9.7.1 «طلبات الانضمام» (slice 2.34b): the board by stage and an
+// application's review page (captains.read); the actions need
+// captains.manage (checked by the page and the server).
+const captainApplicationsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/captain-applications',
+  validateSearch: boardSearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeApplications(context.session)) throw redirect({ to: '/' });
+  },
+  component: CaptainApplicationsPage,
+});
+
+const captainApplicationRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/captain-applications/$applicationId',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeApplications(context.session)) throw redirect({ to: '/' });
+  },
+  component: CaptainApplicationPage,
 });
 
 // AP §9.12.5 «مكافأة ساعة الذروة» (slice 2.16): read with the zones
@@ -739,6 +764,8 @@ const routeTree = rootRoute.addChildren([
     restaurantListRoute,
     restaurantProfileRoute,
     ratingsRoute,
+    captainApplicationsRoute,
+    captainApplicationRoute,
     alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute, handoverRoute])]),
   ]),

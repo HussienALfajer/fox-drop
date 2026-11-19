@@ -19,6 +19,8 @@ export const alertSubjects = [
   'compensation',
   'ticket',
   'price_change',
+  // A captain's application (slice 2.34b).
+  'captain_application',
 ] as const;
 export type AlertSubject = (typeof alertSubjects)[number];
 
@@ -96,6 +98,9 @@ export const alertCodes = [
   // (RA §9.4, AP §9.1.3; slice 2.32a, owner decision 2026-11-19): one alert
   // per change however many prices crossed it, closed by its acknowledgment.
   'large_price_change',
+  // «طلب انضمام كابتن»: an application sent (AP §9.7.1, slice 2.34b), until
+  // it leaves «جديد».
+  'captain_application',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -143,6 +148,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
     ...rule('information', OPERATIONS, 'price_change'),
     resolvesItself: false,
   },
+  captain_application: rule('information', OPERATIONS, 'captain_application'),
 };
 
 function rule(

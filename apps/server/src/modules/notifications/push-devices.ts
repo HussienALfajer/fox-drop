@@ -13,7 +13,10 @@ export type PushRecipient =
   // `reporter`, also that restaurant user's devices (RA §16 #29 «Owners and
   // the reporter», slice 2.24b).
   | { party: 'merchant'; restaurantId: string; owners: boolean; reporter?: string | null }
-  | { party: 'captain'; captainId: string };
+  | { party: 'captain'; captainId: string }
+  // A captain applicant's devices, by their sign-in account (CA §14 #29,
+  // slice 2.34b): a captain-app session without a captain yet.
+  | { party: 'applicant'; accountId: string };
 
 export interface PushTarget {
   sessionId: string;
@@ -80,18 +83,25 @@ export class PushDevices {
           )
         : recipient.party === 'captain'
           ? and(live, eq(pushDevices.captainId, recipient.captainId))
-          : and(
-              live,
-              eq(pushDevices.restaurantId, recipient.restaurantId),
-              !recipient.owners
-                ? undefined
-                : recipient.reporter
-                  ? or(
-                      eq(pushDevices.merchantRole, 'owner'),
-                      eq(pushDevices.accountId, recipient.reporter),
-                    )
-                  : eq(pushDevices.merchantRole, 'owner'),
-            );
+          : recipient.party === 'applicant'
+            ? and(
+                live,
+                eq(pushDevices.party, 'captain'),
+                eq(pushDevices.accountId, recipient.accountId),
+                isNull(pushDevices.captainId),
+              )
+            : and(
+                live,
+                eq(pushDevices.restaurantId, recipient.restaurantId),
+                !recipient.owners
+                  ? undefined
+                  : recipient.reporter
+                    ? or(
+                        eq(pushDevices.merchantRole, 'owner'),
+                        eq(pushDevices.accountId, recipient.reporter),
+                      )
+                    : eq(pushDevices.merchantRole, 'owner'),
+              );
     const rows = await this.database.db
       .select({ sessionId: pushDevices.sessionId, token: pushDevices.token })
       .from(pushDevices)

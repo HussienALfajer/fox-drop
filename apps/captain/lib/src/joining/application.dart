@@ -99,6 +99,55 @@ class MissingTerms extends Missing {
   const MissingTerms();
 }
 
+/// An open «طلب مستند» from the panel (AP §9.7.1).
+class DocumentRequest {
+  const DocumentRequest({
+    required this.kind,
+    required this.reason,
+    required this.requestedAt,
+  });
+
+  final DocumentKind kind;
+  final String reason;
+  final DateTime requestedAt;
+}
+
+/// «تحديد مقابلة»: the appointment and the office's point.
+class Interview {
+  const Interview({
+    required this.at,
+    required this.place,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  final DateTime at;
+  final String place;
+  final num latitude;
+  final num longitude;
+}
+
+/// The rejection's reason and the moment re-applying opens (K11, 30 days).
+class Rejection {
+  const Rejection({
+    required this.reason,
+    required this.at,
+    required this.reapplyFrom,
+  });
+
+  final String reason;
+  final DateTime at;
+  final DateTime reapplyFrom;
+}
+
+/// One stage the application entered, and when.
+class StageChange {
+  const StageChange(this.stage, this.at);
+
+  final ApplicationStage stage;
+  final DateTime at;
+}
+
 class Application {
   const Application({
     required this.stage,
@@ -109,6 +158,10 @@ class Application {
     required this.plate,
     required this.documents,
     required this.missing,
+    this.requests = const [],
+    this.interview,
+    this.rejection,
+    this.history = const [],
   });
 
   final ApplicationStage stage;
@@ -119,9 +172,22 @@ class Application {
   final String? plate;
   final List<ApplicationDocument> documents;
   final List<Missing> missing;
+  final List<DocumentRequest> requests;
+  final Interview? interview;
+  final Rejection? rejection;
+
+  /// The stages entered, oldest first.
+  final List<StageChange> history;
 
   ApplicationDocument? document(DocumentKind kind) {
     for (final each in documents) {
+      if (each.kind == kind) return each;
+    }
+    return null;
+  }
+
+  DocumentRequest? request(DocumentKind kind) {
+    for (final each in requests) {
       if (each.kind == kind) return each;
     }
     return null;
@@ -148,6 +214,41 @@ int firstOpenStep(Application? application) {
   return reviewStep;
 }
 
+/// The stages after «إرسال الطلب» in which the server takes a document
+/// again (a requested or a rejected one only).
+const _uploadAgainStages = {
+  ApplicationStage.newApplication,
+  ApplicationStage.underReview,
+  ApplicationStage.interview,
+  ApplicationStage.awaitingKit,
+  ApplicationStage.waitlist,
+};
+
+/// Whether the status page offers to upload [kind] again (CA §5.3–5.4): a
+/// document the panel requested, or one whose copy in force was rejected,
+/// while the application is still open.
+bool canUploadAgain(Application application, DocumentKind kind) =>
+    _uploadAgainStages.contains(application.stage) &&
+    (application.request(kind) != null ||
+        application.document(kind)?.status == DocumentStatus.rejected);
+
+/// The documents the status page lists: those uploaded and those requested,
+/// in the form's order.
+List<DocumentKind> statusDocuments(Application application) => [
+  for (final kind in DocumentKind.values)
+    if (application.document(kind) != null || application.request(kind) != null)
+      kind,
+];
+
+/// Whether «تقديم طلب جديد» shows (K11): rejected, and [now] (the server's
+/// clock) at or past the rejection's `reapplyFrom`.
+bool canReapply(Application application, DateTime now) {
+  final rejection = application.rejection;
+  return application.stage == ApplicationStage.rejected &&
+      rejection != null &&
+      !now.isBefore(rejection.reapplyFrom);
+}
+
 Application? applicationOf(CaptainApplicationDtoOutput answer) {
   final found = answer.application;
   if (found == null) return null;
@@ -170,6 +271,35 @@ Application? applicationOf(CaptainApplicationDtoOutput answer) {
         ),
     ],
     missing: [for (final each in found.missing) _missing[each]!],
+    requests: [
+      for (final request in found.requests)
+        DocumentRequest(
+          kind: _requestKinds[request.kind]!,
+          reason: request.reason,
+          requestedAt: request.requestedAt,
+        ),
+    ],
+    interview: switch (found.interview) {
+      final interview? => Interview(
+        at: interview.at,
+        place: interview.place,
+        latitude: interview.latitude,
+        longitude: interview.longitude,
+      ),
+      null => null,
+    },
+    rejection: switch (found.rejection) {
+      final rejection? => Rejection(
+        reason: rejection.reason,
+        at: rejection.at,
+        reapplyFrom: rejection.reapplyFrom,
+      ),
+      null => null,
+    },
+    history: [
+      for (final change in found.history)
+        StageChange(_historyStages[change.stage]!, change.at),
+    ],
   );
 }
 
@@ -188,6 +318,25 @@ final _stages = {
   CaptainApplicationDtoOutputApplicationStageEnum.waitlist:
       ApplicationStage.waitlist,
   CaptainApplicationDtoOutputApplicationStageEnum.rejected:
+      ApplicationStage.rejected,
+};
+
+final _historyStages = {
+  CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum.draft:
+      ApplicationStage.draft,
+  CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum.new_:
+      ApplicationStage.newApplication,
+  CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum.underReview:
+      ApplicationStage.underReview,
+  CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum.interview:
+      ApplicationStage.interview,
+  CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum.awaitingKit:
+      ApplicationStage.awaitingKit,
+  CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum.active:
+      ApplicationStage.active,
+  CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum.waitlist:
+      ApplicationStage.waitlist,
+  CaptainApplicationDtoOutputApplicationHistoryInnerStageEnum.rejected:
       ApplicationStage.rejected,
 };
 
@@ -218,6 +367,21 @@ final _kinds = {
   CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnum.vehiclePapers:
       DocumentKind.vehiclePapers,
   CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnum.drivingLicence:
+      DocumentKind.drivingLicence,
+};
+
+final _requestKinds = {
+  CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum.nationalId:
+      DocumentKind.nationalId,
+  CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum.personalPhoto:
+      DocumentKind.personalPhoto,
+  CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum.civilRegistry:
+      DocumentKind.civilRegistry,
+  CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum.criminalRecord:
+      DocumentKind.criminalRecord,
+  CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum.vehiclePapers:
+      DocumentKind.vehiclePapers,
+  CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum.drivingLicence:
       DocumentKind.drivingLicence,
 };
 

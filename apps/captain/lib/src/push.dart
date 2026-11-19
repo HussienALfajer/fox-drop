@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api.dart';
 import 'auth.dart';
+import 'joining/application.dart';
 import 'router.dart';
 
 /// The installation's push (`packages/core_push`): `main` gives the one
@@ -33,13 +34,11 @@ Future<void> askNotifications(Ref ref) async {
   }
 }
 
-/// The token kept registered while the captain is signed in (CA §14,
-/// architecture §8.1).
+/// The token kept registered while the captain, or an applicant, is signed
+/// in (CA §14, §5.4: a push at every change of the application; architecture
+/// §8.1).
 final pushTokensProvider = Provider<PushTokens>((ref) {
   final tokens = PushTokens(ref.watch(pushProvider), (token) async {
-    // An applicant's pushes come with the panel's pipeline (slice 2.34b).
-    final session = await ref.read(captainSessionProvider.future);
-    if (session == null || session.captainId == null) return;
     await ref
         .read(coreApiProvider)
         .getCaptainApi()
@@ -64,8 +63,9 @@ final pushTokensProvider = Provider<PushTokens>((ref) {
 
 /// The route a push's data opens (CA §14): an offer or an order opens home,
 /// which shows the open offer or the active order, a receipt «عهدتي» and a
-/// weekly statement the statement over «أرباحي». The others (documents)
-/// come with their slices; until then such a tap only opens the app.
+/// weekly statement the statement over «أرباحي», an application's change its
+/// status page. The others (documents) come with their slices; until then
+/// such a tap only opens the app.
 String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
   // CA §14 #23 (slice 2.16): home shows the peak window's line.
   'offer' || 'order' || 'peak_bonus' => '/',
@@ -78,6 +78,8 @@ String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
   },
   // CA §14 #30 (slice 2.24c): «تم الرد على بلاغك T-{رقم}» opens «بلاغاتي».
   'ticket' => '/support',
+  // CA §5.4 (slice 2.34b): a change of the application opens its page.
+  'application' => '/application',
   _ => null,
 };
 
@@ -88,9 +90,18 @@ final pushTapsProvider = Provider<void>((ref) {
   final router = ref.watch(routerProvider);
   void open(Map<String, String>? data) {
     final path = data == null ? null : pushTargetPath(data);
-    if (path != null) router.go(path);
+    if (path == null) return;
+    // The page may already show the application: read it again.
+    if (data!['target'] == 'application') ref.invalidate(applicationProvider);
+    router.go(path);
   }
 
+  // CA §5.4: a change of the application while the app is open reads it
+  // again, so the status page shows the new stage.
+  final received = push.received.listen((data) {
+    if (data['target'] == 'application') ref.invalidate(applicationProvider);
+  });
+  ref.onDispose(received.cancel);
   final taps = push.taps.listen(open);
   unawaited(
     push.initialTap().then(
