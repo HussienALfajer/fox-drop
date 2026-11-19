@@ -266,6 +266,38 @@ describe('the quote (CU §10.6)', () => {
     });
   });
 
+  it("prices with the restaurant's own fee rule and its free-delivery threshold (AP §9.12.3)", async () => {
+    const geo = app.get(GeoService);
+    await geo.setRestaurantFeeRule(
+      azaz,
+      restaurant,
+      {
+        kind: 'flat',
+        currency: 'TRY',
+        flatFee: 3000n,
+        minimumFee: null,
+        freeDeliveryFrom: 20_000n,
+      },
+      change,
+    );
+    try {
+      const small = await quote({ lines: [line(ids.drink!, [])] });
+      expect(small.json()).toMatchObject({
+        money: { deliveryFee: '3000', deliveryFree: false },
+        freeDelivery: { threshold: '20000', reached: false },
+      });
+      const large = await quote({
+        lines: [line(ids.shawarma!, [ids.large!]), line(ids.drink!, [], { quantity: 2 })],
+      });
+      expect(large.json()).toMatchObject({
+        money: { deliveryFee: '0', deliveryFree: true },
+        freeDelivery: { threshold: '20000', reached: true },
+      });
+    } finally {
+      await geo.setRestaurantFeeRule(azaz, restaurant, null, change);
+    }
+  });
+
   it('rounds the total to the base unit, and USD by its own rule', async () => {
     // 120 + 12.30 + 40 = 172.30 TRY: 170 to the nearest 5, rounding −2.30;
     // 170 ÷ 40 = 4.25 USD: 4.50 to the nearest 0.50, a half going up.

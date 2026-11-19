@@ -5844,6 +5844,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/delivery-fees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDeliveryFeesScreen"];
+        put: operations["adminDeliveryFeesSetCityRule"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/delivery-fees/restaurants/{restaurantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminDeliveryFeesSetRestaurantRule"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/delivery-fees/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDeliveryFeesPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/route": {
         parameters: {
             query?: never;
@@ -17184,6 +17232,176 @@ export interface components {
                 testOrder: boolean;
                 redelivery: boolean;
             }[];
+        };
+        AdminDeliveryFeesDto_Output: {
+            /** @description The amounts are typed in it; null while the city has none. */
+            baseCurrency: string | null;
+            /**
+             * @description pricing.distance_method: how a distance-band fee is measured.
+             * @enum {string}
+             */
+            distanceMethod: "road" | "straight_line";
+            /** @description The city's rule, newest first (the first is in effect), the latest 50. */
+            versions: {
+                rule: {
+                    /** Format: uuid */
+                    id: string;
+                    /** @constant */
+                    kind: "flat";
+                    flatFee: string;
+                    currency: string;
+                    /** @description A lower fee is raised to it; null for none. */
+                    minimumFee: string | null;
+                    /** @description An items value from which delivery is free; null for none. */
+                    freeDeliveryFrom: string | null;
+                } | {
+                    /** Format: uuid */
+                    id: string;
+                    /** @constant */
+                    kind: "distance_bands";
+                    bands: {
+                        /** @description The band's upper edge in metres, included; null for the last band. */
+                        upToMetres: number | null;
+                        fee: string;
+                    }[];
+                    currency: string;
+                    /** @description A lower fee is raised to it; null for none. */
+                    minimumFee: string | null;
+                    /** @description An items value from which delivery is free; null for none. */
+                    freeDeliveryFrom: string | null;
+                };
+                /** @description Null for the system or an unknown admin. */
+                editorName: string | null;
+                reason: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            /** @description The restaurants with a pin, not terminated, by name. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                nameAr: string;
+                location: {
+                    latitude: number;
+                    longitude: number;
+                };
+                /** @description Its own rule in effect; null: the city's. */
+                ownRule: {
+                    rule: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @constant */
+                        kind: "flat";
+                        flatFee: string;
+                        currency: string;
+                        /** @description A lower fee is raised to it; null for none. */
+                        minimumFee: string | null;
+                        /** @description An items value from which delivery is free; null for none. */
+                        freeDeliveryFrom: string | null;
+                    } | {
+                        /** Format: uuid */
+                        id: string;
+                        /** @constant */
+                        kind: "distance_bands";
+                        bands: {
+                            /** @description The band's upper edge in metres, included; null for the last band. */
+                            upToMetres: number | null;
+                            fee: string;
+                        }[];
+                        currency: string;
+                        /** @description A lower fee is raised to it; null for none. */
+                        minimumFee: string | null;
+                        /** @description An items value from which delivery is free; null for none. */
+                        freeDeliveryFrom: string | null;
+                    };
+                    /** @description Null for the system or an unknown admin. */
+                    editorName: string | null;
+                    reason: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                } | null;
+            }[];
+        };
+        AdminSetDeliveryFeeDto: {
+            /** Format: uuid */
+            cityId: string;
+            rule: {
+                /** @constant */
+                kind: "flat";
+                flatFee: string;
+                currency: string;
+                /** @description A lower fee is raised to it; null for none. */
+                minimumFee: string | null;
+                /** @description An items value from which delivery is free; null for none. */
+                freeDeliveryFrom: string | null;
+            } | {
+                /** @constant */
+                kind: "distance_bands";
+                bands: {
+                    /** @description The band's upper edge in metres, included; null for the last band. */
+                    upToMetres: number | null;
+                    fee: string;
+                }[];
+                currency: string;
+                /** @description A lower fee is raised to it; null for none. */
+                minimumFee: string | null;
+                /** @description An items value from which delivery is free; null for none. */
+                freeDeliveryFrom: string | null;
+            };
+            reason: string | null;
+        };
+        AdminSetRestaurantDeliveryFeeDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Null returns the restaurant to the city's rule. */
+            rule: ({
+                /** @constant */
+                kind: "flat";
+                flatFee: string;
+                currency: string;
+                /** @description A lower fee is raised to it; null for none. */
+                minimumFee: string | null;
+                /** @description An items value from which delivery is free; null for none. */
+                freeDeliveryFrom: string | null;
+            } | {
+                /** @constant */
+                kind: "distance_bands";
+                bands: {
+                    /** @description The band's upper edge in metres, included; null for the last band. */
+                    upToMetres: number | null;
+                    fee: string;
+                }[];
+                currency: string;
+                /** @description A lower fee is raised to it; null for none. */
+                minimumFee: string | null;
+                /** @description An items value from which delivery is free; null for none. */
+                freeDeliveryFrom: string | null;
+            }) | null;
+            reason: string | null;
+        };
+        AdminDeliveryFeePreviewDto_Output: {
+            fee: string;
+            currency: string;
+            /** @description The free-delivery threshold reached. */
+            free: boolean;
+            /**
+             * @description The city's rule or the restaurant's own.
+             * @enum {string}
+             */
+            scope: "city" | "restaurant";
+            /** Format: uuid */
+            ruleId: string;
+            freeDeliveryFrom: string | null;
+            /** @description The motorbike's distance from the restaurant, as a band fee measures it. */
+            distance: {
+                metres: number;
+                /** @enum {string} */
+                method: "road" | "straight_x1.3";
+            };
+            /** @description Whether the restaurant delivers to the point (CU §8). */
+            covers: boolean;
+            /** @description The active zone at the point; null outside. */
+            zoneName: string | null;
         };
         CaptainOrderRouteDto_Output: {
             /** @enum {string} */
@@ -30371,6 +30589,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantOrdersDto_Output"];
+                };
+            };
+        };
+    };
+    adminDeliveryFeesScreen: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeliveryFeesDto_Output"];
+                };
+            };
+        };
+    };
+    adminDeliveryFeesSetCityRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetDeliveryFeeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeliveryFeesDto_Output"];
+                };
+            };
+        };
+    };
+    adminDeliveryFeesSetRestaurantRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetRestaurantDeliveryFeeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeliveryFeesDto_Output"];
+                };
+            };
+        };
+    };
+    adminDeliveryFeesPreview: {
+        parameters: {
+            query: {
+                cityId: string;
+                restaurantId: string;
+                latitude: number;
+                longitude: number;
+                /** @description Minor units of the base currency; 0 is the fee before any item. */
+                itemsValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeliveryFeePreviewDto_Output"];
                 };
             };
         };

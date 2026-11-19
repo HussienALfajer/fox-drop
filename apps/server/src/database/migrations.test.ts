@@ -342,6 +342,25 @@ describe('the zones and fee tables (AP §9.12.2–9.12.3)', () => {
     ).rejects.toThrow(/fee_rules_flat_fee/);
   });
 
+  it("take a restaurant's return to the city's rule, without a currency, for a restaurant only", async () => {
+    await appQuery(
+      `INSERT INTO geo.fee_rules (city_id, restaurant_id, kind) VALUES (${azaz}, uuidv7(), 'city_rule')`,
+    );
+    await expect(
+      appQuery(`INSERT INTO geo.fee_rules (city_id, kind) VALUES (${azaz}, 'city_rule')`),
+    ).rejects.toThrow(/fee_rules_city_rule/);
+    await expect(
+      appQuery(
+        `INSERT INTO geo.fee_rules (city_id, restaurant_id, kind, currency) VALUES (${azaz}, uuidv7(), 'city_rule', 'TRY')`,
+      ),
+    ).rejects.toThrow(/fee_rules_currency/);
+    await expect(
+      appQuery(
+        `INSERT INTO geo.fee_rules (city_id, restaurant_id, kind, flat_fee) VALUES (${azaz}, uuidv7(), 'flat', 100)`,
+      ),
+    ).rejects.toThrow(/fee_rules_currency/);
+  });
+
   it.each([
     ['change a fee rule', "UPDATE geo.fee_rules SET reason = 'x'"],
     ['change a fee band', 'UPDATE geo.fee_bands SET fee = 1'],

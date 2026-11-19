@@ -72,8 +72,11 @@ export const zones = geo.table(
   ],
 );
 
-// AP §9.12.3: a city's delivery fee rule. A change adds a version, the newest
-// in effect, so a quote can name the rule it priced with.
+// AP §9.12.3: a city's delivery fee rule, or a restaurant's own rule that
+// replaces it for that restaurant alone (slice 2.37a, owner decision
+// 2026-11-19). A change adds a version, the newest in effect, so a quote can
+// name the rule it priced with. A restaurant's version of the kind
+// `city_rule` returns it to the city's rule.
 export const feeRules = geo.table(
   'fee_rules',
   {
@@ -83,9 +86,12 @@ export const feeRules = geo.table(
     cityId: uuid('city_id')
       .notNull()
       .references(() => cities.id),
-    kind: text('kind', { enum: ['flat', 'distance_bands'] }).notNull(),
-    // The city's base currency when the rule was set (AP §8.6).
-    currency: text('currency').notNull(),
+    // The merchants module's restaurant; null for the city's rule.
+    restaurantId: uuid('restaurant_id'),
+    kind: text('kind', { enum: ['flat', 'distance_bands', 'city_rule'] }).notNull(),
+    // The city's base currency when the rule was set (AP §8.6); null for
+    // `city_rule`, which charges nothing of its own.
+    currency: text('currency'),
     flatFee: bigint('flat_fee', { mode: 'bigint' }),
     minimumFee: bigint('minimum_fee', { mode: 'bigint' }),
     freeDeliveryFrom: bigint('free_delivery_from', { mode: 'bigint' }),
@@ -95,7 +101,15 @@ export const feeRules = geo.table(
   },
   (table) => [
     index('fee_rules_current').on(table.cityId, table.id.desc()),
-    check('fee_rules_kind_values', sql`${table.kind} IN ('flat', 'distance_bands')`),
+    index('fee_rules_restaurant_current')
+      .on(table.restaurantId, table.id.desc())
+      .where(sql`${table.restaurantId} IS NOT NULL`),
+    check('fee_rules_kind_values', sql`${table.kind} IN ('flat', 'distance_bands', 'city_rule')`),
+    check(
+      'fee_rules_city_rule',
+      sql`${table.kind} <> 'city_rule' OR ${table.restaurantId} IS NOT NULL`,
+    ),
+    check('fee_rules_currency', sql`(${table.kind} = 'city_rule') = (${table.currency} IS NULL)`),
     check(
       'fee_rules_flat_fee',
       sql`(${table.kind} = 'flat') = (${table.flatFee} IS NOT NULL) AND ${table.flatFee} >= 0`,

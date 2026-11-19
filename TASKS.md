@@ -12,11 +12,11 @@ Slice 2.37a, delivery fees (`docs/roadmap.md`, Phase 2; 2.37 in three pull reque
 - **Owner decisions 2026-11-19:** 2.37 in three pull requests (2.37a fees, 2.37b pay, 2.37c the city, zones and rules); a restaurant's override is a whole rule of the city rule's shape that replaces it for that restaurant alone, set by OWN; «المدن» edits the existing city only.
 - **Plan:**
   - [x] Record the split in `docs/roadmap.md` and this file.
-  - [ ] Server: a restaurant's fee rule in `geo.fee_rules` (migration: `restaurant_id`, the kind `city_rule` that returns a restaurant to the city's rule), `setRestaurantFeeRule`, `deliveryFee` taking the restaurant, the quote and the cards passing it, fx seeing the overrides' currencies; tests first.
-  - [ ] Server: the panel's routes (`GET /v1/admin/delivery-fees`, `PUT …` the city's rule, `PUT …/restaurants/{id}` a restaurant's, `GET …/preview`), audited, in the admin route table; `pnpm generate:api`.
-  - [ ] Panel: `/delivery-fees` «رسوم التوصيل»: the rule in force, its versions, the form (OWN), the restaurants' own rules, the preview calculator on the map; unit and Playwright tests.
+  - [x] Server: a restaurant's fee rule in `geo.fee_rules` (migration: `restaurant_id`, the kind `city_rule` that returns a restaurant to the city's rule), `setRestaurantFeeRule`, `deliveryFee` taking the restaurant, the quote and the cards passing it, fx seeing the overrides' currencies; tests first.
+  - [x] Server: the panel's routes (`GET /v1/admin/delivery-fees`, `PUT …` the city's rule, `PUT …/restaurants/{id}` a restaurant's, `GET …/preview`), audited, in the admin route table; `pnpm generate:api`.
+  - [x] Panel: `/delivery-fees` «رسوم التوصيل»: the rule in force, its versions, the form (OWN), the restaurants' own rules, the preview calculator on the map; unit and Playwright tests.
   - [ ] Review (`reviewer`), fixes, then hand over to 2.37b.
-- **Stopped at:** the split recorded; the server step not started.
+- **Stopped at:** server and panel built and tested; the full server suite and the review running.
 
 ### Left from 2.36c (the cloud session's branch)
 

@@ -59,6 +59,7 @@ import { RatingPagesService } from './rating-pages.js';
 import { CaptainFiguresService } from './captain-figures.js';
 import { RestaurantFiguresService } from './restaurant-figures.js';
 import { AdminRestaurantOverviewController } from './admin-restaurant-overview.controller.js';
+import { AdminDeliveryFeesController } from './admin-delivery-fees.controller.js';
 import {
   AdminEmergencyStopController,
   CaptainEmergencyStopController,
@@ -109,6 +110,7 @@ import {
     CaptainRatingsController,
     AdminRatingsController,
     AdminRestaurantOverviewController,
+    AdminDeliveryFeesController,
     CaptainOrderRouteController,
     CustomerOrderRouteController,
   ],

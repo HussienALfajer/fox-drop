@@ -331,6 +331,24 @@ describe('the restaurant list (CU §8.2)', () => {
     expect(restaurants[0].estimate).toEqual({ fromMin: 35, toMin: 45 });
   });
 
+  it("shows a restaurant's own fee rule on its card alone (AP §9.12.3)", async () => {
+    const geo = app.get(GeoService);
+    const own = { kind: 'flat', currency: 'TRY', flatFee: 2500n, minimumFee: null } as const;
+    await geo.setRestaurantFeeRule(azaz, busy, { ...own, freeDeliveryFrom: null }, change);
+    try {
+      const answer = await app.inject({
+        method: 'GET',
+        url: `/v1/customer/restaurants?${query(centre)}`,
+      });
+      const cards = answer.json().restaurants as { id: string; deliveryFee: unknown }[];
+      const fees = Object.fromEntries(cards.map((card) => [card.id, card.deliveryFee]));
+      expect(fees[busy]).toEqual({ fee: { amount: '2500', currency: 'TRY' }, free: false });
+      expect(fees[open]).toEqual({ fee: { amount: '4000', currency: 'TRY' }, free: false });
+    } finally {
+      await geo.setRestaurantFeeRule(azaz, busy, null, change);
+    }
+  });
+
   it('is empty outside every zone', async () => {
     const far = { latitude: 36.7, longitude: 37.3 };
     const answer = await app.inject({
