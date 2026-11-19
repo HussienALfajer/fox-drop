@@ -166,10 +166,12 @@ test('builds the menu, then starts test mode', async ({ page }) => {
   const menu = {
     accountStatus: 'draft',
     editable: true,
+    pricesLocked: false,
     nameMax: 80,
     descriptionMax: 300,
     codeMax: 20,
     categories: [] as Category[],
+    optionGroups: [],
   };
   const sent: Record<string, unknown>[] = [];
   await page.route(`**/v1/admin/restaurant-drafts/${id}/menu**`, (route) => {
@@ -191,6 +193,7 @@ test('builds the menu, then starts test mode', async ({ page }) => {
         code: 'I0001',
         photoKey: null,
         switchedOff: null,
+        optionGroupIds: [],
       });
     }
     return route.fulfill({ json: menu });
