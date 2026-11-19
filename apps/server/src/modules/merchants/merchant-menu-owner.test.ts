@@ -418,14 +418,14 @@ describe("the limits of the owners' commands (RA §5.5, §6, §18)", () => {
     expect(order.statusCode).toBe(400);
     const body = { categoryId: other.meals, kind: 'percent', direction: 'up', value: '1000' };
     const preview = await send('POST', '/bulk-price/preview', r.owner.headers, body);
-    expect(preview.json()).toMatchObject({ rows: [], changed: 0 });
+    expect(preview.statusCode).toBe(404);
     const applied = await send(
       'POST',
       '/bulk-price',
       { ...r.owner.headers, 'idempotency-key': randomUUID() },
       body,
     );
-    expect(applied.json()).toEqual({ changed: 0, unchanged: 0 });
+    expect(applied.statusCode).toBe(404);
     const prices = await sql.query(
       'SELECT price FROM merchants.items WHERE category_id = $1 ORDER BY price',
       [other.meals],

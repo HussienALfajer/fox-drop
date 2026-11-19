@@ -890,6 +890,7 @@ import 'package:core_api/src/model/merchant_menu_item_price_dto.dart';
 import 'package:core_api/src/model/merchant_menu_item_price_dto_price.dart';
 import 'package:core_api/src/model/merchant_menu_option_price_dto.dart';
 import 'package:core_api/src/model/merchant_menu_option_price_dto_price_delta.dart';
+import 'package:core_api/src/model/merchant_menu_preview_category_output.dart';
 import 'package:core_api/src/model/merchant_menu_preview_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_window_dto.dart';
 import 'package:core_api/src/model/merchant_menu_window_dto_window.dart';
@@ -1869,6 +1870,7 @@ part 'serializers.g.dart';
   MerchantMenuItemPriceDtoPrice,
   MerchantMenuOptionPriceDto,
   MerchantMenuOptionPriceDtoPriceDelta,
+  MerchantMenuPreviewCategoryOutput,
   MerchantMenuPreviewDtoOutput,
   MerchantMenuWindowDto,
   MerchantMenuWindowDtoWindow,
@@ -3166,15 +3168,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(AdminRestaurantChangeLogDtoOutputEntriesInner),
-            ]),
-            () => ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(AdminMenuPreviewDtoOutputMenuInnerItemsInner),
             ]),
             () => ListBuilder<AdminMenuPreviewDtoOutputMenuInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantChangeLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3393,6 +3395,12 @@ Serializers serializers =
               FullType(AdminCustomerDtoOutputTicketsInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputTicketsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantMenuPreviewCategoryOutput),
+            ]),
+            () => ListBuilder<MerchantMenuPreviewCategoryOutput>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -18,7 +18,7 @@ typedef MenuOption =
     MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner;
 typedef PriceLogEntry = MerchantPriceLogDtoOutputEntriesInner;
 typedef BulkPreview = MerchantMenuBulkPreviewDtoOutput;
-typedef PreviewCategory = AdminMenuPreviewDtoOutputMenuInner;
+typedef PreviewCategory = MerchantMenuPreviewCategoryOutput;
 
 /// What a row is, for the availability switch (RA §9.3).
 enum RowType { category, item, option }
@@ -294,14 +294,19 @@ class MenuCommands {
     }
   }
 
+  /// The server's count of the prices it changed, recomputed under the
+  /// restaurant's lock, so it may differ from the preview's.
+  int? lastBulkChanged;
+
   Future<MenuRefusal?> applyBulk(BulkChange change) => _run(() async {
     final body = change.body;
     final key = _bulkKeys.putIfAbsent(body.toString(), uuidV4);
     try {
-      await _api.merchantMenuBulkPrice(
+      final answer = await _api.merchantMenuBulkPrice(
         idempotencyKey: key,
         merchantMenuBulkPriceDto: body,
       );
+      lastBulkChanged = answer.data!.changed;
       _bulkKeys.remove(body.toString());
     } on DioException catch (error) {
       // An answer ends the key; a lost one sends it again with the same key.

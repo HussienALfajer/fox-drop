@@ -891,6 +891,7 @@ export 'package:core_api/src/model/merchant_menu_item_price_dto.dart';
 export 'package:core_api/src/model/merchant_menu_item_price_dto_price.dart';
 export 'package:core_api/src/model/merchant_menu_option_price_dto.dart';
 export 'package:core_api/src/model/merchant_menu_option_price_dto_price_delta.dart';
+export 'package:core_api/src/model/merchant_menu_preview_category_output.dart';
 export 'package:core_api/src/model/merchant_menu_preview_dto_output.dart';
 export 'package:core_api/src/model/merchant_menu_window_dto.dart';
 export 'package:core_api/src/model/merchant_menu_window_dto_window.dart';

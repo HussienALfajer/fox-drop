@@ -81,14 +81,17 @@ class _BulkPriceScreenState extends ConsumerState<BulkPriceScreen> {
     if (change == null || preview == null) return;
     final l10n = AppLocalizations.of(context);
     setState(() => _busy = true);
-    final refusal = await ref.read(menuCommandsProvider).applyBulk(change);
+    final commands = ref.read(menuCommandsProvider);
+    final refusal = await commands.applyBulk(change);
     if (!mounted) return;
     setState(() => _busy = false);
     if (refusal != null) {
       _say(refusalText(l10n, refusal));
       return;
     }
-    _say(l10n.merchantMenuBulkDone(preview.changed));
+    _say(
+      l10n.merchantMenuBulkDone(commands.lastBulkChanged ?? preview.changed),
+    );
     Navigator.of(context).maybePop();
   }
 

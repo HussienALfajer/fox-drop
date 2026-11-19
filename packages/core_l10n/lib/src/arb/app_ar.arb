@@ -2333,5 +2333,7 @@
   "merchantMenuPreviewFrom": "متوفر من {time}",
   "@merchantMenuPreviewFrom": {"description": "The preview's item outside its category window (CU §9.3).", "placeholders": {"time": {"type": "String"}}},
   "merchantMenuPreviewUnavailable": "غير متوفر حالياً",
-  "@merchantMenuPreviewUnavailable": {"description": "The preview's unavailable item (CU §9.3)."}
+  "@merchantMenuPreviewUnavailable": {"description": "The preview's unavailable item (CU §9.3)."},
+  "merchantMenuInvalidWindow": "اختر وقتين مختلفين لفترة التوفر.",
+  "@merchantMenuInvalidWindow": {"description": "A category window whose start and end are the same time (RA §9.1)."}
 }

@@ -565,11 +565,19 @@ Future<void> _editWindow(
     initialTime: of(current?.endsAt ?? 12 * 60),
   );
   if (to == null || !context.mounted) return;
+  final startsAt = from.hour * 60 + from.minute;
   final endsAt = to.hour * 60 + to.minute;
+  // RA §9.1: two different times (the same twice is no window).
+  if (startsAt == endsAt) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.merchantMenuInvalidWindow)));
+    return;
+  }
   await _report(
     context,
     commands.setWindow(category.id, (
-      startsAt: from.hour * 60 + from.minute,
+      startsAt: startsAt,
       // Midnight as the end is the day's end.
       endsAt: endsAt == 0 ? 1440 : endsAt,
     )),

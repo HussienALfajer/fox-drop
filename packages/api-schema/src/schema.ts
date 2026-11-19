@@ -9828,60 +9828,61 @@ export interface components {
                 }[];
             }[];
         };
-        MerchantMenuPreviewDto_Output: {
-            /** @description The restaurant page's menu (CU §9.3): hidden rows left out. */
-            menu: {
+        MerchantMenuPreviewCategory_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it. */
+            window: {
+                startsAt: number;
+                endsAt: number;
+            } | null;
+            items: {
                 /** Format: uuid */
                 id: string;
                 name: string;
-                /** @description Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it. */
-                window: {
-                    startsAt: number;
-                    endsAt: number;
+                description: string | null;
+                /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                photoKey: string | null;
+                price: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description «من {أقل سعر}» when a required group changes it. */
+                fromPrice: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
                 } | null;
-                items: {
+                available: boolean;
+                /** @description «يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً». */
+                unavailableReason: ("tomorrow" | "window" | "unavailable") | null;
+                optionGroups: {
                     /** Format: uuid */
                     id: string;
                     name: string;
-                    description: string | null;
-                    /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
-                    photoKey: string | null;
-                    price: {
-                        /** @description Integer minor units (AP §8.6). */
-                        amount: string;
-                        currency: string;
-                    };
-                    /** @description «من {أقل سعر}» when a required group changes it. */
-                    fromPrice: {
-                        /** @description Integer minor units (AP §8.6). */
-                        amount: string;
-                        currency: string;
-                    } | null;
-                    available: boolean;
-                    /** @description «يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً». */
-                    unavailableReason: ("tomorrow" | "window" | "unavailable") | null;
-                    optionGroups: {
+                    /** @description 0 is an add-on group; 1 or more is «إجباري». */
+                    minChoices: number;
+                    maxChoices: number;
+                    options: {
                         /** Format: uuid */
                         id: string;
                         name: string;
-                        /** @description 0 is an add-on group; 1 or more is «إجباري». */
-                        minChoices: number;
-                        maxChoices: number;
-                        options: {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            priceDelta: {
-                                /** @description Integer minor units (AP §8.6). */
-                                amount: string;
-                                currency: string;
-                            };
-                            /** @description Faded and not pickable when false. */
-                            available: boolean;
-                        }[];
+                        priceDelta: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @description Faded and not pickable when false. */
+                        available: boolean;
                     }[];
                 }[];
             }[];
+        };
+        MerchantMenuPreviewDto_Output: {
+            /** @description The restaurant page's menu (CU §9.3): hidden rows left out. */
+            menu: components["schemas"]["MerchantMenuPreviewCategory_Output"][];
         };
         AdminLostDemandDto_Output: {
             /**

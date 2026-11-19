@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_menu_preview_dto_output_menu_inner.dart';
+import 'package:core_api/src/model/merchant_menu_preview_category_output.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -23,7 +23,7 @@ abstract class MerchantMenuPreviewDtoOutput
         > {
   /// The restaurant page's menu (CU §9.3): hidden rows left out.
   @BuiltValueField(wireName: r'menu')
-  BuiltList<AdminMenuPreviewDtoOutputMenuInner> get menu;
+  BuiltList<MerchantMenuPreviewCategoryOutput> get menu;
 
   MerchantMenuPreviewDtoOutput._();
 
@@ -59,7 +59,7 @@ class _$MerchantMenuPreviewDtoOutputSerializer
     yield serializers.serialize(
       object.menu,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminMenuPreviewDtoOutputMenuInner),
+        FullType(MerchantMenuPreviewCategoryOutput),
       ]),
     );
   }
@@ -94,10 +94,10 @@ class _$MerchantMenuPreviewDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminMenuPreviewDtoOutputMenuInner),
+                      FullType(MerchantMenuPreviewCategoryOutput),
                     ]),
                   )
-                  as BuiltList<AdminMenuPreviewDtoOutputMenuInner>;
+                  as BuiltList<MerchantMenuPreviewCategoryOutput>;
           result.menu.replace(valueDes);
           break;
         default:

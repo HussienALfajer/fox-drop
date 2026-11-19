@@ -4299,4 +4299,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantMenuPreviewUnavailable => 'غير متوفر حالياً';
+
+  @override
+  String get merchantMenuInvalidWindow => 'اختر وقتين مختلفين لفترة التوفر.';
 }

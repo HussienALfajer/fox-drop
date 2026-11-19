@@ -8,7 +8,7 @@ part of 'merchant_menu_preview_dto_output.dart';
 
 class _$MerchantMenuPreviewDtoOutput extends MerchantMenuPreviewDtoOutput {
   @override
-  final BuiltList<AdminMenuPreviewDtoOutputMenuInner> menu;
+  final BuiltList<MerchantMenuPreviewCategoryOutput> menu;
 
   factory _$MerchantMenuPreviewDtoOutput([
     void Function(MerchantMenuPreviewDtoOutputBuilder)? updates,
@@ -54,10 +54,10 @@ class MerchantMenuPreviewDtoOutputBuilder
         > {
   _$MerchantMenuPreviewDtoOutput? _$v;
 
-  ListBuilder<AdminMenuPreviewDtoOutputMenuInner>? _menu;
-  ListBuilder<AdminMenuPreviewDtoOutputMenuInner> get menu =>
-      _$this._menu ??= ListBuilder<AdminMenuPreviewDtoOutputMenuInner>();
-  set menu(ListBuilder<AdminMenuPreviewDtoOutputMenuInner>? menu) =>
+  ListBuilder<MerchantMenuPreviewCategoryOutput>? _menu;
+  ListBuilder<MerchantMenuPreviewCategoryOutput> get menu =>
+      _$this._menu ??= ListBuilder<MerchantMenuPreviewCategoryOutput>();
+  set menu(ListBuilder<MerchantMenuPreviewCategoryOutput>? menu) =>
       _$this._menu = menu;
 
   MerchantMenuPreviewDtoOutputBuilder() {

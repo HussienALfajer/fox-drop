@@ -7105,6 +7105,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'غير متوفر حالياً'**
   String get merchantMenuPreviewUnavailable;
+
+  /// A category window whose start and end are the same time (RA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر وقتين مختلفين لفترة التوفر.'**
+  String get merchantMenuInvalidWindow;
 }
 
 class _AppLocalizationsDelegate

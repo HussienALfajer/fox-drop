@@ -1453,6 +1453,7 @@ Serializers _$serializers =
           ..add(MerchantMenuItemPriceDtoPrice.serializer)
           ..add(MerchantMenuOptionPriceDto.serializer)
           ..add(MerchantMenuOptionPriceDtoPriceDelta.serializer)
+          ..add(MerchantMenuPreviewCategoryOutput.serializer)
           ..add(MerchantMenuPreviewDtoOutput.serializer)
           ..add(MerchantMenuWindowDto.serializer)
           ..add(MerchantMenuWindowDtoWindow.serializer)
@@ -2312,9 +2313,9 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(AdminMenuPreviewDtoOutputMenuInner),
+              const FullType(AdminMenuPreviewDtoOutputMenuInnerItemsInner),
             ]),
-            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInner>(),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInnerItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3961,6 +3962,12 @@ Serializers _$serializers =
                 ListBuilder<
                   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantMenuPreviewCategoryOutput),
+            ]),
+            () => ListBuilder<MerchantMenuPreviewCategoryOutput>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
