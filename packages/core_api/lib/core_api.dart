@@ -30,6 +30,9 @@ export 'package:core_api/src/model/admin_all_cities_dto_output_cities_inner.dart
 export 'package:core_api/src/model/admin_approve_compensation_dto.dart';
 export 'package:core_api/src/model/admin_approve_compensation_dto_value.dart';
 export 'package:core_api/src/model/admin_assign_dto.dart';
+export 'package:core_api/src/model/admin_audit_log_dto_output.dart';
+export 'package:core_api/src/model/admin_audit_log_dto_output_events_inner.dart';
+export 'package:core_api/src/model/admin_audit_log_dto_output_events_inner_changes_inner.dart';
 export 'package:core_api/src/model/admin_banner_city_dto.dart';
 export 'package:core_api/src/model/admin_banners_dto_output.dart';
 export 'package:core_api/src/model/admin_banners_dto_output_banners_inner.dart';

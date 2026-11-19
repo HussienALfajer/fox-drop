@@ -51,6 +51,9 @@ export const events = audit.table(
     primaryKey({ columns: [table.id, table.occurredAt] }),
     // AP §9.6.4 «سجل التغييرات» (slice 2.30d): a target's history.
     index('events_target').on(table.targetType, table.targetId, table.occurredAt),
+    // AP §9.16 «سجل التدقيق» (slice 2.38a): the log newest first, and by actor.
+    index('events_newest').on(table.occurredAt.desc(), table.id.desc()),
+    index('events_actor').on(table.actorId, table.occurredAt.desc()),
     check(
       'events_actor_type_values',
       sql`${table.actorType} IN ('admin', 'merchant', 'captain', 'customer', 'system')`,

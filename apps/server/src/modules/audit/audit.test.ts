@@ -125,6 +125,167 @@ describe('AuditService', () => {
   });
 });
 
+describe('AuditService.search', () => {
+  const ops = { type: 'admin', id: '0190f3a0-0000-7000-8000-000000000002', role: 'OPS' } as const;
+  const city = '0190f3a0-0000-7000-8000-0000000000c1';
+  const none = {
+    actorType: null,
+    actorId: null,
+    action: null,
+    targetType: null,
+    targetId: null,
+    from: null,
+    to: null,
+    after: null,
+  };
+
+  it('filters by actor, action, target and dates, newest first, a page at a time', async () => {
+    await withAudit(async (audit, { db }) => {
+      const write = (actor: typeof owner | typeof ops, action: string, id: string) =>
+        db.transaction((tx) =>
+          audit.recordWrite(
+            {
+              actor,
+              context,
+              cityId: city,
+              action,
+              target: { type: 'search_test', id },
+              before: { value: 1 },
+              after: { value: 2 },
+              reason: 'تجربة',
+            },
+            tx,
+          ),
+        );
+      const start = new Date();
+      await write(owner, 'search_test.update', 'a');
+      await write(ops, 'search_test.update', 'b');
+      await write(owner, 'search_test.reset', 'a');
+      await audit.recordView({
+        actor: ops,
+        context,
+        cityId: null,
+        action: 'search_test.view',
+        target: { type: 'search_test', id: 'b' },
+      });
+
+      const all = await audit.search({ ...none, targetType: 'search_test' }, 10);
+      expect(all.map((event) => event.action)).toEqual([
+        'search_test.view',
+        'search_test.reset',
+        'search_test.update',
+        'search_test.update',
+      ]);
+      expect(all[1]).toMatchObject({
+        kind: 'write',
+        cityId: city,
+        actor: owner,
+        target: { type: 'search_test', id: 'a' },
+        changes: { value: { before: 1, after: 2 } },
+        reason: 'تجربة',
+        ipAddress: '203.0.113.7',
+        device: 'Firefox 140 on Windows',
+      });
+      expect(all[0]).toMatchObject({ kind: 'view', cityId: null, changes: null });
+
+      const byActor = await audit.search(
+        { ...none, targetType: 'search_test', actorId: ops.id },
+        10,
+      );
+      expect(byActor.map((event) => event.target.id)).toEqual(['b', 'b']);
+      const byAction = await audit.search({ ...none, action: 'search_test.update' }, 10);
+      expect(byAction.map((event) => event.target.id)).toEqual(['b', 'a']);
+      const byTarget = await audit.search(
+        { ...none, targetType: 'search_test', targetId: 'a' },
+        10,
+      );
+      expect(byTarget.map((event) => event.action)).toEqual([
+        'search_test.reset',
+        'search_test.update',
+      ]);
+      const byType = await audit.search(
+        { ...none, targetType: 'search_test', actorType: 'system' },
+        10,
+      );
+      expect(byType).toEqual([]);
+      expect(await audit.search({ ...none, targetType: 'search_test', to: start }, 10)).toEqual([]);
+      expect(
+        await audit.search({ ...none, targetType: 'search_test', from: start }, 10),
+      ).toHaveLength(4);
+
+      const first = await audit.search({ ...none, targetType: 'search_test' }, 3);
+      const last = first.at(-1)!;
+      const next = await audit.search(
+        { ...none, targetType: 'search_test', after: { occurredAt: last.position, id: last.id } },
+        3,
+      );
+      expect([...first, ...next].map((event) => event.id)).toEqual(all.map((event) => event.id));
+    });
+  });
+});
+
+describe('AuditService.search pages', () => {
+  it('has the indexes of the log, on every month partition', async () => {
+    const { rows } = await reader.query(
+      `SELECT parent.relname AS index, count(*)::int AS partitions
+         FROM pg_inherits i
+         JOIN pg_class parent ON parent.oid = i.inhparent
+        WHERE parent.relname IN ('events_newest', 'events_actor')
+        GROUP BY parent.relname ORDER BY parent.relname`,
+    );
+    const { rows: tables } = await reader.query(
+      `SELECT count(*)::int AS partitions FROM pg_inherits
+        WHERE inhparent = 'audit.events'::regclass`,
+    );
+    expect(rows).toEqual([
+      { index: 'events_actor', partitions: tables[0].partitions },
+      { index: 'events_newest', partitions: tables[0].partitions },
+    ]);
+  });
+
+  it('splits the events of one transaction, which share their time, without losing one', async () => {
+    await withAudit(async (audit, { db }) => {
+      await db.transaction(async (tx) => {
+        for (const id of ['1', '2', '3', '4', '5']) {
+          await audit.recordWrite(
+            {
+              actor: owner,
+              context,
+              cityId: null,
+              action: 'tie_test.update',
+              target: { type: 'tie_test', id },
+              before: null,
+              after: { value: id },
+            },
+            tx,
+          );
+        }
+      });
+      const filter = {
+        actorType: null,
+        actorId: null,
+        action: null,
+        targetType: 'tie_test',
+        targetId: null,
+        from: null,
+        to: null,
+        after: null,
+      };
+      const seen: string[] = [];
+      let after: { occurredAt: string; id: string } | null = null;
+      for (let page = 0; page < 5; page += 1) {
+        const found = await audit.search({ ...filter, after }, 2);
+        if (found.length === 0) break;
+        seen.push(...found.map((event) => event.target.id));
+        const last = found.at(-1)!;
+        after = { occurredAt: last.position, id: last.id };
+      }
+      expect([...seen].sort()).toEqual(['1', '2', '3', '4', '5']);
+      expect(new Set(seen).size).toBe(5);
+    });
+  });
+});
+
 describe('AuditWorkerModule', () => {
   // Next month's partition, dropped by the migration role so the worker has to
   // create it, as it will every month.

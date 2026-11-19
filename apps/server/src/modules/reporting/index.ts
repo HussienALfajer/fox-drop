@@ -22,6 +22,7 @@ import {
   AdminCaptainProfileController,
 } from './admin-captain-profile.controller.js';
 import { CaptainListService } from './captain-list.service.js';
+import { AdminAuditLogController } from './admin-audit-log.controller.js';
 import { AdminCostReportController } from './admin-cost-report.controller.js';
 import { AdminDailyReportController } from './admin-daily-report.controller.js';
 import { AdminExportsController } from './admin-exports.controller.js';
@@ -67,6 +68,7 @@ const imports = [
     NotificationsModule,
   ],
   controllers: [
+    AdminAuditLogController,
     AdminCaptainListController,
     AdminCaptainProfileController,
     AdminCaptainViolationsController,

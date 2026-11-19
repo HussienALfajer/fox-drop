@@ -18,6 +18,7 @@ import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeDrafts } from './restaurant-drafts.js';
 import { canSeeRestaurantList } from './restaurant-list.js';
+import { canReadAuditLog } from './audit-log.js';
 import { canSeeLostDemand } from './lost-demand.js';
 import { canReviewMenuChanges } from './menu-change-requests.js';
 import { canSeeRatings } from './ratings.js';
@@ -217,7 +218,19 @@ export function HomePage() {
           )}
           {can(session, SETTINGS_READ) && (
             <li>
+              <Link to="/settings" search={{ group: 'timers_limits' }}>
+                {t('settings.title')}
+              </Link>
+            </li>
+          )}
+          {can(session, SETTINGS_READ) && (
+            <li>
               <Link to="/settings/apps">{t('appSettings.title')}</Link>
+            </li>
+          )}
+          {canReadAuditLog(session) && (
+            <li>
+              <Link to="/audit-log">{t('auditLog.title')}</Link>
             </li>
           )}
           {can(session, EMERGENCY_CODE_PERMISSION) && (

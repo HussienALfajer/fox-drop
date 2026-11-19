@@ -29,6 +29,9 @@ import 'package:core_api/src/model/admin_all_cities_dto_output_cities_inner.dart
 import 'package:core_api/src/model/admin_approve_compensation_dto.dart';
 import 'package:core_api/src/model/admin_approve_compensation_dto_value.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
+import 'package:core_api/src/model/admin_audit_log_dto_output.dart';
+import 'package:core_api/src/model/admin_audit_log_dto_output_events_inner.dart';
+import 'package:core_api/src/model/admin_audit_log_dto_output_events_inner_changes_inner.dart';
 import 'package:core_api/src/model/admin_banner_city_dto.dart';
 import 'package:core_api/src/model/admin_banners_dto_output.dart';
 import 'package:core_api/src/model/admin_banners_dto_output_banners_inner.dart';
@@ -1200,6 +1203,9 @@ part 'serializers.g.dart';
   AdminApproveCompensationDto,
   AdminApproveCompensationDtoValue,
   AdminAssignDto,
+  AdminAuditLogDtoOutput,
+  AdminAuditLogDtoOutputEventsInner,
+  AdminAuditLogDtoOutputEventsInnerChangesInner,
   AdminBannerCityDto,
   AdminBannersDtoOutput,
   AdminBannersDtoOutputBannersInner,
@@ -2937,6 +2943,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminAuditLogDtoOutputEventsInner),
+            ]),
+            () => ListBuilder<AdminAuditLogDtoOutputEventsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCaptainViolationsDtoOutputSuspensionsInner),
             ]),
             () =>
@@ -3373,6 +3385,12 @@ Serializers serializers =
               FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminAuditLogDtoOutputEventsInnerChangesInner),
+            ]),
+            () => ListBuilder<AdminAuditLogDtoOutputEventsInnerChangesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

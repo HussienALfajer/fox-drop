@@ -7076,6 +7076,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/audit-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAuditLogList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/captain-list": {
         parameters: {
             query?: never;
@@ -20578,6 +20594,46 @@ export interface components {
             /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
             dueAfter: string;
         };
+        AdminAuditLogDto_Output: {
+            /** @description Newest first. */
+            events: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                at: string;
+                /**
+                 * @description view: a sensitive view, without changes.
+                 * @enum {string}
+                 */
+                kind: "write" | "view";
+                /** @description None for an action on the whole platform (D28). */
+                cityId: string | null;
+                /** @enum {string} */
+                actorType: "admin" | "merchant" | "captain" | "customer" | "system";
+                /** @description None for the system. */
+                actorId: string | null;
+                /** @description An admin's name; null for the others. */
+                actorName: string | null;
+                /** @description The role when it acted (D27). */
+                actorRole: string | null;
+                action: string;
+                targetType: string;
+                targetId: string;
+                /** @description The changed fields of a write. */
+                changes: {
+                    field: string;
+                    /** @description JSON; null for none. */
+                    before: string | null;
+                    /** @description JSON; null for none. */
+                    after: string | null;
+                }[];
+                reason: string | null;
+                ipAddress: string | null;
+                device: string | null;
+            }[];
+            /** @description Null on the last page. */
+            nextCursor: string | null;
+        };
         AdminCaptainListQueryDto: {
             /** Format: uuid */
             cityId: string;
@@ -33035,6 +33091,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminAuditLogList: {
+        parameters: {
+            query?: {
+                actorType?: "admin" | "merchant" | "captain" | "customer" | "system";
+                /** @description An actor's account id. */
+                actorId?: string;
+                /** @description An action, such as setting.update. */
+                action?: string;
+                /** @description A target type, such as setting or order. */
+                targetType?: string;
+                targetId?: string;
+                /** @description Included. */
+                from?: string;
+                /** @description Excluded. */
+                to?: string;
+                /** @description The page's nextCursor: the page after it. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAuditLogDto_Output"];
                 };
             };
         };
