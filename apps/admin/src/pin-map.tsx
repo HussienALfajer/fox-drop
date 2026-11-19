@@ -16,14 +16,14 @@ export interface Point {
 // a blob, and the tiles come through the PMTiles protocol from /maps/
 // (architecture §7.2), so the Content-Security-Policy's 'self' covers all.
 let ready = false;
-function prepare(): void {
+export function prepare(): void {
   if (ready) return;
   setWorkerUrl(workerUrl);
   addProtocol('pmtiles', new Protocol().tile);
   ready = true;
 }
 
-function drawable(): boolean {
+export function drawable(): boolean {
   try {
     return document.createElement('canvas').getContext('webgl2') !== null;
   } catch {

@@ -1,3 +1,4 @@
+import { SETTINGS_MANAGE, SWITCH_DISPATCH_MODE } from './city-settings.js';
 import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { SETTINGS_READ } from './app-settings.js';
@@ -147,6 +148,26 @@ export function HomePage() {
           {canSeeMassPushes(session) && (
             <li>
               <Link to="/mass-pushes">{t('massPushes.title')}</Link>
+            </li>
+          )}
+          {can(session, ZONES_READ) && (
+            <li>
+              <Link to="/zones">{t('zones.title')}</Link>
+            </li>
+          )}
+          {can(session, ZONES_READ) && (
+            <li>
+              <Link to="/cities">{t('cityProfile.title')}</Link>
+            </li>
+          )}
+          {can(session, SETTINGS_MANAGE) && (
+            <li>
+              <Link to="/defaults">{t('citySettings.defaultsTitle')}</Link>
+            </li>
+          )}
+          {can(session, SWITCH_DISPATCH_MODE) && (
+            <li>
+              <Link to="/dispatch-rules">{t('citySettings.dispatchTitle')}</Link>
             </li>
           )}
           {can(session, ZONES_READ) && (

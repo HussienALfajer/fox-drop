@@ -13,9 +13,9 @@ Slice 2.37c, the city, its zones and rules in the panel (`docs/roadmap.md`, Phas
 - **Owner decisions 2026-11-19:** the zones are drawn with our own vertex editing on MapLibre (no drawing library); the city's time zone may change at any time, orders or not; the neighbourhood names are typed on the screen (no seeded list).
 - **Plan:**
   - [x] Server: `saveZone` (draw under the panel's id, edit outline, name and state), `zoneOutlines`, `voteMap`, `updateCity`, and the routes of «المدن» (the city, its currencies and base through fx) and the zones; the defaults and dispatch rules use the settings routes as they are (OPS sees and edits only `dispatch.mode`).
-  - [ ] Panel: «مناطق الخدمة» (the zones on the map with drawing and editing, the vote map), «المدن», «الإعدادات الافتراضية» and «قواعد التوزيع»; unit and Playwright tests.
+  - [x] Panel: «مناطق الخدمة» (the zones on the map with drawing and editing, the vote map), «المدن», «الإعدادات الافتراضية» and «قواعد التوزيع»; unit and Playwright tests.
   - [ ] Review (`reviewer`), fixes, then hand over to the next slice of the roadmap.
-- **Stopped at:** the server step done; the panel next.
+- **Stopped at:** the server and the panel done; the review next.
 
 ### Left from 2.37b (the cloud session's branch)
 
