@@ -29,6 +29,7 @@ const view = (over: object) =>
     targetName: 'شاورما',
     createdAt: '2026-11-19T08:00:00Z',
     status: 'pending',
+    updatedAt: '2026-11-19T08:00:00Z',
     before: { ...values, name: 'شاورما' },
     after: { ...values, name: 'شاورما دجاج' },
     parentName: 'وجبات',
@@ -76,15 +77,19 @@ describe('the review of the menu change requests', () => {
       name: false,
       description: false,
     });
+    const seen = '2026-11-19T08:00:00.000Z';
     expect(
       approvalOf(
-        { targetType: 'item', field: 'rename' },
+        { targetType: 'item', field: 'rename', updatedAt: seen },
         { name: ' شاورما عربي ', description: 'x' },
       ),
-    ).toEqual({ kind: 'approve', name: 'شاورما عربي' });
+    ).toEqual({ kind: 'approve', seen, name: 'شاورما عربي' });
     expect(
-      approvalOf({ targetType: 'item', field: 'photo' }, { name: 'x', description: '' }),
-    ).toEqual({ kind: 'approve' });
+      approvalOf(
+        { targetType: 'item', field: 'photo', updatedAt: seen },
+        { name: 'x', description: '' },
+      ),
+    ).toEqual({ kind: 'approve', seen });
   });
 
   it('previews the item as customers will see it, the correction last', () => {

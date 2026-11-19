@@ -105,6 +105,7 @@ export type MerchantsRefusal =
   // sent for a published one, or the other way round.
   | 'unknown_change_request'
   | 'request_not_pending'
+  | 'request_changed'
   | 'category_pending'
   | 'group_pending'
   | 'already_published'

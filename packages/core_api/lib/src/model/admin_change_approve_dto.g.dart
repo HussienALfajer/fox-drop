@@ -8,6 +8,8 @@ part of 'admin_change_approve_dto.dart';
 
 class _$AdminChangeApproveDto extends AdminChangeApproveDto {
   @override
+  final DateTime seen;
+  @override
   final String? name;
   @override
   final String? description;
@@ -16,7 +18,8 @@ class _$AdminChangeApproveDto extends AdminChangeApproveDto {
     void Function(AdminChangeApproveDtoBuilder)? updates,
   ]) => (AdminChangeApproveDtoBuilder()..update(updates))._build();
 
-  _$AdminChangeApproveDto._({this.name, this.description}) : super._();
+  _$AdminChangeApproveDto._({required this.seen, this.name, this.description})
+    : super._();
   @override
   AdminChangeApproveDto rebuild(
     void Function(AdminChangeApproveDtoBuilder) updates,
@@ -30,6 +33,7 @@ class _$AdminChangeApproveDto extends AdminChangeApproveDto {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminChangeApproveDto &&
+        seen == other.seen &&
         name == other.name &&
         description == other.description;
   }
@@ -37,6 +41,7 @@ class _$AdminChangeApproveDto extends AdminChangeApproveDto {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, seen.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jf(_$hash);
@@ -46,6 +51,7 @@ class _$AdminChangeApproveDto extends AdminChangeApproveDto {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminChangeApproveDto')
+          ..add('seen', seen)
           ..add('name', name)
           ..add('description', description))
         .toString();
@@ -55,6 +61,10 @@ class _$AdminChangeApproveDto extends AdminChangeApproveDto {
 class AdminChangeApproveDtoBuilder
     implements Builder<AdminChangeApproveDto, AdminChangeApproveDtoBuilder> {
   _$AdminChangeApproveDto? _$v;
+
+  DateTime? _seen;
+  DateTime? get seen => _$this._seen;
+  set seen(DateTime? seen) => _$this._seen = seen;
 
   String? _name;
   String? get name => _$this._name;
@@ -71,6 +81,7 @@ class AdminChangeApproveDtoBuilder
   AdminChangeApproveDtoBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _seen = $v.seen;
       _name = $v.name;
       _description = $v.description;
       _$v = null;
@@ -93,7 +104,16 @@ class AdminChangeApproveDtoBuilder
 
   _$AdminChangeApproveDto _build() {
     final _$result =
-        _$v ?? _$AdminChangeApproveDto._(name: name, description: description);
+        _$v ??
+        _$AdminChangeApproveDto._(
+          seen: BuiltValueNullFieldError.checkNotNull(
+            seen,
+            r'AdminChangeApproveDto',
+            'seen',
+          ),
+          name: name,
+          description: description,
+        );
     replace(_$result);
     return _$result;
   }

@@ -115,7 +115,8 @@ server {
 
     # The restaurant owners' item photos (RA §9.2; slice 2.32b): a PUT signed
     # by the API for this host into public-media's incoming/, as the panel's.
-    # The file stays unpublished until a change request is approved.
+    # Its request links it under an unguessable key; the menu shows it only
+    # once operations approve it.
     location /public-media/incoming/ {
         limit_except PUT { deny all; }
         client_max_body_size 9m;

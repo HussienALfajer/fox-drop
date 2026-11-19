@@ -24,6 +24,7 @@ part 'admin_change_request_dto_output.g.dart';
 /// * [targetName] - The row's name as the restaurant knows it.
 /// * [createdAt] - Its age: SHOULD be reviewed within 24 hours (RA §9.5).
 /// * [status]
+/// * [updatedAt] - The request's version, sent back with «قبول» (409 request_changed).
 /// * [before] - Null for a new row.
 /// * [after]
 /// * [parentName] - An item's category, an option's group.
@@ -65,6 +66,10 @@ abstract class AdminChangeRequestDtoOutput
   @BuiltValueField(wireName: r'status')
   AdminChangeRequestDtoOutputStatusEnum get status;
   // enum statusEnum {  pending,  approved,  rejected,  withdrawn,  };
+
+  /// The request's version, sent back with «قبول» (409 request_changed).
+  @BuiltValueField(wireName: r'updatedAt')
+  DateTime get updatedAt;
 
   /// Null for a new row.
   @BuiltValueField(wireName: r'before')
@@ -158,6 +163,11 @@ class _$AdminChangeRequestDtoOutputSerializer
     yield serializers.serialize(
       object.status,
       specifiedType: const FullType(AdminChangeRequestDtoOutputStatusEnum),
+    );
+    yield r'updatedAt';
+    yield serializers.serialize(
+      object.updatedAt,
+      specifiedType: const FullType(DateTime),
     );
     yield r'before';
     yield object.before == null
@@ -305,6 +315,15 @@ class _$AdminChangeRequestDtoOutputSerializer
                   )
                   as AdminChangeRequestDtoOutputStatusEnum;
           result.status = valueDes;
+          break;
+        case r'updatedAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
+          result.updatedAt = valueDes;
           break;
         case r'before':
           final valueDes =

@@ -8268,6 +8268,11 @@ export interface components {
             createdAt: string;
             /** @enum {string} */
             status: "pending" | "approved" | "rejected" | "withdrawn";
+            /**
+             * Format: date-time
+             * @description The request's version, sent back with «قبول» (409 request_changed).
+             */
+            updatedAt: string;
             /** @description Null for a new row. */
             before: components["schemas"]["AdminChangeValues_Output"] | null;
             after: components["schemas"]["AdminChangeValues_Output"];
@@ -8278,6 +8283,11 @@ export interface components {
             itemNames: components["schemas"]["AdminChangeItemName_Output"][];
         };
         AdminChangeApproveDto: {
+            /**
+             * Format: date-time
+             * @description The `updatedAt` of the request's view the reviewer saw.
+             */
+            seen: string;
             /** @description The reviewer's correction of the name asked (RA §9.5). */
             name?: string;
             description?: string | null;

@@ -59,7 +59,7 @@ String pendingText(
     pending.itemIds == null || pending.itemIds!.isEmpty
         ? l10n.merchantMenuPendingNoItems
         : l10n.merchantMenuPendingItems(
-            pending.itemIds!.map(itemName).join('، '),
+            pending.itemIds!.map(itemName).join(l10n.listSeparator),
           ),
   _ => l10n.merchantMenuPendingReview,
 };

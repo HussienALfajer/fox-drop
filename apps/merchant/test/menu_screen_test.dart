@@ -690,6 +690,40 @@ void main() {
   );
 
   testWidgets(
+    'the form starts from the pending name, so a new description keeps it',
+    (tester) async {
+      final app = _App(role: 'owner');
+      final renamed = _changed(
+        (menu) => _row(menu, _shawarma)['pending'] = [
+          _pending('r1', 'rename', name: 'شاورما دجاج'),
+        ],
+      );
+      app.server
+        ..on('/v1/merchant/menu', [FakeAnswer(200, renamed)])
+        ..on('/v1/merchant/menu/requests/items/$_shawarma/text', [
+          FakeAnswer(200, renamed),
+        ]);
+      await app.pump(tester, [FakeAnswer(200, _status())]);
+      await _open(tester);
+      await _tap(tester, 'text-item-$_shawarma');
+      await tester.enterText(
+        find.byKey(const Key('item-description')),
+        'مع ثوم',
+      );
+      await _tap(tester, 'item-send');
+      expect(
+        _body(
+          app.server
+              .to('/v1/merchant/menu/requests/items/$_shawarma/text')
+              .single,
+        ),
+        {'name': 'شاورما دجاج', 'description': 'مع ثوم'},
+      );
+      await app.done(tester);
+    },
+  );
+
+  testWidgets(
     'a cashier sees the badge but neither the forms nor «سحب الطلب»',
     (tester) async {
       final app = _App();

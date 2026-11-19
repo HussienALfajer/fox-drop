@@ -65,6 +65,15 @@ String? menuCurrency(Menu menu) =>
         .map((o) => o.priceDelta.currency)
         .firstOrNull;
 
+/// A row's pending request of one field, if any (RA §9.5): the forms start
+/// from it, so editing one field never withdraws another.
+Pending? pendingOf(Iterable<Pending> pending, PendingField field) {
+  for (final each in pending) {
+    if (each.field == field) return each;
+  }
+  return null;
+}
+
 /// The published rows' ids in order, which the reorder names (RA §9.2: a new
 /// row takes the end once approved).
 List<String> publishedIds(Iterable<({String id, bool isNew})> rows) => [

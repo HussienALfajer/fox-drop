@@ -305,7 +305,10 @@ class MerchantOptionGroupRequestDto extends createZodDto(
     name: z.string(),
     minChoices: z.int().min(0).max(50),
     maxChoices: z.int().min(1).max(50),
-    itemIds: z.array(z.uuid()).describe('The items the group is linked to, as a set.'),
+    itemIds: z
+      .array(z.uuid())
+      .max(500)
+      .describe('The items the group is linked to, as a set.'),
     options: z
       .array(
         z
@@ -318,6 +321,7 @@ class MerchantOptionGroupRequestDto extends createZodDto(
           })
           .meta({ id: 'MerchantRequestOption' }),
       )
+      .max(50)
       .describe('The options asked; a published option left out stays as it is.'),
   }),
 ) {}

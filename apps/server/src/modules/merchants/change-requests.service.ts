@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, inArray, isNull, max, notInArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, max, ne, notInArray, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { Jobs } from '../../jobs/jobs.module.js';
@@ -114,6 +114,8 @@ export interface QueuedRequest {
 // AP §9.6.7 «Request view»: before and after, with what the preview needs.
 export interface RequestView extends QueuedRequest {
   status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
+  // The version the reviewer approves (RA §9.5: what was reviewed).
+  updatedAt: Date;
   // Null for a new row.
   before: ChangeValues | null;
   after: ChangeValues;
@@ -416,7 +418,16 @@ export class ChangeRequestsService {
       const [pending] = await this.pendingOf(tx, target, 'photo');
       const was = (pending?.pendingValue as Stored | undefined)?.photoKey ?? before.photoKey;
       const photoKey = await this.linkPhoto(tx, uploadId, was);
-      await this.ask(tx, row.cityId, restaurantId, target, 'photo', { photoKey }, change);
+      await this.askOrDrop(
+        tx,
+        row.cityId,
+        restaurantId,
+        target,
+        'photo',
+        photoKey === before.photoKey,
+        { photoKey },
+        change,
+      );
     });
   }
 
@@ -816,7 +827,14 @@ export class ChangeRequestsService {
       .select({ request: changeRequests, restaurantName: restaurants.nameAr })
       .from(changeRequests)
       .innerJoin(restaurants, eq(restaurants.id, changeRequests.restaurantId))
-      .where(and(eq(restaurants.cityId, cityId), eq(changeRequests.status, 'pending')))
+      // A terminated restaurant's menu is no longer edited (RA §5.5).
+      .where(
+        and(
+          eq(restaurants.cityId, cityId),
+          eq(changeRequests.status, 'pending'),
+          ne(restaurants.accountStatus, 'terminated'),
+        ),
+      )
       .orderBy(asc(changeRequests.createdAt), asc(changeRequests.id));
     const names = await this.names(
       this.database.db,
@@ -876,6 +894,7 @@ export class ChangeRequestsService {
     return {
       ...queued(request, found.restaurantName, names),
       status: request.status,
+      updatedAt: request.updatedAt,
       before,
       after,
       parentName,
@@ -886,13 +905,24 @@ export class ChangeRequestsService {
 
   // RA §9.5 «Approve»: the change publishes at once, the text corrected
   // first when the reviewer did; audited, the owners told (RA §16 #22).
-  async approve(requestId: string, correction: Correction, change: MerchantChange): Promise<void> {
+  // `seen` is the version the reviewer saw (the request's `updatedAt`): a
+  // value the owner replaced since is refused (`request_changed`), so only a
+  // reviewed value publishes.
+  async approve(
+    requestId: string,
+    correction: Correction,
+    seen: Date,
+    change: MerchantChange,
+  ): Promise<void> {
     const restaurantId = await this.restaurantOf(requestId);
     await this.database.db.transaction(async (tx) => {
       const row = await this.editor.lockEditable(tx, restaurantId);
       const request = await this.lockRequest(tx, requestId);
       if (request.status !== 'pending') {
         throw new MerchantsRefusedError('request_not_pending', 'the request was decided');
+      }
+      if (request.updatedAt.getTime() !== seen.getTime()) {
+        throw new MerchantsRefusedError('request_changed', 'the owner changed the request');
       }
       const asked = request.pendingValue as Stored;
       const value: Stored = { ...asked, ...this.corrected(request, correction) };
@@ -1208,7 +1238,8 @@ export class ChangeRequestsService {
     change: MerchantChange,
   ): Promise<void> {
     const [pending] = await this.pendingOf(tx, target, field);
-    if (pending && JSON.stringify(pending.pendingValue) === JSON.stringify(value)) return;
+    // jsonb keeps its own key order, so the values are compared canonically.
+    if (pending && canonical(pending.pendingValue) === canonical(value)) return;
     const requestedById = change.actor.id!;
     let request: RequestRow;
     if (pending) {
@@ -1511,6 +1542,21 @@ async function nextPosition(
     .from(table)
     .where(where);
   return (row?.last ?? -1) + 1;
+}
+
+// A JSON value with its keys sorted, so two equal values compare equal.
+function canonical(value: unknown): string {
+  const sorted = (each: unknown): unknown =>
+    Array.isArray(each)
+      ? each.map(sorted)
+      : each !== null && typeof each === 'object'
+        ? Object.fromEntries(
+            Object.entries(each)
+              .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+              .map(([key, inner]) => [key, sorted(inner)]),
+          )
+        : each;
+  return JSON.stringify(sorted(value));
 }
 
 function sameSet(current: string[], wanted: string[]): boolean {

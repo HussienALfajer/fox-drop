@@ -15,6 +15,7 @@ Uploads to the object storage and their checks before a record links them (archi
 
 ## Not yet
 
+- A restaurant owner's item photo is copied to its published key when its change request is made (slice 2.32b), so imgproxy serves it to whoever holds the key (unguessable) before approval, and after a rejection until the cleanup below.
 - Removing `incoming/` files (all of them once linked or an hour old), unlinked published copies, and images a newer one replaced (a worker job; the bucket only grows until then).
 - Encrypting `private-docs` at rest (Garage offers only SSE-C, which a signed browser download cannot carry): with the captain documents (2.34).
 - The apps' own uploads: the captain's report photos (2.24c), the captain's documents in `private-docs` (2.34).

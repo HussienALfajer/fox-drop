@@ -27,6 +27,7 @@ const viewRoute = getRouteApi('/signed-in/menu-change-requests/$requestId');
 
 const refusalKeys = {
   request_not_pending: 'menuChanges.refused.request_not_pending',
+  request_changed: 'menuChanges.refused.request_changed',
   unknown_change_request: 'menuChanges.refused.unknown_change_request',
   category_pending: 'menuChanges.refused.category_pending',
   group_pending: 'menuChanges.refused.group_pending',
@@ -309,7 +310,7 @@ function Values({ values, view }: { values: ChangeValues; view: ChangeView }) {
                   delta: formatMoney(option.priceDelta),
                 }),
               )
-              .join('، ')}
+              .join(t('menuChanges.separator'))}
           </dd>
         </>
       )}
@@ -319,7 +320,7 @@ function Values({ values, view }: { values: ChangeValues; view: ChangeView }) {
           <dd>
             {values.itemIds.length === 0
               ? t('menuChanges.noItems')
-              : values.itemIds.map(itemName).join('، ')}
+              : values.itemIds.map(itemName).join(t('menuChanges.separator'))}
           </dd>
         </>
       )}

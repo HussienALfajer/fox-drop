@@ -289,6 +289,8 @@ class _$AdminChangeRequestDtoOutput extends AdminChangeRequestDtoOutput {
   @override
   final AdminChangeRequestDtoOutputStatusEnum status;
   @override
+  final DateTime updatedAt;
+  @override
   final AdminChangeValuesOutput? before;
   @override
   final AdminChangeValuesOutput after;
@@ -313,6 +315,7 @@ class _$AdminChangeRequestDtoOutput extends AdminChangeRequestDtoOutput {
     required this.targetName,
     required this.createdAt,
     required this.status,
+    required this.updatedAt,
     this.before,
     required this.after,
     this.parentName,
@@ -341,6 +344,7 @@ class _$AdminChangeRequestDtoOutput extends AdminChangeRequestDtoOutput {
         targetName == other.targetName &&
         createdAt == other.createdAt &&
         status == other.status &&
+        updatedAt == other.updatedAt &&
         before == other.before &&
         after == other.after &&
         parentName == other.parentName &&
@@ -360,6 +364,7 @@ class _$AdminChangeRequestDtoOutput extends AdminChangeRequestDtoOutput {
     _$hash = $jc(_$hash, targetName.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
+    _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jc(_$hash, before.hashCode);
     _$hash = $jc(_$hash, after.hashCode);
     _$hash = $jc(_$hash, parentName.hashCode);
@@ -381,6 +386,7 @@ class _$AdminChangeRequestDtoOutput extends AdminChangeRequestDtoOutput {
           ..add('targetName', targetName)
           ..add('createdAt', createdAt)
           ..add('status', status)
+          ..add('updatedAt', updatedAt)
           ..add('before', before)
           ..add('after', after)
           ..add('parentName', parentName)
@@ -439,6 +445,10 @@ class AdminChangeRequestDtoOutputBuilder
   set status(AdminChangeRequestDtoOutputStatusEnum? status) =>
       _$this._status = status;
 
+  DateTime? _updatedAt;
+  DateTime? get updatedAt => _$this._updatedAt;
+  set updatedAt(DateTime? updatedAt) => _$this._updatedAt = updatedAt;
+
   AdminChangeValuesOutputBuilder? _before;
   AdminChangeValuesOutputBuilder get before =>
       _$this._before ??= AdminChangeValuesOutputBuilder();
@@ -480,6 +490,7 @@ class AdminChangeRequestDtoOutputBuilder
       _targetName = $v.targetName;
       _createdAt = $v.createdAt;
       _status = $v.status;
+      _updatedAt = $v.updatedAt;
       _before = $v.before?.toBuilder();
       _after = $v.after.toBuilder();
       _parentName = $v.parentName;
@@ -553,6 +564,11 @@ class AdminChangeRequestDtoOutputBuilder
               status,
               r'AdminChangeRequestDtoOutput',
               'status',
+            ),
+            updatedAt: BuiltValueNullFieldError.checkNotNull(
+              updatedAt,
+              r'AdminChangeRequestDtoOutput',
+              'updatedAt',
             ),
             before: _before?.build(),
             after: after.build(),

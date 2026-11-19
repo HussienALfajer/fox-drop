@@ -366,9 +366,18 @@ class _ItemTextDialog extends StatefulWidget {
 }
 
 class _ItemTextDialogState extends State<_ItemTextDialog> {
-  late final _name = TextEditingController(text: widget.item.name);
+  // The pending values first (RA §9.5): sending the published one again
+  // would withdraw its request.
+  late final _name = TextEditingController(
+    text:
+        pendingOf(widget.item.pending, PendingField.rename)?.name ??
+        widget.item.name,
+  );
   late final _description = TextEditingController(
-    text: widget.item.description ?? '',
+    text: switch (pendingOf(widget.item.pending, PendingField.description)) {
+      final asked? => asked.description ?? '',
+      null => widget.item.description ?? '',
+    },
   );
 
   @override
@@ -556,14 +565,28 @@ class _GroupDialog extends ConsumerStatefulWidget {
 }
 
 class _GroupDialogState extends ConsumerState<_GroupDialog> {
-  late final _name = TextEditingController(text: widget.group?.name ?? '');
+  // The pending values first (RA §9.5), as the item's text.
+  late final _choices = widget.group == null
+      ? null
+      : pendingOf(widget.group!.pending, PendingField.choices);
+  late final _name = TextEditingController(
+    text: widget.group == null
+        ? ''
+        : pendingOf(widget.group!.pending, PendingField.rename)?.name ??
+              widget.group!.name,
+  );
   late final _min = TextEditingController(
-    text: '${widget.group?.minChoices ?? 0}',
+    text: '${_choices?.minChoices ?? widget.group?.minChoices ?? 0}',
   );
   late final _max = TextEditingController(
-    text: '${widget.group?.maxChoices ?? 1}',
+    text: '${_choices?.maxChoices ?? widget.group?.maxChoices ?? 1}',
   );
-  late final Set<String> _items = {...?widget.group?.itemIds};
+  late final Set<String> _items = {
+    ...?(widget.group == null
+        ? null
+        : pendingOf(widget.group!.pending, PendingField.items)?.itemIds ??
+              widget.group!.itemIds),
+  };
   final _options = <_OptionRow>[];
   bool _invalid = false;
 
@@ -578,7 +601,9 @@ class _GroupDialogState extends ConsumerState<_GroupDialog> {
         _options.add(
           _OptionRow(
             id: option.id,
-            name: option.name,
+            name:
+                pendingOf(option.pending, PendingField.rename)?.name ??
+                option.name,
             delta: typedOf(
               option.priceDelta.amount,
               option.priceDelta.currency,

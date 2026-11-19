@@ -102,13 +102,19 @@ async function ops() {
   const { token } = await app
     .get(AdminSessionsService)
     .start(db.db, rows[0].id, { ipAddress: '203.0.113.9', device: 'test' }, new Date());
-  return (method: 'GET' | 'POST', url: string, payload?: object) =>
+  const call = (method: 'GET' | 'POST', url: string, payload?: object) =>
     app.inject({
       method,
       url: `/v1/admin/menu-change-requests${url}`,
       cookies: { [ADMIN_SESSION_COOKIE]: token },
       ...(payload === undefined ? {} : { payload }),
     });
+  // «قبول» sends the version the reviewer saw, as the panel does.
+  return async (method: 'GET' | 'POST', url: string, payload?: object) => {
+    if (!url.endsWith('/approve')) return call(method, url, payload);
+    const view = await call('GET', url.replace(/\/approve$/, ''));
+    return call(method, url, { ...payload, seen: view.json().updatedAt });
+  };
 }
 
 type Owner = Awaited<ReturnType<typeof owner>>;

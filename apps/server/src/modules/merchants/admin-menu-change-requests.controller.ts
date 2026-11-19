@@ -79,6 +79,9 @@ class AdminChangeRequestsDto extends createZodDto(
 class AdminChangeRequestDto extends createZodDto(
   queuedRequest.extend({
     status: z.enum(['pending', 'approved', 'rejected', 'withdrawn']),
+    updatedAt: z.iso
+      .datetime()
+      .describe("The request's version, sent back with «قبول» (409 request_changed)."),
     before: changeValues.nullable().describe('Null for a new row.'),
     after: changeValues,
     parentName: z.string().nullable().describe("An item's category, an option's group."),
@@ -100,6 +103,7 @@ class AdminChangeRequestDto extends createZodDto(
 
 class AdminChangeApproveDto extends createZodDto(
   z.object({
+    seen: z.iso.datetime().describe("The `updatedAt` of the request's view the reviewer saw."),
     name: z
       .string()
       .max(MENU_NAME_MAX)
@@ -143,9 +147,9 @@ const queuedBody = (request: QueuedRequest) => ({
 // restaurants' requests (AP §6.2, `menus.review_change_requests`). Approving
 // publishes at once, a text corrected first; rejecting needs a reason. A
 // decision's repeat is refused (409 request_not_pending), so no route takes a
-// key. Refusals: 400 invalid_menu; 403 restaurant_terminated; 404
-// unknown_change_request; 409 request_not_pending, category_pending,
-// group_pending.
+// key; «قبول» sends the version it saw. Refusals: 400 invalid_menu; 403
+// restaurant_terminated; 404 unknown_change_request; 409
+// request_not_pending, request_changed, category_pending, group_pending.
 @AdminController('menu-change-requests')
 export class AdminMenuChangeRequestsController {
   constructor(private readonly requests: ChangeRequestsService) {}
@@ -165,6 +169,7 @@ export class AdminMenuChangeRequestsController {
     return {
       ...queuedBody(view),
       status: view.status,
+      updatedAt: view.updatedAt.toISOString(),
       before: view.before === null ? null : valuesBody(view.before),
       after: valuesBody(view.after),
       parentName: view.parentName,
@@ -184,7 +189,12 @@ export class AdminMenuChangeRequestsController {
     @Req() request: FastifyRequest,
   ) {
     await refused(() =>
-      this.requests.approve(params.requestId, body, adminChange(session, request)),
+      this.requests.approve(
+        params.requestId,
+        { name: body.name, description: body.description },
+        new Date(body.seen),
+        adminChange(session, request),
+      ),
     );
     return { status: 'approved' as const };
   }

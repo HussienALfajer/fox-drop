@@ -316,7 +316,13 @@ export class OptionGroupsService {
         await tx
           .select({ id: options.id })
           .from(options)
-          .where(and(eq(options.groupId, groupId), isNull(options.deletedAt)))
+          .where(
+            and(
+              eq(options.groupId, groupId),
+              eq(options.published, true),
+              isNull(options.deletedAt),
+            ),
+          )
       ).map((each) => each.id);
       if (!sameSet(current, optionIds)) {
         throw new MerchantsRefusedError('invalid_menu', 'name every option once, in the new order');
@@ -471,8 +477,9 @@ export class OptionGroupsService {
     }
   }
 
-  // Once a group has live options, its maximum is at most their count (less
-  // the ones about to go).
+  // Once a group has published options, its maximum is at most their count
+  // (less the ones about to go); a restaurant's new option waiting for review
+  // (slice 2.32b) does not count until approved.
   private async checkChoices(
     tx: Tx,
     groupId: string,
@@ -482,7 +489,9 @@ export class OptionGroupsService {
     const [{ count }] = (await tx
       .select({ count: sql<number>`count(*)::int` })
       .from(options)
-      .where(and(eq(options.groupId, groupId), isNull(options.deletedAt)))) as [{ count: number }];
+      .where(
+        and(eq(options.groupId, groupId), eq(options.published, true), isNull(options.deletedAt)),
+      )) as [{ count: number }];
     const left = count - leaving;
     if (left > 0 && maxChoices > left) {
       throw new MerchantsRefusedError(

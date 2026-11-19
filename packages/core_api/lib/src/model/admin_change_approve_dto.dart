@@ -11,11 +11,16 @@ part 'admin_change_approve_dto.g.dart';
 /// AdminChangeApproveDto
 ///
 /// Properties:
+/// * [seen] - The `updatedAt` of the request's view the reviewer saw.
 /// * [name] - The reviewer's correction of the name asked (RA §9.5).
 /// * [description]
 @BuiltValue()
 abstract class AdminChangeApproveDto
     implements Built<AdminChangeApproveDto, AdminChangeApproveDtoBuilder> {
+  /// The `updatedAt` of the request's view the reviewer saw.
+  @BuiltValueField(wireName: r'seen')
+  DateTime get seen;
+
   /// The reviewer's correction of the name asked (RA §9.5).
   @BuiltValueField(wireName: r'name')
   String? get name;
@@ -53,6 +58,11 @@ class _$AdminChangeApproveDtoSerializer
     AdminChangeApproveDto object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'seen';
+    yield serializers.serialize(
+      object.seen,
+      specifiedType: const FullType(DateTime),
+    );
     if (object.name != null) {
       yield r'name';
       yield serializers.serialize(
@@ -94,6 +104,15 @@ class _$AdminChangeApproveDtoSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'seen':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
+          result.seen = valueDes;
+          break;
         case r'name':
           final valueDes =
               serializers.deserialize(

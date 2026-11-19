@@ -122,6 +122,7 @@ export function itemAfter(
 
 export type DecideRefusal =
   | 'request_not_pending'
+  | 'request_changed'
   | 'unknown_change_request'
   | 'category_pending'
   | 'group_pending'
@@ -130,6 +131,7 @@ export type DecideRefusal =
 
 const refusals: readonly string[] = [
   'request_not_pending',
+  'request_changed',
   'unknown_change_request',
   'category_pending',
   'group_pending',
@@ -138,7 +140,7 @@ const refusals: readonly string[] = [
 ] satisfies DecideRefusal[];
 
 export type Decision =
-  | { kind: 'approve'; name?: string; description?: string | null }
+  | { kind: 'approve'; seen: string; name?: string; description?: string | null }
   | { kind: 'reject'; reason: string };
 
 export type DecideResult = { status: 'done' } | { status: 'refused'; refusal: DecideRefusal };
@@ -155,6 +157,7 @@ export function useDecideMenuChange(requestId: string) {
           ? await api.POST('/v1/admin/menu-change-requests/{requestId}/approve', {
               ...path,
               body: {
+                seen: decision.seen,
                 ...(decision.name === undefined ? {} : { name: decision.name }),
                 ...(decision.description === undefined
                   ? {}
@@ -183,7 +186,7 @@ export function useDecideMenuChange(requestId: string) {
 
 // The correction sent: only what the reviewer typed and the request asks.
 export function approvalOf(
-  change: Pick<QueuedChange, 'targetType' | 'field'>,
+  change: Pick<ChangeView, 'targetType' | 'field' | 'updatedAt'>,
   form: { name: string; description: string },
 ): Decision {
   const fix = correctable(change);
@@ -191,6 +194,7 @@ export function approvalOf(
   const description = form.description.trim();
   return {
     kind: 'approve',
+    seen: change.updatedAt,
     ...(fix.name && name !== '' ? { name } : {}),
     ...(fix.description && description !== '' ? { description } : {}),
   };

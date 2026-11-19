@@ -47,6 +47,7 @@ test('reviews a new item and approves it with a corrected name', async ({ page }
       json: {
         ...row,
         status: approved === null ? 'pending' : 'approved',
+        updatedAt: '2026-11-18T08:05:00.000Z',
         before: null,
         after: {
           ...values,
@@ -76,7 +77,7 @@ test('reviews a new item and approves it with a corrected name', async ({ page }
   await expect(preview.getByText(/^كنافة · /)).toBeVisible();
   await page.getByRole('button', { name: 'قبول' }).click();
   await expect(page.getByText('تم القرار، وأُبلغ المطعم.')).toBeVisible();
-  expect(approved).toEqual({ name: 'كنافة' });
+  expect(approved).toEqual({ seen: '2026-11-18T08:05:00.000Z', name: 'كنافة' });
 });
 
 test('is not offered without menus.review_change_requests', async ({ page }) => {

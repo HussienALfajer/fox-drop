@@ -110,13 +110,21 @@ async function admin(role: string) {
     .get(AdminSessionsService)
     .start(db.db, rows[0].id, { ipAddress: '203.0.113.9', device: 'test' }, new Date());
   const cookies = { [ADMIN_SESSION_COOKIE]: token };
-  return (method: 'GET' | 'POST', url: string, payload?: object) =>
+  const call = (method: 'GET' | 'POST', url: string, payload?: object) =>
     app.inject({
       method,
       url: `/v1/admin/menu-change-requests${url}`,
       cookies,
       ...(payload === undefined ? {} : { payload }),
     });
+  // «قبول» sends the version the reviewer saw, as the panel does.
+  return async (method: 'GET' | 'POST', url: string, payload?: object) => {
+    if (!url.endsWith('/approve') || (payload !== undefined && 'seen' in payload)) {
+      return call(method, url, payload);
+    }
+    const view = await call('GET', url.replace(/\/approve$/, ''));
+    return call(method, url, { ...payload, seen: view.json().updatedAt });
+  };
 }
 
 async function restaurant() {
@@ -508,5 +516,111 @@ describe("the owners' reorder (RA §9.2)", () => {
       ).statusCode,
     ).toBe(200);
     expect((await customerNames(r.id))[0]!.items).toEqual(['فلافل', 'شاورما']);
+  });
+});
+
+describe('repeats, scope and cascades (RA §9.5; owner decision 2026-11-19)', () => {
+  it('writes nothing for the same request again', async () => {
+    const r = await restaurant();
+    const kebab = randomUUID();
+    const body = {
+      categoryId: r.meals,
+      name: 'كباب',
+      description: 'مشوي',
+      price: price('12000'),
+      uploadId: null,
+    };
+    await r.owner('PUT', `/requests/items/${kebab}`, body);
+    await r.owner('PUT', `/requests/items/${kebab}`, body);
+    const choices = {
+      name: 'الحجم',
+      minChoices: 0,
+      maxChoices: 2,
+      itemIds: [r.shawarma],
+      options: [],
+    };
+    await r.owner('PUT', `/requests/option-groups/${r.size}`, choices);
+    await r.owner('PUT', `/requests/option-groups/${r.size}`, choices);
+    expect(await audits('menu.change_request', r.id)).toBe(2);
+  });
+
+  it("refuses another restaurant's rows and requests", async () => {
+    const a = await restaurant();
+    const b = await restaurant();
+    await a.owner('PUT', `/requests/categories/${a.meals}`, { name: 'وجبات رئيسية' });
+    const [request] = await queued(a.id);
+    expect((await b.owner('POST', `/requests/${request.id}/withdraw`)).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_change_request',
+    });
+    expect(
+      (await b.owner('PUT', `/requests/categories/${a.meals}`, { name: 'x' })).statusCode,
+    ).toBe(404);
+    expect(
+      (await b.owner('PUT', `/requests/items/${a.shawarma}/text`, { name: 'x', description: null }))
+        .statusCode,
+    ).toBe(404);
+    expect(
+      (
+        await b.owner('PUT', `/requests/option-groups/${a.size}`, {
+          name: 'x',
+          minChoices: 0,
+          maxChoices: 1,
+          itemIds: [],
+          options: [],
+        })
+      ).statusCode,
+    ).toBe(404);
+  });
+
+  it('withdraws a new category with its new items', async () => {
+    const r = await restaurant();
+    const desserts = randomUUID();
+    const kunafa = randomUUID();
+    await r.owner('PUT', `/requests/categories/${desserts}`, { name: 'حلويات' });
+    await r.owner('PUT', `/requests/items/${kunafa}`, {
+      categoryId: desserts,
+      name: 'كنافة',
+      description: null,
+      price: price('7500'),
+      uploadId: null,
+    });
+    const [category] = await queued(r.id);
+    await r.owner('POST', `/requests/${category.id}/withdraw`);
+    expect(await queued(r.id)).toEqual([]);
+    const { rows } = await sql.query(
+      'SELECT deleted_at IS NOT NULL AS gone FROM merchants.items WHERE id = $1',
+      [kunafa],
+    );
+    expect(rows).toEqual([{ gone: true }]);
+    const menu = (await r.owner('GET', '')).json();
+    expect(menu.categories.map((c: { id: string }) => c.id)).not.toContain(desserts);
+  });
+
+  it('refuses an approval of a value the owner replaced since it was seen', async () => {
+    const r = await restaurant();
+    await r.owner('PUT', `/requests/categories/${r.meals}`, { name: 'وجبات رئيسية' });
+    const [request] = await queued(r.id);
+    const ops = await admin('OPS');
+    const seen = (await ops('GET', `/${request.id}`)).json().updatedAt;
+    await r.owner('PUT', `/requests/categories/${r.meals}`, { name: 'وجبات ساخنة' });
+    expect((await ops('POST', `/${request.id}/approve`, { seen })).json()).toMatchObject({
+      statusCode: 409,
+      error: 'request_changed',
+    });
+    expect((await customerNames(r.id))[0]!.name).toBe('وجبات');
+  });
+
+  it('leaves a terminated restaurant out of the queue and its requests refused', async () => {
+    const r = await restaurant();
+    await r.owner('PUT', `/requests/categories/${r.meals}`, { name: 'وجبات رئيسية' });
+    await sql.query(
+      "UPDATE merchants.restaurants SET account_status = 'terminated' WHERE id = $1",
+      [r.id],
+    );
+    expect(await queued(r.id)).toEqual([]);
+    expect(
+      (await r.owner('PUT', `/requests/categories/${r.meals}`, { name: 'x' })).json(),
+    ).toMatchObject({ statusCode: 403, error: 'restaurant_terminated' });
   });
 });
