@@ -848,6 +848,13 @@
       "when": 1795046835297,
       "tag": "0120_merchants_restaurant_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 121,
+      "version": "7",
+      "when": 1795050440411,
+      "tag": "0121_identity_data_price_edits",
+      "breakpoints": true
     }
   ]
 }

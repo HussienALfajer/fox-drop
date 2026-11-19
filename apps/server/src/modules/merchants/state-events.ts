@@ -35,6 +35,12 @@ export const stateKinds = [
   // RA §16 #33, §12.2, D16 (slice 2.30c): a new commission, its basis points
   // and start (`rateBp`, `from`), told to the owners only.
   'commission_change',
+  // RA §16 #21, D17 (slice 2.31): an admin changed a price of a restaurant
+  // that serves customers: one item's or option's (`itemId` or `optionId`,
+  // `name`, `oldPrice`, `newPrice`, `currency`), or many at once (a bulk
+  // change, an import: `count`), told to the owners only.
+  'price_change',
+  'price_change_bulk',
 ] as const;
 export type StateKind = (typeof stateKinds)[number];
 

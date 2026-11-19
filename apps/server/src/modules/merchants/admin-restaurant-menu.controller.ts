@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   ConflictException,
+  ForbiddenException,
   Get,
   HttpStatus,
   NotFoundException,
@@ -21,14 +22,10 @@ import {
   itemBadges,
   MENU_DESCRIPTION_MAX,
   MENU_NAME_MAX,
+  type MenuChange,
   MenuEditorService,
 } from './menu-editor.service.js';
-import {
-  type MerchantChange,
-  MerchantsRefusedError,
-  MerchantsService,
-  type SwitchedOff,
-} from './merchants.service.js';
+import { MerchantsRefusedError, MerchantsService, type SwitchedOff } from './merchants.service.js';
 
 const minorUnits = z
   .string()
@@ -68,9 +65,10 @@ const badge = z.enum(itemBadges).nullable().describe('«جديد», «الأكث
 class AdminMenuDto extends createZodDto(
   z.object({
     accountStatus: z.enum(['draft', 'test', 'active', 'suspended', 'terminated']),
-    editable: z
+    editable: z.boolean().describe('Whether the editor edits it: any status but terminated.'),
+    pricesLocked: z
       .boolean()
-      .describe('Whether step 7 edits it: a draft or a restaurant in test mode (until 2.31).'),
+      .describe('Past test mode, prices need menus.edit_prices: true when this session lacks it.'),
     nameMax: z.int(),
     descriptionMax: z.int(),
     codeMax: z.int(),
@@ -145,7 +143,7 @@ class AdminMenuItemOrderDto extends createZodDto(
 
 class AdminMenuAvailabilityDto extends createZodDto(
   z.object({
-    type: z.enum(['category', 'item']),
+    type: z.enum(['category', 'item', 'option']),
     id: z.uuid(),
     available: z.boolean(),
     until: z
@@ -164,30 +162,35 @@ function refusalAsHttp(error: unknown): never {
     if (error.refusal === 'invalid_menu') {
       throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
     }
+    if (error.refusal === 'restaurant_terminated' || error.refusal === 'price_edit_not_allowed') {
+      throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, ...body });
+    }
     throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
   }
   throw error;
 }
 
-function adminChange(session: AdminSession, request: FastifyRequest): MerchantChange {
+function adminChange(session: AdminSession, request: FastifyRequest): MenuChange {
   return {
     actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
     context: requestContext(request),
+    mayEditPrices: session.permissions.includes('menus.edit_prices'),
   };
 }
 
 const offJson = (off: SwitchedOff) =>
   off === null ? null : { until: off.until?.toISOString() ?? null };
 
-// The wizard's step 7 «القائمة» (AP §9.6.3, §9.6.6; slice 2.30b): the basic
-// menu of a draft or a restaurant in test mode. The panel names each new
+// The menu editor «القائمة» (AP §9.6.3, §9.6.6): the wizard's step 7 (slice
+// 2.30b) and the profile's tab past it (slice 2.31), for any status but
+// terminated; past test mode a price needs menus.edit_prices. The panel names each new
 // category's and item's id, so a PUT creates it the first time and sets its
 // fields after: every route sets a state to a value and takes no
 // Idempotency-Key. Each answers the menu. The photo is
 // PUT /v1/admin/restaurants/{id}/items/{itemId}/photo. Refusals: 400
-// invalid_menu; 404 unknown_restaurant, unknown_menu_row; 409 menu_locked
-// (past test mode), item_code_taken, not_in_base_currency,
-// restaurant_terminated.
+// invalid_menu; 403 restaurant_terminated, price_edit_not_allowed; 404
+// unknown_restaurant, unknown_menu_row; 409 item_code_taken,
+// not_in_base_currency.
 @AdminController('restaurant-drafts')
 export class AdminRestaurantMenuController {
   constructor(
@@ -198,8 +201,8 @@ export class AdminRestaurantMenuController {
   @Get(':restaurantId/menu')
   @RequireAnyPermission('restaurants.read', 'restaurants.menus')
   @ZodResponse({ status: 200, type: AdminMenuDto })
-  async read(@Param() params: AdminMenuParamsDto) {
-    return this.answer(params.restaurantId);
+  async read(@Param() params: AdminMenuParamsDto, @CurrentAdminSession() session: AdminSession) {
+    return this.answer(params.restaurantId, session);
   }
 
   @Put(':restaurantId/menu/categories/:categoryId')
@@ -221,7 +224,7 @@ export class AdminRestaurantMenuController {
     } catch (error) {
       refusalAsHttp(error);
     }
-    return this.answer(params.restaurantId);
+    return this.answer(params.restaurantId, session);
   }
 
   @Put(':restaurantId/menu/items/:itemId')
@@ -246,7 +249,7 @@ export class AdminRestaurantMenuController {
     } catch (error) {
       refusalAsHttp(error);
     }
-    return this.answer(params.restaurantId);
+    return this.answer(params.restaurantId, session);
   }
 
   @Put(':restaurantId/menu/category-order')
@@ -267,7 +270,7 @@ export class AdminRestaurantMenuController {
     } catch (error) {
       refusalAsHttp(error);
     }
-    return this.answer(params.restaurantId);
+    return this.answer(params.restaurantId, session);
   }
 
   @Put(':restaurantId/menu/categories/:categoryId/item-order')
@@ -289,7 +292,7 @@ export class AdminRestaurantMenuController {
     } catch (error) {
       refusalAsHttp(error);
     }
-    return this.answer(params.restaurantId);
+    return this.answer(params.restaurantId, session);
   }
 
   // RA §9.3: «متوفر» or «غير متوفر» «حتى الغد» or «حتى أعيده», as the
@@ -315,10 +318,10 @@ export class AdminRestaurantMenuController {
     } catch (error) {
       refusalAsHttp(error);
     }
-    return this.answer(params.restaurantId);
+    return this.answer(params.restaurantId, session);
   }
 
-  private async answer(restaurantId: string) {
+  private async answer(restaurantId: string, session: AdminSession) {
     const found = await this.merchants.cityAndStatus(restaurantId);
     if (found === null) {
       throw new NotFoundException({
@@ -330,6 +333,9 @@ export class AdminRestaurantMenuController {
     return {
       accountStatus: found.accountStatus,
       editable: MenuEditorService.editable(found.accountStatus),
+      pricesLocked:
+        MenuEditorService.pricesNeedPermission(found.accountStatus) &&
+        !session.permissions.includes('menus.edit_prices'),
       nameMax: MENU_NAME_MAX,
       descriptionMax: MENU_DESCRIPTION_MAX,
       codeMax: ITEM_CODE_MAX,

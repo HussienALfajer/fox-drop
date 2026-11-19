@@ -84,7 +84,10 @@ export type MerchantsRefusal =
   | 'invalid_sort_weight'
   // AP §9.6.4 (slice 2.30d): the profile edits a restaurant past its draft;
   // a draft is the wizard's.
-  | 'still_a_draft';
+  | 'still_a_draft'
+  // AP §9.6.5, §6.3 (slice 2.31): a price set past test mode without
+  // `menus.edit_prices`.
+  | 'price_edit_not_allowed';
 
 // Slice 2.30c: the same commission «now» again within this is a repeat.
 const COMMISSION_REPEAT_WINDOW_MS = 60_000;
@@ -1648,9 +1651,6 @@ export class MerchantsService implements OnModuleInit {
     availability: { available: true } | { available: false; until: 'tomorrow' | 'turned_back_on' },
     change: MerchantChange,
     now = new Date(),
-    // The statuses this caller edits (the wizard's step 7: a draft or test
-    // mode), checked under the lock; `menu_locked` otherwise.
-    onlyIn: readonly AccountStatus[] | null = null,
   ): Promise<SwitchedOff> {
     const until = availability.available
       ? null
@@ -1660,9 +1660,6 @@ export class MerchantsService implements OnModuleInit {
       // RA §5.5: a terminated restaurant keeps only its money section.
       if (row.accountStatus === 'terminated') {
         throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
-      }
-      if (onlyIn !== null && !onlyIn.includes(row.accountStatus)) {
-        throw new MerchantsRefusedError('menu_locked', 'this menu is not edited here now');
       }
       const switched = await this.writeAvailability(
         tx,

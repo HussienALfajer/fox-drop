@@ -21290,7 +21290,11 @@
           },
           "editable": {
             "type": "boolean",
-            "description": "Whether step 7 edits it: a draft or a restaurant in test mode (until 2.31)."
+            "description": "Whether the editor edits it: any status but terminated."
+          },
+          "pricesLocked": {
+            "type": "boolean",
+            "description": "Past test mode, prices need menus.edit_prices: true when this session lacks it."
           },
           "nameMax": {
             "type": "integer",
@@ -21424,6 +21428,7 @@
         "required": [
           "accountStatus",
           "editable",
+          "pricesLocked",
           "nameMax",
           "descriptionMax",
           "codeMax",
@@ -21597,7 +21602,8 @@
             "type": "string",
             "enum": [
               "category",
-              "item"
+              "item",
+              "option"
             ]
           },
           "id": {

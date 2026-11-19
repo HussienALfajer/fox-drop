@@ -7019,8 +7019,10 @@ export interface components {
         AdminMenuDto_Output: {
             /** @enum {string} */
             accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
-            /** @description Whether step 7 edits it: a draft or a restaurant in test mode (until 2.31). */
+            /** @description Whether the editor edits it: any status but terminated. */
             editable: boolean;
+            /** @description Past test mode, prices need menus.edit_prices: true when this session lacks it. */
+            pricesLocked: boolean;
             nameMax: number;
             descriptionMax: number;
             codeMax: number;
@@ -7090,7 +7092,7 @@ export interface components {
         };
         AdminMenuAvailabilityDto: {
             /** @enum {string} */
-            type: "category" | "item";
+            type: "category" | "item" | "option";
             /** Format: uuid */
             id: string;
             available: boolean;

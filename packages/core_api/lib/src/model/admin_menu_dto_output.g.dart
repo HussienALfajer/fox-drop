@@ -103,6 +103,8 @@ class _$AdminMenuDtoOutput extends AdminMenuDtoOutput {
   @override
   final bool editable;
   @override
+  final bool pricesLocked;
+  @override
   final int nameMax;
   @override
   final int descriptionMax;
@@ -118,6 +120,7 @@ class _$AdminMenuDtoOutput extends AdminMenuDtoOutput {
   _$AdminMenuDtoOutput._({
     required this.accountStatus,
     required this.editable,
+    required this.pricesLocked,
     required this.nameMax,
     required this.descriptionMax,
     required this.codeMax,
@@ -138,6 +141,7 @@ class _$AdminMenuDtoOutput extends AdminMenuDtoOutput {
     return other is AdminMenuDtoOutput &&
         accountStatus == other.accountStatus &&
         editable == other.editable &&
+        pricesLocked == other.pricesLocked &&
         nameMax == other.nameMax &&
         descriptionMax == other.descriptionMax &&
         codeMax == other.codeMax &&
@@ -149,6 +153,7 @@ class _$AdminMenuDtoOutput extends AdminMenuDtoOutput {
     var _$hash = 0;
     _$hash = $jc(_$hash, accountStatus.hashCode);
     _$hash = $jc(_$hash, editable.hashCode);
+    _$hash = $jc(_$hash, pricesLocked.hashCode);
     _$hash = $jc(_$hash, nameMax.hashCode);
     _$hash = $jc(_$hash, descriptionMax.hashCode);
     _$hash = $jc(_$hash, codeMax.hashCode);
@@ -162,6 +167,7 @@ class _$AdminMenuDtoOutput extends AdminMenuDtoOutput {
     return (newBuiltValueToStringHelper(r'AdminMenuDtoOutput')
           ..add('accountStatus', accountStatus)
           ..add('editable', editable)
+          ..add('pricesLocked', pricesLocked)
           ..add('nameMax', nameMax)
           ..add('descriptionMax', descriptionMax)
           ..add('codeMax', codeMax)
@@ -183,6 +189,10 @@ class AdminMenuDtoOutputBuilder
   bool? _editable;
   bool? get editable => _$this._editable;
   set editable(bool? editable) => _$this._editable = editable;
+
+  bool? _pricesLocked;
+  bool? get pricesLocked => _$this._pricesLocked;
+  set pricesLocked(bool? pricesLocked) => _$this._pricesLocked = pricesLocked;
 
   int? _nameMax;
   int? get nameMax => _$this._nameMax;
@@ -212,6 +222,7 @@ class AdminMenuDtoOutputBuilder
     if ($v != null) {
       _accountStatus = $v.accountStatus;
       _editable = $v.editable;
+      _pricesLocked = $v.pricesLocked;
       _nameMax = $v.nameMax;
       _descriptionMax = $v.descriptionMax;
       _codeMax = $v.codeMax;
@@ -249,6 +260,11 @@ class AdminMenuDtoOutputBuilder
               editable,
               r'AdminMenuDtoOutput',
               'editable',
+            ),
+            pricesLocked: BuiltValueNullFieldError.checkNotNull(
+              pricesLocked,
+              r'AdminMenuDtoOutput',
+              'pricesLocked',
             ),
             nameMax: BuiltValueNullFieldError.checkNotNull(
               nameMax,

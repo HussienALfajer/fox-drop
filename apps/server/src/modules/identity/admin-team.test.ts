@@ -237,7 +237,6 @@ const specifiedGrants: Record<string, AdminPermission[]> = {
   DATA: [
     'restaurants.create',
     'restaurants.menus',
-    'menus.edit_prices',
     'marketing.banners',
     'content.categories',
   ],

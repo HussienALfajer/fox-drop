@@ -265,7 +265,7 @@ describe('step 7, the basic menu', () => {
     );
   });
 
-  it('locks the menu once the restaurant is active, until the editor of 2.31', async () => {
+  it('edits the menu past test mode, logs every price and tells the owners while active', async () => {
     const merchants = app.get(MerchantsService);
     const id = await merchants.createRestaurant(
       azaz,
@@ -280,35 +280,108 @@ describe('step 7, the basic menu', () => {
       change,
     );
     const ops = await admin('OPS');
+    const data = await admin('DATA');
     const meals = randomUUID();
-    expect(
-      (await ops('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'))).statusCode,
-    ).toBe(200);
-    await merchants.setAccountStatus(id, 'test', change);
-    expect((await ops('GET', `/${id}/menu`)).json()).toMatchObject({
-      accountStatus: 'test',
-      editable: true,
-    });
-    await merchants.setAccountStatus(id, 'active', change);
-    expect(
-      (await ops('PUT', `/${id}/menu/categories/${meals}`, category('أطباق'))).json(),
-    ).toMatchObject({
-      statusCode: 409,
-      error: 'menu_locked',
-    });
-    expect(
+    const shawarma = randomUUID();
+    await ops('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'));
+    await ops('PUT', `/${id}/menu/items/${shawarma}`, item(meals, 'شاورما'));
+    // A draft's price change is logged, and told to no one.
+    await data(
+      'PUT',
+      `/${id}/menu/items/${shawarma}`,
+      item(meals, 'شاورما', { price: { amount: '13000', currency: 'TRY' } }),
+    );
+    const log = async () =>
       (
-        await ops('PUT', `/${id}/menu/availability`, {
-          type: 'category',
-          id: meals,
-          available: false,
-        })
-      ).json(),
-    ).toMatchObject({ statusCode: 409, error: 'menu_locked' });
+        await sql.query(
+          `SELECT old_price::text AS old, new_price::text AS new, currency, changed_by_type AS by
+             FROM merchants.price_changes WHERE item_id = $1 ORDER BY id`,
+          [shawarma],
+        )
+      ).rows;
+    const told = async () =>
+      (
+        await sql.query(
+          `SELECT payload FROM merchants.state_outbox
+            WHERE restaurant_id = $1 AND kind = 'price_change' ORDER BY id`,
+          [id],
+        )
+      ).rows.map((row) => row.payload.values);
+    expect(await log()).toEqual([{ old: '12000', new: '13000', currency: 'TRY', by: 'admin' }]);
+    expect(await told()).toEqual([]);
+
+    await merchants.setAccountStatus(id, 'test', change);
+    await merchants.setAccountStatus(id, 'active', change);
     expect((await ops('GET', `/${id}/menu`)).json()).toMatchObject({
       accountStatus: 'active',
+      editable: true,
+      pricesLocked: false,
+    });
+    expect((await data('GET', `/${id}/menu`)).json()).toMatchObject({ pricesLocked: true });
+    // OPS changes the price of an active restaurant: logged and told.
+    const raised = await ops(
+      'PUT',
+      `/${id}/menu/items/${shawarma}`,
+      item(meals, 'شاورما', { price: { amount: '15000', currency: 'TRY' } }),
+    );
+    expect(raised.statusCode).toBe(200);
+    // The same save again logs nothing.
+    await ops(
+      'PUT',
+      `/${id}/menu/items/${shawarma}`,
+      item(meals, 'شاورما', { price: { amount: '15000', currency: 'TRY' } }),
+    );
+    expect(await log()).toHaveLength(2);
+    expect((await log())[1]).toEqual({ old: '13000', new: '15000', currency: 'TRY', by: 'admin' });
+    expect(await told()).toEqual([
+      { itemId: shawarma, name: 'شاورما', oldPrice: '13000', newPrice: '15000', currency: 'TRY' },
+    ]);
+
+    // DATA edits the names and the switches of an active restaurant, never
+    // its prices (AP §9.6.5 «DATA only before activation»).
+    expect(
+      (await data('PUT', `/${id}/menu/categories/${meals}`, category('أطباق'))).statusCode,
+    ).toBe(200);
+    expect(
+      (
+        await data(
+          'PUT',
+          `/${id}/menu/items/${shawarma}`,
+          item(meals, 'شاورما لحم', { price: { amount: '15000', currency: 'TRY' } }),
+        )
+      ).statusCode,
+    ).toBe(200);
+    expect(
+      (
+        await data(
+          'PUT',
+          `/${id}/menu/items/${shawarma}`,
+          item(meals, 'شاورما لحم', { price: { amount: '16000', currency: 'TRY' } }),
+        )
+      ).json(),
+    ).toMatchObject({ statusCode: 403, error: 'price_edit_not_allowed' });
+    expect(
+      (await data('PUT', `/${id}/menu/items/${randomUUID()}`, item(meals, 'جديد'))).json(),
+    ).toMatchObject({ statusCode: 403, error: 'price_edit_not_allowed' });
+    expect(
+      (
+        await data('PUT', `/${id}/menu/availability`, {
+          type: 'item',
+          id: shawarma,
+          available: false,
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(await log()).toHaveLength(2);
+
+    // A terminated restaurant's menu is read only.
+    await merchants.setAccountStatus(id, 'terminated', change);
+    expect(
+      (await ops('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'))).json(),
+    ).toMatchObject({ statusCode: 403, error: 'restaurant_terminated' });
+    expect((await ops('GET', `/${id}/menu`)).json()).toMatchObject({
+      accountStatus: 'terminated',
       editable: false,
-      categories: [{ id: meals, name: 'وجبات' }],
     });
   });
 });
