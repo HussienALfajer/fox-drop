@@ -4677,7 +4677,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainApplicationStageUnderReview => 'طلبك قيد المراجعة.';
 
   @override
-  String get captainApplicationStageInterview => 'مقابلة وتدريب';
+  String captainApplicationInterviewAt(String day, String time, String place) {
+    return 'موعد المقابلة والتدريب: $day $time في $place';
+  }
 
   @override
   String get captainApplicationStageAwaitingKit =>
@@ -4691,7 +4693,47 @@ class AppLocalizationsAr extends AppLocalizations {
       'لا نحتاج كباتن جدداً حالياً. طلبك محفوظ وسنتواصل معك.';
 
   @override
-  String get captainApplicationStageRejected => 'مرفوض';
+  String captainApplicationRejectedBecause(String reason, String date) {
+    return 'نعتذر، لم يُقبل طلبك: $reason. يمكنك التقديم مجدداً بعد $date.';
+  }
+
+  @override
+  String captainApplicationDocumentRequested(String document, String reason) {
+    return 'يرجى رفع $document: $reason';
+  }
+
+  @override
+  String get captainApplicationReapply => 'تقديم طلب جديد';
+
+  @override
+  String get captainApplicationReapplyWait => 'لم يحن موعد التقديم من جديد.';
+
+  @override
+  String get captainApplicationHistory => 'مراحل الطلب';
+
+  @override
+  String get captainApplicationStageNameDraft => 'مسودة';
+
+  @override
+  String get captainApplicationStageNameNew => 'جديد';
+
+  @override
+  String get captainApplicationStageNameUnderReview => 'قيد المراجعة';
+
+  @override
+  String get captainApplicationStageNameInterview => 'مقابلة وتدريب';
+
+  @override
+  String get captainApplicationStageNameAwaitingKit => 'بانتظار العدة';
+
+  @override
+  String get captainApplicationStageNameActive => 'مفعّل';
+
+  @override
+  String get captainApplicationStageNameWaitlist => 'قائمة انتظار';
+
+  @override
+  String get captainApplicationStageNameRejected => 'مرفوض';
 
   @override
   String get captainApplicationInvalidName => 'اكتب اسمك الثلاثي.';

@@ -63,10 +63,18 @@ export const applicationDocumentLabels = {
 
 const WEEKDAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
-// A day on the city's clock as the apps show it, «الخميس 2026-11-20», with
-// Western digits (slice 2.34b).
+// A date on the city's clock as the apps show it (core_l10n's formatDate),
+// «20/11/2026», with Western digits (slice 2.34b).
+export function formatDate(moment: Date, timeZone: string): string {
+  const [year, month, day] = new Intl.DateTimeFormat('en-CA', { timeZone })
+    .format(moment)
+    .split('-');
+  return `${day}/${month}/${year}`;
+}
+
+// The same with its weekday, «الخميس 20/11/2026».
 export function formatDay(moment: Date, timeZone: string): string {
   const day = new Intl.DateTimeFormat('en-CA', { timeZone }).format(moment);
   const weekday = new Date(`${day}T12:00:00Z`).getUTCDay();
-  return `${WEEKDAYS[weekday]} ${day}`;
+  return `${WEEKDAYS[weekday]} ${formatDate(moment, timeZone)}`;
 }

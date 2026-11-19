@@ -7796,11 +7796,11 @@ abstract class AppLocalizations {
   /// **'طلبك قيد المراجعة.'**
   String get captainApplicationStageUnderReview;
 
-  /// CA §5.4: the stage's name, until its appointment text (slice 2.34b).
+  /// CA §5.4: the stage «مقابلة وتدريب» with its appointment on the city's clock.
   ///
   /// In ar, this message translates to:
-  /// **'مقابلة وتدريب'**
-  String get captainApplicationStageInterview;
+  /// **'موعد المقابلة والتدريب: {day} {time} في {place}'**
+  String captainApplicationInterviewAt(String day, String time, String place);
 
   /// CA §5.4: the stage «بانتظار العدة».
   ///
@@ -7820,11 +7820,83 @@ abstract class AppLocalizations {
   /// **'لا نحتاج كباتن جدداً حالياً. طلبك محفوظ وسنتواصل معك.'**
   String get captainApplicationStageWaitlist;
 
-  /// CA §5.4: the stage's name, until its reason and date (slice 2.34b).
+  /// CA §5.4: the stage «مرفوض» with its reason and the day re-applying opens (K11).
+  ///
+  /// In ar, this message translates to:
+  /// **'نعتذر، لم يُقبل طلبك: {reason}. يمكنك التقديم مجدداً بعد {date}.'**
+  String captainApplicationRejectedBecause(String reason, String date);
+
+  /// CA §5.4: an open «طلب مستند» from the panel.
+  ///
+  /// In ar, this message translates to:
+  /// **'يرجى رفع {document}: {reason}'**
+  String captainApplicationDocumentRequested(String document, String reason);
+
+  /// CA §5.4, K11: a new application once 30 days passed after the rejection. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقديم طلب جديد'**
+  String get captainApplicationReapply;
+
+  /// 409 reapply_wait (K11). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يحن موعد التقديم من جديد.'**
+  String get captainApplicationReapplyWait;
+
+  /// CA §5.4: the stage history on the status page. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'مراحل الطلب'**
+  String get captainApplicationHistory;
+
+  /// The stage draft in the history. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسودة'**
+  String get captainApplicationStageNameDraft;
+
+  /// AP §9.7.1: the stage «جديد».
+  ///
+  /// In ar, this message translates to:
+  /// **'جديد'**
+  String get captainApplicationStageNameNew;
+
+  /// AP §9.7.1: the stage «قيد المراجعة».
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد المراجعة'**
+  String get captainApplicationStageNameUnderReview;
+
+  /// AP §9.7.1: the stage «مقابلة وتدريب»; also the status page's text when the appointment is missing.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقابلة وتدريب'**
+  String get captainApplicationStageNameInterview;
+
+  /// AP §9.7.1: the stage «بانتظار العدة».
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار العدة'**
+  String get captainApplicationStageNameAwaitingKit;
+
+  /// AP §9.7.1: the stage «مفعّل».
+  ///
+  /// In ar, this message translates to:
+  /// **'مفعّل'**
+  String get captainApplicationStageNameActive;
+
+  /// AP §9.7.1: the stage «قائمة انتظار».
+  ///
+  /// In ar, this message translates to:
+  /// **'قائمة انتظار'**
+  String get captainApplicationStageNameWaitlist;
+
+  /// AP §9.7.1: the stage «مرفوض»; also the status page's text when the reason is missing.
   ///
   /// In ar, this message translates to:
   /// **'مرفوض'**
-  String get captainApplicationStageRejected;
+  String get captainApplicationStageNameRejected;
 
   /// 400 invalid_name. The spec gives no wording.
   ///

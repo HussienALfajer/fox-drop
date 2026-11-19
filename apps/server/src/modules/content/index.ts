@@ -61,6 +61,7 @@ export { NotificationTexts, type RenderedNotification } from './notification-tex
 export { costReportLabels, dailyReportLabels, restaurantStatementLabels } from './export-labels.js';
 export {
   applicationDocumentLabels,
+  formatDate,
   formatDay,
   formatMoney,
   formatTime,

@@ -6,6 +6,7 @@ import {
 } from '../captains/index.js';
 import {
   applicationDocumentLabels,
+  formatDate,
   formatDay,
   formatTime,
   NotificationTexts,
@@ -111,7 +112,7 @@ export class CaptainApplicationNotices implements OnModuleInit {
               templateKey: 'captain.application_rejected',
               values: {
                 السبب: change.rejection.reason,
-                التاريخ: formatDay(change.rejection.reapplyFrom, change.timeZone),
+                التاريخ: formatDate(change.rejection.reapplyFrom, change.timeZone),
               },
             };
       default:

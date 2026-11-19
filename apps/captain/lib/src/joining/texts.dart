@@ -39,19 +39,61 @@ String missingText(AppLocalizations l10n, Missing missing) => switch (missing) {
   MissingTerms() => l10n.captainApplicationStepTerms,
 };
 
-/// CA §5.4: what the applicant sees at each stage. The interview's
-/// appointment and the rejection's reason come with slice 2.34b.
-String stageText(AppLocalizations l10n, ApplicationStage stage) =>
-    switch (stage) {
+/// CA §5.4: what the applicant sees at each stage, the appointment and the
+/// rejection on the city's clock; a stage the server sent without its
+/// appointment or reason shows the stage's name.
+String stageText(AppLocalizations l10n, Application application) =>
+    switch (application.stage) {
       ApplicationStage.draft ||
       ApplicationStage.newApplication => l10n.captainApplicationStageNew,
       ApplicationStage.underReview => l10n.captainApplicationStageUnderReview,
-      ApplicationStage.interview => l10n.captainApplicationStageInterview,
+      ApplicationStage.interview => switch (application.interview) {
+        final interview? => l10n.captainApplicationInterviewAt(
+          '${l10n.weekdayOf(interview.at)} ${l10n.formatDate(interview.at)}',
+          l10n.formatTime(interview.at),
+          interview.place,
+        ),
+        null => l10n.captainApplicationStageNameInterview,
+      },
       ApplicationStage.awaitingKit => l10n.captainApplicationStageAwaitingKit,
       ApplicationStage.active => l10n.captainApplicationStageActive,
       ApplicationStage.waitlist => l10n.captainApplicationStageWaitlist,
-      ApplicationStage.rejected => l10n.captainApplicationStageRejected,
+      ApplicationStage.rejected => switch (application.rejection) {
+        final rejection? => l10n.captainApplicationRejectedBecause(
+          rejection.reason,
+          l10n.formatDate(rejection.reapplyFrom),
+        ),
+        null => l10n.captainApplicationStageNameRejected,
+      },
     };
+
+/// An open «طلب مستند»: «يرجى رفع {المستند}: {السبب}».
+String requestText(AppLocalizations l10n, DocumentRequest request) =>
+    l10n.captainApplicationDocumentRequested(
+      documentText(l10n, request.kind),
+      request.reason,
+    );
+
+/// A stage's name in the history (AP §9.7.1).
+String stageName(
+  AppLocalizations l10n,
+  ApplicationStage stage,
+) => switch (stage) {
+  ApplicationStage.draft => l10n.captainApplicationStageNameDraft,
+  ApplicationStage.newApplication => l10n.captainApplicationStageNameNew,
+  ApplicationStage.underReview => l10n.captainApplicationStageNameUnderReview,
+  ApplicationStage.interview => l10n.captainApplicationStageNameInterview,
+  ApplicationStage.awaitingKit => l10n.captainApplicationStageNameAwaitingKit,
+  ApplicationStage.active => l10n.captainApplicationStageNameActive,
+  ApplicationStage.waitlist => l10n.captainApplicationStageNameWaitlist,
+  ApplicationStage.rejected => l10n.captainApplicationStageNameRejected,
+};
+
+/// One line of the history: the stage, then its date and time on the
+/// city's clock.
+String historyText(AppLocalizations l10n, StageChange change) =>
+    '${stageName(l10n, change.stage)}: '
+    '${l10n.formatDate(change.at)} ${l10n.formatTime(change.at)}';
 
 /// A step's refusal (the server's codes, and the photo checks').
 String refusalText(AppLocalizations l10n, ApplicationRefusal refusal) =>
@@ -65,6 +107,7 @@ String refusalText(AppLocalizations l10n, ApplicationRefusal refusal) =>
       'issue_date_in_future' => l10n.captainApplicationIssueDateFuture,
       'document_expired' => l10n.captainApplicationDocumentExpired,
       'application_submitted' => l10n.captainApplicationSubmitted,
+      'reapply_wait' => l10n.captainApplicationReapplyWait,
       'too_many_uploads' => l10n.captainApplicationTooManyUploads,
       ApplicationRefusal.twoSides => l10n.captainApplicationTwoSides,
       ApplicationRefusal.blurry => l10n.captainPhotoBlurry,

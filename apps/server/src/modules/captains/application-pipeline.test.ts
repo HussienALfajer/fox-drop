@@ -414,7 +414,7 @@ describe('the pipeline actions (AP §9.7.1, CA §5.4)', () => {
       },
       {
         template_key: 'captain.application_interview',
-        body: 'موعد المقابلة والتدريب: الإثنين 2099-01-05 10:00 ص في مكتب أعزاز',
+        body: 'موعد المقابلة والتدريب: الإثنين 05/01/2099 10:00 ص في مكتب أعزاز',
       },
       {
         template_key: 'captain.application_awaiting_kit',

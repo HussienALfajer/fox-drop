@@ -27,6 +27,53 @@ void main() {
     await app.done(tester);
   });
 
+  // CA §5.4 (slice 2.34b): an applicant gets a push at every change.
+  TestApp applicant() {
+    final app = TestApp();
+    app.server.on('/v1/captain/auth/session', [
+      const FakeAnswer(200, {
+        'accountId': accountId,
+        'captainId': null,
+        'sessionId': '00000000-0000-4000-8000-000000000003',
+      }),
+    ]);
+    app.server.on('/v1/captain/application', [
+      const FakeAnswer(200, {'application': null}),
+    ]);
+    app.server.on('/v1/captain/application/zones', [
+      const FakeAnswer(200, {'zones': <Object>[]}),
+    ]);
+    return app;
+  }
+
+  testWidgets('an applicant registers the token too', (tester) async {
+    final app = applicant();
+    await app.pump(tester);
+    expect(app.server.to('/v1/captain/push-token').single.data, {
+      'token': 'push-token-0',
+      'platform': 'android',
+    });
+    expect(app.server.to('/v1/captain/availability'), isEmpty);
+    await app.done(tester);
+  });
+
+  testWidgets('a push of the application reads it again', (tester) async {
+    final app = applicant();
+    await app.pump(tester);
+    expect(_location(app), '/application');
+    expect(app.server.to('/v1/captain/application'), hasLength(1));
+
+    app.push.receive({'target': 'application'});
+    await app.settle(tester);
+    expect(app.server.to('/v1/captain/application'), hasLength(2));
+
+    app.push.tap({'target': 'application', 'messageId': 'm'});
+    await app.settle(tester);
+    expect(_location(app), '/application');
+    expect(app.server.to('/v1/captain/application'), hasLength(3));
+    await app.done(tester);
+  });
+
   testWidgets('a renewed token is registered again', (tester) async {
     final app = TestApp();
     app.work(availability: [availabilityJson()]);
@@ -104,6 +151,7 @@ void main() {
       '/earnings/statements/$orderId',
     );
     expect(pushTargetPath({'target': 'statement'}), '/earnings/statements');
+    expect(pushTargetPath({'target': 'application'}), '/application');
     expect(pushTargetPath({'target': 'document'}), isNull);
     expect(pushTargetPath({}), isNull);
   });
