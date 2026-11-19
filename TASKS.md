@@ -4,19 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.37b, captain pay in the panel (`docs/roadmap.md`, Phase 2; 2.37 in three pull requests, owner decision 2026-11-19).
+Slice 2.37c, the city, its zones and rules in the panel (`docs/roadmap.md`, Phase 2; the last of 2.37's three pull requests, owner decision 2026-11-19).
 
-- **Roadmap line:** 2.37b Captain pay: «أجور الكباتن» per vehicle (base pay with its first km, the rate per extra km, the waiting rate, the minimum, the maximum distance), a new table published to take effect 7 days later at the earliest, the captains' push announcing it, the preview calculator for a sample trip, linked with «مكافأة ساعة الذروة» (AP §9.12.5, CA §12.5). The owner publishes a new table and the captain's «ملفي» shows it with its start.
-- **Specs:** AP §9.12.5 (docs/product/v1/admin-panel/09-modules/12-zones-and-pricing.md), AP §6.3 (`pricing.edit_pay_tables`, OWN), AP §10 (what the panel pushes), CA §12.5, CA §14 (the push's row), AP §14 item 27.
+- **Roadmap line:** 2.37c The city, its zones and rules: the zones on the map (drawing one, editing its outline and name, activating it), the vote map, «المدن» for the existing city only (name, code, time zone, base and accepted currencies, cutoff, platform hours, status; adding a city waits for a second city, owner decision 2026-11-19), the defaults of §9.12.4 and the dispatch rules with OPS switching the mode only (AP §9.12.1–9.12.2, §9.12.4, §9.12.6, CU §18 item 6: the neighbourhoods' names typed on the screen). The owner draws a neighbourhood, activates it, and OPS switches the dispatch mode.
+- **Specs:** AP §9.12.1, §9.12.2, §9.12.4, §9.12.6 (docs/product/v1/admin-panel/09-modules/12-zones-and-pricing.md), AP §6.2–6.3 (`zones.read`, `zones.manage`, the dispatch mode for OPS), AP §14 item 27, CU §18 item 6 (docs/product/v1/customer-app/18-open-items.md).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Already built (reuse):** the pay table versions with `setPayTable`, `payTable`, `announcedPayTables`, `samplePay` and the captain's «ملفي» with «احسب أجري» (captains, 2.36c); the settings `dispatch.max_distance_km.<vehicle>` and `captain.waiting_threshold_min`; the peak bonus page and routes (2.16); the fee screen's patterns (`delivery-fees.ts`, `admin-delivery-fees.controller.ts`, 2.37a).
+- **Already built (reuse):** geo's zones (`createZone`, `zones`, `zoneAt`) and cities, the office screen (2.17c), `PinMap` (MapLibre, 2.30a), the votes of CU §8.3 (2.28a), the settings routes (`PUT /v1/admin/settings/{key}`), the dispatch mode setting and dispatch module (2.15), the fee and pay screens' patterns (2.37a, 2.37b).
 - **Plan (to check against the spec first):**
-  - [x] Server: the panel's routes for the pay table in force, the announced ones and their history, publishing a new one (`pricing.edit_pay_tables`, effective at least 7 days later), the preview for a sample trip, and the maximum distance per vehicle; the captains' push announcing a new table; tests first for the effective date.
-  - [x] Panel: «أجور الكباتن» per vehicle with the calculator and the link to «مكافأة ساعة الذروة»; unit and Playwright tests.
-  - [ ] Review (`reviewer`), fixes, then hand over to 2.37c.
-- **Ask the owner first:** the push's wording (CA §14 may name it; else ours, to confirm), and whether the maximum distance per vehicle changes with the table's date or at once (it is a setting today).
-- **Owner decisions 2026-11-19:** the maximum distance per vehicle stays the setting `dispatch.max_distance_km.<vehicle>`, changed at once (the page edits it through the settings route); the push's date reads with its weekday and time («الخميس 26/11/2026 الساعة 2:30 م»).
-- **Stopped at:** the server and the panel are done; the review is next.
+  - [ ] Server: the zones' routes (draw, edit outline and name, activate), the vote map's read, «المدن» edit of the existing city, the defaults and dispatch rules read and edit (OPS the mode only); tests first for the zone rules.
+  - [ ] Panel: the zones on the map with drawing and editing, the vote map, «المدن», the defaults and «قواعد التوزيع»; unit and Playwright tests.
+  - [ ] Review (`reviewer`), fixes, then hand over to the next slice of the roadmap.
+- **Ask the owner first:** whether the panel's map may draw polygons with a MapLibre drawing library (a new dependency) or with our own vertex editing; whether changing the city's base currency or time zone from «المدن» is allowed once orders exist (fx locks the base after the first order); the neighbourhood names to seed, if the owner has a list.
+- **Stopped at:** 2.37b done (its pull request); 2.37c not started.
+
+### Left from 2.37b (the cloud session's branch)
+
+- **Before deploying to staging:** no migration. New routes: `GET`/`PUT /v1/admin/pay-tables`, `GET /v1/admin/pay-tables/preview`. Deploy the server before the panel; the captain app needs a new build only for the push to open «ملفي» (`target: pay_table`); the push itself reaches the installed apps.
+- **To check on staging (after the merge and the deploy):** 1. The home page › «أجور الكباتن»: the table in force per vehicle, «أقصى مسافة لكل مركبة» and «سجل التغييرات». 2. Change a vehicle's «الأجر الأساسي», keep the proposed start (7 days and an hour ahead), type a reason, «نشر الجدول»: the version is listed «معلن» with its start. 3. On a captain's phone: the silent push «جدول أجور جديد يبدأ في …» with the day, date and time; «المزيد» › «ملفي» › «جدول الأجور» shows the announced table with its start. 4. «حاسبة المعاينة»: «دراجة نارية», 5 km, 15 minutes: the pay by the table in force and by the announced one; «جرّب دراجة نارية في الحاسبة» adds the table being typed. 5. «أقصى مسافة: دراجة نارية» saved: applies at once to the offers.
+- **Owner decisions 2026-11-19:** the maximum distance per vehicle stays the setting `dispatch.max_distance_km.<vehicle>`, changed at once; the push's date reads with its weekday and time («الخميس 26/11/2026 الساعة 2:30 م»).
+- **Decided by us (to confirm with the owner):** a version starting after its publication is announced to every captain not terminated (a suspended one too), a city's first table starting at once is not; a repeat of the newest version (same start and rates) answers it, so the publish takes no key; the calculator also prices the table being typed; the word «الساعة» in the push's date is ours, outside the editable template (as the contract phase's push).
+- **Not checked locally:** Turborepo does not run in the cloud container (an exec format error), so its parts ran one by one (see the pull request's test plan); the server test files that need Garage (no IPv6 here) and the Flutter tests other than the captain app's push test did not run here; CI runs them.
 
 ### Left from 2.37a (the cloud session's branch)
 
