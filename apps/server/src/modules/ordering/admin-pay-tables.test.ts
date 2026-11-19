@@ -67,6 +67,9 @@ describe('«أجور الكباتن» (AP §9.12.5)', () => {
     expect((await publish(new Date(earliest + day), { reason: ' ' })).statusCode).toBe(400);
 
     const start = new Date(earliest + day);
+    const otherCurrency = await publish(start, { currency: 'USD' });
+    expect(otherCurrency.statusCode).toBe(409);
+    expect(otherCurrency.json().error).toBe('not_in_base_currency');
     const published = await publish(start);
     expect(published.statusCode).toBe(200);
     expect(published.json().versions).toHaveLength(2);

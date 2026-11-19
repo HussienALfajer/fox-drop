@@ -19,6 +19,7 @@ import {
   CaptainsRefusedError,
   CaptainsService,
   checkPayRate,
+  PAY_TABLE_NOTICE_DAYS,
   type PayParts,
   type PayRate,
   type PayTable,
@@ -30,8 +31,6 @@ import { GeoService } from '../geo/index.js';
 import { type AdminSession, AdminSessionsService } from '../identity/index.js';
 import { SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 
-// AP §9.12.5: a change takes effect 7 days or more after it is published.
-export const PAY_TABLE_NOTICE_DAYS = 7;
 // The calculator's bounds, as «احسب أجري»'s (captains, slice 2.36c).
 const PREVIEW_MAX_METRES = 100_000;
 const PREVIEW_MAX_WAITED_MINUTES = 1_440;
@@ -169,22 +168,22 @@ export class AdminPayTablesController {
     const { cityId } = query;
     await this.knownCity(cityId);
     const now = new Date();
-    const [baseCurrency, waitingThresholdMin, versions, maxDistanceKm] = await Promise.all([
-      this.fx.baseCurrency(cityId),
-      this.settings.get('captain.waiting_threshold_min', { cityId }),
-      this.captains.payTableVersions(cityId, now),
-      Promise.all(
-        vehicles.map(async (vehicle) => ({
-          vehicle,
-          km: await this.settings.get(`dispatch.max_distance_km.${vehicle}`, { cityId }),
-        })),
-      ),
-    ]);
+    const [baseCurrency, waitingThresholdMin, versions, maxDistanceKm, earliest] =
+      await Promise.all([
+        this.fx.baseCurrency(cityId),
+        this.settings.get('captain.waiting_threshold_min', { cityId }),
+        this.captains.payTableVersions(cityId, now),
+        Promise.all(
+          vehicles.map(async (vehicle) => ({
+            vehicle,
+            km: await this.settings.get(`dispatch.max_distance_km.${vehicle}`, { cityId }),
+          })),
+        ),
+        this.captains.earliestPayTableStart(cityId),
+      ]);
     const names = await this.sessions.names(
       versions.flatMap((entry) => (entry.editorId === null ? [] : [entry.editorId])),
     );
-    const earliest =
-      versions.length === 0 ? now : new Date(now.getTime() + PAY_TABLE_NOTICE_DAYS * 86_400_000);
     return {
       baseCurrency,
       waitingThresholdMin,

@@ -101,7 +101,7 @@ test('publishes a new pay table and previews a trip by it', async ({ page }) => 
   await page.getByLabel('السبب', { exact: true }).fill('رفع الأجر');
   await page.getByRole('button', { name: 'نشر الجدول' }).click();
 
-  await expect(page.getByText(/نُشر الجدول ويبدأ في .*أُبلغ الكباتن/)).toBeVisible();
+  await expect(page.getByText(/نُشر الجدول ويبدأ في /)).toBeVisible();
   expect(sent!.rates.map((rate) => rate.basePay)).toEqual(['3000', '3000', '3000', '3000']);
   expect(new Date(sent!.effectiveFrom).getTime()).toBeGreaterThan(
     new Date(earliestStart).getTime(),

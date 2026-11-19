@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   draftOf,
+  formatKm,
   includedMetresOf,
   kmValueOf,
   payFormOf,
@@ -47,6 +48,7 @@ describe('the distances', () => {
     expect(kmValueOf('12.5')).toBe(12.5);
     expect(kmValueOf('0')).toBeNull();
     expect(kmValueOf('-1')).toBeNull();
+    expect(formatKm(2250)).toContain('2.25');
   });
 });
 

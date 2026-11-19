@@ -419,7 +419,7 @@ describe('CaptainsService.setPayTable', () => {
     });
     await captains.setPayTable(cityId, { currency: 'TRY', rates: everyVehicle(rate) }, change);
     expect(heard).toEqual([]);
-    // The city's active captains hear it, a terminated one not.
+    // The city's captains hear it, a suspended one too, a terminated one not.
     const active = { id: await captains.createCaptain(cityId, motorbike, change) };
     const ended = await captains.createCaptain(
       cityId,
@@ -427,6 +427,12 @@ describe('CaptainsService.setPayTable', () => {
       change,
     );
     await captains.setStatus(ended, 'terminated', change, new Date());
+    const suspended = await captains.createCaptain(
+      cityId,
+      { ...motorbike, plateNumber: 'B 3' },
+      change,
+    );
+    await captains.setStatus(suspended, 'suspended', { ...change, until: null }, new Date());
     const start = new Date(Date.now() + 8 * day);
     const id = await captains.setPayTable(
       cityId,
@@ -439,10 +445,11 @@ describe('CaptainsService.setPayTable', () => {
         tableId: id,
         effectiveFrom: start,
         timeZone: expect.any(String),
-        captainIds: [active.id],
+        captainIds: expect.any(Array),
         at: expect.any(Date),
       },
     ]);
+    expect([...heard[0]!.captainIds].sort()).toEqual([active.id, suspended].sort());
     // A repeat is not announced again.
     await captains.setPayTable(
       cityId,

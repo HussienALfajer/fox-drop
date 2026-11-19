@@ -433,7 +433,8 @@ const statusChanges: Record<CaptainStatus, CaptainStatus[]> = {
 // AP §9.12.5: a change to the pay table takes effect 7 days or more after it
 // is published (fixed); a city's first table takes effect when published
 // (owner decision 2026-11-06).
-const PAY_TABLE_NOTICE_MS = 7 * 86_400_000;
+export const PAY_TABLE_NOTICE_DAYS = 7;
+const PAY_TABLE_NOTICE_MS = PAY_TABLE_NOTICE_DAYS * 86_400_000;
 
 // The captain record, its cash limit, its availability and the city's pay
 // table (architecture §4.2; AP §9.7, §9.12.5; CA §7). Money is read through
@@ -824,6 +825,20 @@ export class CaptainsService implements OnModuleInit {
                 AND ${captainRecords.suspendedUntil} <= ${now}))`,
         ),
       );
+    return rows.map((row) => row.id);
+  }
+
+  // CA §12.5, §14 #22 (slice 2.37b): every captain of the city not
+  // terminated, a suspended one too: a table announced 7 days ahead applies
+  // to them once they work again.
+  async captainsNotTerminated(
+    cityId: string,
+    db: Tx | Database['db'] = this.database.db,
+  ): Promise<string[]> {
+    const rows = await db
+      .select({ id: captainRecords.id })
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), ne(captainRecords.status, 'terminated')));
     return rows.map((row) => row.id);
   }
 
@@ -1287,7 +1302,7 @@ export class CaptainsService implements OnModuleInit {
           tableId: id,
           effectiveFrom,
           timeZone: (await this.geo.cityTimeZone(cityId, tx)) ?? 'UTC',
-          captainIds: await this.activeCaptainIds(cityId, new Date(published), tx),
+          captainIds: await this.captainsNotTerminated(cityId, tx),
           at: new Date(published),
         };
         for (const listener of this.payTableListeners) await listener(tx, announced);
@@ -1299,40 +1314,75 @@ export class CaptainsService implements OnModuleInit {
   // AP §9.12.5 (slice 2.37b): the city's versions, newest first, the latest
   // `limit`, each with its state at a moment.
   async payTableVersions(cityId: string, at: Date, limit = 50): Promise<PayTableVersion[]> {
-    const [rows, current, announced] = await Promise.all([
-      this.database.db
-        .select()
-        .from(payTables)
-        .where(eq(payTables.cityId, cityId))
-        .orderBy(desc(payTables.id))
-        .limit(limit),
-      this.payTable(cityId, at),
-      this.announcedPayTables(cityId, at),
-    ]);
-    const announcedIds = new Set(announced.map((table) => table.id));
-    return Promise.all(
-      rows.map(async (row) => {
-        const state: PayTableState =
-          row.id === current?.id
-            ? 'in_force'
-            : announcedIds.has(row.id)
-              ? 'announced'
-              : rows.some(
-                    (other) =>
-                      other.id > row.id &&
-                      other.effectiveFrom.getTime() === row.effectiveFrom.getTime(),
-                  )
-                ? 'replaced'
-                : 'ended';
-        return {
-          ...(await this.withRates(row)),
-          state,
-          editorId: row.editorId,
-          reason: row.reason,
-          createdAt: row.createdAt,
-        };
-      }),
+    const rows = await this.database.db
+      .select()
+      .from(payTables)
+      .where(eq(payTables.cityId, cityId))
+      .orderBy(desc(payTables.id))
+      .limit(limit);
+    const rates =
+      rows.length === 0
+        ? []
+        : await this.database.db
+            .select()
+            .from(payRates)
+            .where(
+              inArray(
+                payRates.tableId,
+                rows.map((row) => row.id),
+              ),
+            );
+    // The states from the same rows, so one read never mixes two moments:
+    // in force the latest start reached (of two, the later version); a row
+    // with a later version at its start was replaced.
+    const reached = rows.filter((row) => row.effectiveFrom.getTime() <= at.getTime());
+    const current = reached.reduce<(typeof rows)[number] | null>(
+      (best, row) =>
+        best === null ||
+        row.effectiveFrom.getTime() > best.effectiveFrom.getTime() ||
+        (row.effectiveFrom.getTime() === best.effectiveFrom.getTime() && row.id > best.id)
+          ? row
+          : best,
+      null,
     );
+    return rows.map((row) => {
+      const replaced = rows.some(
+        (other) =>
+          other.id > row.id && other.effectiveFrom.getTime() === row.effectiveFrom.getTime(),
+      );
+      const state: PayTableState =
+        row.id === current?.id
+          ? 'in_force'
+          : replaced
+            ? 'replaced'
+            : row.effectiveFrom.getTime() > at.getTime()
+              ? 'announced'
+              : 'ended';
+      return {
+        ...ratesOf(
+          row,
+          rates.filter((rate) => rate.tableId === row.id),
+        ),
+        state,
+        editorId: row.editorId,
+        reason: row.reason,
+        createdAt: row.createdAt,
+      };
+    });
+  }
+
+  // AP §9.12.5 (slice 2.37b): the earliest start of a version published now,
+  // on the database clock setPayTable checks: now for a city's first table,
+  // else PAY_TABLE_NOTICE_DAYS later.
+  async earliestPayTableStart(cityId: string): Promise<Date> {
+    const [row] = (await this.database.db
+      .execute<{ now: Date; count: number }>(
+        sql`SELECT now() AS now, (SELECT count(*)::int FROM ${payTables}
+              WHERE ${payTables.cityId} = ${cityId}) AS count`,
+      )
+      .then((result) => result.rows)) as [{ now: Date; count: number }];
+    const now = new Date(row.now).getTime();
+    return new Date(row.count === 0 ? now : now + PAY_TABLE_NOTICE_MS);
   }
 
   // The version in force at a moment: the latest start reached; of two with
@@ -1368,19 +1418,7 @@ export class CaptainsService implements OnModuleInit {
     db: Tx | Database['db'] = this.database.db,
   ): Promise<PayTable> {
     const rows = await db.select().from(payRates).where(eq(payRates.tableId, table.id));
-    const rates = Object.fromEntries(
-      rows.map((row) => [
-        row.vehicle,
-        {
-          basePay: row.basePay,
-          includedMetres: row.includedMetres,
-          perExtraKm: row.perExtraKm,
-          waitingPerMinute: row.waitingPerMinute,
-          minimumPay: row.minimumPay,
-        },
-      ]),
-    ) as Record<Vehicle, PayRate>;
-    return { id: table.id, currency: table.currency, effectiveFrom: table.effectiveFrom, rates };
+    return ratesOf(table, rows);
   }
 
   // AP §9.12.6, the capacity check: whether an eligible captain is within
@@ -2593,6 +2631,25 @@ function hasReason(change: CaptainChange): boolean {
 // The audit log keeps amounts as strings.
 function moneyOf(money: Money) {
   return { amount: money.amount.toString(), currency: money.currency };
+}
+
+function ratesOf(
+  table: typeof payTables.$inferSelect,
+  rows: (typeof payRates.$inferSelect)[],
+): PayTable {
+  const rates = Object.fromEntries(
+    rows.map((row) => [
+      row.vehicle,
+      {
+        basePay: row.basePay,
+        includedMetres: row.includedMetres,
+        perExtraKm: row.perExtraKm,
+        waitingPerMinute: row.waitingPerMinute,
+        minimumPay: row.minimumPay,
+      },
+    ]),
+  ) as Record<Vehicle, PayRate>;
+  return { id: table.id, currency: table.currency, effectiveFrom: table.effectiveFrom, rates };
 }
 
 function sameRates(a: Record<Vehicle, PayRate>, b: Record<Vehicle, PayRate>): boolean {

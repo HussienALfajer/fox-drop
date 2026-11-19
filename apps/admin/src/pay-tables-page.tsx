@@ -3,11 +3,12 @@ import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type City, chosenCity, citiesQuery } from './cities.js';
-import { formatDateTime, formatDistance, formatMoney } from './format.js';
+import { formatDateTime, formatMoney } from './format.js';
 import { vehicleKeys } from './order-labels.js';
 import {
   type DistanceResult,
   draftOf,
+  formatKm,
   includedMetresOf,
   kmValueOf,
   type PayForm,
@@ -205,13 +206,13 @@ function RatesTable({ version, tables }: { version: PayVersion; tables: PayTable
               <td>
                 {t('payTables.baseLine', {
                   pay: money(rate.basePay),
-                  distance: formatDistance(rate.includedMetres),
+                  distance: formatKm(rate.includedMetres),
                 })}
               </td>
               <td>{money(rate.perExtraKm)}</td>
               <td>{money(rate.waitingPerMinute)}</td>
               <td>{money(rate.minimumPay)}</td>
-              <td>{maxKm ? formatDistance(maxKm.km * 1000) : ''}</td>
+              <td>{maxKm ? formatKm(maxKm.km * 1000) : ''}</td>
             </tr>
           );
         })}
@@ -247,7 +248,7 @@ function MaxDistances({
             ) : (
               t('payTables.maxDistanceLine', {
                 vehicle: t(vehicleKeys[entry.vehicle]),
-                distance: formatDistance(entry.km * 1000),
+                distance: formatKm(entry.km * 1000),
               })
             )}
           </li>

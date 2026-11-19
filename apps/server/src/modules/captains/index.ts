@@ -135,6 +135,7 @@ export {
   type LocationPoint,
   type Money,
   type NewCaptain,
+  PAY_TABLE_NOTICE_DAYS,
   type PayTable,
   type PayTableAnnounced,
   type PayTableState,

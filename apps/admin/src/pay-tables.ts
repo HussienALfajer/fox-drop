@@ -54,6 +54,16 @@ export function includedMetresOf(typed: string): number | null {
   return Number(match[1]) * 1000 + Number((match[2] ?? '').padEnd(3, '0'));
 }
 
+// A distance in km to the metre, as typed and stored («2.25 كم»; the
+// shared formatDistance rounds to one decimal).
+export function formatKm(metres: number): string {
+  return new Intl.NumberFormat('ar-u-nu-latn', {
+    style: 'unit',
+    unit: 'kilometer',
+    maximumFractionDigits: 3,
+  }).format(metres / 1000);
+}
+
 // A positive km value typed (the maximum distance), or null.
 export function kmValueOf(typed: string): number | null {
   const match = /^(\d{1,4})(?:\.(\d{1,3}))?$/.exec(typed.trim());
