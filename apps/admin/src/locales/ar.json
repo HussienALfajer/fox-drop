@@ -5235,7 +5235,7 @@
       "ticket": "تذكرة T-{{number}} ({{status}})",
       "restaurant": "مطعم: {{name}}",
       "captain": "كابتن: {{name}}",
-      "customer": "زبون: {{name}} {{phone}}",
+      "customer": "زبون: {{name}}",
       "noName": "بلا اسم"
     }
   }

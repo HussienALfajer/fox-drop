@@ -65691,7 +65691,7 @@
               ],
               "additionalProperties": false
             },
-            "description": "By a part of the name or the phone, for captains.read."
+            "description": "By a part of the name or the phone, for captains.read or captains.money."
           },
           "tickets": {
             "type": "array",

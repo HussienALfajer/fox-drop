@@ -18,7 +18,7 @@ part 'admin_search_results_dto_output.g.dart';
 /// Properties:
 /// * [orders] - By number, for operations.read.
 /// * [restaurants] - By a part of the name, for restaurants.read.
-/// * [captains] - By a part of the name or the phone, for captains.read.
+/// * [captains] - By a part of the name or the phone, for captains.read or captains.money.
 /// * [tickets] - By number, for support.read.
 /// * [customers] - By the phone, for customers.read with customers.reveal_phone (OWN, OPS, SUP).
 @BuiltValue()
@@ -34,7 +34,7 @@ abstract class AdminSearchResultsDtoOutput
   BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
   get restaurants;
 
-  /// By a part of the name or the phone, for captains.read.
+  /// By a part of the name or the phone, for captains.read or captains.money.
   @BuiltValueField(wireName: r'captains')
   BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?> get captains;
 

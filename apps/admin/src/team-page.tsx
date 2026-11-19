@@ -75,7 +75,7 @@ export function TeamPage() {
   return (
     <main>
       <h1>{t('team.title')}</h1>
-      <NewUser command={command} />
+      <NewUser command={command} timeZone={city?.timeZone ?? 'Asia/Damascus'} />
       <h2>{t('team.users')}</h2>
       {users.isError || cities.isError ? (
         <p role="alert">{t('common.failed')}</p>
@@ -97,6 +97,9 @@ export function TeamPage() {
 
 type Command = ReturnType<typeof useTeamCommand>;
 
+// A command's answer as the card shows it, or a request that failed.
+type Shown = TeamResult | { status: 'failed' };
+
 function RolesText({ roles }: { roles: readonly string[] }) {
   const { t } = useTranslation();
   return (
@@ -108,19 +111,26 @@ function RolesText({ roles }: { roles: readonly string[] }) {
   );
 }
 
-function ResultLine({ result }: { result: TeamResult | undefined }) {
+function ResultLine({ result, timeZone }: { result: Shown | undefined; timeZone: string }) {
   const { t } = useTranslation();
   if (!result) return null;
+  if (result.status === 'failed') return <p role="alert">{t('common.failed')}</p>;
   if (result.status === 'refused') return <p role="alert">{t(refusalKeys[result.refusal])}</p>;
   if (result.status === 'done') return <p role="status">{t('team.done')}</p>;
-  return <SetupLink token={result.token} expiresAt={result.expiresAt} />;
+  return <SetupLink token={result.token} expiresAt={result.expiresAt} timeZone={timeZone} />;
 }
 
 // Shown once: the server keeps only its hash.
-function SetupLink({ token, expiresAt }: { token: string; expiresAt: string }) {
+function SetupLink({
+  token,
+  expiresAt,
+  timeZone,
+}: {
+  token: string;
+  expiresAt: string;
+  timeZone: string;
+}) {
   const { t } = useTranslation();
-  const cities = useQuery(citiesQuery);
-  const zone = cities.data?.[0]?.timeZone ?? 'Asia/Damascus';
   const link = setupLinkOf(window.location.origin, token);
   return (
     <div role="status">
@@ -129,7 +139,7 @@ function SetupLink({ token, expiresAt }: { token: string; expiresAt: string }) {
         {t('team.link.label')}
         <input readOnly value={link} onFocus={(event) => event.currentTarget.select()} />
       </label>
-      <p>{t('team.link.expires', { at: formatDateTime(expiresAt, zone) })}</p>
+      <p>{t('team.link.expires', { at: formatDateTime(expiresAt, timeZone) })}</p>
     </div>
   );
 }
@@ -165,11 +175,11 @@ function RoleChoices({
   );
 }
 
-function NewUser({ command }: { command: Command }) {
+function NewUser({ command, timeZone }: { command: Command; timeZone: string }) {
   const { t } = useTranslation();
   const [form, setForm] = useState<NewUserForm>(emptyNewUser);
   const [problem, setProblem] = useState<NewUserProblem | null>(null);
-  const [result, setResult] = useState<TeamResult>();
+  const [result, setResult] = useState<Shown>();
   function submit(event: FormEvent) {
     event.preventDefault();
     const request = newUserRequestOf(form);
@@ -182,6 +192,7 @@ function NewUser({ command }: { command: Command }) {
     command.mutate(
       { kind: 'create', body: request.body },
       {
+        onError: () => setResult({ status: 'failed' }),
         onSuccess: (answer) => {
           setResult(answer);
           if (answer.status === 'link') setForm(emptyNewUser);
@@ -221,7 +232,7 @@ function NewUser({ command }: { command: Command }) {
           {t('team.new.submit')}
         </button>
       </form>
-      <ResultLine result={result} />
+      <ResultLine result={result} timeZone={timeZone} />
     </section>
   );
 }
@@ -229,9 +240,15 @@ function NewUser({ command }: { command: Command }) {
 function UserCard({ user, city, command }: { user: TeamUser; city: City; command: Command }) {
   const { t } = useTranslation();
   const { session } = signedIn.useRouteContext();
-  const [result, setResult] = useState<TeamResult>();
+  const [result, setResult] = useState<Shown>();
   const [confirming, setConfirming] = useState<TeamAction | null>(null);
   const [roles, setRoles] = useState<Role[]>(user.roles.filter(isRole));
+  // Another owner's change read again replaces the choice not saved.
+  const [seed, setSeed] = useState(user.roles.join());
+  if (seed !== user.roles.join()) {
+    setSeed(user.roles.join());
+    setRoles(user.roles.filter(isRole));
+  }
   const changed =
     roles.length !== user.roles.length || roles.some((role) => !user.roles.includes(role));
   function act(kind: TeamAction) {
@@ -240,7 +257,10 @@ function UserCard({ user, city, command }: { user: TeamUser; city: City; command
       return;
     }
     setConfirming(null);
-    command.mutate({ kind, accountId: user.id }, { onSuccess: setResult });
+    command.mutate(
+      { kind, accountId: user.id },
+      { onSuccess: setResult, onError: () => setResult({ status: 'failed' }) },
+    );
   }
   return (
     <article>
@@ -280,7 +300,10 @@ function UserCard({ user, city, command }: { user: TeamUser; city: City; command
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          command.mutate({ kind: 'roles', accountId: user.id, roles }, { onSuccess: setResult });
+          command.mutate(
+            { kind: 'roles', accountId: user.id, roles },
+            { onSuccess: setResult, onError: () => setResult({ status: 'failed' }) },
+          );
         }}
       >
         <RoleChoices roles={roles} onChange={setRoles} />
@@ -295,7 +318,7 @@ function UserCard({ user, city, command }: { user: TeamUser; city: City; command
             : t(actionKeys[kind])}
         </button>
       ))}
-      <ResultLine result={result} />
+      <ResultLine result={result} timeZone={city.timeZone} />
     </article>
   );
 }

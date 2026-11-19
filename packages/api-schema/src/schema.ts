@@ -17840,7 +17840,7 @@ export interface components {
                 id: string;
                 name: string;
             }[];
-            /** @description By a part of the name or the phone, for captains.read. */
+            /** @description By a part of the name or the phone, for captains.read or captains.money. */
             captains: {
                 /** Format: uuid */
                 id: string;

@@ -30,7 +30,9 @@ class AdminSearchResultsDto extends createZodDto(
       .array(z.object({ id: z.uuid(), number: z.string(), status: z.enum(orderStatuses) }))
       .describe('By number, for operations.read.'),
     restaurants: z.array(found).describe('By a part of the name, for restaurants.read.'),
-    captains: z.array(found).describe('By a part of the name or the phone, for captains.read.'),
+    captains: z
+      .array(found)
+      .describe('By a part of the name or the phone, for captains.read or captains.money.'),
     tickets: z
       .array(z.object({ id: z.uuid(), number: z.string(), status: z.enum(ticketStatuses) }))
       .describe('By number, for support.read.'),

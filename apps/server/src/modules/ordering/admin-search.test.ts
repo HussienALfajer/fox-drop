@@ -58,6 +58,13 @@ describe('the global search', () => {
       { id: ticket.json().id, number: ticketNumber, status: 'new' },
     ]);
 
+    // Another city's search finds none of them.
+    const elsewhere = await ops.post('/v1/admin/search', {
+      cityId: '00000000-0000-4000-8000-000000000000',
+      q: number,
+    });
+    expect(elsewhere.json()).toMatchObject({ orders: [], tickets: [] });
+
     // DATA reads neither the operations room nor support (AP §6.2).
     const data = await admin(['DATA']);
     expect((await search(data, number)).json()).toEqual({
@@ -93,6 +100,24 @@ describe('the global search', () => {
     expect((await search(ops, `0${phone.slice(4)}`)).json().captains).toEqual([
       { id: captainId, name: 'كابتن البحث' },
     ]);
+    // FIN reads the captains through captains.money, not the restaurants.
+    const fin = await admin(['FIN']);
+    expect((await search(fin, 'البحث')).json().captains).toEqual([
+      { id: captainId, name: 'كابتن البحث' },
+    ]);
+    expect((await search(fin, 'الاستلام')).json().restaurants).toEqual([]);
+    // DATA reads neither, by name or by phone; another city has neither.
+    const data = await admin(['DATA']);
+    expect((await search(data, 'الاستلام')).json()).toMatchObject({
+      restaurants: [],
+      captains: [],
+    });
+    expect((await search(data, phone)).json().captains).toEqual([]);
+    const elsewhere = await ops.post('/v1/admin/search', {
+      cityId: '00000000-0000-4000-8000-000000000000',
+      q: 'البحث',
+    });
+    expect(elsewhere.json()).toMatchObject({ restaurants: [], captains: [] });
   });
 
   it('finds a customer by phone for OWN, OPS and SUP only, masked', async () => {

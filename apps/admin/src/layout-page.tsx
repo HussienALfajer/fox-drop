@@ -151,7 +151,7 @@ export function TopBar({
       {cities.data && city && <CitySelector cities={cities.data} city={city} />}
       <EmergencyStopBar session={session} cityCode={cityCode} />
       {city && <DispatchMode cityId={city.id} />}
-      {city && <GlobalSearch city={city} />}
+      {city && <GlobalSearch key={city.id} city={city} />}
       {receivesAlerts(session) && bell}
       {canApproveCompensations(session) && <ApprovalsLink cityCode={cityCode} />}
       <UserMenu session={session} />
@@ -282,8 +282,8 @@ function SearchList({ results, city }: { results: SearchResults; city: City }) {
           <Link to="/customers/$customerId" params={{ customerId: customer.id }} search={params}>
             {t('layout.search.customer', {
               name: customer.name === '' ? t('layout.search.noName') : customer.name,
-              phone: customer.maskedPhone,
-            })}
+            })}{' '}
+            <bdi dir="ltr">{customer.maskedPhone}</bdi>
           </Link>
         </li>
       ))}

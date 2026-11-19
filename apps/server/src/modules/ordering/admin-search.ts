@@ -36,7 +36,7 @@ export interface SearchResults {
 }
 
 // AP §7.2 the top bar's global search, each kind for whoever reads its
-// module (AP §6.2), and a customer by the phone for OWN, OPS and SUP only
+// module (AP §6.2; FIN reads the captains through `captains.money`), and a customer by the phone for OWN, OPS and SUP only
 // (`customers.reveal_phone`, the rule of AP §9.5), answered masked.
 @Injectable()
 export class AdminSearch {
@@ -66,7 +66,7 @@ export class AdminSearch {
       may('restaurants.read') && byName
         ? this.support.findParties(cityId, 'restaurant', query, now)
         : none,
-      may('captains.read') && (byName || terms.phone !== null)
+      (may('captains.read') || may('captains.money')) && (byName || terms.phone !== null)
         ? this.support.findParties(cityId, 'captain', query, now)
         : none,
       may('support.read') && terms.number !== null
