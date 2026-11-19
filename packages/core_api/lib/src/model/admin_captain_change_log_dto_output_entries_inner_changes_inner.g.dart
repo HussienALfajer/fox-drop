@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_restaurant_change_log_dto_output_entries_inner_changes_inner.dart';
+part of 'admin_captain_change_log_dto_output_entries_inner_changes_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
-    extends AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner {
+class _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner
+    extends AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner {
   @override
   final String field;
   @override
@@ -15,39 +15,36 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
   @override
   final String? after;
 
-  factory _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner([
+  factory _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner([
     void Function(
-      AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder,
+      AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder,
     )?
     updates,
   ]) =>
-      (AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder()
+      (AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder()
             ..update(updates))
           ._build();
 
-  _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner._({
+  _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner._({
     required this.field,
     this.before,
     this.after,
   }) : super._();
   @override
-  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner rebuild(
-    void Function(
-      AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder,
-    )
+  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner rebuild(
+    void Function(AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder)
     updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder
-  toBuilder() =>
-      AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder()
+  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder toBuilder() =>
+      AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder()
         ..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner &&
+    return other is AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner &&
         field == other.field &&
         before == other.before &&
         after == other.after;
@@ -66,7 +63,7 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner',
+            r'AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner',
           )
           ..add('field', field)
           ..add('before', before)
@@ -75,13 +72,13 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
   }
 }
 
-class AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder
+class AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder
     implements
         Builder<
-          AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
-          AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder
+          AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner,
+          AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder
         > {
-  _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner? _$v;
+  _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner? _$v;
 
   String? _field;
   String? get field => _$this._field;
@@ -95,11 +92,11 @@ class AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder
   String? get after => _$this._after;
   set after(String? after) => _$this._after = after;
 
-  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder() {
-    AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner._defaults(this);
+  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder() {
+    AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner._defaults(this);
   }
 
-  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder get _$this {
+  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _field = $v.field;
@@ -111,16 +108,14 @@ class AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder
   }
 
   @override
-  void replace(
-    AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner other,
-  ) {
-    _$v = other as _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner;
+  void replace(AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner other) {
+    _$v = other as _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner;
   }
 
   @override
   void update(
     void Function(
-      AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder,
+      AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder,
     )?
     updates,
   ) {
@@ -128,15 +123,15 @@ class AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder
   }
 
   @override
-  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner build() => _build();
+  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner build() => _build();
 
-  _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner _build() {
+  _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner _build() {
     final _$result =
         _$v ??
-        _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner._(
+        _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner._(
           field: BuiltValueNullFieldError.checkNotNull(
             field,
-            r'AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner',
+            r'AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner',
             'field',
           ),
           before: before,

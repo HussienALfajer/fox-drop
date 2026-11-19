@@ -6,20 +6,20 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_restaurant_change_log_dto_output_entries_inner_changes_inner.g.dart';
+part 'admin_captain_change_log_dto_output_entries_inner_changes_inner.g.dart';
 
-/// AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
+/// AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner
 ///
 /// Properties:
 /// * [field]
 /// * [before] - The value as JSON; null for none.
 /// * [after]
 @BuiltValue()
-abstract class AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
+abstract class AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner
     implements
         Built<
-          AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
-          AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder
+          AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner,
+          AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder
         > {
   @BuiltValueField(wireName: r'field')
   String get field;
@@ -31,43 +31,43 @@ abstract class AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
   @BuiltValueField(wireName: r'after')
   String? get after;
 
-  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner._();
+  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner._();
 
-  factory AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner([
+  factory AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner([
     void updates(
-      AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder b,
+      AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder b,
     ),
-  ]) = _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner;
+  ]) = _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder b,
+    AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner>
+  static Serializer<AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner>
   get serializer =>
-      _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerSerializer();
+      _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerSerializer();
 }
 
-class _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerSerializer
+class _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerSerializer
     implements
         PrimitiveSerializer<
-          AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
+          AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner
         > {
   @override
   final Iterable<Type> types = const [
-    AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
-    _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
+    AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner,
+    _$AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner,
   ];
 
   @override
   final String wireName =
-      r'AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner';
+      r'AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner object, {
+    AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'field';
@@ -94,7 +94,7 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner object, {
+    AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -109,7 +109,7 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder
+    required AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder
     result,
     required List<Object?> unhandled,
   }) {
@@ -155,13 +155,13 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerSerializer
   }
 
   @override
-  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner deserialize(
+  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInnerBuilder();
+        AdminCaptainChangeLogDtoOutputEntriesInnerChangesInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

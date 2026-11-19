@@ -1480,6 +1480,45 @@ export class ApplicationPipelineService {
     };
   }
 
+  // AP §9.7.4 «سجل التغييرات» (slice 2.36a): every application that became
+  // this captain, a rehire's included.
+  async applicationIds(captainId: string): Promise<string[]> {
+    const rows = await this.database.db
+      .select({ id: applications.id })
+      .from(applications)
+      .where(eq(applications.captainId, captainId));
+    return rows.map((row) => row.id);
+  }
+
+  // AP §9.7.3 (slice 2.36a): each activated captain of the city's file, its
+  // latest activated application (the page holding the contract, kit,
+  // deposit, documents and the offboarding) and the contract's phase now
+  // (null before the contract is recorded and once it ended). A captain the seed made has none.
+  async captainFiles(
+    cityId: string,
+    now: Date,
+  ): Promise<Map<string, { applicationId: string; phase: ContractPhase | null }>> {
+    const rows = await this.database.db
+      .selectDistinctOn([applications.captainId])
+      .from(applications)
+      .where(and(eq(applications.cityId, cityId), isNotNull(applications.captainId)))
+      .orderBy(applications.captainId, sql`${applications.activatedAt} DESC NULLS LAST`);
+    const today = cityDay(now, (await this.geo.cityTimeZone(cityId)) ?? 'UTC');
+    return new Map(
+      rows.map((row) => [
+        row.captainId!,
+        {
+          applicationId: row.id,
+          // An ended contract has no phase (AP §9.7.5 step 5).
+          phase:
+            row.contractSignedOn === null || row.endedAt !== null
+              ? null
+              : contractPhase(row, today),
+        },
+      ]),
+    );
+  }
+
   // CA §12.2 (slice 2.35a): the captain's documents by kind, the required
   // ones and any other uploaded (the driving licence), each with the one in
   // force, a replacement waiting and its state; the latest rejection's

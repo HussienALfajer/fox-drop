@@ -2,12 +2,13 @@ import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { type AvailabilityChange, CaptainsService } from '../captains/index.js';
 import { formatTime, NotificationTexts } from '../content/index.js';
 import { PlatformBroadcasts } from './platform-broadcasts.js';
-import { PushQueue } from './push-queue.js';
+import { CAPTAIN_NOTICE_TTL_MS, PushQueue } from './push-queue.js';
 
 // CA §7.6, §14 #26, AP §10 (slice 2.13a): in the transaction of a change of
 // the captain's availability, the captain's push with operations' reason
 // for a force offline, or after unanswered offers (C3, CA §7.4, §14 #3;
-// slice 2.15b) or for a hand-in grace (CA §14 #18; slice 2.17b), and a broadcast on the captain's own channel, so the
+// slice 2.15b), for a hand-in grace (CA §14 #18; slice 2.17b) or for a
+// suspension or reactivation (CA §14 #26; slice 2.36a), and a broadcast on the captain's own channel, so the
 // open app reads its state again (the order events do not tell it that the
 // online period ended).
 @Injectable()
@@ -32,6 +33,9 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
       }
       if (change.kind === 'custody_warning') {
         await this.pushes.enqueue(tx, [await this.warningPush(tx, change)], change.at);
+      }
+      if (change.kind === 'suspended' || change.kind === 'reactivated') {
+        await this.pushes.enqueue(tx, [await this.statusPush(tx, change)], change.at);
       }
       await this.broadcasts.enqueue(tx, {
         type: 'captain.availability_changed',
@@ -102,6 +106,32 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
       priority: rendered.priority,
       data: { target: 'custody' },
       at: change.at,
+    };
+  }
+
+  // AP §9.7.5, CA §14 #26 (slice 2.36a): «أوقفت العمليات حسابك: {السبب}»
+  // or «أعادت العمليات تفعيل حسابك», with the chime, once per change.
+  private async statusPush(
+    tx: Parameters<Parameters<CaptainsService['onAvailabilityChanged']>[0]>[0],
+    change: Extract<AvailabilityChange, { kind: 'suspended' | 'reactivated' }>,
+  ) {
+    const templateKey = `captain.${change.kind}`;
+    const rendered = await this.texts.render(
+      templateKey,
+      change.kind === 'suspended' ? { السبب: change.reason } : {},
+      tx,
+    );
+    return {
+      source: `captain:${templateKey}:${change.captainId}:${change.at.toISOString()}`,
+      recipient: { party: 'captain' as const, captainId: change.captainId },
+      templateKey,
+      body: rendered.body,
+      level: rendered.level,
+      priority: rendered.priority,
+      data: { type: 'captain.availability' },
+      at: change.at,
+      // A phone switched off still hears it when it comes back.
+      expiresAt: new Date(change.at.getTime() + CAPTAIN_NOTICE_TTL_MS),
     };
   }
 

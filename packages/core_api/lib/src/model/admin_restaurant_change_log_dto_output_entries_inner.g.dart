@@ -128,7 +128,7 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInner
   @override
   final String? account;
   @override
-  final BuiltList<AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner>
+  final BuiltList<AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner>
   changes;
   @override
   final String? reason;
@@ -248,13 +248,12 @@ class AdminRestaurantChangeLogDtoOutputEntriesInnerBuilder
   String? get account => _$this._account;
   set account(String? account) => _$this._account = account;
 
-  ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner>?
-  _changes;
-  ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner>
+  ListBuilder<AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner>? _changes;
+  ListBuilder<AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner>
   get changes => _$this._changes ??=
-      ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner>();
+      ListBuilder<AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner>();
   set changes(
-    ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner>?
+    ListBuilder<AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner>?
     changes,
   ) => _$this._changes = changes;
 

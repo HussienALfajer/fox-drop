@@ -16,6 +16,7 @@ import 'package:core_api/src/model/date.dart';
 
 import 'package:core_api/src/model/add_reason_dto.dart';
 import 'package:core_api/src/model/admin_accept_dto.dart';
+import 'package:core_api/src/model/admin_add_captain_note_dto.dart';
 import 'package:core_api/src/model/admin_add_customer_note_dto.dart';
 import 'package:core_api/src/model/admin_add_restaurant_note_dto.dart';
 import 'package:core_api/src/model/admin_alert_dto_output.dart';
@@ -48,6 +49,7 @@ import 'package:core_api/src/model/admin_canned_replies_dto.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_output.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_output_replies_inner.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_replies_inner.dart';
+import 'package:core_api/src/model/admin_captain_action_done_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_application_contract_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_document_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output.dart';
@@ -80,8 +82,40 @@ import 'package:core_api/src/model/admin_captain_availability_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner_earnings.dart';
+import 'package:core_api/src/model/admin_captain_cash_limit_dto.dart';
+import 'package:core_api/src/model/admin_captain_change_log_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_change_log_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_captain_change_log_dto_output_entries_inner_changes_inner.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output_device.dart';
+import 'package:core_api/src/model/admin_captain_list_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_list_dto_output_captains_inner.dart';
+import 'package:core_api/src/model/admin_captain_list_dto_output_captains_inner_acceptance.dart';
+import 'package:core_api/src/model/admin_captain_list_dto_output_captains_inner_custody.dart';
+import 'package:core_api/src/model/admin_captain_list_dto_output_captains_inner_custody_closed_due.dart';
+import 'package:core_api/src/model/admin_captain_list_dto_output_captains_inner_custody_limit.dart';
+import 'package:core_api/src/model/admin_captain_list_dto_output_captains_inner_custody_usage.dart';
+import 'package:core_api/src/model/admin_captain_list_dto_output_captains_inner_earnings.dart';
+import 'package:core_api/src/model/admin_captain_list_query_dto.dart';
+import 'package:core_api/src/model/admin_captain_message_dto.dart';
+import 'package:core_api/src/model/admin_captain_message_sent_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_notes_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_offers_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_offers_dto_output_offers_inner.dart';
+import 'package:core_api/src/model/admin_captain_orders_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_phone_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_app.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_custody.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_custody_currencies_inner.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_earnings.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_earnings_month.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_earnings_today.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_earnings_week.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_on_time.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_rating.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_suspension.dart';
+import 'package:core_api/src/model/admin_captain_status_dto.dart';
 import 'package:core_api/src/model/admin_categories_dto_output.dart';
 import 'package:core_api/src/model/admin_categories_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/admin_category_dto_output.dart';
@@ -485,7 +519,6 @@ import 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_change_log_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_change_log_dto_output_entries_inner.dart';
-import 'package:core_api/src/model/admin_restaurant_change_log_dto_output_entries_inner_changes_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_commission_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_devices_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_devices_dto_output_devices_inner.dart';
@@ -1090,6 +1123,7 @@ part 'serializers.g.dart';
 @SerializersFor([
   AddReasonDto,
   AdminAcceptDto,
+  AdminAddCaptainNoteDto,
   AdminAddCustomerNoteDto,
   AdminAddRestaurantNoteDto,
   AdminAlertDtoOutput,
@@ -1122,6 +1156,7 @@ part 'serializers.g.dart';
   AdminCannedRepliesDtoOutput,
   AdminCannedRepliesDtoOutputRepliesInner,
   AdminCannedRepliesDtoRepliesInner,
+  AdminCaptainActionDoneDtoOutput,
   AdminCaptainApplicationContractDto,
   AdminCaptainApplicationDocumentDto,
   AdminCaptainApplicationDtoOutput,
@@ -1154,8 +1189,40 @@ part 'serializers.g.dart';
   AdminCaptainBalancesDtoOutput,
   AdminCaptainBalancesDtoOutputCaptainsInner,
   AdminCaptainBalancesDtoOutputCaptainsInnerEarnings,
+  AdminCaptainCashLimitDto,
+  AdminCaptainChangeLogDtoOutput,
+  AdminCaptainChangeLogDtoOutputEntriesInner,
+  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner,
   AdminCaptainDeviceDtoOutput,
   AdminCaptainDeviceDtoOutputDevice,
+  AdminCaptainListDtoOutput,
+  AdminCaptainListDtoOutputCaptainsInner,
+  AdminCaptainListDtoOutputCaptainsInnerAcceptance,
+  AdminCaptainListDtoOutputCaptainsInnerCustody,
+  AdminCaptainListDtoOutputCaptainsInnerCustodyClosedDue,
+  AdminCaptainListDtoOutputCaptainsInnerCustodyLimit,
+  AdminCaptainListDtoOutputCaptainsInnerCustodyUsage,
+  AdminCaptainListDtoOutputCaptainsInnerEarnings,
+  AdminCaptainListQueryDto,
+  AdminCaptainMessageDto,
+  AdminCaptainMessageSentDtoOutput,
+  AdminCaptainNotesDtoOutput,
+  AdminCaptainOffersDtoOutput,
+  AdminCaptainOffersDtoOutputOffersInner,
+  AdminCaptainOrdersDtoOutput,
+  AdminCaptainPhoneDtoOutput,
+  AdminCaptainProfileDtoOutput,
+  AdminCaptainProfileDtoOutputApp,
+  AdminCaptainProfileDtoOutputCustody,
+  AdminCaptainProfileDtoOutputCustodyCurrenciesInner,
+  AdminCaptainProfileDtoOutputEarnings,
+  AdminCaptainProfileDtoOutputEarningsMonth,
+  AdminCaptainProfileDtoOutputEarningsToday,
+  AdminCaptainProfileDtoOutputEarningsWeek,
+  AdminCaptainProfileDtoOutputOnTime,
+  AdminCaptainProfileDtoOutputRating,
+  AdminCaptainProfileDtoOutputSuspension,
+  AdminCaptainStatusDto,
   AdminCategoriesDtoOutput,
   AdminCategoriesDtoOutputCategoriesInner,
   AdminCategoryDtoOutput,
@@ -1559,7 +1626,6 @@ part 'serializers.g.dart';
   AdminRestaurantCategoriesDtoOutput,
   AdminRestaurantChangeLogDtoOutput,
   AdminRestaurantChangeLogDtoOutputEntriesInner,
-  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
   AdminRestaurantCommissionDto,
   AdminRestaurantDevicesDtoOutput,
   AdminRestaurantDevicesDtoOutputDevicesInner,
@@ -2175,6 +2241,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCaptainListDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminCaptainListDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainEarningsDtoOutputOrdersInner),
             ]),
             () => ListBuilder<CaptainEarningsDtoOutputOrdersInner>(),
@@ -2595,17 +2667,6 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(
-                AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(AdminCannedRepliesDtoOutputRepliesInner),
             ]),
             () => ListBuilder<AdminCannedRepliesDtoOutputRepliesInner>(),
@@ -2699,6 +2760,15 @@ Serializers serializers =
             () =>
                 ListBuilder<
                   CustomerSearchDtoOutputItemsInnerOptionGroupsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainProfileDtoOutputCustodyCurrenciesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainProfileDtoOutputCustodyCurrenciesInner
                 >(),
           )
           ..addBuilderFactory(
@@ -2923,6 +2993,12 @@ Serializers serializers =
               FullType(AdminMenuImportPlanDtoOutputChangedInner),
             ]),
             () => ListBuilder<AdminMenuImportPlanDtoOutputChangedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainOffersDtoOutputOffersInner),
+            ]),
+            () => ListBuilder<AdminCaptainOffersDtoOutputOffersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3154,6 +3230,21 @@ Serializers serializers =
                 ListBuilder<
                   CaptainApplicationDtoOutputApplicationDocumentsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainChangeLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminCaptainChangeLogDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

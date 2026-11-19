@@ -3,7 +3,6 @@ import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, lazy, type ReactNode, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivationSection } from './captain-activation-page.js';
-import { OffboardingSection } from './captain-offboarding-page.js';
 import { offboardingActions } from './captain-offboarding.js';
 import {
   actionsOf,
@@ -316,13 +315,19 @@ function Review(props: {
         today={new Intl.DateTimeFormat('en-CA', { timeZone }).format(serverNow())}
         cityCode={props.cityCode}
       />
-      <OffboardingSection
-        application={application}
-        session={props.session}
-        actions={actions}
-        cityCode={props.cityCode}
-        timeZone={timeZone}
-      />
+      {application.stage === 'active' && application.activation.captainId !== null && (
+        // «إنهاء التعاقد» and its checklist live in the captain's profile
+        // (AP §9.7.5, slice 2.36a).
+        <p>
+          <Link
+            to="/captains/$captainId"
+            params={{ captainId: application.activation.captainId }}
+            search={{ city: props.cityCode, tab: 'contract' }}
+          >
+            {t('captainApplications.openProfile')}
+          </Link>
+        </p>
+      )}
       <StageActions application={application} actions={actions} />
       {actions.has('note') && <NoteSection applicationId={application.id} />}
       <section aria-label={t('captainApplications.history')}>

@@ -21,6 +21,7 @@ import { canSeeLostDemand } from './lost-demand.js';
 import { canReviewMenuChanges } from './menu-change-requests.js';
 import { canSeeRatings } from './ratings.js';
 import { canSeeApplications } from './captain-applications.js';
+import { canSeeCaptains } from './captain-list.js';
 import { CUSTOMERS_READ } from './customers.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { can, useSignOut } from './session.js';
@@ -81,6 +82,11 @@ export function HomePage() {
           {canReviewMenuChanges(session) && (
             <li>
               <Link to="/menu-change-requests">{t('menuChanges.title')}</Link>
+            </li>
+          )}
+          {canSeeCaptains(session) && (
+            <li>
+              <Link to="/captains">{t('captainList.title')}</Link>
             </li>
           )}
           {canSeeApplications(session) && (

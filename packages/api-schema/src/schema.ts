@@ -3124,6 +3124,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captains/{captainId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainsSetStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/cash-limit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainsSetCashLimit"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/captains/{captainId}/hand-in-grace": {
         parameters: {
             query?: never;
@@ -6820,6 +6852,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captain-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainListCaptainList"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainProfileProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainProfilePhone"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainProfileLatestOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainProfileOffers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainProfileListNotes"];
+        put?: never;
+        post: operations["adminCaptainProfileAddNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/change-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainProfileChangeLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainProfileMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurant-list": {
         parameters: {
             query?: never;
@@ -9971,6 +10131,29 @@ export interface components {
         AdminForceOfflineDto: {
             /** @description Shown to the captain and kept in the audit log (AP §9.7.5). */
             reason: string;
+        };
+        AdminCaptainStatusDto: {
+            /**
+             * @description «إيقاف» or the reactivation; the termination is the offboarding’s.
+             * @enum {string}
+             */
+            status: "suspended" | "active";
+            /** @description A suspension’s end, null for until further notice; null to reactivate. */
+            until: string | null;
+            /** @description A suspension’s is shown to the captain (AP §9.7.5). */
+            reason: string;
+        };
+        AdminCaptainCashLimitDto: {
+            /** @description Minor units, above zero. */
+            amount: string;
+            /** @description The city's base currency. */
+            currency: string;
+            /** @description Kept in the audit log (AP §9.7.5: every action needs a reason). */
+            reason: string;
+        };
+        AdminCaptainActionDoneDto_Output: {
+            /** @constant */
+            done: true;
         };
         AdminHandInGraceDto: {
             /** @description Why, such as «المكتب كان مغلقاً»; kept in the audit log (AP §8.5.4). */
@@ -19632,6 +19815,242 @@ export interface components {
             /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
             dueAfter: string;
         };
+        AdminCaptainListQueryDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Only this listed status; null for every one. */
+            status: ("online" | "busy" | "offline" | "suspended" | "cash_blocked" | "terminated") | null;
+            /** @description A part of the name, or the sign-in number (E.164, 00…, 09…, 05…). */
+            q: string | null;
+        };
+        AdminCaptainListDto_Output: {
+            /** @description By name. */
+            captains: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                maskedPhone: string | null;
+                vehicle: string;
+                plateNumber: string | null;
+                /** @enum {string} */
+                status: "online" | "busy" | "offline" | "suspended" | "cash_blocked" | "terminated";
+                applicationId: string | null;
+                contractPhase: ("probation" | "commitment" | "open") | null;
+                custody: {
+                    /** @description The positive positions at current rates, in the base. */
+                    usage: {
+                        amount: string;
+                        currency: string;
+                    };
+                    limit: {
+                        amount: string;
+                        currency: string;
+                    };
+                    closedDue: {
+                        amount: string;
+                        currency: string;
+                    };
+                };
+                /** @description + the platform owes the captain. */
+                earnings: {
+                    amount: string;
+                    currency: string;
+                };
+                ordersToday: number;
+                /** @description Of the last captain.acceptance_window_offers answered; null without one. */
+                acceptance: {
+                    accepted: number;
+                    answered: number;
+                } | null;
+                ratingAverage: number | null;
+                ratingCount: number;
+            }[];
+        };
+        AdminCaptainProfileDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cityId: string;
+            name: string;
+            /** @description In full from …/phone (captains.manage). */
+            maskedPhone: string | null;
+            vehicle: string;
+            plateNumber: string | null;
+            /** @enum {string} */
+            status: "online" | "busy" | "offline" | "suspended" | "cash_blocked" | "terminated";
+            /** @description Running now; null otherwise. */
+            suspension: {
+                reason: string;
+                until: string | null;
+            } | null;
+            /** @description The captain's file; null for a seeded one. */
+            applicationId: string | null;
+            contractPhase: ("probation" | "commitment" | "open") | null;
+            custody: {
+                usage: {
+                    amount: string;
+                    currency: string;
+                };
+                limit: {
+                    amount: string;
+                    currency: string;
+                };
+                closedDue: {
+                    amount: string;
+                    currency: string;
+                };
+                currencies: {
+                    currency: string;
+                    /** @description + the captain must hand in, − the office owes them. */
+                    balance: string;
+                    closedDue: string;
+                    today: string;
+                    balanceInBase: string;
+                }[];
+                blocks: ("closed_due" | "cash_limit")[];
+                handInGraceUntil: string | null;
+            };
+            earnings: {
+                currency: string;
+                balance: string;
+                today: {
+                    /** Format: date-time */
+                    from: string;
+                    earnings: string;
+                    orders: number;
+                    onlineMinutes: number;
+                };
+                /** @description The payout week. */
+                week: {
+                    /** Format: date-time */
+                    from: string;
+                    earnings: string;
+                    orders: number;
+                    onlineMinutes: number;
+                };
+                /** @description From the business day on the first of the month. */
+                month: {
+                    /** Format: date-time */
+                    from: string;
+                    earnings: string;
+                    orders: number;
+                    onlineMinutes: number;
+                };
+            };
+            ordersToday: number;
+            delivered: number;
+            /** @description Of the last 50 delivered: those at or before the promised time. */
+            onTime: {
+                onTime: number;
+                counted: number;
+            };
+            /** @description Captain cancellations within captain.violation_window_days (AP §9.7.6). */
+            cancellations: number;
+            /** @description Of the last captain.acceptance_window_offers answered; null without one. */
+            acceptance: {
+                accepted: number;
+                answered: number;
+            } | null;
+            rating: {
+                count: number;
+                average: number;
+            } | null;
+            app: {
+                /** @description «أقصى مبلغ أحمله»; null for no limit. */
+                maxPickup: {
+                    amount: string;
+                    currency: string;
+                } | null;
+                maxPickupAnswered: boolean;
+                carriedCurrencies: string[];
+                /** @description The latest answered offers that expired in a row. */
+                expiredInRow: number;
+            };
+        };
+        AdminCaptainPhoneDto_Output: {
+            phone: string | null;
+        };
+        AdminCaptainOrdersDto_Output: {
+            /** @description The latest 50, newest first. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** Format: date-time */
+                placedAt: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description The customer’s total in minor units. */
+                total: string;
+                currency: string;
+                testOrder: boolean;
+                redelivery: boolean;
+            }[];
+        };
+        AdminCaptainOffersDto_Output: {
+            /** @description The latest 200, newest first. */
+            offers: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                orderNumber: string | null;
+                /** @enum {string} */
+                kind: "manual" | "auto";
+                handover: boolean;
+                /** Format: date-time */
+                offeredAt: string;
+                /** @enum {string} */
+                status: "open" | "accepted" | "declined" | "expired" | "withdrawn";
+                respondedAt: string | null;
+                /** @description From the offer to the response. */
+                responseSeconds: number | null;
+            }[];
+        };
+        AdminCaptainNotesDto_Output: {
+            /** @description Newest first. */
+            notes: {
+                /** Format: uuid */
+                id: string;
+                body: string;
+                authorName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        AdminAddCaptainNoteDto: {
+            body: string;
+        };
+        AdminCaptainChangeLogDto_Output: {
+            /** @description The latest 200 changes, newest first. */
+            entries: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                at: string;
+                /** @description The audit action, such as captain.status. */
+                action: string;
+                /** @enum {string} */
+                actorType: "admin" | "merchant" | "captain" | "customer" | "system";
+                /** @description The admin; null for the others. */
+                actorName: string | null;
+                actorRole: string | null;
+                changes: {
+                    field: string;
+                    /** @description The value as JSON; null for none. */
+                    before: string | null;
+                    after: string | null;
+                }[];
+                reason: string | null;
+            }[];
+        };
+        AdminCaptainMessageDto: {
+            text: string;
+        };
+        AdminCaptainMessageSentDto_Output: {
+            /** @constant */
+            sent: true;
+        };
         AdminRestaurantListQueryDto: {
             /** Format: uuid */
             cityId: string;
@@ -24984,6 +25403,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainsSetStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainsSetCashLimit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainCashLimitDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainActionDoneDto_Output"];
                 };
             };
         };
@@ -31241,6 +31712,220 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainListCaptainList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainListQueryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainListDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfileProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainProfileDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfilePhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainPhoneDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfileLatestOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainOrdersDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfileOffers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainOffersDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfileListNotes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainNotesDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfileAddNote: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminAddCaptainNoteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainNotesDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfileChangeLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainChangeLogDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfileMessage: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainMessageDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainMessageSentDto_Output"];
                 };
             };
         };

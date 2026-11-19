@@ -189,7 +189,12 @@ export { PlatformRelay } from './platform-relay.js';
 export { PublishFailedError, RealtimePublisher } from './realtime-publisher.js';
 export { type AlertCode, alertCodes } from './alert-rules.js';
 export { type PushRecipient } from './push-devices.js';
-export { type CampaignCounts, PushQueue, type QueuedPush } from './push-queue.js';
+export {
+  CAPTAIN_NOTICE_TTL_MS,
+  type CampaignCounts,
+  PushQueue,
+  type QueuedPush,
+} from './push-queue.js';
 export { AlertsService, type AlertSubjectRef } from './alerts.service.js';
 export {
   type BroadcastApp,

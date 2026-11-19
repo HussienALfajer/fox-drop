@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_restaurant_change_log_dto_output_entries_inner_changes_inner.dart';
+import 'package:core_api/src/model/admin_captain_change_log_dto_output_entries_inner_changes_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -56,8 +56,7 @@ abstract class AdminRestaurantChangeLogDtoOutputEntriesInner
 
   /// The changed fields only.
   @BuiltValueField(wireName: r'changes')
-  BuiltList<AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner>
-  get changes;
+  BuiltList<AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner> get changes;
 
   @BuiltValueField(wireName: r'reason')
   String? get reason;
@@ -142,7 +141,7 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInnerSerializer
     yield serializers.serialize(
       object.changes,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner),
+        FullType(AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner),
       ]),
     );
     yield r'reason';
@@ -253,12 +252,12 @@ class _$AdminRestaurantChangeLogDtoOutputEntriesInnerSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType(
-                        AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
+                        AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
+                    AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner
                   >;
           result.changes.replace(valueDes);
           break;

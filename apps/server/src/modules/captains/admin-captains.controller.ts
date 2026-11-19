@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   HttpCode,
@@ -7,6 +8,7 @@ import {
   Param,
   Get,
   Post,
+  Put,
   Req,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
@@ -80,8 +82,42 @@ class AdminBulkHandInGraceAnswerDto extends createZodDto(
   }),
 ) {}
 
-// AP §9.7.5 «فصل من الاتصال» (OWN, OPS: captains.manage), and the captain's
-// state the panel shows beside it. A repeat changes nothing more than the
+const actionReason = z
+  .string()
+  .trim()
+  .min(1)
+  .max(500)
+  .describe('Kept in the audit log (AP §9.7.5: every action needs a reason).');
+
+class AdminCaptainStatusDto extends createZodDto(
+  z.object({
+    status: z
+      .enum(['suspended', 'active'])
+      .describe('«إيقاف» or the reactivation; the termination is the offboarding’s.'),
+    until: z.iso
+      .datetime()
+      .nullable()
+      .describe('A suspension’s end, null for until further notice; null to reactivate.'),
+    reason: actionReason.describe('A suspension’s is shown to the captain (AP §9.7.5).'),
+  }),
+) {}
+
+class AdminCaptainCashLimitDto extends createZodDto(
+  z.object({
+    amount: z
+      .string()
+      .regex(/^\d{1,15}$/)
+      .describe('Minor units, above zero.'),
+    currency: z.string().length(3).describe("The city's base currency."),
+    reason: actionReason,
+  }),
+) {}
+
+class AdminCaptainActionDoneDto extends createZodDto(z.object({ done: z.literal(true) })) {}
+
+// AP §9.7.5 «فصل من الاتصال» (OWN, OPS: captains.manage), the suspension
+// and reactivation (slice 2.36a), the cash limit, the grace, and the
+// captain's state the panel shows beside them. A repeat changes nothing more than the
 // first (the captain is already offline or in last-order mode), so no
 // Idempotency-Key.
 @AdminController('captains')
@@ -128,6 +164,65 @@ export class AdminCaptainsController {
         now,
       );
       return await this.availability(params);
+    } catch (error) {
+      throw refused(error);
+    }
+  }
+
+  // AP §9.7.5 «إيقاف» (for a duration or until further notice) and the
+  // reactivation (OWN, OPS: captains.suspend), each with a reason; the
+  // captain hears it (CA §14 #26). It sets a state, so no Idempotency-Key:
+  // suspending again replaces the suspension, reactivating again is 409.
+  // 404 unknown_captain; 400 invalid_captain (an end not after now, or an
+  // end on a reactivation); 409 status_change_not_allowed (a terminated
+  // captain, an active one reactivated) or offboarding_open (the contract
+  // is being ended: the captain stays suspended until «إغلاق الحساب»).
+  @Post(':captainId/status')
+  @HttpCode(200)
+  @RequirePermission('captains.suspend')
+  @ZodResponse({ status: 200, type: AdminCaptainAvailabilityDto })
+  async setStatus(
+    @Param() params: AdminCaptainStateParamsDto,
+    @Body() body: AdminCaptainStatusDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.captains.setStatus(
+        params.captainId,
+        body.status,
+        {
+          ...changeOf(session, request, body.reason),
+          until: body.until === null ? null : new Date(body.until),
+        },
+        new Date(),
+      );
+      return await this.availability(params);
+    } catch (error) {
+      throw refused(error);
+    }
+  }
+
+  // AP §9.7.5 «Change the cash limit» (OWN, FIN: captains.cash_limit): the
+  // new value in the city's base, effective at once, with a reason. It sets
+  // a value, so no Idempotency-Key. 404 unknown_captain; 400 invalid_captain
+  // (zero), not_in_base_currency; 409 captain_terminated.
+  @Put(':captainId/cash-limit')
+  @RequirePermission('captains.cash_limit')
+  @ZodResponse({ status: 200, type: AdminCaptainActionDoneDto })
+  async setCashLimit(
+    @Param() params: AdminCaptainStateParamsDto,
+    @Body() body: AdminCaptainCashLimitDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.captains.setCustodyLimit(
+        params.captainId,
+        { amount: BigInt(body.amount), currency: body.currency },
+        changeOf(session, request, body.reason),
+      );
+      return { done: true as const };
     } catch (error) {
       throw refused(error);
     }
@@ -208,8 +303,20 @@ function refused(error: unknown): unknown {
   if (error.refusal === 'unknown_captain' || error.refusal === 'unknown_city') {
     return new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
   }
-  if (error.refusal === 'nothing_due') {
+  if (
+    error.refusal === 'nothing_due' ||
+    error.refusal === 'status_change_not_allowed' ||
+    error.refusal === 'offboarding_open' ||
+    error.refusal === 'captain_terminated'
+  ) {
     return new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
+  }
+  if (
+    error.refusal === 'invalid_captain' ||
+    error.refusal === 'reason_required' ||
+    error.refusal === 'not_in_base_currency'
+  ) {
+    return new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
   }
   return error;
 }

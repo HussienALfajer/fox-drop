@@ -48,6 +48,18 @@ export function payoutCycle(
   return { todayFrom, weekFrom, nextPayout };
 }
 
+// AP §9.7.4 «نظرة عامة» (slice 2.36a): the start of the business day on
+// the first of the city's calendar month, today's when today is the first.
+export function monthFrom(todayFrom: Date, cutoffMinutes: number, timeZone: string): Date {
+  const dayOf = (dayStart: Date) =>
+    Number(new Intl.DateTimeFormat('en-US', { timeZone, day: 'numeric' }).format(dayStart));
+  let from = todayFrom;
+  for (let step = 0; step < 31 && dayOf(from) !== 1; step += 1) {
+    from = lastCutoff(new Date(from.getTime() - 1), cutoffMinutes, timeZone);
+  }
+  return from;
+}
+
 // The earnings so far from `from` (every entry but the payouts, charges and
 // instalments taken off) and the orders: those whose earn.order_pay nets
 // above zero, as the weekly statement counts them.

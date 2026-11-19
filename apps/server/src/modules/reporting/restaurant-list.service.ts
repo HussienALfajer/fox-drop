@@ -7,6 +7,7 @@ import { LedgerService } from '../ledger/index.js';
 import { type AccountStatus, MerchantsService } from '../merchants/index.js';
 import { type RestaurantFigures, RestaurantFiguresService } from '../ordering/index.js';
 import { phoneOf } from '../../http/phone-search.js';
+import { folded, inTurns } from './list-reads.js';
 
 // AP §9.6.1: the operating states the list shows, for a restaurant in test
 // mode or active; null for the others, whose account status says it all.
@@ -36,18 +37,6 @@ export interface ListedRestaurant extends RestaurantFigures {
   // the platform owes it): the week's commission, discounts and exceptions
   // with anything earlier unpaid.
   balance: bigint;
-}
-
-// A name as typed and as stored, compared without case or diacritics, with
-// «ة/ه», «ى/ي» and the alefs alike (as the customers' search, CU §8.3).
-function folded(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[ً-ٰٟ̀-ͯ]/g, '')
-    .replace(/[أإآٱ]/g, 'ا')
-    .replace(/ة/g, 'ه')
-    .replace(/ى/g, 'ي');
 }
 
 // AP §9.6.2 «المطاعم» (slice 2.30c): the city's restaurants with their
@@ -133,18 +122,6 @@ export class RestaurantListService {
     // The party's view is − the restaurant owes.
     return account ? -(await this.ledger.balance(account.id)).amount : 0n;
   }
-}
-
-// The reads of each row, LIST_CONCURRENCY rows at a time, so a long list
-// never takes the whole pool from the customers' and captains' requests.
-const LIST_CONCURRENCY = 4;
-
-async function inTurns<T, R>(items: readonly T[], read: (item: T) => Promise<R>): Promise<R[]> {
-  const answers: R[] = [];
-  for (let start = 0; start < items.length; start += LIST_CONCURRENCY) {
-    answers.push(...(await Promise.all(items.slice(start, start + LIST_CONCURRENCY).map(read))));
-  }
-  return answers;
 }
 
 // AP §9.6.1: a holiday close is «مغلق»; open in busy mode is open.

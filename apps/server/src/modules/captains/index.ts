@@ -15,6 +15,7 @@ import { AdminPeakBonusController } from './admin-peak-bonus.controller.js';
 import { ApplicationsService } from './applications.service.js';
 import { CaptainApplicationController } from './captain-application.controller.js';
 import { CaptainAvailabilityController } from './captain-availability.controller.js';
+import { CaptainNotesService } from './captain-notes.service.js';
 import { CaptainContractController } from './captain-contract.controller.js';
 import { CaptainDocumentsController } from './captain-documents.controller.js';
 import { CaptainPeakBonusController } from './captain-peak-bonus.controller.js';
@@ -56,10 +57,18 @@ import { PeakBonusService } from './peak-bonus.service.js';
     LivePositions,
     ApplicationsService,
     ApplicationPipelineService,
+    CaptainNotesService,
   ],
   // ApplicationsService for notifications' listener, the pipeline for
-  // identity's lookups (slice 2.34b).
-  exports: [CaptainsService, PeakBonusService, ApplicationsService, ApplicationPipelineService],
+  // identity's lookups (slice 2.34b), the notes for reporting's profile
+  // (slice 2.36a).
+  exports: [
+    CaptainsService,
+    PeakBonusService,
+    ApplicationsService,
+    ApplicationPipelineService,
+    CaptainNotesService,
+  ],
 })
 export class CaptainsModule {}
 
@@ -127,3 +136,9 @@ export {
   type PeakBonusAmount,
   PeakBonusService,
 } from './peak-bonus.service.js';
+export {
+  CAPTAIN_NOTE_MAX,
+  type CaptainNote,
+  CaptainNoteKeyReusedError,
+  CaptainNotesService,
+} from './captain-notes.service.js';

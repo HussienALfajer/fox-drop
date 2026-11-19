@@ -959,7 +959,10 @@
           "weekly_statement": "كشف الأسبوع",
           "bonus": "مكافأة",
           "pay_table_change": "جدول أجور جديد",
+          "message": "رسالة مباشرة من العمليات",
           "violation": "مخالفة",
+          "suspended": "إيقاف الحساب",
+          "reactivated": "إعادة تفعيل الحساب",
           "forced_offline": "فصل من الاتصال فوراً",
           "forced_last_order": "فصل من الاتصال بعد الطلب",
           "document_expiring": "قرب انتهاء مستند",
@@ -3661,7 +3664,8 @@
       "offboarding_incomplete": "لم تكتمل قائمة إنهاء التعاقد بعد.",
       "active_order": "لدى الكابتن طلب نشط: انتظر حتى ينتهي.",
       "owner_approval_required": "الكابتن عليه علامة «خروج مبكر»: يفعّله المالك فقط."
-    }
+    },
+    "openProfile": "فتح ملف الكابتن: العقد وإنهاء التعاقد"
   },
   "captainActivation": {
     "title": "العدة والعقد والتفعيل",
@@ -3803,5 +3807,212 @@
     "noCashLimit": "لم يُحدَّد حد النقد بعد.",
     "cashLimitAmount": "حد النقد ({{currency}})",
     "setCashLimit": "حفظ حد النقد"
+  },
+  "captainList": {
+    "title": "الكباتن",
+    "filters": "تصفية الكباتن",
+    "status": "الحالة",
+    "all": "الكل",
+    "search": "الاسم أو الرقم",
+    "find": "بحث",
+    "none": "لا يوجد كباتن.",
+    "statusLabel": {
+      "online": "متصل متاح",
+      "busy": "مشغول",
+      "offline": "غير متصل",
+      "suspended": "موقوف",
+      "cash_blocked": "محجوب لعدم تسليم النقد",
+      "terminated": "منتهي التعاقد"
+    },
+    "phase": {
+      "probation": "فترة تجربة",
+      "commitment": "فترة التزام",
+      "open": "مفتوح"
+    },
+    "column": {
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "vehicle": "المركبة",
+      "status": "الحالة",
+      "phase": "مرحلة العقد",
+      "custody": "العهدة",
+      "earnings": "المستحقات",
+      "ordersToday": "طلبات اليوم",
+      "acceptance": "نسبة القبول",
+      "rating": "التقييم"
+    },
+    "custody": "{{usage}} من {{limit}}",
+    "limitUse": "استخدام الحد {{percent}}%",
+    "acceptance": "{{percent}}% من آخر {{answered}} عرضاً",
+    "rating": "{{average}} ({{count}})",
+    "noRating": "لا تقييم بعد"
+  },
+  "captainProfile": {
+    "unknown": "لا يوجد كابتن بهذا الرقم.",
+    "back": "العودة إلى الكباتن",
+    "tabs": "أقسام ملف الكابتن",
+    "tab": {
+      "overview": "نظرة عامة",
+      "data": "البيانات والمستندات",
+      "app": "التطبيق",
+      "contract": "العقد والعدة والتأمين",
+      "custody": "العهدة",
+      "earnings": "المستحقات",
+      "orders": "الطلبات",
+      "offers": "سجل العروض",
+      "ratings": "التقييمات والشكاوى",
+      "suspensions": "المخالفات والإيقافات",
+      "notes": "ملاحظات",
+      "log": "سجل التغييرات"
+    },
+    "suspendedOpen": "موقوف حتى إشعار آخر: {{reason}}",
+    "suspendedUntil": "موقوف حتى {{until}}: {{reason}}",
+    "reason": "السبب",
+    "noFile": "لا يوجد ملف انضمام لهذا الكابتن.",
+    "openFile": "فتح ملف الكابتن",
+    "noContract": "لم يُسجَّل عقد بعد.",
+    "phase": "مرحلة العقد: {{phase}}",
+    "overview": {
+      "ordersToday": "طلبات اليوم",
+      "delivered": "الطلبات المسلّمة",
+      "acceptance": "نسبة القبول",
+      "onTime": "الالتزام بالوقت",
+      "onTimeValue": "{{percent}}% من آخر {{counted}} طلباً مسلّماً",
+      "cancellations": "إلغاءات الكابتن (آخر 90 يوماً)",
+      "rating": "التقييم",
+      "periods": "المستحقات وساعات الاتصال",
+      "period": "الفترة",
+      "earnings": "المستحقات",
+      "paidOrders": "الطلبات",
+      "online": "ساعات الاتصال",
+      "today": "اليوم",
+      "week": "هذا الأسبوع",
+      "month": "هذا الشهر",
+      "hours": "{{hours}} ساعة"
+    },
+    "message": {
+      "title": "رسالة إلى الكابتن",
+      "text": "نص الرسالة",
+      "send": "إرسال",
+      "sent": "أُرسلت الرسالة.",
+      "terminated": "انتهى تعاقد الكابتن، لا تُرسل إليه رسائل."
+    },
+    "data": {
+      "phone": "الهاتف",
+      "vehicle": "المركبة",
+      "plate": "رقم اللوحة",
+      "explain": "المستندات وتاريخ انتهائها واستبدالها في ملف الكابتن.",
+      "showPhone": "إظهار الرقم"
+    },
+    "app": {
+      "maxPickup": "أقصى مبلغ أحمله",
+      "noLimit": "بلا حد",
+      "notAnswered": "لم يحدده الكابتن بعد",
+      "carried": "العملات التي يحملها",
+      "expiredInRow": "العروض المنتهية دون رد على التوالي"
+    },
+    "custody": {
+      "closedDue": "المستحق من أيام مغلقة: {{amount}}",
+      "block": {
+        "closed_due": "محجوب: نقد مستحق من يوم مغلق",
+        "cash_limit": "محجوب: بلغ حد العهدة"
+      },
+      "grace": "مهلة تسليم حتى {{until}}",
+      "none": "لا عهدة.",
+      "currency": "العملة",
+      "balance": "الرصيد",
+      "closedDueColumn": "من أيام مغلقة",
+      "today": "اليوم",
+      "inBase": "بالعملة الأساسية",
+      "balances": "أرصدة الكباتن والمهلة"
+    },
+    "cashLimit": {
+      "title": "تغيير حد العهدة",
+      "amount": "الحد الجديد ({{currency}})",
+      "save": "حفظ الحد",
+      "done": "تغيّر الحد ويسري فوراً.",
+      "invalid": "الحد أكبر من صفر.",
+      "notInBase": "الحد بالعملة الأساسية للمدينة."
+    },
+    "earnings": {
+      "balance": "الرصيد: {{amount}}",
+      "week": "هذا الأسبوع منذ {{from}}: {{amount}} عن {{orders}} طلباً",
+      "month": "هذا الشهر منذ {{from}}: {{amount}} عن {{orders}} طلباً",
+      "statements": "الكشوف الأسبوعية والتصفية"
+    },
+    "orders": {
+      "none": "لا طلبات.",
+      "test": "(تجريبي)",
+      "redelivery": "(إعادة توصيل)"
+    },
+    "offers": {
+      "none": "لا عروض.",
+      "time": "الوقت",
+      "order": "الطلب",
+      "response": "الرد",
+      "responseTime": "زمن الرد",
+      "handover": "(استلام من كابتن)",
+      "auto": "(آلي)",
+      "seconds": "{{seconds}} ث",
+      "status": {
+        "open": "مفتوح",
+        "accepted": "قُبل",
+        "declined": "رُفض",
+        "expired": "انتهت المهلة",
+        "withdrawn": "سُحب"
+      }
+    },
+    "status": {
+      "title": "الإيقاف وإعادة التفعيل",
+      "notSuspended": "الكابتن غير موقوف.",
+      "violationsLater": "تسجيل المخالفات يأتي مع سلّم الانضباط.",
+      "suspend": "إيقاف",
+      "reactivate": "إعادة التفعيل",
+      "until": "حتى (اتركه فارغاً: حتى إشعار آخر)",
+      "untilExplain": "الوقت بتوقيت المدينة.",
+      "reasonShown": "السبب (يراه الكابتن)",
+      "suspendConfirm": "إيقاف الكابتن",
+      "reactivateConfirm": "إعادة تفعيل الكابتن",
+      "notAllowed": "لا يمكن تغيير حالة هذا الكابتن.",
+      "offboarding": "يجري إنهاء تعاقد الكابتن، فيبقى موقوفاً حتى إغلاق الحساب.",
+      "invalidUntil": "وقت انتهاء الإيقاف بعد الآن.",
+      "reasonRequired": "اكتب السبب."
+    },
+    "log": {
+      "line": "{{time}}: {{action}} — {{name}}",
+      "action": {
+        "captain": {
+          "create": "إنشاء الكابتن",
+          "status": "تغيير الحالة",
+          "custody_limit": "تغيير حد العهدة",
+          "force_offline": "فصل من الاتصال",
+          "hand_in_grace": "مهلة تسليم",
+          "note": "ملاحظة",
+          "message": "رسالة إلى الكابتن",
+          "rehire": "إعادة التعاقد"
+        },
+        "captain_application": {
+          "activate": "تفعيل",
+          "issue_kit": "تسليم العدة",
+          "cash_limit": "تحديد حد العهدة",
+          "contract": "تسجيل العقد",
+          "deposit": "دفعة التأمين",
+          "probation_confirmed": "تأكيد فترة التجربة",
+          "document_review": "مراجعة مستند",
+          "document_upload": "رفع مستند",
+          "document_request": "طلب مستند",
+          "terminate": "إنهاء التعاقد",
+          "kit_return": "إعادة العدة",
+          "close": "إغلاق الحساب",
+          "note": "ملاحظة على الطلب",
+          "interview": "تحديد مقابلة",
+          "training_passed": "اجتياز التدريب",
+          "waitlist": "قائمة انتظار",
+          "back_from_waitlist": "إعادة إلى المراجعة",
+          "reject": "رفض"
+        }
+      }
+    },
+    "ratesUnavailable": "لا يمكن قراءة عهدة الكابتن الآن: سعر صرف إحدى العملات غير متوفر."
   }
 }

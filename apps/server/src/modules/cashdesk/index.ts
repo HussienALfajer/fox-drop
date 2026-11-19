@@ -81,7 +81,7 @@ import { SettlementService } from './settlement.service.js';
     DepositsService,
     RestaurantTerminationService,
   ],
-  exports: [CashDeskService, SettlementService],
+  exports: [CashDeskService, SettlementService, EarningsService],
 })
 export class CashDeskModule {}
 
@@ -171,3 +171,8 @@ export {
   SettlementService,
   type Statement,
 } from './settlement.service.js';
+export {
+  type CaptainEarningsOverview,
+  EarningsService,
+  type EarningsWindow,
+} from './earnings.service.js';
