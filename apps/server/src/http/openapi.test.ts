@@ -114,6 +114,12 @@ describe('OpenAPI document', () => {
     expect(admin.properties.roles).toMatchObject({ type: 'array' });
   });
 
+  // A union of objects becomes oneOf, which the generated Dart client cannot
+  // take (slice 2.37a): one object with a kind instead (apps/server/CLAUDE.md).
+  it('has no oneOf', () => {
+    expect(JSON.stringify(document)).not.toContain('"oneOf"');
+  });
+
   it('is OpenAPI 3.1', () => {
     expect(document.openapi).toMatch(/^3\.1\./);
   });
