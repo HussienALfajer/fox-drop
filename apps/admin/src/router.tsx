@@ -45,6 +45,9 @@ import { canSeeBanners } from './banners.js';
 import { BannersPage } from './banners-page.js';
 import { canSeeMassPushes } from './mass-pushes.js';
 import { MassPushesPage } from './mass-pushes-page.js';
+import { isSettingGroup, type SettingGroup } from './settings.js';
+import { SettingsPage } from './settings-page.js';
+import { OtpSendersPage } from './otp-senders-page.js';
 import { auditLogSearchOf, canReadAuditLog } from './audit-log.js';
 import { AuditLogPage } from './audit-log-page.js';
 import { canSeeLostDemand } from './lost-demand.js';
@@ -236,6 +239,32 @@ const contentRoute = createRoute({
     }
   },
   component: ContentPage,
+});
+
+// AP §9.14 «الإعدادات» (slice 2.38a): OWN (the server lists each role only
+// the settings it may change); the group and the city in the search.
+const settingsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/settings',
+  validateSearch: (search: Record<string, unknown>): { city?: string; group: SettingGroup } => ({
+    ...citySearch(search),
+    group: isSettingGroup(search.group) && search.group !== 'apps' ? search.group : 'timers_limits',
+  }),
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, SETTINGS_READ)) throw redirect({ to: '/' });
+  },
+  component: SettingsPage,
+});
+
+// AP §9.14 «أرقام إرسال الرموز» (slice 2.38a): OWN reads (settings.read)
+// and changes them (settings.manage).
+const otpSendersRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/settings/otp-senders',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, SETTINGS_READ)) throw redirect({ to: '/' });
+  },
+  component: OtpSendersPage,
 });
 
 // AP §9.14 «التطبيقات»: OWN (the server checks each key's edit roles).
@@ -878,6 +907,8 @@ const routeTree = rootRoute.addChildren([
     bannersRoute,
     massPushesRoute,
     lostDemandRoute,
+    settingsRoute,
+    otpSendersRoute,
     auditLogRoute,
     menuChangesRoute,
     menuChangeRoute,

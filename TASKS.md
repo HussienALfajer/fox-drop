@@ -15,10 +15,10 @@ Slice 2.38a, settings and the audit log (`docs/roadmap.md`, Phase 2; 2.38 split 
 ### Plan
 
 - [x] Split 2.38 with the owner and record it (roadmap, this file).
-- [ ] Server: `GET /v1/admin/audit-log` (`audit_log.read`, OWN): the events newest first, filtered by actor, action, target and dates, a page at a time, with the admins' names (AP §9.16).
-- [ ] Panel: «سجل التدقيق» (`/audit-log`): the filters, the events with their diff, reason, IP and device.
-- [ ] Panel: «الإعدادات» (`/settings`): the nine group screens, every setting with its Arabic name, description, default, value, unit and «استعادة الافتراضي».
-- [ ] Panel: «أرقام إرسال الرموز» (`/settings/otp-senders`): the numbers, their state and daily counts, active or standby, disable, and how pairing is done.
+- [x] Server: `GET /v1/admin/audit-log` (`audit_log.read`, OWN): the events newest first, filtered by actor, action, target and dates, a page at a time, with the admins' names (AP §9.16).
+- [x] Panel: «سجل التدقيق» (`/audit-log`): the filters, the events with their diff, reason, IP and device.
+- [x] Panel: «الإعدادات» (`/settings`): the nine group screens, every setting with its Arabic name, description, default, value, unit and «استعادة الافتراضي».
+- [x] Panel: «أرقام إرسال الرموز» (`/settings/otp-senders`): the numbers, their state and daily counts, active or standby, disable, and how pairing is done.
 - [ ] Review, fixes, hand over to 2.38b.
 
 ### Left from 2.37c (the cloud session's branch)

@@ -218,6 +218,13 @@ export function HomePage() {
           )}
           {can(session, SETTINGS_READ) && (
             <li>
+              <Link to="/settings" search={{ group: 'timers_limits' }}>
+                {t('settings.title')}
+              </Link>
+            </li>
+          )}
+          {can(session, SETTINGS_READ) && (
+            <li>
               <Link to="/settings/apps">{t('appSettings.title')}</Link>
             </li>
           )}
