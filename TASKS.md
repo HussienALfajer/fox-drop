@@ -4,27 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.35a, activation, the contract and the documents (`docs/roadmap.md`, Phase 2). 2.35b (offboarding and termination, early exit, re-applying) follows.
+Slice 2.35b, offboarding and termination (`docs/roadmap.md`, Phase 2). Planned, not started.
 
-- **Roadmap line:** 2.35a Activation, the contract and the documents (see `docs/roadmap.md`). The owner activates an applicant who becomes a captain.
-- **Specs:** AP §9.7.1 (the actions at «بانتظار العدة» and «تفعيل»), §9.7.2 (the contract, its phases and the probation review), §9.7.4 («البيانات والمستندات», `captain.document_expiry_notice_days`), §8.5.5 (instalments posted on Thursdays), §9.1.3 (the alerts «نهاية فترة تجربة» and «مستند ينتهي»), §6.2–6.3 (the deposit FIN and OWN), CA §5.5, §12.2–12.4, §14, C18, D24, K6.
-- **Branch:** `feat/captain-activation`.
-- **Owner decisions 2026-11-19:** two pull requests (2.35a, 2.35b); the deposit's amount is a setting `captain.kit_deposit_amount` offered as the default, FIN records what is paid now and the weekly instalment deducted each Thursday until it is paid; the kit's items are a list the owner edits in the panel; the contract's scan is the document «العقد الموقّع» uploaded the office's way, with the signing and start dates in «تسجيل العقد».
-- **Decided by us (to confirm):** the kit list is a content list (`kit_item`, «حقيبة حرارية» · «سترة»), the size typed at issue; a new captain's id is its application's id, so the deposit paid at the desk before activation is already the captain's account; the panel's captain file for this slice is the application's page (the captain list and profile are 2.36).
-- **Plan (one step per commit):**
-  - [x] 1. Docs: the split, the owner's decisions in the specs (Appendix A `captain.kit_deposit_amount`, Appendix B the kit list), this plan.
-  - [x] 2. Server: the kit list and the setting `captain.kit_deposit_amount`.
-  - [x] 3. Server: the records at «بانتظار العدة»: «تسليم العدة», the cash limit, «تسجيل العقد» with the signed contract and its dates, the deposit's plan (migration).
-  - [x] 4. Server: the deposit paid at the cash desk with its receipt (`deposit.payment`) and push.
-  - [x] 5. Server: «تفعيل»: its conditions, the captain made from the application, the account linked, the push device rebound, the push (with step 3).
-  - [x] 6. Server: the Thursday settlement posts the deposit's instalments.
-  - [x] 7. Server: the contract's phases: the probation review task and alert, the confirmation, the commitment's automatic end, the pushes; the captain's contract and kit route.
-  - [x] 8. Server: documents' expiry: the reminder push and the alert «مستند ينتهي», an expired required document blocks going online, the captain's documents with «رفع نسخة جديدة» and their review.
-  - [x] 9. Panel: the actions at «بانتظار العدة» and «تفعيل», the contract and its phase, the kit and deposit, the documents' expiry, the desk's deposit payment.
-  - [x] 10. Captain app: the welcome tour, the ask for «أقصى مبلغ أحمله» and «العملات التي أحملها» after activation, the profile's documents, contract and kit.
-  - [ ] 11. Review, then the handover to 2.35b.
-- **Watch:** an applicant's `push_devices` row keeps `captain_id` null; after activation the captain's pushes target the captain, so the server rebinds the row at activation. Captain records hold no ID number or account, so the duplicate check finds captains by plate only; linking the captain to its application fills that gap (AP §9.7.1).
-- **Stopped at:** step 1 done.
+- **Roadmap line:** 2.35b Offboarding and termination: «إنهاء التعاقد» with its checklist (kit returned, custody zero, earnings settled, the deposit refunded or withheld, the account closed), early exit and the flag «خروج مبكر», a former captain applying again on the same account with OWN's approval (AP §9.7.2, §9.7.5, C17). The owner terminates a captain in the commitment period and the captain is flagged «خروج مبكر».
+- **Specs:** AP §9.7.5 (the actions «إنهاء التعاقد» and the offboarding checklist), AP §9.7.2 (ending the contract at the probation review, early exit), AP §9.7.1 (re-applying, the duplicate check showing the flag, «تفعيل» needing OWN's approval for a flagged captain, `captains.activate_early_exit`), AP §9.10.3 «التأمينات» (the deposit's refund), AP §8.5.5 (an off-cycle payout at termination, `captains.final_payout`), CA §12.3, C17, D24.
+- **Branch:** `feat/captain-offboarding`.
+- **Already built (reuse, do not rebuild):** 2.35a's contract and phases on the application (`contractPhase`, `commitment_ends_on`), the kit as `kit_items`, the deposit account `captain.deposit` and `depositPaid`, the desk's receipts and `DepositsService`, `CaptainsService.setStatus` (`terminated`, which does not run the checklist yet), the off-cycle settlement (`SettlementService.settle`, OWN), `captainIdOf` (an application keeps a former captain's id when its `captain_id` is set at submission).
+- **To ask the owner first:** the split, if any; the deposit's refund journal and its receipt («التأمينات»: in the base, in cash at the desk?); what «محتجز» means in the ledger (the withheld deposit to platform revenue or an adjustment?); whether ending at the probation review counts as early exit (C17 says during the commitment).
+- **Plan:** to write as a checklist once the questions are answered (one step per commit).
+- **Stopped at:** 2.35a merged; 2.35b not started.
+
+### Left from 2.35a (`feat/captain-activation`)
+
+- **Before deploying to staging:** migrations 0129 (the content list `kit_item`), 0130 and 0132 (expand only: nullable columns and checks on `captains.applications`, the document kind `signed_contract`, the event kinds), 0131 (the receipt type `captain_deposit` and the journal type `deposit.payment`; the checks rebuilt `NOT VALID` then validated: short locks on `cashdesk.receipts` and `ledger.journals`). The owner enters `captain.kit_deposit_amount` (before launch) and checks the kit list in «المحتوى». Deploy the server before the panel and the captain app: a 2.34b server answering a `signed_contract` document would fail its response (transient).
+- **To check on staging (after the merge and the deploy):** an application at «بانتظار العدة»: «تسليم العدة» with «سترة» size L; FIN at «الصندوق» › «تأمين العدة»: the cash limit, then the deposit 500 ₺ with a weekly 100 ₺ and 200 ₺ now (receipt «تأمين العدة»); OPS «تسجيل العقد» with today's dates and the scan; «تفعيل» lists nothing missing and activates; the app shows «مرحباً بك في FOX DROP!», moves home, shows the tour then «أقصى مبلغ أحمله»; «المزيد» › «العقد والعدة» and «المستندات».
+- **Owner decisions 2026-11-19:** two pull requests; the deposit as the setting `captain.kit_deposit_amount` with FIN entering what is paid now and the weekly instalment; the kit list editable; the contract's scan the office's document way.
+- **Decided by us (to confirm with the owner):** the kit list is a content list (`kit_item`) with the size typed at issue; a new captain's id is its application's id (so the deposit paid before is already its account); the panel's captain file is the application's page until 2.36; FIN sets the cash limit at the desk and never reads the application's page; «رفض» refused while the deposit holds cash (no refund before 2.35b); an activated captain's accepted document is never rejected (a problem is a suspension); the instalment is posted on the payout day only, never more than the earnings owed, and a missed Thursday is not caught up; `probation_ends_on` is the start plus `captain.probation_days` (the commitment's first day, shown as «نهاية فترة التجربة»); the contract has up to 6 pages; the welcome tour's words and the phase push's «المرحلة المفتوحة».
+- **Not yet:** the contract's scan in the captain app (CA §12.3: nginx serves private-docs reads on the panel's host only; a signed GET on the API's host is needed); the device check at activation (CA §5.5, §4.5, not built anywhere yet); offboarding, termination, early exit and re-applying (2.35b); the captain list and profile in the panel (2.36).
+- **Not checked locally:** the realtime tests (Docker Hub refused the Centrifugo image); CI runs them.
 
 ### Left from 2.34b (`feat/captain-application-pipeline`)
 
