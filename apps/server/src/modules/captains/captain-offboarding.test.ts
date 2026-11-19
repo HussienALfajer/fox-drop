@@ -311,3 +311,43 @@ describe('the flag «خروج مبكر» is the person’s (C17)', () => {
     expect((await activate(own, other.id)).statusCode).toBe(200);
   });
 });
+
+// AP §9.7.5–9.7.6 (slice 2.36b): a violation's «إنهاء التعاقد» step starts
+// the offboarding in the violation's transaction.
+describe('a violation that terminates (AP §9.7.6)', () => {
+  it('starts «إنهاء التعاقد» for a severe type, and refuses a second termination', async () => {
+    const { id, ops } = await contracted({ signedDaysAgo: 0, paidNow: '15000' });
+    expect((await activate(ops, id)).statusCode).toBe(200);
+    const violation = (key: string) =>
+      ops(
+        'POST',
+        `captains/${id}/violations`,
+        {
+          severe: true,
+          typeCode: 'theft',
+          typeNote: null,
+          step: 'termination',
+          orderId: null,
+          reason: 'أخذ نقود من الزبون',
+        },
+        { 'idempotency-key': key },
+      );
+    const recorded = await violation(randomUUID());
+    expect(recorded.statusCode).toBe(201);
+    expect(recorded.json().violations[0]).toMatchObject({
+      typeLabel: 'سرقة',
+      severe: true,
+      suggestedStep: 'termination',
+      step: 'termination',
+    });
+    expect(await statusOf(id)).toBe('suspended');
+    const page = (await ops('GET', `captain-applications/${id}`)).json();
+    expect(page.offboarding).toMatchObject({
+      reason: 'إنهاء التعاقد: سرقة',
+      earlyExit: false,
+    });
+    const again = await violation(randomUUID());
+    expect(again.statusCode).toBe(409);
+    expect(again.json().error).toBe('already_terminated');
+  });
+});
