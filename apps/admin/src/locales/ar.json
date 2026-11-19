@@ -109,7 +109,8 @@
     "openRestaurant": "حالة المطعم",
     "openApprovals": "فتح طلبات الموافقة",
     "ticket": "التذكرة {{number}}",
-    "openTicket": "فتح التذكرة"
+    "openTicket": "فتح التذكرة",
+    "openPriceLog": "فتح سجل الأسعار"
   },
   "board": {
     "title": "غرفة العمليات",
@@ -174,6 +175,7 @@
       "codesCannotSend": "لا يمكن إرسال رموز الدخول",
       "codeNumberStopped": "رقم إرسال الرموز متوقف",
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
+      "largePriceChange": "تغيير أسعار كبير",
       "restaurantSettlementOverdue": "مطعم متأخر في التسوية",
       "rateStale": "سعر صرف قديم",
       "compensationApproval": "طلب موافقة تعويض",

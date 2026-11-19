@@ -6,8 +6,9 @@ export type AlertSeverity = (typeof alertSeverities)[number];
 
 // What an alert is about: an order, a captain, the WhatsApp code senders
 // (the pool as a whole, or one number), a restaurant, or one currency of a
-// city (`<cityId>:<code>`), a compensation request (slice 2.22a), or a
-// ticket (slice 2.23a).
+// city (`<cityId>:<code>`), a compensation request (slice 2.22a), a
+// ticket (slice 2.23a), or one price edit or bulk change of a restaurant
+// (slice 2.32a: a fresh id per change, the restaurant in `details`).
 export const alertSubjects = [
   'order',
   'captain',
@@ -17,6 +18,7 @@ export const alertSubjects = [
   'currency',
   'compensation',
   'ticket',
+  'price_change',
 ] as const;
 export type AlertSubject = (typeof alertSubjects)[number];
 
@@ -89,6 +91,11 @@ export const alertCodes = [
   // «تذكرة عاجلة» on a pickup-dispute ticket (AP §9.1.3, §9.9.2; slice
   // 2.23b): for FIN too, who resolves it, until it is resolved or closed.
   'urgent_dispute_ticket',
+  // «تغيير أسعار كبير»: a restaurant changed a price by more than
+  // merchant.price_change_alert_pct, up or down, in one edit or bulk change
+  // (RA §9.4, AP §9.1.3; slice 2.32a, owner decision 2026-11-19): one alert
+  // per change however many prices crossed it, closed by its acknowledgment.
+  'large_price_change',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -132,6 +139,10 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   compensation_approval: rule('information', ['OWN'], 'compensation'),
   urgent_ticket: rule('critical', ['OWN', 'OPS', 'SUP'], 'ticket'),
   urgent_dispute_ticket: rule('critical', ['OWN', 'OPS', 'SUP', 'FIN'], 'ticket'),
+  large_price_change: {
+    ...rule('information', OPERATIONS, 'price_change'),
+    resolvesItself: false,
+  },
 };
 
 function rule(

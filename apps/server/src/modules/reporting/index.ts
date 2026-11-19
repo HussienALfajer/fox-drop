@@ -18,6 +18,7 @@ import { AdminExportsController } from './admin-exports.controller.js';
 import { AdminRestaurantListController } from './admin-restaurant-list.controller.js';
 import { AdminRestaurantProfileReadsController } from './admin-restaurant-profile.controller.js';
 import { AdminRestaurantStatementsController } from './admin-restaurant-statements.controller.js';
+import { MerchantPriceLogController } from './merchant-price-log.controller.js';
 import { RestaurantListService } from './restaurant-list.service.js';
 import { ContentModule } from '../content/index.js';
 import { IdentityModule } from '../identity/index.js';
@@ -55,6 +56,7 @@ const imports = [
     AdminDailyReportController,
     AdminCostReportController,
     AdminExportsController,
+    MerchantPriceLogController,
   ],
   providers: [ExportsService, DailyReportService, CostReportService, RestaurantListService],
 })

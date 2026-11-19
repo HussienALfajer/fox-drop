@@ -25,6 +25,7 @@ import { MenuEditorService } from './menu-editor.service.js';
 import { MenuImportService } from './menu-import.service.js';
 import { OptionGroupsService } from './option-groups.service.js';
 import { MerchantsService } from './merchants.service.js';
+import { RestaurantMenuService } from './restaurant-menu.service.js';
 import { RestaurantDraftsService } from './restaurant-drafts.service.js';
 import { RestaurantStatusService } from './restaurant-status.service.js';
 import { RestaurantStatusTimersWorker } from './status-timers.js';
@@ -64,6 +65,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     OptionGroupsService,
     MenuBulkService,
     MenuImportService,
+    RestaurantMenuService,
     ActivationService,
     RestaurantNotesService,
   ],
@@ -93,6 +95,7 @@ export {
   type ActiveOrderCount,
   type Coverage,
   type DevicePlatform,
+  type LargePriceChange,
   type MerchantChange,
   type MerchantsRefusal,
   MerchantsRefusedError,

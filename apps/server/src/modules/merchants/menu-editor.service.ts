@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, isNull, ne, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
@@ -36,6 +37,10 @@ const SERVING: readonly AccountStatus[] = ['active', 'suspended'];
 // `menus.edit_prices`.
 export interface MenuChange extends MerchantChange {
   mayEditPrices: boolean;
+  // A restaurant's own change (slice 2.32a): merchant.price_change_alert_pct,
+  // read before the transaction; a price moved by more raises «تغيير أسعار
+  // كبير» (AP §9.1.3).
+  alertPct?: number;
 }
 
 // One price changed by an admin: an item's price or an option's delta.
@@ -319,6 +324,8 @@ export class MenuEditorService {
     restaurantId: string,
     categoryIds: string[],
     change: MerchantChange,
+    // The restaurant's own command tells its devices (slice 2.32a).
+    after?: (tx: Tx, cityId: string) => Promise<void>,
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockEditable(tx, restaurantId);
@@ -336,6 +343,7 @@ export class MenuEditorService {
       await this.record(tx, change, row.cityId, 'menu.category.order', restaurantId, null, {
         categoryIds,
       });
+      await after?.(tx, row.cityId);
     });
   }
 
@@ -346,6 +354,7 @@ export class MenuEditorService {
     categoryId: string,
     itemIds: string[],
     change: MerchantChange,
+    after?: (tx: Tx, cityId: string) => Promise<void>,
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockEditable(tx, restaurantId);
@@ -372,6 +381,7 @@ export class MenuEditorService {
         itemIds,
       );
       await this.record(tx, change, row.cityId, 'menu.item.order', categoryId, null, { itemIds });
+      await after?.(tx, row.cityId);
     });
   }
 
@@ -404,9 +414,9 @@ export class MenuEditorService {
   async logPrices(
     tx: Tx,
     restaurantId: string,
-    row: { cityId: string; accountStatus: AccountStatus },
+    row: { cityId: string; accountStatus: AccountStatus; nameAr: string },
     changes: PriceChange[],
-    change: MerchantChange,
+    change: MerchantChange & { alertPct?: number },
   ): Promise<void> {
     if (changes.length === 0) return;
     const by = changedBy(change.actor);
@@ -421,12 +431,36 @@ export class MenuEditorService {
         ...by,
       })),
     );
+    const at = new Date();
+    // A restaurant's own change (slice 2.32a): no chime of «عدّلت FOX DROP»
+    // (D17 is an admin's change), every device reads the menu again, and
+    // operations hear of a large one (RA §9.4, S11).
+    if (change.actor.type === 'merchant') {
+      await this.menuChanged(tx, restaurantId, row.cityId, at);
+      const crossed =
+        change.alertPct === undefined
+          ? 0
+          : changes.filter((each) =>
+              movesBeyond(each.old.amount, each.new.amount, change.alertPct!),
+            ).length;
+      if (crossed > 0) {
+        await this.merchants.tellLargePriceChange(tx, {
+          changeId: randomUUID(),
+          restaurantId,
+          restaurantName: row.nameAr,
+          cityId: row.cityId,
+          count: crossed,
+          at,
+        });
+      }
+      return;
+    }
     if (!SERVING.includes(row.accountStatus)) return;
     const [only] = changes;
     await recordStateChange(tx, this.jobs, {
       restaurantId,
       cityId: row.cityId,
-      at: new Date(),
+      at,
       ...(changes.length === 1 && only
         ? {
             kind: 'price_change',
@@ -441,6 +475,12 @@ export class MenuEditorService {
           }
         : { kind: 'price_change_bulk', values: { count: changes.length } }),
     });
+  }
+
+  // Module-internal: RA §18 «menu changed», so every device of the restaurant
+  // reads its menu again (slice 2.32a: the restaurant's own commands).
+  async menuChanged(tx: Tx, restaurantId: string, cityId: string, at = new Date()): Promise<void> {
+    await recordStateChange(tx, this.jobs, { restaurantId, cityId, kind: 'menu_changed', at });
   }
 
   // RA §9.3: a category, an item or an option switched on, or off «حتى الغد»
@@ -532,6 +572,15 @@ function optionalText(value: string | null, max: number): string | null {
     throw new MerchantsRefusedError('invalid_menu', `a description is ${max} characters at most`);
   }
   return text.length === 0 ? null : text;
+}
+
+// RA §9.4 (S11): whether a price moved by more than `pct` percent of its old
+// value, up or down; exactly `pct` does not. A price from 0 (an option's
+// delta) moves beyond any threshold once it changes.
+export function movesBeyond(old: bigint, next: bigint, pct: number): boolean {
+  const moved = next > old ? next - old : old - next;
+  // In hundredths of a percent, so a setting such as 12.5 stays exact.
+  return moved * 10_000n > BigInt(Math.round(pct * 100)) * old;
 }
 
 // Two whole minutes of the day; the end 1440 is midnight, and an end not after

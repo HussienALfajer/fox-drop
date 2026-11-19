@@ -10,6 +10,7 @@ import {
   autoPausedRestaurantOf,
   orderOf,
   overdueRestaurantOf,
+  priceChangeRestaurantOf,
   staleRateOf,
   useAcknowledgeAlert,
 } from './alerts.js';
@@ -24,6 +25,7 @@ import { alertKeys } from './order-labels.js';
 import { canReadTickets, ticketLabel } from './tickets.js';
 import { OPERATIONS_MANAGE } from './assign-captain.js';
 import { WaitForCustomer } from './order-no-answer-page.js';
+import { RESTAURANTS_READ } from './restaurant-drafts.js';
 import { canChangeRestaurantStatus, useResumeRestaurant } from './restaurant-status.js';
 
 const alertsRoute = getRouteApi('/signed-in/alerts');
@@ -163,6 +165,8 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
     canReadTickets(session)
       ? alert.subjectId
       : null;
+  // AP §9.1.3 «تغيير أسعار كبير» (slice 2.32a): «فتح سجل الأسعار».
+  const priceLogOf = can(session, RESTAURANTS_READ) ? priceChangeRestaurantOf(alert) : null;
   return (
     <>
       <strong>{t(`alerts.severity.${alert.severity}`)}</strong>{' '}
@@ -198,6 +202,15 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
       {approval && (
         <Link to="/compensations" search={{ city: city.code }}>
           {t('alerts.openApprovals')}
+        </Link>
+      )}
+      {priceLogOf && (
+        <Link
+          to="/restaurants/$restaurantId"
+          params={{ restaurantId: priceLogOf }}
+          search={{ city: city.code, tab: 'menu' }}
+        >
+          {t('alerts.openPriceLog')}
         </Link>
       )}
       {ticketId && (

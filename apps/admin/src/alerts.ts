@@ -119,3 +119,9 @@ export function overdueRestaurantOf(alert: AdminAlert): string | null {
     ? alert.subjectId
     : null;
 }
+
+// AP §9.1.3 «تغيير أسعار كبير» (slice 2.32a): its restaurant, for «فتح سجل
+// الأسعار» on the profile's «القائمة».
+export function priceChangeRestaurantOf(alert: AdminAlert): string | null {
+  return alert.code === 'large_price_change' ? alert.restaurantId : null;
+}

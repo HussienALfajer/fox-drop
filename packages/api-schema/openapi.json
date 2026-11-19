@@ -1983,6 +1983,407 @@
         ]
       }
     },
+    "/v1/merchant/menu/items/{itemId}/price": {
+      "put": {
+        "operationId": "merchantMenuItemPrice",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuItemPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/options/{optionId}/price": {
+      "put": {
+        "operationId": "merchantMenuOptionPrice",
+        "parameters": [
+          {
+            "name": "optionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuOptionPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/items/{itemId}/hidden": {
+      "put": {
+        "operationId": "merchantMenuItemHidden",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuHiddenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/categories/{categoryId}/hidden": {
+      "put": {
+        "operationId": "merchantMenuCategoryHidden",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuHiddenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/categories/{categoryId}/window": {
+      "put": {
+        "operationId": "merchantMenuCategoryWindow",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuWindowDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/category-order": {
+      "put": {
+        "operationId": "merchantMenuCategoryOrder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuCategoryOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/categories/{categoryId}/item-order": {
+      "put": {
+        "operationId": "merchantMenuItemOrder",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuItemOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/bulk-price/preview": {
+      "post": {
+        "operationId": "merchantMenuBulkPricePreview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuBulkPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuBulkPreviewDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/bulk-price": {
+      "post": {
+        "operationId": "merchantMenuBulkPrice",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantMenuBulkPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuBulkPriceResultDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/merchant/restaurant/status": {
       "get": {
         "operationId": "merchantStatusRead",
@@ -8114,6 +8515,32 @@
         },
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/v1/merchant/menu/customer-preview": {
+      "get": {
+        "operationId": "merchantMenuPreviewPreview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuPreviewDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
         ]
       }
     },
@@ -17179,6 +17606,32 @@
           "admin"
         ]
       }
+    },
+    "/v1/merchant/menu/price-log": {
+      "get": {
+        "operationId": "merchantPriceLogPriceLog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantPriceLogDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
     }
   },
   "info": {
@@ -19322,6 +19775,34 @@
                   ],
                   "description": "The row's own switch (RA §9.3): null while on."
                 },
+                "window": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "startsAt": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1439
+                        },
+                        "endsAt": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1440
+                        }
+                      },
+                      "required": [
+                        "startsAt",
+                        "endsAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A category's daily window, minutes after midnight on the city's clock (breakfast until 12:00 is 0 to 720); an end not after the start crosses midnight; null all day (RA §9.1)."
+                },
                 "items": {
                   "type": "array",
                   "items": {
@@ -19534,6 +20015,7 @@
                 "hidden",
                 "available",
                 "switchedOff",
+                "window",
                 "items"
               ],
               "additionalProperties": false
@@ -19615,6 +20097,292 @@
         },
         "required": [
           "switchedOff"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantMenuItemPriceDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^\\d{1,15}$",
+                "description": "Integer minor units of the base (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "description": "Above 0 (RA §9.4)."
+          }
+        },
+        "required": [
+          "price"
+        ]
+      },
+      "MerchantMenuOptionPriceDto": {
+        "type": "object",
+        "properties": {
+          "priceDelta": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^\\d{1,15}$",
+                "description": "Integer minor units of the base (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "description": "0 or more (RA §9.4)."
+          }
+        },
+        "required": [
+          "priceDelta"
+        ]
+      },
+      "MerchantMenuHiddenDto": {
+        "type": "object",
+        "properties": {
+          "hidden": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hidden"
+        ]
+      },
+      "MerchantMenuWindowDto": {
+        "type": "object",
+        "properties": {
+          "window": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "startsAt": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1439
+                  },
+                  "endsAt": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1440
+                  }
+                },
+                "required": [
+                  "startsAt",
+                  "endsAt"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A category's daily window, minutes after midnight on the city's clock (breakfast until 12:00 is 0 to 720); an end not after the start crosses midnight; null all day (RA §9.1)."
+          }
+        },
+        "required": [
+          "window"
+        ]
+      },
+      "MerchantMenuCategoryOrderDto": {
+        "type": "object",
+        "properties": {
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "Every category once, in the new order."
+          }
+        },
+        "required": [
+          "categoryIds"
+        ]
+      },
+      "MerchantMenuItemOrderDto": {
+        "type": "object",
+        "properties": {
+          "itemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "Every item of the category once, in order."
+          }
+        },
+        "required": [
+          "itemIds"
+        ]
+      },
+      "MerchantMenuBulkPriceDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One category; null: the whole menu."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "amount"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^[1-9]\\d{0,14}$",
+            "description": "Basis points for a percentage (1000 is 10%); minor units of the base for an amount."
+          }
+        },
+        "required": [
+          "categoryId",
+          "kind",
+          "direction",
+          "value"
+        ]
+      },
+      "MerchantMenuBulkPreviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "roundingUnit": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "The base's rounding unit each new price is rounded to."
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "categoryId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "before": {
+                  "type": "string",
+                  "pattern": "^\\d+$"
+                },
+                "after": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d+$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "null: the change would bring it to 0 (refused)."
+                }
+              },
+              "required": [
+                "itemId",
+                "code",
+                "name",
+                "categoryId",
+                "before",
+                "after"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "changed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unchanged": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "refused": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Above 0, the change cannot be applied."
+          }
+        },
+        "required": [
+          "currency",
+          "roundingUnit",
+          "rows",
+          "changed",
+          "unchanged",
+          "refused"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantMenuBulkPriceResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unchanged": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "changed",
+          "unchanged"
         ],
         "additionalProperties": false
       },
@@ -31410,6 +32178,257 @@
         ],
         "additionalProperties": false
       },
+      "MerchantMenuPreviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "menu": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "window": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "startsAt": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "endsAt": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "startsAt",
+                        "endsAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it."
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "photoKey": {
+                        "description": "Its key in public-media, shown through imgproxy (architecture §5.8); null without one.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "price": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?\\d+$",
+                            "description": "Integer minor units (AP §8.6)."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "fromPrice": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "string",
+                                "pattern": "^-?\\d+$",
+                                "description": "Integer minor units (AP §8.6)."
+                              },
+                              "currency": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«من {أقل سعر}» when a required group changes it."
+                      },
+                      "available": {
+                        "type": "boolean"
+                      },
+                      "unavailableReason": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "tomorrow",
+                              "window",
+                              "unavailable"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً»."
+                      },
+                      "optionGroups": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "minChoices": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991,
+                              "description": "0 is an add-on group; 1 or more is «إجباري»."
+                            },
+                            "maxChoices": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "options": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "priceDelta": {
+                                    "type": "object",
+                                    "properties": {
+                                      "amount": {
+                                        "type": "string",
+                                        "pattern": "^-?\\d+$",
+                                        "description": "Integer minor units (AP §8.6)."
+                                      },
+                                      "currency": {
+                                        "type": "string",
+                                        "minLength": 3,
+                                        "maxLength": 3
+                                      }
+                                    },
+                                    "required": [
+                                      "amount",
+                                      "currency"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "available": {
+                                    "type": "boolean",
+                                    "description": "Faded and not pickable when false."
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "priceDelta",
+                                  "available"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "minChoices",
+                            "maxChoices",
+                            "options"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "description",
+                      "photoKey",
+                      "price",
+                      "fromPrice",
+                      "available",
+                      "unavailableReason",
+                      "optionGroups"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "window",
+                "items"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The restaurant page's menu (CU §9.3): hidden rows left out."
+          }
+        },
+        "required": [
+          "menu"
+        ],
+        "additionalProperties": false
+      },
       "AdminLostDemandDto_Output": {
         "type": "object",
         "properties": {
@@ -35117,7 +36136,8 @@
                     "rate_stale",
                     "compensation_approval",
                     "urgent_ticket",
-                    "urgent_dispute_ticket"
+                    "urgent_dispute_ticket",
+                    "large_price_change"
                   ],
                   "description": "The rule of AP §9.1.3."
                 },
@@ -35140,7 +36160,8 @@
                     "restaurant",
                     "currency",
                     "compensation",
-                    "ticket"
+                    "ticket",
+                    "price_change"
                   ]
                 },
                 "subjectId": {
@@ -35167,6 +36188,19 @@
                     "string",
                     "null"
                   ]
+                },
+                "restaurantId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«تغيير أسعار كبير» (AP §9.1.3, slice 2.32a): the restaurant, for «فتح سجل الأسعار»; null for the others."
                 },
                 "currency": {
                   "description": "«سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others.",
@@ -35287,6 +36321,7 @@
                 "orderNumber",
                 "captainName",
                 "restaurantName",
+                "restaurantId",
                 "currency",
                 "ticketNumber",
                 "statementId",
@@ -35338,7 +36373,8 @@
               "rate_stale",
               "compensation_approval",
               "urgent_ticket",
-              "urgent_dispute_ticket"
+              "urgent_dispute_ticket",
+              "large_price_change"
             ],
             "description": "The rule of AP §9.1.3."
           },
@@ -35361,7 +36397,8 @@
               "restaurant",
               "currency",
               "compensation",
-              "ticket"
+              "ticket",
+              "price_change"
             ]
           },
           "subjectId": {
@@ -35388,6 +36425,19 @@
               "string",
               "null"
             ]
+          },
+          "restaurantId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«تغيير أسعار كبير» (AP §9.1.3, slice 2.32a): the restaurant, for «فتح سجل الأسعار»; null for the others."
           },
           "currency": {
             "description": "«سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others.",
@@ -35508,6 +36558,7 @@
           "orderNumber",
           "captainName",
           "restaurantName",
+          "restaurantId",
           "currency",
           "ticketNumber",
           "statementId",
@@ -67871,6 +68922,126 @@
           "from",
           "to"
         ]
+      },
+      "MerchantPriceLogDto_Output": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "targetType": {
+                  "type": "string",
+                  "enum": [
+                    "item",
+                    "option"
+                  ]
+                },
+                "targetId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The item's name, or the option's."
+                },
+                "groupName": {
+                  "description": "An option's group; null for an item.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "oldPrice": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                },
+                "newPrice": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                },
+                "byType": {
+                  "type": "string",
+                  "enum": [
+                    "admin",
+                    "merchant",
+                    "system"
+                  ],
+                  "description": "admin and system are «FOX DROP» (RA §9.4)."
+                },
+                "byName": {
+                  "description": "The restaurant user's name; null for FOX DROP or when unknown.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "targetType",
+                "targetId",
+                "name",
+                "groupName",
+                "oldPrice",
+                "newPrice",
+                "byType",
+                "byName",
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The latest 200, newest first."
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "additionalProperties": false
       }
     },
     "headers": {

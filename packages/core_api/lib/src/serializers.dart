@@ -871,6 +871,11 @@ import 'package:core_api/src/model/merchant_hours_dto_output.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output_coverage.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output_periods_inner.dart';
 import 'package:core_api/src/model/merchant_item_report_dto.dart';
+import 'package:core_api/src/model/merchant_menu_bulk_preview_dto_output.dart';
+import 'package:core_api/src/model/merchant_menu_bulk_preview_dto_output_rows_inner.dart';
+import 'package:core_api/src/model/merchant_menu_bulk_price_dto.dart';
+import 'package:core_api/src/model/merchant_menu_bulk_price_result_dto_output.dart';
+import 'package:core_api/src/model/merchant_menu_category_order_dto.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner.dart';
@@ -878,6 +883,16 @@ import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_ite
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner_options_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_price.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_switched_off.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_window.dart';
+import 'package:core_api/src/model/merchant_menu_hidden_dto.dart';
+import 'package:core_api/src/model/merchant_menu_item_order_dto.dart';
+import 'package:core_api/src/model/merchant_menu_item_price_dto.dart';
+import 'package:core_api/src/model/merchant_menu_item_price_dto_price.dart';
+import 'package:core_api/src/model/merchant_menu_option_price_dto.dart';
+import 'package:core_api/src/model/merchant_menu_option_price_dto_price_delta.dart';
+import 'package:core_api/src/model/merchant_menu_preview_dto_output.dart';
+import 'package:core_api/src/model/merchant_menu_window_dto.dart';
+import 'package:core_api/src/model/merchant_menu_window_dto_window.dart';
 import 'package:core_api/src/model/merchant_order_dto_output.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order_pickup.dart';
@@ -908,6 +923,8 @@ import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_base_cu
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_choices_inner.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
+import 'package:core_api/src/model/merchant_price_log_dto_output.dart';
+import 'package:core_api/src/model/merchant_price_log_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/merchant_ratings_dto_output.dart';
 import 'package:core_api/src/model/merchant_ratings_dto_output_distribution_inner.dart';
 import 'package:core_api/src/model/merchant_ratings_dto_output_ratings_inner.dart';
@@ -1833,6 +1850,11 @@ part 'serializers.g.dart';
   MerchantHoursDtoOutputCoverage,
   MerchantHoursDtoOutputPeriodsInner,
   MerchantItemReportDto,
+  MerchantMenuBulkPreviewDtoOutput,
+  MerchantMenuBulkPreviewDtoOutputRowsInner,
+  MerchantMenuBulkPriceDto,
+  MerchantMenuBulkPriceResultDtoOutput,
+  MerchantMenuCategoryOrderDto,
   MerchantMenuDtoOutput,
   MerchantMenuDtoOutputCategoriesInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInner,
@@ -1840,6 +1862,16 @@ part 'serializers.g.dart';
   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
   MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
+  MerchantMenuDtoOutputCategoriesInnerWindow,
+  MerchantMenuHiddenDto,
+  MerchantMenuItemOrderDto,
+  MerchantMenuItemPriceDto,
+  MerchantMenuItemPriceDtoPrice,
+  MerchantMenuOptionPriceDto,
+  MerchantMenuOptionPriceDtoPriceDelta,
+  MerchantMenuPreviewDtoOutput,
+  MerchantMenuWindowDto,
+  MerchantMenuWindowDtoWindow,
   MerchantOrderDtoOutput,
   MerchantOrderDtoOutputOrder,
   MerchantOrderDtoOutputOrderPickup,
@@ -1870,6 +1902,8 @@ part 'serializers.g.dart';
   MerchantPickupCurrenciesDtoOutputChoicesInner,
   MerchantPickupDisputeDto,
   MerchantPickupDisputeDtoReceivedLinesInner,
+  MerchantPriceLogDtoOutput,
+  MerchantPriceLogDtoOutputEntriesInner,
   MerchantRatingsDtoOutput,
   MerchantRatingsDtoOutputDistributionInner,
   MerchantRatingsDtoOutputRatingsInner,
@@ -2977,6 +3011,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantPriceLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<MerchantPriceLogDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCustomerDtoOutputCodesInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputCodesInner>(),
@@ -3273,6 +3313,12 @@ Serializers serializers =
               FullType(AdminCustomerDtoOutputNotesInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputNotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantMenuBulkPreviewDtoOutputRowsInner),
+            ]),
+            () => ListBuilder<MerchantMenuBulkPreviewDtoOutputRowsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

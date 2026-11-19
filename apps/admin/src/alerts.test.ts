@@ -3,6 +3,7 @@ import {
   type AdminAlert,
   needsRepeat,
   overdueRestaurantOf,
+  priceChangeRestaurantOf,
   receivesAlerts,
   soundPlan,
 } from './alerts.js';
@@ -20,6 +21,7 @@ function alert(overrides: Partial<AdminAlert>): AdminAlert {
     captainName: null,
     ticketNumber: null,
     restaurantName: null,
+    restaurantId: null,
     currency: null,
     statementId: null,
     location: null,
@@ -89,5 +91,23 @@ describe('overdueRestaurantOf', () => {
     });
     expect(overdueRestaurantOf(overdue)).toBe('r1');
     expect(overdueRestaurantOf(alert({}))).toBeNull();
+  });
+});
+
+describe('«تغيير أسعار كبير» (AP §9.1.3, slice 2.32a)', () => {
+  it('opens the price log of its restaurant', () => {
+    expect(
+      priceChangeRestaurantOf(
+        alert({
+          code: 'large_price_change',
+          severity: 'information',
+          subjectType: 'price_change',
+          subjectId: 'c1',
+          restaurantId: 'r1',
+          restaurantName: 'مطعم',
+        }),
+      ),
+    ).toBe('r1');
+    expect(priceChangeRestaurantOf(alert({ restaurantId: 'r1' }))).toBeNull();
   });
 });

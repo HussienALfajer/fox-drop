@@ -1426,6 +1426,13 @@ Serializers _$serializers =
           ..add(MerchantHoursDtoOutputCoverageKindEnum.serializer)
           ..add(MerchantHoursDtoOutputPeriodsInner.serializer)
           ..add(MerchantItemReportDto.serializer)
+          ..add(MerchantMenuBulkPreviewDtoOutput.serializer)
+          ..add(MerchantMenuBulkPreviewDtoOutputRowsInner.serializer)
+          ..add(MerchantMenuBulkPriceDto.serializer)
+          ..add(MerchantMenuBulkPriceDtoDirectionEnum.serializer)
+          ..add(MerchantMenuBulkPriceDtoKindEnum.serializer)
+          ..add(MerchantMenuBulkPriceResultDtoOutput.serializer)
+          ..add(MerchantMenuCategoryOrderDto.serializer)
           ..add(MerchantMenuDtoOutput.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInner.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInner.serializer)
@@ -1439,6 +1446,16 @@ Serializers _$serializers =
           )
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerSwitchedOff.serializer)
+          ..add(MerchantMenuDtoOutputCategoriesInnerWindow.serializer)
+          ..add(MerchantMenuHiddenDto.serializer)
+          ..add(MerchantMenuItemOrderDto.serializer)
+          ..add(MerchantMenuItemPriceDto.serializer)
+          ..add(MerchantMenuItemPriceDtoPrice.serializer)
+          ..add(MerchantMenuOptionPriceDto.serializer)
+          ..add(MerchantMenuOptionPriceDtoPriceDelta.serializer)
+          ..add(MerchantMenuPreviewDtoOutput.serializer)
+          ..add(MerchantMenuWindowDto.serializer)
+          ..add(MerchantMenuWindowDtoWindow.serializer)
           ..add(MerchantOrderDtoOutput.serializer)
           ..add(MerchantOrderDtoOutputOrder.serializer)
           ..add(MerchantOrderDtoOutputOrderCaptainTrackEnum.serializer)
@@ -1496,6 +1513,10 @@ Serializers _$serializers =
           ..add(MerchantPickupCurrenciesDtoOutputChoicesInner.serializer)
           ..add(MerchantPickupDisputeDto.serializer)
           ..add(MerchantPickupDisputeDtoReceivedLinesInner.serializer)
+          ..add(MerchantPriceLogDtoOutput.serializer)
+          ..add(MerchantPriceLogDtoOutputEntriesInner.serializer)
+          ..add(MerchantPriceLogDtoOutputEntriesInnerByTypeEnum.serializer)
+          ..add(MerchantPriceLogDtoOutputEntriesInnerTargetTypeEnum.serializer)
           ..add(MerchantRatingsDtoOutput.serializer)
           ..add(MerchantRatingsDtoOutputDistributionInner.serializer)
           ..add(MerchantRatingsDtoOutputRatingsInner.serializer)
@@ -2282,6 +2303,12 @@ Serializers _$serializers =
               const FullType(AdminMenuImportPlanDtoOutputChangedInner),
             ]),
             () => ListBuilder<AdminMenuImportPlanDtoOutputChangedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuPreviewDtoOutputMenuInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3897,6 +3924,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantMenuBulkPreviewDtoOutputRowsInner),
+            ]),
+            () => ListBuilder<MerchantMenuBulkPreviewDtoOutputRowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
@@ -4015,6 +4048,12 @@ Serializers _$serializers =
               const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
             ]),
             () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantPriceLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<MerchantPriceLogDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4156,6 +4195,14 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

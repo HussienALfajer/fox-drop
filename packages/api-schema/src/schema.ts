@@ -868,6 +868,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/menu/items/{itemId}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuItemPrice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/options/{optionId}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuOptionPrice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/items/{itemId}/hidden": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuItemHidden"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/categories/{categoryId}/hidden": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuCategoryHidden"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/categories/{categoryId}/window": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuCategoryWindow"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/category-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuCategoryOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/categories/{categoryId}/item-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuItemOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/bulk-price/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantMenuBulkPricePreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/bulk-price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantMenuBulkPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/restaurant/status": {
         parameters: {
             query?: never;
@@ -3052,6 +3196,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["adminMenuPreviewPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/customer-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantMenuPreviewPreview"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6084,6 +6244,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/menu/price-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantPriceLogPriceLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -6675,6 +6851,11 @@ export interface components {
                     /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
                     until: string | null;
                 } | null;
+                /** @description A category's daily window, minutes after midnight on the city's clock (breakfast until 12:00 is 0 to 720); an end not after the start crosses midnight; null all day (RA §9.1). */
+                window: {
+                    startsAt: number;
+                    endsAt: number;
+                } | null;
                 items: {
                     /** Format: uuid */
                     id: string;
@@ -6738,6 +6919,74 @@ export interface components {
                 /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
                 until: string | null;
             } | null;
+        };
+        MerchantMenuItemPriceDto: {
+            /** @description Above 0 (RA §9.4). */
+            price: {
+                /** @description Integer minor units of the base (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+        };
+        MerchantMenuOptionPriceDto: {
+            /** @description 0 or more (RA §9.4). */
+            priceDelta: {
+                /** @description Integer minor units of the base (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+        };
+        MerchantMenuHiddenDto: {
+            hidden: boolean;
+        };
+        MerchantMenuWindowDto: {
+            /** @description A category's daily window, minutes after midnight on the city's clock (breakfast until 12:00 is 0 to 720); an end not after the start crosses midnight; null all day (RA §9.1). */
+            window: {
+                startsAt: number;
+                endsAt: number;
+            } | null;
+        };
+        MerchantMenuCategoryOrderDto: {
+            /** @description Every category once, in the new order. */
+            categoryIds: string[];
+        };
+        MerchantMenuItemOrderDto: {
+            /** @description Every item of the category once, in order. */
+            itemIds: string[];
+        };
+        MerchantMenuBulkPriceDto: {
+            /** @description One category; null: the whole menu. */
+            categoryId: string | null;
+            /** @enum {string} */
+            kind: "percent" | "amount";
+            /** @enum {string} */
+            direction: "up" | "down";
+            /** @description Basis points for a percentage (1000 is 10%); minor units of the base for an amount. */
+            value: string;
+        };
+        MerchantMenuBulkPreviewDto_Output: {
+            currency: string;
+            /** @description The base's rounding unit each new price is rounded to. */
+            roundingUnit: string;
+            rows: {
+                /** Format: uuid */
+                itemId: string;
+                code: string;
+                name: string;
+                /** Format: uuid */
+                categoryId: string;
+                before: string;
+                /** @description null: the change would bring it to 0 (refused). */
+                after: string | null;
+            }[];
+            changed: number;
+            unchanged: number;
+            /** @description Above 0, the change cannot be applied. */
+            refused: number;
+        };
+        MerchantMenuBulkPriceResultDto_Output: {
+            changed: number;
+            unchanged: number;
         };
         MerchantStatusDto_Output: {
             /**
@@ -9579,6 +9828,61 @@ export interface components {
                 }[];
             }[];
         };
+        MerchantMenuPreviewDto_Output: {
+            /** @description The restaurant page's menu (CU §9.3): hidden rows left out. */
+            menu: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @description Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it. */
+                window: {
+                    startsAt: number;
+                    endsAt: number;
+                } | null;
+                items: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    description: string | null;
+                    /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                    photoKey: string | null;
+                    price: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description «من {أقل سعر}» when a required group changes it. */
+                    fromPrice: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    available: boolean;
+                    /** @description «يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً». */
+                    unavailableReason: ("tomorrow" | "window" | "unavailable") | null;
+                    optionGroups: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        /** @description 0 is an add-on group; 1 or more is «إجباري». */
+                        minChoices: number;
+                        maxChoices: number;
+                        options: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            priceDelta: {
+                                /** @description Integer minor units (AP §8.6). */
+                                amount: string;
+                                currency: string;
+                            };
+                            /** @description Faded and not pickable when false. */
+                            available: boolean;
+                        }[];
+                    }[];
+                }[];
+            }[];
+        };
         AdminLostDemandDto_Output: {
             /**
              * Format: date-time
@@ -10400,14 +10704,14 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
                  */
                 severity: "critical" | "warning" | "information";
                 /** @enum {string} */
-                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket";
+                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket" | "price_change";
                 /** @description The order, captain or sending number it is about. */
                 subjectId: string;
                 /** @description For an alert about an order. */
@@ -10416,6 +10720,8 @@ export interface components {
                 captainName: string | null;
                 /** @description For an alert about a restaurant. */
                 restaurantName: string | null;
+                /** @description «تغيير أسعار كبير» (AP §9.1.3, slice 2.32a): the restaurant, for «فتح سجل الأسعار»; null for the others. */
+                restaurantId: string | null;
                 /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
                 currency: string | null;
                 /** @description «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others. */
@@ -10449,14 +10755,14 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
              */
             severity: "critical" | "warning" | "information";
             /** @enum {string} */
-            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket";
+            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket" | "price_change";
             /** @description The order, captain or sending number it is about. */
             subjectId: string;
             /** @description For an alert about an order. */
@@ -10465,6 +10771,8 @@ export interface components {
             captainName: string | null;
             /** @description For an alert about a restaurant. */
             restaurantName: string | null;
+            /** @description «تغيير أسعار كبير» (AP §9.1.3, slice 2.32a): the restaurant, for «فتح سجل الأسعار»; null for the others. */
+            restaurantId: string | null;
             /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
             currency: string | null;
             /** @description «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others. */
@@ -17984,6 +18292,40 @@ export interface components {
             /** @description A business day on the city’s clock, YYYY-MM-DD. */
             to: string;
         };
+        MerchantPriceLogDto_Output: {
+            /** @description The latest 200, newest first. */
+            entries: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                targetType: "item" | "option";
+                /** Format: uuid */
+                targetId: string;
+                /** @description The item's name, or the option's. */
+                name: string;
+                /** @description An option's group; null for an item. */
+                groupName: string | null;
+                oldPrice: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                newPrice: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /**
+                 * @description admin and system are «FOX DROP» (RA §9.4).
+                 * @enum {string}
+                 */
+                byType: "admin" | "merchant" | "system";
+                /** @description The restaurant user's name; null for FOX DROP or when unknown. */
+                byName: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
+        };
     };
     responses: never;
     parameters: never;
@@ -19268,6 +19610,237 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantAvailabilitySavedDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuItemPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuItemPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuOptionPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                optionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuOptionPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuItemHidden: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuHiddenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuCategoryHidden: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuHiddenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuCategoryWindow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuWindowDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuCategoryOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuCategoryOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuItemOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuItemOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuBulkPricePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuBulkPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuBulkPreviewDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuBulkPrice: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantMenuBulkPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuBulkPriceResultDto_Output"];
                 };
             };
         };
@@ -22902,6 +23475,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMenuPreviewDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuPreviewPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuPreviewDto_Output"];
                 };
             };
         };
@@ -27990,6 +28583,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminExportDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPriceLogPriceLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPriceLogDto_Output"];
                 };
             };
         };

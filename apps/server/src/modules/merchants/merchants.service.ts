@@ -155,6 +155,21 @@ export interface RestaurantDevice {
   updatedAt: Date;
 }
 
+// RA §9.4, AP §9.1.3 (slice 2.32a): a restaurant's own price edit or bulk
+// change that moved a price by more than merchant.price_change_alert_pct, up
+// or down; `changeId` is new for each such change (one alert per change).
+export interface LargePriceChange {
+  changeId: string;
+  restaurantId: string;
+  restaurantName: string;
+  cityId: string;
+  // How many of its prices crossed the threshold.
+  count: number;
+  at: Date;
+}
+
+export type LargePriceListener = (tx: Tx, change: LargePriceChange) => Promise<void>;
+
 // Who changes a restaurant and why, for the audit log.
 export interface MerchantChange {
   actor: AuditActor;
@@ -346,6 +361,19 @@ export class MerchantsService implements OnModuleInit {
     private readonly jobs: Jobs,
     private readonly categories: CategoriesService,
   ) {}
+
+  // AP §9.1.3 «تغيير أسعار كبير» (slice 2.32a): notifications raise the alert
+  // in the transaction of the price change (onLargePriceChange).
+  private readonly largePriceListeners: LargePriceListener[] = [];
+
+  onLargePriceChange(listener: LargePriceListener): void {
+    this.largePriceListeners.push(listener);
+  }
+
+  // Module-internal: the menu's price log tells the listeners.
+  async tellLargePriceChange(tx: Tx, change: LargePriceChange): Promise<void> {
+    for (const listener of this.largePriceListeners) await listener(tx, change);
+  }
 
   // AP §9.13, AP §9.6.3 step 1 (slice 2.27a): the restaurant's categories,
   // active ones of the content module, once each, at most
@@ -1795,6 +1823,16 @@ export class MerchantsService implements OnModuleInit {
           throw new MerchantsRefusedError('unknown_menu_row', `no such ${target.type} here`);
         }
       }
+      // RA §18 «menu changed» (slice 2.32a): a restaurant user's switch makes
+      // every other device of the restaurant read the menu again.
+      if (change.actor.type === 'merchant') {
+        await recordStateChange(tx, this.jobs, {
+          restaurantId,
+          cityId: row.cityId,
+          kind: 'menu_changed',
+          at: now,
+        });
+      }
       return availability.available ? null : { until };
     });
   }
@@ -2045,6 +2083,7 @@ export class MerchantsService implements OnModuleInit {
       .select({
         cityId: restaurants.cityId,
         accountStatus: restaurants.accountStatus,
+        nameAr: restaurants.nameAr,
         // The pin and the operations: a draft may still lack them.
         complete: sql<boolean>`${restaurants.location} IS NOT NULL AND ${restaurants.minimumOrder} IS NOT NULL`,
       })

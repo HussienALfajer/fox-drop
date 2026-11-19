@@ -41,6 +41,10 @@ export const stateKinds = [
   // change, an import: `count`), told to the owners only.
   'price_change',
   'price_change_bulk',
+  // RA §18 «menu changed» (slice 2.32a): the restaurant's own menu command
+  // (a price, a switch, hiding, the order, a window), so every device reads
+  // the menu again; no push.
+  'menu_changed',
 ] as const;
 export type StateKind = (typeof stateKinds)[number];
 
