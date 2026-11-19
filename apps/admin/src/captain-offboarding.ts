@@ -27,6 +27,20 @@ export const settlementKeys = {
   withheld: 'captainOffboarding.settled.withheld',
 } as const satisfies Record<NonNullable<Offboarding['depositSettled']>, string>;
 
+// The page's actions once the contract is being ended: no probation to
+// confirm and no second «إنهاء التعاقد»; none once it ended (the server
+// refuses them as well).
+export function offboardingActions<Action extends string>(
+  actions: ReadonlySet<Action>,
+  offboarding: Application['offboarding'],
+): ReadonlySet<Action> {
+  if (offboarding === null) return actions;
+  if (offboarding.endedAt !== null) return new Set();
+  return new Set(
+    [...actions].filter((action) => action !== 'confirm_probation' && action !== 'terminate'),
+  );
+}
+
 export type OffboardingCommand =
   | { action: 'terminate'; reason: string }
   | { action: 'return_kit'; returned: boolean }

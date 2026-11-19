@@ -191,6 +191,7 @@ export function settlementOf(contract: Pick<DepositRefund, 'kitReturned'>): Sett
 
 export type SettleRefusal =
   | 'no_open_session'
+  | 'drawer_short'
   | 'not_terminated'
   | 'contract_ended'
   | 'kit_not_checked'
@@ -202,6 +203,7 @@ export type SettleRefusal =
 
 const settleRefusals: readonly string[] = [
   'no_open_session',
+  'drawer_short',
   'not_terminated',
   'contract_ended',
   'kit_not_checked',

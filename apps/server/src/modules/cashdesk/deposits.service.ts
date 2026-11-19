@@ -368,6 +368,10 @@ export class DepositsService {
         );
         const ids: string[] = [];
         if (session) {
+          // The drawer pays back only the cash it holds (as a reimbursement).
+          if (contract.held > ((await this.desk.drawerCash(tx, session)).get(base) ?? 0n)) {
+            throw new CashDeskRefusedError('drawer_short', `the drawer lacks ${base}`);
+          }
           const year = cityYear(now, city.timeZone);
           const number = await nextNumber(tx, command.cityId, city.code, year);
           const [created] = await tx
@@ -466,7 +470,7 @@ export class DepositsService {
                 body: rendered.body,
                 level: rendered.level,
                 priority: rendered.priority,
-                data: { target: 'custody', receiptId },
+                data: { target: 'contract', receiptId },
                 at: now,
               },
             ],

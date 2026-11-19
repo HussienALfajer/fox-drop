@@ -536,7 +536,7 @@ export class AdminCashDeskController {
   // The deposit refunded in cash with its receipt «استرداد التأمين», or
   // withheld to the platform's revenue (no receipt: `receipt` null), as the
   // kit's step says (C17). 404 unknown_party; 409 no_open_session (a refund
-  // without a drawer), not_terminated, contract_ended, kit_not_checked,
+  // without a drawer), drawer_short, not_terminated, contract_ended, kit_not_checked,
   // deposit_settled (so a repeat with another key is refused),
   // wrong_settlement, nothing_held, no_base_currency.
   @Post('deposit-refunds')

@@ -21,8 +21,16 @@ import {
 
 // An activated captain whose contract was signed `signedDaysAgo` days ago,
 // with `paidNow` of a 30 000 deposit paid in cash at the desk.
-async function contracted(options: { signedDaysAgo: number; paidNow: string; phone?: string }) {
-  const { who, id, ops } = await awaitingKit(options.phone ? { phone: options.phone } : {});
+async function contracted(options: {
+  signedDaysAgo: number;
+  paidNow: string;
+  phone?: string;
+  idNumber?: string;
+}) {
+  const { who, id, ops } = await awaitingKit({
+    ...(options.phone ? { phone: options.phone } : {}),
+    ...(options.idNumber ? { idNumber: options.idNumber } : {}),
+  });
   const own = await admin('OWN');
   await ops('PUT', `captain-applications/${id}/kit`, {
     items: [{ code: 'thermal_bag', quantity: 1 }],
@@ -125,6 +133,10 @@ describe('«إنهاء التعاقد» in «فترة التزام» (AP §9.7.5
     expect(kit.json().offboarding).toMatchObject({ kitReturned: true, missing: ['deposit'] });
     expect((await settle(own, id, 'withheld')).json().error).toBe('wrong_settlement');
 
+    // A drawer without the cash refunds nothing.
+    const fin = await admin('FIN');
+    await fin('POST', 'cash-desk/sessions', { cityId: azaz, floats: [] });
+    expect((await settle(fin, id, 'refunded')).json().error).toBe('drawer_short');
     const key = randomUUID();
     const refunded = await settle(own, id, 'refunded', key);
     expect(refunded.statusCode).toBe(201);
@@ -187,7 +199,7 @@ describe('«إنهاء التعاقد» in «فترة التزام» (AP §9.7.5
 
 describe('«إنهاء التعاقد» in «فترة تجربة» (AP §9.7.2)', () => {
   it('flags nothing, withholds the deposit of a kit not returned and waits for the earnings', async () => {
-    const { id, ops, own } = await contracted({ signedDaysAgo: 0, paidNow: '15000' });
+    const { who, id, ops, own } = await contracted({ signedDaysAgo: 0, paidNow: '15000' });
     expect((await activate(ops, id)).statusCode).toBe(200);
     const terminated = await ops('POST', `captain-applications/${id}/terminate`, {
       reason: 'لم يجتز فترة التجربة',
@@ -206,9 +218,12 @@ describe('«إنهاء التعاقد» in «فترة تجربة» (AP §9.7.2)'
       ),
     );
     const before = (await ledger.balance(revenue)).amount;
-    const withheld = await settle(own, id, 'withheld');
+    const key = randomUUID();
+    const withheld = await settle(own, id, 'withheld', key);
     expect(withheld.statusCode).toBe(201);
     expect(withheld.json().receipt).toBeNull();
+    // A repeat of the key answers it again and withholds nothing more.
+    expect((await settle(own, id, 'withheld', key)).statusCode).toBe(201);
     expect((await ledger.balance(revenue)).amount - before).toBe(15_000n);
 
     // The captain earned 4 000: the account waits until they are paid.
@@ -264,5 +279,35 @@ describe('«إنهاء التعاقد» in «فترة تجربة» (AP §9.7.2)'
     const closed = await ops('POST', `captain-applications/${id}/offboarding/close`);
     expect(closed.statusCode).toBe(200);
     expect(await statusOf(id)).toBe('terminated');
+    // Not flagged: OPS activates the former captain again.
+    const back = await contracted({ signedDaysAgo: 0, paidNow: '0', phone: who.phone });
+    const review = (await back.ops('GET', `captain-applications/${back.id}`)).json();
+    expect(review.formerCaptain).toEqual({ captainId: id, earlyExit: false });
+    const again = await activate(back.ops, back.id);
+    expect(again.statusCode).toBe(200);
+    expect(again.json().activation.captainId).toBe(id);
+  });
+});
+
+describe('the flag «خروج مبكر» is the person’s (C17)', () => {
+  it('asks OWN for a flagged captain applying from another number with the same ID', async () => {
+    const idNumber = `${Date.now()}`.slice(-9) + '07';
+    const { id, ops, own } = await contracted({ signedDaysAgo: 40, paidNow: '0', idNumber });
+    expect((await activate(ops, id)).statusCode).toBe(200);
+    await ops('POST', `captain-applications/${id}/confirm-probation`);
+    await ops('POST', `captain-applications/${id}/terminate`, { reason: 'ترك العمل' });
+    await ops('PUT', `captain-applications/${id}/offboarding/kit`, { returned: true });
+    expect((await ops('POST', `captain-applications/${id}/offboarding/close`)).statusCode).toBe(
+      200,
+    );
+    // A new number: a new account, the same person.
+    const other = await contracted({ signedDaysAgo: 0, paidNow: '0', idNumber });
+    const review = (await other.ops('GET', `captain-applications/${other.id}`)).json();
+    expect(review.formerCaptain).toBeNull();
+    expect(review.duplicates).toContainEqual(
+      expect.objectContaining({ field: 'id_number', applicationId: id, earlyExit: true }),
+    );
+    expect((await activate(other.ops, other.id)).json().error).toBe('owner_approval_required');
+    expect((await activate(own, other.id)).statusCode).toBe(200);
   });
 });

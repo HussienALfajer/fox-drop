@@ -4,6 +4,7 @@ import { type FormEvent, lazy, type ReactNode, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { ActivationSection } from './captain-activation-page.js';
 import { OffboardingSection } from './captain-offboarding-page.js';
+import { offboardingActions } from './captain-offboarding.js';
 import {
   actionsOf,
   type Application,
@@ -177,7 +178,10 @@ function Review(props: {
   const { t } = useTranslation();
   const { application, timeZone } = props;
   const time = (at: string) => formatDateTime(at, timeZone);
-  const actions = actionsOf(props.session, application.stage);
+  const actions = offboardingActions(
+    actionsOf(props.session, application.stage),
+    application.offboarding,
+  );
   return (
     <>
       <section aria-label={t('captainApplications.data')}>
@@ -317,6 +321,7 @@ function Review(props: {
         session={props.session}
         actions={actions}
         cityCode={props.cityCode}
+        timeZone={timeZone}
       />
       <StageActions application={application} actions={actions} />
       {actions.has('note') && <NoteSection applicationId={application.id} />}

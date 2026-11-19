@@ -20,7 +20,7 @@ import {
 import { canSetCashLimit, cashLimitOf } from './captain-activation.js';
 import { useCurrentSession } from './cash-desk.js';
 import { chosenCity, citiesQuery } from './cities.js';
-import { decimalOf, formatMoney } from './format.js';
+import { decimalOf, formatDateTime, formatMoney } from './format.js';
 
 const route = getRouteApi('/signed-in/cash-desk/deposits');
 const signedIn = getRouteApi('/signed-in');
@@ -94,6 +94,7 @@ export function DepositsPage() {
             contract={contract}
             cityId={city.id}
             cityCode={city.code}
+            timeZone={city.timeZone}
           />
         ))
       )}
@@ -103,6 +104,7 @@ export function DepositsPage() {
 
 const settleRefusalKeys = {
   no_open_session: 'cashDesk.refusal.no_open_session',
+  drawer_short: 'cashDesk.refusal.drawer_short',
   not_terminated: 'depositRefunds.refusal.not_terminated',
   contract_ended: 'depositRefunds.refusal.contract_ended',
   kit_not_checked: 'depositRefunds.refusal.kit_not_checked',
@@ -115,7 +117,12 @@ const settleRefusalKeys = {
 
 // A contract being ended (AP §9.7.5 step 4): the deposit held and what the
 // kit's step says; the refund needs the drawer, the withholding does not.
-function RefundEntry(props: { contract: DepositRefund; cityId: string; cityCode: string }) {
+function RefundEntry(props: {
+  contract: DepositRefund;
+  cityId: string;
+  cityCode: string;
+  timeZone: string;
+}) {
   const { t } = useTranslation();
   const { contract } = props;
   const settlement = settlementOf(contract);
@@ -133,7 +140,7 @@ function RefundEntry(props: { contract: DepositRefund; cityId: string; cityCode:
       </h3>
       <p>
         {t('depositRefunds.line', {
-          day: contract.terminatedAt.slice(0, 10),
+          day: formatDateTime(contract.terminatedAt, props.timeZone),
           amount: formatMoney(contract.held),
         })}{' '}
         {contract.earlyExit && t('captainOffboarding.earlyExitFlag')}

@@ -1294,12 +1294,14 @@ export class ApplicationPipelineService {
         custodyLimit: row.custodyLimit!,
         custodyLimitCurrency: row.custodyLimitCurrency!,
       };
+      // C17: a person flagged «خروج مبكر» (by the account or the ID's
+      // number, so a new number changes nothing) is OWN's to activate.
+      if (!ownerApproval && (await this.flagged(tx, row))) {
+        throw new PipelineRefusedError('owner_approval_required');
+      }
       if (row.formerCaptainId === null) {
         await tx.insert(captainRecords).values({ id: captainId, ...record });
       } else {
-        if ((await this.flagged(tx, row.accountId)) && !ownerApproval) {
-          throw new PipelineRefusedError('owner_approval_required');
-        }
         const rehired = await tx
           .update(captainRecords)
           .set({
@@ -1780,6 +1782,14 @@ export class ApplicationPipelineService {
     await this.act(applicationId, admin, 'close', now, async (tx, row) => {
       openOffboarding(row);
       captainId = row.captainId!;
+      // The captain's row first, as the desk and the manual entries lock it
+      // before they move its custody or earnings, so the balances read here
+      // stay as read until the commit.
+      await tx
+        .select({ id: captainRecords.id })
+        .from(captainRecords)
+        .where(eq(captainRecords.id, captainId))
+        .for('update');
       const state = await this.offboardingState(row, tx);
       if (state.missing.length > 0) {
         throw new PipelineRefusedError('offboarding_incomplete', null, [], state.missing);
@@ -1802,13 +1812,18 @@ export class ApplicationPipelineService {
         after: { captainId },
       };
     });
-    if (changed !== null) await this.captains.afterStatus(captainId, changed, now);
     (released as (() => void) | null)?.();
+    if (changed !== null) await this.captains.afterStatus(captainId, changed, now);
   }
 
   private async offboardingOf(row: Row, names: Map<string, string>): Promise<Offboarding | null> {
     if (row.terminatedAt === null) return null;
-    const state = await this.offboardingState(row, this.database.db);
+    // Once closed every step was done: the captain's accounts may belong to
+    // a later contract since (a rehire).
+    const state =
+      row.endedAt === null
+        ? await this.offboardingState(row, this.database.db)
+        : { custodyZero: true, earningsZero: true, depositHeld: 0n, missing: [] };
     return {
       terminatedAt: row.terminatedAt,
       terminatedBy: names.get(row.terminatedBy!) ?? null,
@@ -1868,17 +1883,47 @@ export class ApplicationPipelineService {
     if (row.formerCaptainId === null) return null;
     return {
       captainId: row.formerCaptainId,
-      earlyExit: await this.flagged(this.database.db, row.accountId),
+      earlyExit: await this.flagged(this.database.db, row),
     };
   }
 
-  private async flagged(executor: Executor, accountId: string): Promise<boolean> {
-    const [found] = await executor
+  // Any contract of the same account, or of an application with the same ID
+  // number as this one's, ended early (C17: the flag is the person's).
+  private async flagged(
+    executor: Executor,
+    row: { id: string; accountId: string },
+  ): Promise<boolean> {
+    const [byAccount] = await executor
       .select({ id: applications.id })
       .from(applications)
-      .where(and(eq(applications.accountId, accountId), eq(applications.earlyExit, true)))
+      .where(and(eq(applications.accountId, row.accountId), eq(applications.earlyExit, true)))
       .limit(1);
-    return found !== undefined;
+    if (byAccount) return true;
+    const numbers = await executor
+      .select({ number: applicationDocuments.number })
+      .from(applicationDocuments)
+      .where(
+        and(
+          eq(applicationDocuments.applicationId, row.id),
+          eq(applicationDocuments.kind, 'national_id'),
+          isNotNull(applicationDocuments.number),
+        ),
+      );
+    const values = [...new Set(numbers.map((each) => each.number!))];
+    if (values.length === 0) return false;
+    const [byNumber] = await executor
+      .select({ id: applications.id })
+      .from(applicationDocuments)
+      .innerJoin(applications, eq(applications.id, applicationDocuments.applicationId))
+      .where(
+        and(
+          inArray(applicationDocuments.number, values),
+          eq(applicationDocuments.kind, 'national_id'),
+          eq(applications.earlyExit, true),
+        ),
+      )
+      .limit(1);
+    return byNumber !== undefined;
   }
 
   private async activeContracts(cityId: string): Promise<Row[]> {
@@ -1939,6 +1984,8 @@ export class ApplicationPipelineService {
       if (!row || row.stage === 'draft') throw new PipelineRefusedError('unknown_application');
       const steps = pipelineSteps(action, row.stage);
       if (steps === null) throw new PipelineRefusedError('wrong_stage', row.stage);
+      // An ended contract is history (slice 2.35b).
+      if (row.endedAt !== null) throw new PipelineRefusedError('contract_ended');
       const outcome = await work(tx, row);
       if (outcome === null) return;
       const stage = steps.at(-1) ?? row.stage;

@@ -508,6 +508,9 @@ export const applications = captains.table(
     uniqueIndex('applications_captain')
       .on(table.captainId)
       .where(sql`${table.endedAt} IS NULL`),
+    // Every contract of a captain, the ended ones included (the latest
+    // activated is read at each settlement and going online).
+    index('applications_captain_any').on(table.captainId, table.activatedAt.desc()),
     check(
       'applications_terminated',
       sql`(${table.terminatedAt} IS NULL) = (${table.terminatedBy} IS NULL) AND (${table.terminatedAt} IS NULL) = (${table.terminationReason} IS NULL) AND (${table.terminatedAt} IS NULL) = (${table.earlyExit} IS NULL) AND (${table.terminatedAt} IS NULL OR ${table.activatedAt} IS NOT NULL)`,

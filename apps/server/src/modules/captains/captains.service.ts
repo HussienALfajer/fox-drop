@@ -835,7 +835,10 @@ export class CaptainsService implements OnModuleInit {
         `a ${current} captain cannot become ${status}`,
       );
     }
-    if (status === 'active') {
+    // AP §9.7.5: while the contract is being ended the captain stays
+    // suspended until «إغلاق الحساب» terminates it (a timed suspension would
+    // lift it by itself).
+    if (status !== 'terminated') {
       const [open] = await tx
         .select({ id: applications.id })
         .from(applications)

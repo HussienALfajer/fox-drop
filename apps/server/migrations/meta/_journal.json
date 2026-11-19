@@ -946,6 +946,13 @@
       "when": 1795097285934,
       "tag": "0134_cashdesk_deposit_settlement",
       "breakpoints": true
+    },
+    {
+      "idx": 135,
+      "version": "7",
+      "when": 1795098873478,
+      "tag": "0135_captains_contracts_index",
+      "breakpoints": true
     }
   ]
 }

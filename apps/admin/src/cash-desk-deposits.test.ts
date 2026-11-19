@@ -27,3 +27,18 @@ describe('the deposit at termination', () => {
     });
   });
 });
+
+describe('the page’s actions once the contract is being ended', async () => {
+  const { offboardingActions } = await import('./captain-offboarding.js');
+  const all = new Set(['confirm_probation', 'terminate', 'return_kit', 'close', 'review_document']);
+  const offboarding = (endedAt: string | null) =>
+    ({ endedAt }) as Parameters<typeof offboardingActions>[1];
+
+  it('keeps every action before, drops the probation and «إنهاء التعاقد» during, and all after', () => {
+    expect(offboardingActions(all, null)).toBe(all);
+    expect([...offboardingActions(all, offboarding(null))].sort()).toEqual(
+      ['close', 'return_kit', 'review_document'].sort(),
+    );
+    expect(offboardingActions(all, offboarding('2026-11-19T10:00:00.000Z')).size).toBe(0);
+  });
+});

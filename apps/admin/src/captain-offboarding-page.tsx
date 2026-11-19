@@ -10,7 +10,7 @@ import {
   useOffboardingCommand,
 } from './captain-offboarding.js';
 import { CASH_DESK } from './cash-desk.js';
-import { formatMoney } from './format.js';
+import { formatDateTime, formatMoney } from './format.js';
 import { type AdminSession, can } from './session.js';
 
 // AP §9.7.5, §9.7.2, C17 (slice 2.35b): «إنهاء التعاقد» on an activated
@@ -21,6 +21,7 @@ export function OffboardingSection(props: {
   session: AdminSession;
   actions: ReadonlySet<string>;
   cityCode: string;
+  timeZone: string;
 }) {
   const { t } = useTranslation();
   const { application, actions } = props;
@@ -38,6 +39,7 @@ export function OffboardingSection(props: {
           canAct={actions.has('close')}
           canSettle={can(props.session, CASH_DESK)}
           cityCode={props.cityCode}
+          timeZone={props.timeZone}
         />
       )}
     </section>
@@ -90,6 +92,7 @@ function Checklist(props: {
   canAct: boolean;
   canSettle: boolean;
   cityCode: string;
+  timeZone: string;
 }) {
   const { t } = useTranslation();
   const { offboarding } = props;
@@ -101,7 +104,7 @@ function Checklist(props: {
     <>
       <p>
         {t('captainOffboarding.terminatedLine', {
-          day: offboarding.terminatedAt.slice(0, 10),
+          day: formatDateTime(offboarding.terminatedAt, props.timeZone),
           by: offboarding.terminatedBy ?? t('captainApplications.dash'),
           reason: offboarding.reason,
         })}
@@ -162,7 +165,9 @@ function Checklist(props: {
           {t('captainOffboarding.stepLabel', { step: t('captainOffboarding.step.close') })}{' '}
           {open
             ? t('captainOffboarding.open')
-            : t('captainOffboarding.closedAt', { day: offboarding.endedAt!.slice(0, 10) })}
+            : t('captainOffboarding.closedAt', {
+                day: formatDateTime(offboarding.endedAt!, props.timeZone),
+              })}
         </li>
       </ol>
       {open && offboarding.missing.length > 0 && (
