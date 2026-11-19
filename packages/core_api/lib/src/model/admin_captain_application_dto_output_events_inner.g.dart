@@ -33,6 +33,18 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentUpload =
 const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
 _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_interview =
     const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._('interview');
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kit =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._('kit');
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_cashLimit =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._('cashLimit');
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._('contract');
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._('deposit');
 
 AdminCaptainApplicationDtoOutputEventsInnerKindEnum
 _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValueOf(String name) {
@@ -51,6 +63,14 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValueOf(String name) {
       return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentUpload;
     case 'interview':
       return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_interview;
+    case 'kit':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kit;
+    case 'cashLimit':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_cashLimit;
+    case 'contract':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract;
+    case 'deposit':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit;
     default:
       throw ArgumentError(name);
   }
@@ -67,6 +87,10 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValues =
         _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentRequest,
         _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_documentUpload,
         _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_interview,
+        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kit,
+        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_cashLimit,
+        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract,
+        _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit,
       ],
     );
 
@@ -164,6 +188,11 @@ _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_drivingLicence =
     const AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum._(
       'drivingLicence',
     );
+const AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_signedContract =
+    const AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum._(
+      'signedContract',
+    );
 
 AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum
 _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnumValueOf(
@@ -182,6 +211,8 @@ _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnumValueOf(
       return _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_vehiclePapers;
     case 'drivingLicence':
       return _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_drivingLicence;
+    case 'signedContract':
+      return _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_signedContract;
     default:
       throw ArgumentError(name);
   }
@@ -198,6 +229,7 @@ _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnumValues =
       _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_criminalRecord,
       _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_vehiclePapers,
       _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_drivingLicence,
+      _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_signedContract,
     ]);
 
 const AdminCaptainApplicationDtoOutputEventsInnerDocumentStatusEnum
@@ -268,6 +300,10 @@ class _$AdminCaptainApplicationDtoOutputEventsInnerKindEnumSerializer
     'documentRequest': 'document_request',
     'documentUpload': 'document_upload',
     'interview': 'interview',
+    'kit': 'kit',
+    'cashLimit': 'cash_limit',
+    'contract': 'contract',
+    'deposit': 'deposit',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'submitted': 'submitted',
@@ -277,6 +313,10 @@ class _$AdminCaptainApplicationDtoOutputEventsInnerKindEnumSerializer
     'document_request': 'documentRequest',
     'document_upload': 'documentUpload',
     'interview': 'interview',
+    'kit': 'kit',
+    'cash_limit': 'cashLimit',
+    'contract': 'contract',
+    'deposit': 'deposit',
   };
 
   @override
@@ -366,6 +406,7 @@ class _$AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnumSerializer
     'criminalRecord': 'criminal_record',
     'vehiclePapers': 'vehicle_papers',
     'drivingLicence': 'driving_licence',
+    'signedContract': 'signed_contract',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'national_id': 'nationalId',
@@ -374,6 +415,7 @@ class _$AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnumSerializer
     'criminal_record': 'criminalRecord',
     'vehicle_papers': 'vehiclePapers',
     'driving_licence': 'drivingLicence',
+    'signed_contract': 'signedContract',
   };
 
   @override

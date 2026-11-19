@@ -36,6 +36,11 @@ _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_drivingLicence =
     const AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum._(
       'drivingLicence',
     );
+const AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum
+_$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_signedContract =
+    const AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum._(
+      'signedContract',
+    );
 
 AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum
 _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnumValueOf(String name) {
@@ -52,6 +57,8 @@ _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnumValueOf(String name) {
       return _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_vehiclePapers;
     case 'drivingLicence':
       return _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_drivingLicence;
+    case 'signedContract':
+      return _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_signedContract;
     default:
       throw ArgumentError(name);
   }
@@ -67,6 +74,7 @@ _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnumValues =
         _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_criminalRecord,
         _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_vehiclePapers,
         _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_drivingLicence,
+        _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_signedContract,
       ],
     );
 
@@ -127,6 +135,7 @@ class _$AdminCaptainApplicationDtoOutputDocumentsInnerKindEnumSerializer
     'criminalRecord': 'criminal_record',
     'vehiclePapers': 'vehicle_papers',
     'drivingLicence': 'driving_licence',
+    'signedContract': 'signed_contract',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'national_id': 'nationalId',
@@ -135,6 +144,7 @@ class _$AdminCaptainApplicationDtoOutputDocumentsInnerKindEnumSerializer
     'criminal_record': 'criminalRecord',
     'vehicle_papers': 'vehiclePapers',
     'driving_licence': 'drivingLicence',
+    'signed_contract': 'signedContract',
   };
 
   @override

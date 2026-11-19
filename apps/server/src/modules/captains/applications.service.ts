@@ -102,6 +102,8 @@ export interface ApplicationChange {
   cityId: string;
   fullName: string;
   stage: ApplicationStage;
+  // The captain made from it, once «مفعّل» (slice 2.35a).
+  captainId: string | null;
   // The event that tells it: names the push once.
   eventId: string;
   at: Date;
@@ -356,6 +358,8 @@ export class ApplicationsService {
     now = new Date(),
   ): Promise<Application> {
     refuseCaptain(applicant);
+    // «العقد الموقّع» is the office's (CA §5.3).
+    if (kind === 'signed_contract') throw new ApplicationRefusedError('document_not_needed');
     const current = await this.application(applicant.accountId, now);
     if (current === null) throw new ApplicationRefusedError('no_application');
     if (current.stage !== 'draft' && !uploadAgain(current, kind)) {
@@ -452,6 +456,9 @@ export class ApplicationsService {
     checked: CheckedDocument,
     uploadedBy: string,
     now: Date,
+    // The office's signed contract is accepted as it is uploaded (owner
+    // decision 2026-11-19, slice 2.35a).
+    acceptedBy: string | null = null,
   ): Promise<boolean> {
     // Checked again under the lock: a vehicle changed since the read.
     if (
@@ -513,7 +520,8 @@ export class ApplicationsService {
       number: checked.number,
       issueDate: checked.issueDate,
       expiresOn: checked.expiresOn,
-      status: 'pending',
+      status: acceptedBy === null ? 'pending' : 'accepted',
+      ...(acceptedBy === null ? {} : { reviewedBy: acceptedBy, reviewedAt: now }),
       uploadedBy,
       createdAt: now,
     });
@@ -730,6 +738,7 @@ export function changeOf(
     cityId: row.cityId,
     fullName: row.fullName,
     stage: row.stage,
+    captainId: row.captainId,
     eventId,
     at,
     notices,

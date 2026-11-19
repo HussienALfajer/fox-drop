@@ -71,6 +71,22 @@ export class PushDevices {
     });
   }
 
+  // «تفعيل» (AP §9.7.1, slice 2.35a): the applicant's devices become the
+  // captain's in the activation's transaction, so its pushes reach them.
+  async bindCaptain(tx: Executor, accountId: string, captainId: string): Promise<void> {
+    await tx
+      .update(pushDevices)
+      .set({ captainId })
+      .where(
+        and(
+          eq(pushDevices.party, 'captain'),
+          eq(pushDevices.accountId, accountId),
+          isNull(pushDevices.captainId),
+          isNull(pushDevices.endedAt),
+        ),
+      );
+  }
+
   // The live tokens of the recipient's open sessions.
   async targets(recipient: PushRecipient): Promise<PushTarget[]> {
     const live = isNull(pushDevices.endedAt);

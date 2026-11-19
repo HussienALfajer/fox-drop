@@ -27,8 +27,12 @@ export function requiredDocuments(vehicle: Vehicle | null): ApplicationDocumentK
 // How many files each document takes: the ID's front and back, one or two
 // pages of the others (decided by us).
 export function fileCountAllowed(kind: ApplicationDocumentKind, count: number): boolean {
-  return kind === 'national_id' ? count === 2 : count >= 1 && count <= 2;
+  if (kind === 'national_id') return count === 2;
+  // The signed contract's pages, up to CONTRACT_PAGES_MAX (decided by us).
+  return count >= 1 && count <= (kind === 'signed_contract' ? CONTRACT_PAGES_MAX : 2);
 }
+
+export const CONTRACT_PAGES_MAX = 6;
 
 // What the application still needs before it is sent, in the form's order:
 // the vehicle (step 2), each required document in force (step 3), the
@@ -101,6 +105,79 @@ export function criminalRecordExpiry(issueDate: string, validityMonths: number):
   return addMonths(issueDate, validityMonths);
 }
 
+// The day `days` after `day`.
+export function addDays(day: string, days: number): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+// AP §9.7.2, D24: the probation ends `captain.probation_days` after the
+// start; the commitment lasts `captain.min_commitment_months` from the
+// probation's confirmation, which is the probation's end when confirmed on
+// time.
+export function contractDates(contract: {
+  startsOn: string;
+  probationDays: number;
+  commitmentMonths: number;
+}): { probationEndsOn: string; commitmentEndsOn: string } {
+  const probationEndsOn = addDays(contract.startsOn, contract.probationDays);
+  return {
+    probationEndsOn,
+    commitmentEndsOn: addMonths(probationEndsOn, contract.commitmentMonths),
+  };
+}
+
+// AP §9.7.1 «تفعيل»: what the activation still waits for, in the order of
+// its conditions. The training passed is the stage «بانتظار العدة» itself;
+// the vehicle is the application's (step 2). Each required document and the
+// signed contract must be accepted and not expired.
+export type ActivationMissing =
+  `document:${ApplicationDocumentKind}` | 'kit' | 'deposit' | 'contract' | 'cash_limit';
+
+export function activationMissing(application: {
+  vehicle: Vehicle;
+  documents: {
+    kind: ApplicationDocumentKind;
+    status: 'pending' | 'accepted' | 'rejected';
+    expiresOn: string | null;
+  }[];
+  kitIssued: boolean;
+  depositRecorded: boolean;
+  contractRecorded: boolean;
+  cashLimitSet: boolean;
+  today: string;
+}): ActivationMissing[] {
+  const found: ActivationMissing[] = [];
+  for (const kind of [...requiredDocuments(application.vehicle), 'signed_contract' as const]) {
+    const document = application.documents.find((each) => each.kind === kind);
+    if (
+      !document ||
+      document.status !== 'accepted' ||
+      (document.expiresOn !== null && document.expiresOn <= application.today)
+    ) {
+      found.push(`document:${kind}`);
+    }
+  }
+  if (!application.kitIssued) found.push('kit');
+  if (!application.depositRecorded) found.push('deposit');
+  if (!application.contractRecorded) found.push('contract');
+  if (!application.cashLimitSet) found.push('cash_limit');
+  return found;
+}
+
+// AP §8.5.5 step 2: the instalment a Thursday settlement posts, never more
+// than what is left of the deposit (owner decision 2026-11-19).
+export function depositInstalmentDue(deposit: {
+  amount: bigint;
+  paid: bigint;
+  instalment: bigint | null;
+}): bigint {
+  const left = deposit.amount - deposit.paid;
+  if (deposit.instalment === null || left <= 0n) return 0n;
+  return left < deposit.instalment ? left : deposit.instalment;
+}
+
 // The calendar day of a moment on a city's clock.
 export function cityDay(at: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone }).format(at);
@@ -128,7 +205,14 @@ export type PipelineAction =
   | 'training_passed'
   | 'reject'
   | 'waitlist'
-  | 'back_from_waitlist';
+  | 'back_from_waitlist'
+  // At «بانتظار العدة» (slice 2.35a): the activation's records, then
+  // «تفعيل».
+  | 'issue_kit'
+  | 'set_cash_limit'
+  | 'record_contract'
+  | 'record_deposit'
+  | 'activate';
 
 // The stages each action takes an application in, and where it leaves it
 // (null: where it was). «مفعّل» is the activation's (2.35).
@@ -153,6 +237,11 @@ const PIPELINE: Record<
   waitlist: { from: ['new', 'under_review', 'interview', 'awaiting_kit'], to: 'waitlist' },
   // Owner decision 2026-11-19: back to «قيد المراجعة».
   back_from_waitlist: { from: ['waitlist'], to: 'under_review' },
+  issue_kit: { from: ['awaiting_kit'], to: null },
+  set_cash_limit: { from: ['awaiting_kit'], to: null },
+  record_contract: { from: ['awaiting_kit'], to: null },
+  record_deposit: { from: ['awaiting_kit'], to: null },
+  activate: { from: ['awaiting_kit'], to: 'active' },
 };
 
 // The stages an action passes through from `stage`, in order, or null when

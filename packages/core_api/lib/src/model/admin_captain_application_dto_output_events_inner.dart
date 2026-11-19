@@ -39,7 +39,7 @@ abstract class AdminCaptainApplicationDtoOutputEventsInner
 
   @BuiltValueField(wireName: r'kind')
   AdminCaptainApplicationDtoOutputEventsInnerKindEnum get kind;
-  // enum kindEnum {  submitted,  stage,  note,  document_review,  document_request,  document_upload,  interview,  };
+  // enum kindEnum {  submitted,  stage,  note,  document_review,  document_request,  document_upload,  interview,  kit,  cash_limit,  contract,  deposit,  };
 
   @BuiltValueField(wireName: r'stage')
   AdminCaptainApplicationDtoOutputEventsInnerStageEnum get stage;
@@ -47,7 +47,7 @@ abstract class AdminCaptainApplicationDtoOutputEventsInner
 
   @BuiltValueField(wireName: r'documentKind')
   AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum? get documentKind;
-  // enum documentKindEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  };
+  // enum documentKindEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  signed_contract,  };
 
   @BuiltValueField(wireName: r'documentStatus')
   AdminCaptainApplicationDtoOutputEventsInnerDocumentStatusEnum?
@@ -310,6 +310,18 @@ class AdminCaptainApplicationDtoOutputEventsInnerKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'interview')
   static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum interview =
       _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_interview;
+  @BuiltValueEnumConst(wireName: r'kit')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum kit =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kit;
+  @BuiltValueEnumConst(wireName: r'cash_limit')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum cashLimit =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_cashLimit;
+  @BuiltValueEnumConst(wireName: r'contract')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum contract =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract;
+  @BuiltValueEnumConst(wireName: r'deposit')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum deposit =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit;
 
   static Serializer<AdminCaptainApplicationDtoOutputEventsInnerKindEnum>
   get serializer =>
@@ -393,6 +405,10 @@ class AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum
   static const AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum
   drivingLicence =
       _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_drivingLicence;
+  @BuiltValueEnumConst(wireName: r'signed_contract')
+  static const AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum
+  signedContract =
+      _$adminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum_signedContract;
 
   static Serializer<AdminCaptainApplicationDtoOutputEventsInnerDocumentKindEnum>
   get serializer =>

@@ -50,7 +50,8 @@ export const stageKeys = {
   rejected: 'captainApplications.stage.rejected',
 } as const satisfies Record<Stage, string>;
 
-// D24's documents in the table's order (the signed contract is 2.35's).
+// D24's documents the applicant uploads, in the table's order (the signed
+// contract comes with «تسجيل العقد», slice 2.35a).
 export const DOCUMENT_KINDS = [
   'national_id',
   'personal_photo',
@@ -67,6 +68,7 @@ export const documentKindKeys = {
   criminal_record: 'captainApplications.document.criminal_record',
   vehicle_papers: 'captainApplications.document.vehicle_papers',
   driving_licence: 'captainApplications.document.driving_licence',
+  signed_contract: 'captainApplications.document.signed_contract',
 } as const satisfies Record<DocumentKind, string>;
 
 export const documentStatusKeys = {
@@ -83,6 +85,10 @@ export const eventKindKeys = {
   document_request: 'captainApplications.event.document_request',
   document_upload: 'captainApplications.event.document_upload',
   interview: 'captainApplications.event.interview',
+  kit: 'captainApplications.event.kit',
+  cash_limit: 'captainApplications.event.cash_limit',
+  contract: 'captainApplications.event.contract',
+  deposit: 'captainApplications.event.deposit',
 } as const satisfies Record<ApplicationEvent['kind'], string>;
 
 export const duplicateFieldKeys = {

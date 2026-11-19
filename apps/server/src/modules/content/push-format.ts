@@ -59,6 +59,7 @@ export const applicationDocumentLabels = {
   criminal_record: 'لا حكم عليه',
   vehicle_papers: 'أوراق المركبة',
   driving_licence: 'شهادة قيادة',
+  signed_contract: 'العقد الموقّع',
 } as const;
 
 const WEEKDAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];

@@ -3268,6 +3268,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captain-applications/{applicationId}/kit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainApplicationsIssueKit"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/cash-limit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainApplicationsSetCashLimit"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainApplicationsRecordContract"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsActivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/peak-bonus": {
         parameters: {
             query?: never;
@@ -9375,7 +9439,7 @@ export interface components {
                 plate: string | null;
                 documents: {
                     /** @enum {string} */
-                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
                     /** @enum {string} */
                     status: "pending" | "accepted" | "rejected";
                     /** @description Why it was rejected. */
@@ -9390,12 +9454,12 @@ export interface components {
                     uploadedAt: string;
                 }[];
                 /** @description What «إرسال الطلب» waits for, in the form’s order. */
-                missing: ("vehicle" | "document:national_id" | "document:personal_photo" | "document:civil_registry" | "document:criminal_record" | "document:vehicle_papers" | "document:driving_licence" | "terms")[];
+                missing: ("vehicle" | "document:national_id" | "document:personal_photo" | "document:civil_registry" | "document:criminal_record" | "document:vehicle_papers" | "document:driving_licence" | "document:signed_contract" | "terms")[];
                 submittedAt: string | null;
                 /** @description What the panel asked for: «يرجى رفع {المستند}: {السبب}». */
                 requests: {
                     /** @enum {string} */
-                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
                     reason: string;
                     /** Format: date-time */
                     requestedAt: string;
@@ -9756,13 +9820,13 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
             /** @description The documents activation waits for (D24). */
-            requiredDocuments: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence")[];
+            requiredDocuments: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract")[];
             /** @description Every upload, newest first. */
             documents: {
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
-                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
                 /** @enum {string} */
                 status: "pending" | "accepted" | "rejected";
                 reason: string | null;
@@ -9783,7 +9847,7 @@ export interface components {
             }[];
             requests: {
                 /** @enum {string} */
-                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
                 reason: string;
                 /** Format: date-time */
                 requestedAt: string;
@@ -9820,13 +9884,78 @@ export interface components {
                 /** @description The admin; null for the applicant. */
                 actor: string | null;
                 /** @enum {string} */
-                kind: "submitted" | "stage" | "note" | "document_review" | "document_request" | "document_upload" | "interview";
+                kind: "submitted" | "stage" | "note" | "document_review" | "document_request" | "document_upload" | "interview" | "kit" | "cash_limit" | "contract" | "deposit";
                 /** @enum {string} */
                 stage: "draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
-                documentKind: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence") | null;
+                documentKind: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract") | null;
                 documentStatus: ("pending" | "accepted" | "rejected") | null;
                 note: string | null;
             }[];
+            /** @description «بانتظار العدة» and «تفعيل» (slice 2.35a). */
+            activation: {
+                kit: {
+                    items: {
+                        code: string;
+                        label: string;
+                        size: string | null;
+                        quantity: number;
+                    }[];
+                    /** Format: date-time */
+                    issuedAt: string;
+                } | null;
+                cashLimit: {
+                    /** @description Minor units. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description captain.custody_limit_suggested.<vehicle>. */
+                suggestedCashLimit: {
+                    /** @description Minor units. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                contract: {
+                    /** Format: date */
+                    signedOn: string;
+                    /** Format: date */
+                    startsOn: string;
+                    probationDays: number;
+                    commitmentMonths: number;
+                    /** Format: date */
+                    probationEndsOn: string;
+                    /**
+                     * Format: date
+                     * @description When the probation is confirmed on its end.
+                     */
+                    commitmentEndsOn: string;
+                } | null;
+                deposit: {
+                    amount: {
+                        /** @description Minor units. */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description Deducted each Thursday until paid. */
+                    instalment: {
+                        /** @description Minor units. */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description Minor units in the city’s base, paid at the desk. */
+                    paid: string;
+                    recorded: boolean;
+                };
+                /** @description captain.kit_deposit_amount. */
+                suggestedDeposit: {
+                    /** @description Minor units. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description What «تفعيل» still waits for. */
+                missing: (string | ("kit" | "deposit" | "contract" | "cash_limit"))[];
+                captainId: string | null;
+                activatedAt: string | null;
+            };
         };
         AdminCaptainApplicationReviewDto: {
             /** @enum {string} */
@@ -9844,7 +9973,7 @@ export interface components {
         };
         AdminCaptainApplicationRequestDto: {
             /** @enum {string} */
-            kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+            kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
             /** @description Sent to the applicant. */
             reason: string;
         };
@@ -9864,6 +9993,36 @@ export interface components {
         AdminCaptainApplicationRejectDto: {
             /** @description Sent to the applicant (CA §5.4). */
             reason: string;
+        };
+        AdminCaptainApplicationKitDto: {
+            items: {
+                /** @description A reason of the list kit_item. */
+                code: string;
+                size?: string | null;
+                quantity: number;
+            }[];
+        };
+        AdminCaptainApplicationCashLimitDto: {
+            /** @description In the city's base currency. */
+            cashLimit: {
+                /** @description Minor units. */
+                amount: string;
+                currency: string;
+            };
+        };
+        AdminCaptainApplicationContractDto: {
+            /**
+             * Format: date
+             * @description Not after today on the city's clock.
+             */
+            signedOn: string;
+            /**
+             * Format: date
+             * @description Not before the signing.
+             */
+            startsOn: string;
+            /** @description The scan’s pages, from POST /v1/admin/uploads (captain_document). */
+            uploadIds: string[];
         };
         AdminPeakBonusDto_Output: {
             /** @description Null until the owner first saves it: off (D15). */
@@ -24017,7 +24176,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
             };
             cookie?: never;
         };
@@ -24454,7 +24613,7 @@ export interface operations {
             header?: never;
             path: {
                 applicationId: string;
-                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
             };
             cookie?: never;
         };
@@ -24627,6 +24786,106 @@ export interface operations {
         };
     };
     adminCaptainApplicationsBackFromWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsIssueKit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationKitDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsSetCashLimit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationCashLimitDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsRecordContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationContractDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsActivate: {
         parameters: {
             query?: never;
             header?: never;

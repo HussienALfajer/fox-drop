@@ -23,7 +23,7 @@ abstract class AdminCaptainApplicationRequestDto
         > {
   @BuiltValueField(wireName: r'kind')
   AdminCaptainApplicationRequestDtoKindEnum get kind;
-  // enum kindEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  };
+  // enum kindEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  signed_contract,  };
 
   /// Sent to the applicant.
   @BuiltValueField(wireName: r'reason')
@@ -164,6 +164,9 @@ class AdminCaptainApplicationRequestDtoKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'driving_licence')
   static const AdminCaptainApplicationRequestDtoKindEnum drivingLicence =
       _$adminCaptainApplicationRequestDtoKindEnum_drivingLicence;
+  @BuiltValueEnumConst(wireName: r'signed_contract')
+  static const AdminCaptainApplicationRequestDtoKindEnum signedContract =
+      _$adminCaptainApplicationRequestDtoKindEnum_signedContract;
 
   static Serializer<AdminCaptainApplicationRequestDtoKindEnum> get serializer =>
       _$adminCaptainApplicationRequestDtoKindEnumSerializer;

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  activationMissing,
+  addDays,
   addMonths,
+  contractDates,
+  depositInstalmentDue,
   cityDay,
   criminalRecordExpiry,
   fileCountAllowed,
@@ -154,5 +158,100 @@ describe('the pipeline rules', () => {
 
   it('compares plates without spaces in lower case', () => {
     expect(plateKey('AB 12 34')).toBe(plateKey('ab1234'));
+  });
+});
+
+// The activation's rules (AP §9.7.1–9.7.2, D24; slice 2.35a).
+describe('the activation rules', () => {
+  const accepted = (kind: string, expiresOn: string | null = null) => ({
+    kind: kind as never,
+    status: 'accepted' as const,
+    expiresOn,
+  });
+  const ready = {
+    vehicle: 'motorbike' as const,
+    documents: [
+      accepted('national_id'),
+      accepted('personal_photo'),
+      accepted('civil_registry'),
+      accepted('criminal_record', '2027-05-01'),
+      accepted('vehicle_papers'),
+      accepted('signed_contract'),
+    ],
+    kitIssued: true,
+    depositRecorded: true,
+    contractRecorded: true,
+    cashLimitSet: true,
+    today: '2026-11-19',
+  };
+
+  it('needs nothing more once every record is in', () => {
+    expect(activationMissing(ready)).toEqual([]);
+  });
+
+  it('names each record still missing, in the order of AP §9.7.1', () => {
+    expect(
+      activationMissing({
+        ...ready,
+        documents: [],
+        kitIssued: false,
+        depositRecorded: false,
+        contractRecorded: false,
+        cashLimitSet: false,
+      }),
+    ).toEqual([
+      'document:national_id',
+      'document:personal_photo',
+      'document:civil_registry',
+      'document:criminal_record',
+      'document:vehicle_papers',
+      'document:signed_contract',
+      'kit',
+      'deposit',
+      'contract',
+      'cash_limit',
+    ]);
+  });
+
+  it('counts a document only once accepted and not expired', () => {
+    const documents = ready.documents.map((document) =>
+      document.kind === 'civil_registry'
+        ? { ...document, status: 'pending' as const }
+        : document.kind === 'criminal_record'
+          ? { ...document, expiresOn: '2026-11-19' }
+          : document,
+    );
+    expect(activationMissing({ ...ready, documents })).toEqual([
+      'document:civil_registry',
+      'document:criminal_record',
+    ]);
+  });
+
+  it('asks no vehicle papers of a bicycle, and never the optional licence', () => {
+    expect(
+      activationMissing({
+        ...ready,
+        vehicle: 'bicycle',
+        documents: ready.documents.filter((document) => document.kind !== 'vehicle_papers'),
+      }),
+    ).toEqual([]);
+  });
+
+  it('computes the probation end and the commitment end from the start (D24)', () => {
+    expect(addDays('2026-11-20', 30)).toBe('2026-12-20');
+    expect(
+      contractDates({ startsOn: '2026-11-20', probationDays: 30, commitmentMonths: 3 }),
+    ).toEqual({ probationEndsOn: '2026-12-20', commitmentEndsOn: '2027-03-20' });
+  });
+
+  it('deducts the instalment until the deposit is paid, the last one what is left', () => {
+    expect(depositInstalmentDue({ amount: 50_000n, paid: 10_000n, instalment: 15_000n })).toBe(
+      15_000n,
+    );
+    expect(depositInstalmentDue({ amount: 50_000n, paid: 40_000n, instalment: 15_000n })).toBe(
+      10_000n,
+    );
+    expect(depositInstalmentDue({ amount: 50_000n, paid: 50_000n, instalment: 15_000n })).toBe(0n);
+    expect(depositInstalmentDue({ amount: 50_000n, paid: 0n, instalment: null })).toBe(0n);
   });
 });

@@ -36,6 +36,11 @@ _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_drivingLicence =
     const CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnum._(
       'drivingLicence',
     );
+const CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnum
+_$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_signedContract =
+    const CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnum._(
+      'signedContract',
+    );
 
 CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnum
 _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnumValueOf(
@@ -54,6 +59,8 @@ _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnumValueOf(
       return _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_vehiclePapers;
     case 'drivingLicence':
       return _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_drivingLicence;
+    case 'signedContract':
+      return _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_signedContract;
     default:
       throw ArgumentError(name);
   }
@@ -70,6 +77,7 @@ _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnumValues =
       _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_criminalRecord,
       _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_vehiclePapers,
       _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_drivingLicence,
+      _$captainApplicationDtoOutputApplicationDocumentsInnerKindEnum_signedContract,
     ]);
 
 const CaptainApplicationDtoOutputApplicationDocumentsInnerStatusEnum
@@ -133,6 +141,7 @@ class _$CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnumSerializer
     'criminalRecord': 'criminal_record',
     'vehiclePapers': 'vehicle_papers',
     'drivingLicence': 'driving_licence',
+    'signedContract': 'signed_contract',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'national_id': 'nationalId',
@@ -141,6 +150,7 @@ class _$CaptainApplicationDtoOutputApplicationDocumentsInnerKindEnumSerializer
     'criminal_record': 'criminalRecord',
     'vehicle_papers': 'vehiclePapers',
     'driving_licence': 'drivingLicence',
+    'signed_contract': 'signedContract',
   };
 
   @override

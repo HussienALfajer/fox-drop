@@ -7386,7 +7386,8 @@
                 "civil_registry",
                 "criminal_record",
                 "vehicle_papers",
-                "driving_licence"
+                "driving_licence",
+                "signed_contract"
               ]
             }
           }
@@ -8097,7 +8098,8 @@
                 "civil_registry",
                 "criminal_record",
                 "vehicle_papers",
-                "driving_licence"
+                "driving_licence",
+                "signed_contract"
               ]
             }
           }
@@ -8409,6 +8411,184 @@
     "/v1/admin/captain-applications/{applicationId}/back-from-waitlist": {
       "post": {
         "operationId": "adminCaptainApplicationsBackFromWaitlist",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captain-applications/{applicationId}/kit": {
+      "put": {
+        "operationId": "adminCaptainApplicationsIssueKit",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCaptainApplicationKitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captain-applications/{applicationId}/cash-limit": {
+      "put": {
+        "operationId": "adminCaptainApplicationsSetCashLimit",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCaptainApplicationCashLimitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captain-applications/{applicationId}/contract": {
+      "put": {
+        "operationId": "adminCaptainApplicationsRecordContract",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCaptainApplicationContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captain-applications/{applicationId}/activate": {
+      "post": {
+        "operationId": "adminCaptainApplicationsActivate",
         "parameters": [
           {
             "name": "applicationId",
@@ -29580,7 +29760,8 @@
                             "civil_registry",
                             "criminal_record",
                             "vehicle_papers",
-                            "driving_licence"
+                            "driving_licence",
+                            "signed_contract"
                           ]
                         },
                         "status": {
@@ -29668,6 +29849,7 @@
                         "document:criminal_record",
                         "document:vehicle_papers",
                         "document:driving_licence",
+                        "document:signed_contract",
                         "terms"
                       ]
                     },
@@ -29698,7 +29880,8 @@
                             "civil_registry",
                             "criminal_record",
                             "vehicle_papers",
-                            "driving_licence"
+                            "driving_licence",
+                            "signed_contract"
                           ]
                         },
                         "reason": {
@@ -31236,7 +31419,8 @@
                 "civil_registry",
                 "criminal_record",
                 "vehicle_papers",
-                "driving_licence"
+                "driving_licence",
+                "signed_contract"
               ]
             },
             "description": "The documents activation waits for (D24)."
@@ -31259,7 +31443,8 @@
                     "civil_registry",
                     "criminal_record",
                     "vehicle_papers",
-                    "driving_licence"
+                    "driving_licence",
+                    "signed_contract"
                   ]
                 },
                 "status": {
@@ -31384,7 +31569,8 @@
                     "civil_registry",
                     "criminal_record",
                     "vehicle_papers",
-                    "driving_licence"
+                    "driving_licence",
+                    "signed_contract"
                   ]
                 },
                 "reason": {
@@ -31578,7 +31764,11 @@
                     "document_review",
                     "document_request",
                     "document_upload",
-                    "interview"
+                    "interview",
+                    "kit",
+                    "cash_limit",
+                    "contract",
+                    "deposit"
                   ]
                 },
                 "stage": {
@@ -31604,7 +31794,8 @@
                         "civil_registry",
                         "criminal_record",
                         "vehicle_papers",
-                        "driving_licence"
+                        "driving_licence",
+                        "signed_contract"
                       ]
                     },
                     {
@@ -31646,6 +31837,327 @@
               ],
               "additionalProperties": false
             }
+          },
+          "activation": {
+            "type": "object",
+            "properties": {
+              "kit": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "size": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "label",
+                            "size",
+                            "quantity"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "issuedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "items",
+                      "issuedAt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cashLimit": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$",
+                        "description": "Minor units."
+                      },
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      }
+                    },
+                    "required": [
+                      "amount",
+                      "currency"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "suggestedCashLimit": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$",
+                        "description": "Minor units."
+                      },
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      }
+                    },
+                    "required": [
+                      "amount",
+                      "currency"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "captain.custody_limit_suggested.<vehicle>."
+              },
+              "contract": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "signedOn": {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      "startsOn": {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      "probationDays": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "commitmentMonths": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "probationEndsOn": {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      "commitmentEndsOn": {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                        "description": "When the probation is confirmed on its end."
+                      }
+                    },
+                    "required": [
+                      "signedOn",
+                      "startsOn",
+                      "probationDays",
+                      "commitmentMonths",
+                      "probationEndsOn",
+                      "commitmentEndsOn"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "deposit": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^\\d{1,18}$",
+                            "description": "Minor units."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$"
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "instalment": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^\\d{1,18}$",
+                            "description": "Minor units."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$"
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Deducted each Thursday until paid."
+                  },
+                  "paid": {
+                    "type": "string",
+                    "description": "Minor units in the city’s base, paid at the desk."
+                  },
+                  "recorded": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "amount",
+                  "instalment",
+                  "paid",
+                  "recorded"
+                ],
+                "additionalProperties": false
+              },
+              "suggestedDeposit": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$",
+                        "description": "Minor units."
+                      },
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      }
+                    },
+                    "required": [
+                      "amount",
+                      "currency"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "captain.kit_deposit_amount."
+              },
+              "missing": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^document:(national_id|personal_photo|civil_registry|criminal_record|vehicle_papers|driving_licence|signed_contract)$"
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "kit",
+                        "deposit",
+                        "contract",
+                        "cash_limit"
+                      ]
+                    }
+                  ]
+                },
+                "description": "What «تفعيل» still waits for."
+              },
+              "captainId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "activatedAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kit",
+              "cashLimit",
+              "suggestedCashLimit",
+              "contract",
+              "deposit",
+              "suggestedDeposit",
+              "missing",
+              "captainId",
+              "activatedAt"
+            ],
+            "additionalProperties": false,
+            "description": "«بانتظار العدة» and «تفعيل» (slice 2.35a)."
           }
         },
         "required": [
@@ -31667,7 +32179,8 @@
           "interview",
           "rejection",
           "duplicates",
-          "events"
+          "events",
+          "activation"
         ],
         "additionalProperties": false
       },
@@ -31754,7 +32267,8 @@
               "civil_registry",
               "criminal_record",
               "vehicle_papers",
-              "driving_licence"
+              "driving_licence",
+              "signed_contract"
             ]
           },
           "reason": {
@@ -31826,6 +32340,110 @@
         },
         "required": [
           "reason"
+        ]
+      },
+      "AdminCaptainApplicationKitDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60,
+                  "description": "A reason of the list kit_item."
+                },
+                "size": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 20
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "code",
+                "quantity"
+              ]
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "AdminCaptainApplicationCashLimitDto": {
+        "type": "object",
+        "properties": {
+          "cashLimit": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^\\d{1,18}$",
+                "description": "Minor units."
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "description": "In the city's base currency."
+          }
+        },
+        "required": [
+          "cashLimit"
+        ]
+      },
+      "AdminCaptainApplicationContractDto": {
+        "type": "object",
+        "properties": {
+          "signedOn": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Not after today on the city's clock."
+          },
+          "startsOn": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Not before the signing."
+          },
+          "uploadIds": {
+            "minItems": 1,
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "The scan’s pages, from POST /v1/admin/uploads (captain_document)."
+          }
+        },
+        "required": [
+          "signedOn",
+          "startsOn",
+          "uploadIds"
         ]
       },
       "AdminPeakBonusDto_Output": {

@@ -400,6 +400,13 @@ export class CaptainsService implements OnModuleInit {
           FROM captains.captains WHERE city_id = ${cityId} AND status <> 'terminated'
             AND max_pickup_currency IS NOT NULL
         UNION
+        SELECT 'captain.custody_limit' AS key, custody_limit_currency AS currency
+          FROM captains.applications WHERE city_id = ${cityId} AND stage = 'awaiting_kit'
+            AND custody_limit_currency IS NOT NULL
+        UNION
+        SELECT 'captain.kit_deposit' AS key, deposit_currency AS currency
+          FROM captains.applications WHERE city_id = ${cityId} AND deposit_currency IS NOT NULL
+        UNION
         SELECT 'captain.pay_table' AS key, currency FROM captains.pay_tables
           WHERE city_id = ${cityId} AND (effective_from > now() OR id = (
             SELECT id FROM captains.pay_tables WHERE city_id = ${cityId} AND effective_from <= now()
@@ -2209,18 +2216,24 @@ export class CaptainsService implements OnModuleInit {
   // As the merchants' amounts: the base, or until the first order locks it,
   // another of the city's currencies.
   private async checkBaseCurrency(tx: Tx, cityId: string, currency: string): Promise<void> {
-    await lockCityCurrencies(tx, cityId);
-    const base = await this.fx.baseCurrency(cityId, tx);
-    const allowed =
-      currency === base ||
-      (!(await this.fx.baseLocked(cityId, tx)) &&
-        (await this.fx.cityCurrencies(cityId, tx)).some((entry) => entry.currency === currency));
-    if (!allowed) {
+    if (!(await this.inBaseCurrency(tx, cityId, currency))) {
       throw new CaptainsRefusedError(
         'not_in_base_currency',
-        `amounts are in the city's base currency, ${base ?? 'not chosen yet'}`,
+        `amounts are in the city's base currency`,
       );
     }
+  }
+
+  // Under the city's currencies lock: the application pipeline's cash limit
+  // checks it too (slice 2.35a).
+  async inBaseCurrency(tx: Tx, cityId: string, currency: string): Promise<boolean> {
+    await lockCityCurrencies(tx, cityId);
+    const base = await this.fx.baseCurrency(cityId, tx);
+    return (
+      currency === base ||
+      (!(await this.fx.baseLocked(cityId, tx)) &&
+        (await this.fx.cityCurrencies(cityId, tx)).some((entry) => entry.currency === currency))
+    );
   }
 }
 

@@ -39,7 +39,7 @@ abstract class AdminCaptainApplicationDtoOutputDocumentsInner
 
   @BuiltValueField(wireName: r'kind')
   AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum get kind;
-  // enum kindEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  };
+  // enum kindEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  signed_contract,  };
 
   @BuiltValueField(wireName: r'status')
   AdminCaptainApplicationDtoOutputDocumentsInnerStatusEnum get status;
@@ -423,6 +423,10 @@ class AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum extends EnumClass {
   static const AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum
   drivingLicence =
       _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_drivingLicence;
+  @BuiltValueEnumConst(wireName: r'signed_contract')
+  static const AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum
+  signedContract =
+      _$adminCaptainApplicationDtoOutputDocumentsInnerKindEnum_signedContract;
 
   static Serializer<AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum>
   get serializer =>

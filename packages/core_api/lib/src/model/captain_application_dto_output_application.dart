@@ -70,7 +70,7 @@ abstract class CaptainApplicationDtoOutputApplication
   /// What «إرسال الطلب» waits for, in the form’s order.
   @BuiltValueField(wireName: r'missing')
   BuiltList<CaptainApplicationDtoOutputApplicationMissingEnum> get missing;
-  // enum missingEnum {  vehicle,  document:national_id,  document:personal_photo,  document:civil_registry,  document:criminal_record,  document:vehicle_papers,  document:driving_licence,  terms,  };
+  // enum missingEnum {  vehicle,  document:national_id,  document:personal_photo,  document:civil_registry,  document:criminal_record,  document:vehicle_papers,  document:driving_licence,  document:signed_contract,  terms,  };
 
   @BuiltValueField(wireName: r'submittedAt')
   DateTime? get submittedAt;
@@ -529,6 +529,10 @@ class CaptainApplicationDtoOutputApplicationMissingEnum extends EnumClass {
   static const CaptainApplicationDtoOutputApplicationMissingEnum
   documentColonDrivingLicence =
       _$captainApplicationDtoOutputApplicationMissingEnum_documentColonDrivingLicence;
+  @BuiltValueEnumConst(wireName: r'document:signed_contract')
+  static const CaptainApplicationDtoOutputApplicationMissingEnum
+  documentColonSignedContract =
+      _$captainApplicationDtoOutputApplicationMissingEnum_documentColonSignedContract;
   @BuiltValueEnumConst(wireName: r'terms')
   static const CaptainApplicationDtoOutputApplicationMissingEnum terms =
       _$captainApplicationDtoOutputApplicationMissingEnum_terms;

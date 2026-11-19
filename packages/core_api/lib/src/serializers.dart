@@ -48,14 +48,27 @@ import 'package:core_api/src/model/admin_canned_replies_dto.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_output.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_output_replies_inner.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_replies_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_cash_limit_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_cash_limit_dto_cash_limit.dart';
+import 'package:core_api/src/model/admin_captain_application_contract_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_document_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation_cash_limit.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation_contract.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation_deposit.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation_kit.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation_kit_items_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation_missing_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation_suggested_cash_limit.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_documents_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_duplicates_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_events_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_rejection.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_requests_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_interview_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_kit_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_kit_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_note_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_reject_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_request_dto.dart';
@@ -1085,14 +1098,27 @@ part 'serializers.g.dart';
   AdminCannedRepliesDtoOutput,
   AdminCannedRepliesDtoOutputRepliesInner,
   AdminCannedRepliesDtoRepliesInner,
+  AdminCaptainApplicationCashLimitDto,
+  AdminCaptainApplicationCashLimitDtoCashLimit,
+  AdminCaptainApplicationContractDto,
   AdminCaptainApplicationDocumentDto,
   AdminCaptainApplicationDtoOutput,
+  AdminCaptainApplicationDtoOutputActivation,
+  AdminCaptainApplicationDtoOutputActivationCashLimit,
+  AdminCaptainApplicationDtoOutputActivationContract,
+  AdminCaptainApplicationDtoOutputActivationDeposit,
+  AdminCaptainApplicationDtoOutputActivationKit,
+  AdminCaptainApplicationDtoOutputActivationKitItemsInner,
+  AdminCaptainApplicationDtoOutputActivationMissingInner,
+  AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit,
   AdminCaptainApplicationDtoOutputDocumentsInner,
   AdminCaptainApplicationDtoOutputDuplicatesInner,
   AdminCaptainApplicationDtoOutputEventsInner,
   AdminCaptainApplicationDtoOutputRejection,
   AdminCaptainApplicationDtoOutputRequestsInner,
   AdminCaptainApplicationInterviewDto,
+  AdminCaptainApplicationKitDto,
+  AdminCaptainApplicationKitDtoItemsInner,
   AdminCaptainApplicationNoteDto,
   AdminCaptainApplicationRejectDto,
   AdminCaptainApplicationRequestDto,
@@ -2605,6 +2631,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCaptainApplicationDtoOutputActivationKitItemsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainApplicationDtoOutputActivationKitItemsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminPickerDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminPickerDtoOutputCaptainsInner>(),
@@ -3054,6 +3089,12 @@ Serializers serializers =
               FullType(AdminTicketPageDtoOutputReportLinesInner),
             ]),
             () => ListBuilder<AdminTicketPageDtoOutputReportLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainApplicationKitDtoItemsInner),
+            ]),
+            () => ListBuilder<AdminCaptainApplicationKitDtoItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3709,6 +3750,15 @@ Serializers serializers =
               FullType(AdminRatingsDtoOutputRatingsInner),
             ]),
             () => ListBuilder<AdminRatingsDtoOutputRatingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainApplicationDtoOutputActivationMissingInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainApplicationDtoOutputActivationMissingInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

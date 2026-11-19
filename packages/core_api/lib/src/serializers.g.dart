@@ -60,8 +60,26 @@ Serializers _$serializers =
           ..add(AdminCannedRepliesDtoOutput.serializer)
           ..add(AdminCannedRepliesDtoOutputRepliesInner.serializer)
           ..add(AdminCannedRepliesDtoRepliesInner.serializer)
+          ..add(AdminCaptainApplicationCashLimitDto.serializer)
+          ..add(AdminCaptainApplicationCashLimitDtoCashLimit.serializer)
+          ..add(AdminCaptainApplicationContractDto.serializer)
           ..add(AdminCaptainApplicationDocumentDto.serializer)
           ..add(AdminCaptainApplicationDtoOutput.serializer)
+          ..add(AdminCaptainApplicationDtoOutputActivation.serializer)
+          ..add(AdminCaptainApplicationDtoOutputActivationCashLimit.serializer)
+          ..add(AdminCaptainApplicationDtoOutputActivationContract.serializer)
+          ..add(AdminCaptainApplicationDtoOutputActivationDeposit.serializer)
+          ..add(AdminCaptainApplicationDtoOutputActivationKit.serializer)
+          ..add(
+            AdminCaptainApplicationDtoOutputActivationKitItemsInner.serializer,
+          )
+          ..add(
+            AdminCaptainApplicationDtoOutputActivationMissingInner.serializer,
+          )
+          ..add(
+            AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit
+                .serializer,
+          )
           ..add(AdminCaptainApplicationDtoOutputDocumentsInner.serializer)
           ..add(
             AdminCaptainApplicationDtoOutputDocumentsInnerKindEnum.serializer,
@@ -98,6 +116,8 @@ Serializers _$serializers =
           ..add(AdminCaptainApplicationDtoOutputStageEnum.serializer)
           ..add(AdminCaptainApplicationDtoOutputVehicleEnum.serializer)
           ..add(AdminCaptainApplicationInterviewDto.serializer)
+          ..add(AdminCaptainApplicationKitDto.serializer)
+          ..add(AdminCaptainApplicationKitDtoItemsInner.serializer)
           ..add(AdminCaptainApplicationNoteDto.serializer)
           ..add(AdminCaptainApplicationRejectDto.serializer)
           ..add(AdminCaptainApplicationRequestDto.serializer)
@@ -1845,6 +1865,28 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
+                AdminCaptainApplicationDtoOutputActivationKitItemsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainApplicationDtoOutputActivationKitItemsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCaptainApplicationDtoOutputActivationMissingInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainApplicationDtoOutputActivationMissingInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
                 AdminCaptainApplicationDtoOutputRequiredDocumentsEnum,
               ),
             ]),
@@ -1877,6 +1919,12 @@ Serializers _$serializers =
               const FullType(AdminCaptainApplicationDtoOutputEventsInner),
             ]),
             () => ListBuilder<AdminCaptainApplicationDtoOutputEventsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainApplicationKitDtoItemsInner),
+            ]),
+            () => ListBuilder<AdminCaptainApplicationKitDtoItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4485,6 +4533,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

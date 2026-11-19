@@ -965,6 +965,7 @@
           "application_interview": "موعد المقابلة والتدريب",
           "application_awaiting_kit": "اجتياز التدريب",
           "application_waitlist": "طلب الانضمام في قائمة الانتظار",
+          "application_active": "تفعيل الكابتن",
           "application_rejected": "رفض طلب الانضمام",
           "ticket_resolved": "الرد على بلاغ",
           "pickup_corrected": "تصحيح دفعة استلام"
@@ -3576,7 +3577,8 @@
       "civil_registry": "إخراج قيد",
       "criminal_record": "لا حكم عليه",
       "vehicle_papers": "أوراق المركبة",
-      "driving_licence": "شهادة قيادة"
+      "driving_licence": "شهادة قيادة",
+      "signed_contract": "العقد الموقّع"
     },
     "documentStatus": {
       "pending": "بانتظار التحقق",
@@ -3590,7 +3592,11 @@
       "document_review": "{{kind}}: {{status}}",
       "document_request": "طلب مستند: {{kind}}",
       "document_upload": "رفع {{kind}}",
-      "interview": "حدّد المقابلة"
+      "interview": "حدّد المقابلة",
+      "kit": "سلّم العدة",
+      "cash_limit": "حدّد حد النقد",
+      "contract": "سجّل العقد",
+      "deposit": "سجّل التأمين"
     },
     "duplicate": {
       "id_number": "رقم الهوية",

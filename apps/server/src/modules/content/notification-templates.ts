@@ -273,6 +273,8 @@ const captain: Entry[] = [
   ['application_interview', '29', 'موعد المقابلة والتدريب: {اليوم} {الساعة} في {المكان}', 'silent'],
   ['application_awaiting_kit', '29', 'اجتزت التدريب. استلم العدة ووقّع العقد في المكتب.', 'silent'],
   ['application_waitlist', '29', 'لا نحتاج كباتن جدداً حالياً. طلبك محفوظ وسنتواصل معك.', 'silent'],
+  // «مفعّل» (CA §5.4, slice 2.35a): to the captain the activation made.
+  ['application_active', '29', 'مرحباً بك في FOX DROP!', 'silent'],
   [
     'application_rejected',
     '29',

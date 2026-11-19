@@ -15,7 +15,7 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
+import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
@@ -38,6 +38,17 @@ const documentKind = z.enum(applicationDocumentKinds);
 const stage = z.enum(applicationStages);
 const documentStatus = z.enum(['pending', 'accepted', 'rejected']);
 const reason = z.string().trim().min(1).max(500);
+const money = z.object({
+  amount: z
+    .string()
+    .regex(/^\d{1,18}$/u)
+    .describe('Minor units.'),
+  currency: z.string().regex(/^[A-Z]{3}$/u),
+});
+const activationMissing = z.union([
+  z.templateLiteral(['document:', documentKind]),
+  z.enum(['kit', 'deposit', 'contract', 'cash_limit']),
+]);
 
 class AdminCaptainApplicationsQueryDto extends createZodDto(
   z.object({ cityId: z.uuid(), stage: z.enum(boardStages).default('new') }),
@@ -147,6 +158,76 @@ class AdminCaptainApplicationDto extends createZodDto(
         note: z.string().nullable(),
       }),
     ),
+    activation: z
+      .object({
+        kit: z
+          .object({
+            items: z.array(
+              z.object({
+                code: z.string(),
+                label: z.string(),
+                size: z.string().nullable(),
+                quantity: z.int(),
+              }),
+            ),
+            issuedAt: z.iso.datetime(),
+          })
+          .nullable(),
+        cashLimit: money.nullable(),
+        suggestedCashLimit: money.nullable().describe('captain.custody_limit_suggested.<vehicle>.'),
+        contract: z
+          .object({
+            signedOn: z.iso.date(),
+            startsOn: z.iso.date(),
+            probationDays: z.int(),
+            commitmentMonths: z.int(),
+            probationEndsOn: z.iso.date(),
+            commitmentEndsOn: z.iso.date().describe('When the probation is confirmed on its end.'),
+          })
+          .nullable(),
+        deposit: z.object({
+          amount: money.nullable(),
+          instalment: money.nullable().describe('Deducted each Thursday until paid.'),
+          paid: z.string().describe('Minor units in the city’s base, paid at the desk.'),
+          recorded: z.boolean(),
+        }),
+        suggestedDeposit: money.nullable().describe('captain.kit_deposit_amount.'),
+        missing: z.array(activationMissing).describe('What «تفعيل» still waits for.'),
+        captainId: z.uuid().nullable(),
+        activatedAt: z.iso.datetime().nullable(),
+      })
+      .describe('«بانتظار العدة» and «تفعيل» (slice 2.35a).'),
+  }),
+) {}
+
+class AdminCaptainApplicationKitDto extends createZodDto(
+  z.object({
+    items: z
+      .array(
+        z.object({
+          code: z.string().min(1).max(60).describe('A reason of the list kit_item.'),
+          size: z.string().max(20).nullish(),
+          quantity: z.int().min(1).max(20),
+        }),
+      )
+      .min(1)
+      .max(20),
+  }),
+) {}
+
+class AdminCaptainApplicationCashLimitDto extends createZodDto(
+  z.object({ cashLimit: money.describe("In the city's base currency.") }),
+) {}
+
+class AdminCaptainApplicationContractDto extends createZodDto(
+  z.object({
+    signedOn: z.iso.date().describe("Not after today on the city's clock."),
+    startsOn: z.iso.date().describe('Not before the signing.'),
+    uploadIds: z
+      .array(z.uuid())
+      .min(1)
+      .max(6)
+      .describe('The scan’s pages, from POST /v1/admin/uploads (captain_document).'),
   }),
 ) {}
 
@@ -238,7 +319,7 @@ export class AdminCaptainApplicationsController {
   }
 
   @Get()
-  @RequirePermission('captains.read')
+  @RequireAnyPermission('captains.read', 'captains.cash_limit')
   @ZodResponse({ status: 200, type: AdminCaptainApplicationsDto })
   async board(@Query() query: AdminCaptainApplicationsQueryDto) {
     const board = await this.pipeline.board(query.cityId, query.stage);
@@ -252,8 +333,9 @@ export class AdminCaptainApplicationsController {
     };
   }
 
+  // FIN reads it too, for the cash limit (slice 2.35a).
   @Get(':applicationId')
-  @RequirePermission('captains.read')
+  @RequireAnyPermission('captains.read', 'captains.cash_limit')
   @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
   review(
     @Param() params: AdminCaptainApplicationParamsDto,
@@ -417,6 +499,80 @@ export class AdminCaptainApplicationsController {
       this.pipeline.backFromWaitlist(params.applicationId, adminOf(session, request)),
     );
   }
+
+  // «تسليم العدة» (slice 2.35a). 400 invalid_kit (a code not of kit_item).
+  @Put(':applicationId/kit')
+  @RequirePermission('captains.manage')
+  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
+  issueKit(
+    @Param() params: AdminCaptainApplicationParamsDto,
+    @Body() body: AdminCaptainApplicationKitDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.page(params.applicationId, session, request, () =>
+      this.pipeline.issueKit(
+        params.applicationId,
+        adminOf(session, request),
+        body.items.map((item) => ({ ...item, size: item.size ?? null })),
+      ),
+    );
+  }
+
+  // The cash limit before activation (D10; FIN, OWN). 400
+  // invalid_cash_limit; 409 not_in_base_currency.
+  @Put(':applicationId/cash-limit')
+  @RequirePermission('captains.cash_limit')
+  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
+  setCashLimit(
+    @Param() params: AdminCaptainApplicationParamsDto,
+    @Body() body: AdminCaptainApplicationCashLimitDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.page(params.applicationId, session, request, () =>
+      this.pipeline.setCashLimit(params.applicationId, adminOf(session, request), {
+        amount: BigInt(body.cashLimit.amount),
+        currency: body.cashLimit.currency,
+      }),
+    );
+  }
+
+  // «تسجيل العقد» with the scan (AP §9.7.2). 400 invalid_contract,
+  // invalid_files and the uploads' refusals.
+  @Put(':applicationId/contract')
+  @RequirePermission('captains.manage')
+  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
+  recordContract(
+    @Param() params: AdminCaptainApplicationParamsDto,
+    @Body() body: AdminCaptainApplicationContractDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.page(params.applicationId, session, request, () =>
+      this.pipeline.recordContract(params.applicationId, adminOf(session, request), {
+        signedOn: body.signedOn,
+        startsOn: body.startsOn,
+        document: { uploadIds: body.uploadIds },
+      }),
+    );
+  }
+
+  // «تفعيل» (AP §9.7.1). 409 activation_incomplete with `missing`;
+  // wrong_stage once activated, so a repeat is refused.
+  @Post(':applicationId/activate')
+  @RequirePermission('captains.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
+  activate(
+    @Param() params: AdminCaptainApplicationParamsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.page(params.applicationId, session, request, async () => {
+      await this.pipeline.activate(params.applicationId, adminOf(session, request));
+    });
+  }
 }
 
 function adminOf(session: AdminSession, request: FastifyRequest): PipelineAdmin {
@@ -460,7 +616,28 @@ function body(review: Review, session: AdminSession) {
       reapplyFrom: review.rejection.reapplyFrom.toISOString(),
     },
     events: review.events.map((event) => ({ ...event, at: event.at.toISOString() })),
+    activation: {
+      ...review.activation,
+      kit: review.activation.kit && {
+        items: review.activation.kit.items,
+        issuedAt: review.activation.kit.issuedAt.toISOString(),
+      },
+      cashLimit: moneyBody(review.activation.cashLimit),
+      suggestedCashLimit: moneyBody(review.activation.suggestedCashLimit),
+      deposit: {
+        amount: moneyBody(review.activation.deposit.amount),
+        instalment: moneyBody(review.activation.deposit.instalment),
+        paid: review.activation.deposit.paid.toString(),
+        recorded: review.activation.deposit.recorded,
+      },
+      suggestedDeposit: moneyBody(review.activation.suggestedDeposit),
+      activatedAt: iso(review.activation.activatedAt),
+    },
   };
+}
+
+function moneyBody(money: { amount: bigint; currency: string } | null) {
+  return money && { amount: money.amount.toString(), currency: money.currency };
 }
 
 const notFound = new Set(['unknown_application', 'unknown_document']);
@@ -471,6 +648,9 @@ const badRequests = new Set([
   'issue_date_required',
   'issue_date_in_future',
   'document_expired',
+  'invalid_kit',
+  'invalid_cash_limit',
+  'invalid_contract',
 ]);
 
 function refused(error: unknown): unknown {
@@ -494,6 +674,9 @@ function refused(error: unknown): unknown {
     error: refusal,
     ...(error instanceof PipelineRefusedError && error.stage !== null
       ? { stage: error.stage }
+      : {}),
+    ...(error instanceof PipelineRefusedError && error.missing.length > 0
+      ? { missing: error.missing }
       : {}),
   });
 }

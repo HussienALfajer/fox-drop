@@ -138,6 +138,11 @@ _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_drivingLicence =
     const AdminCaptainApplicationDtoOutputRequiredDocumentsEnum._(
       'drivingLicence',
     );
+const AdminCaptainApplicationDtoOutputRequiredDocumentsEnum
+_$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_signedContract =
+    const AdminCaptainApplicationDtoOutputRequiredDocumentsEnum._(
+      'signedContract',
+    );
 
 AdminCaptainApplicationDtoOutputRequiredDocumentsEnum
 _$adminCaptainApplicationDtoOutputRequiredDocumentsEnumValueOf(String name) {
@@ -154,6 +159,8 @@ _$adminCaptainApplicationDtoOutputRequiredDocumentsEnumValueOf(String name) {
       return _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_vehiclePapers;
     case 'drivingLicence':
       return _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_drivingLicence;
+    case 'signedContract':
+      return _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_signedContract;
     default:
       throw ArgumentError(name);
   }
@@ -169,6 +176,7 @@ _$adminCaptainApplicationDtoOutputRequiredDocumentsEnumValues =
         _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_criminalRecord,
         _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_vehiclePapers,
         _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_drivingLicence,
+        _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_signedContract,
       ],
     );
 
@@ -281,6 +289,7 @@ class _$AdminCaptainApplicationDtoOutputRequiredDocumentsEnumSerializer
     'criminalRecord': 'criminal_record',
     'vehiclePapers': 'vehicle_papers',
     'drivingLicence': 'driving_licence',
+    'signedContract': 'signed_contract',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'national_id': 'nationalId',
@@ -289,6 +298,7 @@ class _$AdminCaptainApplicationDtoOutputRequiredDocumentsEnumSerializer
     'criminal_record': 'criminalRecord',
     'vehicle_papers': 'vehiclePapers',
     'driving_licence': 'drivingLicence',
+    'signed_contract': 'signedContract',
   };
 
   @override
@@ -357,6 +367,8 @@ class _$AdminCaptainApplicationDtoOutput
   final BuiltList<AdminCaptainApplicationDtoOutputDuplicatesInner> duplicates;
   @override
   final BuiltList<AdminCaptainApplicationDtoOutputEventsInner> events;
+  @override
+  final AdminCaptainApplicationDtoOutputActivation activation;
 
   factory _$AdminCaptainApplicationDtoOutput([
     void Function(AdminCaptainApplicationDtoOutputBuilder)? updates,
@@ -382,6 +394,7 @@ class _$AdminCaptainApplicationDtoOutput
     this.rejection,
     required this.duplicates,
     required this.events,
+    required this.activation,
   }) : super._();
   @override
   AdminCaptainApplicationDtoOutput rebuild(
@@ -414,7 +427,8 @@ class _$AdminCaptainApplicationDtoOutput
         interview == other.interview &&
         rejection == other.rejection &&
         duplicates == other.duplicates &&
-        events == other.events;
+        events == other.events &&
+        activation == other.activation;
   }
 
   @override
@@ -439,6 +453,7 @@ class _$AdminCaptainApplicationDtoOutput
     _$hash = $jc(_$hash, rejection.hashCode);
     _$hash = $jc(_$hash, duplicates.hashCode);
     _$hash = $jc(_$hash, events.hashCode);
+    _$hash = $jc(_$hash, activation.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -464,7 +479,8 @@ class _$AdminCaptainApplicationDtoOutput
           ..add('interview', interview)
           ..add('rejection', rejection)
           ..add('duplicates', duplicates)
-          ..add('events', events))
+          ..add('events', events)
+          ..add('activation', activation))
         .toString();
   }
 }
@@ -583,6 +599,14 @@ class AdminCaptainApplicationDtoOutputBuilder
     ListBuilder<AdminCaptainApplicationDtoOutputEventsInner>? events,
   ) => _$this._events = events;
 
+  AdminCaptainApplicationDtoOutputActivationBuilder? _activation;
+  AdminCaptainApplicationDtoOutputActivationBuilder get activation =>
+      _$this._activation ??=
+          AdminCaptainApplicationDtoOutputActivationBuilder();
+  set activation(
+    AdminCaptainApplicationDtoOutputActivationBuilder? activation,
+  ) => _$this._activation = activation;
+
   AdminCaptainApplicationDtoOutputBuilder() {
     AdminCaptainApplicationDtoOutput._defaults(this);
   }
@@ -609,6 +633,7 @@ class AdminCaptainApplicationDtoOutputBuilder
       _rejection = $v.rejection?.toBuilder();
       _duplicates = $v.duplicates.toBuilder();
       _events = $v.events.toBuilder();
+      _activation = $v.activation.toBuilder();
       _$v = null;
     }
     return this;
@@ -680,6 +705,7 @@ class AdminCaptainApplicationDtoOutputBuilder
             rejection: _rejection?.build(),
             duplicates: duplicates.build(),
             events: events.build(),
+            activation: activation.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -698,6 +724,8 @@ class AdminCaptainApplicationDtoOutputBuilder
         duplicates.build();
         _$failedField = 'events';
         events.build();
+        _$failedField = 'activation';
+        activation.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminCaptainApplicationDtoOutput',

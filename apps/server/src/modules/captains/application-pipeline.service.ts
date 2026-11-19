@@ -3,11 +3,18 @@ import { and, asc, count, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
+import { ContentService } from '../content/index.js';
 import { FilesService } from '../files/index.js';
 import { GeoService } from '../geo/index.js';
-import type { Vehicle } from '../settings/index.js';
+import { LedgerService } from '../ledger/index.js';
+import { SettingsService, type Vehicle } from '../settings/index.js';
 import {
+  type ActivationMissing,
+  activationMissing,
+  addDays,
   type ApplicationDocumentKind,
+  cityDay,
+  contractDates,
   type ApplicationStage,
   isMotorVehicle,
   type PipelineAction,
@@ -35,7 +42,9 @@ import {
   applications,
   applicationStages,
   captainRecords,
+  type KitItem,
 } from './schema.js';
+import { CaptainsService, type Money } from './captains.service.js';
 
 export type PipelineRefusal =
   | 'unknown_application'
@@ -46,15 +55,62 @@ export type PipelineRefusal =
   | 'document_replaced'
   | 'document_not_needed'
   | 'already_requested'
-  | 'interview_in_past';
+  | 'interview_in_past'
+  // Slice 2.35a: a kit item not of the list, a size or a count out of
+  // bounds; a cash limit at zero; contract dates in the future or upside
+  // down; a deposit or instalment out of bounds; «تفعيل» before every
+  // condition is met (`missing`).
+  | 'invalid_kit'
+  | 'invalid_cash_limit'
+  | 'not_in_base_currency'
+  | 'invalid_contract'
+  | 'invalid_deposit'
+  | 'activation_incomplete';
 
 export class PipelineRefusedError extends Error {
   constructor(
     readonly refusal: PipelineRefusal,
     readonly stage: ApplicationStage | null = null,
+    readonly missing: ActivationMissing[] = [],
   ) {
     super(`pipeline refused: ${refusal}`);
   }
+}
+
+// The deposit as the review page and the desk show it (AP §9.7.1, §8.5):
+// its amount and instalment in the city's base, what is paid (the
+// captain.deposit account of the captain to be) and whether «تفعيل» counts it
+// recorded: an amount, and either the instalments or all of it paid.
+export interface DepositState {
+  amount: Money | null;
+  instalment: Money | null;
+  paid: bigint;
+  recorded: boolean;
+}
+
+export interface Contract {
+  signedOn: string;
+  startsOn: string;
+  probationDays: number;
+  commitmentMonths: number;
+  probationEndsOn: string;
+  // When the probation is confirmed on its end (AP §9.7.2).
+  commitmentEndsOn: string;
+}
+
+// What the activation shows at «بانتظار العدة» (slice 2.35a).
+export interface Activation {
+  kit: { items: KitItem[]; issuedAt: Date } | null;
+  cashLimit: Money | null;
+  // `captain.custody_limit_suggested.<vehicle>`, the prefill (D10).
+  suggestedCashLimit: Money | null;
+  contract: Contract | null;
+  deposit: DepositState;
+  // `captain.kit_deposit_amount`, the deposit offered.
+  suggestedDeposit: Money | null;
+  missing: ActivationMissing[];
+  captainId: string | null;
+  activatedAt: Date | null;
 }
 
 // The admin who acts, for the audit log and the history.
@@ -140,6 +196,7 @@ export interface Review {
   rejection: Rejection | null;
   duplicates: Duplicate[];
   events: ReviewEvent[];
+  activation: Activation;
 }
 
 // What identity answers this module (architecture §4.3: identity imports
@@ -148,7 +205,15 @@ export interface Review {
 export interface PipelineIdentity {
   phones(accountIds: string[]): Promise<Map<string, string>>;
   adminNames(accountIds: string[]): Promise<Map<string, string>>;
+  // «تفعيل» (slice 2.35a): the applicant's sign-in account becomes the
+  // captain's, in the activation's transaction.
+  activate(tx: Tx, accountId: string, captainId: string, cityId: string): Promise<void>;
 }
+
+// The bounds of «تسليم العدة» (decided by us).
+export const KIT_ITEMS_MAX = 20;
+export const KIT_QUANTITY_MAX = 20;
+export const KIT_SIZE_MAX = 20;
 
 // How long a document's signed link stays valid, as the restaurants' scans.
 export const FILE_URL_SECONDS = 600;
@@ -183,6 +248,10 @@ export class ApplicationPipelineService {
     private readonly files: FilesService,
     private readonly geo: GeoService,
     private readonly audit: AuditService,
+    private readonly settings: SettingsService,
+    private readonly content: ContentService,
+    private readonly ledger: LedgerService,
+    private readonly captains: CaptainsService,
   ) {}
 
   useIdentity(identity: PipelineIdentity): void {
@@ -314,7 +383,88 @@ export class ApplicationPipelineService {
         documentStatus: event.documentStatus,
         note: event.note,
       })),
+      activation: await this.activationOf(row, uploads, now),
     };
+  }
+
+  // What «بانتظار العدة» shows and «تفعيل» checks.
+  private async activationOf(
+    row: Row,
+    uploads: (typeof applicationDocuments.$inferSelect)[],
+    now: Date,
+    executor: Executor = this.database.db,
+  ): Promise<Activation> {
+    const timeZone = (await this.geo.cityTimeZone(row.cityId)) ?? 'UTC';
+    const deposit = await this.depositOf(row, executor);
+    const [suggestedLimit, suggestedDeposit] = await Promise.all([
+      row.vehicle === null
+        ? null
+        : this.settings.get('captain.custody_limit_suggested.<vehicle>', {
+            cityId: row.cityId,
+            parameter: row.vehicle,
+          }),
+      this.settings.get('captain.kit_deposit_amount', { cityId: row.cityId }),
+    ]);
+    return {
+      kit: row.kitItems === null ? null : { items: row.kitItems, issuedAt: row.kitIssuedAt! },
+      cashLimit:
+        row.custodyLimit === null
+          ? null
+          : { amount: row.custodyLimit, currency: row.custodyLimitCurrency! },
+      suggestedCashLimit: moneySetting(suggestedLimit),
+      contract: contractOf(row),
+      deposit,
+      suggestedDeposit: moneySetting(suggestedDeposit),
+      missing:
+        row.vehicle === null
+          ? []
+          : activationMissing({
+              vehicle: row.vehicle,
+              documents: uploads.filter((upload) => upload.replacedAt === null),
+              kitIssued: row.kitItems !== null,
+              depositRecorded: deposit.recorded,
+              contractRecorded: row.contractSignedOn !== null,
+              cashLimitSet: row.custodyLimit !== null,
+              today: cityDay(now, timeZone),
+            }),
+      captainId: row.captainId,
+      activatedAt: row.activatedAt,
+    };
+  }
+
+  private async depositOf(row: Row, executor: Executor): Promise<DepositState> {
+    const paid = await this.depositPaid(row, executor);
+    const amount =
+      row.depositAmount === null
+        ? null
+        : { amount: row.depositAmount, currency: row.depositCurrency! };
+    return {
+      amount,
+      instalment:
+        row.depositInstalment === null
+          ? null
+          : { amount: row.depositInstalment, currency: row.depositCurrency! },
+      paid,
+      recorded: amount !== null && (row.depositInstalment !== null || paid >= amount.amount),
+    };
+  }
+
+  // What the captain to be paid towards the deposit: its captain.deposit
+  // account in the city's base (the desk's receipts, slice 2.35a).
+  async depositPaid(
+    row: { id: string; cityId: string; captainId: string | null },
+    executor: Executor = this.database.db,
+  ): Promise<bigint> {
+    let paid = 0n;
+    for (const account of await this.ledger.ownerAccounts(
+      row.cityId,
+      captainIdOf(row),
+      'captain.deposit',
+      executor,
+    )) {
+      paid += (await this.ledger.balance(account.id, executor)).amount;
+    }
+    return paid;
   }
 
   // AP §9.7.1, CA §5.2: the ID's number, the phone and the plate already
@@ -446,6 +596,8 @@ export class ApplicationPipelineService {
     document: NewDocument,
     now = new Date(),
   ): Promise<void> {
+    // The signed contract comes with «تسجيل العقد» and its dates.
+    if (kind === 'signed_contract') throw new PipelineRefusedError('document_not_needed');
     const row = await this.row(applicationId);
     const checked = await this.applications.checkedDocument(
       row,
@@ -477,6 +629,7 @@ export class ApplicationPipelineService {
     now = new Date(),
   ): Promise<void> {
     await this.act(applicationId, admin, 'request_document', now, async (tx, row) => {
+      if (request.kind === 'signed_contract') throw new PipelineRefusedError('document_not_needed');
       if (
         request.kind === 'vehicle_papers' &&
         (row.vehicle === null || !isMotorVehicle(row.vehicle))
@@ -604,6 +757,321 @@ export class ApplicationPipelineService {
     }));
   }
 
+  // «تسليم العدة» (AP §9.7.1; owner decision 2026-11-19): the items from
+  // the list `kit_item`, each with its size typed and how many. Again
+  // before the activation, the kit issued is replaced (a correction).
+  async issueKit(
+    applicationId: string,
+    admin: PipelineAdmin,
+    given: { code: string; size: string | null; quantity: number }[],
+    now = new Date(),
+  ): Promise<void> {
+    if (
+      given.length === 0 ||
+      given.length > KIT_ITEMS_MAX ||
+      new Set(given.map((item) => item.code)).size !== given.length
+    ) {
+      throw new PipelineRefusedError('invalid_kit');
+    }
+    const items: KitItem[] = [];
+    for (const item of given) {
+      const size = item.size?.trim() || null;
+      if (
+        !Number.isInteger(item.quantity) ||
+        item.quantity < 1 ||
+        item.quantity > KIT_QUANTITY_MAX ||
+        (size !== null && size.length > KIT_SIZE_MAX)
+      ) {
+        throw new PipelineRefusedError('invalid_kit');
+      }
+      const chosen = await this.content
+        .choose('kit_item', { code: item.code, note: null })
+        .catch(() => {
+          throw new PipelineRefusedError('invalid_kit');
+        });
+      items.push({ code: chosen.code, label: chosen.label, size, quantity: item.quantity });
+    }
+    await this.act(applicationId, admin, 'issue_kit', now, async (_tx, row) => {
+      if (JSON.stringify(row.kitItems) === JSON.stringify(items)) return null;
+      return {
+        set: { kitItems: items, kitIssuedAt: now },
+        event: { kind: 'kit' },
+        audit: 'issue_kit',
+        before: { kit: row.kitItems },
+        after: { kit: items },
+      };
+    });
+  }
+
+  // The cash limit before activation (D10, AP §9.7.1), in the city's base.
+  async setCashLimit(
+    applicationId: string,
+    admin: PipelineAdmin,
+    limit: Money,
+    now = new Date(),
+  ): Promise<void> {
+    if (limit.amount <= 0n || limit.amount > 2n ** 63n - 1n) {
+      throw new PipelineRefusedError('invalid_cash_limit');
+    }
+    await this.act(applicationId, admin, 'set_cash_limit', now, async (tx, row) => {
+      if (!(await this.captains.inBaseCurrency(tx, row.cityId, limit.currency))) {
+        throw new PipelineRefusedError('not_in_base_currency');
+      }
+      if (row.custodyLimit === limit.amount && row.custodyLimitCurrency === limit.currency) {
+        return null;
+      }
+      return {
+        set: { custodyLimit: limit.amount, custodyLimitCurrency: limit.currency },
+        event: { kind: 'cash_limit' },
+        audit: 'cash_limit',
+        before: {
+          cashLimit:
+            row.custodyLimit === null ? null : moneyOf(row.custodyLimit, row.custodyLimitCurrency!),
+        },
+        after: { cashLimit: moneyOf(limit.amount, limit.currency) },
+      };
+    });
+  }
+
+  // «تسجيل العقد» (AP §9.7.2, D24; owner decision 2026-11-19): the signing
+  // and start dates with the scan, kept as the document «العقد الموقّع»,
+  // accepted as the office uploads it. The probation and commitment lengths
+  // are the settings' when it is recorded. Again before the activation, it
+  // replaces the contract recorded.
+  async recordContract(
+    applicationId: string,
+    admin: PipelineAdmin,
+    contract: { signedOn: string; startsOn: string; document: NewDocument },
+    now = new Date(),
+  ): Promise<void> {
+    const row = await this.row(applicationId);
+    const timeZone = (await this.geo.cityTimeZone(row.cityId)) ?? 'UTC';
+    if (
+      !isDay(contract.signedOn) ||
+      !isDay(contract.startsOn) ||
+      contract.signedOn > cityDay(now, timeZone) ||
+      contract.startsOn < contract.signedOn
+    ) {
+      throw new PipelineRefusedError('invalid_contract');
+    }
+    const [probationDays, commitmentMonths] = await Promise.all([
+      this.settings.get('captain.probation_days', { cityId: row.cityId }),
+      this.settings.get('captain.min_commitment_months', { cityId: row.cityId }),
+    ]);
+    const checked = await this.applications.checkedDocument(
+      row,
+      'signed_contract',
+      { uploadIds: contract.document.uploadIds },
+      admin.actor.id!,
+      now,
+    );
+    const probationEndsOn = addDays(contract.startsOn, probationDays);
+    await this.act(applicationId, admin, 'record_contract', now, async (tx, locked) => {
+      const stored = await this.applications.storeDocument(
+        tx,
+        locked,
+        'signed_contract',
+        checked,
+        admin.actor.id!,
+        now,
+        admin.actor.id!,
+      );
+      const same =
+        locked.contractSignedOn === contract.signedOn &&
+        locked.contractStartsOn === contract.startsOn &&
+        locked.probationDays === probationDays &&
+        locked.commitmentMonths === commitmentMonths;
+      if (!stored && same) return null;
+      return {
+        set: {
+          contractSignedOn: contract.signedOn,
+          contractStartsOn: contract.startsOn,
+          probationDays,
+          commitmentMonths,
+          probationEndsOn,
+        },
+        event: { kind: 'contract' },
+        audit: 'contract',
+        before: { contract: locked.contractSignedOn === null ? null : contractOf(locked) },
+        after: {
+          contract: {
+            signedOn: contract.signedOn,
+            startsOn: contract.startsOn,
+            probationDays,
+            commitmentMonths,
+            probationEndsOn,
+          },
+        },
+      };
+    });
+  }
+
+  // The deposit's amount and weekly instalment (AP §9.7.1, §8.5; owner
+  // decision 2026-11-19), in the city's base, recorded by the desk in its
+  // own transaction with what is paid now. A null instalment means nothing
+  // is deducted on Thursdays: the whole amount is paid at the desk.
+  async recordDeposit(
+    tx: Tx,
+    applicationId: string,
+    admin: PipelineAdmin,
+    deposit: { amount: Money; instalment: bigint | null },
+    now: Date,
+  ): Promise<void> {
+    const { amount, instalment } = deposit;
+    if (
+      amount.amount < 0n ||
+      amount.amount > 2n ** 63n - 1n ||
+      (instalment !== null && (instalment <= 0n || instalment > amount.amount))
+    ) {
+      throw new PipelineRefusedError('invalid_deposit');
+    }
+    const { cityId } = await this.row(applicationId);
+    const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    await this.actIn(
+      tx,
+      applicationId,
+      admin,
+      'record_deposit',
+      now,
+      timeZone,
+      async (_tx, row) => {
+        if (
+          row.depositAmount === amount.amount &&
+          row.depositCurrency === amount.currency &&
+          row.depositInstalment === instalment
+        ) {
+          return null;
+        }
+        return {
+          set: {
+            depositAmount: amount.amount,
+            depositCurrency: amount.currency,
+            depositInstalment: instalment,
+          },
+          event: { kind: 'deposit' },
+          audit: 'deposit',
+          before: {
+            deposit:
+              row.depositAmount === null
+                ? null
+                : {
+                    amount: moneyOf(row.depositAmount, row.depositCurrency!),
+                    instalment: row.depositInstalment?.toString() ?? null,
+                  },
+          },
+          after: {
+            deposit: {
+              amount: moneyOf(amount.amount, amount.currency),
+              instalment: instalment?.toString() ?? null,
+            },
+          },
+        };
+      },
+    );
+  }
+
+  // The desk's read of the application whose deposit it records, locked in
+  // its transaction: at «بانتظار العدة» only.
+  async lockForDeposit(
+    tx: Tx,
+    applicationId: string,
+  ): Promise<{
+    id: string;
+    cityId: string;
+    fullName: string;
+    captainId: string;
+    stage: ApplicationStage;
+  }> {
+    const [row] = await tx
+      .select()
+      .from(applications)
+      .where(eq(applications.id, applicationId))
+      .for('update');
+    if (!row || row.stage === 'draft') throw new PipelineRefusedError('unknown_application');
+    if (pipelineSteps('record_deposit', row.stage) === null) {
+      throw new PipelineRefusedError('wrong_stage', row.stage);
+    }
+    return {
+      id: row.id,
+      cityId: row.cityId,
+      fullName: row.fullName,
+      captainId: captainIdOf(row),
+      stage: row.stage,
+    };
+  }
+
+  // «تفعيل» (AP §9.7.1, CA §5.5): once every condition is met, the
+  // application becomes a captain whose id is the application's, with its
+  // name, vehicle, plate and cash limit; the applicant's sign-in account
+  // becomes the captain's. «مفعّل» tells the applicant (CA §5.4).
+  async activate(applicationId: string, admin: PipelineAdmin, now = new Date()): Promise<string> {
+    const { cityId } = await this.row(applicationId);
+    const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    let captainId = '';
+    await this.act(applicationId, admin, 'activate', now, async (tx, row) => {
+      const uploads = await tx
+        .select()
+        .from(applicationDocuments)
+        .where(
+          and(
+            eq(applicationDocuments.applicationId, row.id),
+            isNull(applicationDocuments.replacedAt),
+          ),
+        );
+      const deposit = await this.depositOf(row, tx);
+      const missing = activationMissing({
+        vehicle: row.vehicle!,
+        documents: uploads,
+        kitIssued: row.kitItems !== null,
+        depositRecorded: deposit.recorded,
+        contractRecorded: row.contractSignedOn !== null,
+        cashLimitSet: row.custodyLimit !== null,
+        today: cityDay(now, timeZone),
+      });
+      if (missing.length > 0) {
+        throw new PipelineRefusedError('activation_incomplete', row.stage, missing);
+      }
+      if (!(await this.captains.inBaseCurrency(tx, row.cityId, row.custodyLimitCurrency!))) {
+        throw new PipelineRefusedError('not_in_base_currency');
+      }
+      captainId = captainIdOf(row);
+      await tx.insert(captainRecords).values({
+        id: captainId,
+        cityId: row.cityId,
+        name: row.fullName,
+        vehicle: row.vehicle!,
+        plateNumber: row.plate,
+        custodyLimit: row.custodyLimit!,
+        custodyLimitCurrency: row.custodyLimitCurrency!,
+      });
+      await this.lookups().activate(tx, row.accountId, captainId, row.cityId);
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId: row.cityId,
+          action: 'captain.create',
+          target: { type: 'captain', id: captainId },
+          before: null,
+          after: {
+            name: row.fullName,
+            vehicle: row.vehicle,
+            plateNumber: row.plate,
+            custodyLimit: moneyOf(row.custodyLimit!, row.custodyLimitCurrency!),
+            applicationId: row.id,
+          },
+        },
+        tx,
+      );
+      return {
+        set: { captainId, activatedAt: now },
+        audit: 'activate',
+        after: { captainId },
+      };
+    });
+    return captainId;
+  }
+
   private async act(
     applicationId: string,
     admin: PipelineAdmin,
@@ -613,7 +1081,21 @@ export class ApplicationPipelineService {
   ): Promise<void> {
     const { cityId } = await this.row(applicationId);
     const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
-    await this.database.db.transaction(async (tx) => {
+    await this.database.db.transaction((tx) =>
+      this.actIn(tx, applicationId, admin, action, now, timeZone, work),
+    );
+  }
+
+  private async actIn(
+    tx: Tx,
+    applicationId: string,
+    admin: PipelineAdmin,
+    action: PipelineAction,
+    now: Date,
+    timeZone: string,
+    work: (tx: Tx, row: Row) => Promise<Outcome | null>,
+  ): Promise<void> {
+    {
       const [row] = await tx
         .select()
         .from(applications)
@@ -682,7 +1164,7 @@ export class ApplicationPipelineService {
           ? [{ kind: 'stage', stage }, ...own]
           : own;
       await this.applications.notify(tx, changeOf(updated!, eventId!, now, notices, timeZone));
-    });
+    }
   }
 
   private async row(applicationId: string): Promise<Row> {
@@ -717,6 +1199,45 @@ export class ApplicationPipelineService {
     if (this.identity === null) throw new Error('identity has not registered its lookups');
     return this.identity;
   }
+}
+
+type Executor = Pick<Database['db'], 'select' | 'insert'>;
+
+// The captain an application makes: its own id for a new captain.
+function captainIdOf(row: { id: string; captainId: string | null }): string {
+  return row.captainId ?? row.id;
+}
+
+function contractOf(row: Row): Contract | null {
+  if (row.contractSignedOn === null) return null;
+  return {
+    signedOn: row.contractSignedOn,
+    startsOn: row.contractStartsOn!,
+    probationDays: row.probationDays!,
+    commitmentMonths: row.commitmentMonths!,
+    probationEndsOn: row.probationEndsOn!,
+    commitmentEndsOn: contractDates({
+      startsOn: row.contractStartsOn!,
+      probationDays: row.probationDays!,
+      commitmentMonths: row.commitmentMonths!,
+    }).commitmentEndsOn,
+  };
+}
+
+function isDay(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/u.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+}
+
+function moneyOf(amount: bigint, currency: string) {
+  return { amount: amount.toString(), currency };
+}
+
+function moneySetting(
+  value: { amountMinor: number; currency: string | null } | null,
+): Money | null {
+  return value === null || value.currency === null
+    ? null
+    : { amount: BigInt(value.amountMinor), currency: value.currency };
 }
 
 function duplicate(

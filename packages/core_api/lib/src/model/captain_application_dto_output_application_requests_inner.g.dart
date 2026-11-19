@@ -36,6 +36,11 @@ _$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_drivingLicence =
     const CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum._(
       'drivingLicence',
     );
+const CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum
+_$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_signedContract =
+    const CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum._(
+      'signedContract',
+    );
 
 CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum
 _$captainApplicationDtoOutputApplicationRequestsInnerKindEnumValueOf(
@@ -54,6 +59,8 @@ _$captainApplicationDtoOutputApplicationRequestsInnerKindEnumValueOf(
       return _$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_vehiclePapers;
     case 'drivingLicence':
       return _$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_drivingLicence;
+    case 'signedContract':
+      return _$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_signedContract;
     default:
       throw ArgumentError(name);
   }
@@ -70,6 +77,7 @@ _$captainApplicationDtoOutputApplicationRequestsInnerKindEnumValues =
       _$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_criminalRecord,
       _$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_vehiclePapers,
       _$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_drivingLicence,
+      _$captainApplicationDtoOutputApplicationRequestsInnerKindEnum_signedContract,
     ]);
 
 Serializer<CaptainApplicationDtoOutputApplicationRequestsInnerKindEnum>
@@ -88,6 +96,7 @@ class _$CaptainApplicationDtoOutputApplicationRequestsInnerKindEnumSerializer
     'criminalRecord': 'criminal_record',
     'vehiclePapers': 'vehicle_papers',
     'drivingLicence': 'driving_licence',
+    'signedContract': 'signed_contract',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'national_id': 'nationalId',
@@ -96,6 +105,7 @@ class _$CaptainApplicationDtoOutputApplicationRequestsInnerKindEnumSerializer
     'criminal_record': 'criminalRecord',
     'vehicle_papers': 'vehiclePapers',
     'driving_licence': 'drivingLicence',
+    'signed_contract': 'signedContract',
   };
 
   @override
