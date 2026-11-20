@@ -22,6 +22,7 @@ import {
   merchantDeviceCheckSchema,
   MerchantsRefusedError,
   MerchantsService,
+  ReceivingDevicesService,
 } from '../merchants/index.js';
 import { deviceId } from './app-auth.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
@@ -108,6 +109,11 @@ class MerchantDevicesDto extends createZodDto(
         }),
       )
       .describe('Every device named on the restaurant, the latest named first.'),
+    withoutDevice: z
+      .boolean()
+      .describe(
+        'RA §14.2, §4.6: the restaurant is open with no receiving device, as the worker last saw it.',
+      ),
   }),
 ) {}
 
@@ -127,6 +133,7 @@ export class MerchantStaffController {
     private readonly devices: RestaurantDevicesService,
     private readonly merchants: MerchantsService,
     private readonly sessions: AppSessionsService,
+    private readonly receiving: ReceivingDevicesService,
   ) {}
 
   @Get('staff')
@@ -270,8 +277,12 @@ export class MerchantStaffController {
   }
 
   private async devicesAnswer(restaurantId: string, session: AppSession) {
-    const devices = await this.devices.devices(restaurantId);
+    const [devices, without] = await Promise.all([
+      this.devices.devices(restaurantId),
+      this.receiving.withoutDevice([restaurantId]),
+    ]);
     return {
+      withoutDevice: without.has(restaurantId),
       devices: devices.map((device) => ({
         ...device,
         lastSeenAt: device.lastSeenAt?.toISOString() ?? null,

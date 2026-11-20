@@ -8255,6 +8255,8 @@ export interface components {
                 /** @description The device making the request. */
                 thisDevice: boolean;
             }[];
+            /** @description RA §14.2, §4.6: the restaurant is open with no receiving device, as the worker last saw it. */
+            withoutDevice: boolean;
         };
         MerchantDeviceNameDto: {
             name: string;

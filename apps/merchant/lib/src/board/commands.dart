@@ -416,9 +416,16 @@ class BoardCommands extends Notifier<Set<String>> {
     final orderId = command.subject;
     final answers = command.args['requestId'] as String?;
     if (answers != null) answeredHere.add(answers);
-    await _queue.put(command);
     try {
+      await _queue.put(command);
       for (var attempt = 0; ; attempt++) {
+        // A command belongs to the account that sent it: once another
+        // signed in, it is dropped rather than sent in their name.
+        if (ref.read(merchantSessionProvider).value?.accountId !=
+            command.accountId) {
+          await _queue.remove(command.key);
+          return null;
+        }
         try {
           await _call(kind, orderId, command.args, command.key);
           await _queue.remove(command.key);

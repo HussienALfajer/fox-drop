@@ -163,9 +163,18 @@ List<RestaurantDevice> _devicesOf(MerchantDevicesDtoOutput dto) => [
 class DevicesNotifier extends AsyncNotifier<List<RestaurantDevice>> {
   MerchantApi get _api => ref.read(coreApiProvider).getMerchantApi();
 
+  /// RA §14.2, §4.6 (slice 2.42): the restaurant is open with no receiving
+  /// device, as the last answer says; set with each state.
+  bool withoutDevice = false;
+
+  List<RestaurantDevice> _take(MerchantDevicesDtoOutput dto) {
+    withoutDevice = dto.withoutDevice;
+    return _devicesOf(dto);
+  }
+
   @override
   Future<List<RestaurantDevice>> build() async =>
-      _devicesOf((await _api.merchantStaffListDevices()).data!);
+      _take((await _api.merchantStaffListDevices()).data!);
 
   /// False when the server did not take it: the list is read again.
   Future<bool> rename(String deviceId, String name) => _run(
@@ -183,7 +192,7 @@ class DevicesNotifier extends AsyncNotifier<List<RestaurantDevice>> {
     Future<Response<MerchantDevicesDtoOutput>> Function() command,
   ) async {
     try {
-      state = AsyncData(_devicesOf((await command()).data!));
+      state = AsyncData(_take((await command()).data!));
       return true;
     } on DioException {
       ref.invalidateSelf();

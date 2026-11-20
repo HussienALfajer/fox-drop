@@ -16,7 +16,6 @@ import android.os.PowerManager
 // the lock screen where the system allows it; otherwise the system shows it
 // heads-up (RA §21 item 4). The chime plays once on the notification stream.
 object Ringer {
-    const val RING_EXTRA = "fox_drop_ring"
     private const val CHANNEL = "core_alerts_ring"
     private const val NOTIFICATION_ID = 4202
 
@@ -142,7 +141,9 @@ object Ringer {
     }
 
     // The screen turns on for the ring even where the full-screen prompt is
-    // not allowed, for 30 seconds at a time.
+    // not allowed, for 30 seconds at a time. Deprecated, and newer Android
+    // versions may ignore it: the full-screen intent and the activity's
+    // setTurnScreenOn are the main path; this is kept for older phones.
     @Suppress("DEPRECATION")
     private fun wakeScreen(context: Context) {
         val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager

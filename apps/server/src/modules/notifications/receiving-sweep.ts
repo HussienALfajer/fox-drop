@@ -64,6 +64,7 @@ export class ReceivingSweep {
       parameter: 'merchant',
     });
     const seen = new Set<string>();
+    let unread = 0;
     for (const city of await this.geo.activeCities()) {
       const alertMinutes = await this.settings.get('merchant.no_device_alert_min', {
         cityId: city.id,
@@ -73,11 +74,14 @@ export class ReceivingSweep {
         seen.add(row.id);
         await this.restaurant(row, city.id, minVersion, alertMinutes, now).catch(
           (error: unknown) => {
-            this.logger.warn({ err: error, restaurantId: row.id }, 'a restaurant was not read');
+            if (unread === 0) this.logger.warn({ err: error }, 'a restaurant was not read');
+            unread += 1;
           },
         );
       }
     }
+    // Once per run: Centrifugo out of reach fails every restaurant alike.
+    if (unread > 0) this.logger.warn({ unread }, 'restaurants not read this run');
     // A restaurant no longer listed (terminated, its city inactive).
     for (const subject of await this.alerts.openSubjects(CODE)) {
       if (seen.has(subject.id)) continue;
@@ -122,9 +126,10 @@ export class ReceivingSweep {
       alertMinutes,
       now,
     });
-    await this.devices.setWithoutDeviceSince(row.id, step.since);
     const rendered = step.alert ? await this.texts.render(TEMPLATE, {}) : null;
+    // The stretch's start, the alert and the owners' push commit together.
     await this.database.db.transaction(async (tx) => {
+      await this.devices.setWithoutDeviceSince(row.id, step.since, tx);
       await this.alerts.sync(
         tx,
         { type: 'restaurant', id: row.id, cityId, details: { restaurantName: row.nameAr } },

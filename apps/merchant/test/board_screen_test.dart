@@ -1767,10 +1767,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('test-ring')));
       await tester.pumpAndSettle();
-      expect(app.alerts.ringing, RingSound.newOrder);
+      expect(app.ringer.sound, RingSound.newOrder);
       await tester.tap(find.byKey(const Key('test-ring-heard')));
       await tester.pumpAndSettle();
-      expect(app.alerts.ringing, isNull);
+      expect(app.ringer.ringing, isFalse);
 
       await tester.ensureVisible(find.byKey(const Key('save-check')));
       await tester.pumpAndSettle();

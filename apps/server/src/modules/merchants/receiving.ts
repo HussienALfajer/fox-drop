@@ -26,9 +26,13 @@ export interface DeviceCheck {
 }
 
 // RA §4.3: the server marks a device disconnected after 60 seconds without a
-// heartbeat (fixed). The heartbeat is Centrifugo's ping every 20 seconds;
-// the worker records the devices it sees on the channel.
-export const DISCONNECTED_AFTER_MS = 60_000;
+// heartbeat (fixed). The heartbeat is Centrifugo's ping every 20 seconds: a
+// client that misses it leaves the channel up to 28 s after its last answer
+// (the ping interval and its 8 s pong timeout, infra/centrifugo/config.yaml),
+// and the worker records the devices it sees on the channel. So a device
+// counts as connected 32 s after its last sighting, 60 s after its last
+// heartbeat.
+export const DISCONNECTED_AFTER_MS = 32_000;
 
 export function connectedAt(presentAt: Date | null, now: Date): boolean {
   return presentAt !== null && now.getTime() - presentAt.getTime() <= DISCONNECTED_AFTER_MS;

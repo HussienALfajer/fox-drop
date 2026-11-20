@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api.dart';
 import '../auth.dart';
 import '../board/alerts.dart';
+import '../board/board.dart';
 import '../device.dart';
 import '../push.dart';
 
@@ -32,6 +33,14 @@ class ThisDevice {
 class ThisDeviceNotifier extends AsyncNotifier<ThisDevice?> {
   @override
   Future<ThisDevice?> build() async {
+    // A report that failed (offline at start) is sent again once the
+    // restaurant's channel is back, so the server never keeps an old version
+    // that would count this device out (RA §4.2, §4.6).
+    ref.listen(boardProvider, (previous, next) {
+      final live = next.value?.live == true;
+      final wasLive = previous?.value?.live == true;
+      if (live && !wasLive && state.hasError) ref.invalidateSelf();
+    });
     final session = await ref.watch(merchantSessionProvider.future);
     if (session == null || !session.deviceNamed) return null;
     return _report(null);

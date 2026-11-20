@@ -5771,4 +5771,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantDeviceCheckNotOk => 'لم يجتز فحص الجهاز';
+
+  @override
+  String get merchantNoReceivingDevice =>
+      'لا يوجد جهاز يستقبل الطلبات في مطعمك الآن';
+
+  @override
+  String get merchantDeviceNotChecked => 'لم يُفحص بعد';
+
+  @override
+  String get merchantCheckReadFailed =>
+      'تعذّرت قراءة إعدادات الجهاز، اضغط لإعادة المحاولة';
 }

@@ -19,6 +19,11 @@ abstract interface class Ringer {
   void ring(RingSound sound, String text);
   void stop();
   void chime();
+
+  /// RA §4.5 check 7: the new-order sound once more, through the same ring,
+  /// so stopping it never silences a real order: the board's next step (each
+  /// second) rings again what still rings.
+  void test(String text);
 }
 
 /// The ring through `core_alerts` (architecture §12.2), which keeps one
@@ -52,6 +57,12 @@ class AlertsRinger implements Ringer {
     // One sound at a time: the ring is louder anyway.
     if (_playing != null) return;
     unawaited(alerts.chime());
+  }
+
+  @override
+  void test(String text) {
+    _playing = (RingSound.newOrder, text);
+    unawaited(alerts.ring(RingSound.newOrder, title: title, body: text));
   }
 }
 

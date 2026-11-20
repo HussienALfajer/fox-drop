@@ -5,10 +5,11 @@ const now = new Date('2026-11-20T12:00:00Z');
 const secondsAgo = (seconds: number) => new Date(now.getTime() - seconds * 1000);
 
 describe('connectedAt (RA §4.3)', () => {
-  it('counts a device seen within the last 60 seconds as connected', () => {
-    expect(connectedAt(secondsAgo(59), now)).toBe(true);
-    expect(connectedAt(secondsAgo(60), now)).toBe(true);
-    expect(connectedAt(secondsAgo(61), now)).toBe(false);
+  // Centrifugo drops a silent client 28 s after its last heartbeat at most.
+  it('counts a device seen within 32 s, 60 s after its last heartbeat, as connected', () => {
+    expect(connectedAt(secondsAgo(31), now)).toBe(true);
+    expect(connectedAt(secondsAgo(32), now)).toBe(true);
+    expect(connectedAt(secondsAgo(33), now)).toBe(false);
     expect(connectedAt(null, now)).toBe(false);
   });
 });
@@ -25,7 +26,7 @@ describe('isReceiving (RA §4.6)', () => {
     expect(isReceiving(owner, '1.2.0', now)).toBe(true);
     expect(isReceiving(owner, null, now)).toBe(true);
     expect(isReceiving({ ...owner, role: null }, null, now)).toBe(false);
-    expect(isReceiving({ ...owner, presentAt: secondsAgo(90) }, null, now)).toBe(false);
+    expect(isReceiving({ ...owner, presentAt: secondsAgo(40) }, null, now)).toBe(false);
     expect(isReceiving({ ...owner, ringing: false }, null, now)).toBe(false);
     expect(isReceiving(owner, '1.10.0', now)).toBe(false);
   });

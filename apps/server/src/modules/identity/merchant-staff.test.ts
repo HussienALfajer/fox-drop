@@ -407,6 +407,8 @@ describe('this device (RA §4.4–4.5)', () => {
     expect(passed.json().check).toMatchObject({ passed: true, failed: ['sleep'] });
 
     const listed = await app.inject({ method: 'GET', url: '/v1/merchant/devices', ...owner });
+    // No worker read the channel here: nothing to warn of.
+    expect(listed.json().withoutDevice).toBe(false);
     expect(listed.json().devices).toMatchObject([
       {
         deviceId: cashier.deviceId,

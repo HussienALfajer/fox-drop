@@ -101,8 +101,12 @@ export class ReceivingDevicesService {
     return row?.since ?? null;
   }
 
-  async setWithoutDeviceSince(restaurantId: string, since: Date | null): Promise<void> {
-    await this.database.db
+  async setWithoutDeviceSince(
+    restaurantId: string,
+    since: Date | null,
+    executor: Pick<Database['db'], 'insert'> = this.database.db,
+  ): Promise<void> {
+    await executor
       .insert(receiving)
       .values({ restaurantId, withoutDeviceSince: since })
       .onConflictDoUpdate({

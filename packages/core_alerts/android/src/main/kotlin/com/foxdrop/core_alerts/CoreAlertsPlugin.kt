@@ -37,7 +37,16 @@ class CoreAlertsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activit
                 result.success(null)
             }
             "wake" -> {
-                if (ReceivingService.enabled(context)) ReceivingService.start(context)
+                // Only a push that finds the service gone starts it again; a
+                // start the system refuses (no high-priority exemption) waits
+                // for the next push or the app's start.
+                if (ReceivingService.enabled(context) && !ReceivingService.running) {
+                    try {
+                        ReceivingService.start(context)
+                    } catch (error: Exception) {
+                        // Not allowed from the background now.
+                    }
+                }
                 result.success(null)
             }
             "stopReceiving" -> {

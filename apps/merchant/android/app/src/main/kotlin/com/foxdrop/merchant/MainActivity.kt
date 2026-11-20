@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.media.AudioAttributes
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import com.foxdrop.core_alerts.ReceivingService
 import io.flutter.embedding.android.FlutterActivity
@@ -31,6 +32,8 @@ class MainActivity : FlutterActivity() {
     // the app is closed, so they are created natively at every start
     // (creating an existing channel changes nothing the user set).
     private fun createPushChannels() {
+        // Channels exist from Android 8 (API 26); older phones have none.
+        if (Build.VERSION.SDK_INT < 26) return
         val manager = getSystemService(NotificationManager::class.java) ?: return
         // A new order, a pickup request or a cancellation rings with the
         // bundled new-order sound on the alarm stream (slice 2.42): the push

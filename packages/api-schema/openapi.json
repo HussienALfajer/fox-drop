@@ -23953,10 +23953,15 @@
               "additionalProperties": false
             },
             "description": "Every device named on the restaurant, the latest named first."
+          },
+          "withoutDevice": {
+            "type": "boolean",
+            "description": "RA §14.2, §4.6: the restaurant is open with no receiving device, as the worker last saw it."
           }
         },
         "required": [
-          "devices"
+          "devices",
+          "withoutDevice"
         ],
         "additionalProperties": false
       },

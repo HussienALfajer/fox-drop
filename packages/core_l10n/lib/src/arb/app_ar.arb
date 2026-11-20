@@ -3179,5 +3179,11 @@
   "merchantDeviceCheckOk": "اجتاز فحص الجهاز",
   "@merchantDeviceCheckOk": {"description": "The device's last check passed (RA §14.2)."},
   "merchantDeviceCheckNotOk": "لم يجتز فحص الجهاز",
-  "@merchantDeviceCheckNotOk": {"description": "The device's last check failed (RA §14.2)."}
+  "@merchantDeviceCheckNotOk": {"description": "The device's last check failed (RA §14.2)."},
+  "merchantNoReceivingDevice": "لا يوجد جهاز يستقبل الطلبات في مطعمك الآن",
+  "@merchantNoReceivingDevice": {"description": "The warning on «الأجهزة» while the restaurant is open with no receiving device (RA §14.2, §4.6)."},
+  "merchantDeviceNotChecked": "لم يُفحص بعد",
+  "@merchantDeviceNotChecked": {"description": "A device without a device check, in «الأجهزة» (RA §14.2)."},
+  "merchantCheckReadFailed": "تعذّرت قراءة إعدادات الجهاز، اضغط لإعادة المحاولة",
+  "@merchantCheckReadFailed": {"description": "The device check could not read the phone's settings."}
 }

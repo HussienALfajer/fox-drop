@@ -214,14 +214,15 @@ describe('the receiving devices (RA §4.3–4.6)', () => {
     expect(await openAlerts(id)).toEqual([]);
     expect(await app.get(ReceivingDevicesService).withoutDeviceSince(id)).toBeNull();
 
-    // Off the channel, a device still counts for 60 seconds (RA §4.3).
+    // Off the channel, a device still counts for 32 s, 60 s after its last
+    // heartbeat (RA §4.3).
     cashierClient.disconnect();
     ownerClient.disconnect();
     await sweep.run(minutes(start, 7.5));
     expect(await app.get(ReceivingDevicesService).withoutDeviceSince(id)).toBeNull();
-    await sweep.run(minutes(start, 8.1));
+    await sweep.run(minutes(start, 7.6));
     expect(await app.get(ReceivingDevicesService).withoutDeviceSince(id)).toEqual(
-      minutes(start, 8.1),
+      minutes(start, 7.6),
     );
   });
 

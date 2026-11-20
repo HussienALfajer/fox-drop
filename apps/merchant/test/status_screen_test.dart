@@ -559,16 +559,20 @@ void main() {
       ])
       ..on('/v1/merchant/devices', [
         FakeAnswer(200, {
+          'withoutDevice': false,
           'devices': [device('كاشير 1', signedIn: true)],
         }),
       ])
       ..on('/v1/merchant/devices/kitchen/name', [
         FakeAnswer(200, {
+          'withoutDevice': false,
           'devices': [device('تابلت المطبخ', signedIn: true)],
         }),
       ])
       ..on('/v1/merchant/devices/kitchen/sign-out', [
         FakeAnswer(200, {
+          // Its only device signed out: none receives (RA §14.2, §4.6).
+          'withoutDevice': true,
           'devices': [device('تابلت المطبخ', signedIn: false)],
         }),
       ]);
@@ -580,6 +584,7 @@ void main() {
     expect(find.text('كاشير 1'), findsOneWidget);
     expect(find.textContaining('سامر (كاشير)'), findsOneWidget);
     expect(find.textContaining('أندرويد · الإصدار 1.2.0'), findsOneWidget);
+    expect(find.byKey(const Key('no-receiving-device')), findsNothing);
     // RA §14.2 (slice 2.42): ringing, connection and the last check.
     expect(
       find.textContaining('يرن · متصل الآن · اجتاز فحص الجهاز'),
@@ -613,6 +618,11 @@ void main() {
     );
     expect(find.textContaining('غير مسجّل الدخول'), findsOneWidget);
     expect(find.byKey(const Key('sign-out-kitchen')), findsNothing);
+    // RA §14.2: the warning while no device receives.
+    expect(
+      find.text('لا يوجد جهاز يستقبل الطلبات في مطعمك الآن'),
+      findsOneWidget,
+    );
     await app.done(tester);
   });
 

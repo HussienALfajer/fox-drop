@@ -38,9 +38,11 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
     unawaited(ref.read(deviceStoreProvider).write(deviceCheckDoneKey, 'true'));
   }
 
+  late final Ringer _ringer = ref.read(ringerProvider);
+
   @override
   void dispose() {
-    if (_playing) unawaited(ref.read(alertsProvider).stopRing());
+    if (_playing) _ringer.stop();
     super.dispose();
   }
 
@@ -65,18 +67,11 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
 
   Future<void> _ring(AppLocalizations l10n) async {
     setState(() => _playing = true);
-    await ref
-        .read(alertsProvider)
-        .ring(
-          RingSound.newOrder,
-          title: l10n.merchantAppName,
-          body: l10n.merchantCheckTestRing,
-        );
+    _ringer.test(l10n.merchantCheckTestRing);
   }
 
   Future<void> _answer(bool heard) async {
-    await ref.read(alertsProvider).stopRing();
-    if (!mounted) return;
+    _ringer.stop();
     setState(() {
       _playing = false;
       _heard = heard;
@@ -263,7 +258,12 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
             ],
           );
         }(),
-        AsyncError() => Center(child: Text(l10n.merchantCheckWindowsLater)),
+        AsyncError() => Center(
+          child: TextButton(
+            onPressed: () => ref.invalidate(deviceReadingsProvider),
+            child: Text(l10n.merchantCheckReadFailed),
+          ),
+        ),
         _ => const Center(child: CircularProgressIndicator()),
       },
     );

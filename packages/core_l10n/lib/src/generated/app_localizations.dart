@@ -9625,6 +9625,24 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لم يجتز فحص الجهاز'**
   String get merchantDeviceCheckNotOk;
+
+  /// The warning on «الأجهزة» while the restaurant is open with no receiving device (RA §14.2, §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد جهاز يستقبل الطلبات في مطعمك الآن'**
+  String get merchantNoReceivingDevice;
+
+  /// A device without a device check, in «الأجهزة» (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُفحص بعد'**
+  String get merchantDeviceNotChecked;
+
+  /// The device check could not read the phone's settings.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت قراءة إعدادات الجهاز، اضغط لإعادة المحاولة'**
+  String get merchantCheckReadFailed;
 }
 
 class _AppLocalizationsDelegate

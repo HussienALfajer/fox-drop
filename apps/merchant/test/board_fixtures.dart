@@ -222,6 +222,10 @@ class FakeRinger implements Ringer {
 
   @override
   void chime() => chimes++;
+
+  /// The device check's test ring (RA §4.5 check 7).
+  @override
+  void test(String text) => ring(RingSound.newOrder, text);
 }
 
 class FakeTransport implements RealtimeTransport {

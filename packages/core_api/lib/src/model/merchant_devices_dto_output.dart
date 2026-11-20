@@ -14,6 +14,7 @@ part 'merchant_devices_dto_output.g.dart';
 ///
 /// Properties:
 /// * [devices] - Every device named on the restaurant, the latest named first.
+/// * [withoutDevice] - RA §14.2, §4.6: the restaurant is open with no receiving device, as the worker last saw it.
 @BuiltValue()
 abstract class MerchantDevicesDtoOutput
     implements
@@ -21,6 +22,10 @@ abstract class MerchantDevicesDtoOutput
   /// Every device named on the restaurant, the latest named first.
   @BuiltValueField(wireName: r'devices')
   BuiltList<MerchantDevicesDtoOutputDevicesInner> get devices;
+
+  /// RA §14.2, §4.6: the restaurant is open with no receiving device, as the worker last saw it.
+  @BuiltValueField(wireName: r'withoutDevice')
+  bool get withoutDevice;
 
   MerchantDevicesDtoOutput._();
 
@@ -59,6 +64,11 @@ class _$MerchantDevicesDtoOutputSerializer
         FullType(MerchantDevicesDtoOutputDevicesInner),
       ]),
     );
+    yield r'withoutDevice';
+    yield serializers.serialize(
+      object.withoutDevice,
+      specifiedType: const FullType(bool),
+    );
   }
 
   @override
@@ -96,6 +106,15 @@ class _$MerchantDevicesDtoOutputSerializer
                   )
                   as BuiltList<MerchantDevicesDtoOutputDevicesInner>;
           result.devices.replace(valueDes);
+          break;
+        case r'withoutDevice':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.withoutDevice = valueDes;
           break;
         default:
           unhandled.add(key);

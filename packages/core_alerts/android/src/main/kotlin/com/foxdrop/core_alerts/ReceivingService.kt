@@ -29,15 +29,31 @@ class ReceivingService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = receivingNotification(this)
-        if (Build.VERSION.SDK_INT >= 34) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
+        try {
+            if (Build.VERSION.SDK_INT >= 34) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+        } catch (error: Exception) {
+            // Android 12 and later refuse a foreground service started from
+            // the background without an exemption (the system restarting a
+            // sticky service, without the battery exemption the device check
+            // asks for): stop rather than crash; the app's next start, a push
+            // or a reboot starts it again.
+            if (Build.VERSION.SDK_INT >= 31 &&
+                error is android.app.ForegroundServiceStartNotAllowedException
+            ) {
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            throw error
         }
+        running = true
         if (wakeLock == null) {
             val power = getSystemService(Context.POWER_SERVICE) as PowerManager
             wakeLock =
@@ -53,6 +69,7 @@ class ReceivingService : Service() {
     }
 
     override fun onDestroy() {
+        running = false
         wakeLock?.let { if (it.isHeld) it.release() }
         wakeLock = null
         super.onDestroy()
@@ -63,6 +80,11 @@ class ReceivingService : Service() {
         private const val CHANNEL = "core_alerts_receiving"
         private const val PREFERENCES = "core_alerts"
         private const val ENABLED = "receiving"
+
+        // Whether the service runs in this process now.
+        @Volatile
+        var running = false
+            private set
 
         // The one Flutter engine of the app, shared by the activity and the
         // service, so the board, its connection and its ring outlive the
@@ -129,7 +151,6 @@ class ReceivingService : Service() {
             val intent =
                 context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return null
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            intent.putExtra(Ringer.RING_EXTRA, ring)
             return PendingIntent.getActivity(
                 context,
                 if (ring) 1 else 0,

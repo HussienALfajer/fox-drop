@@ -13,6 +13,18 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
     <!-- RA §4.5 check 2: the device check asks to leave battery optimisation. -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- RA §4.5 check 3: the brands' auto-start pages (DeviceCheck.kt), visible
+         to the app on Android 11 and later only when named here. -->
+    <queries>
+        <package android:name="com.miui.securitycenter"/>
+        <package android:name="com.huawei.systemmanager"/>
+        <package android:name="com.hihonor.systemmanager"/>
+        <package android:name="com.coloros.safecenter"/>
+        <package android:name="com.oplus.safecenter"/>
+        <package android:name="com.vivo.permissionmanager"/>
+        <package android:name="com.iqoo.secure"/>
+        <package android:name="com.samsung.android.lool"/>
+    </queries>
     <application>
         <service
             android:name="com.foxdrop.core_alerts.ReceivingService"
