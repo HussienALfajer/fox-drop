@@ -17,4 +17,4 @@ Phone sign-in and the app session of the three Flutter apps (architecture §11.2
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/packages/core_auth.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/packages/core_auth.md`. Grep it for what you change; never read it whole.

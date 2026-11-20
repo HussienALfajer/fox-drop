@@ -17,4 +17,4 @@ Push notifications of the three Flutter apps (architecture §8.1–8.2, §11.2; 
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/packages/core_push.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/packages/core_push.md`. Grep it for what you change; never read it whole.

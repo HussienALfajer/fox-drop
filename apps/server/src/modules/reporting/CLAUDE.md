@@ -17,4 +17,4 @@ Statements, reports, the dashboard, the Excel exports and the read-only profiles
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/server/src/modules/reporting.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/server/src/modules/reporting.md`. Grep it for what you change; never read it whole.

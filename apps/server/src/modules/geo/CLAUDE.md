@@ -19,4 +19,4 @@ Cities (AP §9.12.1), distances (architecture §7.1), service zones and the deli
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/server/src/modules/geo.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/server/src/modules/geo.md`. Grep it for what you change; never read it whole.

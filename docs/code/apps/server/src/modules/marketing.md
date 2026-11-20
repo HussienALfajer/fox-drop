@@ -1,5 +1,7 @@
 # marketing module
 
+> Moved here from `apps/server/src/modules/marketing/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 Promo codes «أكواد الخصم» (architecture §4.2; AP §9.11.1) and «تعويض الزبون» with its caps and approvals (AP §6.4, §9.3.2). The home sections (AP §9.11.3, slice 2.27b), the banners (AP §9.11.2, slice 2.27c) and the mass pushes (AP §9.11.4, slice 2.27d).
 
 ## Rules

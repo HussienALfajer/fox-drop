@@ -1,6 +1,6 @@
 # apps/merchant
 
-The restaurant app «تطبيق المطعم» (Android and Windows; architecture §11, §12; RA §4–§16). It follows the rules of `apps/customer/CLAUDE.md`.
+The restaurant app «تطبيق المطعم» (Android and Windows; architecture §11, §12; RA §4–§16). Read `apps/customer/CLAUDE.md` first (it does not load here by itself): its rules hold here too.
 
 ## Rules
 
@@ -18,4 +18,4 @@ The restaurant app «تطبيق المطعم» (Android and Windows; architectur
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/merchant.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/merchant.md`. Grep it for what you change; never read it whole.

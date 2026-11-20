@@ -17,4 +17,4 @@ The texts and reason lists of AP §9.13, edited in the panel and read by the app
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/server/src/modules/content.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/server/src/modules/content.md`. Grep it for what you change; never read it whole.

@@ -1,5 +1,7 @@
 # apps/admin
 
+> Moved here from `apps/admin/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 The admin panel «لوحة الإدارة»: a static single-page app (architecture §10). `apps/merchant-portal` follows the same rules.
 
 ## Layout

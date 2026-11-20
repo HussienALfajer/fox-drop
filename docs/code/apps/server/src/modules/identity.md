@@ -1,5 +1,7 @@
 # identity module
 
+> Moved here from `apps/server/src/modules/identity/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 Users of the four products, their sign-in and sessions (architecture §4.2). So far: the admin panel's accounts, first sign-in, sign-in, sessions, roles and permissions, the guard on every route and the admin team (AP §5.1–5.3, §6, §9.15; architecture §10.3, §15.2); the apps' phone sign-in with a WhatsApp code, tokens and sessions, served to the customer, restaurant and captain apps (architecture §8.3.1–8.3.2, §15.1; CU §5.2, §5.4; RA §5.1–5.3; CA §4.9), with the restaurants' owners, cashiers and devices and the captains' sign-in accounts.
 
 ## Rules

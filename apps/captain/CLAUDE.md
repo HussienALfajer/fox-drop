@@ -1,6 +1,6 @@
 # apps/captain
 
-The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, §14; CA §4.3-4.6, §7-§9, §14-§15). It follows the rules of `apps/customer/CLAUDE.md`: generated API client, strings in `core_l10n`, start/end layout, the design stop.
+The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, §14; CA §4.3-4.6, §7-§9, §14-§15). Read `apps/customer/CLAUDE.md` first (it does not load here by itself): its rules hold here too: generated API client, strings in `core_l10n`, start/end layout, the design stop.
 
 ## Rules
 
@@ -15,4 +15,4 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/captain.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/captain.md`. Grep it for what you change; never read it whole.

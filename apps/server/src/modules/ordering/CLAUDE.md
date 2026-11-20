@@ -10,12 +10,12 @@ The quote, the order, its state machine, edits and outcomes, delivery, pickup, r
 - **Nothing slow inside the transaction:** never call the distance service or another slow one in it. Read what is slow (settings, distance, the quote) before it. Where two locks are taken, the customer's first, then the restaurant's.
 - **Events leave through the outbox** (E4): `ordering.outbox`, with a payload of `schema: 1`. The relay publishes at least once; clients order events by the order version and ignore one not newer than the one they show. The application role may only insert outbox rows and change `published_at`; `order_events` is append-only.
 - **Partitions:** `orders`, `order_lines` and `order_events` are partitioned by the UTC month of `placed_at`; lines and events carry the order's `placed_at`. `ordering.create_month_partitions()` runs from `OrderingWorkerModule`. A table keyed by the order needs `placed_at` too.
-- **Idempotency** (architecture §5.3): every command takes `Idempotency-Key` (`@Idempotent()`, `@IdempotencyKey()` from `src/http/idempotency.ts`; `idempotency-keys.ts` here). Replay the key before anything else and again under the lock; write it in the command's transaction, so a refused command keeps no key.
+- **Idempotency** (architecture §5.3): every command takes `Idempotency-Key` except those `apps/server/CLAUDE.md` exempts (an acknowledgement, a rating, the emergency stop) (`@Idempotent()`, `@IdempotencyKey()` from `src/http/idempotency.ts`; `idempotency-keys.ts` here). Replay the key before anything else and again under the lock; write it in the command's transaction, so a refused command keeps no key.
 - **State errors:** a state a command no longer allows answers `409 order_state_changed` with the order as it is now; another party's order is `404 unknown_order`.
 - **Order numbers** (AP §4.8) are taken last in the order's transaction, so a refused order leaves no gap.
 - **No cross-module reads:** other modules reach orders through exported services (`OrderAssignments`, `ReportOrdersService`, ...) or events; `OrdersService` registers ports with others (for example `MerchantsService.countActiveOrders`). Never import another module's schema.
-- **Realtime:** the order's channel check is `OrderChannelAccess`; a customer subscribes only to their own order. Never send a captain's phone to the restaurant's board.
+- **Realtime:** the order's channel check is `OrderChannelAccess`; a customer subscribes only to their own order. The restaurant's board never carries the delivery fee, the total, the address, any phone, the promised time or operations' moments (R11); the customer's captain card never carries the captain's phone.
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/server/src/modules/ordering.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/server/src/modules/ordering.md`. Grep it for what you change; never read it whole.

@@ -10,7 +10,7 @@ Input: the slice, such as "0.2", or nothing for the slice `TASKS.md` names.
 ## 1. Read
 
 - `TASKS.md`: the slice, the spec sections it implements, its branch, its plan and any "Stopped at" line. If `TASKS.md` describes another slice that is not done, stop and ask the owner.
-- The slice's line in `docs/roadmap.md`, the spec and architecture sections it cites, their definition of done. Folder `CLAUDE.md` files load by themselves when you read a file there; do not read them again. For what a feature already does and why, grep the folder's `docs/code/<folder path>.md` and `docs/slice-notes.md`, or ask the `Explore` agent.
+- The slice's line in `docs/roadmap.md`, the spec and architecture sections it cites, their definition of done. A folder's `CLAUDE.md` and its parents' load by themselves when you read a file there; do not read them again, but Read once one that a loaded file says to read first (`apps/customer/CLAUDE.md` for the captain and restaurant apps, `apps/admin/CLAUDE.md` for the portal). For what a feature already does and why, grep the folder's `docs/code/<folder path>.md` and `docs/slice-notes.md`, or ask the `Explore` agent.
 - If the plan in `TASKS.md` is missing or does not match the roadmap line, write it as a checklist first, one step per commit.
 
 Stop and ask the owner about everything `CLAUDE.md` says to ask about, and at the design stop.

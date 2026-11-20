@@ -1,5 +1,7 @@
 # merchants module
 
+> Moved here from `apps/server/src/modules/merchants/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 Restaurants, their account status, hours, operating state, coverage, minimum order, commission and menu (architecture §4.2; AP §9.6, RA §7, §9, §10).
 
 ## Rules

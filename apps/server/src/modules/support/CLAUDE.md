@@ -17,4 +17,4 @@ Tickets «الدعم» (architecture §4.2; AP §9.9): manual tickets, resolving
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/server/src/modules/support.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/server/src/modules/support.md`. Grep it for what you change; never read it whole.

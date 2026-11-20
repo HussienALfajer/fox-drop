@@ -1,5 +1,7 @@
 # apps/captain
 
+> Moved here from `apps/captain/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, §14). It follows the rules of `apps/customer/CLAUDE.md`.
 
 ## The work cycle (slice 1.14g; CA §4.3–4.6, §7–§9, §14–§15)

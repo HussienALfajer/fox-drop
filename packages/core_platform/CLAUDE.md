@@ -16,4 +16,4 @@ The forced update and maintenance, the terms and privacy and the emergency stop 
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/packages/core_platform.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/packages/core_platform.md`. Grep it for what you change; never read it whole.

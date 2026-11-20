@@ -1,5 +1,7 @@
 # ledger module
 
+> Moved here from `apps/server/src/modules/ledger/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 Accounts and append-only double-entry journals in every currency (AP §8.4–§8.11; architecture §4.3 item 5, §5.2, §5.6). Money moves only here.
 
 ## How another module posts money

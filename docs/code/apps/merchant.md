@@ -1,5 +1,7 @@
 # apps/merchant
 
+> Moved here from `apps/merchant/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 The restaurant app «تطبيق المطعم» (Android, Windows; architecture §11, §12). It follows the rules of `apps/customer/CLAUDE.md`.
 
 ## The board (slice 1.14e; RA §4.3–4.7, §8.1–8.11)

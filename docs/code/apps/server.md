@@ -1,5 +1,7 @@
 # apps/server
 
+> Moved here from `apps/server/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 The FOX DROP server: one NestJS on Fastify application, strict TypeScript, ES modules (architecture §4, §5).
 
 ## Layout

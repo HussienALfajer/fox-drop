@@ -1,6 +1,6 @@
 # apps/merchant-portal
 
-The owner web portal «بوابة المطعم» (architecture §10.4, RA §17): the same stack and rules as the admin panel (`apps/admin/CLAUDE.md`: the API through `api` only, same origin, feature and page pairs, Arabic and right to left, no styling until the design). It calls the `merchant` route group, serves on port 5174 in development and previews on 4174 for its smoke test (`e2e/smoke.spec.ts`).
+The owner web portal «بوابة المطعم» (architecture §10.4, RA §17): the same stack and rules as the admin panel; read `apps/admin/CLAUDE.md` first, it does not load here by itself (the the API through `api` only, same origin, feature and page pairs, Arabic and right to left, no styling until the design). It calls the `merchant` route group, serves on port 5174 in development and previews on 4174 for its smoke test (`e2e/smoke.spec.ts`).
 
 ## Rules
 
@@ -17,4 +17,4 @@ The owner web portal «بوابة المطعم» (architecture §10.4, RA §17):
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/merchant-portal.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/merchant-portal.md`. Grep it for what you change; never read it whole.

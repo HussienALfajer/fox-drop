@@ -1,5 +1,7 @@
 # apps/customer
 
+> Moved here from `apps/customer/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 The customer app «تطبيق الزبون» (Android, iOS), a Flutter app in the Dart pub workspace (architecture §11, §13). `apps/captain` (Android, iOS) and `apps/merchant` (Android, Windows) follow the same rules.
 
 ## Layout

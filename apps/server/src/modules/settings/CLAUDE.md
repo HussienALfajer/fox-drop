@@ -20,4 +20,4 @@ The typed settings of AP §4.4 and Appendix A, cached in Valkey (architecture §
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/server/src/modules/settings.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/server/src/modules/settings.md`. Grep it for what you change; never read it whole.

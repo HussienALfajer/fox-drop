@@ -6,7 +6,7 @@ How FOX DROP runs on the owner's shared Contabo server (architecture §17, T9, E
 
 - **Layout:** `compose.yaml` is one environment's Compose project; `environments/<env>.env` holds public settings only; `nginx/` (`*.template` rendered per environment by `provision.sh`), `server/` (provision, deploy, backup scripts), `osrm/`, `maps/`, `storage/`, `imgproxy/`, `centrifugo/`, `web/`. `infra.test.mjs` checks the machine-checkable rules below in `pnpm verify`.
 - **Edit here, never on the server.** A change under `nginx/` or `server/` reaches the server only by running `provision.sh` again; `compose.yaml` and `environments/` reach it with the next deploy.
-- **Nothing public but nginx (§15.5):** publish every port as `127.0.0.1:<port>`; Docker bypasses the firewall. Staging uses ports 3110 to 3116.
+- **Nothing public but nginx (§15.5):** publish every port as `127.0.0.1:<port>`; Docker bypasses the firewall. Staging uses ports 3110 to 3116; the server's other sites use 3000 to 3073.
 - **One hop of proxy:** nginx sets `X-Forwarded-For $remote_addr`, and the API trusts exactly one hop (`trustProxy: 1`). Never `$proxy_add_x_forwarded_for`, never `trustProxy: true`.
 - **Isolation (§17.2):** each environment has its own system user, Compose project, network, volume, database, environment file and certificate. Never use the server's own PostgreSQL or Redis.
 - **Memory limits** on every container: the server is shared with the owner's other sites.
@@ -21,4 +21,4 @@ How FOX DROP runs on the owner's shared Contabo server (architecture §17, T9, E
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/infra.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/infra.md`. Grep it for what you change; never read it whole.

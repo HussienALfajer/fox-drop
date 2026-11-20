@@ -1,5 +1,7 @@
 # packages/core_push
 
+> Moved here from `packages/core_push/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 Push notifications of the three Flutter apps (architecture §8.1–8.2, §11.2; CU §14, RA §16, CA §14). The server side is the notifications module (`apps/server/src/modules/notifications/CLAUDE.md`, «Push tokens», «The push relay»).
 
 ## Layout

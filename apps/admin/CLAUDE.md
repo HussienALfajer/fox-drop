@@ -9,7 +9,7 @@ The admin panel «لوحة الإدارة»: a static single-page app (architect
 - **Same origin, no secrets (E7):** the app calls `/v1` on its own origin (Vite forwards it to port 3000 in development). Never put an API address, key or secret in the bundle: every `VITE_` variable ships to the browser.
 - **Arabic, right to left (AP §4.7):** every user-facing string, the page title included, is a key in `src/locales/ar.json` read with `t()`; the keys are typed, so a missing one fails the type check. Western digits only (`src/locales/ar.test.ts`). Format numbers and dates with `Intl` and `ar-u-nu-latn`, never plain `ar`.
 - **Lint:** the root `eslint.web.mjs` (shared by every web app) fails text written in JSX, in braces or in a label attribute (`alt`, `title`, `placeholder`, `aria-label`), and `Intl` or `toLocale*String` with plain `ar`. `test/lint.test.ts` proves each rule fires; add a case when a rule changes.
-- **Money and codes:** format money from integer minor units (`format.ts`), never through a float; a code label (status, reason, alert) is a key map checked against the API's enum with `satisfies`; a code the panel does not know is hidden or shown as its code, never in English.
+- **Money and codes:** format money from integer minor units (`format.ts`), never through a float; a code label (status, reason, alert) is a key map checked against the API's enum with `satisfies`; a code the panel does not know is hidden, never shown in English; only an operator's own reason shows as written (`eventReason`).
 - **Time:** show and type times on the chosen city's clock, never the browser's; countdowns and SLA colours use the server's clock (`clock.ts`).
 - **Session and permissions (AP §5.1, §6.1):** every page but `/sign-in` and `/setup` sits under the `signed-in` layout route. A page needing a permission checks it with `can()` in its route's `beforeLoad` and hides its links and menu entry (`layout.ts`) the same way; the server still enforces it. The `city` search parameter travels on every link.
 - **Commands (architecture §5.3):** a command that takes `Idempotency-Key` keeps one key per choice until an answer arrives, so a retry replays instead of acting twice. A command that only sets a value takes none.
@@ -29,4 +29,4 @@ The admin panel «لوحة الإدارة»: a static single-page app (architect
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/admin.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/admin.md`. Grep it for what you change; never read it whole.

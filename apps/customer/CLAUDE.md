@@ -4,8 +4,8 @@ The customer app «تطبيق الزبون» (Android, iOS), a Flutter app in th
 
 ## Rules
 
-- **Layout:** `lib/main.dart` starts App Check and push, then runs the app in a Riverpod `ProviderScope`; `lib/src/app.dart` is `MaterialApp.router` fixed to Arabic, `router.dart` the go_router routes, `api.dart` the API client providers, `auth.dart` the `AuthScope`. One screen per file, then feature folders (`cart/`, `checkout/`, `orders/`, `browsing/`): logic (providers, notifiers, pure functions) in plain files; each `*_screen.dart` or `*_sheet.dart` only reads that state and calls it.
-- **Libraries (architecture §11.3):** Riverpod for state and injection, go_router for navigation; no other state library, no `Navigator.push` for screens. Pin every dependency to an exact version.
+- **Layout:** `lib/main.dart` starts App Check and push, then runs the app in a Riverpod `ProviderScope`; `lib/src/app.dart` is `MaterialApp.router` in Arabic; `router.dart`, `api.dart` and `auth.dart` hold the routes, API providers and `AuthScope`. One screen per file, then feature folders (`cart/`, `checkout/`, `orders/`, `browsing/`): logic (providers, notifiers, pure functions) in plain files; each `*_screen.dart` or `*_sheet.dart` only reads that state and calls it.
+- **Libraries (architecture §11.3):** Riverpod for state and injection, go_router for navigation; no other state library, no `Navigator.push` for screens. Pin every dependency to an exact version; a package another workspace member also uses takes the same version.
 - **API (E6):** call the server only through `coreApiProvider` (the generated `core_api` client) inside a provider; never Dio or `http` by hand (the one exception is the report photo's `PUT` to a signed URL, `photoPutProvider`). `authApiProvider`, without the interceptor, serves only the app's `AuthParty`.
 - **Money:** amounts arrive as minor-unit strings, formatted with `formatMoney`; generated money models are nullable in Dart (`price!`).
 - **Commands:** a command's `Idempotency-Key` belongs to one command body: a lost answer resends the same key, a refusal or another body takes a new one. A problem's action finds its cart line by `CartLine.key`, never by index.
@@ -26,4 +26,4 @@ From the app's folder, with the pinned Flutter (`.fvm/flutter_sdk/bin` first on 
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/customer.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/customer.md`. Grep it for what you change; never read it whole.

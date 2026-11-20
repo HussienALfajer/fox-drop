@@ -19,4 +19,4 @@ Restaurants, their account status, hours, operating state, coverage, minimum ord
 
 ## More
 
-Behaviour, decisions and slice history: `docs/code/apps/server/src/modules/merchants.md`. Grep it for the feature, route, table or label you are changing and read only those lines; never read it whole.
+Behaviour, decisions and history: `docs/code/apps/server/src/modules/merchants.md`. Grep it for what you change; never read it whole.

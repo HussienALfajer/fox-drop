@@ -1,5 +1,7 @@
 # captains module
 
+> Moved here from `apps/server/src/modules/captains/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 The captain record, its vehicle, status and cash limit, its availability and location, and the city's pay table (architecture §4.2, §7.3; AP §9.7, §9.12.5, §8.5.3–8.5.4; CA §4.3, §7).
 
 ## Rules

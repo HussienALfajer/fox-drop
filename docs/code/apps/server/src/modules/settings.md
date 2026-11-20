@@ -1,5 +1,7 @@
 # settings module
 
+> Moved here from `apps/server/src/modules/settings/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+
 The typed settings of AP §4.4 and Appendix A, cached in Valkey (architecture §5.7).
 
 ## Rules
