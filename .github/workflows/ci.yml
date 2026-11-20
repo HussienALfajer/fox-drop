@@ -439,6 +439,41 @@ jobs:
         working-directory: apps/merchant
         run: flutter build windows --release
 
+  # Slice 2.46 (owner decisions 2026-11-20): the customer and captain apps'
+  # iOS release builds on every pull request that touches a Flutter app, a
+  # Dart package or this workflow, unsigned (no Apple account is needed), so
+  # the Xcode projects, the Swift plugins (core_alerts' own included, which
+  # has no unit tests) and the Swift packages compile before the merge.
+  ios-release:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.flutter == 'true'
+    runs-on: macos-15
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [customer, captain]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - run: dart pub get --enforce-lockfile
+
+      - name: Build the staging release, unsigned
+        working-directory: apps/${{ matrix.app }}
+        run: flutter build ios --flavor staging --release --no-codesign
+
   staging-apks:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
     needs: [changes, verify]
