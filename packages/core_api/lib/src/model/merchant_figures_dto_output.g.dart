@@ -14,9 +14,9 @@ class _$MerchantFiguresDtoOutput extends MerchantFiguresDtoOutput {
   @override
   final String currency;
   @override
-  final MerchantFiguresDtoOutputCurrent current;
+  final MerchantFiguresOutput current;
   @override
-  final MerchantFiguresDtoOutputPrevious previous;
+  final MerchantFiguresOutput previous;
 
   factory _$MerchantFiguresDtoOutput([
     void Function(MerchantFiguresDtoOutputBuilder)? updates,
@@ -90,16 +90,16 @@ class MerchantFiguresDtoOutputBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  MerchantFiguresDtoOutputCurrentBuilder? _current;
-  MerchantFiguresDtoOutputCurrentBuilder get current =>
-      _$this._current ??= MerchantFiguresDtoOutputCurrentBuilder();
-  set current(MerchantFiguresDtoOutputCurrentBuilder? current) =>
+  MerchantFiguresOutputBuilder? _current;
+  MerchantFiguresOutputBuilder get current =>
+      _$this._current ??= MerchantFiguresOutputBuilder();
+  set current(MerchantFiguresOutputBuilder? current) =>
       _$this._current = current;
 
-  MerchantFiguresDtoOutputPreviousBuilder? _previous;
-  MerchantFiguresDtoOutputPreviousBuilder get previous =>
-      _$this._previous ??= MerchantFiguresDtoOutputPreviousBuilder();
-  set previous(MerchantFiguresDtoOutputPreviousBuilder? previous) =>
+  MerchantFiguresOutputBuilder? _previous;
+  MerchantFiguresOutputBuilder get previous =>
+      _$this._previous ??= MerchantFiguresOutputBuilder();
+  set previous(MerchantFiguresOutputBuilder? previous) =>
       _$this._previous = previous;
 
   MerchantFiguresDtoOutputBuilder() {

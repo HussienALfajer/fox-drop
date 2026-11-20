@@ -22382,7 +22382,7 @@ export interface components {
                 /** @description The table, unique in its report. */
                 key: string;
                 /** @enum {string} */
-                rowKind: "none" | "code" | "name" | "day" | "hour";
+                rowKind: "none" | "code" | "label" | "day" | "hour";
                 /** @description The list of `reports.code` that names the rows’ codes; null: as they are. */
                 rowCodes: string | null;
                 columns: {
@@ -22506,6 +22506,64 @@ export interface components {
                 at: string;
             }[];
         };
+        MerchantFigures_Output: {
+            /** @description Orders that reached the restaurant. */
+            received: number;
+            acceptedByYou: number;
+            /** @description Accepted on the restaurant’s behalf (RA §8.15). */
+            acceptedByOperations: number;
+            rejected: number;
+            rejections: {
+                label: string;
+                byOperations: boolean;
+                count: number;
+            }[];
+            /** @description Cancelled automatically for no response (RA §8.3). */
+            unanswered: number;
+            /** @description Accepted by you ÷ (received − cancelled by the customer before any answer). */
+            acceptanceBp: number | null;
+            delivered: number;
+            /** @description Items value of the delivered orders, after any edits. */
+            sales: string;
+            averageOrder: string | null;
+            /** @description From the restaurant account’s entries of the period (RA §12). */
+            commission: string;
+            /** @description Restaurant-funded discounts, from the same entries. */
+            discounts: string;
+            /** @description Sales less the commission and the discounts. */
+            net: string;
+            /** @description Placed to accepted, by restaurant users only. */
+            acceptMinutes: number | null;
+            prepActualMinutes: number | null;
+            prepChosenMinutes: number | null;
+            /** @description Ready (or picked up) after the time chosen ÷ accepted. */
+            lateBp: number | null;
+            readyNotPressed: number;
+            captainWaitMinutes: number | null;
+            rating: {
+                count: number;
+                average: number | null;
+            };
+            topByQuantity: components["schemas"]["MerchantFiguresItem_Output"][];
+            topBySales: components["schemas"]["MerchantFiguresItem_Output"][];
+            hours: {
+                hour: number;
+                delivered: number;
+            }[];
+            pauseMinutes: {
+                restaurant: number;
+                ops: number;
+                auto: number;
+            };
+        };
+        MerchantFiguresItem_Output: {
+            /** Format: uuid */
+            itemId: string;
+            /** @description Its name on the latest order. */
+            name: string;
+            quantity: number;
+            sales: string;
+        };
         MerchantFiguresDto_Output: {
             /** Format: date-time */
             from: string;
@@ -22516,135 +22574,8 @@ export interface components {
             to: string;
             /** @description The money’s currency, the city’s base. */
             currency: string;
-            current: {
-                /** @description Orders that reached the restaurant. */
-                received: number;
-                acceptedByYou: number;
-                /** @description Accepted on the restaurant’s behalf (RA §8.15). */
-                acceptedByOperations: number;
-                rejected: number;
-                rejections: {
-                    label: string;
-                    byOperations: boolean;
-                    count: number;
-                }[];
-                /** @description Cancelled automatically for no response (RA §8.3). */
-                unanswered: number;
-                /** @description Accepted by you ÷ (received − cancelled by the customer before any answer). */
-                acceptanceBp: number | null;
-                delivered: number;
-                /** @description Items value of the delivered orders, after any edits. */
-                sales: string;
-                averageOrder: string | null;
-                /** @description From the restaurant account’s entries of the period (RA §12). */
-                commission: string;
-                /** @description Restaurant-funded discounts, from the same entries. */
-                discounts: string;
-                /** @description Sales less the commission and the discounts. */
-                net: string;
-                /** @description Placed to accepted, by restaurant users only. */
-                acceptMinutes: number | null;
-                prepActualMinutes: number | null;
-                prepChosenMinutes: number | null;
-                /** @description Ready (or picked up) after the time chosen ÷ accepted. */
-                lateBp: number | null;
-                readyNotPressed: number;
-                captainWaitMinutes: number | null;
-                rating: {
-                    count: number;
-                    average: number | null;
-                };
-                topByQuantity: {
-                    /** Format: uuid */
-                    itemId: string;
-                    /** @description Its name on the latest order. */
-                    name: string;
-                    quantity: number;
-                    sales: string;
-                }[];
-                topBySales: {
-                    /** Format: uuid */
-                    itemId: string;
-                    /** @description Its name on the latest order. */
-                    name: string;
-                    quantity: number;
-                    sales: string;
-                }[];
-                hours: {
-                    hour: number;
-                    delivered: number;
-                }[];
-                pauseMinutes: {
-                    restaurant: number;
-                    ops: number;
-                    auto: number;
-                };
-            };
-            /** @description The previous period of the same length, for the arrows. */
-            previous: {
-                /** @description Orders that reached the restaurant. */
-                received: number;
-                acceptedByYou: number;
-                /** @description Accepted on the restaurant’s behalf (RA §8.15). */
-                acceptedByOperations: number;
-                rejected: number;
-                rejections: {
-                    label: string;
-                    byOperations: boolean;
-                    count: number;
-                }[];
-                /** @description Cancelled automatically for no response (RA §8.3). */
-                unanswered: number;
-                /** @description Accepted by you ÷ (received − cancelled by the customer before any answer). */
-                acceptanceBp: number | null;
-                delivered: number;
-                /** @description Items value of the delivered orders, after any edits. */
-                sales: string;
-                averageOrder: string | null;
-                /** @description From the restaurant account’s entries of the period (RA §12). */
-                commission: string;
-                /** @description Restaurant-funded discounts, from the same entries. */
-                discounts: string;
-                /** @description Sales less the commission and the discounts. */
-                net: string;
-                /** @description Placed to accepted, by restaurant users only. */
-                acceptMinutes: number | null;
-                prepActualMinutes: number | null;
-                prepChosenMinutes: number | null;
-                /** @description Ready (or picked up) after the time chosen ÷ accepted. */
-                lateBp: number | null;
-                readyNotPressed: number;
-                captainWaitMinutes: number | null;
-                rating: {
-                    count: number;
-                    average: number | null;
-                };
-                topByQuantity: {
-                    /** Format: uuid */
-                    itemId: string;
-                    /** @description Its name on the latest order. */
-                    name: string;
-                    quantity: number;
-                    sales: string;
-                }[];
-                topBySales: {
-                    /** Format: uuid */
-                    itemId: string;
-                    /** @description Its name on the latest order. */
-                    name: string;
-                    quantity: number;
-                    sales: string;
-                }[];
-                hours: {
-                    hour: number;
-                    delivered: number;
-                }[];
-                pauseMinutes: {
-                    restaurant: number;
-                    ops: number;
-                    auto: number;
-                };
-            };
+            current: components["schemas"]["MerchantFigures_Output"];
+            previous: components["schemas"]["MerchantFigures_Output"];
         };
     };
     responses: never;

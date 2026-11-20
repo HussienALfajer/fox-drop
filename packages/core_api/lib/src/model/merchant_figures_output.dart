@@ -3,18 +3,18 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/merchant_figures_output_rating.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_pause_minutes.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_hours_inner.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_rating.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_top_by_quantity_inner.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_rejections_inner.dart';
+import 'package:core_api/src/model/merchant_figures_item_output.dart';
+import 'package:core_api/src/model/merchant_figures_output_pause_minutes.dart';
+import 'package:core_api/src/model/merchant_figures_output_hours_inner.dart';
+import 'package:core_api/src/model/merchant_figures_output_rejections_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_figures_dto_output_previous.g.dart';
+part 'merchant_figures_output.g.dart';
 
-/// The previous period of the same length, for the arrows.
+/// MerchantFiguresOutput
 ///
 /// Properties:
 /// * [received] - Orders that reached the restaurant.
@@ -42,12 +42,8 @@ part 'merchant_figures_dto_output_previous.g.dart';
 /// * [hours]
 /// * [pauseMinutes]
 @BuiltValue()
-abstract class MerchantFiguresDtoOutputPrevious
-    implements
-        Built<
-          MerchantFiguresDtoOutputPrevious,
-          MerchantFiguresDtoOutputPreviousBuilder
-        > {
+abstract class MerchantFiguresOutput
+    implements Built<MerchantFiguresOutput, MerchantFiguresOutputBuilder> {
   /// Orders that reached the restaurant.
   @BuiltValueField(wireName: r'received')
   int get received;
@@ -63,7 +59,7 @@ abstract class MerchantFiguresDtoOutputPrevious
   int get rejected;
 
   @BuiltValueField(wireName: r'rejections')
-  BuiltList<MerchantFiguresDtoOutputCurrentRejectionsInner> get rejections;
+  BuiltList<MerchantFiguresOutputRejectionsInner> get rejections;
 
   /// Cancelled automatically for no response (RA §8.3).
   @BuiltValueField(wireName: r'unanswered')
@@ -116,49 +112,48 @@ abstract class MerchantFiguresDtoOutputPrevious
   num? get captainWaitMinutes;
 
   @BuiltValueField(wireName: r'rating')
-  MerchantFiguresDtoOutputCurrentRating get rating;
+  MerchantFiguresOutputRating get rating;
 
   @BuiltValueField(wireName: r'topByQuantity')
-  BuiltList<MerchantFiguresDtoOutputCurrentTopByQuantityInner>
-  get topByQuantity;
+  BuiltList<MerchantFiguresItemOutput> get topByQuantity;
 
   @BuiltValueField(wireName: r'topBySales')
-  BuiltList<MerchantFiguresDtoOutputCurrentTopByQuantityInner> get topBySales;
+  BuiltList<MerchantFiguresItemOutput> get topBySales;
 
   @BuiltValueField(wireName: r'hours')
-  BuiltList<MerchantFiguresDtoOutputCurrentHoursInner> get hours;
+  BuiltList<MerchantFiguresOutputHoursInner> get hours;
 
   @BuiltValueField(wireName: r'pauseMinutes')
-  MerchantFiguresDtoOutputCurrentPauseMinutes get pauseMinutes;
+  MerchantFiguresOutputPauseMinutes get pauseMinutes;
 
-  MerchantFiguresDtoOutputPrevious._();
+  MerchantFiguresOutput._();
 
-  factory MerchantFiguresDtoOutputPrevious([
-    void updates(MerchantFiguresDtoOutputPreviousBuilder b),
-  ]) = _$MerchantFiguresDtoOutputPrevious;
+  factory MerchantFiguresOutput([
+    void updates(MerchantFiguresOutputBuilder b),
+  ]) = _$MerchantFiguresOutput;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantFiguresDtoOutputPreviousBuilder b) => b;
+  static void _defaults(MerchantFiguresOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantFiguresDtoOutputPrevious> get serializer =>
-      _$MerchantFiguresDtoOutputPreviousSerializer();
+  static Serializer<MerchantFiguresOutput> get serializer =>
+      _$MerchantFiguresOutputSerializer();
 }
 
-class _$MerchantFiguresDtoOutputPreviousSerializer
-    implements PrimitiveSerializer<MerchantFiguresDtoOutputPrevious> {
+class _$MerchantFiguresOutputSerializer
+    implements PrimitiveSerializer<MerchantFiguresOutput> {
   @override
   final Iterable<Type> types = const [
-    MerchantFiguresDtoOutputPrevious,
-    _$MerchantFiguresDtoOutputPrevious,
+    MerchantFiguresOutput,
+    _$MerchantFiguresOutput,
   ];
 
   @override
-  final String wireName = r'MerchantFiguresDtoOutputPrevious';
+  final String wireName = r'MerchantFiguresOutput';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantFiguresDtoOutputPrevious object, {
+    MerchantFiguresOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'received';
@@ -185,7 +180,7 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
     yield serializers.serialize(
       object.rejections,
       specifiedType: const FullType(BuiltList, [
-        FullType(MerchantFiguresDtoOutputCurrentRejectionsInner),
+        FullType(MerchantFiguresOutputRejectionsInner),
       ]),
     );
     yield r'unanswered';
@@ -275,42 +270,40 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
     yield r'rating';
     yield serializers.serialize(
       object.rating,
-      specifiedType: const FullType(MerchantFiguresDtoOutputCurrentRating),
+      specifiedType: const FullType(MerchantFiguresOutputRating),
     );
     yield r'topByQuantity';
     yield serializers.serialize(
       object.topByQuantity,
       specifiedType: const FullType(BuiltList, [
-        FullType(MerchantFiguresDtoOutputCurrentTopByQuantityInner),
+        FullType(MerchantFiguresItemOutput),
       ]),
     );
     yield r'topBySales';
     yield serializers.serialize(
       object.topBySales,
       specifiedType: const FullType(BuiltList, [
-        FullType(MerchantFiguresDtoOutputCurrentTopByQuantityInner),
+        FullType(MerchantFiguresItemOutput),
       ]),
     );
     yield r'hours';
     yield serializers.serialize(
       object.hours,
       specifiedType: const FullType(BuiltList, [
-        FullType(MerchantFiguresDtoOutputCurrentHoursInner),
+        FullType(MerchantFiguresOutputHoursInner),
       ]),
     );
     yield r'pauseMinutes';
     yield serializers.serialize(
       object.pauseMinutes,
-      specifiedType: const FullType(
-        MerchantFiguresDtoOutputCurrentPauseMinutes,
-      ),
+      specifiedType: const FullType(MerchantFiguresOutputPauseMinutes),
     );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    MerchantFiguresDtoOutputPrevious object, {
+    MerchantFiguresOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -325,7 +318,7 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantFiguresDtoOutputPreviousBuilder result,
+    required MerchantFiguresOutputBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -361,10 +354,10 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(MerchantFiguresDtoOutputCurrentRejectionsInner),
+                      FullType(MerchantFiguresOutputRejectionsInner),
                     ]),
                   )
-                  as BuiltList<MerchantFiguresDtoOutputCurrentRejectionsInner>;
+                  as BuiltList<MerchantFiguresOutputRejectionsInner>;
           result.rejections.replace(valueDes);
           break;
         case r'unanswered':
@@ -495,11 +488,9 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      MerchantFiguresDtoOutputCurrentRating,
-                    ),
+                    specifiedType: const FullType(MerchantFiguresOutputRating),
                   )
-                  as MerchantFiguresDtoOutputCurrentRating;
+                  as MerchantFiguresOutputRating;
           result.rating.replace(valueDes);
           break;
         case r'topByQuantity':
@@ -507,14 +498,10 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        MerchantFiguresDtoOutputCurrentTopByQuantityInner,
-                      ),
+                      FullType(MerchantFiguresItemOutput),
                     ]),
                   )
-                  as BuiltList<
-                    MerchantFiguresDtoOutputCurrentTopByQuantityInner
-                  >;
+                  as BuiltList<MerchantFiguresItemOutput>;
           result.topByQuantity.replace(valueDes);
           break;
         case r'topBySales':
@@ -522,14 +509,10 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        MerchantFiguresDtoOutputCurrentTopByQuantityInner,
-                      ),
+                      FullType(MerchantFiguresItemOutput),
                     ]),
                   )
-                  as BuiltList<
-                    MerchantFiguresDtoOutputCurrentTopByQuantityInner
-                  >;
+                  as BuiltList<MerchantFiguresItemOutput>;
           result.topBySales.replace(valueDes);
           break;
         case r'hours':
@@ -537,10 +520,10 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(MerchantFiguresDtoOutputCurrentHoursInner),
+                      FullType(MerchantFiguresOutputHoursInner),
                     ]),
                   )
-                  as BuiltList<MerchantFiguresDtoOutputCurrentHoursInner>;
+                  as BuiltList<MerchantFiguresOutputHoursInner>;
           result.hours.replace(valueDes);
           break;
         case r'pauseMinutes':
@@ -548,10 +531,10 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      MerchantFiguresDtoOutputCurrentPauseMinutes,
+                      MerchantFiguresOutputPauseMinutes,
                     ),
                   )
-                  as MerchantFiguresDtoOutputCurrentPauseMinutes;
+                  as MerchantFiguresOutputPauseMinutes;
           result.pauseMinutes.replace(valueDes);
           break;
         default:
@@ -563,12 +546,12 @@ class _$MerchantFiguresDtoOutputPreviousSerializer
   }
 
   @override
-  MerchantFiguresDtoOutputPrevious deserialize(
+  MerchantFiguresOutput deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantFiguresDtoOutputPreviousBuilder();
+    final result = MerchantFiguresOutputBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

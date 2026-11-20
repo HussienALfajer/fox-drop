@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'merchant_figures_dto_output_current_rejections_inner.dart';
+part of 'merchant_figures_output_rejections_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$MerchantFiguresDtoOutputCurrentRejectionsInner
-    extends MerchantFiguresDtoOutputCurrentRejectionsInner {
+class _$MerchantFiguresOutputRejectionsInner
+    extends MerchantFiguresOutputRejectionsInner {
   @override
   final String label;
   @override
@@ -15,32 +15,29 @@ class _$MerchantFiguresDtoOutputCurrentRejectionsInner
   @override
   final int count;
 
-  factory _$MerchantFiguresDtoOutputCurrentRejectionsInner([
-    void Function(MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder)?
-    updates,
+  factory _$MerchantFiguresOutputRejectionsInner([
+    void Function(MerchantFiguresOutputRejectionsInnerBuilder)? updates,
   ]) =>
-      (MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder()..update(updates))
-          ._build();
+      (MerchantFiguresOutputRejectionsInnerBuilder()..update(updates))._build();
 
-  _$MerchantFiguresDtoOutputCurrentRejectionsInner._({
+  _$MerchantFiguresOutputRejectionsInner._({
     required this.label,
     required this.byOperations,
     required this.count,
   }) : super._();
   @override
-  MerchantFiguresDtoOutputCurrentRejectionsInner rebuild(
-    void Function(MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder)
-    updates,
+  MerchantFiguresOutputRejectionsInner rebuild(
+    void Function(MerchantFiguresOutputRejectionsInnerBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder toBuilder() =>
-      MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder()..replace(this);
+  MerchantFiguresOutputRejectionsInnerBuilder toBuilder() =>
+      MerchantFiguresOutputRejectionsInnerBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantFiguresDtoOutputCurrentRejectionsInner &&
+    return other is MerchantFiguresOutputRejectionsInner &&
         label == other.label &&
         byOperations == other.byOperations &&
         count == other.count;
@@ -58,9 +55,7 @@ class _$MerchantFiguresDtoOutputCurrentRejectionsInner
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'MerchantFiguresDtoOutputCurrentRejectionsInner',
-          )
+    return (newBuiltValueToStringHelper(r'MerchantFiguresOutputRejectionsInner')
           ..add('label', label)
           ..add('byOperations', byOperations)
           ..add('count', count))
@@ -68,13 +63,13 @@ class _$MerchantFiguresDtoOutputCurrentRejectionsInner
   }
 }
 
-class MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder
+class MerchantFiguresOutputRejectionsInnerBuilder
     implements
         Builder<
-          MerchantFiguresDtoOutputCurrentRejectionsInner,
-          MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder
+          MerchantFiguresOutputRejectionsInner,
+          MerchantFiguresOutputRejectionsInnerBuilder
         > {
-  _$MerchantFiguresDtoOutputCurrentRejectionsInner? _$v;
+  _$MerchantFiguresOutputRejectionsInner? _$v;
 
   String? _label;
   String? get label => _$this._label;
@@ -88,11 +83,11 @@ class MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder
   int? get count => _$this._count;
   set count(int? count) => _$this._count = count;
 
-  MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder() {
-    MerchantFiguresDtoOutputCurrentRejectionsInner._defaults(this);
+  MerchantFiguresOutputRejectionsInnerBuilder() {
+    MerchantFiguresOutputRejectionsInner._defaults(this);
   }
 
-  MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder get _$this {
+  MerchantFiguresOutputRejectionsInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _label = $v.label;
@@ -104,38 +99,37 @@ class MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder
   }
 
   @override
-  void replace(MerchantFiguresDtoOutputCurrentRejectionsInner other) {
-    _$v = other as _$MerchantFiguresDtoOutputCurrentRejectionsInner;
+  void replace(MerchantFiguresOutputRejectionsInner other) {
+    _$v = other as _$MerchantFiguresOutputRejectionsInner;
   }
 
   @override
   void update(
-    void Function(MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder)?
-    updates,
+    void Function(MerchantFiguresOutputRejectionsInnerBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  MerchantFiguresDtoOutputCurrentRejectionsInner build() => _build();
+  MerchantFiguresOutputRejectionsInner build() => _build();
 
-  _$MerchantFiguresDtoOutputCurrentRejectionsInner _build() {
+  _$MerchantFiguresOutputRejectionsInner _build() {
     final _$result =
         _$v ??
-        _$MerchantFiguresDtoOutputCurrentRejectionsInner._(
+        _$MerchantFiguresOutputRejectionsInner._(
           label: BuiltValueNullFieldError.checkNotNull(
             label,
-            r'MerchantFiguresDtoOutputCurrentRejectionsInner',
+            r'MerchantFiguresOutputRejectionsInner',
             'label',
           ),
           byOperations: BuiltValueNullFieldError.checkNotNull(
             byOperations,
-            r'MerchantFiguresDtoOutputCurrentRejectionsInner',
+            r'MerchantFiguresOutputRejectionsInner',
             'byOperations',
           ),
           count: BuiltValueNullFieldError.checkNotNull(
             count,
-            r'MerchantFiguresDtoOutputCurrentRejectionsInner',
+            r'MerchantFiguresOutputRejectionsInner',
             'count',
           ),
         );

@@ -32,7 +32,7 @@ abstract class AdminReportDtoOutputTablesInner
 
   @BuiltValueField(wireName: r'rowKind')
   AdminReportDtoOutputTablesInnerRowKindEnum get rowKind;
-  // enum rowKindEnum {  none,  code,  name,  day,  hour,  };
+  // enum rowKindEnum {  none,  code,  label,  day,  hour,  };
 
   /// The list of `reports.code` that names the rows’ codes; null: as they are.
   @BuiltValueField(wireName: r'rowCodes')
@@ -220,9 +220,9 @@ class AdminReportDtoOutputTablesInnerRowKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'code')
   static const AdminReportDtoOutputTablesInnerRowKindEnum code =
       _$adminReportDtoOutputTablesInnerRowKindEnum_code;
-  @BuiltValueEnumConst(wireName: r'name')
-  static const AdminReportDtoOutputTablesInnerRowKindEnum name =
-      _$adminReportDtoOutputTablesInnerRowKindEnum_name;
+  @BuiltValueEnumConst(wireName: r'label')
+  static const AdminReportDtoOutputTablesInnerRowKindEnum label =
+      _$adminReportDtoOutputTablesInnerRowKindEnum_label;
   @BuiltValueEnumConst(wireName: r'day')
   static const AdminReportDtoOutputTablesInnerRowKindEnum day =
       _$adminReportDtoOutputTablesInnerRowKindEnum_day;

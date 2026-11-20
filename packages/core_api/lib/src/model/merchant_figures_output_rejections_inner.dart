@@ -6,20 +6,20 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_figures_dto_output_current_rejections_inner.g.dart';
+part 'merchant_figures_output_rejections_inner.g.dart';
 
-/// MerchantFiguresDtoOutputCurrentRejectionsInner
+/// MerchantFiguresOutputRejectionsInner
 ///
 /// Properties:
 /// * [label]
 /// * [byOperations]
 /// * [count]
 @BuiltValue()
-abstract class MerchantFiguresDtoOutputCurrentRejectionsInner
+abstract class MerchantFiguresOutputRejectionsInner
     implements
         Built<
-          MerchantFiguresDtoOutputCurrentRejectionsInner,
-          MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder
+          MerchantFiguresOutputRejectionsInner,
+          MerchantFiguresOutputRejectionsInnerBuilder
         > {
   @BuiltValueField(wireName: r'label')
   String get label;
@@ -30,38 +30,34 @@ abstract class MerchantFiguresDtoOutputCurrentRejectionsInner
   @BuiltValueField(wireName: r'count')
   int get count;
 
-  MerchantFiguresDtoOutputCurrentRejectionsInner._();
+  MerchantFiguresOutputRejectionsInner._();
 
-  factory MerchantFiguresDtoOutputCurrentRejectionsInner([
-    void updates(MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder b),
-  ]) = _$MerchantFiguresDtoOutputCurrentRejectionsInner;
+  factory MerchantFiguresOutputRejectionsInner([
+    void updates(MerchantFiguresOutputRejectionsInnerBuilder b),
+  ]) = _$MerchantFiguresOutputRejectionsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder b,
-  ) => b;
+  static void _defaults(MerchantFiguresOutputRejectionsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantFiguresDtoOutputCurrentRejectionsInner>
-  get serializer =>
-      _$MerchantFiguresDtoOutputCurrentRejectionsInnerSerializer();
+  static Serializer<MerchantFiguresOutputRejectionsInner> get serializer =>
+      _$MerchantFiguresOutputRejectionsInnerSerializer();
 }
 
-class _$MerchantFiguresDtoOutputCurrentRejectionsInnerSerializer
-    implements
-        PrimitiveSerializer<MerchantFiguresDtoOutputCurrentRejectionsInner> {
+class _$MerchantFiguresOutputRejectionsInnerSerializer
+    implements PrimitiveSerializer<MerchantFiguresOutputRejectionsInner> {
   @override
   final Iterable<Type> types = const [
-    MerchantFiguresDtoOutputCurrentRejectionsInner,
-    _$MerchantFiguresDtoOutputCurrentRejectionsInner,
+    MerchantFiguresOutputRejectionsInner,
+    _$MerchantFiguresOutputRejectionsInner,
   ];
 
   @override
-  final String wireName = r'MerchantFiguresDtoOutputCurrentRejectionsInner';
+  final String wireName = r'MerchantFiguresOutputRejectionsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantFiguresDtoOutputCurrentRejectionsInner object, {
+    MerchantFiguresOutputRejectionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'label';
@@ -84,7 +80,7 @@ class _$MerchantFiguresDtoOutputCurrentRejectionsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    MerchantFiguresDtoOutputCurrentRejectionsInner object, {
+    MerchantFiguresOutputRejectionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -99,7 +95,7 @@ class _$MerchantFiguresDtoOutputCurrentRejectionsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder result,
+    required MerchantFiguresOutputRejectionsInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -139,12 +135,12 @@ class _$MerchantFiguresDtoOutputCurrentRejectionsInnerSerializer
   }
 
   @override
-  MerchantFiguresDtoOutputCurrentRejectionsInner deserialize(
+  MerchantFiguresOutputRejectionsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantFiguresDtoOutputCurrentRejectionsInnerBuilder();
+    final result = MerchantFiguresOutputRejectionsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

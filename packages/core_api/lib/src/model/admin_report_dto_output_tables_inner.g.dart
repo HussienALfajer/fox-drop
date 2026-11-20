@@ -13,8 +13,8 @@ const AdminReportDtoOutputTablesInnerRowKindEnum
 _$adminReportDtoOutputTablesInnerRowKindEnum_code =
     const AdminReportDtoOutputTablesInnerRowKindEnum._('code');
 const AdminReportDtoOutputTablesInnerRowKindEnum
-_$adminReportDtoOutputTablesInnerRowKindEnum_name =
-    const AdminReportDtoOutputTablesInnerRowKindEnum._('name');
+_$adminReportDtoOutputTablesInnerRowKindEnum_label =
+    const AdminReportDtoOutputTablesInnerRowKindEnum._('label');
 const AdminReportDtoOutputTablesInnerRowKindEnum
 _$adminReportDtoOutputTablesInnerRowKindEnum_day =
     const AdminReportDtoOutputTablesInnerRowKindEnum._('day');
@@ -29,8 +29,8 @@ _$adminReportDtoOutputTablesInnerRowKindEnumValueOf(String name) {
       return _$adminReportDtoOutputTablesInnerRowKindEnum_none;
     case 'code':
       return _$adminReportDtoOutputTablesInnerRowKindEnum_code;
-    case 'name':
-      return _$adminReportDtoOutputTablesInnerRowKindEnum_name;
+    case 'label':
+      return _$adminReportDtoOutputTablesInnerRowKindEnum_label;
     case 'day':
       return _$adminReportDtoOutputTablesInnerRowKindEnum_day;
     case 'hour':
@@ -46,7 +46,7 @@ _$adminReportDtoOutputTablesInnerRowKindEnumValues =
       const <AdminReportDtoOutputTablesInnerRowKindEnum>[
         _$adminReportDtoOutputTablesInnerRowKindEnum_none,
         _$adminReportDtoOutputTablesInnerRowKindEnum_code,
-        _$adminReportDtoOutputTablesInnerRowKindEnum_name,
+        _$adminReportDtoOutputTablesInnerRowKindEnum_label,
         _$adminReportDtoOutputTablesInnerRowKindEnum_day,
         _$adminReportDtoOutputTablesInnerRowKindEnum_hour,
       ],
@@ -61,14 +61,14 @@ class _$AdminReportDtoOutputTablesInnerRowKindEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'none': 'none',
     'code': 'code',
-    'name': 'name',
+    'label': 'label',
     'day': 'day',
     'hour': 'hour',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none': 'none',
     'code': 'code',
-    'name': 'name',
+    'label': 'label',
     'day': 'day',
     'hour': 'hour',
   };

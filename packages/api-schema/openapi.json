@@ -85459,7 +85459,7 @@
                   "enum": [
                     "none",
                     "code",
-                    "name",
+                    "label",
                     "day",
                     "hour"
                   ]
@@ -86022,6 +86022,295 @@
         ],
         "additionalProperties": false
       },
+      "MerchantFigures_Output": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Orders that reached the restaurant."
+          },
+          "acceptedByYou": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "acceptedByOperations": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Accepted on the restaurant’s behalf (RA §8.15)."
+          },
+          "rejected": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "rejections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "byOperations": {
+                  "type": "boolean"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "label",
+                "byOperations",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "unanswered": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Cancelled automatically for no response (RA §8.3)."
+          },
+          "acceptanceBp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Accepted by you ÷ (received − cancelled by the customer before any answer)."
+          },
+          "delivered": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "sales": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "Items value of the delivered orders, after any edits."
+          },
+          "averageOrder": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d{1,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "commission": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "From the restaurant account’s entries of the period (RA §12)."
+          },
+          "discounts": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "Restaurant-funded discounts, from the same entries."
+          },
+          "net": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "Sales less the commission and the discounts."
+          },
+          "acceptMinutes": {
+            "description": "Placed to accepted, by restaurant users only.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "prepActualMinutes": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "prepChosenMinutes": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "lateBp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ready (or picked up) after the time chosen ÷ accepted."
+          },
+          "readyNotPressed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "captainWaitMinutes": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rating": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "average": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "count",
+              "average"
+            ],
+            "additionalProperties": false
+          },
+          "topByQuantity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MerchantFiguresItem_Output"
+            }
+          },
+          "topBySales": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MerchantFiguresItem_Output"
+            }
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "hour": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "delivered": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "hour",
+                "delivered"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "pauseMinutes": {
+            "type": "object",
+            "properties": {
+              "restaurant": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "ops": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "auto": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "restaurant",
+              "ops",
+              "auto"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "received",
+          "acceptedByYou",
+          "acceptedByOperations",
+          "rejected",
+          "rejections",
+          "unanswered",
+          "acceptanceBp",
+          "delivered",
+          "sales",
+          "averageOrder",
+          "commission",
+          "discounts",
+          "net",
+          "acceptMinutes",
+          "prepActualMinutes",
+          "prepChosenMinutes",
+          "lateBp",
+          "readyNotPressed",
+          "captainWaitMinutes",
+          "rating",
+          "topByQuantity",
+          "topBySales",
+          "hours",
+          "pauseMinutes"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantFiguresItem_Output": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Its name on the latest order."
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "sales": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$"
+          }
+        },
+        "required": [
+          "itemId",
+          "name",
+          "quantity",
+          "sales"
+        ],
+        "additionalProperties": false
+      },
       "MerchantFiguresDto_Output": {
         "type": "object",
         "properties": {
@@ -86041,631 +86330,10 @@
             "description": "The money’s currency, the city’s base."
           },
           "current": {
-            "type": "object",
-            "properties": {
-              "received": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991,
-                "description": "Orders that reached the restaurant."
-              },
-              "acceptedByYou": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "acceptedByOperations": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991,
-                "description": "Accepted on the restaurant’s behalf (RA §8.15)."
-              },
-              "rejected": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "rejections": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "label": {
-                      "type": "string"
-                    },
-                    "byOperations": {
-                      "type": "boolean"
-                    },
-                    "count": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    }
-                  },
-                  "required": [
-                    "label",
-                    "byOperations",
-                    "count"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "unanswered": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991,
-                "description": "Cancelled automatically for no response (RA §8.3)."
-              },
-              "acceptanceBp": {
-                "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "description": "Accepted by you ÷ (received − cancelled by the customer before any answer)."
-              },
-              "delivered": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "sales": {
-                "type": "string",
-                "pattern": "^-?\\d{1,18}$",
-                "description": "Items value of the delivered orders, after any edits."
-              },
-              "averageOrder": {
-                "anyOf": [
-                  {
-                    "type": "string",
-                    "pattern": "^-?\\d{1,18}$"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "commission": {
-                "type": "string",
-                "pattern": "^-?\\d{1,18}$",
-                "description": "From the restaurant account’s entries of the period (RA §12)."
-              },
-              "discounts": {
-                "type": "string",
-                "pattern": "^-?\\d{1,18}$",
-                "description": "Restaurant-funded discounts, from the same entries."
-              },
-              "net": {
-                "type": "string",
-                "pattern": "^-?\\d{1,18}$",
-                "description": "Sales less the commission and the discounts."
-              },
-              "acceptMinutes": {
-                "description": "Placed to accepted, by restaurant users only.",
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "prepActualMinutes": {
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "prepChosenMinutes": {
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "lateBp": {
-                "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "description": "Ready (or picked up) after the time chosen ÷ accepted."
-              },
-              "readyNotPressed": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "captainWaitMinutes": {
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "rating": {
-                "type": "object",
-                "properties": {
-                  "count": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  "average": {
-                    "type": [
-                      "number",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "count",
-                  "average"
-                ],
-                "additionalProperties": false
-              },
-              "topByQuantity": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "itemId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Its name on the latest order."
-                    },
-                    "quantity": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "sales": {
-                      "type": "string",
-                      "pattern": "^-?\\d{1,18}$"
-                    }
-                  },
-                  "required": [
-                    "itemId",
-                    "name",
-                    "quantity",
-                    "sales"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "topBySales": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "itemId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Its name on the latest order."
-                    },
-                    "quantity": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "sales": {
-                      "type": "string",
-                      "pattern": "^-?\\d{1,18}$"
-                    }
-                  },
-                  "required": [
-                    "itemId",
-                    "name",
-                    "quantity",
-                    "sales"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "hours": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "hour": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "delivered": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    }
-                  },
-                  "required": [
-                    "hour",
-                    "delivered"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "pauseMinutes": {
-                "type": "object",
-                "properties": {
-                  "restaurant": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  "ops": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  "auto": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  }
-                },
-                "required": [
-                  "restaurant",
-                  "ops",
-                  "auto"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "required": [
-              "received",
-              "acceptedByYou",
-              "acceptedByOperations",
-              "rejected",
-              "rejections",
-              "unanswered",
-              "acceptanceBp",
-              "delivered",
-              "sales",
-              "averageOrder",
-              "commission",
-              "discounts",
-              "net",
-              "acceptMinutes",
-              "prepActualMinutes",
-              "prepChosenMinutes",
-              "lateBp",
-              "readyNotPressed",
-              "captainWaitMinutes",
-              "rating",
-              "topByQuantity",
-              "topBySales",
-              "hours",
-              "pauseMinutes"
-            ],
-            "additionalProperties": false
+            "$ref": "#/components/schemas/MerchantFigures_Output"
           },
           "previous": {
-            "type": "object",
-            "properties": {
-              "received": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991,
-                "description": "Orders that reached the restaurant."
-              },
-              "acceptedByYou": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "acceptedByOperations": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991,
-                "description": "Accepted on the restaurant’s behalf (RA §8.15)."
-              },
-              "rejected": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "rejections": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "label": {
-                      "type": "string"
-                    },
-                    "byOperations": {
-                      "type": "boolean"
-                    },
-                    "count": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    }
-                  },
-                  "required": [
-                    "label",
-                    "byOperations",
-                    "count"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "unanswered": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991,
-                "description": "Cancelled automatically for no response (RA §8.3)."
-              },
-              "acceptanceBp": {
-                "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "description": "Accepted by you ÷ (received − cancelled by the customer before any answer)."
-              },
-              "delivered": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "sales": {
-                "type": "string",
-                "pattern": "^-?\\d{1,18}$",
-                "description": "Items value of the delivered orders, after any edits."
-              },
-              "averageOrder": {
-                "anyOf": [
-                  {
-                    "type": "string",
-                    "pattern": "^-?\\d{1,18}$"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "commission": {
-                "type": "string",
-                "pattern": "^-?\\d{1,18}$",
-                "description": "From the restaurant account’s entries of the period (RA §12)."
-              },
-              "discounts": {
-                "type": "string",
-                "pattern": "^-?\\d{1,18}$",
-                "description": "Restaurant-funded discounts, from the same entries."
-              },
-              "net": {
-                "type": "string",
-                "pattern": "^-?\\d{1,18}$",
-                "description": "Sales less the commission and the discounts."
-              },
-              "acceptMinutes": {
-                "description": "Placed to accepted, by restaurant users only.",
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "prepActualMinutes": {
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "prepChosenMinutes": {
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "lateBp": {
-                "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "description": "Ready (or picked up) after the time chosen ÷ accepted."
-              },
-              "readyNotPressed": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "captainWaitMinutes": {
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "rating": {
-                "type": "object",
-                "properties": {
-                  "count": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  "average": {
-                    "type": [
-                      "number",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "count",
-                  "average"
-                ],
-                "additionalProperties": false
-              },
-              "topByQuantity": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "itemId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Its name on the latest order."
-                    },
-                    "quantity": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "sales": {
-                      "type": "string",
-                      "pattern": "^-?\\d{1,18}$"
-                    }
-                  },
-                  "required": [
-                    "itemId",
-                    "name",
-                    "quantity",
-                    "sales"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "topBySales": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "itemId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Its name on the latest order."
-                    },
-                    "quantity": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "sales": {
-                      "type": "string",
-                      "pattern": "^-?\\d{1,18}$"
-                    }
-                  },
-                  "required": [
-                    "itemId",
-                    "name",
-                    "quantity",
-                    "sales"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "hours": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "hour": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "delivered": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    }
-                  },
-                  "required": [
-                    "hour",
-                    "delivered"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "pauseMinutes": {
-                "type": "object",
-                "properties": {
-                  "restaurant": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  "ops": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  "auto": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  }
-                },
-                "required": [
-                  "restaurant",
-                  "ops",
-                  "auto"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "required": [
-              "received",
-              "acceptedByYou",
-              "acceptedByOperations",
-              "rejected",
-              "rejections",
-              "unanswered",
-              "acceptanceBp",
-              "delivered",
-              "sales",
-              "averageOrder",
-              "commission",
-              "discounts",
-              "net",
-              "acceptMinutes",
-              "prepActualMinutes",
-              "prepChosenMinutes",
-              "lateBp",
-              "readyNotPressed",
-              "captainWaitMinutes",
-              "rating",
-              "topByQuantity",
-              "topBySales",
-              "hours",
-              "pauseMinutes"
-            ],
-            "additionalProperties": false,
-            "description": "The previous period of the same length, for the arrows."
+            "$ref": "#/components/schemas/MerchantFigures_Output"
           }
         },
         "required": [

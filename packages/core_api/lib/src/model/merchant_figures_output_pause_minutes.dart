@@ -6,65 +6,70 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_figures_dto_output_current_hours_inner.g.dart';
+part 'merchant_figures_output_pause_minutes.g.dart';
 
-/// MerchantFiguresDtoOutputCurrentHoursInner
+/// MerchantFiguresOutputPauseMinutes
 ///
 /// Properties:
-/// * [hour]
-/// * [delivered]
+/// * [restaurant]
+/// * [ops]
+/// * [auto]
 @BuiltValue()
-abstract class MerchantFiguresDtoOutputCurrentHoursInner
+abstract class MerchantFiguresOutputPauseMinutes
     implements
         Built<
-          MerchantFiguresDtoOutputCurrentHoursInner,
-          MerchantFiguresDtoOutputCurrentHoursInnerBuilder
+          MerchantFiguresOutputPauseMinutes,
+          MerchantFiguresOutputPauseMinutesBuilder
         > {
-  @BuiltValueField(wireName: r'hour')
-  int get hour;
+  @BuiltValueField(wireName: r'restaurant')
+  int get restaurant;
 
-  @BuiltValueField(wireName: r'delivered')
-  int get delivered;
+  @BuiltValueField(wireName: r'ops')
+  int get ops;
 
-  MerchantFiguresDtoOutputCurrentHoursInner._();
+  @BuiltValueField(wireName: r'auto')
+  int get auto;
 
-  factory MerchantFiguresDtoOutputCurrentHoursInner([
-    void updates(MerchantFiguresDtoOutputCurrentHoursInnerBuilder b),
-  ]) = _$MerchantFiguresDtoOutputCurrentHoursInner;
+  MerchantFiguresOutputPauseMinutes._();
+
+  factory MerchantFiguresOutputPauseMinutes([
+    void updates(MerchantFiguresOutputPauseMinutesBuilder b),
+  ]) = _$MerchantFiguresOutputPauseMinutes;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantFiguresDtoOutputCurrentHoursInnerBuilder b) =>
-      b;
+  static void _defaults(MerchantFiguresOutputPauseMinutesBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantFiguresDtoOutputCurrentHoursInner> get serializer =>
-      _$MerchantFiguresDtoOutputCurrentHoursInnerSerializer();
+  static Serializer<MerchantFiguresOutputPauseMinutes> get serializer =>
+      _$MerchantFiguresOutputPauseMinutesSerializer();
 }
 
-class _$MerchantFiguresDtoOutputCurrentHoursInnerSerializer
-    implements PrimitiveSerializer<MerchantFiguresDtoOutputCurrentHoursInner> {
+class _$MerchantFiguresOutputPauseMinutesSerializer
+    implements PrimitiveSerializer<MerchantFiguresOutputPauseMinutes> {
   @override
   final Iterable<Type> types = const [
-    MerchantFiguresDtoOutputCurrentHoursInner,
-    _$MerchantFiguresDtoOutputCurrentHoursInner,
+    MerchantFiguresOutputPauseMinutes,
+    _$MerchantFiguresOutputPauseMinutes,
   ];
 
   @override
-  final String wireName = r'MerchantFiguresDtoOutputCurrentHoursInner';
+  final String wireName = r'MerchantFiguresOutputPauseMinutes';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantFiguresDtoOutputCurrentHoursInner object, {
+    MerchantFiguresOutputPauseMinutes object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'hour';
+    yield r'restaurant';
     yield serializers.serialize(
-      object.hour,
+      object.restaurant,
       specifiedType: const FullType(int),
     );
-    yield r'delivered';
+    yield r'ops';
+    yield serializers.serialize(object.ops, specifiedType: const FullType(int));
+    yield r'auto';
     yield serializers.serialize(
-      object.delivered,
+      object.auto,
       specifiedType: const FullType(int),
     );
   }
@@ -72,7 +77,7 @@ class _$MerchantFiguresDtoOutputCurrentHoursInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    MerchantFiguresDtoOutputCurrentHoursInner object, {
+    MerchantFiguresOutputPauseMinutes object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -87,24 +92,30 @@ class _$MerchantFiguresDtoOutputCurrentHoursInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantFiguresDtoOutputCurrentHoursInnerBuilder result,
+    required MerchantFiguresOutputPauseMinutesBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'hour':
+        case r'restaurant':
           final valueDes =
               serializers.deserialize(value, specifiedType: const FullType(int))
                   as int;
-          result.hour = valueDes;
+          result.restaurant = valueDes;
           break;
-        case r'delivered':
+        case r'ops':
           final valueDes =
               serializers.deserialize(value, specifiedType: const FullType(int))
                   as int;
-          result.delivered = valueDes;
+          result.ops = valueDes;
+          break;
+        case r'auto':
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
+          result.auto = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -115,12 +126,12 @@ class _$MerchantFiguresDtoOutputCurrentHoursInnerSerializer
   }
 
   @override
-  MerchantFiguresDtoOutputCurrentHoursInner deserialize(
+  MerchantFiguresOutputPauseMinutes deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantFiguresDtoOutputCurrentHoursInnerBuilder();
+    final result = MerchantFiguresOutputPauseMinutesBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

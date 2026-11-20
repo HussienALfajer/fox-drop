@@ -1,40 +1,39 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'merchant_figures_dto_output_current_hours_inner.dart';
+part of 'merchant_figures_output_hours_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$MerchantFiguresDtoOutputCurrentHoursInner
-    extends MerchantFiguresDtoOutputCurrentHoursInner {
+class _$MerchantFiguresOutputHoursInner
+    extends MerchantFiguresOutputHoursInner {
   @override
   final int hour;
   @override
   final int delivered;
 
-  factory _$MerchantFiguresDtoOutputCurrentHoursInner([
-    void Function(MerchantFiguresDtoOutputCurrentHoursInnerBuilder)? updates,
-  ]) => (MerchantFiguresDtoOutputCurrentHoursInnerBuilder()..update(updates))
-      ._build();
+  factory _$MerchantFiguresOutputHoursInner([
+    void Function(MerchantFiguresOutputHoursInnerBuilder)? updates,
+  ]) => (MerchantFiguresOutputHoursInnerBuilder()..update(updates))._build();
 
-  _$MerchantFiguresDtoOutputCurrentHoursInner._({
+  _$MerchantFiguresOutputHoursInner._({
     required this.hour,
     required this.delivered,
   }) : super._();
   @override
-  MerchantFiguresDtoOutputCurrentHoursInner rebuild(
-    void Function(MerchantFiguresDtoOutputCurrentHoursInnerBuilder) updates,
+  MerchantFiguresOutputHoursInner rebuild(
+    void Function(MerchantFiguresOutputHoursInnerBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  MerchantFiguresDtoOutputCurrentHoursInnerBuilder toBuilder() =>
-      MerchantFiguresDtoOutputCurrentHoursInnerBuilder()..replace(this);
+  MerchantFiguresOutputHoursInnerBuilder toBuilder() =>
+      MerchantFiguresOutputHoursInnerBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantFiguresDtoOutputCurrentHoursInner &&
+    return other is MerchantFiguresOutputHoursInner &&
         hour == other.hour &&
         delivered == other.delivered;
   }
@@ -50,22 +49,20 @@ class _$MerchantFiguresDtoOutputCurrentHoursInner
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'MerchantFiguresDtoOutputCurrentHoursInner',
-          )
+    return (newBuiltValueToStringHelper(r'MerchantFiguresOutputHoursInner')
           ..add('hour', hour)
           ..add('delivered', delivered))
         .toString();
   }
 }
 
-class MerchantFiguresDtoOutputCurrentHoursInnerBuilder
+class MerchantFiguresOutputHoursInnerBuilder
     implements
         Builder<
-          MerchantFiguresDtoOutputCurrentHoursInner,
-          MerchantFiguresDtoOutputCurrentHoursInnerBuilder
+          MerchantFiguresOutputHoursInner,
+          MerchantFiguresOutputHoursInnerBuilder
         > {
-  _$MerchantFiguresDtoOutputCurrentHoursInner? _$v;
+  _$MerchantFiguresOutputHoursInner? _$v;
 
   int? _hour;
   int? get hour => _$this._hour;
@@ -75,11 +72,11 @@ class MerchantFiguresDtoOutputCurrentHoursInnerBuilder
   int? get delivered => _$this._delivered;
   set delivered(int? delivered) => _$this._delivered = delivered;
 
-  MerchantFiguresDtoOutputCurrentHoursInnerBuilder() {
-    MerchantFiguresDtoOutputCurrentHoursInner._defaults(this);
+  MerchantFiguresOutputHoursInnerBuilder() {
+    MerchantFiguresOutputHoursInner._defaults(this);
   }
 
-  MerchantFiguresDtoOutputCurrentHoursInnerBuilder get _$this {
+  MerchantFiguresOutputHoursInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _hour = $v.hour;
@@ -90,32 +87,30 @@ class MerchantFiguresDtoOutputCurrentHoursInnerBuilder
   }
 
   @override
-  void replace(MerchantFiguresDtoOutputCurrentHoursInner other) {
-    _$v = other as _$MerchantFiguresDtoOutputCurrentHoursInner;
+  void replace(MerchantFiguresOutputHoursInner other) {
+    _$v = other as _$MerchantFiguresOutputHoursInner;
   }
 
   @override
-  void update(
-    void Function(MerchantFiguresDtoOutputCurrentHoursInnerBuilder)? updates,
-  ) {
+  void update(void Function(MerchantFiguresOutputHoursInnerBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  MerchantFiguresDtoOutputCurrentHoursInner build() => _build();
+  MerchantFiguresOutputHoursInner build() => _build();
 
-  _$MerchantFiguresDtoOutputCurrentHoursInner _build() {
+  _$MerchantFiguresOutputHoursInner _build() {
     final _$result =
         _$v ??
-        _$MerchantFiguresDtoOutputCurrentHoursInner._(
+        _$MerchantFiguresOutputHoursInner._(
           hour: BuiltValueNullFieldError.checkNotNull(
             hour,
-            r'MerchantFiguresDtoOutputCurrentHoursInner',
+            r'MerchantFiguresOutputHoursInner',
             'hour',
           ),
           delivered: BuiltValueNullFieldError.checkNotNull(
             delivered,
-            r'MerchantFiguresDtoOutputCurrentHoursInner',
+            r'MerchantFiguresOutputHoursInner',
             'delivered',
           ),
         );

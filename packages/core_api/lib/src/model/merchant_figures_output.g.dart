@@ -1,13 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'merchant_figures_dto_output_previous.dart';
+part of 'merchant_figures_output.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$MerchantFiguresDtoOutputPrevious
-    extends MerchantFiguresDtoOutputPrevious {
+class _$MerchantFiguresOutput extends MerchantFiguresOutput {
   @override
   final int received;
   @override
@@ -17,7 +16,7 @@ class _$MerchantFiguresDtoOutputPrevious
   @override
   final int rejected;
   @override
-  final BuiltList<MerchantFiguresDtoOutputCurrentRejectionsInner> rejections;
+  final BuiltList<MerchantFiguresOutputRejectionsInner> rejections;
   @override
   final int unanswered;
   @override
@@ -47,22 +46,21 @@ class _$MerchantFiguresDtoOutputPrevious
   @override
   final num? captainWaitMinutes;
   @override
-  final MerchantFiguresDtoOutputCurrentRating rating;
+  final MerchantFiguresOutputRating rating;
   @override
-  final BuiltList<MerchantFiguresDtoOutputCurrentTopByQuantityInner>
-  topByQuantity;
+  final BuiltList<MerchantFiguresItemOutput> topByQuantity;
   @override
-  final BuiltList<MerchantFiguresDtoOutputCurrentTopByQuantityInner> topBySales;
+  final BuiltList<MerchantFiguresItemOutput> topBySales;
   @override
-  final BuiltList<MerchantFiguresDtoOutputCurrentHoursInner> hours;
+  final BuiltList<MerchantFiguresOutputHoursInner> hours;
   @override
-  final MerchantFiguresDtoOutputCurrentPauseMinutes pauseMinutes;
+  final MerchantFiguresOutputPauseMinutes pauseMinutes;
 
-  factory _$MerchantFiguresDtoOutputPrevious([
-    void Function(MerchantFiguresDtoOutputPreviousBuilder)? updates,
-  ]) => (MerchantFiguresDtoOutputPreviousBuilder()..update(updates))._build();
+  factory _$MerchantFiguresOutput([
+    void Function(MerchantFiguresOutputBuilder)? updates,
+  ]) => (MerchantFiguresOutputBuilder()..update(updates))._build();
 
-  _$MerchantFiguresDtoOutputPrevious._({
+  _$MerchantFiguresOutput._({
     required this.received,
     required this.acceptedByYou,
     required this.acceptedByOperations,
@@ -89,18 +87,18 @@ class _$MerchantFiguresDtoOutputPrevious
     required this.pauseMinutes,
   }) : super._();
   @override
-  MerchantFiguresDtoOutputPrevious rebuild(
-    void Function(MerchantFiguresDtoOutputPreviousBuilder) updates,
+  MerchantFiguresOutput rebuild(
+    void Function(MerchantFiguresOutputBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  MerchantFiguresDtoOutputPreviousBuilder toBuilder() =>
-      MerchantFiguresDtoOutputPreviousBuilder()..replace(this);
+  MerchantFiguresOutputBuilder toBuilder() =>
+      MerchantFiguresOutputBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantFiguresDtoOutputPrevious &&
+    return other is MerchantFiguresOutput &&
         received == other.received &&
         acceptedByYou == other.acceptedByYou &&
         acceptedByOperations == other.acceptedByOperations &&
@@ -160,7 +158,7 @@ class _$MerchantFiguresDtoOutputPrevious
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'MerchantFiguresDtoOutputPrevious')
+    return (newBuiltValueToStringHelper(r'MerchantFiguresOutput')
           ..add('received', received)
           ..add('acceptedByYou', acceptedByYou)
           ..add('acceptedByOperations', acceptedByOperations)
@@ -189,13 +187,9 @@ class _$MerchantFiguresDtoOutputPrevious
   }
 }
 
-class MerchantFiguresDtoOutputPreviousBuilder
-    implements
-        Builder<
-          MerchantFiguresDtoOutputPrevious,
-          MerchantFiguresDtoOutputPreviousBuilder
-        > {
-  _$MerchantFiguresDtoOutputPrevious? _$v;
+class MerchantFiguresOutputBuilder
+    implements Builder<MerchantFiguresOutput, MerchantFiguresOutputBuilder> {
+  _$MerchantFiguresOutput? _$v;
 
   int? _received;
   int? get received => _$this._received;
@@ -215,12 +209,12 @@ class MerchantFiguresDtoOutputPreviousBuilder
   int? get rejected => _$this._rejected;
   set rejected(int? rejected) => _$this._rejected = rejected;
 
-  ListBuilder<MerchantFiguresDtoOutputCurrentRejectionsInner>? _rejections;
-  ListBuilder<MerchantFiguresDtoOutputCurrentRejectionsInner> get rejections =>
+  ListBuilder<MerchantFiguresOutputRejectionsInner>? _rejections;
+  ListBuilder<MerchantFiguresOutputRejectionsInner> get rejections =>
       _$this._rejections ??=
-          ListBuilder<MerchantFiguresDtoOutputCurrentRejectionsInner>();
+          ListBuilder<MerchantFiguresOutputRejectionsInner>();
   set rejections(
-    ListBuilder<MerchantFiguresDtoOutputCurrentRejectionsInner>? rejections,
+    ListBuilder<MerchantFiguresOutputRejectionsInner>? rejections,
   ) => _$this._rejections = rejections;
 
   int? _unanswered;
@@ -284,50 +278,41 @@ class MerchantFiguresDtoOutputPreviousBuilder
   set captainWaitMinutes(num? captainWaitMinutes) =>
       _$this._captainWaitMinutes = captainWaitMinutes;
 
-  MerchantFiguresDtoOutputCurrentRatingBuilder? _rating;
-  MerchantFiguresDtoOutputCurrentRatingBuilder get rating =>
-      _$this._rating ??= MerchantFiguresDtoOutputCurrentRatingBuilder();
-  set rating(MerchantFiguresDtoOutputCurrentRatingBuilder? rating) =>
+  MerchantFiguresOutputRatingBuilder? _rating;
+  MerchantFiguresOutputRatingBuilder get rating =>
+      _$this._rating ??= MerchantFiguresOutputRatingBuilder();
+  set rating(MerchantFiguresOutputRatingBuilder? rating) =>
       _$this._rating = rating;
 
-  ListBuilder<MerchantFiguresDtoOutputCurrentTopByQuantityInner>?
-  _topByQuantity;
-  ListBuilder<MerchantFiguresDtoOutputCurrentTopByQuantityInner>
-  get topByQuantity => _$this._topByQuantity ??=
-      ListBuilder<MerchantFiguresDtoOutputCurrentTopByQuantityInner>();
-  set topByQuantity(
-    ListBuilder<MerchantFiguresDtoOutputCurrentTopByQuantityInner>?
-    topByQuantity,
-  ) => _$this._topByQuantity = topByQuantity;
+  ListBuilder<MerchantFiguresItemOutput>? _topByQuantity;
+  ListBuilder<MerchantFiguresItemOutput> get topByQuantity =>
+      _$this._topByQuantity ??= ListBuilder<MerchantFiguresItemOutput>();
+  set topByQuantity(ListBuilder<MerchantFiguresItemOutput>? topByQuantity) =>
+      _$this._topByQuantity = topByQuantity;
 
-  ListBuilder<MerchantFiguresDtoOutputCurrentTopByQuantityInner>? _topBySales;
-  ListBuilder<MerchantFiguresDtoOutputCurrentTopByQuantityInner>
-  get topBySales => _$this._topBySales ??=
-      ListBuilder<MerchantFiguresDtoOutputCurrentTopByQuantityInner>();
-  set topBySales(
-    ListBuilder<MerchantFiguresDtoOutputCurrentTopByQuantityInner>? topBySales,
-  ) => _$this._topBySales = topBySales;
+  ListBuilder<MerchantFiguresItemOutput>? _topBySales;
+  ListBuilder<MerchantFiguresItemOutput> get topBySales =>
+      _$this._topBySales ??= ListBuilder<MerchantFiguresItemOutput>();
+  set topBySales(ListBuilder<MerchantFiguresItemOutput>? topBySales) =>
+      _$this._topBySales = topBySales;
 
-  ListBuilder<MerchantFiguresDtoOutputCurrentHoursInner>? _hours;
-  ListBuilder<MerchantFiguresDtoOutputCurrentHoursInner> get hours =>
-      _$this._hours ??=
-          ListBuilder<MerchantFiguresDtoOutputCurrentHoursInner>();
-  set hours(ListBuilder<MerchantFiguresDtoOutputCurrentHoursInner>? hours) =>
+  ListBuilder<MerchantFiguresOutputHoursInner>? _hours;
+  ListBuilder<MerchantFiguresOutputHoursInner> get hours =>
+      _$this._hours ??= ListBuilder<MerchantFiguresOutputHoursInner>();
+  set hours(ListBuilder<MerchantFiguresOutputHoursInner>? hours) =>
       _$this._hours = hours;
 
-  MerchantFiguresDtoOutputCurrentPauseMinutesBuilder? _pauseMinutes;
-  MerchantFiguresDtoOutputCurrentPauseMinutesBuilder get pauseMinutes =>
-      _$this._pauseMinutes ??=
-          MerchantFiguresDtoOutputCurrentPauseMinutesBuilder();
-  set pauseMinutes(
-    MerchantFiguresDtoOutputCurrentPauseMinutesBuilder? pauseMinutes,
-  ) => _$this._pauseMinutes = pauseMinutes;
+  MerchantFiguresOutputPauseMinutesBuilder? _pauseMinutes;
+  MerchantFiguresOutputPauseMinutesBuilder get pauseMinutes =>
+      _$this._pauseMinutes ??= MerchantFiguresOutputPauseMinutesBuilder();
+  set pauseMinutes(MerchantFiguresOutputPauseMinutesBuilder? pauseMinutes) =>
+      _$this._pauseMinutes = pauseMinutes;
 
-  MerchantFiguresDtoOutputPreviousBuilder() {
-    MerchantFiguresDtoOutputPrevious._defaults(this);
+  MerchantFiguresOutputBuilder() {
+    MerchantFiguresOutput._defaults(this);
   }
 
-  MerchantFiguresDtoOutputPreviousBuilder get _$this {
+  MerchantFiguresOutputBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _received = $v.received;
@@ -360,75 +345,75 @@ class MerchantFiguresDtoOutputPreviousBuilder
   }
 
   @override
-  void replace(MerchantFiguresDtoOutputPrevious other) {
-    _$v = other as _$MerchantFiguresDtoOutputPrevious;
+  void replace(MerchantFiguresOutput other) {
+    _$v = other as _$MerchantFiguresOutput;
   }
 
   @override
-  void update(void Function(MerchantFiguresDtoOutputPreviousBuilder)? updates) {
+  void update(void Function(MerchantFiguresOutputBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  MerchantFiguresDtoOutputPrevious build() => _build();
+  MerchantFiguresOutput build() => _build();
 
-  _$MerchantFiguresDtoOutputPrevious _build() {
-    _$MerchantFiguresDtoOutputPrevious _$result;
+  _$MerchantFiguresOutput _build() {
+    _$MerchantFiguresOutput _$result;
     try {
       _$result =
           _$v ??
-          _$MerchantFiguresDtoOutputPrevious._(
+          _$MerchantFiguresOutput._(
             received: BuiltValueNullFieldError.checkNotNull(
               received,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'received',
             ),
             acceptedByYou: BuiltValueNullFieldError.checkNotNull(
               acceptedByYou,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'acceptedByYou',
             ),
             acceptedByOperations: BuiltValueNullFieldError.checkNotNull(
               acceptedByOperations,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'acceptedByOperations',
             ),
             rejected: BuiltValueNullFieldError.checkNotNull(
               rejected,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'rejected',
             ),
             rejections: rejections.build(),
             unanswered: BuiltValueNullFieldError.checkNotNull(
               unanswered,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'unanswered',
             ),
             acceptanceBp: acceptanceBp,
             delivered: BuiltValueNullFieldError.checkNotNull(
               delivered,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'delivered',
             ),
             sales: BuiltValueNullFieldError.checkNotNull(
               sales,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'sales',
             ),
             averageOrder: averageOrder,
             commission: BuiltValueNullFieldError.checkNotNull(
               commission,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'commission',
             ),
             discounts: BuiltValueNullFieldError.checkNotNull(
               discounts,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'discounts',
             ),
             net: BuiltValueNullFieldError.checkNotNull(
               net,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'net',
             ),
             acceptMinutes: acceptMinutes,
@@ -437,7 +422,7 @@ class MerchantFiguresDtoOutputPreviousBuilder
             lateBp: lateBp,
             readyNotPressed: BuiltValueNullFieldError.checkNotNull(
               readyNotPressed,
-              r'MerchantFiguresDtoOutputPrevious',
+              r'MerchantFiguresOutput',
               'readyNotPressed',
             ),
             captainWaitMinutes: captainWaitMinutes,
@@ -465,7 +450,7 @@ class MerchantFiguresDtoOutputPreviousBuilder
         pauseMinutes.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'MerchantFiguresDtoOutputPrevious',
+          r'MerchantFiguresOutput',
           _$failedField,
           e.toString(),
         );

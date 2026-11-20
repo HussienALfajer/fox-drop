@@ -18,10 +18,11 @@ export const reportColumnKinds = [
 ] as const;
 export type ReportColumnKind = (typeof reportColumnKinds)[number];
 
-// What names a row: nothing (a one-row summary), a code the panel names, a
-// name as the data has it, a business day (YYYY-MM-DD) or an hour of the
+// What names a row: nothing (a one-row summary), a code the panel names, its
+// label as the data has it (`label`, not `name`, which the Dart client's
+// enums cannot hold), a business day (YYYY-MM-DD) or an hour of the
 // city's clock (0 to 23).
-export const reportRowKinds = ['none', 'code', 'name', 'day', 'hour'] as const;
+export const reportRowKinds = ['none', 'code', 'label', 'day', 'hour'] as const;
 export type ReportRowKind = (typeof reportRowKinds)[number];
 
 export interface ReportColumn {
@@ -30,9 +31,9 @@ export interface ReportColumn {
 }
 
 export interface ReportRow {
-  // The row's code, day or hour; null for `none` and `name`.
+  // The row's code, day or hour; null for `none` and `label`.
   code: string | null;
-  // The row's name, for `name`, or a label as chosen beside a code (a
+  // The row's name, for `label`, or a label as chosen beside a code (a
   // cancellation reason's); null otherwise.
   label: string | null;
   // One per column, as text; null where the value does not exist (an
@@ -223,13 +224,13 @@ export function ordersReport(input: OrdersReportInput): ReportTable[] {
     },
     {
       key: 'by_zone',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: outcomeColumns,
       rows: named(byZone, input.zoneNames).sort(byCountThenName),
     },
     {
       key: 'by_restaurant',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: outcomeColumns,
       rows: named(byRestaurant, input.restaurantNames).sort(byCountThenName),
     },
@@ -268,7 +269,7 @@ export function ordersReport(input: OrdersReportInput): ReportTable[] {
       // By the reason's label as chosen, and whether the restaurant or
       // operations on its behalf rejected it.
       key: 'rejections',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: [
         { key: 'orders', kind: 'count' },
         { key: 'by', kind: 'code' },
@@ -464,7 +465,7 @@ export function restaurantsReport(input: RestaurantsReportInput): ReportTable[] 
   return [
     {
       key: 'ranking',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: [
         { key: 'orders', kind: 'count' },
         { key: 'sales', kind: 'money' },
@@ -527,7 +528,7 @@ export function captainsReport(input: CaptainsReportInput): ReportTable[] {
   return [
     {
       key: 'ranking',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: [
         { key: 'delivered', kind: 'count' },
         { key: 'acceptance', kind: 'bp' },
@@ -687,7 +688,7 @@ export function customersReport(input: CustomersReportInput): ReportTable[] {
     },
     {
       key: 'top',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: [
         { key: 'phone', kind: 'text' },
         { key: 'delivered', kind: 'count' },
@@ -729,7 +730,7 @@ export function customersReport(input: CustomersReportInput): ReportTable[] {
     },
     {
       key: 'blocks',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: [{ key: 'started', kind: 'count' }],
       rows: input.blocks.started.map((row) => ({
         code: null,
@@ -779,7 +780,7 @@ export function lostDemandReport(input: LostDemandReportInput): ReportTable[] {
     },
     {
       key: 'searches',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: [{ key: 'count', kind: 'count' }],
       rows: input.searches.map((row) => ({
         code: null,
@@ -789,7 +790,7 @@ export function lostDemandReport(input: LostDemandReportInput): ReportTable[] {
     },
     {
       key: 'suggestions',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: [
         { key: 'note', kind: 'text' },
         { key: 'query', kind: 'text' },
@@ -825,7 +826,7 @@ export function codesReport(input: CodesReportInput): ReportTable[] {
   return [
     {
       key: 'codes',
-      rowKind: 'name',
+      rowKind: 'label',
       columns: [
         { key: 'uses', kind: 'count' },
         { key: 'returned', kind: 'count' },

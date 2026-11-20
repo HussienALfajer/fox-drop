@@ -186,6 +186,20 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
           floatingActionButton: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // RA §11: «التقارير», owners only (the top bar has no room).
+              if (ref.watch(
+                merchantSessionProvider.select(
+                  (s) =>
+                      s.value?.role == MerchantSessionDtoOutputRoleEnum.owner,
+                ),
+              ))
+                FloatingActionButton.small(
+                  key: const Key('open-reports'),
+                  heroTag: 'open-reports',
+                  tooltip: l10n.merchantReports,
+                  onPressed: () => context.push('/reports'),
+                  child: const Icon(Icons.bar_chart),
+                ),
               FloatingActionButton.small(
                 key: const Key('open-history'),
                 heroTag: 'open-history',

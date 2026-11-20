@@ -1,13 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'merchant_figures_dto_output_current_top_by_quantity_inner.dart';
+part of 'merchant_figures_item_output.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$MerchantFiguresDtoOutputCurrentTopByQuantityInner
-    extends MerchantFiguresDtoOutputCurrentTopByQuantityInner {
+class _$MerchantFiguresItemOutput extends MerchantFiguresItemOutput {
   @override
   final String itemId;
   @override
@@ -17,34 +16,29 @@ class _$MerchantFiguresDtoOutputCurrentTopByQuantityInner
   @override
   final String sales;
 
-  factory _$MerchantFiguresDtoOutputCurrentTopByQuantityInner([
-    void Function(MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder)?
-    updates,
-  ]) =>
-      (MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder()
-            ..update(updates))
-          ._build();
+  factory _$MerchantFiguresItemOutput([
+    void Function(MerchantFiguresItemOutputBuilder)? updates,
+  ]) => (MerchantFiguresItemOutputBuilder()..update(updates))._build();
 
-  _$MerchantFiguresDtoOutputCurrentTopByQuantityInner._({
+  _$MerchantFiguresItemOutput._({
     required this.itemId,
     required this.name,
     required this.quantity,
     required this.sales,
   }) : super._();
   @override
-  MerchantFiguresDtoOutputCurrentTopByQuantityInner rebuild(
-    void Function(MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder)
-    updates,
+  MerchantFiguresItemOutput rebuild(
+    void Function(MerchantFiguresItemOutputBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder toBuilder() =>
-      MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder()..replace(this);
+  MerchantFiguresItemOutputBuilder toBuilder() =>
+      MerchantFiguresItemOutputBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantFiguresDtoOutputCurrentTopByQuantityInner &&
+    return other is MerchantFiguresItemOutput &&
         itemId == other.itemId &&
         name == other.name &&
         quantity == other.quantity &&
@@ -64,9 +58,7 @@ class _$MerchantFiguresDtoOutputCurrentTopByQuantityInner
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'MerchantFiguresDtoOutputCurrentTopByQuantityInner',
-          )
+    return (newBuiltValueToStringHelper(r'MerchantFiguresItemOutput')
           ..add('itemId', itemId)
           ..add('name', name)
           ..add('quantity', quantity)
@@ -75,13 +67,10 @@ class _$MerchantFiguresDtoOutputCurrentTopByQuantityInner
   }
 }
 
-class MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder
+class MerchantFiguresItemOutputBuilder
     implements
-        Builder<
-          MerchantFiguresDtoOutputCurrentTopByQuantityInner,
-          MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder
-        > {
-  _$MerchantFiguresDtoOutputCurrentTopByQuantityInner? _$v;
+        Builder<MerchantFiguresItemOutput, MerchantFiguresItemOutputBuilder> {
+  _$MerchantFiguresItemOutput? _$v;
 
   String? _itemId;
   String? get itemId => _$this._itemId;
@@ -99,11 +88,11 @@ class MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder
   String? get sales => _$this._sales;
   set sales(String? sales) => _$this._sales = sales;
 
-  MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder() {
-    MerchantFiguresDtoOutputCurrentTopByQuantityInner._defaults(this);
+  MerchantFiguresItemOutputBuilder() {
+    MerchantFiguresItemOutput._defaults(this);
   }
 
-  MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder get _$this {
+  MerchantFiguresItemOutputBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _itemId = $v.itemId;
@@ -116,43 +105,40 @@ class MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder
   }
 
   @override
-  void replace(MerchantFiguresDtoOutputCurrentTopByQuantityInner other) {
-    _$v = other as _$MerchantFiguresDtoOutputCurrentTopByQuantityInner;
+  void replace(MerchantFiguresItemOutput other) {
+    _$v = other as _$MerchantFiguresItemOutput;
   }
 
   @override
-  void update(
-    void Function(MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder)?
-    updates,
-  ) {
+  void update(void Function(MerchantFiguresItemOutputBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  MerchantFiguresDtoOutputCurrentTopByQuantityInner build() => _build();
+  MerchantFiguresItemOutput build() => _build();
 
-  _$MerchantFiguresDtoOutputCurrentTopByQuantityInner _build() {
+  _$MerchantFiguresItemOutput _build() {
     final _$result =
         _$v ??
-        _$MerchantFiguresDtoOutputCurrentTopByQuantityInner._(
+        _$MerchantFiguresItemOutput._(
           itemId: BuiltValueNullFieldError.checkNotNull(
             itemId,
-            r'MerchantFiguresDtoOutputCurrentTopByQuantityInner',
+            r'MerchantFiguresItemOutput',
             'itemId',
           ),
           name: BuiltValueNullFieldError.checkNotNull(
             name,
-            r'MerchantFiguresDtoOutputCurrentTopByQuantityInner',
+            r'MerchantFiguresItemOutput',
             'name',
           ),
           quantity: BuiltValueNullFieldError.checkNotNull(
             quantity,
-            r'MerchantFiguresDtoOutputCurrentTopByQuantityInner',
+            r'MerchantFiguresItemOutput',
             'quantity',
           ),
           sales: BuiltValueNullFieldError.checkNotNull(
             sales,
-            r'MerchantFiguresDtoOutputCurrentTopByQuantityInner',
+            r'MerchantFiguresItemOutput',
             'sales',
           ),
         );

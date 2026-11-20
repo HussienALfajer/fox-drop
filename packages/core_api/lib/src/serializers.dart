@@ -1088,13 +1088,12 @@ import 'package:core_api/src/model/merchant_devices_dto_output.dart';
 import 'package:core_api/src/model/merchant_devices_dto_output_devices_inner.dart';
 import 'package:core_api/src/model/merchant_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/merchant_figures_dto_output.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_hours_inner.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_pause_minutes.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_rating.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_rejections_inner.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_current_top_by_quantity_inner.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_previous.dart';
+import 'package:core_api/src/model/merchant_figures_item_output.dart';
+import 'package:core_api/src/model/merchant_figures_output.dart';
+import 'package:core_api/src/model/merchant_figures_output_hours_inner.dart';
+import 'package:core_api/src/model/merchant_figures_output_pause_minutes.dart';
+import 'package:core_api/src/model/merchant_figures_output_rating.dart';
+import 'package:core_api/src/model/merchant_figures_output_rejections_inner.dart';
 import 'package:core_api/src/model/merchant_holiday_close_dto.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output_coverage.dart';
@@ -2318,13 +2317,12 @@ part 'serializers.g.dart';
   MerchantDevicesDtoOutputDevicesInner,
   MerchantEmergencyStopDtoOutput,
   MerchantFiguresDtoOutput,
-  MerchantFiguresDtoOutputCurrent,
-  MerchantFiguresDtoOutputCurrentHoursInner,
-  MerchantFiguresDtoOutputCurrentPauseMinutes,
-  MerchantFiguresDtoOutputCurrentRating,
-  MerchantFiguresDtoOutputCurrentRejectionsInner,
-  MerchantFiguresDtoOutputCurrentTopByQuantityInner,
-  MerchantFiguresDtoOutputPrevious,
+  MerchantFiguresItemOutput,
+  MerchantFiguresOutput,
+  MerchantFiguresOutputHoursInner,
+  MerchantFiguresOutputPauseMinutes,
+  MerchantFiguresOutputRating,
+  MerchantFiguresOutputRejectionsInner,
   MerchantHolidayCloseDto,
   MerchantHoursDtoOutput,
   MerchantHoursDtoOutputCoverage,
@@ -2573,12 +2571,6 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(MerchantFiguresDtoOutputCurrentHoursInner),
-            ]),
-            () => ListBuilder<MerchantFiguresDtoOutputCurrentHoursInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(AdminReportDtoOutputTablesInner),
             ]),
             () => ListBuilder<AdminReportDtoOutputTablesInner>(),
@@ -2714,12 +2706,6 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderLinesInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderLinesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(MerchantFiguresDtoOutputCurrentRejectionsInner),
-            ]),
-            () => ListBuilder<MerchantFiguresDtoOutputCurrentRejectionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2865,6 +2851,10 @@ Serializers serializers =
             () => ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(MerchantFiguresItemOutput)]),
+            () => ListBuilder<MerchantFiguresItemOutput>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(
                 CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner,
@@ -2921,15 +2911,6 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminCaptainApplicationDtoOutputDuplicatesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(MerchantFiguresDtoOutputCurrentTopByQuantityInner),
-            ]),
-            () =>
-                ListBuilder<
-                  MerchantFiguresDtoOutputCurrentTopByQuantityInner
-                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3556,6 +3537,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantFiguresOutputRejectionsInner),
+            ]),
+            () => ListBuilder<MerchantFiguresOutputRejectionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainPayCalculationDtoOutputAnnouncedInner),
             ]),
             () => ListBuilder<CaptainPayCalculationDtoOutputAnnouncedInner>(),
@@ -3707,6 +3694,12 @@ Serializers serializers =
               FullType(AdminDashboardDtoOutputHoursInner),
             ]),
             () => ListBuilder<AdminDashboardDtoOutputHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantFiguresOutputHoursInner),
+            ]),
+            () => ListBuilder<MerchantFiguresOutputHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

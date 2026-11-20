@@ -22,42 +22,46 @@ class MerchantFiguresQueryDto extends createZodDto(
 ) {}
 
 const minor = z.string().regex(/^-?\d{1,18}$/);
-const item = z.object({
-  itemId: z.uuid(),
-  name: z.string().describe('Its name on the latest order.'),
-  quantity: z.int(),
-  sales: minor,
-});
+const item = z
+  .object({
+    itemId: z.uuid(),
+    name: z.string().describe('Its name on the latest order.'),
+    quantity: z.int(),
+    sales: minor,
+  })
+  .meta({ id: 'MerchantFiguresItem' });
 
-const figures = z.object({
-  received: z.int().describe('Orders that reached the restaurant.'),
-  acceptedByYou: z.int(),
-  acceptedByOperations: z.int().describe('Accepted on the restaurant’s behalf (RA §8.15).'),
-  rejected: z.int(),
-  rejections: z.array(z.object({ label: z.string(), byOperations: z.boolean(), count: z.int() })),
-  unanswered: z.int().describe('Cancelled automatically for no response (RA §8.3).'),
-  acceptanceBp: z
-    .int()
-    .nullable()
-    .describe('Accepted by you ÷ (received − cancelled by the customer before any answer).'),
-  delivered: z.int(),
-  sales: minor.describe('Items value of the delivered orders, after any edits.'),
-  averageOrder: minor.nullable(),
-  commission: minor.describe('From the restaurant account’s entries of the period (RA §12).'),
-  discounts: minor.describe('Restaurant-funded discounts, from the same entries.'),
-  net: minor.describe('Sales less the commission and the discounts.'),
-  acceptMinutes: z.number().nullable().describe('Placed to accepted, by restaurant users only.'),
-  prepActualMinutes: z.number().nullable(),
-  prepChosenMinutes: z.number().nullable(),
-  lateBp: z.int().nullable().describe('Ready (or picked up) after the time chosen ÷ accepted.'),
-  readyNotPressed: z.int(),
-  captainWaitMinutes: z.number().nullable(),
-  rating: z.object({ count: z.int(), average: z.number().nullable() }),
-  topByQuantity: z.array(item),
-  topBySales: z.array(item),
-  hours: z.array(z.object({ hour: z.int(), delivered: z.int() })),
-  pauseMinutes: z.object({ restaurant: z.int(), ops: z.int(), auto: z.int() }),
-});
+const figures = z
+  .object({
+    received: z.int().describe('Orders that reached the restaurant.'),
+    acceptedByYou: z.int(),
+    acceptedByOperations: z.int().describe('Accepted on the restaurant’s behalf (RA §8.15).'),
+    rejected: z.int(),
+    rejections: z.array(z.object({ label: z.string(), byOperations: z.boolean(), count: z.int() })),
+    unanswered: z.int().describe('Cancelled automatically for no response (RA §8.3).'),
+    acceptanceBp: z
+      .int()
+      .nullable()
+      .describe('Accepted by you ÷ (received − cancelled by the customer before any answer).'),
+    delivered: z.int(),
+    sales: minor.describe('Items value of the delivered orders, after any edits.'),
+    averageOrder: minor.nullable(),
+    commission: minor.describe('From the restaurant account’s entries of the period (RA §12).'),
+    discounts: minor.describe('Restaurant-funded discounts, from the same entries.'),
+    net: minor.describe('Sales less the commission and the discounts.'),
+    acceptMinutes: z.number().nullable().describe('Placed to accepted, by restaurant users only.'),
+    prepActualMinutes: z.number().nullable(),
+    prepChosenMinutes: z.number().nullable(),
+    lateBp: z.int().nullable().describe('Ready (or picked up) after the time chosen ÷ accepted.'),
+    readyNotPressed: z.int(),
+    captainWaitMinutes: z.number().nullable(),
+    rating: z.object({ count: z.int(), average: z.number().nullable() }),
+    topByQuantity: z.array(item),
+    topBySales: z.array(item),
+    hours: z.array(z.object({ hour: z.int(), delivered: z.int() })),
+    pauseMinutes: z.object({ restaurant: z.int(), ops: z.int(), auto: z.int() }),
+  })
+  .meta({ id: 'MerchantFigures' });
 
 class MerchantFiguresDto extends createZodDto(
   z.object({
@@ -65,7 +69,8 @@ class MerchantFiguresDto extends createZodDto(
     to: z.iso.datetime().describe('The period’s end, or now while it runs.'),
     currency: z.string().describe('The money’s currency, the city’s base.'),
     current: figures,
-    previous: figures.describe('The previous period of the same length, for the arrows.'),
+    // The previous period of the same length, for the arrows.
+    previous: figures,
   }),
 ) {}
 

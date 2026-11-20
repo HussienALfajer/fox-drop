@@ -6,9 +6,9 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_figures_dto_output_current_top_by_quantity_inner.g.dart';
+part 'merchant_figures_item_output.g.dart';
 
-/// MerchantFiguresDtoOutputCurrentTopByQuantityInner
+/// MerchantFiguresItemOutput
 ///
 /// Properties:
 /// * [itemId]
@@ -16,12 +16,9 @@ part 'merchant_figures_dto_output_current_top_by_quantity_inner.g.dart';
 /// * [quantity]
 /// * [sales]
 @BuiltValue()
-abstract class MerchantFiguresDtoOutputCurrentTopByQuantityInner
+abstract class MerchantFiguresItemOutput
     implements
-        Built<
-          MerchantFiguresDtoOutputCurrentTopByQuantityInner,
-          MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder
-        > {
+        Built<MerchantFiguresItemOutput, MerchantFiguresItemOutputBuilder> {
   @BuiltValueField(wireName: r'itemId')
   String get itemId;
 
@@ -35,38 +32,34 @@ abstract class MerchantFiguresDtoOutputCurrentTopByQuantityInner
   @BuiltValueField(wireName: r'sales')
   String get sales;
 
-  MerchantFiguresDtoOutputCurrentTopByQuantityInner._();
+  MerchantFiguresItemOutput._();
 
-  factory MerchantFiguresDtoOutputCurrentTopByQuantityInner([
-    void updates(MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder b),
-  ]) = _$MerchantFiguresDtoOutputCurrentTopByQuantityInner;
+  factory MerchantFiguresItemOutput([
+    void updates(MerchantFiguresItemOutputBuilder b),
+  ]) = _$MerchantFiguresItemOutput;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder b,
-  ) => b;
+  static void _defaults(MerchantFiguresItemOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantFiguresDtoOutputCurrentTopByQuantityInner>
-  get serializer =>
-      _$MerchantFiguresDtoOutputCurrentTopByQuantityInnerSerializer();
+  static Serializer<MerchantFiguresItemOutput> get serializer =>
+      _$MerchantFiguresItemOutputSerializer();
 }
 
-class _$MerchantFiguresDtoOutputCurrentTopByQuantityInnerSerializer
-    implements
-        PrimitiveSerializer<MerchantFiguresDtoOutputCurrentTopByQuantityInner> {
+class _$MerchantFiguresItemOutputSerializer
+    implements PrimitiveSerializer<MerchantFiguresItemOutput> {
   @override
   final Iterable<Type> types = const [
-    MerchantFiguresDtoOutputCurrentTopByQuantityInner,
-    _$MerchantFiguresDtoOutputCurrentTopByQuantityInner,
+    MerchantFiguresItemOutput,
+    _$MerchantFiguresItemOutput,
   ];
 
   @override
-  final String wireName = r'MerchantFiguresDtoOutputCurrentTopByQuantityInner';
+  final String wireName = r'MerchantFiguresItemOutput';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantFiguresDtoOutputCurrentTopByQuantityInner object, {
+    MerchantFiguresItemOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'itemId';
@@ -94,7 +87,7 @@ class _$MerchantFiguresDtoOutputCurrentTopByQuantityInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    MerchantFiguresDtoOutputCurrentTopByQuantityInner object, {
+    MerchantFiguresItemOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -109,7 +102,7 @@ class _$MerchantFiguresDtoOutputCurrentTopByQuantityInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder result,
+    required MerchantFiguresItemOutputBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -158,12 +151,12 @@ class _$MerchantFiguresDtoOutputCurrentTopByQuantityInnerSerializer
   }
 
   @override
-  MerchantFiguresDtoOutputCurrentTopByQuantityInner deserialize(
+  MerchantFiguresItemOutput deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantFiguresDtoOutputCurrentTopByQuantityInnerBuilder();
+    final result = MerchantFiguresItemOutputBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

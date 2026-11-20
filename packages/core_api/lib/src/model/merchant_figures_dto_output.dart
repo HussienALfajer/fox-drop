@@ -3,8 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/merchant_figures_dto_output_current.dart';
-import 'package:core_api/src/model/merchant_figures_dto_output_previous.dart';
+import 'package:core_api/src/model/merchant_figures_output.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -34,10 +33,10 @@ abstract class MerchantFiguresDtoOutput
   String get currency;
 
   @BuiltValueField(wireName: r'current')
-  MerchantFiguresDtoOutputCurrent get current;
+  MerchantFiguresOutput get current;
 
   @BuiltValueField(wireName: r'previous')
-  MerchantFiguresDtoOutputPrevious get previous;
+  MerchantFiguresOutput get previous;
 
   MerchantFiguresDtoOutput._();
 
@@ -87,12 +86,12 @@ class _$MerchantFiguresDtoOutputSerializer
     yield r'current';
     yield serializers.serialize(
       object.current,
-      specifiedType: const FullType(MerchantFiguresDtoOutputCurrent),
+      specifiedType: const FullType(MerchantFiguresOutput),
     );
     yield r'previous';
     yield serializers.serialize(
       object.previous,
-      specifiedType: const FullType(MerchantFiguresDtoOutputPrevious),
+      specifiedType: const FullType(MerchantFiguresOutput),
     );
   }
 
@@ -152,22 +151,18 @@ class _$MerchantFiguresDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      MerchantFiguresDtoOutputCurrent,
-                    ),
+                    specifiedType: const FullType(MerchantFiguresOutput),
                   )
-                  as MerchantFiguresDtoOutputCurrent;
+                  as MerchantFiguresOutput;
           result.current.replace(valueDes);
           break;
         case r'previous':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      MerchantFiguresDtoOutputPrevious,
-                    ),
+                    specifiedType: const FullType(MerchantFiguresOutput),
                   )
-                  as MerchantFiguresDtoOutputPrevious;
+                  as MerchantFiguresOutput;
           result.previous.replace(valueDes);
           break;
         default:

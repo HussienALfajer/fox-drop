@@ -20,6 +20,8 @@ import 'menu/quick_edit_screen.dart';
 import 'not_found_screen.dart';
 import 'platform.dart';
 import 'ratings/ratings_screen.dart';
+import 'reports/reports_screen.dart';
+import 'reports/summary_screen.dart';
 import 'settings/devices_screen.dart';
 import 'settings/settings_screen.dart';
 import 'settings/staff_screen.dart';
@@ -142,6 +144,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/ratings',
         builder: (context, state) => const RatingsScreen(),
+      ),
+      // RA §11: «التقارير» and «الملخص اليومي», the owners' (a cashier's
+      // read is 403 owner_only).
+      GoRoute(
+        path: '/reports',
+        builder: (context, state) => const ReportsScreen(),
+        routes: [
+          GoRoute(
+            path: 'summary',
+            builder: (context, state) => const SummaryScreen(),
+          ),
+        ],
       ),
       // RA §12.2, R10: «الحساب», the owners' (a cashier's read is 403
       // owner_only).

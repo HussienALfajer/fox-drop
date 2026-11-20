@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'merchant_figures_dto_output_current_pause_minutes.dart';
+part of 'merchant_figures_output_pause_minutes.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$MerchantFiguresDtoOutputCurrentPauseMinutes
-    extends MerchantFiguresDtoOutputCurrentPauseMinutes {
+class _$MerchantFiguresOutputPauseMinutes
+    extends MerchantFiguresOutputPauseMinutes {
   @override
   final int restaurant;
   @override
@@ -15,29 +15,28 @@ class _$MerchantFiguresDtoOutputCurrentPauseMinutes
   @override
   final int auto;
 
-  factory _$MerchantFiguresDtoOutputCurrentPauseMinutes([
-    void Function(MerchantFiguresDtoOutputCurrentPauseMinutesBuilder)? updates,
-  ]) => (MerchantFiguresDtoOutputCurrentPauseMinutesBuilder()..update(updates))
-      ._build();
+  factory _$MerchantFiguresOutputPauseMinutes([
+    void Function(MerchantFiguresOutputPauseMinutesBuilder)? updates,
+  ]) => (MerchantFiguresOutputPauseMinutesBuilder()..update(updates))._build();
 
-  _$MerchantFiguresDtoOutputCurrentPauseMinutes._({
+  _$MerchantFiguresOutputPauseMinutes._({
     required this.restaurant,
     required this.ops,
     required this.auto,
   }) : super._();
   @override
-  MerchantFiguresDtoOutputCurrentPauseMinutes rebuild(
-    void Function(MerchantFiguresDtoOutputCurrentPauseMinutesBuilder) updates,
+  MerchantFiguresOutputPauseMinutes rebuild(
+    void Function(MerchantFiguresOutputPauseMinutesBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  MerchantFiguresDtoOutputCurrentPauseMinutesBuilder toBuilder() =>
-      MerchantFiguresDtoOutputCurrentPauseMinutesBuilder()..replace(this);
+  MerchantFiguresOutputPauseMinutesBuilder toBuilder() =>
+      MerchantFiguresOutputPauseMinutesBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantFiguresDtoOutputCurrentPauseMinutes &&
+    return other is MerchantFiguresOutputPauseMinutes &&
         restaurant == other.restaurant &&
         ops == other.ops &&
         auto == other.auto;
@@ -55,9 +54,7 @@ class _$MerchantFiguresDtoOutputCurrentPauseMinutes
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'MerchantFiguresDtoOutputCurrentPauseMinutes',
-          )
+    return (newBuiltValueToStringHelper(r'MerchantFiguresOutputPauseMinutes')
           ..add('restaurant', restaurant)
           ..add('ops', ops)
           ..add('auto', auto))
@@ -65,13 +62,13 @@ class _$MerchantFiguresDtoOutputCurrentPauseMinutes
   }
 }
 
-class MerchantFiguresDtoOutputCurrentPauseMinutesBuilder
+class MerchantFiguresOutputPauseMinutesBuilder
     implements
         Builder<
-          MerchantFiguresDtoOutputCurrentPauseMinutes,
-          MerchantFiguresDtoOutputCurrentPauseMinutesBuilder
+          MerchantFiguresOutputPauseMinutes,
+          MerchantFiguresOutputPauseMinutesBuilder
         > {
-  _$MerchantFiguresDtoOutputCurrentPauseMinutes? _$v;
+  _$MerchantFiguresOutputPauseMinutes? _$v;
 
   int? _restaurant;
   int? get restaurant => _$this._restaurant;
@@ -85,11 +82,11 @@ class MerchantFiguresDtoOutputCurrentPauseMinutesBuilder
   int? get auto => _$this._auto;
   set auto(int? auto) => _$this._auto = auto;
 
-  MerchantFiguresDtoOutputCurrentPauseMinutesBuilder() {
-    MerchantFiguresDtoOutputCurrentPauseMinutes._defaults(this);
+  MerchantFiguresOutputPauseMinutesBuilder() {
+    MerchantFiguresOutputPauseMinutes._defaults(this);
   }
 
-  MerchantFiguresDtoOutputCurrentPauseMinutesBuilder get _$this {
+  MerchantFiguresOutputPauseMinutesBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _restaurant = $v.restaurant;
@@ -101,37 +98,37 @@ class MerchantFiguresDtoOutputCurrentPauseMinutesBuilder
   }
 
   @override
-  void replace(MerchantFiguresDtoOutputCurrentPauseMinutes other) {
-    _$v = other as _$MerchantFiguresDtoOutputCurrentPauseMinutes;
+  void replace(MerchantFiguresOutputPauseMinutes other) {
+    _$v = other as _$MerchantFiguresOutputPauseMinutes;
   }
 
   @override
   void update(
-    void Function(MerchantFiguresDtoOutputCurrentPauseMinutesBuilder)? updates,
+    void Function(MerchantFiguresOutputPauseMinutesBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  MerchantFiguresDtoOutputCurrentPauseMinutes build() => _build();
+  MerchantFiguresOutputPauseMinutes build() => _build();
 
-  _$MerchantFiguresDtoOutputCurrentPauseMinutes _build() {
+  _$MerchantFiguresOutputPauseMinutes _build() {
     final _$result =
         _$v ??
-        _$MerchantFiguresDtoOutputCurrentPauseMinutes._(
+        _$MerchantFiguresOutputPauseMinutes._(
           restaurant: BuiltValueNullFieldError.checkNotNull(
             restaurant,
-            r'MerchantFiguresDtoOutputCurrentPauseMinutes',
+            r'MerchantFiguresOutputPauseMinutes',
             'restaurant',
           ),
           ops: BuiltValueNullFieldError.checkNotNull(
             ops,
-            r'MerchantFiguresDtoOutputCurrentPauseMinutes',
+            r'MerchantFiguresOutputPauseMinutes',
             'ops',
           ),
           auto: BuiltValueNullFieldError.checkNotNull(
             auto,
-            r'MerchantFiguresDtoOutputCurrentPauseMinutes',
+            r'MerchantFiguresOutputPauseMinutes',
             'auto',
           ),
         );

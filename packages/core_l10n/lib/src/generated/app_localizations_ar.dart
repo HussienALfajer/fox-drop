@@ -3560,7 +3560,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get merchantMyReportsEmpty => 'لا بلاغات بعد.';
 
   @override
-  String get merchantReportsFailed => 'تعذّر تحميل البلاغات.';
+  String get merchantReportsFailed => 'تعذّر تحميل التقارير.';
 
   @override
   String get merchantReportsRetry => 'إعادة المحاولة';
@@ -5350,4 +5350,274 @@ class AppLocalizationsAr extends AppLocalizations {
   String captainHistoryRestaurant(String restaurant, String neighbourhood) {
     return '$restaurant · $neighbourhood';
   }
+
+  @override
+  String get merchantReports => 'التقارير';
+
+  @override
+  String get merchantReportsNotAllowed => 'التقارير للمالكين فقط.';
+
+  @override
+  String get merchantReportsTerminated =>
+      'انتهى حساب مطعمك، والتقارير لم تعد متاحة.';
+
+  @override
+  String get merchantReportsCompared =>
+      '↑ ↓ مقارنة بالفترة السابقة بالطول نفسه. الطلبات التجريبية مستبعدة.';
+
+  @override
+  String merchantReportsChangeUp(String percent) {
+    return '↑ $percent%';
+  }
+
+  @override
+  String merchantReportsChangeDown(String percent) {
+    return '↓ $percent%';
+  }
+
+  @override
+  String get merchantReportsChangeNew => '↑';
+
+  @override
+  String get merchantReportsChangeSame => '=';
+
+  @override
+  String merchantReportsPrevious(String value) {
+    return 'السابق: $value';
+  }
+
+  @override
+  String get merchantReportsNoValue => '—';
+
+  @override
+  String merchantReportsMinutes(String value) {
+    return '$value د';
+  }
+
+  @override
+  String merchantReportsPercent(String value) {
+    return '$value%';
+  }
+
+  @override
+  String merchantReportsRating(String average, int count) {
+    return '$average من 5 ($count)';
+  }
+
+  @override
+  String merchantReportsInfo(String metric) {
+    return 'ما معنى «$metric»؟';
+  }
+
+  @override
+  String get merchantReportsInfoClose => 'حسناً';
+
+  @override
+  String get merchantReportsMetricReceived => 'الطلبات المستلمة';
+
+  @override
+  String get merchantReportsInfoReceived =>
+      'الطلبات التي وصلت إلى مطعمك في الفترة.';
+
+  @override
+  String get merchantReportsMetricAcceptedByYou => 'قبلتموها';
+
+  @override
+  String get merchantReportsInfoAcceptedByYou =>
+      'الطلبات التي قبلها أحد مستخدمي المطعم.';
+
+  @override
+  String get merchantReportsMetricAcceptedByOperations => 'قبلتها العمليات';
+
+  @override
+  String get merchantReportsInfoAcceptedByOperations =>
+      'الطلبات التي قبلتها العمليات نيابة عنكم.';
+
+  @override
+  String get merchantReportsMetricRejected => 'المرفوضة';
+
+  @override
+  String get merchantReportsInfoRejected =>
+      'الطلبات المرفوضة منكم أو من العمليات، وأسبابها أدناه.';
+
+  @override
+  String get merchantReportsMetricUnanswered => 'بلا رد';
+
+  @override
+  String get merchantReportsInfoUnanswered =>
+      'الطلبات التي أُلغيت تلقائياً لأن أحداً لم يرد عليها.';
+
+  @override
+  String get merchantReportsMetricAcceptance => 'نسبة القبول';
+
+  @override
+  String get merchantReportsInfoAcceptance =>
+      'ما قبلتموه ÷ (الطلبات المستلمة − ما ألغاه الزبون قبل أي رد).';
+
+  @override
+  String get merchantReportsMetricDelivered => 'المسلّمة';
+
+  @override
+  String get merchantReportsInfoDelivered => 'الطلبات التي وصلت إلى الزبون.';
+
+  @override
+  String get merchantReportsMetricSales => 'المبيعات';
+
+  @override
+  String get merchantReportsInfoSales =>
+      'قيمة أصناف الطلبات المسلّمة بعد أي تعديل.';
+
+  @override
+  String get merchantReportsMetricAverageOrder => 'متوسط الطلب';
+
+  @override
+  String get merchantReportsInfoAverageOrder => 'المبيعات ÷ الطلبات المسلّمة.';
+
+  @override
+  String get merchantReportsMetricCommission => 'العمولة';
+
+  @override
+  String get merchantReportsInfoCommission =>
+      'العمولة المقيّدة على حسابكم في الفترة.';
+
+  @override
+  String get merchantReportsMetricDiscounts => 'خصومات على حسابكم';
+
+  @override
+  String get merchantReportsInfoDiscounts =>
+      'حصتكم من الخصومات المقيّدة على حسابكم في الفترة.';
+
+  @override
+  String get merchantReportsMetricNet => 'الصافي';
+
+  @override
+  String get merchantReportsInfoNet =>
+      'المبيعات ناقص العمولة وحصتكم من الخصومات.';
+
+  @override
+  String get merchantReportsMetricAcceptTime => 'متوسط وقت القبول';
+
+  @override
+  String get merchantReportsInfoAcceptTime =>
+      'من وصول الطلب حتى قبوله، لمستخدمي المطعم فقط.';
+
+  @override
+  String get merchantReportsMetricPrepTime => 'متوسط التحضير الفعلي';
+
+  @override
+  String get merchantReportsInfoPrepTime =>
+      'من القبول حتى «الطلب جاهز»، أو حتى الاستلام إن لم يُضغط «جاهز»، مقارنة بمتوسط الوقت المختار.';
+
+  @override
+  String get merchantReportsMetricChosenTime => 'متوسط الوقت المختار';
+
+  @override
+  String get merchantReportsInfoChosenTime =>
+      'وقت التحضير الذي اخترتموه عند القبول، بعد أي تعديل.';
+
+  @override
+  String get merchantReportsMetricLate => 'نسبة التأخير';
+
+  @override
+  String get merchantReportsInfoLate =>
+      'الطلبات الجاهزة (أو المستلمة دون ضغط «جاهز») بعد وقت التحضير المختار ÷ المقبولة.';
+
+  @override
+  String get merchantReportsMetricReadyNotPressed => 'لم يُضغط «جاهز»';
+
+  @override
+  String get merchantReportsInfoReadyNotPressed =>
+      'طلبات استلمها الكابتن دون ضغط «الطلب جاهز».';
+
+  @override
+  String get merchantReportsMetricCaptainWait => 'متوسط انتظار الكابتن';
+
+  @override
+  String get merchantReportsInfoCaptainWait =>
+      'من وصول الكابتن إلى المطعم حتى الاستلام.';
+
+  @override
+  String get merchantReportsMetricRating => 'التقييم';
+
+  @override
+  String get merchantReportsInfoRating =>
+      'متوسط النجوم وعدد التقييمات في الفترة.';
+
+  @override
+  String get merchantReportsRejections => 'الرفض حسب السبب';
+
+  @override
+  String merchantReportsRejectionRow(String reason, int count) {
+    return '$reason: $count';
+  }
+
+  @override
+  String merchantReportsRejectionByOperations(String reason, int count) {
+    return '$reason (العمليات): $count';
+  }
+
+  @override
+  String get merchantReportsTopByQuantity => 'الأكثر طلباً بالكمية';
+
+  @override
+  String get merchantReportsTopBySales => 'الأكثر مبيعاً بالقيمة';
+
+  @override
+  String merchantReportsItemRow(String name, int quantity, String sales) {
+    return '$name: $quantity — $sales';
+  }
+
+  @override
+  String get merchantReportsHours => 'الطلبات المسلّمة حسب الساعة';
+
+  @override
+  String merchantReportsHourRow(String hour, int count) {
+    return '$hour:00 — $count';
+  }
+
+  @override
+  String get merchantReportsPauses => 'الإيقاف ووضع الانشغال';
+
+  @override
+  String merchantReportsPauseRestaurant(int minutes) {
+    return 'إيقافكم: $minutes د';
+  }
+
+  @override
+  String merchantReportsPauseOps(int minutes) {
+    return 'إيقاف العمليات: $minutes د';
+  }
+
+  @override
+  String merchantReportsPauseAuto(int minutes) {
+    return 'إيقاف تلقائي: $minutes د';
+  }
+
+  @override
+  String get merchantReportsBusyNotYet =>
+      'دقائق وضع الانشغال أو بلوغ الحد: غير متاحة بعد';
+
+  @override
+  String get merchantReportsEmpty => 'لا شيء في هذه الفترة.';
+
+  @override
+  String get merchantReportsOpenSummary => 'الملخص اليومي';
+
+  @override
+  String merchantReportsSummaryTitle(String date) {
+    return 'ملخص يوم $date';
+  }
+
+  @override
+  String get merchantReportsSummaryPickDay => 'اختيار يوم آخر';
+
+  @override
+  String get merchantReportsSummaryCompared => 'مقارنة باليوم السابق';
+
+  @override
+  String get merchantReportsShare => 'مشاركة كصورة';
+
+  @override
+  String get merchantReportsShareFailed =>
+      'تعذّرت مشاركة الصورة، حاول مرة أخرى';
 }
