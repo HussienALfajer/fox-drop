@@ -4,18 +4,17 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 1 of `docs/claude-code-workflow.md`: the context diet.
+Phase 2 of `docs/claude-code-workflow.md`: fast checks. Planned, not started. Phase 1 (the context diet) merged with `chore/claude-context-diet`.
 
-- **Branch:** `chore/claude-context-diet`.
-- **Why:** sessions spend most of their tokens carrying 941 KB of folder `CLAUDE.md` files and a 413 KB `TASKS.md` (the baseline in that file).
+- **Branch:** `chore/fast-verify`.
+- **Why:** the `checker` ran the full `pnpm verify` 305 times (median 3.7 min, p90 9.5 min, 25.6 h in all) with every Turborepo cache off; CI's `verify` runs the same set in 4–5 min.
 
 ### Plan
 
-- [x] Write `docs/claude-code-workflow.md`; move the earlier handover notes to `docs/slice-notes.md`.
-- [x] Move every folder `CLAUDE.md` over 4 KB unchanged to `docs/code/<folder path>.md`.
-- [x] Write the short folder `CLAUDE.md` files (at most 4 KB, pointing to their `docs/code` file).
-- [x] The size check in `pnpm verify`; the `build-slice`, `reviewer` and root `CLAUDE.md` rules; the `Explore` agent on Haiku.
-- [ ] Run the checker and the reviewer, open the pull request and merge it.
+- [ ] Move the path classification of CI's `changes` job into one script that `ci.yml` and `verify.mjs` share.
+- [ ] `node scripts/verify.mjs --changed`: only the parts the branch's changes need (Markdown only: Prettier on the changed files and the size check; TypeScript: `turbo --affected`; Dart: Melos `--diff`; the API contract only after a route or schema change); the `checker` runs it by default.
+- [ ] Turborepo cache for `lint` and `typecheck` only.
+- [ ] Measure: a Markdown-only change, a server change and a Flutter change, before and after.
 
 ## Next
 
