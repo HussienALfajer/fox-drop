@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { CaptainsService } from '../captains/index.js';
 import { GeoService } from '../geo/index.js';
+import { MerchantsService } from '../merchants/index.js';
 import { LiveMap, LiveMapPublisher } from './live-map.js';
 import {
   app,
@@ -14,6 +15,7 @@ import {
   admin,
   acceptedOrder,
   onlineCaptain,
+  change,
 } from './dispatch.fixture.js';
 
 const readMap = async (roles: string[] = ['OPS']) => {
@@ -97,6 +99,49 @@ describe('GET /v1/admin/live-map (AP §9.4, slice 2.39)', () => {
       state: 'offline',
       position: { latitude: 36.6, longitude: 37.05, recordedAt: expect.any(String) },
     });
+  });
+
+  it('leaves out a draft restaurant, keeps a placed order unassignable and ignores a simulated point', async () => {
+    const draft = await app.get(MerchantsService).createRestaurant(
+      azaz,
+      {
+        nameAr: 'مطعم المسودة',
+        location: centre,
+        coverage: { kind: 'radius', radiusMetres: 1000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1500,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    const placed = await acceptedOrder(undefined, { accept: false });
+    const captain = await onlineCaptain();
+    const later = new Date(Date.now() + 1000);
+    await app
+      .get(CaptainsService)
+      .recordLocations(
+        captain.captainId,
+        [
+          {
+            latitude: 36.7,
+            longitude: 37.2,
+            accuracyMetres: 8,
+            recordedAt: later,
+            simulated: true,
+          },
+        ],
+        new Date(later.getTime() + 1),
+      );
+    const map = await readMap();
+    expect(map.restaurants.map((each: { id: string }) => each.id)).not.toContain(draft);
+    expect(map.orders.find((each: { id: string }) => each.id === placed.id)).toMatchObject({
+      status: 'placed',
+      assignable: false,
+    });
+    expect(
+      map.captains.find((each: { captainId: string }) => each.captainId === captain.captainId)
+        .position,
+    ).toMatchObject(captainSpot);
   });
 
   it('is for live_map.read (OWN, OPS, SUP); an unknown city is 404', async () => {

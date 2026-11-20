@@ -18910,7 +18910,7 @@ export interface components {
                 /** @enum {string} */
                 vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 /**
-                 * @description CA §7.1. The map: online_available green, busy and last_order orange, the others grey (offline and suspended show the last known position and its time).
+                 * @description CA §7.1. The map: online_available and not_receiving_offers green (the latter never listed as available), busy and last_order orange, offline and suspended grey at the last known position and its time.
                  * @enum {string}
                  */
                 state: "offline" | "online_available" | "busy" | "last_order" | "not_receiving_offers" | "suspended";

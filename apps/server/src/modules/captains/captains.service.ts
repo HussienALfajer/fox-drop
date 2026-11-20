@@ -2021,32 +2021,29 @@ export class CaptainsService implements OnModuleInit {
     if (rows.length === 0) return [];
     const rules = await this.cityRules(cityId, now);
     const points = await this.newestPoints(rows.map((row) => row.id));
-    const listed: MapCaptain[] = [];
-    for (const row of rows) {
-      try {
-        const { availability: input, custody, grace } = await this.input(
-          this.database.db,
-          row,
-          rules,
-        );
-        const graced = grace !== null && now < grace.until;
-        const blocks: MapCaptain['blocks'] = [];
-        if (custody.closedDue.amount > rules.remitTolerance && !graced) blocks.push('closed_due');
-        if (custody.usage.amount >= custody.limit.amount) blocks.push('cash_limit');
-        listed.push({
-          captainId: row.id,
-          name: row.name,
-          vehicle: row.vehicle,
-          state: availability(input, now).state,
-          blocks,
-          custody: { usage: custody.usage, limit: custody.limit },
-          position: points.get(row.id) ?? null,
-        });
-      } catch (error) {
-        this.logger.warn({ err: error, captainId: row.id }, 'a map captain was left out');
-      }
-    }
-    return listed;
+    const listed = await Promise.all(
+      rows.map(async (row): Promise<MapCaptain[]> => {
+        try {
+          const { availability: input, custody } = await this.input(this.database.db, row, rules);
+          const state = availability(input, now);
+          return [
+            {
+              captainId: row.id,
+              name: row.name,
+              vehicle: row.vehicle,
+              state: state.state,
+              blocks: cashBlocks(input, state, now),
+              custody: { usage: custody.usage, limit: custody.limit },
+              position: points.get(row.id) ?? null,
+            },
+          ];
+        } catch (error) {
+          this.logger.warn({ err: error, captainId: row.id }, 'a map captain was left out');
+          return [];
+        }
+      }),
+    );
+    return listed.flat();
   }
 
   // Each captain's newest real point, whatever its age, in one read.
@@ -2765,4 +2762,22 @@ function graceOfRow(row: typeof handInGraces.$inferSelect): HandInGrace {
     bulk: row.captainId === null,
     grantedAt: row.grantedAt,
   };
+}
+
+// AP §9.4 «red outline» (slice 2.39), by the availability rules alone: an
+// online captain receiving no offers for cash (its reasons), or any other
+// captain whom cash would keep from going online (onlineBlocks: closed_due
+// with no grace running, the cash limit). One receiving offers has none,
+// so the remit grace after a cutoff shows no outline.
+function cashBlocks(
+  input: AvailabilityInput,
+  state: Availability,
+  now: Date,
+): MapCaptain['blocks'] {
+  if (state.state === 'online_available') return [];
+  const kinds: string[] =
+    state.state === 'not_receiving_offers'
+      ? state.reasons
+      : onlineBlocks(input, now).map((block) => block.kind);
+  return (['closed_due', 'cash_limit'] as const).filter((kind) => kinds.includes(kind));
 }

@@ -186,11 +186,16 @@ export function captainsOf<Captain>(event: OpsMapEvent<Captain>): Captain[] | nu
   return event.type === 'captains' && Array.isArray(event.captains) ? event.captains : null;
 }
 
-// The cities whose map channel is subscribed now.
-const liveMaps = new Set<string>();
+// The cities whose map channel is subscribed now, with when it last
+// answered (the subscription or a publication). The worker publishes every
+// 10 s; a channel silent for longer than MAP_SILENT_MS (a stopped worker)
+// counts as down, so the map reads again.
+const liveMaps = new Map<string, number>();
+export const MAP_SILENT_MS = 25_000;
 
-export function mapLive(cityId: string | undefined): boolean {
-  return cityId !== undefined && liveMaps.has(cityId);
+export function mapLive(cityId: string | undefined, now = Date.now()): boolean {
+  const heard = cityId === undefined ? undefined : liveMaps.get(cityId);
+  return heard !== undefined && now - heard < MAP_SILENT_MS;
 }
 
 // The map follows the channel while it is open: each publication replaces
@@ -209,14 +214,19 @@ export function useOpsMapChannel<Captain>(
     if (cityId === undefined) return;
     return follow(opsMapChannel(cityId), {
       subscribed: () => {
-        liveMaps.add(cityId);
+        liveMaps.set(cityId, Date.now());
         refresh(queryClient, [['live-map', cityId]]);
       },
-      down: () => liveMaps.delete(cityId),
+      // The fallback starts with a full read, whose answer resets the timer.
+      down: () => {
+        if (liveMaps.delete(cityId)) refresh(queryClient, [['live-map', cityId]]);
+      },
       left: () => liveMaps.delete(cityId),
       publication: (data) => {
         const captains = captainsOf(data as OpsMapEvent<Captain>);
-        if (captains) latest.current(cityId, captains);
+        if (!captains) return;
+        liveMaps.set(cityId, Date.now());
+        latest.current(cityId, captains);
       },
     });
   }, [queryClient, cityId]);

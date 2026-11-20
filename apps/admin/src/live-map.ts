@@ -174,8 +174,11 @@ export function ordersData(view: LiveMapView, filters: MapFilters): Collection {
 
 const liveMapKey = (cityId: string) => ['live-map', cityId] as const;
 
-// The polling fallback while a channel is down (as the board's).
+// The polling fallback while a channel is down (as the board's), and while
+// both are up a slower read that also notices a silent map channel
+// (mapLive) and keeps the restaurants' timed states current.
 const FALLBACK_MS = 10_000;
+const LIVE_READ_MS = 30_000;
 
 // The map's read, kept current by both channels: ops:city (orders and
 // restaurants change: the read again) and ops_map:city (the captains every
@@ -192,11 +195,11 @@ export function useLiveMap(cityId: string | undefined) {
     [queryClient],
   );
   useOpsMapChannel<MapCaptain>(cityId, put);
-  const ordersLive = pollUnlessLive(cityId, FALLBACK_MS);
+  const opsPoll = pollUnlessLive(cityId, FALLBACK_MS);
   return useQuery({
     queryKey: liveMapKey(cityId ?? ''),
     enabled: cityId !== undefined,
-    refetchInterval: () => (mapLive(cityId) ? ordersLive() : FALLBACK_MS),
+    refetchInterval: () => (mapLive(cityId) && opsPoll() === false ? LIVE_READ_MS : FALLBACK_MS),
     queryFn: async (): Promise<LiveMapView> => {
       const { data } = await api.GET('/v1/admin/live-map', {
         params: { query: { cityId: cityId! } },

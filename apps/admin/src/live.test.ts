@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   captainsOf,
   cityQueries,
+  mapLive,
   opsChannel,
   opsMapChannel,
   pollUnlessLive,
@@ -93,5 +94,10 @@ describe('the live map channel', () => {
     ]);
     expect(captainsOf({ type: 'other' })).toBeNull();
     expect(captainsOf({ type: 'captains' })).toBeNull();
+  });
+
+  it('is not live before its subscription', () => {
+    expect(mapLive(city)).toBe(false);
+    expect(mapLive(undefined)).toBe(false);
   });
 });

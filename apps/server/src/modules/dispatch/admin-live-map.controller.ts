@@ -25,7 +25,7 @@ const mapCaptain = z.object({
   state: z
     .enum(captainStates)
     .describe(
-      'CA §7.1. The map: online_available green, busy and last_order orange, the others grey (offline and suspended show the last known position and its time).',
+      'CA §7.1. The map: online_available and not_receiving_offers green (the latter never listed as available), busy and last_order orange, offline and suspended grey at the last known position and its time.',
     ),
   blocks: z
     .array(z.enum(['closed_due', 'cash_limit']))

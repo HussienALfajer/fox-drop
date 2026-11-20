@@ -3,7 +3,7 @@ import {
   Injectable,
   Logger,
   type OnApplicationBootstrap,
-  type OnModuleDestroy,
+  type OnApplicationShutdown,
 } from '@nestjs/common';
 import { and, eq, inArray } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
@@ -89,35 +89,41 @@ export class LiveMap {
       this.merchants.listRows(cityId),
       this.assignments.active(cityId),
     ]);
-    const restaurants: MapRestaurant[] = [];
-    for (const row of rows) {
-      if (row.location === null) continue;
-      if (row.accountStatus === 'draft' || row.accountStatus === 'terminated') continue;
-      const state = await this.restaurantState(row.id, now);
-      if (state !== null) {
-        restaurants.push({ id: row.id, name: row.nameAr, location: row.location, state });
-      }
-    }
+    const states = await Promise.all(
+      rows.map(async (row) =>
+        row.location === null || row.accountStatus === 'draft' || row.accountStatus === 'terminated'
+          ? null
+          : this.restaurantState(row.id, now),
+      ),
+    );
+    const restaurants = rows.flatMap((row, index): MapRestaurant[] => {
+      const state = states[index];
+      return state && row.location
+        ? [{ id: row.id, name: row.nameAr, location: row.location, state }]
+        : [];
+    });
     const byId = new Map(rows.map((row) => [row.id, row]));
     const offered = await this.openOffers(active.map((order) => order.id));
     // An order's restaurant always has its pin (activation needs it).
     const orders = active.flatMap((order): MapOrder[] => {
       const restaurant = byId.get(order.restaurantId);
       if (!restaurant?.location) return [];
-      return [{
-        id: order.id,
-        number: String(order.number),
-        status: order.status,
-        restaurantId: order.restaurantId,
-        restaurantName: restaurant.nameAr,
-        from: restaurant.location,
-        to: order.location,
-        captainId: order.captainId,
-        assignable:
-          (order.status === 'accepted' || order.status === 'ready') &&
-          order.captainId === null &&
-          !offered.has(order.id),
-      }];
+      return [
+        {
+          id: order.id,
+          number: String(order.number),
+          status: order.status,
+          restaurantId: order.restaurantId,
+          restaurantName: restaurant.nameAr,
+          from: restaurant.location,
+          to: order.location,
+          captainId: order.captainId,
+          assignable:
+            (order.status === 'accepted' || order.status === 'ready') &&
+            order.captainId === null &&
+            !offered.has(order.id),
+        },
+      ];
     });
     return { zones, restaurants, captains: await this.withOrders(cityId, now, active), orders };
   }
@@ -212,7 +218,7 @@ export const captainStates: Availability['state'][] = [
 // failure is logged and the next tick tries again. A position is no state
 // change, so this never goes through an outbox (§6.2).
 @Injectable()
-export class LiveMapPublisher implements OnApplicationBootstrap, OnModuleDestroy {
+export class LiveMapPublisher implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger('LiveMapPublisher');
   private timer: NodeJS.Timeout | null = null;
   private running: Promise<void> | null = null;
@@ -231,7 +237,7 @@ export class LiveMapPublisher implements OnApplicationBootstrap, OnModuleDestroy
     }, LIVE_MAP_PUBLISH_MS);
   }
 
-  async onModuleDestroy(): Promise<void> {
+  async onApplicationShutdown(): Promise<void> {
     if (this.timer) clearInterval(this.timer);
     await this.running;
   }

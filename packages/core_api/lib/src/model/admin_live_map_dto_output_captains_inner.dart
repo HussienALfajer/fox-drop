@@ -18,7 +18,7 @@ part 'admin_live_map_dto_output_captains_inner.g.dart';
 /// * [captainId]
 /// * [name]
 /// * [vehicle]
-/// * [state] - CA §7.1. The map: online_available green, busy and last_order orange, the others grey (offline and suspended show the last known position and its time).
+/// * [state] - CA §7.1. The map: online_available and not_receiving_offers green (the latter never listed as available), busy and last_order orange, offline and suspended grey at the last known position and its time.
 /// * [blocks] - AP §9.4 «red outline»: blocked for unhanded cash or at the cash limit.
 /// * [custody]
 /// * [position]
@@ -40,7 +40,7 @@ abstract class AdminLiveMapDtoOutputCaptainsInner
   AdminLiveMapDtoOutputCaptainsInnerVehicleEnum get vehicle;
   // enum vehicleEnum {  walking,  bicycle,  motorbike,  car,  };
 
-  /// CA §7.1. The map: online_available green, busy and last_order orange, the others grey (offline and suspended show the last known position and its time).
+  /// CA §7.1. The map: online_available and not_receiving_offers green (the latter never listed as available), busy and last_order orange, offline and suspended grey at the last known position and its time.
   @BuiltValueField(wireName: r'state')
   AdminLiveMapDtoOutputCaptainsInnerStateEnum get state;
   // enum stateEnum {  offline,  online_available,  busy,  last_order,  not_receiving_offers,  suspended,  };
@@ -311,7 +311,7 @@ class AdminLiveMapDtoOutputCaptainsInnerVehicleEnum extends EnumClass {
       _$adminLiveMapDtoOutputCaptainsInnerVehicleEnumValueOf(name);
 }
 
-/// CA §7.1. The map: online_available green, busy and last_order orange, the others grey (offline and suspended show the last known position and its time).
+/// CA §7.1. The map: online_available and not_receiving_offers green (the latter never listed as available), busy and last_order orange, offline and suspended grey at the last known position and its time.
 class AdminLiveMapDtoOutputCaptainsInnerStateEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'offline')
   static const AdminLiveMapDtoOutputCaptainsInnerStateEnum offline =
