@@ -12911,6 +12911,131 @@
         ]
       }
     },
+    "/v1/merchant/orders/history": {
+      "get": {
+        "operationId": "merchantOrdersHistory",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "The first business day, YYYY-MM-DD on the city clock; with `to`.",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "The last business day, included; with `from`.",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "placed",
+                "accepted",
+                "ready",
+                "picked_up",
+                "arrived",
+                "delivered",
+                "rejected",
+                "cancelled",
+                "failed"
+              ]
+            }
+          },
+          {
+            "name": "number",
+            "required": false,
+            "in": "query",
+            "description": "The order number without «#»; within the range.",
+            "schema": {
+              "pattern": "^\\d{1,12}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "The `next` of the page before; none for the first page.",
+            "schema": {
+              "pattern": "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z)_([0-9a-f-]{36})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantOrderHistoryDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/orders/{orderId}": {
+      "get": {
+        "operationId": "merchantOrdersOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantOrderWithTimelineDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/merchant/orders/{orderId}/accept": {
       "post": {
         "operationId": "merchantOrdersAccept",
@@ -19885,6 +20010,65 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CaptainEarningsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/orders/history": {
+      "get": {
+        "operationId": "captainHistoryHistory",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "The first business day, YYYY-MM-DD on the city clock; with `to`. None: every order.",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "The last business day, included; with `from`.",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "The `next` of the page before; none for the first page.",
+            "schema": {
+              "pattern": "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z)_([0-9a-f-]{36})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainOrderHistoryDto_Output"
                 }
               }
             },
@@ -50243,6 +50427,1088 @@
         ],
         "additionalProperties": false
       },
+      "MerchantOrderHistoryDto_Output": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "boolean",
+            "description": "An owner sees the commission and the net and picks any range; a cashier not (S12)."
+          },
+          "fromDay": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "The range read: by default today and the 7 business days before."
+          },
+          "toDay": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string"
+                },
+                "placedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "description": "«الوقت»."
+                },
+                "day": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                  "description": "The business day it was placed on."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "placed",
+                    "accepted",
+                    "ready",
+                    "picked_up",
+                    "arrived",
+                    "delivered",
+                    "rejected",
+                    "cancelled",
+                    "failed"
+                  ]
+                },
+                "testOrder": {
+                  "type": "boolean",
+                  "description": "«طلب تجريبي» (RA §8.16)."
+                },
+                "redelivery": {
+                  "type": "boolean",
+                  "description": "«إعادة توصيل مجانية» (AP §9.9.3)."
+                },
+                "itemCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "«عدد الأصناف»: the quantities added up."
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "itemsValue": {
+                  "type": "string",
+                  "pattern": "^-?\\d+$",
+                  "description": "«قيمة الأصناف», for every user."
+                },
+                "owner": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "testOrder": {
+                          "type": "boolean",
+                          "description": "«طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3)."
+                        },
+                        "commissionBp": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The rate at placing in basis points (1500 is 15%); null on a test order."
+                        },
+                        "commission": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order."
+                        },
+                        "discountShare": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order."
+                        },
+                        "discountOnDelivery": {
+                          "type": "boolean",
+                          "description": "The restaurant-funded discount is on the delivery fee (RA S18), not the items."
+                        },
+                        "merchantNet": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«صافيك من الطلب»; null on a test order."
+                        }
+                      },
+                      "required": [
+                        "testOrder",
+                        "commissionBp",
+                        "commission",
+                        "discountShare",
+                        "discountOnDelivery",
+                        "merchantNet"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "RA §8.18: the commission and the net, to owners only (null for a cashier, and on a cancelled or rejected order)."
+                }
+              },
+              "required": [
+                "id",
+                "number",
+                "placedAt",
+                "day",
+                "status",
+                "testOrder",
+                "redelivery",
+                "itemCount",
+                "currency",
+                "itemsValue",
+                "owner"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first, 20 a page."
+          },
+          "next": {
+            "description": "The cursor of the next page; null at the end.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "owner",
+          "fromDay",
+          "toDay",
+          "orders",
+          "next"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantOrderWithTimelineDto_Output": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "number": {
+                "type": "string",
+                "description": "Shown as #10423 (AP §4.8)."
+              },
+              "redeliveryOf": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "orderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "number": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "orderId",
+                      "number"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them."
+              },
+              "testOrder": {
+                "type": "boolean",
+                "description": "RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode)."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "placed",
+                  "accepted",
+                  "ready",
+                  "picked_up",
+                  "arrived",
+                  "delivered",
+                  "rejected",
+                  "cancelled",
+                  "failed"
+                ],
+                "description": "AP §8.1; the board column (RA §8.1–8.2)."
+              },
+              "version": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3)."
+              },
+              "placedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "acceptAlertAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3)."
+              },
+              "autoCancelAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3)."
+              },
+              "acceptance": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "prepMin": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "The prep time chosen (RA §8.5)."
+                      },
+                      "prepDueAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                        "description": "While accepted, the prep countdown runs to it; past it the card turns red and counts up, «متأخر {د} د» (RA §8.7)."
+                      },
+                      "deviceName": {
+                        "description": "«قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "byOperations": {
+                        "type": "boolean",
+                        "description": "Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5)."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "prepMin",
+                      "prepDueAt",
+                      "deviceName",
+                      "byOperations"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Null until the order is accepted."
+              },
+              "readyAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«الطلب جاهز» (RA §8.8)."
+              },
+              "customer": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "description": "Null while the customer has not completed the account (CU §5.3).",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "neighbourhood": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "neighbourhood"
+                ],
+                "additionalProperties": false,
+                "description": "Never the phone number, the last name or the full address (RA §8.4)."
+              },
+              "note": {
+                "description": "The customer's note.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "description": "«صنف غير متوفر» picks the items by it (RA §8.6)."
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "note": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "lineTotal": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    }
+                  },
+                  "required": [
+                    "itemId",
+                    "name",
+                    "quantity",
+                    "options",
+                    "note",
+                    "lineTotal"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "itemsValue": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "«قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11)."
+              },
+              "owner": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "testOrder": {
+                        "type": "boolean",
+                        "description": "«طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3)."
+                      },
+                      "commissionBp": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The rate at placing in basis points (1500 is 15%); null on a test order."
+                      },
+                      "commission": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^-?\\d+$",
+                            "description": "Integer minor units (AP §8.6)."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order."
+                      },
+                      "discountShare": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^-?\\d+$",
+                            "description": "Integer minor units (AP §8.6)."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order."
+                      },
+                      "discountOnDelivery": {
+                        "type": "boolean",
+                        "description": "The restaurant-funded discount is on the delivery fee (RA S18), not the items."
+                      },
+                      "merchantNet": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^-?\\d+$",
+                            "description": "Integer minor units (AP §8.6)."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«صافيك من الطلب»; null on a test order."
+                      }
+                    },
+                    "required": [
+                      "testOrder",
+                      "commissionBp",
+                      "commission",
+                      "discountShare",
+                      "discountOnDelivery",
+                      "merchantNet"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line."
+              },
+              "captainTrack": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "searching",
+                      "offered",
+                      "assigned",
+                      "at_merchant",
+                      "pickup_pending",
+                      "picked_up",
+                      "at_customer",
+                      "done"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts."
+              },
+              "captain": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "type": "string"
+                      },
+                      "vehicle": {
+                        "type": "string",
+                        "enum": [
+                          "walking",
+                          "bicycle",
+                          "motorbike",
+                          "car"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "firstName",
+                      "vehicle"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "From assignment (RA §8.9); the photo and the ETA come with their slices."
+              },
+              "captainArrival": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                        "description": "«وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it."
+                      },
+                      "waitingAlertAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                        "description": "Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9)."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "waitingAlertAt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null."
+              },
+              "itemReport": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "itemId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "until": {
+                              "type": "string",
+                              "enum": [
+                                "tomorrow",
+                                "turned_back_on"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "itemId",
+                            "name",
+                            "until"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "note": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "label"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A reason of Content's item_unavailable_note list, its label as chosen."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "items",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise."
+              },
+              "edits": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "addsItems": {
+                      "type": "boolean",
+                      "description": "Items added or a quantity raised: every device rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل», and pickup requests wait (RA §8.10, §16 #16); otherwise it chimes «تم تعديل الطلب #{رقم}» once and stays on the card (RA §16 #17)."
+                    },
+                    "changes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "added",
+                              "removed",
+                              "quantity"
+                            ],
+                            "description": "A line whose options changed is removed and added again."
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "quantityBefore": {
+                            "description": "quantity: the quantity before.",
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "name",
+                          "options",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "description": "The prompt lists them (RA §8.13)."
+                    },
+                    "itemsValue": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "The new items value after this edit."
+                    },
+                    "extraPrepMin": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Items added to a ready order: back to «قيد التحضير» with this many minutes from the edit (RA §8.13); null otherwise."
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "addsItems",
+                    "changes",
+                    "itemsValue",
+                    "extraPrepMin"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup."
+              },
+              "cancellation": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "description": "The code of Content's ops_cancel list."
+                      },
+                      "label": {
+                        "type": "string",
+                        "description": "{السبب} of «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}»."
+                      },
+                      "byOperations": {
+                        "type": "boolean",
+                        "description": "Always true: only operations cancel after acceptance."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "reason",
+                      "label",
+                      "byOperations"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged."
+              },
+              "pickup": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "confirmed",
+                              "rejected",
+                              "voided"
+                            ]
+                          },
+                          "outcome": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "restaurant",
+                                  "automatic",
+                                  "operations",
+                                  "amount_incorrect",
+                                  "incomplete",
+                                  "cancelled"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»."
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "string",
+                                "pattern": "^-?\\d+$",
+                                "description": "Integer minor units (AP §8.6)."
+                              },
+                              "currency": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "lines": {
+                            "maxItems": 5,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "string",
+                                  "pattern": "^-?\\d+$",
+                                  "description": "Integer minor units (AP §8.6)."
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "minLength": 3,
+                                  "maxLength": 3
+                                }
+                              },
+                              "required": [
+                                "amount",
+                                "currency"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "description": "«400 ₺» or «5 $ + 195 ₺»."
+                          },
+                          "baseEquivalent": {
+                            "type": "string",
+                            "pattern": "^-?\\d+$",
+                            "description": "The lines in the base currency, by the order rates."
+                          },
+                          "confirmBy": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                            "description": "«يُؤكَّد تلقائياً خلال {ث} ث» counts down to it."
+                          },
+                          "closedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "closedByUserName": {
+                            "description": "The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "closedByDeviceName": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "status",
+                          "outcome",
+                          "amount",
+                          "lines",
+                          "baseEquivalent",
+                          "confirmBy",
+                          "closedAt",
+                          "closedByUserName",
+                          "closedByDeviceName"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The latest request; while open every device rings with the pickup prompt (RA §8.10 item 3)."
+                  },
+                  "pickedUpAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«تم الاستلام»."
+                  },
+                  "readyNotPressed": {
+                    "type": "boolean",
+                    "description": "«لم يُضغط جاهز» (S8)."
+                  },
+                  "disputeUntil": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«المبلغ غير صحيح» stays on the order until then after the pickup (RA §8.10 item 8); null once disputed or before the pickup."
+                  },
+                  "disputedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "request",
+                  "pickedUpAt",
+                  "readyNotPressed",
+                  "disputeUntil",
+                  "disputedAt"
+                ],
+                "additionalProperties": false,
+                "description": "The pickup confirmation (RA §8.10)."
+              }
+            },
+            "required": [
+              "id",
+              "number",
+              "redeliveryOf",
+              "testOrder",
+              "status",
+              "version",
+              "placedAt",
+              "acceptAlertAt",
+              "autoCancelAt",
+              "acceptance",
+              "readyAt",
+              "customer",
+              "note",
+              "lines",
+              "currency",
+              "itemsValue",
+              "owner",
+              "captainTrack",
+              "captain",
+              "captainArrival",
+              "itemReport",
+              "edits",
+              "cancellation",
+              "pickup"
+            ],
+            "additionalProperties": false
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "step": {
+                  "type": "string",
+                  "enum": [
+                    "placed",
+                    "accepted",
+                    "picked_up",
+                    "arrived",
+                    "delivered",
+                    "failed",
+                    "rejected",
+                    "cancelled"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "step",
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            "description": "RA §8.18: the steps the order reached, oldest first."
+          }
+        },
+        "required": [
+          "order",
+          "timeline"
+        ],
+        "additionalProperties": false
+      },
       "MerchantAcceptDto": {
         "type": "object",
         "properties": {
@@ -77037,6 +78303,246 @@
           "payoutWeekday",
           "nextPayout",
           "negativePolicy"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainOrderHistoryDto_Output": {
+        "type": "object",
+        "properties": {
+          "payCurrency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "description": "The city's base currency, the pay's."
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string"
+                },
+                "placedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "day": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                  "description": "The business day it was placed on, for the grouping."
+                },
+                "restaurantName": {
+                  "type": "string"
+                },
+                "neighbourhood": {
+                  "type": "string",
+                  "description": "«الحي» only: never the customer's name, phone or address (K8)."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "placed",
+                    "accepted",
+                    "ready",
+                    "picked_up",
+                    "arrived",
+                    "delivered",
+                    "rejected",
+                    "cancelled",
+                    "failed"
+                  ]
+                },
+                "outcome": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "normal",
+                        "free",
+                        "fake",
+                        "damaged",
+                        "wrong_refused",
+                        "failed_other"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "How it ended (AP Appendix C); null when not delivered or failed."
+                },
+                "testOrder": {
+                  "type": "boolean"
+                },
+                "redelivery": {
+                  "type": "boolean",
+                  "description": "«إعادة توصيل مجانية»."
+                },
+                "handedOver": {
+                  "type": "boolean",
+                  "description": "«سلّمته لكابتن آخر»: the captain handed it over; the order went on without them."
+                },
+                "pay": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,19}$",
+                      "description": "Integer minor units of its currency."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The pay earned for it in the base (order, waiting and peak); null for none."
+                },
+                "paidToRestaurant": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,19}$",
+                        "description": "Integer minor units of its currency."
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "«دفعت للمطعم»: the confirmed pickup payment."
+                },
+                "collected": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,19}$",
+                        "description": "Integer minor units of its currency."
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "«قبضت»: what the captain received at the door."
+                },
+                "change": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,19}$",
+                        "description": "Integer minor units of its currency."
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "«الباقي»: the change given back."
+                },
+                "steps": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "step": {
+                        "type": "string",
+                        "enum": [
+                          "assigned",
+                          "received_handover",
+                          "arrived_at_restaurant",
+                          "picked_up",
+                          "handed_over",
+                          "arrived_at_customer",
+                          "delivered",
+                          "failed",
+                          "cancelled"
+                        ]
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "step",
+                      "at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The captain's own steps, oldest first (CA §9.13 detail)."
+                }
+              },
+              "required": [
+                "id",
+                "number",
+                "placedAt",
+                "day",
+                "restaurantName",
+                "neighbourhood",
+                "status",
+                "outcome",
+                "testOrder",
+                "redelivery",
+                "handedOver",
+                "pay",
+                "paidToRestaurant",
+                "collected",
+                "change",
+                "steps"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first, 20 a page."
+          },
+          "next": {
+            "description": "The cursor of the next page; null at the end.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "payCurrency",
+          "orders",
+          "next"
         ],
         "additionalProperties": false
       },

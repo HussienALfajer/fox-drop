@@ -20,6 +20,7 @@ import { AdminRestaurantTerminationController } from './admin-restaurant-termina
 import { RestaurantTerminationService } from './restaurant-termination.service.js';
 import { CaptainCustodyController } from './captain-custody.controller.js';
 import { CaptainEarningsController } from './captain-earnings.controller.js';
+import { CaptainHistoryController } from './captain-history.controller.js';
 import { CaptainStatementsController } from './captain-statements.controller.js';
 import { AdminManualEntriesController } from './admin-manual-entries.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
@@ -64,6 +65,7 @@ import { SettlementService } from './settlement.service.js';
     AdminExchangeRatesController,
     CaptainCustodyController,
     CaptainEarningsController,
+    CaptainHistoryController,
     CaptainStatementsController,
     MerchantAccountController,
     MerchantRecordsController,

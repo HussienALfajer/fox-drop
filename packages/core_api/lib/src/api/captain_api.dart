@@ -42,6 +42,7 @@ import 'package:core_api/src/model/captain_locations_saved_dto_output.dart';
 import 'package:core_api/src/model/captain_max_pickup_dto_output.dart';
 import 'package:core_api/src/model/captain_offer_dto_output.dart';
 import 'package:core_api/src/model/captain_order_dto_output.dart';
+import 'package:core_api/src/model/captain_order_history_dto_output.dart';
 import 'package:core_api/src/model/captain_order_route_dto_output.dart';
 import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
 import 'package:core_api/src/model/captain_pay_calculation_dto_output.dart';
@@ -69,6 +70,7 @@ import 'package:core_api/src/model/captain_went_offline_dto_output.dart';
 import 'package:core_api/src/model/contact_dto_output.dart';
 import 'package:core_api/src/model/customer_new_upload_dto.dart';
 import 'package:core_api/src/model/customer_upload_dto_output.dart';
+import 'package:core_api/src/model/date.dart';
 import 'package:core_api/src/model/platform_dto_output.dart';
 import 'package:core_api/src/model/push_token_dto.dart';
 import 'package:core_api/src/model/push_token_registered_dto_output.dart';
@@ -2611,6 +2613,96 @@ class CaptainApi {
     }
 
     return Response<CaptainEmergencyStopDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// captainHistoryHistory
+  ///
+  ///
+  /// Parameters:
+  /// * [from] - The first business day, YYYY-MM-DD on the city clock; with `to`. None: every order.
+  /// * [to] - The last business day, included; with `from`.
+  /// * [cursor] - The `next` of the page before; none for the first page.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CaptainOrderHistoryDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CaptainOrderHistoryDtoOutput>> captainHistoryHistory({
+    Date? from,
+    Date? to,
+    String? cursor,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/captain/orders/history';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (from != null)
+        r'from': encodeQueryParameter(_serializers, from, const FullType(Date)),
+      if (to != null)
+        r'to': encodeQueryParameter(_serializers, to, const FullType(Date)),
+      if (cursor != null)
+        r'cursor': encodeQueryParameter(
+          _serializers,
+          cursor,
+          const FullType(String),
+        ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CaptainOrderHistoryDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CaptainOrderHistoryDtoOutput),
+                )
+                as CaptainOrderHistoryDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CaptainOrderHistoryDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

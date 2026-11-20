@@ -1,15 +1,15 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'merchant_order_dto_output_order_pickup.dart';
+part of 'merchant_order_with_timeline_dto_output_order_pickup.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$MerchantOrderDtoOutputOrderPickup
-    extends MerchantOrderDtoOutputOrderPickup {
+class _$MerchantOrderWithTimelineDtoOutputOrderPickup
+    extends MerchantOrderWithTimelineDtoOutputOrderPickup {
   @override
-  final MerchantOrderDtoOutputOrderPickupRequest? request;
+  final MerchantOrderWithTimelineDtoOutputOrderPickupRequest? request;
   @override
   final DateTime? pickedUpAt;
   @override
@@ -19,11 +19,14 @@ class _$MerchantOrderDtoOutputOrderPickup
   @override
   final DateTime? disputedAt;
 
-  factory _$MerchantOrderDtoOutputOrderPickup([
-    void Function(MerchantOrderDtoOutputOrderPickupBuilder)? updates,
-  ]) => (MerchantOrderDtoOutputOrderPickupBuilder()..update(updates))._build();
+  factory _$MerchantOrderWithTimelineDtoOutputOrderPickup([
+    void Function(MerchantOrderWithTimelineDtoOutputOrderPickupBuilder)?
+    updates,
+  ]) =>
+      (MerchantOrderWithTimelineDtoOutputOrderPickupBuilder()..update(updates))
+          ._build();
 
-  _$MerchantOrderDtoOutputOrderPickup._({
+  _$MerchantOrderWithTimelineDtoOutputOrderPickup._({
     this.request,
     this.pickedUpAt,
     required this.readyNotPressed,
@@ -31,18 +34,18 @@ class _$MerchantOrderDtoOutputOrderPickup
     this.disputedAt,
   }) : super._();
   @override
-  MerchantOrderDtoOutputOrderPickup rebuild(
-    void Function(MerchantOrderDtoOutputOrderPickupBuilder) updates,
+  MerchantOrderWithTimelineDtoOutputOrderPickup rebuild(
+    void Function(MerchantOrderWithTimelineDtoOutputOrderPickupBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  MerchantOrderDtoOutputOrderPickupBuilder toBuilder() =>
-      MerchantOrderDtoOutputOrderPickupBuilder()..replace(this);
+  MerchantOrderWithTimelineDtoOutputOrderPickupBuilder toBuilder() =>
+      MerchantOrderWithTimelineDtoOutputOrderPickupBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantOrderDtoOutputOrderPickup &&
+    return other is MerchantOrderWithTimelineDtoOutputOrderPickup &&
         request == other.request &&
         pickedUpAt == other.pickedUpAt &&
         readyNotPressed == other.readyNotPressed &&
@@ -64,7 +67,9 @@ class _$MerchantOrderDtoOutputOrderPickup
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'MerchantOrderDtoOutputOrderPickup')
+    return (newBuiltValueToStringHelper(
+            r'MerchantOrderWithTimelineDtoOutputOrderPickup',
+          )
           ..add('request', request)
           ..add('pickedUpAt', pickedUpAt)
           ..add('readyNotPressed', readyNotPressed)
@@ -74,19 +79,21 @@ class _$MerchantOrderDtoOutputOrderPickup
   }
 }
 
-class MerchantOrderDtoOutputOrderPickupBuilder
+class MerchantOrderWithTimelineDtoOutputOrderPickupBuilder
     implements
         Builder<
-          MerchantOrderDtoOutputOrderPickup,
-          MerchantOrderDtoOutputOrderPickupBuilder
+          MerchantOrderWithTimelineDtoOutputOrderPickup,
+          MerchantOrderWithTimelineDtoOutputOrderPickupBuilder
         > {
-  _$MerchantOrderDtoOutputOrderPickup? _$v;
+  _$MerchantOrderWithTimelineDtoOutputOrderPickup? _$v;
 
-  MerchantOrderDtoOutputOrderPickupRequestBuilder? _request;
-  MerchantOrderDtoOutputOrderPickupRequestBuilder get request =>
-      _$this._request ??= MerchantOrderDtoOutputOrderPickupRequestBuilder();
-  set request(MerchantOrderDtoOutputOrderPickupRequestBuilder? request) =>
-      _$this._request = request;
+  MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder? _request;
+  MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder get request =>
+      _$this._request ??=
+          MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder();
+  set request(
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder? request,
+  ) => _$this._request = request;
 
   DateTime? _pickedUpAt;
   DateTime? get pickedUpAt => _$this._pickedUpAt;
@@ -106,11 +113,11 @@ class MerchantOrderDtoOutputOrderPickupBuilder
   DateTime? get disputedAt => _$this._disputedAt;
   set disputedAt(DateTime? disputedAt) => _$this._disputedAt = disputedAt;
 
-  MerchantOrderDtoOutputOrderPickupBuilder() {
-    MerchantOrderDtoOutputOrderPickup._defaults(this);
+  MerchantOrderWithTimelineDtoOutputOrderPickupBuilder() {
+    MerchantOrderWithTimelineDtoOutputOrderPickup._defaults(this);
   }
 
-  MerchantOrderDtoOutputOrderPickupBuilder get _$this {
+  MerchantOrderWithTimelineDtoOutputOrderPickupBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _request = $v.request?.toBuilder();
@@ -124,31 +131,32 @@ class MerchantOrderDtoOutputOrderPickupBuilder
   }
 
   @override
-  void replace(MerchantOrderDtoOutputOrderPickup other) {
-    _$v = other as _$MerchantOrderDtoOutputOrderPickup;
+  void replace(MerchantOrderWithTimelineDtoOutputOrderPickup other) {
+    _$v = other as _$MerchantOrderWithTimelineDtoOutputOrderPickup;
   }
 
   @override
   void update(
-    void Function(MerchantOrderDtoOutputOrderPickupBuilder)? updates,
+    void Function(MerchantOrderWithTimelineDtoOutputOrderPickupBuilder)?
+    updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  MerchantOrderDtoOutputOrderPickup build() => _build();
+  MerchantOrderWithTimelineDtoOutputOrderPickup build() => _build();
 
-  _$MerchantOrderDtoOutputOrderPickup _build() {
-    _$MerchantOrderDtoOutputOrderPickup _$result;
+  _$MerchantOrderWithTimelineDtoOutputOrderPickup _build() {
+    _$MerchantOrderWithTimelineDtoOutputOrderPickup _$result;
     try {
       _$result =
           _$v ??
-          _$MerchantOrderDtoOutputOrderPickup._(
+          _$MerchantOrderWithTimelineDtoOutputOrderPickup._(
             request: _request?.build(),
             pickedUpAt: pickedUpAt,
             readyNotPressed: BuiltValueNullFieldError.checkNotNull(
               readyNotPressed,
-              r'MerchantOrderDtoOutputOrderPickup',
+              r'MerchantOrderWithTimelineDtoOutputOrderPickup',
               'readyNotPressed',
             ),
             disputeUntil: disputeUntil,
@@ -161,7 +169,7 @@ class MerchantOrderDtoOutputOrderPickupBuilder
         _request?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'MerchantOrderDtoOutputOrderPickup',
+          r'MerchantOrderWithTimelineDtoOutputOrderPickup',
           _$failedField,
           e.toString(),
         );

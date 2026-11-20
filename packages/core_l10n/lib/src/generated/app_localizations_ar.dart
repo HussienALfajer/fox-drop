@@ -5138,4 +5138,216 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainPayCalculateFailed => 'تعذّر الحساب، حاول مجدداً.';
+
+  @override
+  String get merchantHistory => 'السجل';
+
+  @override
+  String get merchantHistoryFailed => 'تعذّر تحميل السجل.';
+
+  @override
+  String get merchantHistoryEmpty => 'لا طلبات في هذه الفترة.';
+
+  @override
+  String get merchantHistoryMore => 'عرض المزيد';
+
+  @override
+  String get merchantHistoryMoreFailed => 'تعذّر التحميل، حاول مرة أخرى';
+
+  @override
+  String get merchantHistoryCashierWindow => 'اليوم وآخر 7 أيام';
+
+  @override
+  String get merchantHistoryPresetToday => 'اليوم';
+
+  @override
+  String get merchantHistoryPreset30 => 'آخر 30 يوماً';
+
+  @override
+  String get merchantHistoryPresetCustom => 'فترة أخرى';
+
+  @override
+  String get merchantHistoryAllStatuses => 'كل الحالات';
+
+  @override
+  String get merchantHistoryNumber => 'رقم الطلب';
+
+  @override
+  String get merchantHistorySearch => 'بحث';
+
+  @override
+  String get merchantHistoryStatusPlaced => 'جديد';
+
+  @override
+  String get merchantHistoryStatusAccepted => 'قيد التحضير';
+
+  @override
+  String get merchantHistoryStatusReady => 'جاهز';
+
+  @override
+  String get merchantHistoryStatusPickedUp => 'مع الكابتن';
+
+  @override
+  String get merchantHistoryStatusArrived => 'عند الزبون';
+
+  @override
+  String get merchantHistoryStatusDelivered => 'تم التسليم';
+
+  @override
+  String get merchantHistoryStatusFailed => 'لم يُسلَّم';
+
+  @override
+  String get merchantHistoryStatusRejected => 'مرفوض';
+
+  @override
+  String get merchantHistoryStatusCancelled => 'ملغى';
+
+  @override
+  String get merchantHistoryTimeline => 'مراحل الطلب';
+
+  @override
+  String get merchantTimelinePlaced => 'وصل الطلب';
+
+  @override
+  String get merchantTimelineAccepted => 'قُبل الطلب';
+
+  @override
+  String get merchantTimelinePickedUp => 'استلم الكابتن الطلب';
+
+  @override
+  String get merchantTimelineArrived => 'وصل الكابتن إلى الزبون';
+
+  @override
+  String get merchantTimelineDelivered => 'تم التسليم';
+
+  @override
+  String get merchantTimelineFailed => 'لم يُسلَّم';
+
+  @override
+  String get merchantTimelineRejected => 'رُفض الطلب';
+
+  @override
+  String get merchantTimelineCancelled => 'أُلغي الطلب';
+
+  @override
+  String get merchantHistoryOrderFailed => 'تعذّر تحميل الطلب.';
+
+  @override
+  String get merchantHistoryOrderMissing => 'لم يُعثر على هذا الطلب.';
+
+  @override
+  String get captainHistory => 'السجل';
+
+  @override
+  String get captainHistoryFailed => 'تعذّر تحميل السجل.';
+
+  @override
+  String get captainHistoryEmpty => 'لا طلبات في هذه الفترة.';
+
+  @override
+  String get captainHistoryMore => 'عرض المزيد';
+
+  @override
+  String get captainHistoryMoreFailed => 'تعذّر التحميل، حاول مرة أخرى';
+
+  @override
+  String get captainHistoryAll => 'كل الطلبات';
+
+  @override
+  String get captainHistoryPickRange => 'اختر فترة';
+
+  @override
+  String get captainHistoryHandedOver => 'سلّمته لكابتن آخر';
+
+  @override
+  String get captainHistoryNoPay => 'بلا أجر';
+
+  @override
+  String get captainHistoryStatusDelivered => 'تم التسليم';
+
+  @override
+  String get captainHistoryStatusFailed => 'لم يُسلَّم';
+
+  @override
+  String get captainHistoryStatusCancelled => 'أُلغي';
+
+  @override
+  String get captainHistoryStepAssigned => 'أُسند إليك';
+
+  @override
+  String get captainHistoryStepReceivedHandover => 'استلمته من كابتن آخر';
+
+  @override
+  String get captainHistoryStepArrivedAtRestaurant => 'وصلت إلى المطعم';
+
+  @override
+  String get captainHistoryStepPickedUp => 'استلمت الطلب';
+
+  @override
+  String get captainHistoryStepHandedOver => 'سلّمته لكابتن آخر';
+
+  @override
+  String get captainHistoryStepArrivedAtCustomer => 'وصلت إلى الزبون';
+
+  @override
+  String get captainHistoryStepDelivered => 'سلّمت الطلب';
+
+  @override
+  String get captainHistoryStepFailed => 'لم يُسلَّم';
+
+  @override
+  String get captainHistoryStepCancelled => 'أُلغي الطلب';
+
+  @override
+  String get captainHistorySteps => 'خطواتك';
+
+  @override
+  String merchantHistoryItemCount(int count) {
+    return '$count أصناف';
+  }
+
+  @override
+  String merchantHistoryOwnerLine(String commission, String net) {
+    return 'العمولة $commission · الصافي $net';
+  }
+
+  @override
+  String merchantHistoryRange(String from, String to) {
+    return 'من $from إلى $to';
+  }
+
+  @override
+  String merchantHistoryCaptain(String name) {
+    return 'الكابتن: $name';
+  }
+
+  @override
+  String captainHistoryRange(String from, String to) {
+    return 'من $from إلى $to';
+  }
+
+  @override
+  String captainHistoryPay(String amount) {
+    return 'أجرك: $amount';
+  }
+
+  @override
+  String captainHistoryPaidToRestaurant(String amount) {
+    return 'دفعت للمطعم: $amount';
+  }
+
+  @override
+  String captainHistoryCollected(String amount) {
+    return 'قبضت من الزبون: $amount';
+  }
+
+  @override
+  String captainHistoryChange(String amount) {
+    return 'أعدت الباقي: $amount';
+  }
+
+  @override
+  String captainHistoryRestaurant(String restaurant, String neighbourhood) {
+    return '$restaurant · $neighbourhood';
+  }
 }

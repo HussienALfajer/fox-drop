@@ -8539,6 +8539,390 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّر الحساب، حاول مجدداً.'**
   String get captainPayCalculateFailed;
+
+  /// The restaurant's order history (RA §8.18).
+  ///
+  /// In ar, this message translates to:
+  /// **'السجل'**
+  String get merchantHistory;
+
+  /// The history could not be read (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل السجل.'**
+  String get merchantHistoryFailed;
+
+  /// No order matches the filters (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا طلبات في هذه الفترة.'**
+  String get merchantHistoryEmpty;
+
+  /// Reads the next page of the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض المزيد'**
+  String get merchantHistoryMore;
+
+  /// The next page could not be read; tapping tries again (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التحميل، حاول مرة أخرى'**
+  String get merchantHistoryMoreFailed;
+
+  /// A cashier's fixed range and everyone's default: today and the 7 business days before (RA §8.18, S12).
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم وآخر 7 أيام'**
+  String get merchantHistoryCashierWindow;
+
+  /// The range of today's business day (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم'**
+  String get merchantHistoryPresetToday;
+
+  /// The last 30 business days, today included (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر 30 يوماً'**
+  String get merchantHistoryPreset30;
+
+  /// Opens the range picker, owners only (RA §8.18; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'فترة أخرى'**
+  String get merchantHistoryPresetCustom;
+
+  /// The status filter's choice of every status (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الحالات'**
+  String get merchantHistoryAllStatuses;
+
+  /// The search by order number (RA §8.18).
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الطلب'**
+  String get merchantHistoryNumber;
+
+  /// Runs the search by order number (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'بحث'**
+  String get merchantHistorySearch;
+
+  /// An order's status in the history (AP §8.1; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'جديد'**
+  String get merchantHistoryStatusPlaced;
+
+  /// An order's status in the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التحضير'**
+  String get merchantHistoryStatusAccepted;
+
+  /// An order's status in the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'جاهز'**
+  String get merchantHistoryStatusReady;
+
+  /// An order's status in the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'مع الكابتن'**
+  String get merchantHistoryStatusPickedUp;
+
+  /// An order's status in the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'عند الزبون'**
+  String get merchantHistoryStatusArrived;
+
+  /// An order's status in the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get merchantHistoryStatusDelivered;
+
+  /// An order's status in the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُسلَّم'**
+  String get merchantHistoryStatusFailed;
+
+  /// An order's status in the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get merchantHistoryStatusRejected;
+
+  /// An order's status in the history (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'ملغى'**
+  String get merchantHistoryStatusCancelled;
+
+  /// The order's timeline in the history's detail (RA §8.18).
+  ///
+  /// In ar, this message translates to:
+  /// **'مراحل الطلب'**
+  String get merchantHistoryTimeline;
+
+  /// A timeline step (RA §8.18; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصل الطلب'**
+  String get merchantTimelinePlaced;
+
+  /// A timeline step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'قُبل الطلب'**
+  String get merchantTimelineAccepted;
+
+  /// A timeline step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'استلم الكابتن الطلب'**
+  String get merchantTimelinePickedUp;
+
+  /// A timeline step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصل الكابتن إلى الزبون'**
+  String get merchantTimelineArrived;
+
+  /// A timeline step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get merchantTimelineDelivered;
+
+  /// A timeline step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُسلَّم'**
+  String get merchantTimelineFailed;
+
+  /// A timeline step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'رُفض الطلب'**
+  String get merchantTimelineRejected;
+
+  /// A timeline step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي الطلب'**
+  String get merchantTimelineCancelled;
+
+  /// An order of the history could not be read (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل الطلب.'**
+  String get merchantHistoryOrderFailed;
+
+  /// The server does not give this order: another restaurant's, or past a cashier's range (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُعثر على هذا الطلب.'**
+  String get merchantHistoryOrderMissing;
+
+  /// The captain's past orders (CA §9.13).
+  ///
+  /// In ar, this message translates to:
+  /// **'السجل'**
+  String get captainHistory;
+
+  /// The history could not be read (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل السجل.'**
+  String get captainHistoryFailed;
+
+  /// No past order in the range (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا طلبات في هذه الفترة.'**
+  String get captainHistoryEmpty;
+
+  /// Reads the next page (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض المزيد'**
+  String get captainHistoryMore;
+
+  /// The next page could not be read; tapping tries again (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التحميل، حاول مرة أخرى'**
+  String get captainHistoryMoreFailed;
+
+  /// The whole history, no range (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الطلبات'**
+  String get captainHistoryAll;
+
+  /// Opens the date range picker (CA §9.13; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر فترة'**
+  String get captainHistoryPickRange;
+
+  /// The captain handed the order over (AP §9.3.2; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'سلّمته لكابتن آخر'**
+  String get captainHistoryHandedOver;
+
+  /// No pay was earned for the order (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا أجر'**
+  String get captainHistoryNoPay;
+
+  /// How the order ended (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get captainHistoryStatusDelivered;
+
+  /// How the order ended (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُسلَّم'**
+  String get captainHistoryStatusFailed;
+
+  /// How the order ended (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي'**
+  String get captainHistoryStatusCancelled;
+
+  /// The captain's step (CA §9.13; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُسند إليك'**
+  String get captainHistoryStepAssigned;
+
+  /// The captain's step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمته من كابتن آخر'**
+  String get captainHistoryStepReceivedHandover;
+
+  /// The captain's step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلت إلى المطعم'**
+  String get captainHistoryStepArrivedAtRestaurant;
+
+  /// The captain's step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمت الطلب'**
+  String get captainHistoryStepPickedUp;
+
+  /// The captain's step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'سلّمته لكابتن آخر'**
+  String get captainHistoryStepHandedOver;
+
+  /// The captain's step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلت إلى الزبون'**
+  String get captainHistoryStepArrivedAtCustomer;
+
+  /// The captain's step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'سلّمت الطلب'**
+  String get captainHistoryStepDelivered;
+
+  /// The captain's step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُسلَّم'**
+  String get captainHistoryStepFailed;
+
+  /// The captain's step (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي الطلب'**
+  String get captainHistoryStepCancelled;
+
+  /// The detail's timeline of the captain's own steps (CA §9.13).
+  ///
+  /// In ar, this message translates to:
+  /// **'خطواتك'**
+  String get captainHistorySteps;
+
+  /// The row's item count (RA §8.18; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} أصناف'**
+  String merchantHistoryItemCount(int count);
+
+  /// An owner's money columns (RA §8.18, R10); amounts formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة {commission} · الصافي {net}'**
+  String merchantHistoryOwnerLine(String commission, String net);
+
+  /// The range shown, dates as dd/mm/yyyy (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'من {from} إلى {to}'**
+  String merchantHistoryRange(String from, String to);
+
+  /// The captain's first name in the detail (RA §8.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن: {name}'**
+  String merchantHistoryCaptain(String name);
+
+  /// The range shown, dates as dd/mm/yyyy (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'من {from} إلى {to}'**
+  String captainHistoryRange(String from, String to);
+
+  /// The pay earned for the order (CA §9.13); formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'أجرك: {amount}'**
+  String captainHistoryPay(String amount);
+
+  /// The custody effect: the pickup payment (CA §9.13); the lines joined with « + ».
+  ///
+  /// In ar, this message translates to:
+  /// **'دفعت للمطعم: {amount}'**
+  String captainHistoryPaidToRestaurant(String amount);
+
+  /// The custody effect: what was received at the door (CA §9.13).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبضت من الزبون: {amount}'**
+  String captainHistoryCollected(String amount);
+
+  /// The custody effect: the change given back (CA §9.13).
+  ///
+  /// In ar, this message translates to:
+  /// **'أعدت الباقي: {amount}'**
+  String captainHistoryChange(String amount);
+
+  /// The restaurant and «الحي», never the customer (K8).
+  ///
+  /// In ar, this message translates to:
+  /// **'{restaurant} · {neighbourhood}'**
+  String captainHistoryRestaurant(String restaurant, String neighbourhood);
 }
 
 class _AppLocalizationsDelegate

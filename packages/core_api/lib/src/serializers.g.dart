@@ -1433,6 +1433,19 @@ Serializers _$serializers =
           ..add(CaptainOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
           ..add(CaptainOrderDtoOutputOrderRedeliveryOf.serializer)
           ..add(CaptainOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(CaptainOrderHistoryDtoOutput.serializer)
+          ..add(CaptainOrderHistoryDtoOutputOrdersInner.serializer)
+          ..add(CaptainOrderHistoryDtoOutputOrdersInnerOutcomeEnum.serializer)
+          ..add(
+            CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                .serializer,
+          )
+          ..add(CaptainOrderHistoryDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(CaptainOrderHistoryDtoOutputOrdersInnerStepsInner.serializer)
+          ..add(
+            CaptainOrderHistoryDtoOutputOrdersInnerStepsInnerStepEnum
+                .serializer,
+          )
           ..add(CaptainOrderRouteDtoOutput.serializer)
           ..add(CaptainOrderRouteDtoOutputLegEnum.serializer)
           ..add(CaptainOrderRouteDtoOutputRoute.serializer)
@@ -1852,15 +1865,32 @@ Serializers _$serializers =
           ..add(MerchantNewUploadDtoContentTypeEnum.serializer)
           ..add(MerchantOptionGroupRequestDto.serializer)
           ..add(MerchantOrderDtoOutput.serializer)
-          ..add(MerchantOrderDtoOutputOrder.serializer)
-          ..add(MerchantOrderDtoOutputOrderCaptainTrackEnum.serializer)
-          ..add(MerchantOrderDtoOutputOrderPickup.serializer)
-          ..add(MerchantOrderDtoOutputOrderPickupRequest.serializer)
-          ..add(MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
-          ..add(MerchantOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
-          ..add(MerchantOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(MerchantOrderHistoryDtoOutput.serializer)
+          ..add(MerchantOrderHistoryDtoOutputOrdersInner.serializer)
+          ..add(MerchantOrderHistoryDtoOutputOrdersInnerOwner.serializer)
+          ..add(MerchantOrderHistoryDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(MerchantOrderProblemBodyDto.serializer)
           ..add(MerchantOrderSettingsDto.serializer)
+          ..add(MerchantOrderWithTimelineDtoOutput.serializer)
+          ..add(MerchantOrderWithTimelineDtoOutputOrder.serializer)
+          ..add(
+            MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum.serializer,
+          )
+          ..add(MerchantOrderWithTimelineDtoOutputOrderPickup.serializer)
+          ..add(MerchantOrderWithTimelineDtoOutputOrderPickupRequest.serializer)
+          ..add(
+            MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+                .serializer,
+          )
+          ..add(
+            MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+                .serializer,
+          )
+          ..add(MerchantOrderWithTimelineDtoOutputOrderStatusEnum.serializer)
+          ..add(MerchantOrderWithTimelineDtoOutputTimelineInner.serializer)
+          ..add(
+            MerchantOrderWithTimelineDtoOutputTimelineInnerStepEnum.serializer,
+          )
           ..add(MerchantOrdersDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerAcceptance.serializer)
@@ -4153,6 +4183,54 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CaptainOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<CaptainOrderHistoryDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainOrderHistoryDtoOutputOrdersInnerStepsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerStepsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainPayCalculationDtoOutputAnnouncedInner),
             ]),
             () => ListBuilder<CaptainPayCalculationDtoOutputAnnouncedInner>(),
@@ -4922,6 +5000,19 @@ Serializers _$serializers =
               const FullType(MerchantMenuPreviewCategoryOutput),
             ]),
             () => ListBuilder<MerchantMenuPreviewCategoryOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<MerchantOrderHistoryDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantOrderWithTimelineDtoOutputTimelineInner),
+            ]),
+            () =>
+                ListBuilder<MerchantOrderWithTimelineDtoOutputTimelineInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

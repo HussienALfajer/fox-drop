@@ -8,7 +8,7 @@ part of 'merchant_order_dto_output.dart';
 
 class _$MerchantOrderDtoOutput extends MerchantOrderDtoOutput {
   @override
-  final MerchantOrderDtoOutputOrder order;
+  final MerchantOrderWithTimelineDtoOutputOrder order;
 
   factory _$MerchantOrderDtoOutput([
     void Function(MerchantOrderDtoOutputBuilder)? updates,
@@ -50,10 +50,11 @@ class MerchantOrderDtoOutputBuilder
     implements Builder<MerchantOrderDtoOutput, MerchantOrderDtoOutputBuilder> {
   _$MerchantOrderDtoOutput? _$v;
 
-  MerchantOrderDtoOutputOrderBuilder? _order;
-  MerchantOrderDtoOutputOrderBuilder get order =>
-      _$this._order ??= MerchantOrderDtoOutputOrderBuilder();
-  set order(MerchantOrderDtoOutputOrderBuilder? order) => _$this._order = order;
+  MerchantOrderWithTimelineDtoOutputOrderBuilder? _order;
+  MerchantOrderWithTimelineDtoOutputOrderBuilder get order =>
+      _$this._order ??= MerchantOrderWithTimelineDtoOutputOrderBuilder();
+  set order(MerchantOrderWithTimelineDtoOutputOrderBuilder? order) =>
+      _$this._order = order;
 
   MerchantOrderDtoOutputBuilder() {
     MerchantOrderDtoOutput._defaults(this);

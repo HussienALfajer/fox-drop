@@ -14,6 +14,7 @@ import { ContentModule } from '../content/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AuditModule } from '../audit/index.js';
 import { ActiveOrders } from './active-orders.js';
+import { AppHistories } from './app-histories.js';
 import { CaptainOrders } from './captain-orders.js';
 import { CaptainOrdersController } from './captain-orders.controller.js';
 import { DeliveryBooking } from './delivery-booking.js';
@@ -143,6 +144,7 @@ import {
     CaptainFiguresService,
     DashboardOrdersService,
     AdminSearch,
+    AppHistories,
   ],
   exports: [
     QuoteService,
@@ -150,6 +152,7 @@ import {
     RestaurantFiguresService,
     CaptainFiguresService,
     DashboardOrdersService,
+    AppHistories,
   ],
 })
 export class OrderingModule {}
@@ -224,6 +227,13 @@ export {
 } from './quote.service.js';
 export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
 export { HANDOVER_FROM } from './handover.js';
+export {
+  AppHistories,
+  type CaptainHistoryRow,
+  captainSteps,
+  HISTORY_PAGE,
+  HistoryRefusedError,
+} from './app-histories.js';
 export { type RestaurantFigures, RestaurantFiguresService } from './restaurant-figures.js';
 export { type CaptainFigures, CaptainFiguresService, ON_TIME_WINDOW } from './captain-figures.js';
 export { type DashboardOrderRow, DashboardOrdersService } from './dashboard-orders.js';

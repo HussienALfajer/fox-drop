@@ -3,11 +3,11 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/merchant_order_dto_output_order_pickup_request.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output_order_pickup_request.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_order_dto_output_order_pickup.g.dart';
+part 'merchant_order_with_timeline_dto_output_order_pickup.g.dart';
 
 /// The pickup confirmation (RA §8.10).
 ///
@@ -18,14 +18,14 @@ part 'merchant_order_dto_output_order_pickup.g.dart';
 /// * [disputeUntil] - «المبلغ غير صحيح» stays on the order until then after the pickup (RA §8.10 item 8); null once disputed or before the pickup.
 /// * [disputedAt]
 @BuiltValue()
-abstract class MerchantOrderDtoOutputOrderPickup
+abstract class MerchantOrderWithTimelineDtoOutputOrderPickup
     implements
         Built<
-          MerchantOrderDtoOutputOrderPickup,
-          MerchantOrderDtoOutputOrderPickupBuilder
+          MerchantOrderWithTimelineDtoOutputOrderPickup,
+          MerchantOrderWithTimelineDtoOutputOrderPickupBuilder
         > {
   @BuiltValueField(wireName: r'request')
-  MerchantOrderDtoOutputOrderPickupRequest? get request;
+  MerchantOrderWithTimelineDtoOutputOrderPickupRequest? get request;
 
   /// «تم الاستلام».
   @BuiltValueField(wireName: r'pickedUpAt')
@@ -42,34 +42,37 @@ abstract class MerchantOrderDtoOutputOrderPickup
   @BuiltValueField(wireName: r'disputedAt')
   DateTime? get disputedAt;
 
-  MerchantOrderDtoOutputOrderPickup._();
+  MerchantOrderWithTimelineDtoOutputOrderPickup._();
 
-  factory MerchantOrderDtoOutputOrderPickup([
-    void updates(MerchantOrderDtoOutputOrderPickupBuilder b),
-  ]) = _$MerchantOrderDtoOutputOrderPickup;
+  factory MerchantOrderWithTimelineDtoOutputOrderPickup([
+    void updates(MerchantOrderWithTimelineDtoOutputOrderPickupBuilder b),
+  ]) = _$MerchantOrderWithTimelineDtoOutputOrderPickup;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantOrderDtoOutputOrderPickupBuilder b) => b;
+  static void _defaults(
+    MerchantOrderWithTimelineDtoOutputOrderPickupBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrderDtoOutputOrderPickup> get serializer =>
-      _$MerchantOrderDtoOutputOrderPickupSerializer();
+  static Serializer<MerchantOrderWithTimelineDtoOutputOrderPickup>
+  get serializer => _$MerchantOrderWithTimelineDtoOutputOrderPickupSerializer();
 }
 
-class _$MerchantOrderDtoOutputOrderPickupSerializer
-    implements PrimitiveSerializer<MerchantOrderDtoOutputOrderPickup> {
+class _$MerchantOrderWithTimelineDtoOutputOrderPickupSerializer
+    implements
+        PrimitiveSerializer<MerchantOrderWithTimelineDtoOutputOrderPickup> {
   @override
   final Iterable<Type> types = const [
-    MerchantOrderDtoOutputOrderPickup,
-    _$MerchantOrderDtoOutputOrderPickup,
+    MerchantOrderWithTimelineDtoOutputOrderPickup,
+    _$MerchantOrderWithTimelineDtoOutputOrderPickup,
   ];
 
   @override
-  final String wireName = r'MerchantOrderDtoOutputOrderPickup';
+  final String wireName = r'MerchantOrderWithTimelineDtoOutputOrderPickup';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantOrderDtoOutputOrderPickup object, {
+    MerchantOrderWithTimelineDtoOutputOrderPickup object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'request';
@@ -78,7 +81,7 @@ class _$MerchantOrderDtoOutputOrderPickupSerializer
         : serializers.serialize(
             object.request,
             specifiedType: const FullType.nullable(
-              MerchantOrderDtoOutputOrderPickupRequest,
+              MerchantOrderWithTimelineDtoOutputOrderPickupRequest,
             ),
           );
     yield r'pickedUpAt';
@@ -112,7 +115,7 @@ class _$MerchantOrderDtoOutputOrderPickupSerializer
   @override
   Object serialize(
     Serializers serializers,
-    MerchantOrderDtoOutputOrderPickup object, {
+    MerchantOrderWithTimelineDtoOutputOrderPickup object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -127,7 +130,7 @@ class _$MerchantOrderDtoOutputOrderPickupSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantOrderDtoOutputOrderPickupBuilder result,
+    required MerchantOrderWithTimelineDtoOutputOrderPickupBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -139,10 +142,10 @@ class _$MerchantOrderDtoOutputOrderPickupSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      MerchantOrderDtoOutputOrderPickupRequest,
+                      MerchantOrderWithTimelineDtoOutputOrderPickupRequest,
                     ),
                   )
-                  as MerchantOrderDtoOutputOrderPickupRequest?;
+                  as MerchantOrderWithTimelineDtoOutputOrderPickupRequest?;
           if (valueDes == null) continue;
           result.request.replace(valueDes);
           break;
@@ -194,12 +197,12 @@ class _$MerchantOrderDtoOutputOrderPickupSerializer
   }
 
   @override
-  MerchantOrderDtoOutputOrderPickup deserialize(
+  MerchantOrderWithTimelineDtoOutputOrderPickup deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantOrderDtoOutputOrderPickupBuilder();
+    final result = MerchantOrderWithTimelineDtoOutputOrderPickupBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

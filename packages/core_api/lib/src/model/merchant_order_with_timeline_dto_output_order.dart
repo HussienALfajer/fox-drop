@@ -8,19 +8,19 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_owner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/merchant_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redeliveries_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_edits_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_order_dto_output_order.g.dart';
+part 'merchant_order_with_timeline_dto_output_order.g.dart';
 
-/// MerchantOrderDtoOutputOrder
+/// MerchantOrderWithTimelineDtoOutputOrder
 ///
 /// Properties:
 /// * [id]
@@ -48,9 +48,12 @@ part 'merchant_order_dto_output_order.g.dart';
 /// * [cancellation]
 /// * [pickup]
 @BuiltValue()
-abstract class MerchantOrderDtoOutputOrder
+abstract class MerchantOrderWithTimelineDtoOutputOrder
     implements
-        Built<MerchantOrderDtoOutputOrder, MerchantOrderDtoOutputOrderBuilder> {
+        Built<
+          MerchantOrderWithTimelineDtoOutputOrder,
+          MerchantOrderWithTimelineDtoOutputOrderBuilder
+        > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -67,7 +70,7 @@ abstract class MerchantOrderDtoOutputOrder
 
   /// AP §8.1; the board column (RA §8.1–8.2).
   @BuiltValueField(wireName: r'status')
-  MerchantOrderDtoOutputOrderStatusEnum get status;
+  MerchantOrderWithTimelineDtoOutputOrderStatusEnum get status;
   // enum statusEnum {  placed,  accepted,  ready,  picked_up,  arrived,  delivered,  rejected,  cancelled,  failed,  };
 
   /// Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
@@ -114,7 +117,7 @@ abstract class MerchantOrderDtoOutputOrder
 
   /// The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
   @BuiltValueField(wireName: r'captainTrack')
-  MerchantOrderDtoOutputOrderCaptainTrackEnum? get captainTrack;
+  MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum? get captainTrack;
   // enum captainTrackEnum {  searching,  offered,  assigned,  at_merchant,  pickup_pending,  picked_up,  at_customer,  done,  };
 
   @BuiltValueField(wireName: r'captain')
@@ -134,36 +137,36 @@ abstract class MerchantOrderDtoOutputOrder
   MerchantOrdersDtoOutputOrdersInnerCancellation? get cancellation;
 
   @BuiltValueField(wireName: r'pickup')
-  MerchantOrderDtoOutputOrderPickup get pickup;
+  MerchantOrderWithTimelineDtoOutputOrderPickup get pickup;
 
-  MerchantOrderDtoOutputOrder._();
+  MerchantOrderWithTimelineDtoOutputOrder._();
 
-  factory MerchantOrderDtoOutputOrder([
-    void updates(MerchantOrderDtoOutputOrderBuilder b),
-  ]) = _$MerchantOrderDtoOutputOrder;
+  factory MerchantOrderWithTimelineDtoOutputOrder([
+    void updates(MerchantOrderWithTimelineDtoOutputOrderBuilder b),
+  ]) = _$MerchantOrderWithTimelineDtoOutputOrder;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantOrderDtoOutputOrderBuilder b) => b;
+  static void _defaults(MerchantOrderWithTimelineDtoOutputOrderBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrderDtoOutputOrder> get serializer =>
-      _$MerchantOrderDtoOutputOrderSerializer();
+  static Serializer<MerchantOrderWithTimelineDtoOutputOrder> get serializer =>
+      _$MerchantOrderWithTimelineDtoOutputOrderSerializer();
 }
 
-class _$MerchantOrderDtoOutputOrderSerializer
-    implements PrimitiveSerializer<MerchantOrderDtoOutputOrder> {
+class _$MerchantOrderWithTimelineDtoOutputOrderSerializer
+    implements PrimitiveSerializer<MerchantOrderWithTimelineDtoOutputOrder> {
   @override
   final Iterable<Type> types = const [
-    MerchantOrderDtoOutputOrder,
-    _$MerchantOrderDtoOutputOrder,
+    MerchantOrderWithTimelineDtoOutputOrder,
+    _$MerchantOrderWithTimelineDtoOutputOrder,
   ];
 
   @override
-  final String wireName = r'MerchantOrderDtoOutputOrder';
+  final String wireName = r'MerchantOrderWithTimelineDtoOutputOrder';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantOrderDtoOutputOrder object, {
+    MerchantOrderWithTimelineDtoOutputOrder object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -193,7 +196,9 @@ class _$MerchantOrderDtoOutputOrderSerializer
     yield r'status';
     yield serializers.serialize(
       object.status,
-      specifiedType: const FullType(MerchantOrderDtoOutputOrderStatusEnum),
+      specifiedType: const FullType(
+        MerchantOrderWithTimelineDtoOutputOrderStatusEnum,
+      ),
     );
     yield r'version';
     yield serializers.serialize(
@@ -279,7 +284,7 @@ class _$MerchantOrderDtoOutputOrderSerializer
         : serializers.serialize(
             object.captainTrack,
             specifiedType: const FullType.nullable(
-              MerchantOrderDtoOutputOrderCaptainTrackEnum,
+              MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum,
             ),
           );
     yield r'captain';
@@ -328,14 +333,16 @@ class _$MerchantOrderDtoOutputOrderSerializer
     yield r'pickup';
     yield serializers.serialize(
       object.pickup,
-      specifiedType: const FullType(MerchantOrderDtoOutputOrderPickup),
+      specifiedType: const FullType(
+        MerchantOrderWithTimelineDtoOutputOrderPickup,
+      ),
     );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    MerchantOrderDtoOutputOrder object, {
+    MerchantOrderWithTimelineDtoOutputOrder object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -350,7 +357,7 @@ class _$MerchantOrderDtoOutputOrderSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantOrderDtoOutputOrderBuilder result,
+    required MerchantOrderWithTimelineDtoOutputOrderBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -401,10 +408,10 @@ class _$MerchantOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      MerchantOrderDtoOutputOrderStatusEnum,
+                      MerchantOrderWithTimelineDtoOutputOrderStatusEnum,
                     ),
                   )
-                  as MerchantOrderDtoOutputOrderStatusEnum;
+                  as MerchantOrderWithTimelineDtoOutputOrderStatusEnum;
           result.status = valueDes;
           break;
         case r'version':
@@ -531,10 +538,10 @@ class _$MerchantOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      MerchantOrderDtoOutputOrderCaptainTrackEnum,
+                      MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum,
                     ),
                   )
-                  as MerchantOrderDtoOutputOrderCaptainTrackEnum?;
+                  as MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum?;
           if (valueDes == null) continue;
           result.captainTrack = valueDes;
           break;
@@ -602,10 +609,10 @@ class _$MerchantOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      MerchantOrderDtoOutputOrderPickup,
+                      MerchantOrderWithTimelineDtoOutputOrderPickup,
                     ),
                   )
-                  as MerchantOrderDtoOutputOrderPickup;
+                  as MerchantOrderWithTimelineDtoOutputOrderPickup;
           result.pickup.replace(valueDes);
           break;
         default:
@@ -617,12 +624,12 @@ class _$MerchantOrderDtoOutputOrderSerializer
   }
 
   @override
-  MerchantOrderDtoOutputOrder deserialize(
+  MerchantOrderWithTimelineDtoOutputOrder deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantOrderDtoOutputOrderBuilder();
+    final result = MerchantOrderWithTimelineDtoOutputOrderBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -638,81 +645,91 @@ class _$MerchantOrderDtoOutputOrderSerializer
 }
 
 /// AP §8.1; the board column (RA §8.1–8.2).
-class MerchantOrderDtoOutputOrderStatusEnum extends EnumClass {
+class MerchantOrderWithTimelineDtoOutputOrderStatusEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'placed')
-  static const MerchantOrderDtoOutputOrderStatusEnum placed =
-      _$merchantOrderDtoOutputOrderStatusEnum_placed;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum placed =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_placed;
   @BuiltValueEnumConst(wireName: r'accepted')
-  static const MerchantOrderDtoOutputOrderStatusEnum accepted =
-      _$merchantOrderDtoOutputOrderStatusEnum_accepted;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum accepted =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_accepted;
   @BuiltValueEnumConst(wireName: r'ready')
-  static const MerchantOrderDtoOutputOrderStatusEnum ready =
-      _$merchantOrderDtoOutputOrderStatusEnum_ready;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum ready =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_ready;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const MerchantOrderDtoOutputOrderStatusEnum pickedUp =
-      _$merchantOrderDtoOutputOrderStatusEnum_pickedUp;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum pickedUp =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'arrived')
-  static const MerchantOrderDtoOutputOrderStatusEnum arrived =
-      _$merchantOrderDtoOutputOrderStatusEnum_arrived;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum arrived =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_arrived;
   @BuiltValueEnumConst(wireName: r'delivered')
-  static const MerchantOrderDtoOutputOrderStatusEnum delivered =
-      _$merchantOrderDtoOutputOrderStatusEnum_delivered;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum delivered =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_delivered;
   @BuiltValueEnumConst(wireName: r'rejected')
-  static const MerchantOrderDtoOutputOrderStatusEnum rejected =
-      _$merchantOrderDtoOutputOrderStatusEnum_rejected;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum rejected =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_rejected;
   @BuiltValueEnumConst(wireName: r'cancelled')
-  static const MerchantOrderDtoOutputOrderStatusEnum cancelled =
-      _$merchantOrderDtoOutputOrderStatusEnum_cancelled;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum cancelled =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_cancelled;
   @BuiltValueEnumConst(wireName: r'failed')
-  static const MerchantOrderDtoOutputOrderStatusEnum failed =
-      _$merchantOrderDtoOutputOrderStatusEnum_failed;
+  static const MerchantOrderWithTimelineDtoOutputOrderStatusEnum failed =
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_failed;
 
-  static Serializer<MerchantOrderDtoOutputOrderStatusEnum> get serializer =>
-      _$merchantOrderDtoOutputOrderStatusEnumSerializer;
+  static Serializer<MerchantOrderWithTimelineDtoOutputOrderStatusEnum>
+  get serializer =>
+      _$merchantOrderWithTimelineDtoOutputOrderStatusEnumSerializer;
 
-  const MerchantOrderDtoOutputOrderStatusEnum._(String name) : super(name);
+  const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._(String name)
+    : super(name);
 
-  static BuiltSet<MerchantOrderDtoOutputOrderStatusEnum> get values =>
-      _$merchantOrderDtoOutputOrderStatusEnumValues;
-  static MerchantOrderDtoOutputOrderStatusEnum valueOf(String name) =>
-      _$merchantOrderDtoOutputOrderStatusEnumValueOf(name);
+  static BuiltSet<MerchantOrderWithTimelineDtoOutputOrderStatusEnum>
+  get values => _$merchantOrderWithTimelineDtoOutputOrderStatusEnumValues;
+  static MerchantOrderWithTimelineDtoOutputOrderStatusEnum valueOf(
+    String name,
+  ) => _$merchantOrderWithTimelineDtoOutputOrderStatusEnumValueOf(name);
 }
 
 /// The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
-class MerchantOrderDtoOutputOrderCaptainTrackEnum extends EnumClass {
+class MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+    extends EnumClass {
   @BuiltValueEnumConst(wireName: r'searching')
-  static const MerchantOrderDtoOutputOrderCaptainTrackEnum searching =
-      _$merchantOrderDtoOutputOrderCaptainTrackEnum_searching;
+  static const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+  searching =
+      _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_searching;
   @BuiltValueEnumConst(wireName: r'offered')
-  static const MerchantOrderDtoOutputOrderCaptainTrackEnum offered =
-      _$merchantOrderDtoOutputOrderCaptainTrackEnum_offered;
+  static const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum offered =
+      _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_offered;
   @BuiltValueEnumConst(wireName: r'assigned')
-  static const MerchantOrderDtoOutputOrderCaptainTrackEnum assigned =
-      _$merchantOrderDtoOutputOrderCaptainTrackEnum_assigned;
+  static const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+  assigned = _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_assigned;
   @BuiltValueEnumConst(wireName: r'at_merchant')
-  static const MerchantOrderDtoOutputOrderCaptainTrackEnum atMerchant =
-      _$merchantOrderDtoOutputOrderCaptainTrackEnum_atMerchant;
+  static const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+  atMerchant =
+      _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_atMerchant;
   @BuiltValueEnumConst(wireName: r'pickup_pending')
-  static const MerchantOrderDtoOutputOrderCaptainTrackEnum pickupPending =
-      _$merchantOrderDtoOutputOrderCaptainTrackEnum_pickupPending;
+  static const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+  pickupPending =
+      _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_pickupPending;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const MerchantOrderDtoOutputOrderCaptainTrackEnum pickedUp =
-      _$merchantOrderDtoOutputOrderCaptainTrackEnum_pickedUp;
+  static const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+  pickedUp = _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'at_customer')
-  static const MerchantOrderDtoOutputOrderCaptainTrackEnum atCustomer =
-      _$merchantOrderDtoOutputOrderCaptainTrackEnum_atCustomer;
+  static const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+  atCustomer =
+      _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_atCustomer;
   @BuiltValueEnumConst(wireName: r'done')
-  static const MerchantOrderDtoOutputOrderCaptainTrackEnum done =
-      _$merchantOrderDtoOutputOrderCaptainTrackEnum_done;
+  static const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum done =
+      _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_done;
 
-  static Serializer<MerchantOrderDtoOutputOrderCaptainTrackEnum>
-  get serializer => _$merchantOrderDtoOutputOrderCaptainTrackEnumSerializer;
+  static Serializer<MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum>
+  get serializer =>
+      _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnumSerializer;
 
-  const MerchantOrderDtoOutputOrderCaptainTrackEnum._(String name)
+  const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._(String name)
     : super(name);
 
-  static BuiltSet<MerchantOrderDtoOutputOrderCaptainTrackEnum> get values =>
-      _$merchantOrderDtoOutputOrderCaptainTrackEnumValues;
-  static MerchantOrderDtoOutputOrderCaptainTrackEnum valueOf(String name) =>
-      _$merchantOrderDtoOutputOrderCaptainTrackEnumValueOf(name);
+  static BuiltSet<MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum>
+  get values => _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnumValues;
+  static MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum valueOf(
+    String name,
+  ) => _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnumValueOf(name);
 }

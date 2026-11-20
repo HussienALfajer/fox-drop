@@ -4804,6 +4804,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantOrdersHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantOrdersOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orders/{orderId}/accept": {
         parameters: {
             query?: never;
@@ -6988,6 +7020,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["captainEarningsRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainHistoryHistory"];
         put?: never;
         post?: never;
         delete?: never;
@@ -14273,6 +14321,270 @@ export interface components {
                 defaultMin: number;
             };
         };
+        MerchantOrderHistoryDto_Output: {
+            /** @description An owner sees the commission and the net and picks any range; a cashier not (S12). */
+            owner: boolean;
+            /**
+             * Format: date
+             * @description The range read: by default today and the 7 business days before.
+             */
+            fromDay: string;
+            /** Format: date */
+            toDay: string;
+            /** @description Newest first, 20 a page. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /**
+                 * Format: date-time
+                 * @description «الوقت».
+                 */
+                placedAt: string;
+                /**
+                 * Format: date
+                 * @description The business day it was placed on.
+                 */
+                day: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description «طلب تجريبي» (RA §8.16). */
+                testOrder: boolean;
+                /** @description «إعادة توصيل مجانية» (AP §9.9.3). */
+                redelivery: boolean;
+                /** @description «عدد الأصناف»: the quantities added up. */
+                itemCount: number;
+                currency: string;
+                /** @description «قيمة الأصناف», for every user. */
+                itemsValue: string;
+                /** @description RA §8.18: the commission and the net, to owners only (null for a cashier, and on a cancelled or rejected order). */
+                owner: {
+                    /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
+                    testOrder: boolean;
+                    /** @description The rate at placing in basis points (1500 is 15%); null on a test order. */
+                    commissionBp: number | null;
+                    /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
+                    commission: string | null;
+                    /** @description The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order. */
+                    discountShare: string | null;
+                    /** @description The restaurant-funded discount is on the delivery fee (RA S18), not the items. */
+                    discountOnDelivery: boolean;
+                    /** @description «صافيك من الطلب»; null on a test order. */
+                    merchantNet: string | null;
+                } | null;
+            }[];
+            /** @description The cursor of the next page; null at the end. */
+            next: string | null;
+        };
+        MerchantOrderWithTimelineDto_Output: {
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /** @description «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them. */
+                redeliveryOf: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                } | null;
+                /** @description RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode). */
+                testOrder: boolean;
+                /**
+                 * @description AP §8.1; the board column (RA §8.1–8.2).
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3). */
+                version: number;
+                /** Format: date-time */
+                placedAt: string;
+                /** @description While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3). */
+                acceptAlertAt: string | null;
+                /** @description «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3). */
+                autoCancelAt: string | null;
+                /** @description Null until the order is accepted. */
+                acceptance: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The prep time chosen (RA §8.5). */
+                    prepMin: number;
+                    /**
+                     * Format: date-time
+                     * @description While accepted, the prep countdown runs to it; past it the card turns red and counts up, «متأخر {د} د» (RA §8.7).
+                     */
+                    prepDueAt: string;
+                    /** @description «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant. */
+                    deviceName: string | null;
+                    /** @description Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5). */
+                    byOperations: boolean;
+                } | null;
+                /** @description «الطلب جاهز» (RA §8.8). */
+                readyAt: string | null;
+                /** @description Never the phone number, the last name or the full address (RA §8.4). */
+                customer: {
+                    /** @description Null while the customer has not completed the account (CU §5.3). */
+                    firstName: string | null;
+                    neighbourhood: string;
+                };
+                /** @description The customer's note. */
+                note: string | null;
+                lines: {
+                    /**
+                     * Format: uuid
+                     * @description «صنف غير متوفر» picks the items by it (RA §8.6).
+                     */
+                    itemId: string;
+                    name: string;
+                    quantity: number;
+                    options: {
+                        name: string;
+                    }[];
+                    note: string | null;
+                    /** @description Integer minor units (AP §8.6). */
+                    lineTotal: string;
+                }[];
+                currency: string;
+                /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
+                itemsValue: string;
+                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line. */
+                owner: {
+                    /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
+                    testOrder: boolean;
+                    /** @description The rate at placing in basis points (1500 is 15%); null on a test order. */
+                    commissionBp: number | null;
+                    /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
+                    commission: string | null;
+                    /** @description The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order. */
+                    discountShare: string | null;
+                    /** @description The restaurant-funded discount is on the delivery fee (RA S18), not the items. */
+                    discountOnDelivery: boolean;
+                    /** @description «صافيك من الطلب»; null on a test order. */
+                    merchantNet: string | null;
+                } | null;
+                /** @description The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts. */
+                captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
+                /** @description From assignment (RA §8.9); the photo and the ETA come with their slices. */
+                captain: {
+                    firstName: string;
+                    /** @enum {string} */
+                    vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                } | null;
+                /** @description While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null. */
+                captainArrival: {
+                    /**
+                     * Format: date-time
+                     * @description «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it.
+                     */
+                    at: string;
+                    /**
+                     * Format: date-time
+                     * @description Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9).
+                     */
+                    waitingAlertAt: string;
+                } | null;
+                /** @description RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise. */
+                itemReport: {
+                    /** Format: date-time */
+                    at: string;
+                    items: {
+                        /** Format: uuid */
+                        itemId: string;
+                        name: string;
+                        /** @enum {string} */
+                        until: "tomorrow" | "turned_back_on";
+                    }[];
+                    /** @description A reason of Content's item_unavailable_note list, its label as chosen. */
+                    note: {
+                        code: string;
+                        label: string;
+                    } | null;
+                } | null;
+                /** @description RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup. */
+                edits: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description Items added or a quantity raised: every device rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل», and pickup requests wait (RA §8.10, §16 #16); otherwise it chimes «تم تعديل الطلب #{رقم}» once and stays on the card (RA §16 #17). */
+                    addsItems: boolean;
+                    /** @description The prompt lists them (RA §8.13). */
+                    changes: {
+                        /**
+                         * @description A line whose options changed is removed and added again.
+                         * @enum {string}
+                         */
+                        kind: "added" | "removed" | "quantity";
+                        name: string;
+                        options: string[];
+                        quantity: number;
+                        /** @description quantity: the quantity before. */
+                        quantityBefore?: number;
+                    }[];
+                    /** @description The new items value after this edit. */
+                    itemsValue: string;
+                    /** @description Items added to a ready order: back to «قيد التحضير» with this many minutes from the edit (RA §8.13); null otherwise. */
+                    extraPrepMin: number | null;
+                }[];
+                /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
+                cancellation: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The code of Content's ops_cancel list. */
+                    reason: string;
+                    /** @description {السبب} of «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}». */
+                    label: string;
+                    /** @description Always true: only operations cancel after acceptance. */
+                    byOperations: boolean;
+                } | null;
+                /** @description The pickup confirmation (RA §8.10). */
+                pickup: {
+                    /** @description The latest request; while open every device rings with the pickup prompt (RA §8.10 item 3). */
+                    request: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "open" | "confirmed" | "rejected" | "voided";
+                        /** @description automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام». */
+                        outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
+                        amount: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @description «400 ₺» or «5 $ + 195 ₺». */
+                        lines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[];
+                        /** @description The lines in the base currency, by the order rates. */
+                        baseEquivalent: string;
+                        /**
+                         * Format: date-time
+                         * @description «يُؤكَّد تلقائياً خلال {ث} ث» counts down to it.
+                         */
+                        confirmBy: string;
+                        closedAt: string | null;
+                        /** @description The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10). */
+                        closedByUserName: string | null;
+                        closedByDeviceName: string | null;
+                    } | null;
+                    /** @description «تم الاستلام». */
+                    pickedUpAt: string | null;
+                    /** @description «لم يُضغط جاهز» (S8). */
+                    readyNotPressed: boolean;
+                    /** @description «المبلغ غير صحيح» stays on the order until then after the pickup (RA §8.10 item 8); null once disputed or before the pickup. */
+                    disputeUntil: string | null;
+                    disputedAt: string | null;
+                };
+            };
+            /** @description RA §8.18: the steps the order reached, oldest first. */
+            timeline: {
+                /** @enum {string} */
+                step: "placed" | "accepted" | "picked_up" | "arrived" | "delivered" | "failed" | "rejected" | "cancelled";
+                /** Format: date-time */
+                at: string;
+            }[];
+        };
         MerchantAcceptDto: {
             /** @description Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise. */
             prepMin: number;
@@ -20482,6 +20794,64 @@ export interface components {
             nextPayout: string;
             /** @enum {string} */
             negativePolicy: "carry_forward" | "collect_at_desk";
+        };
+        CaptainOrderHistoryDto_Output: {
+            /** @description The city's base currency, the pay's. */
+            payCurrency: string;
+            /** @description Newest first, 20 a page. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** Format: date-time */
+                placedAt: string;
+                /**
+                 * Format: date
+                 * @description The business day it was placed on, for the grouping.
+                 */
+                day: string;
+                restaurantName: string;
+                /** @description «الحي» only: never the customer's name, phone or address (K8). */
+                neighbourhood: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description How it ended (AP Appendix C); null when not delivered or failed. */
+                outcome: ("normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other") | null;
+                testOrder: boolean;
+                /** @description «إعادة توصيل مجانية». */
+                redelivery: boolean;
+                /** @description «سلّمته لكابتن آخر»: the captain handed it over; the order went on without them. */
+                handedOver: boolean;
+                /** @description The pay earned for it in the base (order, waiting and peak); null for none. */
+                pay: string | null;
+                /** @description «دفعت للمطعم»: the confirmed pickup payment. */
+                paidToRestaurant: {
+                    currency: string;
+                    /** @description Integer minor units of its currency. */
+                    amount: string;
+                }[];
+                /** @description «قبضت»: what the captain received at the door. */
+                collected: {
+                    currency: string;
+                    /** @description Integer minor units of its currency. */
+                    amount: string;
+                }[];
+                /** @description «الباقي»: the change given back. */
+                change: {
+                    currency: string;
+                    /** @description Integer minor units of its currency. */
+                    amount: string;
+                }[];
+                /** @description The captain's own steps, oldest first (CA §9.13 detail). */
+                steps: {
+                    /** @enum {string} */
+                    step: "assigned" | "received_handover" | "arrived_at_restaurant" | "picked_up" | "handed_over" | "arrived_at_customer" | "delivered" | "failed" | "cancelled";
+                    /** Format: date-time */
+                    at: string;
+                }[];
+            }[];
+            /** @description The cursor of the next page; null at the end. */
+            next: string | null;
         };
         CaptainStatementListDto_Output: {
             /** @description Newest first. */
@@ -29516,6 +29886,58 @@ export interface operations {
             };
         };
     };
+    merchantOrdersHistory: {
+        parameters: {
+            query?: {
+                /** @description The first business day, YYYY-MM-DD on the city clock; with `to`. */
+                from?: string;
+                /** @description The last business day, included; with `from`. */
+                to?: string;
+                status?: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description The order number without «#»; within the range. */
+                number?: string;
+                /** @description The `next` of the page before; none for the first page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderHistoryDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrdersOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderWithTimelineDto_Output"];
+                };
+            };
+        };
+    };
     merchantOrdersAccept: {
         parameters: {
             query?: never;
@@ -33325,6 +33747,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainEarningsDto_Output"];
+                };
+            };
+        };
+    };
+    captainHistoryHistory: {
+        parameters: {
+            query?: {
+                /** @description The first business day, YYYY-MM-DD on the city clock; with `to`. None: every order. */
+                from?: string;
+                /** @description The last business day, included; with `from`. */
+                to?: string;
+                /** @description The `next` of the page before; none for the first page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderHistoryDto_Output"];
                 };
             };
         };
