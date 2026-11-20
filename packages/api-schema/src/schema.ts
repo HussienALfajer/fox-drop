@@ -32888,7 +32888,7 @@ export interface operations {
     merchantRatingsRead: {
         parameters: {
             query?: {
-                /** @description Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً». */
+                /** @description Business days on the city’s clock (RA §11): «الكل» (the default), «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً»; or `from` and `to`. */
                 period?: "all" | "today" | "yesterday" | "last_7_days" | "last_30_days";
                 /** @description The portal’s custom range (RA §17): its first business day, with `to`, in place of `period`. */
                 from?: string;

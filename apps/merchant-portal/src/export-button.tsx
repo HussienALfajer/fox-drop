@@ -10,7 +10,8 @@ import {
 } from './exports.js';
 
 // RA §17: «تصدير Excel», then «تنزيل» once the server wrote the file; the
-// file is kept 24 hours.
+// file is kept 24 hours. Rendered with `key` set to its ask (`askKey`), so a
+// new period or statement starts afresh.
 export function ExportButton({ ask }: { ask: ExportAsk | null }) {
   const { t } = useTranslation();
   const request = useRequestExport();
@@ -51,7 +52,7 @@ export function ExportButton({ ask }: { ask: ExportAsk | null }) {
     <p data-print="hide">
       <button
         type="button"
-        disabled={ask === null || request.isPending || status === 'pending'}
+        disabled={ask === null || request.isPending || (status === 'pending' && !gaveUp)}
         onClick={() => void start()}
       >
         {t('exports.ask')}
@@ -68,4 +69,8 @@ export function ExportButton({ ask }: { ask: ExportAsk | null }) {
       {(failed || state.isError) && <span role="alert">{t('exports.failed')}</span>}
     </p>
   );
+}
+
+export function askKey(ask: ExportAsk): string {
+  return JSON.stringify(ask);
 }

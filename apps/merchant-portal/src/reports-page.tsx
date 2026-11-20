@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { use, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExportButton } from './export-button.js';
+import { askKey, ExportButton } from './export-button.js';
+import type { ExportAsk } from './exports.js';
 import { formatDateTime, formatMoney } from './format.js';
 import { TimeZoneContext } from './live.js';
 import { OWNER_PERIODS, type OwnerPeriod, type PeriodChoice } from './period.js';
@@ -25,20 +26,19 @@ export function ReportsPage() {
   const [choice, setChoice] = useState<PeriodChoice>({ kind: 'period', period: 'today' });
   const read = useQuery(figuresQuery(choice));
   const timeZone = use(TimeZoneContext);
+  const reportAsk: ExportAsk = {
+    kind: 'report',
+    body:
+      choice.kind === 'period'
+        ? { period: choice.period, from: null, to: null }
+        : { period: null, from: choice.from, to: choice.to },
+  };
 
   return (
     <main>
       <h1>{t('reports.title')}</h1>
       <PeriodPicker<OwnerPeriod> periods={OWNER_PERIODS} value={choice} onChange={setChoice} />
-      <ExportButton
-        ask={{
-          kind: 'report',
-          body:
-            choice.kind === 'period'
-              ? { period: choice.period, from: null, to: null }
-              : { period: null, from: choice.from, to: choice.to },
-        }}
-      />
+      <ExportButton key={askKey(reportAsk)} ask={reportAsk} />
       {read.isPending ? (
         <p>{t('app.loading')}</p>
       ) : read.isError ? (
@@ -76,7 +76,7 @@ function Figures({
 }) {
   const { t } = useTranslation();
   const changeText = useChangeText();
-  const show = (kind: MetricKind, value: number | string | null, figures: FigureSet) => {
+  const show = (kind: MetricKind, value: number | string | null) => {
     if (value === null) return t('reports.noValue');
     switch (kind) {
       case 'count':
@@ -88,7 +88,7 @@ function Figures({
       case 'money':
         return formatMoney(String(value), currency);
       case 'rating':
-        return t('reports.rating', { average: value, count: figures.rating.count });
+        return t('reports.rating', { average: value });
     }
   };
   return (
@@ -115,8 +115,8 @@ function Figures({
                     {t(`reports.info.${metric.key as 'received'}`)}
                   </details>
                 </th>
-                <td>{show(metric.kind, now, current)}</td>
-                <td>{show(metric.kind, before, previous)}</td>
+                <td>{show(metric.kind, now)}</td>
+                <td>{show(metric.kind, before)}</td>
                 <td>{changeText(changeOf(now, before))}</td>
               </tr>
             );
@@ -178,9 +178,6 @@ function Figures({
       </ul>
       <h2>{t('reports.pauses')}</h2>
       <ul>
-        <li>{t('reports.pauseRestaurant', { minutes: current.pauseMinutes.restaurant })}</li>
-        <li>{t('reports.pauseOps', { minutes: current.pauseMinutes.ops })}</li>
-        <li>{t('reports.pauseAuto', { minutes: current.pauseMinutes.auto })}</li>
         <li>{t('reports.busyNotYet')}</li>
       </ul>
     </>

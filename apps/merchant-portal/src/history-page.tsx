@@ -2,7 +2,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { use, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExportButton } from './export-button.js';
+import { askKey, ExportButton } from './export-button.js';
+import type { ExportAsk } from './exports.js';
 import { formatDateTime, formatMoney } from './format.js';
 import {
   type HistoryFilter,
@@ -101,17 +102,7 @@ export function HistoryPage() {
       {range && (
         <>
           <p>{t('history.range', { from: range.fromDay, to: range.toDay })}</p>
-          <ExportButton
-            ask={{
-              kind: 'order-history',
-              body: {
-                from: range.fromDay,
-                to: range.toDay,
-                status: filter.status,
-                number: filter.number,
-              },
-            }}
-          />
+          <ExportButton key={askKey(historyAsk(range, filter))} ask={historyAsk(range, filter)} />
         </>
       )}
       {read.isPending ? (
@@ -183,4 +174,11 @@ export function HistoryPage() {
       )}
     </main>
   );
+}
+
+function historyAsk(range: { fromDay: string; toDay: string }, filter: HistoryFilter): ExportAsk {
+  return {
+    kind: 'order-history',
+    body: { from: range.fromDay, to: range.toDay, status: filter.status, number: filter.number },
+  };
 }

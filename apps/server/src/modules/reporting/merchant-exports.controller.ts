@@ -36,7 +36,9 @@ class MerchantReportExportDto extends createZodDto(
     })
     .refine(
       (body) =>
-        body.period === null ? body.from !== null && body.to !== null : body.from === null,
+        body.period === null
+          ? body.from !== null && body.to !== null
+          : body.from === null && body.to === null,
       { message: 'a period, or from and to' },
     ),
 ) {}
@@ -231,6 +233,7 @@ export class MerchantExportsController {
       accountId: merchant.id,
       restaurantId: restaurant.id,
       cityId: restaurant.cityId,
+      terminated: restaurant.accountStatus === 'terminated',
       actor: { type: 'merchant', id: merchant.id, role: merchant.role },
       context: { ipAddress: request.ip, device: session.deviceId },
     };

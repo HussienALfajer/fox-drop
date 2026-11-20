@@ -297,7 +297,10 @@ function StatementSheet({ statement }: { statement: Statement }) {
           {t('statements.print')}
         </button>
       </p>
-      <ExportButton ask={{ kind: 'statement', body: { statementId: statement.id } }} />
+      <ExportButton
+        key={statement.id}
+        ask={{ kind: 'statement', body: { statementId: statement.id } }}
+      />
       <p>
         {statement.periodFrom === null
           ? t('statements.periodFirst', { to: formatDateTime(statement.cutoff, timeZone) })

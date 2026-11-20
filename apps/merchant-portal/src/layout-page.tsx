@@ -13,7 +13,9 @@ import { termsQuery } from './terms.js';
 // 2026-11-20): the owner's name, the screens, sign-out, the pending terms,
 // the overdue settlement (RA §12.6) and the platform's emergency stop above
 // every page. A terminated restaurant's owners keep the money section only,
-// read only (RA §5.5; slice 2.45d).
+// read only (RA §5.5; slice 2.45d), so nothing else shows before the
+// status is read. A status that fails to read shows everything: each
+// route checks the restaurant's status anyway.
 const MONEY_PATHS = ['/account', '/statements', '/receipts'];
 
 function isMoneyPath(path: string): boolean {
@@ -45,7 +47,7 @@ export function LayoutPage({ session }: { session: PortalSession }) {
         <strong>{t('app.name')}</strong>{' '}
         <span>{t('layout.signedInAs', { name: session.name })}</span>
         <nav data-print="hide">
-          {terminated ? (
+          {terminated || status.isPending ? (
             money
           ) : (
             <>
@@ -85,7 +87,8 @@ export function LayoutPage({ session }: { session: PortalSession }) {
         </p>
       )}
       {terminated && <p role="alert">{t('layout.terminated')}</p>}
-      {(!terminated || isMoneyPath(path)) && (
+      {status.isPending && <p>{t('app.loading')}</p>}
+      {!status.isPending && (!terminated || isMoneyPath(path)) && (
         <TimeZoneContext value={session.timeZone}>
           <LiveContext value={live}>
             <Outlet />

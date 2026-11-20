@@ -12,9 +12,9 @@ class MerchantRatingsQueryDto extends createZodDto(
     .object({
       period: z
         .enum(ratingPeriods)
-        .default('all')
+        .optional()
         .describe(
-          'Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».',
+          'Business days on the city’s clock (RA §11): «الكل» (the default), «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً»; or `from` and `to`.',
         ),
       from: z.iso
         .date()
@@ -45,9 +45,12 @@ class MerchantRatingsQueryDto extends createZodDto(
         .optional()
         .describe('The first page’s `asOf`, sent with every next page so the pages agree.'),
     })
-    .refine((query) => (query.from === undefined) === (query.to === undefined), {
-      message: 'from and to go together',
-    }),
+    .refine(
+      (query) =>
+        (query.from === undefined) === (query.to === undefined) &&
+        (query.from === undefined || query.period === undefined),
+      { message: 'a period, or from and to' },
+    ),
 ) {}
 
 class MerchantRatingsDto extends createZodDto(
@@ -109,7 +112,7 @@ export class MerchantRatingsController {
       this.ratings.read(
         { party: 'restaurant', id: restaurant.id, cityId: restaurant.cityId },
         {
-          period: query.period,
+          period: query.period ?? 'all',
           range: query.from === undefined ? null : { fromDay: query.from, toDay: query.to! },
           stars: query.stars ?? null,
           page: query.page,

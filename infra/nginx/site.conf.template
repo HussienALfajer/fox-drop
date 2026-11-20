@@ -8,8 +8,9 @@
 # (PUT) and /private-docs/exports/, /tickets/ and /restaurants/ (GET) to the
 # storage, the API's host /public-media/incoming/ and /private-docs/incoming/
 # (PUT, the apps' uploads), the portal's host /public-media/incoming/ and
-# /private-docs/incoming/ (PUT, the owners' item and report photos); the panel and the
-# portal send everything else to the web container, which answers unknown
+# /private-docs/incoming/ (PUT, the owners' item and report photos) and
+# /private-docs/exports/ (GET, their Excel files); the panel and the portal
+# send everything else to the web container, which answers unknown
 # paths with index.html. The limit zones `general` and `perip` are the
 # server's own (conf.d/rate-limits.conf).
 

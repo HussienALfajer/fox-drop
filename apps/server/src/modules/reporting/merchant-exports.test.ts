@@ -244,6 +244,12 @@ describe('the portal’s Excel files (RA §17)', () => {
       key,
     );
     expect(reused.statusCode).toBe(422);
+    const { rows: stored } = await sql.query('SELECT params FROM reporting.exports WHERE id = $1', [
+      exportId,
+    ]);
+    // The period's days are kept as asked, so the file covers what its
+    // name says whenever the worker writes it.
+    expect(stored[0].params).toMatchObject({ period: 'today', from: day, to: day });
 
     const rows = await downloaded(owner, exportId);
     expect(rows[0]).toEqual(['تقارير المطعم']);
@@ -319,6 +325,16 @@ describe('the portal’s Excel files (RA §17)', () => {
       to: null,
     });
     expect([refused.statusCode, refused.json().error]).toEqual([403, 'restaurant_terminated']);
+    const noHistory = await owner.post('/v1/merchant/exports/order-history', {
+      from: day,
+      to: day,
+      status: null,
+      number: null,
+    });
+    expect([noHistory.statusCode, noHistory.json().error]).toEqual([403, 'restaurant_terminated']);
+    // The files made before the termination: the statement's only.
+    expect((await owner.get(`/v1/merchant/exports/${statement.json().id}`)).statusCode).toBe(200);
+    expect((await owner.get(`/v1/merchant/exports/${history.json().id}`)).statusCode).toBe(404);
   });
 
   it('serves the portal’s owners only, each their own exports', async () => {
@@ -339,6 +355,8 @@ describe('the portal’s Excel files (RA §17)', () => {
       to: null,
     });
     expect([fromApp.statusCode, fromApp.json().error]).toEqual([403, 'not_in_portal']);
+    const appRead = await appOwner.get(`/v1/merchant/exports/${exportId}`);
+    expect([appRead.statusCode, appRead.json().error]).toEqual([403, 'not_in_portal']);
     const cashier = await appUser(id, 'cashier');
     expect((await cashier.get(`/v1/merchant/exports/${exportId}`)).json().error).toBe('owner_only');
 

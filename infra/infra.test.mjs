@@ -234,6 +234,15 @@ test('nginx serves /maps/ from public-maps only, for reads', () => {
   assert.match(read('storage/garage.toml'), /^\[s3_web\]$/m);
 });
 
+test("nginx serves the portal's Excel files for reads only, from private-docs' exports/", () => {
+  const site = read('nginx/site.conf.template');
+  const portal = /server_name \$\{PORTAL_HOST\};([\s\S]*?)\n\}\n/.exec(site)[1];
+  const exports = /location \/private-docs\/exports\/ \{([\s\S]*?)\n {4}\}/.exec(portal)[1];
+  assert.match(exports, /limit_except GET \{ deny all; \}/);
+  assert.match(exports, /proxy_pass http:\/\/127\.0\.0\.1:\$\{STORAGE_PORT\};/);
+  assert.match(exports, /proxy_set_header Cookie "";/);
+});
+
 test("nginx serves the Windows downloads for reads only, from the publish script's folder", () => {
   const downloads = /^location \/downloads\/windows\/ \{$([\s\S]*?)^\}$/m.exec(
     read('nginx/api.conf.template'),

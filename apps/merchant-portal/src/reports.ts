@@ -98,6 +98,10 @@ export const METRICS: readonly {
   { key: 'readyNotPressed', kind: 'count', value: (f) => f.readyNotPressed },
   { key: 'captainWait', kind: 'minutes', value: (f) => f.captainWaitMinutes },
   { key: 'rating', kind: 'rating', value: (f) => f.rating.average },
+  { key: 'ratings', kind: 'count', value: (f) => f.rating.count },
+  { key: 'pauseRestaurant', kind: 'minutes', value: (f) => f.pauseMinutes.restaurant },
+  { key: 'pauseOps', kind: 'minutes', value: (f) => f.pauseMinutes.ops },
+  { key: 'pauseAuto', kind: 'minutes', value: (f) => f.pauseMinutes.auto },
 ];
 
 // A share in basis points as a percentage to one decimal (1250 → 12.5).

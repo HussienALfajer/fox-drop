@@ -59,6 +59,10 @@ import { ownerPeriods, type OwnerPeriod } from './restaurant-report.js';
 
 // Architecture §5.9: an export stays in private-docs this long.
 export const EXPORT_KEEP_MS = 24 * 60 * 60_000;
+// The orders whose owner money lines the history's export reads at once
+// (each picked-up one is a query; the pool has 10 connections).
+const OWNER_MONEY_CHUNK = 10;
+
 // How long a download URL stays valid: long enough to start the download.
 export const EXPORT_URL_SECONDS = 5 * 60;
 
@@ -140,8 +144,9 @@ export interface ReportParams {
 }
 
 // RA §17 (slice 2.45d): the owner web portal's exports, each of the
-// owner's restaurant: the reports of a period or a custom range (the other
-// fields null), «السجل» of a range, and one weekly statement.
+// owner's restaurant: the reports of the business days `from` to `to` (a
+// period's, resolved when asked, with the period kept; null for a custom
+// range), «السجل» of a range, and one weekly statement.
 export interface MerchantReportParams {
   restaurantId: string;
   period: OwnerPeriod | null;
@@ -177,6 +182,8 @@ export interface MerchantExportUser {
   accountId: string;
   restaurantId: string;
   cityId: string;
+  // RA §5.5: a terminated restaurant's owners keep the statements only.
+  terminated: boolean;
   actor: AuditActor;
   context: AuditRequestContext;
 }
@@ -254,19 +261,37 @@ export class ExportsService {
     idempotencyKey: string,
     now: Date,
   ): Promise<ExportView> {
-    const params: MerchantReportParams = {
-      restaurantId: user.restaurantId,
-      period: 'period' in asked ? asked.period : null,
-      from: 'from' in asked ? asked.from : null,
-      to: 'to' in asked ? asked.to : null,
-    };
+    const period = 'period' in asked ? asked.period : null;
     const repeat = await this.byKey(user.accountId, idempotencyKey);
-    if (repeat) return this.answerRepeat(repeat, 'merchant_report', params, now);
-    const days = await this.reportsOf.ownerDays(user.cityId, ownerAskedOf(params), now);
+    if (repeat) {
+      // The same ask: the period, or the range typed (a period's days are
+      // resolved when first asked, so a repeat after the cutoff still answers).
+      const first = repeat.params as MerchantReportParams;
+      const same =
+        repeat.kind === 'merchant_report' &&
+        first.restaurantId === user.restaurantId &&
+        first.period === period &&
+        ('period' in asked || (first.from === asked.from && first.to === asked.to));
+      if (!same) throw new ExportsRefusedError('idempotency_key_reused');
+      return this.viewOf(repeat, now, null);
+    }
+    const days = await this.reportsOf.ownerDays(
+      user.cityId,
+      'period' in asked ? asked : { fromDay: asked.from, toDay: asked.to },
+      now,
+    );
     if (days === null) throw new ExportsRefusedError('invalid_period');
     if ((await this.fx.baseCurrency(user.cityId)) === null) {
       throw new ExportsRefusedError('no_base_currency');
     }
+    // The business days the period covers when asked, so the file is the
+    // one its name says even when the worker writes it after the cutoff.
+    const params: MerchantReportParams = {
+      restaurantId: user.restaurantId,
+      period,
+      from: days.fromDay,
+      to: days.toDay,
+    };
     const fileName = `${merchantExportLabels.report.title} ${days.fromDay} - ${days.toDay}.xlsx`;
     return this.record(user, 'merchant_report', user.cityId, params, fileName, idempotencyKey, now);
   }
@@ -327,7 +352,8 @@ export class ExportsService {
   }
 
   // A portal export's state, to the owner who asked for it, while it is of
-  // their restaurant (`unknown_export` otherwise); with `download`, while
+  // their restaurant, and once it is terminated only a statement's
+  // (`unknown_export` otherwise); with `download`, while
   // ready, a fresh URL signed for the portal's origin, audited as a view.
   async viewMerchant(
     exportId: string,
@@ -342,7 +368,8 @@ export class ExportsService {
     if (
       !row ||
       !isMerchantKind(row.kind) ||
-      (row.params as { restaurantId?: unknown }).restaurantId !== user.restaurantId
+      (row.params as { restaurantId?: unknown }).restaurantId !== user.restaurantId ||
+      (user.terminated && row.kind !== 'merchant_statement')
     ) {
       throw new ExportsRefusedError('unknown_export');
     }
@@ -611,10 +638,19 @@ export class ExportsService {
     if (typeof found === 'string') {
       throw new Error(`the history export of ${params.restaurantId} is refused: ${found}`);
     }
-    const [owner, currencies] = await Promise.all([
-      this.orders.ownerMoney(found.orders),
-      this.fx.currencies(),
-    ]);
+    // A chunk at a time: ownerMoney reads each picked-up order's edits, and
+    // the worker's pool is shared with the timers and the outbox.
+    const owner: Map<
+      string,
+      { commission: bigint; discountShare: bigint; merchantNet: bigint } | null
+    > = new Map();
+    for (let start = 0; start < found.orders.length; start += OWNER_MONEY_CHUNK) {
+      const chunk = await this.orders.ownerMoney(
+        found.orders.slice(start, start + OWNER_MONEY_CHUNK),
+      );
+      for (const [id, money] of chunk) owner.set(id, money);
+    }
+    const currencies = await this.fx.currencies();
     return merchantHistoryWorkbook(
       { fromDay: params.from, toDay: params.to, ...found, owner },
       new Map(currencies.map((each) => [each.code, each.decimals])),
@@ -773,11 +809,16 @@ export class ExportsService {
   }
 }
 
+// The days the export covers; one asked before slice 2.45d's fix kept only
+// its period.
 function ownerAskedOf(params: MerchantReportParams): OwnerAsked {
+  if (params.from !== null && params.to !== null) {
+    return { fromDay: params.from, toDay: params.to };
+  }
   if (params.period !== null && (ownerPeriods as readonly string[]).includes(params.period)) {
     return { period: params.period };
   }
-  return { fromDay: params.from ?? '', toDay: params.to ?? '' };
+  throw new Error('a report export without its days');
 }
 
 function historyFilterOf(params: MerchantHistoryParams) {

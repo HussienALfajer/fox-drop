@@ -129,9 +129,10 @@ describe('«التقييمات» of the restaurant', () => {
       new Date(Date.parse(day) + days * DAY).toISOString().slice(0, 10);
     expect((await read(owner, `?from=${todayDay}&to=${todayDay}`)).json().count).toBe(2);
     expect((await read(owner, `?from=${oldDay}&to=${oldDay}`)).json().count).toBe(1);
-    expect((await read(owner, `?from=${oldDay}&to=${todayDay}&period=today`)).json().count).toBe(3);
+    expect((await read(owner, `?from=${oldDay}&to=${todayDay}`)).json().count).toBe(3);
     for (const query of [
       `?from=${todayDay}`,
+      `?from=${todayDay}&to=${todayDay}&period=today`,
       `?from=${todayDay}&to=${plus(todayDay, -1)}`,
       `?from=${todayDay}&to=${plus(todayDay, 1)}`,
       `?from=${plus(todayDay, -366)}&to=${todayDay}`,

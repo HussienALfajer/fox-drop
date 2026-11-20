@@ -16802,9 +16802,8 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».",
+            "description": "Business days on the city’s clock (RA §11): «الكل» (the default), «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً»; or `from` and `to`.",
             "schema": {
-              "default": "all",
               "type": "string",
               "enum": [
                 "all",
