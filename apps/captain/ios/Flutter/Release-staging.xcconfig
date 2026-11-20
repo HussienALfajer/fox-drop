@@ -1,0 +1,4 @@
+// The staging flavor's Release configuration (slice 2.46). CocoaPods
+// writes the included file only for an app with a plugin it builds.
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release-staging.xcconfig"
+#include "Generated.xcconfig"

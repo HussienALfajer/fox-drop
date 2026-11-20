@@ -26,7 +26,9 @@ final pushTokensProvider = Provider<PushTokens>((ref) {
           pushTokenDto: PushTokenDto(
             (b) => b
               ..token = token
-              ..platform = PushTokenDtoPlatformEnum.android,
+              ..platform = defaultTargetPlatform == TargetPlatform.iOS
+                  ? PushTokenDtoPlatformEnum.ios
+                  : PushTokenDtoPlatformEnum.android,
           ),
         );
   });

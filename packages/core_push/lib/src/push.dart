@@ -42,7 +42,7 @@ abstract interface class Push {
 }
 
 /// No push: builds without a Firebase project, and platforms push does not
-/// cover yet (iOS, Windows).
+/// cover (Windows).
 class NoPush implements Push {
   const NoPush();
 
@@ -63,15 +63,16 @@ class NoPush implements Push {
 }
 
 /// Push through FCM on the Firebase app `startAppCheck` started from the
-/// build's values (`packages/core_auth/CLAUDE.md`); Android only for now
-/// (owner decision 2026-11-07). Call after `startAppCheck`. [background]
+/// build's values (`packages/core_auth/CLAUDE.md`); Android (owner decision
+/// 2026-11-07) and iOS, where FCM sends through APNs (slice 2.46). Call after `startAppCheck`. [background]
 /// hears each push that arrives while the app is in the background or
 /// closed (the customer's receipt of a mass push, AP §9.11.4): a top-level
 /// function marked `@pragma('vm:entry-point')`, since it runs in an isolate
 /// of its own, with no session.
 Push startPush({BackgroundPush? background}) {
   if (kIsWeb ||
-      defaultTargetPlatform != TargetPlatform.android ||
+      (defaultTargetPlatform != TargetPlatform.android &&
+          defaultTargetPlatform != TargetPlatform.iOS) ||
       Firebase.apps.isEmpty) {
     return const NoPush();
   }
