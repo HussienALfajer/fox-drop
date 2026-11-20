@@ -5,6 +5,15 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from L.1 (`docs/dod-checklist`)
+
+- **Owner decision 2026-11-21:** the three gap slices proposed in `docs/launch/dod-checklist.md` («Gap slices») are approved as proposed and are in `docs/roadmap.md` under L.1: L.1a the 12 missing tests, L.1b the calls and notices not built (RA-10, CU-17, CA-13, CA-10, CU-19), L.1c cached browsing offline with the address commands' `Idempotency-Key` (CU-28), all before L.10.
+- **Decided by us (to confirm with the owner):** a row per bullet where an item has bullets (152 rows); `gap` split into `build` and `test`; AP-27 counts as covered because AP §9.12 defines no zone calculator apart from the fee calculator, which names the zone. The title search alone was wrong for 9 of 21 test gaps (the assertion sat in a test with another title), so every gap row was checked against the test bodies.
+- **Not yet:** `docs/code/apps/customer.md` still lists the edit banner of CU-19 as «Not yet», but `apps/customer/test/orders_test.dart` shows it built.
+- **Bash guard:** besides switching it to enforce, this slice stopped it refusing inline scripts that only write to stdout or stderr (found by review, not in the log), and its refusal now suggests `command < file` to feed a file to a command. Not fixed: a commit message in `"$(cat <<'EOF' … EOF)"` whose body holds a `"` throws `parse()`'s quote tracking off, so a body line starting with `cat`, `sed`, `head` or `tail` and a tracked path could be refused (low risk, no test).
+- **To check on staging:** the 8 `demo only` rows (AP-3, AP-21, RA-3, RA-28, CA-5, CA-6, CU-2, CU-20) need the owner's devices: the panel's alert sound, a printer, the Android phone locked 8 hours, the Windows PC, both phones with the screen off, a real WhatsApp code. L.9's device-lab runbook and L.10's rehearsal take them.
+- **Also done:** the Bash guard (`.claude/hooks/bash.mjs`) enforces since this slice: its observe-mode log held 5 entries over two sessions, all true (4 `sed -n` and 1 `cat` of tracked files).
+
 ## Left from 2.46 (`feat/ios-customer-captain`)
 
 - **Before deploying to staging:** migration 0149 (expand only: `notifications.push_devices_platform` takes `ios`).

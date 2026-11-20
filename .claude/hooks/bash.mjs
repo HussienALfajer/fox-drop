@@ -2,7 +2,7 @@
 // call is a request that resends the whole context, so:
 // - reading a tracked file with cat, head, tail or sed -n, or editing one with
 //   sed -i, perl -i or an inline script, is refused with the tool to use
-//   (in observe mode it is only logged to .claude/bash-guard.log);
+//   (in observe mode it is only logged to .claude/bash-guard.log instead);
 // - a test command's output is cut to its failures and its summary.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // 'observe' logs what would be refused; 'enforce' refuses it.
-const MODE = 'observe';
+const MODE = 'enforce';
 
 /** Splits a command line into pipelines of stages; each stage is { words, heredoc }. */
 export function parse(command) {
@@ -128,7 +128,7 @@ function fileArgs(name, args) {
 const READERS = new Set(['cat', 'head', 'tail', 'sed']);
 const INTERPRETERS = new Set(['python', 'python3', 'py', 'node', 'deno', 'bun']);
 const WRITES =
-  /write_text|write_bytes|writeFileSync|writeFile\(|\.write\(|open\([^)]*['"][wa]\+?b?['"]/;
+  /write_text|write_bytes|writeFileSync|writeFile\(|(?<!std(?:out|err))\.write\(|open\([^)]*['"][wa]\+?b?['"]/;
 const SCRATCH = /scratchpad|[\\/]te?mp[\\/]|AppData[\\/]Local[\\/]Temp/i;
 
 /** Turns /d/fox-drop and ~ into paths Node resolves on Windows too. */
@@ -166,7 +166,7 @@ export function check(command, cwd, isTracked) {
           findings.push({
             rule: 'read',
             file: tracked,
-            reason: `Read ${tracked} with the Read tool (offset and limit for a line range) or search it with Grep, not \`${name}\`.`,
+            reason: `Read ${tracked} with the Read tool (offset and limit for a line range) or search it with Grep, not \`${name}\`; to feed it to a command, redirect it (\`command < ${tracked}\`).`,
           });
       } else if (INTERPRETERS.has(name)) {
         const inline = args.findIndex((arg) => /^-[ce]$/.test(arg));
