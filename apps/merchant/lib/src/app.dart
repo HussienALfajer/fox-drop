@@ -11,6 +11,7 @@ import 'push.dart';
 import 'router.dart';
 import 'status/status.dart';
 import 'terms.dart';
+import 'windows/update.dart';
 
 /// The restaurant app «تطبيق المطعم»: Arabic only, right to left (AP §4.7).
 class MerchantApp extends ConsumerWidget {
@@ -36,6 +37,8 @@ class MerchantApp extends ConsumerWidget {
     ref.watch(receivingProvider);
     ref.watch(boardAlertsProvider);
     ref.watch(deviceCheckPromptProvider);
+    // RA §4.2 on Windows (slice 2.44): the self-update, outside active orders.
+    ref.watch(windowsUpdateProvider);
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
       routerConfig: router,
