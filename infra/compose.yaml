@@ -43,6 +43,9 @@ x-server-environment: &server-environment
   # The apps' uploads (CU §12.2, RA §9.2): nginx forwards /private-docs/incoming/
   # and /public-media/incoming/ on the API's host to the storage.
   APP_UPLOAD_URL: https://${API_HOST:?}
+  # The owner portal's item photos (RA §17, slice 2.45b): nginx forwards
+  # /public-media/incoming/ on the portal's host to the storage.
+  MERCHANT_PORTAL_URL: https://${PORTAL_HOST:?}
   # Empty until the owner sets it: the server then sends nothing (§16).
   SENTRY_DSN: ${SENTRY_DSN:-}
   # The shared OSRM (osrm/compose.yaml, §7.1). While it is down, distances

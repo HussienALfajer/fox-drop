@@ -14,8 +14,8 @@ Slice 2.45b, the menu in the owner web portal (`docs/roadmap.md`, Phase 2).
 
 ### Plan
 
-- [ ] Read RA §9 and the owners' menu routes; write this plan as one step per commit.
-- [ ] Server: open the owners' menu routes, the price log and the preview to the portal (`portal: true`), with `merchant-portal.test.ts`'s list; the photo upload from the portal's origin.
+- [x] Read RA §9 and the owners' menu routes; write this plan as one step per commit.
+- [x] Server: open the owners' menu routes, the price log and the preview to the portal (`portal: true`), with `merchant-portal.test.ts`'s list; the photo upload from the portal's origin.
 - [ ] Portal: «القائمة» (availability, prices, hiding, windows, order, bulk price, change requests with photos), the price log and the preview; unit and smoke tests.
 - [ ] Review, then hand over to 2.45c.
 

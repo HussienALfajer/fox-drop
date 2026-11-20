@@ -52,6 +52,11 @@ beforeAll(async () => {
   process.env.STORAGE_SECRET = storage.key.secret;
   process.env.ADMIN_PANEL_URL = storage.url;
   process.env.APP_UPLOAD_URL = storage.url;
+  // The portal's origin (slice 2.45b): the same storage under another host
+  // name, so the test sees which origin the upload was signed for.
+  const portalUrl = new URL(storage.url);
+  portalUrl.hostname = portalUrl.hostname === 'localhost' ? '127.0.0.1' : 'localhost';
+  process.env.MERCHANT_PORTAL_URL = portalUrl.origin;
   sql = new pg.Pool({ connectionString: database.appUrl });
   db = createDatabase(database.appUrl);
   app = await createApiApp(ApiModule);
@@ -87,6 +92,29 @@ async function owner(restaurantId: string) {
   const headers = { authorization: `Bearer ${signedIn.json().accessToken}` };
   return (method: 'GET' | 'PUT' | 'POST', url: string, payload?: object) =>
     app.inject({ method, url, headers, ...(payload === undefined ? {} : { payload }) });
+}
+
+// An owner signed in to the web portal (RA §17), calling with its cookie.
+async function portalOwner(restaurantId: string) {
+  const phone = `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
+  await app
+    .get(MerchantAccountsService)
+    .addAccount(restaurantId, { role: 'owner', name: 'المالك', phone }, change);
+  const browserId = randomUUID();
+  await app.inject({
+    method: 'POST',
+    url: '/v1/merchant/auth/portal/code',
+    payload: { phone, browserId },
+  });
+  const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+  const signedIn = await app.inject({
+    method: 'POST',
+    url: '/v1/merchant/auth/portal/sign-in',
+    payload: { phone, browserId, code },
+  });
+  const cookies = Object.fromEntries(signedIn.cookies.map((c) => [c.name, c.value]));
+  return (method: 'GET' | 'PUT' | 'POST', url: string, payload?: object) =>
+    app.inject({ method, url, cookies, ...(payload === undefined ? {} : { payload }) });
 }
 
 async function ops() {
@@ -213,5 +241,37 @@ describe("the owners' photos (RA §9.2, §9.5)", () => {
     expect(requests).toHaveLength(1);
     await reviewer('POST', `/${requests[0].id}/approve`, {});
     expect(await photoOf()).toBe(second.key);
+  });
+
+  it("signs the portal's photo for the portal's own origin and links it (RA §17)", async () => {
+    const r = await restaurant();
+    const portal = await portalOwner(r.id);
+    const body = jpeg();
+    const answer = await portal('POST', '/v1/merchant/uploads/item-photo', {
+      contentType: 'image/jpeg',
+      sizeBytes: body.length,
+    });
+    expect(answer.statusCode).toBe(201);
+    const { uploadId, url } = answer.json();
+    expect(new URL(url).origin).toBe(new URL(process.env.MERCHANT_PORTAL_URL!).origin);
+    const put = await fetch(url, {
+      method: 'PUT',
+      body,
+      headers: { 'content-type': 'image/jpeg' },
+    });
+    expect(put.status).toBe(200);
+    const asked = await portal('PUT', `/v1/merchant/menu/requests/items/${r.shawarma}/photo`, {
+      uploadId,
+    });
+    expect(asked.statusCode).toBe(200);
+    expect(asked.json().categories[0].items[0].pending).toEqual([
+      expect.objectContaining({ field: 'photo' }),
+    ]);
+    // The app's upload is still signed for the apps' host.
+    const fromApp = await r.owner('POST', '/v1/merchant/uploads/item-photo', {
+      contentType: 'image/jpeg',
+      sizeBytes: body.length,
+    });
+    expect(new URL(fromApp.json().url).origin).toBe(new URL(storage.url).origin);
   });
 });
