@@ -719,6 +719,69 @@ export class CustomersService {
     return new Map(rows.map((row) => [row.accountId, row.firstName]));
   }
 
+  // AP §9.17 «Customers» (slice 2.41): the completed customers' names,
+  // gender and birthday by account, in one read.
+  async reportProfiles(
+    accountIds: string[],
+  ): Promise<
+    Map<
+      string,
+      { firstName: string; lastName: string | null; gender: string; birthday: string | null }
+    >
+  > {
+    if (accountIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({
+        accountId: profiles.accountId,
+        firstName: profiles.firstName,
+        lastName: profiles.lastName,
+        gender: profiles.gender,
+        birthday: profiles.birthday,
+      })
+      .from(profiles)
+      .where(inArray(profiles.accountId, accountIds));
+    return new Map(rows.map(({ accountId, ...row }) => [accountId, row]));
+  }
+
+  // AP §9.17 «Customers» (slice 2.41): the panel's blocks (not the dues
+  // blocks, which follow the balance) started between two moments, by the
+  // reason's label as chosen, and how many are in force at `to`. A customer
+  // belongs to no city, so they count every city.
+  async blocksBetween(
+    from: Date,
+    to: Date,
+  ): Promise<{ started: { label: string; count: number }[]; inForce: number }> {
+    const [started, [inForce]] = await Promise.all([
+      this.database.db
+        .select({ label: blocks.reasonLabel, count: sql<number>`count(*)::int` })
+        .from(blocks)
+        .where(
+          and(
+            sql`${blocks.kind} <> 'dues'`,
+            gte(blocks.startedAt, from),
+            sql`${blocks.startedAt} < ${to.toISOString()}`,
+          ),
+        )
+        .groupBy(blocks.reasonLabel)
+        .orderBy(sql`count(*) DESC`, blocks.reasonLabel),
+      this.database.db
+        .select({ count: sql<number>`count(DISTINCT ${blocks.customerAccountId})::int` })
+        .from(blocks)
+        .where(
+          and(
+            sql`${blocks.kind} <> 'dues'`,
+            sql`${blocks.startedAt} < ${to.toISOString()}`,
+            sql`(${blocks.endedAt} IS NULL OR ${blocks.endedAt} > ${to.toISOString()})`,
+            sql`(${blocks.until} IS NULL OR ${blocks.until} > ${to.toISOString()})`,
+          ),
+        ),
+    ]);
+    return {
+      started: started.map((row) => ({ label: row.label, count: Number(row.count) })),
+      inForce: Number(inForce?.count ?? 0),
+    };
+  }
+
   // «أكمل بياناتك» (CU §5.3), and later edits in «حسابي» (§13). The terms
   // are ticked once, when the details are first completed; a later version
   // is accepted on its own (CU §4.7).

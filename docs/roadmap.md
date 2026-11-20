@@ -211,7 +211,7 @@ Markers: `[ ]` not started, `[~]` in progress, `[x]` done.
   - Visibility and reports:
     - `[x]` 2.39 The live map: zones, restaurants, captains and orders over `ops_map:`, assignment from the map; its styling waits for the design (AP §9.4). The owner assigns a captain from the map.
     - `[x]` 2.40 Dashboard and order histories: the status strip, today's tiles, tasks, the charts as tables until the design, the panel's order history, the restaurant's and the captain's histories (AP §9.1.1–9.1.5, §9.5, RA §8.18, CA §9.13). The owner compares today with the same weekday last week.
-    - `[ ]` 2.41 Reports: every report of AP §9.17 exported to Excel with Arabic headers, the restaurant's reports and daily summary (RA §11). The owner exports a report.
+    - `[x]` 2.41 Reports: every report of AP §9.17 exported to Excel with Arabic headers, the restaurant's reports and daily summary (RA §11). The owner exports a report.
   - Devices and platforms:
     - `[ ]` 2.42 Receiving in the restaurant app: the Android foreground service, the ring with the screen off for 8 hours, full-screen intents, bundled sounds (`core_alerts`), silent notifications when an owner turns ringing off, presence and the 20-second heartbeat, «مطعم مفتوح بلا جهاز استقبال», the device check, the persistent command queue (`core_commands`), the red bar and the offline chime (RA §4.3–4.6, §16, architecture §12). An order rings on a phone locked for hours.
     - `[ ]` 2.43 The captain app in the background: `flutter_background_geolocation` and its licence, positions queued without signal, the offer over the lock screen, the device check (CA §4.5, §14, architecture §14). An offer reaches a phone in a pocket.

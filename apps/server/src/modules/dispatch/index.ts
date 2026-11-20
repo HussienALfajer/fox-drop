@@ -89,6 +89,9 @@ export class OfferTimersWorker implements OnModuleInit {
     LiveMap,
     LiveMapPublisher,
   ],
+  // The reports' exports read the offers (slice 2.41) through the worker's
+  // own DispatchService, so its listeners are registered once.
+  exports: [DispatchService],
 })
 export class DispatchWorkerModule {}
 

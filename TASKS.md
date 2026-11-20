@@ -4,17 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.41, reports (`docs/roadmap.md`, Phase 2).
+Slice 2.42, receiving in the restaurant app (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.41 Reports: every report of AP §9.17 exported to Excel with Arabic headers, the restaurant's reports and daily summary (RA §11). The owner exports a report.
-- **Specs:** AP §9.17 (docs/product/v1/admin-panel/09-modules/17-reports.md: orders, timings, restaurants, captains, customers, lost demand, codes, finance), AP §6.2 (the reports row), AP §5.4 (exports with phone numbers, `exports.phone_numbers`), RA §11 (docs/product/v1/restaurant-app/11-reports.md: the owner's periods, the comparison with the previous period, test orders left out, the daily summary), AP §7.5.
+- **Roadmap line:** 2.42 Receiving in the restaurant app: the Android foreground service, the ring with the screen off for 8 hours, full-screen intents, bundled sounds (`core_alerts`), silent notifications when an owner turns ringing off, presence and the 20-second heartbeat, «مطعم مفتوح بلا جهاز استقبال», the device check, the persistent command queue (`core_commands`), the red bar and the offline chime (RA §4.3–4.6, §16, architecture §12). An order rings on a phone locked for hours.
+- **Specs:** RA §4.3–4.6 (docs/product/v1/restaurant-app/04-platforms-and-technical-foundations.md), RA §16 (16-notifications-and-sounds.md), RA §14.2 (the devices' ring setting and check), AP §9.1.1 («مطعم مفتوح بلا جهاز استقبال», `withoutDevice` on the dashboard), AP §9.6.3 step 8 (the activation's device check, now required), architecture §11.2 (`core_alerts`, `core_commands`) and §12.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Ask the owner first:** the split into pull requests (likely: the panel's reports and their exports; the restaurant's reports and daily summary in the app), and that the daily summary's image and any charts stay plain tables until the design (roadmap, owner decision 2026-11-07).
-- **Already built (reuse):** the exports' worker and workbooks (`reporting/exports.service.ts`, `exports.worker.ts`, `*-workbook.ts`, `content/export-labels.ts` for the Arabic headers), the daily report's figures (`daily-figures.ts`, `DailyReportService.periodFigures`), the dashboard's orders (`DashboardOrdersService.placedBetween`, `dashboard-figures.ts`), the order history's filters (`OrderHistoryService`), the cost report (codes' costs), the lost-demand log (2.28a, its Excel export waits for this slice), `RestaurantFiguresService`, `CaptainFiguresService`, `periodBounds`.
+- **Ask the owner first:** the split into pull requests (likely: the server's presence, heartbeat and device check with the dashboard and activation; the Android foreground service, full-screen intents and bundled sounds; the persistent command queue); the bundled sounds before the design (RA §16: placeholder sounds?); full-screen alerts on Android 14 and later (RA §21 item 4, an open item). Real phones are needed to prove the 8-hour lock: the owner runs that on a device.
+- **Already built (reuse):** the board's ring and chimes (`board/alerts.dart`, `PhoneRinger`), the push channels `ring`, `chime`, `silent` (`MainActivity`), the devices (`merchants.devices`, «الأجهزة», slice 2.33), the activation checklist's `device_check` («غير متاح بعد»), the dashboard's `withoutDevice` (null).
 
 ### Plan
 
-- [ ] Ask the owner the split; write the plan.
+- [ ] Ask the owner the split and the open items; write the plan.
+
+### Left from 2.41 (the cloud session's branch)
+
+- **Before deploying to staging:** migration 0142 (expand only: widens `reporting.exports.exports_kind_values` with `report`). New routes: `GET /v1/admin/reports/{report}`, `POST /v1/admin/reports/{report}/exports`, `GET /v1/merchant/figures`. Deploy the server (API and worker: the worker now imports `DispatchWorkerModule`'s service for the exports) before the panel; the restaurant app needs a new build for «التقارير».
+- **To check on staging (after the merge and the deploy):** 1. Panel as OWN: the side menu › «التقارير» › «تقرير الطلبات»: the last 7 business days by day, hour, zone and restaurant, the cancellations and rejections, the outcomes. 2. Change «من» and «إلى», «عرض التقرير»; press a column's header in «تقرير المطاعم» to sort. 3. «تصدير Excel», then «تنزيل»: the sheet right to left with Arabic headers. 4. «تقرير الزبائن» › «تصدير Excel» as OWN: the top customers' numbers in full; as FIN the report is not offered. 5. As OPS: «تقرير الكباتن» without «المستحقات»; no «التقرير المالي». 6. Restaurant app as owner: the chart button above «السجل» › «التقارير»: «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً», the arrows and the «i» of each figure. 7. «الملخص اليومي» › «مشاركة كصورة» to WhatsApp.
+- **Owner decisions 2026-11-20:** one pull request; every chart a table with text arrows; the daily summary a plain table shared as an image.
+- **Decided by us (to confirm with the owner):** which role reads which report (OWN all; OPS orders, timings, restaurants, captains, customers, lost demand; SUP customers; FIN codes and finance); OPS sees the captains report without the earnings (AP §6.2 «except money»); the reports open on the last 7 business days; the panel's restaurant acceptance (operations' acceptances counted, as «المطاعم») differs from the owners' RA §11 rate (their own, the customer's early cancellations left out); «Orders by hour» counts delivered orders by the hour placed; a customer is new when their first order ever is in the period; the top customers are 20; the customers' blocks count every city; the votes count against the zones active now; the comparison of «اليوم» is with the same length of yesterday from its cutoff.
+- **Open (ask the owner):** how to count the captains' «cash hand-in punctuality» (AP §9.17): nothing records when a closed day's cash was handed in against its cutoff; the restaurants' minutes in busy mode or at the limit (RA §11) need a history that is not kept yet; the orders the capacity check refused are not logged yet.
+- **Not checked locally:** see the pull request's test plan.
 
 ### Left from 2.40 (the cloud session's branch)
 

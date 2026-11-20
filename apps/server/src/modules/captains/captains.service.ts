@@ -697,6 +697,29 @@ export class CaptainsService implements OnModuleInit {
     return Math.floor(Number(total?.seconds ?? '0') / 60);
   }
 
+  // AP §9.17 «Captains» (slice 2.41): each captain of the city's whole
+  // minutes online between two moments, the open period counted up to `to`.
+  async onlineMinutesOfCity(cityId: string, from: Date, to: Date): Promise<Map<string, number>> {
+    const end = sql`least(coalesce(${onlinePeriods.endedAt}, ${to.toISOString()}::timestamptz), ${to.toISOString()}::timestamptz)`;
+    const start = sql`greatest(${onlinePeriods.startedAt}, ${from.toISOString()}::timestamptz)`;
+    const rows = await this.database.db
+      .select({
+        captainId: onlinePeriods.captainId,
+        seconds: sql<string>`coalesce(sum(greatest(extract(epoch FROM ${end} - ${start}), 0)), 0)::text`,
+      })
+      .from(onlinePeriods)
+      .innerJoin(captainRecords, eq(captainRecords.id, onlinePeriods.captainId))
+      .where(
+        and(
+          eq(captainRecords.cityId, cityId),
+          lte(onlinePeriods.startedAt, to),
+          or(isNull(onlinePeriods.endedAt), gt(onlinePeriods.endedAt, from)),
+        ),
+      )
+      .groupBy(onlinePeriods.captainId);
+    return new Map(rows.map((row) => [row.captainId, Math.floor(Number(row.seconds) / 60)]));
+  }
+
   // CA §10.5 «العملات التي أحملها»: what the captain carries of the city's
   // enabled currencies (the base until they set them), and the choices.
   async carriedCurrencies(captainId: string): Promise<CarriedCurrencies> {

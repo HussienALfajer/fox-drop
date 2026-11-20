@@ -62,7 +62,7 @@ import { MassPushAudienceSource } from './mass-push-audience.js';
     FavouritesService,
     MassPushAudienceSource,
   ],
-  exports: [CustomersService],
+  exports: [CustomersService, LostDemandService],
 })
 export class CustomersModule {}
 
@@ -87,5 +87,6 @@ export {
   type UnsavedAddressFields,
 } from './customers.service.js';
 export { maskedPhone } from './blocks.js';
+export { type LostDemand, LostDemandService } from './lost-demand.service.js';
 export { pointQuery } from './point-query.js';
 export { trustBasis, type TrustMark } from './trust.js';

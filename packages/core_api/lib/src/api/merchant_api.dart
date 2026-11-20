@@ -28,6 +28,7 @@ import 'package:core_api/src/model/merchant_device_name_dto.dart';
 import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_devices_dto_output.dart';
 import 'package:core_api/src/model/merchant_emergency_stop_dto_output.dart';
+import 'package:core_api/src/model/merchant_figures_dto_output.dart';
 import 'package:core_api/src/model/merchant_holiday_close_dto.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output.dart';
 import 'package:core_api/src/model/merchant_item_photo_request_dto.dart';
@@ -945,6 +946,92 @@ class MerchantApi {
     }
 
     return Response<MerchantEmergencyStopDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// merchantFiguresRead
+  ///
+  ///
+  /// Parameters:
+  /// * [period] - RA §11: «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً»; or `day`.
+  /// * [day] - A business day on the city’s clock, for the daily summary; or `period`.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantFiguresDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantFiguresDtoOutput>> merchantFiguresRead({
+    String? period,
+    String? day,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/figures';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (period != null)
+        r'period': encodeQueryParameter(
+          _serializers,
+          period,
+          const FullType(String),
+        ),
+      if (day != null)
+        r'day': encodeQueryParameter(_serializers, day, const FullType(String)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantFiguresDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantFiguresDtoOutput),
+                )
+                as MerchantFiguresDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantFiguresDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

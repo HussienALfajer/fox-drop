@@ -62,6 +62,7 @@ export {
   costReportLabels,
   dailyReportLabels,
   orderHistoryLabels,
+  reportLabels,
   restaurantStatementLabels,
 } from './export-labels.js';
 export {

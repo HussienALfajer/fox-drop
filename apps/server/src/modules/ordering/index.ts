@@ -60,6 +60,7 @@ import { RatingPagesService } from './rating-pages.js';
 import { CaptainFiguresService } from './captain-figures.js';
 import { RestaurantFiguresService } from './restaurant-figures.js';
 import { DashboardOrdersService } from './dashboard-orders.js';
+import { ReportOrdersService } from './report-orders.js';
 import { AdminRestaurantOverviewController } from './admin-restaurant-overview.controller.js';
 import { AdminDeliveryFeesController } from './admin-delivery-fees.controller.js';
 import { AdminPayTablesController } from './admin-pay-tables.controller.js';
@@ -149,6 +150,7 @@ import {
     AdminSearch,
     AppHistories,
     OrderHistoryService,
+    ReportOrdersService,
   ],
   exports: [
     QuoteService,
@@ -158,6 +160,7 @@ import {
     DashboardOrdersService,
     AppHistories,
     OrderHistoryService,
+    ReportOrdersService,
   ],
 })
 export class OrderingModule {}
@@ -255,6 +258,13 @@ export {
 } from './order-history.js';
 export { type CaptainFigures, CaptainFiguresService, ON_TIME_WINDOW } from './captain-figures.js';
 export { type DashboardOrderRow, DashboardOrdersService } from './dashboard-orders.js';
+export { periodBounds } from './rating-pages.js';
+export {
+  type ReportItem,
+  type ReportOrder,
+  ReportOrdersService,
+  type ReportScope,
+} from './report-orders.js';
 export {
   type CostOrder,
   type OperatingCostCause,

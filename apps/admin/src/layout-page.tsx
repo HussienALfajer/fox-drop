@@ -107,6 +107,8 @@ function MenuLink({ id }: { id: MenuLinkId }) {
       return <Link to="/team">{t('team.title')}</Link>;
     case 'auditLog':
       return <Link to="/audit-log">{t('auditLog.title')}</Link>;
+    case 'reports':
+      return <Link to="/reports">{t('reports.title')}</Link>;
     case 'lostDemand':
       return <Link to="/lost-demand">{t('lostDemand.title')}</Link>;
   }

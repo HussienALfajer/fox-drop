@@ -518,6 +518,43 @@ export class MerchantsService implements OnModuleInit {
     return new Map(rows.map(({ id, ...names }) => [id, names]));
   }
 
+  // AP §9.17 «Restaurants», RA §11 «Pause and busy time» (slice 2.41): the
+  // whole minutes each restaurant was paused between two moments, by the
+  // pause's source (`restaurant`, `ops`, `auto`): from its start to its
+  // early end, else its end, else `to` (a pause until resumed), within the
+  // window. A pause counts whether or not the schedule had it open.
+  async pauseMinutes(
+    restaurantIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<Map<string, Map<string, number>>> {
+    const result = new Map<string, Map<string, number>>();
+    if (restaurantIds.length === 0) return result;
+    const start = sql`greatest(${pauses.startsAt}, ${from.toISOString()}::timestamptz)`;
+    const end = sql`least(coalesce(${pauses.endedAt}, ${pauses.endsAt}, ${to.toISOString()}::timestamptz), coalesce(${pauses.endsAt}, ${to.toISOString()}::timestamptz), ${to.toISOString()}::timestamptz)`;
+    const rows = await this.database.db
+      .select({
+        restaurantId: pauses.restaurantId,
+        source: pauses.source,
+        seconds: sql<string>`coalesce(sum(greatest(extract(epoch FROM ${end} - ${start}), 0)), 0)::text`,
+      })
+      .from(pauses)
+      .where(
+        and(
+          inArray(pauses.restaurantId, restaurantIds),
+          sql`${pauses.startsAt} < ${to.toISOString()}`,
+          sql`coalesce(${pauses.endedAt}, ${pauses.endsAt}, 'infinity'::timestamptz) > ${from.toISOString()}`,
+        ),
+      )
+      .groupBy(pauses.restaurantId, pauses.source);
+    for (const row of rows) {
+      const sources = result.get(row.restaurantId) ?? new Map<string, number>();
+      sources.set(row.source, Math.floor(Number(row.seconds) / 60));
+      result.set(row.restaurantId, sources);
+    }
+    return result;
+  }
+
   // A new restaurant, a draft until activated (AP §9.6.3).
   async createRestaurant(
     cityId: string,

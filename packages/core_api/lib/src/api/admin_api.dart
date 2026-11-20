@@ -245,6 +245,8 @@ import 'package:core_api/src/model/admin_record_violation_dto.dart';
 import 'package:core_api/src/model/admin_reject_compensation_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_release_device_dto.dart';
+import 'package:core_api/src/model/admin_report_dto_output.dart';
+import 'package:core_api/src/model/admin_report_export_body_dto.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_resolve_shortfall_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_accounts_dto_output.dart';
@@ -20096,6 +20098,217 @@ class AdminApi {
     }
 
     return Response<RealtimeTokenDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminReportsReport
+  ///
+  ///
+  /// Parameters:
+  /// * [report]
+  /// * [cityId]
+  /// * [from] - The first business day; with `to`, or neither.
+  /// * [to] - The last business day, included; the last 7 days when both are left out.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminReportDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminReportDtoOutput>> adminReportsReport({
+    required String report,
+    required String cityId,
+    String? from,
+    String? to,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/reports/{report}'.replaceAll(
+      '{'
+      r'report'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        report,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+      if (from != null)
+        r'from': encodeQueryParameter(
+          _serializers,
+          from,
+          const FullType(String),
+        ),
+      if (to != null)
+        r'to': encodeQueryParameter(_serializers, to, const FullType(String)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminReportDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminReportDtoOutput),
+                )
+                as AdminReportDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminReportDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminReportsRequestExport
+  ///
+  ///
+  /// Parameters:
+  /// * [report]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminReportExportBodyDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminExportDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminExportDtoOutput>> adminReportsRequestExport({
+    required String report,
+    required String idempotencyKey,
+    required AdminReportExportBodyDto adminReportExportBodyDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/reports/{report}/exports'.replaceAll(
+      '{'
+      r'report'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        report,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminReportExportBodyDto);
+      _bodyData = _serializers.serialize(
+        adminReportExportBodyDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminExportDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminExportDtoOutput),
+                )
+                as AdminExportDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminExportDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

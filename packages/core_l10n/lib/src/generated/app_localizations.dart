@@ -5798,10 +5798,10 @@ abstract class AppLocalizations {
   /// **'لا بلاغات بعد.'**
   String get merchantMyReportsEmpty;
 
-  /// «بلاغاتي» could not be read (no wording in the spec).
+  /// A reports read failed for another reason than a refusal (the wording ours).
   ///
   /// In ar, this message translates to:
-  /// **'تعذّر تحميل البلاغات.'**
+  /// **'تعذّر تحميل التقارير.'**
   String get merchantReportsFailed;
 
   /// Reads «بلاغاتي» again.
@@ -8923,6 +8923,444 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'{restaurant} · {neighbourhood}'**
   String captainHistoryRestaurant(String restaurant, String neighbourhood);
+
+  /// The owners' reports screen (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'التقارير'**
+  String get merchantReports;
+
+  /// A cashier's reports read (RA §6.1; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'التقارير للمالكين فقط.'**
+  String get merchantReportsNotAllowed;
+
+  /// A terminated restaurant's reports read (RA §5.5; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى حساب مطعمك، والتقارير لم تعد متاحة.'**
+  String get merchantReportsTerminated;
+
+  /// Under the period chips: the arrows and the exclusions (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'↑ ↓ مقارنة بالفترة السابقة بالطول نفسه. الطلبات التجريبية مستبعدة.'**
+  String get merchantReportsCompared;
+
+  /// A figure above the previous period, by how much (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'↑ {percent}%'**
+  String merchantReportsChangeUp(String percent);
+
+  /// A figure below the previous period, by how much (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'↓ {percent}%'**
+  String merchantReportsChangeDown(String percent);
+
+  /// A figure above a previous period that had none (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'↑'**
+  String get merchantReportsChangeNew;
+
+  /// A figure equal to the previous period's (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'='**
+  String get merchantReportsChangeSame;
+
+  /// The previous period's value beside the arrow (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'السابق: {value}'**
+  String merchantReportsPrevious(String value);
+
+  /// A figure with nothing to count or average.
+  ///
+  /// In ar, this message translates to:
+  /// **'—'**
+  String get merchantReportsNoValue;
+
+  /// An average in minutes, one decimal at most.
+  ///
+  /// In ar, this message translates to:
+  /// **'{value} د'**
+  String merchantReportsMinutes(String value);
+
+  /// A share as a percentage, one decimal at most.
+  ///
+  /// In ar, this message translates to:
+  /// **'{value}%'**
+  String merchantReportsPercent(String value);
+
+  /// The period's average stars and how many ratings (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'{average} من 5 ({count})'**
+  String merchantReportsRating(String average, int count);
+
+  /// The info icon's tooltip beside a figure (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'ما معنى «{metric}»؟'**
+  String merchantReportsInfo(String metric);
+
+  /// Closes a figure's definition.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسناً'**
+  String get merchantReportsInfoClose;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات المستلمة'**
+  String get merchantReportsMetricReceived;
+
+  /// The definition of «الطلبات المستلمة» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات التي وصلت إلى مطعمك في الفترة.'**
+  String get merchantReportsInfoReceived;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبلتموها'**
+  String get merchantReportsMetricAcceptedByYou;
+
+  /// The definition of «قبلتموها» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات التي قبلها أحد مستخدمي المطعم.'**
+  String get merchantReportsInfoAcceptedByYou;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبلتها العمليات'**
+  String get merchantReportsMetricAcceptedByOperations;
+
+  /// The definition of «قبلتها العمليات» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات التي قبلتها العمليات نيابة عنكم.'**
+  String get merchantReportsInfoAcceptedByOperations;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'المرفوضة'**
+  String get merchantReportsMetricRejected;
+
+  /// The definition of «المرفوضة» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات المرفوضة منكم أو من العمليات، وأسبابها أدناه.'**
+  String get merchantReportsInfoRejected;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا رد'**
+  String get merchantReportsMetricUnanswered;
+
+  /// The definition of «بلا رد» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات التي أُلغيت تلقائياً لأن أحداً لم يرد عليها.'**
+  String get merchantReportsInfoUnanswered;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة القبول'**
+  String get merchantReportsMetricAcceptance;
+
+  /// The definition of «نسبة القبول» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'ما قبلتموه ÷ (الطلبات المستلمة − ما ألغاه الزبون قبل أي رد).'**
+  String get merchantReportsInfoAcceptance;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'المسلّمة'**
+  String get merchantReportsMetricDelivered;
+
+  /// The definition of «المسلّمة» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات التي وصلت إلى الزبون.'**
+  String get merchantReportsInfoDelivered;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبيعات'**
+  String get merchantReportsMetricSales;
+
+  /// The definition of «المبيعات» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة أصناف الطلبات المسلّمة بعد أي تعديل.'**
+  String get merchantReportsInfoSales;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط الطلب'**
+  String get merchantReportsMetricAverageOrder;
+
+  /// The definition of «متوسط الطلب» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبيعات ÷ الطلبات المسلّمة.'**
+  String get merchantReportsInfoAverageOrder;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة'**
+  String get merchantReportsMetricCommission;
+
+  /// The definition of «العمولة» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة المقيّدة على حسابكم في الفترة.'**
+  String get merchantReportsInfoCommission;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'خصومات على حسابكم'**
+  String get merchantReportsMetricDiscounts;
+
+  /// The definition of «خصومات على حسابكم» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'حصتكم من الخصومات المقيّدة على حسابكم في الفترة.'**
+  String get merchantReportsInfoDiscounts;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'الصافي'**
+  String get merchantReportsMetricNet;
+
+  /// The definition of «الصافي» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبيعات ناقص العمولة وحصتكم من الخصومات.'**
+  String get merchantReportsInfoNet;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط وقت القبول'**
+  String get merchantReportsMetricAcceptTime;
+
+  /// The definition of «متوسط وقت القبول» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'من وصول الطلب حتى قبوله، لمستخدمي المطعم فقط.'**
+  String get merchantReportsInfoAcceptTime;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط التحضير الفعلي'**
+  String get merchantReportsMetricPrepTime;
+
+  /// The definition of «متوسط التحضير الفعلي» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'من القبول حتى «الطلب جاهز»، أو حتى الاستلام إن لم يُضغط «جاهز»، مقارنة بمتوسط الوقت المختار.'**
+  String get merchantReportsInfoPrepTime;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط الوقت المختار'**
+  String get merchantReportsMetricChosenTime;
+
+  /// The definition of «متوسط الوقت المختار» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت التحضير الذي اخترتموه عند القبول، بعد أي تعديل.'**
+  String get merchantReportsInfoChosenTime;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة التأخير'**
+  String get merchantReportsMetricLate;
+
+  /// The definition of «نسبة التأخير» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات الجاهزة (أو المستلمة دون ضغط «جاهز») بعد وقت التحضير المختار ÷ المقبولة.'**
+  String get merchantReportsInfoLate;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُضغط «جاهز»'**
+  String get merchantReportsMetricReadyNotPressed;
+
+  /// The definition of «لم يُضغط «جاهز»» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات استلمها الكابتن دون ضغط «الطلب جاهز».'**
+  String get merchantReportsInfoReadyNotPressed;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط انتظار الكابتن'**
+  String get merchantReportsMetricCaptainWait;
+
+  /// The definition of «متوسط انتظار الكابتن» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'من وصول الكابتن إلى المطعم حتى الاستلام.'**
+  String get merchantReportsInfoCaptainWait;
+
+  /// A figure of RA §11's table (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'التقييم'**
+  String get merchantReportsMetricRating;
+
+  /// The definition of «التقييم» (RA §11 «Definitions»).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط النجوم وعدد التقييمات في الفترة.'**
+  String get merchantReportsInfoRating;
+
+  /// The rejections by reason and party (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'الرفض حسب السبب'**
+  String get merchantReportsRejections;
+
+  /// A rejection reason and its count.
+  ///
+  /// In ar, this message translates to:
+  /// **'{reason}: {count}'**
+  String merchantReportsRejectionRow(String reason, int count);
+
+  /// A reason operations rejected on the restaurant's behalf, and its count.
+  ///
+  /// In ar, this message translates to:
+  /// **'{reason} (العمليات): {count}'**
+  String merchantReportsRejectionByOperations(String reason, int count);
+
+  /// Top 10 items by quantity in delivered orders (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأكثر طلباً بالكمية'**
+  String get merchantReportsTopByQuantity;
+
+  /// Top 10 items by sales in delivered orders (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأكثر مبيعاً بالقيمة'**
+  String get merchantReportsTopBySales;
+
+  /// An item, its quantity and its sales.
+  ///
+  /// In ar, this message translates to:
+  /// **'{name}: {quantity} — {sales}'**
+  String merchantReportsItemRow(String name, int quantity, String sales);
+
+  /// Delivered orders per hour of the business day (RA §11), as a table until the design.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات المسلّمة حسب الساعة'**
+  String get merchantReportsHours;
+
+  /// An hour of the city's clock and its delivered orders.
+  ///
+  /// In ar, this message translates to:
+  /// **'{hour}:00 — {count}'**
+  String merchantReportsHourRow(String hour, int count);
+
+  /// Pause and busy time (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيقاف ووضع الانشغال'**
+  String get merchantReportsPauses;
+
+  /// Minutes the restaurant paused itself.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقافكم: {minutes} د'**
+  String merchantReportsPauseRestaurant(int minutes);
+
+  /// Minutes operations paused the restaurant.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف العمليات: {minutes} د'**
+  String merchantReportsPauseOps(int minutes);
+
+  /// Minutes of the automatic pause (RA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف تلقائي: {minutes} د'**
+  String merchantReportsPauseAuto(int minutes);
+
+  /// Busy-mode minutes are not recorded yet (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'دقائق وضع الانشغال أو بلوغ الحد: غير متاحة بعد'**
+  String get merchantReportsBusyNotYet;
+
+  /// An empty list of a period.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا شيء في هذه الفترة.'**
+  String get merchantReportsEmpty;
+
+  /// Opens the daily summary (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'الملخص اليومي'**
+  String get merchantReportsOpenSummary;
+
+  /// The daily summary's title, with the business day.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملخص يوم {date}'**
+  String merchantReportsSummaryTitle(String date);
+
+  /// Picks the summary's business day.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار يوم آخر'**
+  String get merchantReportsSummaryPickDay;
+
+  /// Under the summary: what the arrows compare.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقارنة باليوم السابق'**
+  String get merchantReportsSummaryCompared;
+
+  /// Shares the daily summary as an image (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشاركة كصورة'**
+  String get merchantReportsShare;
+
+  /// The summary image could not be shared (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت مشاركة الصورة، حاول مرة أخرى'**
+  String get merchantReportsShareFailed;
 }
 
 class _AppLocalizationsDelegate

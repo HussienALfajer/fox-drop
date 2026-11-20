@@ -573,6 +573,11 @@ import 'package:core_api/src/model/admin_reject_compensation_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_release_device_dto.dart';
+import 'package:core_api/src/model/admin_report_dto_output.dart';
+import 'package:core_api/src/model/admin_report_dto_output_tables_inner.dart';
+import 'package:core_api/src/model/admin_report_dto_output_tables_inner_columns_inner.dart';
+import 'package:core_api/src/model/admin_report_dto_output_tables_inner_rows_inner.dart';
+import 'package:core_api/src/model/admin_report_export_body_dto.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_resolve_shortfall_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_accounts_dto_output.dart';
@@ -1082,6 +1087,13 @@ import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_devices_dto_output.dart';
 import 'package:core_api/src/model/merchant_devices_dto_output_devices_inner.dart';
 import 'package:core_api/src/model/merchant_emergency_stop_dto_output.dart';
+import 'package:core_api/src/model/merchant_figures_dto_output.dart';
+import 'package:core_api/src/model/merchant_figures_item_output.dart';
+import 'package:core_api/src/model/merchant_figures_output.dart';
+import 'package:core_api/src/model/merchant_figures_output_hours_inner.dart';
+import 'package:core_api/src/model/merchant_figures_output_pause_minutes.dart';
+import 'package:core_api/src/model/merchant_figures_output_rating.dart';
+import 'package:core_api/src/model/merchant_figures_output_rejections_inner.dart';
 import 'package:core_api/src/model/merchant_holiday_close_dto.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output_coverage.dart';
@@ -1790,6 +1802,11 @@ part 'serializers.g.dart';
   AdminRejectDto,
   AdminRejectDtoItemsInner,
   AdminReleaseDeviceDto,
+  AdminReportDtoOutput,
+  AdminReportDtoOutputTablesInner,
+  AdminReportDtoOutputTablesInnerColumnsInner,
+  AdminReportDtoOutputTablesInnerRowsInner,
+  AdminReportExportBodyDto,
   AdminResendNotificationDto,
   AdminResolveShortfallDto,
   AdminRestaurantAccountsDtoOutput,
@@ -2299,6 +2316,13 @@ part 'serializers.g.dart';
   MerchantDevicesDtoOutput,
   MerchantDevicesDtoOutputDevicesInner,
   MerchantEmergencyStopDtoOutput,
+  MerchantFiguresDtoOutput,
+  MerchantFiguresItemOutput,
+  MerchantFiguresOutput,
+  MerchantFiguresOutputHoursInner,
+  MerchantFiguresOutputPauseMinutes,
+  MerchantFiguresOutputRating,
+  MerchantFiguresOutputRejectionsInner,
   MerchantHolidayCloseDto,
   MerchantHoursDtoOutput,
   MerchantHoursDtoOutputCoverage,
@@ -2467,6 +2491,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminReportDtoOutputTablesInnerColumnsInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInnerColumnsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainEarningsDtoOutputOrdersInner),
             ]),
             () => ListBuilder<CaptainEarningsDtoOutputOrdersInner>(),
@@ -2540,6 +2570,12 @@ Serializers serializers =
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminReportDtoOutputTablesInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInner>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [FullType(MerchantRequestOption)]),
             () => ListBuilder<MerchantRequestOption>(),
           )
@@ -2586,6 +2622,10 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminDraftPeriodOutput)]),
             () => ListBuilder<AdminDraftPeriodOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType.nullable(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2809,6 +2849,10 @@ Serializers serializers =
               FullType(AdminEditPreviewAnswerDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(MerchantFiguresItemOutput)]),
+            () => ListBuilder<MerchantFiguresItemOutput>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3371,6 +3415,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminReportDtoOutputTablesInnerRowsInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInnerRowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
             ]),
             () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
@@ -3484,6 +3534,12 @@ Serializers serializers =
               FullType(CaptainStatementListDtoOutputStatementsInner),
             ]),
             () => ListBuilder<CaptainStatementListDtoOutputStatementsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantFiguresOutputRejectionsInner),
+            ]),
+            () => ListBuilder<MerchantFiguresOutputRejectionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3638,6 +3694,12 @@ Serializers serializers =
               FullType(AdminDashboardDtoOutputHoursInner),
             ]),
             () => ListBuilder<AdminDashboardDtoOutputHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantFiguresOutputHoursInner),
+            ]),
+            () => ListBuilder<MerchantFiguresOutputHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

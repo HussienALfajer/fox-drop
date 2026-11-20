@@ -656,7 +656,21 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/restaurant-statements': 'restaurants.statements',
   'POST /v1/admin/restaurant-statements/exports': 'restaurants.statements',
   'GET /v1/admin/exports/{exportId}': {
-    anyOf: ['restaurants.statements', 'finance.read', 'order_history.read'],
+    anyOf: [
+      'restaurants.statements',
+      'finance.read',
+      'order_history.read',
+      'reports.all',
+      'reports.operations',
+      'reports.support',
+      'reports.financial',
+    ],
+  },
+  'GET /v1/admin/reports/{report}': {
+    anyOf: ['reports.all', 'reports.operations', 'reports.support', 'reports.financial'],
+  },
+  'POST /v1/admin/reports/{report}/exports': {
+    anyOf: ['reports.all', 'reports.operations', 'reports.support', 'reports.financial'],
   },
   'GET /v1/admin/daily-report': 'finance.read',
   'GET /v1/admin/dashboard': 'dashboard.read',
@@ -739,6 +753,7 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/merchant/account': 'app_session',
   'GET /v1/merchant/account/overdue': 'app_session',
   'GET /v1/merchant/ratings': 'app_session',
+  'GET /v1/merchant/figures': 'app_session',
   'GET /v1/merchant/statements': 'app_session',
   'GET /v1/merchant/statements/{statementId}': 'app_session',
   'GET /v1/merchant/receipts': 'app_session',

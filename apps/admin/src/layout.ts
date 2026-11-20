@@ -16,6 +16,7 @@ import { canSeeDashboard } from './dashboard.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { canSeeHomeSections } from './home-sections.js';
 import { canSeeLostDemand } from './lost-demand.js';
+import { canSeeReports } from './reports.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { canSeeMassPushes } from './mass-pushes.js';
 import { canSeeLiveMap } from './live-map.js';
@@ -113,6 +114,7 @@ export const MENU_LINKS = {
   appSettings: { module: 'settings', path: '/settings/apps', allowed: holds(SETTINGS_READ) },
   team: { module: 'team', path: '/team', allowed: holds(ADMIN_TEAM) },
   auditLog: { module: 'auditLog', path: '/audit-log', allowed: canReadAuditLog },
+  reports: { module: 'reports', path: '/reports', allowed: canSeeReports },
   lostDemand: { module: 'reports', path: '/lost-demand', allowed: canSeeLostDemand },
 } as const satisfies Record<string, { module: MenuModule; path: string; allowed: Check }>;
 export type MenuLinkId = keyof typeof MENU_LINKS;

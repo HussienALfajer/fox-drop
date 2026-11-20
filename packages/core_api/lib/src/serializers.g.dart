@@ -995,6 +995,14 @@ Serializers _$serializers =
           ..add(AdminRejectDtoItemsInner.serializer)
           ..add(AdminRejectDtoItemsInnerUntilEnum.serializer)
           ..add(AdminReleaseDeviceDto.serializer)
+          ..add(AdminReportDtoOutput.serializer)
+          ..add(AdminReportDtoOutputReportEnum.serializer)
+          ..add(AdminReportDtoOutputTablesInner.serializer)
+          ..add(AdminReportDtoOutputTablesInnerColumnsInner.serializer)
+          ..add(AdminReportDtoOutputTablesInnerColumnsInnerKindEnum.serializer)
+          ..add(AdminReportDtoOutputTablesInnerRowKindEnum.serializer)
+          ..add(AdminReportDtoOutputTablesInnerRowsInner.serializer)
+          ..add(AdminReportExportBodyDto.serializer)
           ..add(AdminResendNotificationDto.serializer)
           ..add(AdminResendNotificationDtoToEnum.serializer)
           ..add(AdminResolveShortfallDto.serializer)
@@ -1832,6 +1840,13 @@ Serializers _$serializers =
           ..add(MerchantDevicesDtoOutputDevicesInner.serializer)
           ..add(MerchantDevicesDtoOutputDevicesInnerPlatformEnum.serializer)
           ..add(MerchantEmergencyStopDtoOutput.serializer)
+          ..add(MerchantFiguresDtoOutput.serializer)
+          ..add(MerchantFiguresItemOutput.serializer)
+          ..add(MerchantFiguresOutput.serializer)
+          ..add(MerchantFiguresOutputHoursInner.serializer)
+          ..add(MerchantFiguresOutputPauseMinutes.serializer)
+          ..add(MerchantFiguresOutputRating.serializer)
+          ..add(MerchantFiguresOutputRejectionsInner.serializer)
           ..add(MerchantHolidayCloseDto.serializer)
           ..add(MerchantHoursDtoOutput.serializer)
           ..add(MerchantHoursDtoOutputCoverage.serializer)
@@ -3623,6 +3638,24 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminReportDtoOutputTablesInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReportDtoOutputTablesInnerColumnsInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInnerColumnsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReportDtoOutputTablesInnerRowsInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInnerRowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
             ]),
             () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
@@ -4956,6 +4989,30 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantFiguresOutputRejectionsInner),
+            ]),
+            () => ListBuilder<MerchantFiguresOutputRejectionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresItemOutput),
+            ]),
+            () => ListBuilder<MerchantFiguresItemOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresItemOutput),
+            ]),
+            () => ListBuilder<MerchantFiguresItemOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresOutputHoursInner),
+            ]),
+            () => ListBuilder<MerchantFiguresOutputHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantHoursDtoOutputPeriodsInner),
             ]),
             () => ListBuilder<MerchantHoursDtoOutputPeriodsInner>(),
@@ -6043,6 +6100,10 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType.nullable(String)]),
+            () => ListBuilder<String?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltMap, const [

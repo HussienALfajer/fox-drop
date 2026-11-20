@@ -57,6 +57,8 @@ import { auditLogSearchOf, canReadAuditLog } from './audit-log.js';
 import { AuditLogPage } from './audit-log-page.js';
 import { canSeeLostDemand } from './lost-demand.js';
 import { LostDemandPage } from './lost-demand-page.js';
+import { canSeeReports, REPORT_KINDS, type ReportKind } from './reports.js';
+import { ReportsPage } from './reports-page.js';
 import { MenuChangeRequestPage, MenuChangeRequestsPage } from './menu-change-requests-page.js';
 import { canReviewMenuChanges } from './menu-change-requests.js';
 import { canSeeHomeSections } from './home-sections.js';
@@ -622,6 +624,29 @@ const lostDemandRoute = createRoute({
   component: LostDemandPage,
 });
 
+// AP §9.17 «التقارير» (slice 2.41): the session's reports (AP §6.2, checked
+// by the server too); `report` the one shown, `from` and `to` the business
+// days, both or neither (the last 7 when left out).
+const reportsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/reports',
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { city?: string; report?: ReportKind; from?: string; to?: string } => ({
+    ...citySearch(search),
+    ...(REPORT_KINDS.includes(search.report as ReportKind)
+      ? { report: search.report as ReportKind }
+      : {}),
+    ...(typeof search.from === 'string' && typeof search.to === 'string'
+      ? { from: search.from, to: search.to }
+      : {}),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeReports(context.session)) throw redirect({ to: '/' });
+  },
+  component: ReportsPage,
+});
+
 // AP §9.11.1 «Code report» (slice 2.21d): the list's readers; OWN pauses,
 // resumes and extends from it (checked by the page and the server).
 const promoCodeReportRoute = createRoute({
@@ -976,6 +1001,7 @@ const routeTree = rootRoute.addChildren([
     bannersRoute,
     massPushesRoute,
     lostDemandRoute,
+    reportsRoute,
     settingsRoute,
     otpSendersRoute,
     auditLogRoute,

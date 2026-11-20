@@ -125,7 +125,7 @@ export class DailyReportService {
   }
 
   // Each day's figures, the days consecutive and oldest first.
-  private async figures(
+  async figures(
     cityId: string,
     days: readonly string[],
     clock: { timeZone: string; cutoffMinutes: number },
