@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { cityQueries, opsChannel, pollUnlessLive, staleQueries } from './live.js';
+import {
+  captainsOf,
+  cityQueries,
+  mapLive,
+  opsChannel,
+  opsMapChannel,
+  pollUnlessLive,
+  staleQueries,
+} from './live.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -15,6 +23,7 @@ describe('the ops channel', () => {
   it("refreshes the board and the order's detail on an order event", () => {
     expect(staleQueries({ type: 'order.accepted', orderId: 'o1' }, city)).toEqual([
       ['orders-board', city],
+      ['live-map', city],
       ['order', 'o1'],
     ]);
     // Slice 2.9: the item report and the time change are order events too.
@@ -41,6 +50,7 @@ describe('the ops channel', () => {
     ]);
     expect(staleQueries({ type: 'restaurant.state_changed', restaurantId: 'r1' }, city)).toEqual([
       ['restaurant-status', 'r1'],
+      ['live-map', city],
     ]);
     expect(staleQueries({ type: 'ticket.opened' }, city)).toEqual([]);
     // Slice 2.23a: a ticket opened or changed.
@@ -61,11 +71,33 @@ describe('the ops channel', () => {
       ['restaurant-status'],
       ['tickets', city],
       ['ticket'],
+      ['live-map', city],
     ]);
   });
 
   it('polls only while the city is not live (owner decision 2026-11-07)', () => {
     expect(pollUnlessLive(city, 10_000)()).toBe(10_000);
     expect(pollUnlessLive(undefined, 10_000)()).toBe(10_000);
+  });
+});
+
+// Architecture §6.2, AP §9.4 (slice 2.39): the live map's channel carries
+// the city's whole captains layer.
+describe('the live map channel', () => {
+  it('is the city map channel of architecture §6.2', () => {
+    expect(opsMapChannel(city)).toBe(`ops_map:city.${city}`);
+  });
+
+  it('takes the captains of a captains publication only', () => {
+    expect(captainsOf({ type: 'captains', captains: [{ captainId: 'c1' }] })).toEqual([
+      { captainId: 'c1' },
+    ]);
+    expect(captainsOf({ type: 'other' })).toBeNull();
+    expect(captainsOf({ type: 'captains' })).toBeNull();
+  });
+
+  it('is not live before its subscription', () => {
+    expect(mapLive(city)).toBe(false);
+    expect(mapLive(undefined)).toBe(false);
   });
 });

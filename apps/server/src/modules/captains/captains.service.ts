@@ -318,6 +318,21 @@ export interface PayTableAnnounced {
 type PayTableListener = (tx: Tx, announced: PayTableAnnounced) => Promise<void>;
 
 // A captain's cash now (AP §8.5.3–8.5.4), in the city's base currency.
+// AP §9.4 «الخريطة الحية» (slice 2.39): a captain of the city as the live
+// map shows them: the state (green available, orange busy, grey offline),
+// what blocks them for cash (the red outline), the cash-limit usage and the
+// newest real point, whatever its age (an offline captain's last known
+// position and its time).
+export interface MapCaptain {
+  captainId: string;
+  name: string;
+  vehicle: Vehicle;
+  state: Availability['state'];
+  blocks: ('closed_due' | 'cash_limit')[];
+  custody: { usage: Money; limit: Money };
+  position: (Point & { recordedAt: Date }) | null;
+}
+
 export interface Custody {
   // The positive custody positions, converted at current rates.
   usage: Money;
@@ -1993,6 +2008,74 @@ export class CaptainsService implements OnModuleInit {
     return states.flat();
   }
 
+  // AP §9.4 (slice 2.39): every captain of the city not terminated, by
+  // name, with the state, the cash blocks and the newest real point of any
+  // online period. A captain whose state cannot be read now (a currency
+  // without a rate) is logged and left out, as cashLimits does.
+  async mapCaptains(cityId: string, now: Date): Promise<MapCaptain[]> {
+    const rows = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), ne(captainRecords.status, 'terminated')))
+      .orderBy(captainRecords.name);
+    if (rows.length === 0) return [];
+    const rules = await this.cityRules(cityId, now);
+    const points = await this.newestPoints(rows.map((row) => row.id));
+    const listed = await Promise.all(
+      rows.map(async (row): Promise<MapCaptain[]> => {
+        try {
+          const { availability: input, custody } = await this.input(this.database.db, row, rules);
+          const state = availability(input, now);
+          return [
+            {
+              captainId: row.id,
+              name: row.name,
+              vehicle: row.vehicle,
+              state: state.state,
+              blocks: cashBlocks(input, state, now),
+              custody: { usage: custody.usage, limit: custody.limit },
+              position: points.get(row.id) ?? null,
+            },
+          ];
+        } catch (error) {
+          this.logger.warn({ err: error, captainId: row.id }, 'a map captain was left out');
+          return [];
+        }
+      }),
+    );
+    return listed.flat();
+  }
+
+  // Each captain's newest real point, whatever its age, in one read.
+  private async newestPoints(
+    captainIds: string[],
+  ): Promise<Map<string, Point & { recordedAt: Date }>> {
+    const { rows } = await this.database.db.execute<{
+      captain_id: string;
+      latitude: number;
+      longitude: number;
+      recorded_at: Date | string;
+    }>(sql`
+      SELECT c.id AS captain_id, ST_Y(newest.location) AS latitude,
+          ST_X(newest.location) AS longitude, newest.recorded_at
+        FROM unnest(${sql.param(captainIds)}::uuid[]) AS c(id)
+        CROSS JOIN LATERAL (
+          SELECT l.location, l.recorded_at FROM ${locations} l
+            WHERE l.captain_id = c.id AND NOT l.simulated
+            ORDER BY l.recorded_at DESC LIMIT 1
+        ) newest`);
+    return new Map(
+      rows.map((row) => [
+        row.captain_id,
+        {
+          latitude: Number(row.latitude),
+          longitude: Number(row.longitude),
+          recordedAt: new Date(row.recorded_at),
+        },
+      ]),
+    );
+  }
+
   // CA §10.4, AP §8.5.3 (slice 2.17d): the worker's sweep of the city's
   // captains not terminated. One whose usage is at captain.custody_warn_pct
   // with no open warning gets one, and the listeners hear custody_warning in
@@ -2679,4 +2762,22 @@ function graceOfRow(row: typeof handInGraces.$inferSelect): HandInGrace {
     bulk: row.captainId === null,
     grantedAt: row.grantedAt,
   };
+}
+
+// AP §9.4 «red outline» (slice 2.39), by the availability rules alone: an
+// online captain receiving no offers for cash (its reasons), or any other
+// captain whom cash would keep from going online (onlineBlocks: closed_due
+// with no grace running, the cash limit). One receiving offers has none,
+// so the remit grace after a cutoff shows no outline.
+function cashBlocks(
+  input: AvailabilityInput,
+  state: Availability,
+  now: Date,
+): MapCaptain['blocks'] {
+  if (state.state === 'online_available') return [];
+  const kinds: string[] =
+    state.state === 'not_receiving_offers'
+      ? state.reasons
+      : onlineBlocks(input, now).map((block) => block.kind);
+  return (['closed_due', 'cash_limit'] as const).filter((kind) => kinds.includes(kind));
 }

@@ -41,3 +41,10 @@ channel:
       history_ttl: 600s
       subscribe_proxy_enabled: true
       subscribe_proxy_name: admin
+    # ops_map:city.{city_id}, the live map screen: the city's captains, their
+    # positions and states, every 10 s (§6.2, AP §9.4). Each publication is
+    # the whole layer and the screen reads the map again on subscribing, so
+    # it keeps no history.
+    - name: ops_map
+      subscribe_proxy_enabled: true
+      subscribe_proxy_name: admin

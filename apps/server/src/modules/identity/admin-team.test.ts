@@ -557,6 +557,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/captains/{captainId}/force-offline': 'captains.manage',
   'POST /v1/admin/captains/{captainId}/hand-in-grace': 'captains.hand_in_grace',
   'POST /v1/admin/captains/hand-in-grace': 'captains.bulk_hand_in_grace',
+  'GET /v1/admin/live-map': 'live_map.read',
   'GET /v1/admin/peak-bonus': 'zones.read',
   'PUT /v1/admin/peak-bonus': 'pricing.edit_pay_tables',
   'GET /v1/admin/promo-codes': {

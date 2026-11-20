@@ -64,6 +64,7 @@ describe('the side menu (AP §7.1)', () => {
   it("leaves Finance out of an OPS user's menu, and OWN's own modules", () => {
     expect(modules(OPS)).toEqual([
       'operations',
+      'liveMap',
       'restaurants',
       'captains',
       'customers',
@@ -119,6 +120,7 @@ describe('the side menu (AP §7.1)', () => {
     expect(moduleOfPath('/settings/otp-senders')).toBe('settings');
     expect(moduleOfPath('/cash-desk/sessions')).toBe('finance');
     expect(moduleOfPath('/orders/0190/assign')).toBe('operations');
+    expect(moduleOfPath('/live-map')).toBe('liveMap');
     expect(moduleOfPath('/restaurants-x')).toBeNull();
   });
 });

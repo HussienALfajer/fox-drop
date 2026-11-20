@@ -184,7 +184,13 @@ export class AlertsWorkerModule {}
 })
 export class PlatformRelayWorkerModule {}
 
-export { captainChannel, merchantChannel, opsChannel, orderChannel } from './channels.js';
+export {
+  captainChannel,
+  merchantChannel,
+  opsChannel,
+  opsMapChannel,
+  orderChannel,
+} from './channels.js';
 export { type ChannelCheck, RealtimeAccess } from './realtime-access.js';
 export { requireRealtime } from './realtime-config.js';
 export { PlatformRelay } from './platform-relay.js';

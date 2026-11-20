@@ -6436,6 +6436,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/live-map": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminLiveMapRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/deposits": {
         parameters: {
             query?: never;
@@ -18861,6 +18877,94 @@ export interface components {
                 /** @description CA §8.4, K2: sent by operations above the captain’s «أقصى مبلغ أحمله»: «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي». */
                 aboveMaxPickup: boolean;
             };
+        };
+        AdminLiveMapDto_Output: {
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                active: boolean;
+                area: {
+                    latitude: number;
+                    longitude: number;
+                }[];
+            }[];
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                location: {
+                    latitude: number;
+                    longitude: number;
+                };
+                /**
+                 * @description AP §9.4: open and busy green, paused amber, the others grey.
+                 * @enum {string}
+                 */
+                state: "open" | "busy" | "paused" | "closed" | "holiday" | "suspended";
+            }[];
+            captains: {
+                /** Format: uuid */
+                captainId: string;
+                name: string;
+                /** @enum {string} */
+                vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                /**
+                 * @description CA §7.1. The map: online_available and not_receiving_offers green (the latter never listed as available), busy and last_order orange, offline and suspended grey at the last known position and its time.
+                 * @enum {string}
+                 */
+                state: "offline" | "online_available" | "busy" | "last_order" | "not_receiving_offers" | "suspended";
+                /** @description AP §9.4 «red outline»: blocked for unhanded cash or at the cash limit. */
+                blocks: ("closed_due" | "cash_limit")[];
+                /** @description The cash-limit usage, in base. */
+                custody: {
+                    usage: {
+                        /** @description Minor units of the currency, as a string. */
+                        amount: string;
+                        currency: string;
+                    };
+                    limit: {
+                        /** @description Minor units of the currency, as a string. */
+                        amount: string;
+                        currency: string;
+                    };
+                };
+                position: {
+                    latitude: number;
+                    longitude: number;
+                    /** Format: date-time */
+                    recordedAt: string;
+                } | null;
+                /** @description The active order the captain carries. */
+                order: {
+                    /** Format: uuid */
+                    id: string;
+                    number: string;
+                } | null;
+            }[];
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived";
+                /** Format: uuid */
+                restaurantId: string;
+                restaurantName: string;
+                /** @description The restaurant's pin. */
+                from: {
+                    latitude: number;
+                    longitude: number;
+                };
+                /** @description The customer's pin. */
+                to: {
+                    latitude: number;
+                    longitude: number;
+                };
+                captainId: string | null;
+                /** @description Accepted or ready, no captain and no open offer: «عيّنه لطلب» lists it. */
+                assignable: boolean;
+            }[];
         };
         AdminDepositsDto_Output: {
             applications: {
@@ -32108,6 +32212,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainOfferDto_Output"];
+                };
+            };
+        };
+    };
+    adminLiveMapRead: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLiveMapDto_Output"];
                 };
             };
         };

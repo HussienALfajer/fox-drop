@@ -4,19 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.39, the live map (`docs/roadmap.md`, Phase 2).
+Slice 2.40, the dashboard and order histories (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.39 The live map: zones, restaurants, captains and orders over `ops_map:`, assignment from the map; its styling waits for the design (AP §9.4). The owner assigns a captain from the map.
-- **Specs:** AP §9.4 (docs/product/v1/admin-panel/09-modules/04-live-map.md), AP §9.3.2 (the assignment it reuses), AP §7.5 (the phone must work for monitoring), architecture §6.2 (the `ops_map:` channel), §7.2 (the map tiles).
+- **Roadmap line:** 2.40 Dashboard and order histories: the status strip, today's tiles, tasks, the charts as tables until the design, the panel's order history, the restaurant's and the captain's histories (AP §9.1.1–9.1.5, §9.5, RA §8.18, CA §9.13). The owner compares today with the same weekday last week.
+- **Specs:** AP §9.1 (docs/product/v1/admin-panel/09-modules/01-dashboard.md: §9.1.1 the status strip, §9.1.2 today's tiles, §9.1.3 the alerts list, §9.1.4 tasks, §9.1.5 the charts), AP §9.5 (05-order-history.md), RA §8.18 (the restaurant's order history), CA §9.13 (the captain's history), AP §6.2 (the dashboard and order history rows), AP §7.5 (the phone).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Ask the owner first:** whether the map stays unstyled (MapLibre's default look with the opacities that tell the layers apart, as «مناطق الخدمة»), and whether one pull request is enough or it splits (the channel and the read, then the map and the assignment).
-- **Already built (reuse):** `ZoneMap` and `PinMap` (MapLibre, the local style, `prepare`, `drawable`), `zonesData`, the picker `/orders/$orderId/assign` (`useAssignCaptain`), `useOpsChannel` and `live.ts`, the captains' latest point (`CaptainsService.latestPoint`), the side menu (`MENU_LINKS`: add «الخريطة الحية» with its module).
+- **Ask the owner first:** the split into pull requests (likely three: the dashboard; the panel's order history; the restaurant's and the captain's histories in their apps), and that the charts stay tables until the design (the roadmap says so).
+- **Already built (reuse):** the alerts (`AlertsService`, `/alerts`), the platform status and dispatch mode in the top bar (`EmergencyStopBar`, `useDispatchMode`), the live map's captains and restaurants states (`LiveMap.read`, `CaptainsService.mapCaptains`), «التقرير اليومي»'s figures (`daily-figures.ts`, the same weekday's comparison), the approvals badge, `RestaurantFiguresService`, `CaptainFiguresService`, the side menu (`MODULES`: add `dashboard` first and `orderHistory` with their pages).
 
 ### Plan
 
-- [ ] Server: the map's read (zones, restaurants with their state, captains with their state and last point, the active orders) and the `ops_map:` channel's publications (AP §9.4, architecture §6.2).
-- [ ] Panel: `/live-map` with its layers, the side menu's «الخريطة الحية», and the assignment from the map.
-- [ ] Review, fixes, hand over to 2.40.
+- [ ] Ask the owner the split; write the plan per pull request.
+
+### Left from 2.39 (the cloud session's branch)
+
+- **Before deploying to staging:** no migration. New route: `GET /v1/admin/live-map`. Centrifugo's channel file adds the namespace `ops_map` (`infra/centrifugo/config.yaml`): restart Centrifugo with the new file before the panel. Deploy the server (the worker publishes the captains every 10 s) before the panel. No app needs a new build.
+- **To check on staging (after the merge and the deploy):** 1. The side menu: «الخريطة الحية». 2. The map shows the zones, the restaurants (green open, amber paused, grey closed), the captains (green, orange with «طلب #…» on hover, grey at the last position; a red outline for a cash block) and each active order as a line; the same as lists under it. 3. On a captain's phone go online and move: the point moves within about 10 s without reloading. 4. «المتاحون فقط», the vehicle and the layers filter the map and the lists. 5. An accepted order without a captain: open an available captain, «عيّنه لطلب», pick the order: «أُرسل العرض…» (or «تم تعيين الكابتن.»), and the order leaves the list. 6. As SUP: the map without «عيّنه لطلب». 7. On a phone: the page works for monitoring.
+- **Owner decisions 2026-11-19:** the map unstyled until the design (the spec's colours only); one pull request.
+- **Decided by us (to confirm with the owner):** a captain online but not receiving offers (the cash limit, unhanded cash past the grace, a simulated location) is green with its state in words, and «المتاحون فقط» leaves them out (AP §9.4 names no colour for it); the red outline shows only while cash keeps the captain from offers or from going online (none during the remit grace after a cutoff); the busy captain's order number shows on hover on the map and in the list and the card (a phone has no hover); restaurants on holiday show grey, in busy mode green; a draft or terminated restaurant and a terminated captain are not on the map; the worker publishes every active city's captains whether or not anyone watches.
+- **Not yet:** `live_map.manage` guards nothing (the assignment is `operations.manage`); no Playwright case at a phone width; the publisher does not check Centrifugo's subscribers.
+- **Not checked locally:** Turborepo does not run in the cloud container, so the parts ran one by one: the server's live map, dispatch, captains, real-time (with Centrifugo), admin team route table, OpenAPI and module boundaries tests, its type check and lint; `dart analyze` of `core_api`; the panel's type check, lint, unit tests (375) and every Playwright spec (124, with the container's Chromium). The red outline has no test with a real cash block. The map was not seen drawing tiles (no map files in the container). The other server files and the Flutter tests did not run here; CI runs them.
 
 ### Left from 2.38b (the cloud session's branch)
 

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
-  type AssignRefusal,
+  assignRefusalKeys as refusalKeys,
   ineligibleKeys as reasonKeys,
   pickerQuery,
   secondsLeft,
@@ -13,13 +13,6 @@ import { formatDistance, formatMoney } from './format.js';
 import { vehicleKeys } from './order-labels.js';
 
 const route = getRouteApi('/signed-in/orders/$orderId/assign');
-
-const refusalKeys = {
-  order_not_assignable: 'assign.refused.orderNotAssignable',
-  captain_not_eligible: 'assign.refused.captainNotEligible',
-  captain_has_offer: 'assign.refused.captainHasOffer',
-  unknown_captain: 'assign.refused.unknownCaptain',
-} as const satisfies Record<AssignRefusal, string>;
 
 // AP §9.3.2's assignment picker, inside the order's detail: the online
 // captains nearest the restaurant first, the ineligible ones greyed out with
