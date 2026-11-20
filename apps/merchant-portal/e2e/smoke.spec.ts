@@ -138,3 +138,57 @@ test('tells a cashier the portal is for owners', async ({ page }) => {
   await page.getByRole('button', { name: 'إرسال الرمز' }).click();
   await expect(page.getByRole('alert')).toContainText('بوابة المطعم لمالكي المطاعم');
 });
+
+// RA §9.4, §17 (slice 2.45b): the owner changes a price from a browser.
+test('changes an item price from the portal', async ({ page }) => {
+  await signedOutApi(page);
+  await page.route('**/v1/merchant/auth/portal/session', (route) =>
+    route.fulfill({ json: session }),
+  );
+  const item = (price: string) => ({
+    id: '0190f3a0-0000-7000-8000-000000000011',
+    code: 'I0001',
+    name: 'شاورما',
+    description: null,
+    photoKey: null,
+    price: { amount: price, currency: 'TRY' },
+    available: true,
+    switchedOff: null,
+    hidden: false,
+    optionGroups: [],
+    pending: [],
+  });
+  const menu = (price: string) => ({
+    categories: [
+      {
+        id: '0190f3a0-0000-7000-8000-000000000012',
+        name: 'وجبات',
+        hidden: false,
+        available: true,
+        switchedOff: null,
+        window: null,
+        pending: [],
+        items: [item(price)],
+      },
+    ],
+    optionGroups: [],
+  });
+  let sent: unknown = null;
+  await page.route('**/v1/merchant/menu', (route) => route.fulfill({ json: menu('10000') }));
+  await page.route('**/v1/merchant/menu/items/*/price', (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ json: menu('12500') });
+  });
+
+  await page.goto('/menu');
+  await expect(page.getByRole('heading', { name: 'وجبات' })).toBeVisible();
+  const row = page.getByRole('listitem', { name: 'شاورما' });
+  await row.getByRole('button', { name: 'تعديل السعر' }).click();
+  await expect(page.getByText('تذكير: سعر التطبيق يجب ألا يزيد على سعر المحل')).toBeVisible();
+  await page.getByLabel('السعر').fill('125');
+  await page.getByRole('button', { name: 'حفظ' }).click();
+
+  expect(sent).toEqual({ price: { amount: '12500', currency: 'TRY' } });
+  await expect(row).toContainText('125.00');
+  await expect(page.getByLabel('السعر')).toHaveCount(0);
+});

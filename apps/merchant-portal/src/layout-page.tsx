@@ -26,7 +26,7 @@ export function LayoutPage({ session }: { session: PortalSession }) {
         <span>{t('layout.signedInAs', { name: session.name })}</span>
         <nav>
           <Link to="/orders">{t('layout.orders')}</Link>{' '}
-          <Link to="/status">{t('layout.status')}</Link>{' '}
+          <Link to="/status">{t('layout.status')}</Link> <Link to="/menu">{t('layout.menu')}</Link>{' '}
           <Link to="/terms">{t('layout.terms')}</Link>
         </nav>
         <button

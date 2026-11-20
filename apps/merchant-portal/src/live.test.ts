@@ -14,6 +14,15 @@ describe('the restaurant channel (RA §4.3, §17)', () => {
       ['order', 'o1'],
     ]);
     expect(staleKeys({ type: 'restaurant.state_changed' })).toEqual([['restaurant-status']]);
+    expect(staleKeys({ type: 'restaurant.state_changed', kind: 'menu_changed' })).toEqual([
+      ['restaurant-status'],
+      ['menu'],
+      ['menu-price-log'],
+      ['menu-preview'],
+    ]);
+    expect(staleKeys({ type: 'restaurant.state_changed', kind: 'paused' })).toEqual([
+      ['restaurant-status'],
+    ]);
     expect(staleKeys({ type: 'platform.emergency_stop' })).toEqual([['emergency-stop']]);
     expect(staleKeys({ type: 'platform.app_changed' })).toEqual([]);
   });
