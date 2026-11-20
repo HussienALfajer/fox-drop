@@ -62,19 +62,19 @@ void main() {
     () {
       expect(mayRestartForUpdate(signedIn: false, board: null), isTrue);
       expect(mayRestartForUpdate(signedIn: true, board: null), isFalse);
-    expect(mayRestartForUpdate(signedIn: true, board: board([])), isTrue);
-    // A placed order rings; an accepted one is active.
-    expect(
-      mayRestartForUpdate(signedIn: true, board: board([orderJson()])),
-      isFalse,
-    );
-    expect(
-      mayRestartForUpdate(
-        signedIn: true,
-        board: board([orderJson(status: 'accepted')]),
-      ),
-      isFalse,
-    );
+      expect(mayRestartForUpdate(signedIn: true, board: board([])), isTrue);
+      // A placed order rings; an accepted one is active.
+      expect(
+        mayRestartForUpdate(signedIn: true, board: board([orderJson()])),
+        isFalse,
+      );
+      expect(
+        mayRestartForUpdate(
+          signedIn: true,
+          board: board([orderJson(status: 'accepted')]),
+        ),
+        isFalse,
+      );
     },
   );
 }
