@@ -9,7 +9,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  built_collection: 5.1.2
+  built_collection: 6.0.0
   crypto: 3.0.8
   cryptography: 2.9.0
   core_alerts: any
