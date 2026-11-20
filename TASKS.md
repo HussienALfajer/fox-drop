@@ -8,13 +8,21 @@ Slice 2.42, receiving in the restaurant app (`docs/roadmap.md`, Phase 2).
 
 - **Roadmap line:** 2.42 Receiving in the restaurant app: the Android foreground service, the ring with the screen off for 8 hours, full-screen intents, bundled sounds (`core_alerts`), silent notifications when an owner turns ringing off, presence and the 20-second heartbeat, «مطعم مفتوح بلا جهاز استقبال», the device check, the persistent command queue (`core_commands`), the red bar and the offline chime (RA §4.3–4.6, §16, architecture §12). An order rings on a phone locked for hours.
 - **Specs:** RA §4.3–4.6 (docs/product/v1/restaurant-app/04-platforms-and-technical-foundations.md), RA §16 (16-notifications-and-sounds.md), RA §14.2 (the devices' ring setting and check), AP §9.1.1 («مطعم مفتوح بلا جهاز استقبال», `withoutDevice` on the dashboard), AP §9.6.3 step 8 (the activation's device check, now required), architecture §11.2 (`core_alerts`, `core_commands`) and §12.
-- **Branch:** the cloud session's branch, from an up-to-date `main`.
+- **Branch:** `claude/adoring-mayer-j6eid2` (the cloud session's branch), from an up-to-date `main`.
 - **Ask the owner first:** the split into pull requests (likely: the server's presence, heartbeat and device check with the dashboard and activation; the Android foreground service, full-screen intents and bundled sounds; the persistent command queue); the bundled sounds before the design (RA §16: placeholder sounds?); full-screen alerts on Android 14 and later (RA §21 item 4, an open item). Real phones are needed to prove the 8-hour lock: the owner runs that on a device.
 - **Already built (reuse):** the board's ring and chimes (`board/alerts.dart`, `PhoneRinger`), the push channels `ring`, `chime`, `silent` (`MainActivity`), the devices (`merchants.devices`, «الأجهزة», slice 2.33), the activation checklist's `device_check` («غير متاح بعد»), the dashboard's `withoutDevice` (null).
 
 ### Plan
 
-- [ ] Ask the owner the split and the open items; write the plan.
+- [x] Ask the owner the split and the open items; write the plan. Owner decisions 2026-11-20: one pull request; placeholder sounds until the design; full-screen intents requested and checked, with the heads-up notification and its looping sound as the fallback (RA §21 item 4, to verify at submission).
+- [ ] Server: each device's ring setting and device check (migration), the app's routes, the panel's and the app's device lists, the activation's device check required (AP §9.6.3 step 8).
+- [ ] Server: presence (Centrifugo pings every 20 s, presence on `merchant:`), the worker's 60-second rule, the receiving device, «مطعم مفتوح بلا جهاز استقبال» with the owners' push (RA §16 #27), the dashboard's `withoutDevice`, Ring pushes silent on owner devices with ringing off.
+- [ ] Panel: the devices' ringing, connection and check; the new alert.
+- [ ] `core_alerts` (Android): the foreground service, restart after reboot and update, the ring on the alarm stream with bundled placeholder sounds, full-screen intents with the heads-up fallback, the device check's readers.
+- [ ] Restaurant app: the ringer on `core_alerts`, «الرنين على هذا الجهاز», the device check screen and banner, its result sent.
+- [ ] `core_commands`: the persistent command queue; the board's commands on it.
+- [ ] The red bar on every screen and the offline chime.
+- [ ] Docs, review, handover.
 
 ### Left from 2.41 (the cloud session's branch)
 
