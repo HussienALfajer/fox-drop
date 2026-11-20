@@ -7540,6 +7540,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/reports/{report}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminReportsReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reports/{report}/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminReportsRequestExport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/order-history/exports": {
         parameters: {
             query?: never;
@@ -22309,6 +22341,72 @@ export interface components {
                 total: string;
             }[];
         };
+        AdminReportDto_Output: {
+            /** @enum {string} */
+            report: "orders" | "timings" | "restaurants" | "captains" | "customers" | "lost_demand" | "codes" | "finance";
+            /** Format: uuid */
+            cityId: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            fromDay: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            toDay: string;
+            /**
+             * Format: date-time
+             * @description The cutoff that starts the first day.
+             */
+            from: string;
+            /**
+             * Format: date-time
+             * @description The cutoff that ends the last day, or now while the last day runs.
+             */
+            to: string;
+            /** @description The city’s base: every money cell is in it unless its row names another. */
+            currency: string;
+            tables: {
+                /** @description The table, unique in its report. */
+                key: string;
+                /** @enum {string} */
+                rowKind: "none" | "code" | "name" | "day" | "hour";
+                /** @description The list of `reports.code` that names the rows’ codes; null: as they are. */
+                rowCodes: string | null;
+                columns: {
+                    key: string;
+                    /** @enum {string} */
+                    kind: "count" | "bp" | "minutes" | "money" | "stars" | "code" | "text";
+                }[];
+                rows: {
+                    code: string | null;
+                    label: string | null;
+                    /** @description The money cells’ currency, when not the report’s. */
+                    currency: string | null;
+                    /** @description One per column, as text: counts, basis points, minutes or stars to one decimal, minor units, a code or text. */
+                    cells: (string | null)[];
+                }[];
+            }[];
+        };
+        AdminReportExportBodyDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The first business day. */
+            from: string;
+            /** @description The last business day, included; at most 366 days, not after today. */
+            to: string;
+        };
+        AdminExportDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "restaurant_statement" | "daily_report" | "cost_report" | "order_history" | "report";
+            /** @enum {string} */
+            status: "pending" | "ready" | "expired";
+            fileName: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description Until when it can be downloaded. */
+            expiresAt: string | null;
+            /** @description Asked with download=true while ready: a signed download on the panel’s origin, valid 5 minutes. */
+            url: string | null;
+        };
         AdminOrderHistoryExportDto: {
             /** Format: uuid */
             cityId: string;
@@ -22335,21 +22433,6 @@ export interface components {
              * @enum {string}
              */
             kind: "all" | "real" | "test";
-        };
-        AdminExportDto_Output: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            kind: "restaurant_statement" | "daily_report" | "cost_report" | "order_history";
-            /** @enum {string} */
-            status: "pending" | "ready" | "expired";
-            fileName: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** @description Until when it can be downloaded. */
-            expiresAt: string | null;
-            /** @description Asked with download=true while ready: a signed download on the panel’s origin, valid 5 minutes. */
-            url: string | null;
         };
         AdminRestaurantStatementExportDto: {
             /** Format: uuid */
@@ -34836,6 +34919,63 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCostReportDto_Output"];
+                };
+            };
+        };
+    };
+    adminReportsReport: {
+        parameters: {
+            query: {
+                cityId: string;
+                /** @description The first business day. */
+                from: string;
+                /** @description The last business day, included; at most 366 days, not after today. */
+                to: string;
+            };
+            header?: never;
+            path: {
+                report: "orders" | "timings" | "restaurants" | "captains" | "customers" | "lost_demand" | "codes" | "finance";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReportDto_Output"];
+                };
+            };
+        };
+    };
+    adminReportsRequestExport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                report: "orders" | "timings" | "restaurants" | "captains" | "customers" | "lost_demand" | "codes" | "finance";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminReportExportBodyDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminExportDto_Output"];
                 };
             };
         };

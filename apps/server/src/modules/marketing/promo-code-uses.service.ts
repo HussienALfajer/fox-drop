@@ -392,6 +392,45 @@ export class PromoCodeUsesService {
     };
   }
 
+  // AP §9.17 «Codes» (slice 2.41): each code's uses held between two
+  // moments, not given back: the orders, the discount (the cost), the
+  // restaurants' share and the new customers who got their order delivered
+  // with it, by code, the most used first.
+  async periodReport(
+    cityId: string,
+    from: Date,
+    to: Date,
+  ): Promise<(CodeReport & { codeId: string; code: string; currency: string })[]> {
+    const rows = await this.database.db
+      .select({
+        codeId: promoCodeUses.codeId,
+        code: promoCodes.code,
+        currency: promoCodeUses.currency,
+        orders: sql<number>`count(*) FILTER (WHERE ${counting})::int`,
+        returned: sql<number>`count(*) FILTER (WHERE NOT (${counting}))::int`,
+        customers: sql<number>`count(DISTINCT ${promoCodeUses.customerAccountId}) FILTER (WHERE ${counting})::int`,
+        cost: sql<string>`coalesce(sum(${promoCodeUses.discount}) FILTER (WHERE ${counting}), 0)::text`,
+        merchantShare: sql<string>`coalesce(sum(${promoCodeUses.merchantShare}) FILTER (WHERE ${counting}), 0)::text`,
+        newCustomers: sql<number>`count(DISTINCT ${promoCodeUses.phoneHash}) FILTER (WHERE ${promoCodeUses.newUser} AND ${promoCodeUses.delivered})::int`,
+      })
+      .from(promoCodeUses)
+      .innerJoin(promoCodes, eq(promoCodes.id, promoCodeUses.codeId))
+      .where(
+        and(
+          eq(promoCodeUses.cityId, cityId),
+          gte(promoCodeUses.heldAt, from),
+          sql`${promoCodeUses.heldAt} < ${to.toISOString()}`,
+        ),
+      )
+      .groupBy(promoCodeUses.codeId, promoCodes.code, promoCodeUses.currency)
+      .orderBy(sql`count(*) DESC`, promoCodes.code);
+    return rows.map((row) => ({
+      ...row,
+      cost: BigInt(row.cost),
+      merchantShare: BigInt(row.merchantShare),
+    }));
+  }
+
   // The list's «الاستخدامات» and «التكلفة حتى الآن»: the uses not given back
   // and their discounts, per code.
   async totals(codeIds: readonly string[]): Promise<Map<string, { uses: number; cost: bigint }>> {

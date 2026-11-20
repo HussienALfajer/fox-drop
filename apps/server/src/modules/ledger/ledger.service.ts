@@ -533,6 +533,45 @@ export class LedgerService {
       .filter((row) => row.amount !== 0n);
   }
 
+  // AP §9.17 «Captains» (slice 2.41): the entries of some journal types on
+  // a purpose's accounts from `from` (included) to `to` (excluded), summed
+  // per owner and currency, from the party's view (a captain's earnings: +
+  // what they earned).
+  async ownerTotals(
+    cityId: string,
+    purpose: AccountPurpose,
+    types: readonly JournalType[],
+    from: Date,
+    to: Date,
+  ): Promise<{ ownerId: string; currency: string; amount: bigint }[]> {
+    if (types.length === 0) return [];
+    const rows = await this.database.db
+      .select({
+        ownerId: accounts.ownerId,
+        currency: entries.currency,
+        sum: sql<string>`sum(${entries.amount})::text`,
+      })
+      .from(entries)
+      .innerJoin(journals, eq(journals.id, entries.journalId))
+      .innerJoin(accounts, eq(accounts.id, entries.accountId))
+      .where(
+        and(
+          eq(journals.cityId, cityId),
+          eq(accounts.purpose, purpose),
+          inArray(journals.type, [...types]),
+          gte(entries.createdAt, from),
+          lt(entries.createdAt, to),
+        ),
+      )
+      .groupBy(accounts.ownerId, entries.currency);
+    const sign = accountPurposes[purpose].sign;
+    return rows.flatMap((row) =>
+      row.ownerId === null
+        ? []
+        : [{ ownerId: row.ownerId, currency: row.currency, amount: BigInt(row.sum) * sign }],
+    );
+  }
+
   // The same periods' entries of one purpose and type, summed per period by
   // the journal's source, from the platform's side: the orders of each
   // day's order pay.

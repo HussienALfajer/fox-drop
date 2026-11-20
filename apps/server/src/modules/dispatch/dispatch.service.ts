@@ -1099,6 +1099,38 @@ export class DispatchService implements OnModuleInit {
     );
   }
 
+  // AP §9.17 «Captains» (slice 2.41): of each captain's offers of the city
+  // answered between two moments (by when they were offered), how many it
+  // accepted; a withdrawn offer is no answer, as `acceptance`.
+  async acceptanceBetween(
+    cityId: string,
+    from: Date,
+    to: Date,
+  ): Promise<Map<string, { accepted: number; answered: number }>> {
+    const rows = await this.database.db
+      .select({
+        captainId: offers.captainId,
+        accepted: sql<number>`count(*) FILTER (WHERE ${offers.status} = 'accepted')::int`,
+        answered: sql<number>`count(*)::int`,
+      })
+      .from(offers)
+      .where(
+        and(
+          eq(offers.cityId, cityId),
+          inArray(offers.status, ['accepted', 'declined', 'expired']),
+          gte(offers.offeredAt, from),
+          lt(offers.offeredAt, to),
+        ),
+      )
+      .groupBy(offers.captainId);
+    return new Map(
+      rows.map((row) => [
+        row.captainId,
+        { accepted: Number(row.accepted), answered: Number(row.answered) },
+      ]),
+    );
+  }
+
   // AP §9.7.4 «سجل العروض» (slice 2.36a): the captain's latest offers,
   // newest first, every response with its time.
   async captainOffers(captainId: string, limit: number): Promise<CaptainOfferLogRow[]> {

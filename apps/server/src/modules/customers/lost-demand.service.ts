@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, count, desc, eq, gte, max, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, lt, max, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { GeoService, type Point } from '../geo/index.js';
@@ -113,6 +113,52 @@ export class LostDemandService {
       );
     }
     return true;
+  }
+
+  // AP §9.17 «Lost demand» (slice 2.41): a period's misses and
+  // suggestions, from `from` (included) to `to` (excluded), as `report`
+  // groups them, every row.
+  async between(cityId: string, from: Date, to: Date): Promise<Omit<LostDemand, 'since'>> {
+    const db = this.database.db;
+    const [searches, suggestions] = await Promise.all([
+      db
+        .select({
+          query: sql<string>`(array_agg(${searchMisses.query} ORDER BY ${searchMisses.at} DESC))[1]`,
+          count: count(),
+          lastAt: max(searchMisses.at),
+        })
+        .from(searchMisses)
+        .where(
+          and(eq(searchMisses.cityId, cityId), gte(searchMisses.at, from), lt(searchMisses.at, to)),
+        )
+        .groupBy(searchMisses.normalized)
+        .orderBy(desc(count()), desc(max(searchMisses.at))),
+      db
+        .select({
+          id: restaurantSuggestions.id,
+          restaurantName: restaurantSuggestions.restaurantName,
+          note: restaurantSuggestions.note,
+          query: restaurantSuggestions.query,
+          at: restaurantSuggestions.at,
+        })
+        .from(restaurantSuggestions)
+        .where(
+          and(
+            eq(restaurantSuggestions.cityId, cityId),
+            gte(restaurantSuggestions.at, from),
+            lt(restaurantSuggestions.at, to),
+          ),
+        )
+        .orderBy(desc(restaurantSuggestions.at)),
+    ]);
+    return {
+      searches: searches.map((row) => ({
+        query: row.query,
+        count: row.count,
+        lastAt: row.lastAt!,
+      })),
+      suggestions,
+    };
   }
 
   // AP §9.17: the city's lost demand since LOST_DEMAND_DAYS ago.

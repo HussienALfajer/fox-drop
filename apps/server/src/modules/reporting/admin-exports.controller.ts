@@ -59,7 +59,7 @@ class AdminExportQueryDto extends createZodDto(
   }),
 ) {}
 
-class AdminExportDto extends createZodDto(
+export class AdminExportDto extends createZodDto(
   z.object({
     id: z.uuid(),
     kind: z.enum(exportKinds),
@@ -76,7 +76,7 @@ class AdminExportDto extends createZodDto(
   }),
 ) {}
 
-function exportBody(view: ExportView) {
+export function exportBody(view: ExportView) {
   return {
     id: view.id,
     kind: view.kind,
@@ -255,7 +255,15 @@ export class AdminExportsController {
   // kind's permission (`exportPermissions`; 404 unknown_export for anyone
   // else); with download=true while ready, a download URL, audited.
   @Get('exports/:exportId')
-  @RequireAnyPermission('restaurants.statements', 'finance.read', 'order_history.read')
+  @RequireAnyPermission(
+    'restaurants.statements',
+    'finance.read',
+    'order_history.read',
+    'reports.all',
+    'reports.operations',
+    'reports.support',
+    'reports.financial',
+  )
   @ZodResponse({ status: 200, type: AdminExportDto })
   view(
     @Param() params: AdminExportParamsDto,

@@ -995,6 +995,14 @@ Serializers _$serializers =
           ..add(AdminRejectDtoItemsInner.serializer)
           ..add(AdminRejectDtoItemsInnerUntilEnum.serializer)
           ..add(AdminReleaseDeviceDto.serializer)
+          ..add(AdminReportDtoOutput.serializer)
+          ..add(AdminReportDtoOutputReportEnum.serializer)
+          ..add(AdminReportDtoOutputTablesInner.serializer)
+          ..add(AdminReportDtoOutputTablesInnerColumnsInner.serializer)
+          ..add(AdminReportDtoOutputTablesInnerColumnsInnerKindEnum.serializer)
+          ..add(AdminReportDtoOutputTablesInnerRowKindEnum.serializer)
+          ..add(AdminReportDtoOutputTablesInnerRowsInner.serializer)
+          ..add(AdminReportExportBodyDto.serializer)
           ..add(AdminResendNotificationDto.serializer)
           ..add(AdminResendNotificationDtoToEnum.serializer)
           ..add(AdminResolveShortfallDto.serializer)
@@ -3623,6 +3631,24 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminReportDtoOutputTablesInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReportDtoOutputTablesInnerColumnsInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInnerColumnsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReportDtoOutputTablesInnerRowsInner),
+            ]),
+            () => ListBuilder<AdminReportDtoOutputTablesInnerRowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
             ]),
             () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
@@ -6043,6 +6069,10 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType.nullable(String)]),
+            () => ListBuilder<String?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltMap, const [

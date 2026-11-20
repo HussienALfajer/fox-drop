@@ -9,7 +9,12 @@ import { MerchantPeriodService, periodFits } from '../cashdesk/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
-import { costReportLabels, dailyReportLabels, orderHistoryLabels } from '../content/index.js';
+import {
+  costReportLabels,
+  dailyReportLabels,
+  orderHistoryLabels,
+  reportLabels,
+} from '../content/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { CaptainsService } from '../captains/index.js';
 import {
@@ -24,6 +29,8 @@ import { type CostReportRefusal, CostReportService } from './cost-report.service
 import { dailyReportWorkbook } from './daily-report-workbook.js';
 import { type DailyReportRefusal, DailyReportService } from './daily-report.service.js';
 import { statementWorkbook } from './statement-workbook.js';
+import { reportWorkbook } from './report-workbook.js';
+import { mayRead, type ReportKind, type ReportRefusal, ReportsService } from './reports.service.js';
 
 // Architecture §5.9: an export stays in private-docs this long.
 export const EXPORT_KEEP_MS = 24 * 60 * 60_000;
@@ -39,7 +46,8 @@ export type ExportsRefusal =
   | 'unknown_export'
   | 'too_many_rows'
   | DailyReportRefusal
-  | CostReportRefusal;
+  | CostReportRefusal
+  | ReportRefusal;
 
 export class ExportsRefusedError extends Error {
   override readonly name = 'ExportsRefusedError';
@@ -93,8 +101,22 @@ export type OrderHistoryParams = Omit<AdminHistoryFilter, 'number' | 'from' | 't
   to: string;
 };
 
+// AP §9.17 (slice 2.41): a report of «التقارير»; `phones` writes the top
+// customers' numbers in full (`exports.phone_numbers`, AP §5.4).
+export interface ReportParams {
+  report: ReportKind;
+  cityId: string;
+  from: string;
+  to: string;
+  phones: boolean;
+}
+
 type ExportParams =
-  RestaurantStatementParams | DailyReportParams | CostReportParams | OrderHistoryParams;
+  | RestaurantStatementParams
+  | DailyReportParams
+  | CostReportParams
+  | OrderHistoryParams
+  | ReportParams;
 
 // The permission each kind of export is read with: the one its screen asks.
 export const exportPermissions = {
@@ -102,7 +124,24 @@ export const exportPermissions = {
   daily_report: 'finance.read',
   cost_report: 'finance.read',
   order_history: 'order_history.read',
+  // Each report's own (`reportPermissions`), checked by `mayReadExport`.
+  report: 'reports.all',
 } as const satisfies Record<ExportKind, string>;
+
+// Whether a user may read an export: its kind's permission; a report's, its
+// report's (and `exports.phone_numbers` for one with the numbers in full).
+export function mayReadExport(
+  kind: ExportKind,
+  params: unknown,
+  permissions: readonly string[],
+): boolean {
+  if (kind !== 'report') return permissions.includes(exportPermissions[kind]);
+  const asked = params as ReportParams;
+  return (
+    mayRead(asked.report, permissions) &&
+    (!asked.phones || permissions.includes('exports.phone_numbers'))
+  );
+}
 
 export interface ExportJob {
   exportId: string;
@@ -129,7 +168,30 @@ export class ExportsService {
     private readonly costs: CostReportService,
     private readonly history: OrderHistoryService,
     private readonly captains: CaptainsService,
+    private readonly reportsOf: ReportsService,
   ) {}
+
+  // «تصدير Excel» of a report of «التقارير» (AP §9.17, slice 2.41), as the
+  // statement's. The customers report holds the top customers' numbers in
+  // full only for a user with `exports.phone_numbers` (AP §5.4); the export
+  // is audited with `phones` either way.
+  async requestReport(
+    user: ExportUser,
+    params: Omit<ReportParams, 'phones'>,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<ExportView> {
+    const full: ReportParams = {
+      ...params,
+      phones: params.report === 'customers' && user.permissions.includes('exports.phone_numbers'),
+    };
+    const repeat = await this.byKey(user.accountId, idempotencyKey);
+    if (repeat) return this.answerRepeat(repeat, 'report', full, now);
+    const refusal = await this.reportsOf.check(params.cityId, params.from, params.to, now);
+    if (refusal !== null) throw new ExportsRefusedError(refusal);
+    const fileName = `${reportLabels.title[params.report]} ${params.from} - ${params.to}.xlsx`;
+    return this.record(user, 'report', params.cityId, full, fileName, idempotencyKey, now);
+  }
 
   // «تصدير Excel» of «سجل الطلبات» (AP §9.5, slice 2.40), as the
   // statement's: a period of business days is required (at most 366).
@@ -260,7 +322,7 @@ export class ExportsService {
       .from(exports)
       .where(and(eq(exports.id, exportId), eq(exports.requestedBy, user.accountId)));
     // Another's export, or one whose kind the user may no longer read.
-    if (!row || !user.permissions.includes(exportPermissions[row.kind])) {
+    if (!row || !mayReadExport(row.kind, row.params, user.permissions)) {
       throw new ExportsRefusedError('unknown_export');
     }
     const view = this.viewOf(row, now, null);
@@ -316,7 +378,21 @@ export class ExportsService {
         return this.costReportFile(row.params as CostReportParams, now);
       case 'order_history':
         return this.orderHistoryFile(row.params as OrderHistoryParams);
+      case 'report':
+        return this.reportFile(row.params as ReportParams, now);
     }
+  }
+
+  // The report as it stands when the worker writes it (a period that ends
+  // today is still running).
+  private async reportFile(params: ReportParams, now: Date): Promise<Buffer> {
+    const [report, currencies] = await Promise.all([
+      this.reportsOf.report(params.report, params.cityId, params.from, params.to, now, {
+        fullPhones: params.phones,
+      }),
+      this.fx.currencies(),
+    ]);
+    return reportWorkbook(report, new Map(currencies.map((each) => [each.code, each.decimals])));
   }
 
   // The orders as they stand when the worker writes the file.

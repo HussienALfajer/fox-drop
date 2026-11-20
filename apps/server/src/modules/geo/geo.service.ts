@@ -538,6 +538,23 @@ export class GeoService implements OnModuleInit {
     }));
   }
 
+  // AP §9.17 «Lost demand» (slice 2.41): the city's votes cast between two
+  // moments from outside its active zones now, as the vote map counts them.
+  async votesBetween(cityId: string, from: Date, to: Date): Promise<number> {
+    const [row] = await this.database.db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(zoneVotes)
+      .where(
+        and(
+          eq(zoneVotes.cityId, cityId),
+          sql`${zoneVotes.createdAt} >= ${from.toISOString()} AND ${zoneVotes.createdAt} < ${to.toISOString()}`,
+          sql`NOT EXISTS (SELECT 1 FROM geo.zones covering WHERE covering.city_id = ${cityId}
+            AND covering.active AND ST_Covers(covering.area, ${zoneVotes.location}))`,
+        ),
+      );
+    return Number(row?.count ?? 0);
+  }
+
   // The centre of the city's active zones, where a map of the city starts
   // (the wizard's pin, slice 2.30a); null without any.
   async zonesCentre(cityId: string): Promise<Point | null> {

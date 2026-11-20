@@ -7,7 +7,8 @@ import { JobsModule } from '../../jobs/jobs.module.js';
 import { AuditModule } from '../audit/index.js';
 import { CaptainsModule } from '../captains/index.js';
 import { CashDeskModule, CashDeskPeriodModule } from '../cashdesk/index.js';
-import { DispatchModule } from '../dispatch/index.js';
+import { DispatchModule, DispatchWorkerModule } from '../dispatch/index.js';
+import { CustomersModule } from '../customers/index.js';
 import { NotificationsModule } from '../notifications/index.js';
 import { FilesModule } from '../files/index.js';
 import { FxModule } from '../fx/index.js';
@@ -39,6 +40,8 @@ import { CostReportService } from './cost-report.service.js';
 import { DailyReportService } from './daily-report.service.js';
 import { ExportsService } from './exports.service.js';
 import { ExportsWorker } from './exports.worker.js';
+import { AdminReportsController } from './admin-reports.controller.js';
+import { ReportsService } from './reports.service.js';
 
 const imports = [
   DatabaseModule,
@@ -68,6 +71,7 @@ const imports = [
     CashDeskModule,
     DispatchModule,
     NotificationsModule,
+    CustomersModule,
   ],
   controllers: [
     AdminAuditLogController,
@@ -82,6 +86,7 @@ const imports = [
     AdminDailyReportController,
     AdminDashboardController,
     AdminCostReportController,
+    AdminReportsController,
     AdminExportsController,
     MerchantPriceLogController,
   ],
@@ -92,13 +97,14 @@ const imports = [
     RestaurantListService,
     CaptainListService,
     DashboardService,
+    ReportsService,
   ],
 })
 export class ReportingModule {}
 
 // The worker's export jobs: writing each export, removing it after 24 hours.
 @Module({
-  imports,
-  providers: [ExportsService, DailyReportService, CostReportService, ExportsWorker],
+  imports: [...imports, ContentModule, IdentityModule, CustomersModule, DispatchWorkerModule],
+  providers: [ExportsService, DailyReportService, CostReportService, ReportsService, ExportsWorker],
 })
 export class ReportingWorkerModule {}
