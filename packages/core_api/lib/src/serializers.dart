@@ -851,6 +851,10 @@ import 'package:core_api/src/model/captain_order_dto_output_order_outcome_to_col
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup_request.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_redelivery_of.dart';
+import 'package:core_api/src/model/captain_order_history_dto_output.dart';
+import 'package:core_api/src/model/captain_order_history_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/captain_order_history_dto_output_orders_inner_paid_to_restaurant_inner.dart';
+import 'package:core_api/src/model/captain_order_history_dto_output_orders_inner_steps_inner.dart';
 import 'package:core_api/src/model/captain_order_route_dto_output.dart';
 import 'package:core_api/src/model/captain_order_route_dto_output_route.dart';
 import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
@@ -1099,11 +1103,16 @@ import 'package:core_api/src/model/merchant_new_item_request_dto.dart';
 import 'package:core_api/src/model/merchant_new_upload_dto.dart';
 import 'package:core_api/src/model/merchant_option_group_request_dto.dart';
 import 'package:core_api/src/model/merchant_order_dto_output.dart';
-import 'package:core_api/src/model/merchant_order_dto_output_order.dart';
-import 'package:core_api/src/model/merchant_order_dto_output_order_pickup.dart';
-import 'package:core_api/src/model/merchant_order_dto_output_order_pickup_request.dart';
+import 'package:core_api/src/model/merchant_order_history_dto_output.dart';
+import 'package:core_api/src/model/merchant_order_history_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/merchant_order_history_dto_output_orders_inner_owner.dart';
 import 'package:core_api/src/model/merchant_order_problem_body_dto.dart';
 import 'package:core_api/src/model/merchant_order_settings_dto.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output_order.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output_order_pickup.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output_order_pickup_request.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output_timeline_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
@@ -2041,6 +2050,10 @@ part 'serializers.g.dart';
   CaptainOrderDtoOutputOrderPickup,
   CaptainOrderDtoOutputOrderPickupRequest,
   CaptainOrderDtoOutputOrderRedeliveryOf,
+  CaptainOrderHistoryDtoOutput,
+  CaptainOrderHistoryDtoOutputOrdersInner,
+  CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner,
+  CaptainOrderHistoryDtoOutputOrdersInnerStepsInner,
   CaptainOrderRouteDtoOutput,
   CaptainOrderRouteDtoOutputRoute,
   CaptainOutcomePaymentDto,
@@ -2289,11 +2302,16 @@ part 'serializers.g.dart';
   MerchantNewUploadDto,
   MerchantOptionGroupRequestDto,
   MerchantOrderDtoOutput,
-  MerchantOrderDtoOutputOrder,
-  MerchantOrderDtoOutputOrderPickup,
-  MerchantOrderDtoOutputOrderPickupRequest,
+  MerchantOrderHistoryDtoOutput,
+  MerchantOrderHistoryDtoOutputOrdersInner,
+  MerchantOrderHistoryDtoOutputOrdersInnerOwner,
   MerchantOrderProblemBodyDto,
   MerchantOrderSettingsDto,
+  MerchantOrderWithTimelineDtoOutput,
+  MerchantOrderWithTimelineDtoOutputOrder,
+  MerchantOrderWithTimelineDtoOutputOrderPickup,
+  MerchantOrderWithTimelineDtoOutputOrderPickupRequest,
+  MerchantOrderWithTimelineDtoOutputTimelineInner,
   MerchantOrdersDtoOutput,
   MerchantOrdersDtoOutputOrdersInner,
   MerchantOrdersDtoOutputOrdersInnerAcceptance,
@@ -2631,6 +2649,13 @@ Serializers serializers =
               FullType(CustomerQuoteDtoOutputRatesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputRatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantOrderWithTimelineDtoOutputTimelineInner),
+            ]),
+            () =>
+                ListBuilder<MerchantOrderWithTimelineDtoOutputTimelineInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2978,6 +3003,15 @@ Serializers serializers =
               FullType(MerchantScheduleDtoPeriodsInner),
             ]),
             () => ListBuilder<MerchantScheduleDtoPeriodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainOrderHistoryDtoOutputOrdersInnerStepsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerStepsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3439,6 +3473,12 @@ Serializers serializers =
             () => ListBuilder<AdminMenuImportPlanDtoOutputAddedInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<CaptainOrderHistoryDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminChangeItemNameOutput)]),
             () => ListBuilder<AdminChangeItemNameOutput>(),
           )
@@ -3767,6 +3807,17 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderNoAnswerReportsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderNoAnswerReportsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -4335,6 +4386,12 @@ Serializers serializers =
               FullType(CaptainCustodyDtoOutputReceiptsInnerLinesInner),
             ]),
             () => ListBuilder<CaptainCustodyDtoOutputReceiptsInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<MerchantOrderHistoryDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

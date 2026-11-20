@@ -12,6 +12,7 @@ import 'package:core_api/src/api_util.dart';
 import 'package:core_api/src/model/contact_dto_output.dart';
 import 'package:core_api/src/model/customer_new_upload_dto.dart';
 import 'package:core_api/src/model/customer_upload_dto_output.dart';
+import 'package:core_api/src/model/date.dart';
 import 'package:core_api/src/model/merchant_accept_dto.dart';
 import 'package:core_api/src/model/merchant_account_dto_output.dart';
 import 'package:core_api/src/model/merchant_acknowledge_edit_dto.dart';
@@ -48,8 +49,10 @@ import 'package:core_api/src/model/merchant_new_item_request_dto.dart';
 import 'package:core_api/src/model/merchant_new_upload_dto.dart';
 import 'package:core_api/src/model/merchant_option_group_request_dto.dart';
 import 'package:core_api/src/model/merchant_order_dto_output.dart';
+import 'package:core_api/src/model/merchant_order_history_dto_output.dart';
 import 'package:core_api/src/model/merchant_order_problem_body_dto.dart';
 import 'package:core_api/src/model/merchant_order_settings_dto.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output.dart';
 import 'package:core_api/src/model/merchant_overdue_dto_output.dart';
 import 'package:core_api/src/model/merchant_pause_dto.dart';
@@ -3393,6 +3396,195 @@ class MerchantApi {
     }
 
     return Response<MerchantOrderDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// merchantOrdersHistory
+  ///
+  ///
+  /// Parameters:
+  /// * [from] - The first business day, YYYY-MM-DD on the city clock; with `to`.
+  /// * [to] - The last business day, included; with `from`.
+  /// * [status]
+  /// * [number] - The order number without «#»; within the range.
+  /// * [cursor] - The `next` of the page before; none for the first page.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantOrderHistoryDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantOrderHistoryDtoOutput>> merchantOrdersHistory({
+    Date? from,
+    Date? to,
+    String? status,
+    String? number,
+    String? cursor,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/orders/history';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (from != null)
+        r'from': encodeQueryParameter(_serializers, from, const FullType(Date)),
+      if (to != null)
+        r'to': encodeQueryParameter(_serializers, to, const FullType(Date)),
+      if (status != null)
+        r'status': encodeQueryParameter(
+          _serializers,
+          status,
+          const FullType(String),
+        ),
+      if (number != null)
+        r'number': encodeQueryParameter(
+          _serializers,
+          number,
+          const FullType(String),
+        ),
+      if (cursor != null)
+        r'cursor': encodeQueryParameter(
+          _serializers,
+          cursor,
+          const FullType(String),
+        ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantOrderHistoryDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(MerchantOrderHistoryDtoOutput),
+                )
+                as MerchantOrderHistoryDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantOrderHistoryDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// merchantOrdersOrder
+  ///
+  ///
+  /// Parameters:
+  /// * [orderId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MerchantOrderWithTimelineDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MerchantOrderWithTimelineDtoOutput>> merchantOrdersOrder({
+    required String orderId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/merchant/orders/{orderId}'.replaceAll(
+      '{'
+      r'orderId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        orderId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MerchantOrderWithTimelineDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    MerchantOrderWithTimelineDtoOutput,
+                  ),
+                )
+                as MerchantOrderWithTimelineDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MerchantOrderWithTimelineDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

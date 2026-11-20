@@ -1,154 +1,163 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'merchant_order_dto_output_order.dart';
+part of 'merchant_order_with_timeline_dto_output_order.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_placed =
-    const MerchantOrderDtoOutputOrderStatusEnum._('placed');
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_accepted =
-    const MerchantOrderDtoOutputOrderStatusEnum._('accepted');
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_ready =
-    const MerchantOrderDtoOutputOrderStatusEnum._('ready');
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_pickedUp =
-    const MerchantOrderDtoOutputOrderStatusEnum._('pickedUp');
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_arrived =
-    const MerchantOrderDtoOutputOrderStatusEnum._('arrived');
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_delivered =
-    const MerchantOrderDtoOutputOrderStatusEnum._('delivered');
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_rejected =
-    const MerchantOrderDtoOutputOrderStatusEnum._('rejected');
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_cancelled =
-    const MerchantOrderDtoOutputOrderStatusEnum._('cancelled');
-const MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnum_failed =
-    const MerchantOrderDtoOutputOrderStatusEnum._('failed');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_placed =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('placed');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_accepted =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('accepted');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_ready =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('ready');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_pickedUp =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('pickedUp');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_arrived =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('arrived');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_delivered =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('delivered');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_rejected =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('rejected');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_cancelled =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('cancelled');
+const MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnum_failed =
+    const MerchantOrderWithTimelineDtoOutputOrderStatusEnum._('failed');
 
-MerchantOrderDtoOutputOrderStatusEnum
-_$merchantOrderDtoOutputOrderStatusEnumValueOf(String name) {
+MerchantOrderWithTimelineDtoOutputOrderStatusEnum
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnumValueOf(String name) {
   switch (name) {
     case 'placed':
-      return _$merchantOrderDtoOutputOrderStatusEnum_placed;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_placed;
     case 'accepted':
-      return _$merchantOrderDtoOutputOrderStatusEnum_accepted;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_accepted;
     case 'ready':
-      return _$merchantOrderDtoOutputOrderStatusEnum_ready;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_ready;
     case 'pickedUp':
-      return _$merchantOrderDtoOutputOrderStatusEnum_pickedUp;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_pickedUp;
     case 'arrived':
-      return _$merchantOrderDtoOutputOrderStatusEnum_arrived;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_arrived;
     case 'delivered':
-      return _$merchantOrderDtoOutputOrderStatusEnum_delivered;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_delivered;
     case 'rejected':
-      return _$merchantOrderDtoOutputOrderStatusEnum_rejected;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_rejected;
     case 'cancelled':
-      return _$merchantOrderDtoOutputOrderStatusEnum_cancelled;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_cancelled;
     case 'failed':
-      return _$merchantOrderDtoOutputOrderStatusEnum_failed;
+      return _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_failed;
     default:
       throw ArgumentError(name);
   }
 }
 
-final BuiltSet<MerchantOrderDtoOutputOrderStatusEnum>
-_$merchantOrderDtoOutputOrderStatusEnumValues =
-    BuiltSet<MerchantOrderDtoOutputOrderStatusEnum>(
-      const <MerchantOrderDtoOutputOrderStatusEnum>[
-        _$merchantOrderDtoOutputOrderStatusEnum_placed,
-        _$merchantOrderDtoOutputOrderStatusEnum_accepted,
-        _$merchantOrderDtoOutputOrderStatusEnum_ready,
-        _$merchantOrderDtoOutputOrderStatusEnum_pickedUp,
-        _$merchantOrderDtoOutputOrderStatusEnum_arrived,
-        _$merchantOrderDtoOutputOrderStatusEnum_delivered,
-        _$merchantOrderDtoOutputOrderStatusEnum_rejected,
-        _$merchantOrderDtoOutputOrderStatusEnum_cancelled,
-        _$merchantOrderDtoOutputOrderStatusEnum_failed,
+final BuiltSet<MerchantOrderWithTimelineDtoOutputOrderStatusEnum>
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnumValues =
+    BuiltSet<MerchantOrderWithTimelineDtoOutputOrderStatusEnum>(
+      const <MerchantOrderWithTimelineDtoOutputOrderStatusEnum>[
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_placed,
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_accepted,
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_ready,
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_pickedUp,
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_arrived,
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_delivered,
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_rejected,
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_cancelled,
+        _$merchantOrderWithTimelineDtoOutputOrderStatusEnum_failed,
       ],
     );
 
-const MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnum_searching =
-    const MerchantOrderDtoOutputOrderCaptainTrackEnum._('searching');
-const MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnum_offered =
-    const MerchantOrderDtoOutputOrderCaptainTrackEnum._('offered');
-const MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnum_assigned =
-    const MerchantOrderDtoOutputOrderCaptainTrackEnum._('assigned');
-const MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnum_atMerchant =
-    const MerchantOrderDtoOutputOrderCaptainTrackEnum._('atMerchant');
-const MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnum_pickupPending =
-    const MerchantOrderDtoOutputOrderCaptainTrackEnum._('pickupPending');
-const MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnum_pickedUp =
-    const MerchantOrderDtoOutputOrderCaptainTrackEnum._('pickedUp');
-const MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnum_atCustomer =
-    const MerchantOrderDtoOutputOrderCaptainTrackEnum._('atCustomer');
-const MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnum_done =
-    const MerchantOrderDtoOutputOrderCaptainTrackEnum._('done');
+const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_searching =
+    const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._(
+      'searching',
+    );
+const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_offered =
+    const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._('offered');
+const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_assigned =
+    const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._('assigned');
+const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_atMerchant =
+    const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._(
+      'atMerchant',
+    );
+const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_pickupPending =
+    const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._(
+      'pickupPending',
+    );
+const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_pickedUp =
+    const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._('pickedUp');
+const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_atCustomer =
+    const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._(
+      'atCustomer',
+    );
+const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_done =
+    const MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum._('done');
 
-MerchantOrderDtoOutputOrderCaptainTrackEnum
-_$merchantOrderDtoOutputOrderCaptainTrackEnumValueOf(String name) {
+MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnumValueOf(String name) {
   switch (name) {
     case 'searching':
-      return _$merchantOrderDtoOutputOrderCaptainTrackEnum_searching;
+      return _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_searching;
     case 'offered':
-      return _$merchantOrderDtoOutputOrderCaptainTrackEnum_offered;
+      return _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_offered;
     case 'assigned':
-      return _$merchantOrderDtoOutputOrderCaptainTrackEnum_assigned;
+      return _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_assigned;
     case 'atMerchant':
-      return _$merchantOrderDtoOutputOrderCaptainTrackEnum_atMerchant;
+      return _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_atMerchant;
     case 'pickupPending':
-      return _$merchantOrderDtoOutputOrderCaptainTrackEnum_pickupPending;
+      return _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_pickupPending;
     case 'pickedUp':
-      return _$merchantOrderDtoOutputOrderCaptainTrackEnum_pickedUp;
+      return _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_pickedUp;
     case 'atCustomer':
-      return _$merchantOrderDtoOutputOrderCaptainTrackEnum_atCustomer;
+      return _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_atCustomer;
     case 'done':
-      return _$merchantOrderDtoOutputOrderCaptainTrackEnum_done;
+      return _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_done;
     default:
       throw ArgumentError(name);
   }
 }
 
-final BuiltSet<MerchantOrderDtoOutputOrderCaptainTrackEnum>
-_$merchantOrderDtoOutputOrderCaptainTrackEnumValues =
-    BuiltSet<MerchantOrderDtoOutputOrderCaptainTrackEnum>(
-      const <MerchantOrderDtoOutputOrderCaptainTrackEnum>[
-        _$merchantOrderDtoOutputOrderCaptainTrackEnum_searching,
-        _$merchantOrderDtoOutputOrderCaptainTrackEnum_offered,
-        _$merchantOrderDtoOutputOrderCaptainTrackEnum_assigned,
-        _$merchantOrderDtoOutputOrderCaptainTrackEnum_atMerchant,
-        _$merchantOrderDtoOutputOrderCaptainTrackEnum_pickupPending,
-        _$merchantOrderDtoOutputOrderCaptainTrackEnum_pickedUp,
-        _$merchantOrderDtoOutputOrderCaptainTrackEnum_atCustomer,
-        _$merchantOrderDtoOutputOrderCaptainTrackEnum_done,
+final BuiltSet<MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum>
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnumValues =
+    BuiltSet<MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum>(
+      const <MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum>[
+        _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_searching,
+        _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_offered,
+        _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_assigned,
+        _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_atMerchant,
+        _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_pickupPending,
+        _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_pickedUp,
+        _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_atCustomer,
+        _$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum_done,
       ],
     );
 
-Serializer<MerchantOrderDtoOutputOrderStatusEnum>
-_$merchantOrderDtoOutputOrderStatusEnumSerializer =
-    _$MerchantOrderDtoOutputOrderStatusEnumSerializer();
-Serializer<MerchantOrderDtoOutputOrderCaptainTrackEnum>
-_$merchantOrderDtoOutputOrderCaptainTrackEnumSerializer =
-    _$MerchantOrderDtoOutputOrderCaptainTrackEnumSerializer();
+Serializer<MerchantOrderWithTimelineDtoOutputOrderStatusEnum>
+_$merchantOrderWithTimelineDtoOutputOrderStatusEnumSerializer =
+    _$MerchantOrderWithTimelineDtoOutputOrderStatusEnumSerializer();
+Serializer<MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum>
+_$merchantOrderWithTimelineDtoOutputOrderCaptainTrackEnumSerializer =
+    _$MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnumSerializer();
 
-class _$MerchantOrderDtoOutputOrderStatusEnumSerializer
-    implements PrimitiveSerializer<MerchantOrderDtoOutputOrderStatusEnum> {
+class _$MerchantOrderWithTimelineDtoOutputOrderStatusEnumSerializer
+    implements
+        PrimitiveSerializer<MerchantOrderWithTimelineDtoOutputOrderStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'placed': 'placed',
     'accepted': 'accepted',
@@ -174,31 +183,33 @@ class _$MerchantOrderDtoOutputOrderStatusEnumSerializer
 
   @override
   final Iterable<Type> types = const <Type>[
-    MerchantOrderDtoOutputOrderStatusEnum,
+    MerchantOrderWithTimelineDtoOutputOrderStatusEnum,
   ];
   @override
-  final String wireName = 'MerchantOrderDtoOutputOrderStatusEnum';
+  final String wireName = 'MerchantOrderWithTimelineDtoOutputOrderStatusEnum';
 
   @override
   Object serialize(
     Serializers serializers,
-    MerchantOrderDtoOutputOrderStatusEnum object, {
+    MerchantOrderWithTimelineDtoOutputOrderStatusEnum object, {
     FullType specifiedType = FullType.unspecified,
   }) => _toWire[object.name] ?? object.name;
 
   @override
-  MerchantOrderDtoOutputOrderStatusEnum deserialize(
+  MerchantOrderWithTimelineDtoOutputOrderStatusEnum deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
-  }) => MerchantOrderDtoOutputOrderStatusEnum.valueOf(
+  }) => MerchantOrderWithTimelineDtoOutputOrderStatusEnum.valueOf(
     _fromWire[serialized] ?? (serialized is String ? serialized : ''),
   );
 }
 
-class _$MerchantOrderDtoOutputOrderCaptainTrackEnumSerializer
+class _$MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnumSerializer
     implements
-        PrimitiveSerializer<MerchantOrderDtoOutputOrderCaptainTrackEnum> {
+        PrimitiveSerializer<
+          MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum
+        > {
   static const Map<String, Object> _toWire = const <String, Object>{
     'searching': 'searching',
     'offered': 'offered',
@@ -222,29 +233,31 @@ class _$MerchantOrderDtoOutputOrderCaptainTrackEnumSerializer
 
   @override
   final Iterable<Type> types = const <Type>[
-    MerchantOrderDtoOutputOrderCaptainTrackEnum,
+    MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum,
   ];
   @override
-  final String wireName = 'MerchantOrderDtoOutputOrderCaptainTrackEnum';
+  final String wireName =
+      'MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum';
 
   @override
   Object serialize(
     Serializers serializers,
-    MerchantOrderDtoOutputOrderCaptainTrackEnum object, {
+    MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum object, {
     FullType specifiedType = FullType.unspecified,
   }) => _toWire[object.name] ?? object.name;
 
   @override
-  MerchantOrderDtoOutputOrderCaptainTrackEnum deserialize(
+  MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
-  }) => MerchantOrderDtoOutputOrderCaptainTrackEnum.valueOf(
+  }) => MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum.valueOf(
     _fromWire[serialized] ?? (serialized is String ? serialized : ''),
   );
 }
 
-class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
+class _$MerchantOrderWithTimelineDtoOutputOrder
+    extends MerchantOrderWithTimelineDtoOutputOrder {
   @override
   final String id;
   @override
@@ -254,7 +267,7 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
   @override
   final bool testOrder;
   @override
-  final MerchantOrderDtoOutputOrderStatusEnum status;
+  final MerchantOrderWithTimelineDtoOutputOrderStatusEnum status;
   @override
   final int version;
   @override
@@ -280,7 +293,7 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
   @override
   final MerchantOrdersDtoOutputOrdersInnerOwner? owner;
   @override
-  final MerchantOrderDtoOutputOrderCaptainTrackEnum? captainTrack;
+  final MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum? captainTrack;
   @override
   final MerchantOrdersDtoOutputOrdersInnerCaptain? captain;
   @override
@@ -292,13 +305,14 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
   @override
   final MerchantOrdersDtoOutputOrdersInnerCancellation? cancellation;
   @override
-  final MerchantOrderDtoOutputOrderPickup pickup;
+  final MerchantOrderWithTimelineDtoOutputOrderPickup pickup;
 
-  factory _$MerchantOrderDtoOutputOrder([
-    void Function(MerchantOrderDtoOutputOrderBuilder)? updates,
-  ]) => (MerchantOrderDtoOutputOrderBuilder()..update(updates))._build();
+  factory _$MerchantOrderWithTimelineDtoOutputOrder([
+    void Function(MerchantOrderWithTimelineDtoOutputOrderBuilder)? updates,
+  ]) => (MerchantOrderWithTimelineDtoOutputOrderBuilder()..update(updates))
+      ._build();
 
-  _$MerchantOrderDtoOutputOrder._({
+  _$MerchantOrderWithTimelineDtoOutputOrder._({
     required this.id,
     required this.number,
     this.redeliveryOf,
@@ -325,18 +339,18 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
     required this.pickup,
   }) : super._();
   @override
-  MerchantOrderDtoOutputOrder rebuild(
-    void Function(MerchantOrderDtoOutputOrderBuilder) updates,
+  MerchantOrderWithTimelineDtoOutputOrder rebuild(
+    void Function(MerchantOrderWithTimelineDtoOutputOrderBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  MerchantOrderDtoOutputOrderBuilder toBuilder() =>
-      MerchantOrderDtoOutputOrderBuilder()..replace(this);
+  MerchantOrderWithTimelineDtoOutputOrderBuilder toBuilder() =>
+      MerchantOrderWithTimelineDtoOutputOrderBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantOrderDtoOutputOrder &&
+    return other is MerchantOrderWithTimelineDtoOutputOrder &&
         id == other.id &&
         number == other.number &&
         redeliveryOf == other.redeliveryOf &&
@@ -396,7 +410,9 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'MerchantOrderDtoOutputOrder')
+    return (newBuiltValueToStringHelper(
+            r'MerchantOrderWithTimelineDtoOutputOrder',
+          )
           ..add('id', id)
           ..add('number', number)
           ..add('redeliveryOf', redeliveryOf)
@@ -425,13 +441,13 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
   }
 }
 
-class MerchantOrderDtoOutputOrderBuilder
+class MerchantOrderWithTimelineDtoOutputOrderBuilder
     implements
         Builder<
-          MerchantOrderDtoOutputOrder,
-          MerchantOrderDtoOutputOrderBuilder
+          MerchantOrderWithTimelineDtoOutputOrder,
+          MerchantOrderWithTimelineDtoOutputOrderBuilder
         > {
-  _$MerchantOrderDtoOutputOrder? _$v;
+  _$MerchantOrderWithTimelineDtoOutputOrder? _$v;
 
   String? _id;
   String? get id => _$this._id;
@@ -455,9 +471,10 @@ class MerchantOrderDtoOutputOrderBuilder
   bool? get testOrder => _$this._testOrder;
   set testOrder(bool? testOrder) => _$this._testOrder = testOrder;
 
-  MerchantOrderDtoOutputOrderStatusEnum? _status;
-  MerchantOrderDtoOutputOrderStatusEnum? get status => _$this._status;
-  set status(MerchantOrderDtoOutputOrderStatusEnum? status) =>
+  MerchantOrderWithTimelineDtoOutputOrderStatusEnum? _status;
+  MerchantOrderWithTimelineDtoOutputOrderStatusEnum? get status =>
+      _$this._status;
+  set status(MerchantOrderWithTimelineDtoOutputOrderStatusEnum? status) =>
       _$this._status = status;
 
   int? _version;
@@ -521,11 +538,12 @@ class MerchantOrderDtoOutputOrderBuilder
   set owner(MerchantOrdersDtoOutputOrdersInnerOwnerBuilder? owner) =>
       _$this._owner = owner;
 
-  MerchantOrderDtoOutputOrderCaptainTrackEnum? _captainTrack;
-  MerchantOrderDtoOutputOrderCaptainTrackEnum? get captainTrack =>
+  MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum? _captainTrack;
+  MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum? get captainTrack =>
       _$this._captainTrack;
-  set captainTrack(MerchantOrderDtoOutputOrderCaptainTrackEnum? captainTrack) =>
-      _$this._captainTrack = captainTrack;
+  set captainTrack(
+    MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum? captainTrack,
+  ) => _$this._captainTrack = captainTrack;
 
   MerchantOrdersDtoOutputOrdersInnerCaptainBuilder? _captain;
   MerchantOrdersDtoOutputOrdersInnerCaptainBuilder get captain =>
@@ -564,17 +582,17 @@ class MerchantOrderDtoOutputOrderBuilder
     MerchantOrdersDtoOutputOrdersInnerCancellationBuilder? cancellation,
   ) => _$this._cancellation = cancellation;
 
-  MerchantOrderDtoOutputOrderPickupBuilder? _pickup;
-  MerchantOrderDtoOutputOrderPickupBuilder get pickup =>
-      _$this._pickup ??= MerchantOrderDtoOutputOrderPickupBuilder();
-  set pickup(MerchantOrderDtoOutputOrderPickupBuilder? pickup) =>
+  MerchantOrderWithTimelineDtoOutputOrderPickupBuilder? _pickup;
+  MerchantOrderWithTimelineDtoOutputOrderPickupBuilder get pickup =>
+      _$this._pickup ??= MerchantOrderWithTimelineDtoOutputOrderPickupBuilder();
+  set pickup(MerchantOrderWithTimelineDtoOutputOrderPickupBuilder? pickup) =>
       _$this._pickup = pickup;
 
-  MerchantOrderDtoOutputOrderBuilder() {
-    MerchantOrderDtoOutputOrder._defaults(this);
+  MerchantOrderWithTimelineDtoOutputOrderBuilder() {
+    MerchantOrderWithTimelineDtoOutputOrder._defaults(this);
   }
 
-  MerchantOrderDtoOutputOrderBuilder get _$this {
+  MerchantOrderWithTimelineDtoOutputOrderBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
@@ -607,53 +625,55 @@ class MerchantOrderDtoOutputOrderBuilder
   }
 
   @override
-  void replace(MerchantOrderDtoOutputOrder other) {
-    _$v = other as _$MerchantOrderDtoOutputOrder;
+  void replace(MerchantOrderWithTimelineDtoOutputOrder other) {
+    _$v = other as _$MerchantOrderWithTimelineDtoOutputOrder;
   }
 
   @override
-  void update(void Function(MerchantOrderDtoOutputOrderBuilder)? updates) {
+  void update(
+    void Function(MerchantOrderWithTimelineDtoOutputOrderBuilder)? updates,
+  ) {
     if (updates != null) updates(this);
   }
 
   @override
-  MerchantOrderDtoOutputOrder build() => _build();
+  MerchantOrderWithTimelineDtoOutputOrder build() => _build();
 
-  _$MerchantOrderDtoOutputOrder _build() {
-    _$MerchantOrderDtoOutputOrder _$result;
+  _$MerchantOrderWithTimelineDtoOutputOrder _build() {
+    _$MerchantOrderWithTimelineDtoOutputOrder _$result;
     try {
       _$result =
           _$v ??
-          _$MerchantOrderDtoOutputOrder._(
+          _$MerchantOrderWithTimelineDtoOutputOrder._(
             id: BuiltValueNullFieldError.checkNotNull(
               id,
-              r'MerchantOrderDtoOutputOrder',
+              r'MerchantOrderWithTimelineDtoOutputOrder',
               'id',
             ),
             number: BuiltValueNullFieldError.checkNotNull(
               number,
-              r'MerchantOrderDtoOutputOrder',
+              r'MerchantOrderWithTimelineDtoOutputOrder',
               'number',
             ),
             redeliveryOf: _redeliveryOf?.build(),
             testOrder: BuiltValueNullFieldError.checkNotNull(
               testOrder,
-              r'MerchantOrderDtoOutputOrder',
+              r'MerchantOrderWithTimelineDtoOutputOrder',
               'testOrder',
             ),
             status: BuiltValueNullFieldError.checkNotNull(
               status,
-              r'MerchantOrderDtoOutputOrder',
+              r'MerchantOrderWithTimelineDtoOutputOrder',
               'status',
             ),
             version: BuiltValueNullFieldError.checkNotNull(
               version,
-              r'MerchantOrderDtoOutputOrder',
+              r'MerchantOrderWithTimelineDtoOutputOrder',
               'version',
             ),
             placedAt: BuiltValueNullFieldError.checkNotNull(
               placedAt,
-              r'MerchantOrderDtoOutputOrder',
+              r'MerchantOrderWithTimelineDtoOutputOrder',
               'placedAt',
             ),
             acceptAlertAt: acceptAlertAt,
@@ -665,12 +685,12 @@ class MerchantOrderDtoOutputOrderBuilder
             lines: lines.build(),
             currency: BuiltValueNullFieldError.checkNotNull(
               currency,
-              r'MerchantOrderDtoOutputOrder',
+              r'MerchantOrderWithTimelineDtoOutputOrder',
               'currency',
             ),
             itemsValue: BuiltValueNullFieldError.checkNotNull(
               itemsValue,
-              r'MerchantOrderDtoOutputOrder',
+              r'MerchantOrderWithTimelineDtoOutputOrder',
               'itemsValue',
             ),
             owner: _owner?.build(),
@@ -714,7 +734,7 @@ class MerchantOrderDtoOutputOrderBuilder
         pickup.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'MerchantOrderDtoOutputOrder',
+          r'MerchantOrderWithTimelineDtoOutputOrder',
           _$failedField,
           e.toString(),
         );

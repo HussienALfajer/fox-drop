@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/merchant_order_dto_output_order.dart';
+import 'package:core_api/src/model/merchant_order_with_timeline_dto_output_order.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -17,7 +17,7 @@ part 'merchant_order_dto_output.g.dart';
 abstract class MerchantOrderDtoOutput
     implements Built<MerchantOrderDtoOutput, MerchantOrderDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
-  MerchantOrderDtoOutputOrder get order;
+  MerchantOrderWithTimelineDtoOutputOrder get order;
 
   MerchantOrderDtoOutput._();
 
@@ -52,7 +52,7 @@ class _$MerchantOrderDtoOutputSerializer
     yield r'order';
     yield serializers.serialize(
       object.order,
-      specifiedType: const FullType(MerchantOrderDtoOutputOrder),
+      specifiedType: const FullType(MerchantOrderWithTimelineDtoOutputOrder),
     );
   }
 
@@ -85,9 +85,11 @@ class _$MerchantOrderDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(MerchantOrderDtoOutputOrder),
+                    specifiedType: const FullType(
+                      MerchantOrderWithTimelineDtoOutputOrder,
+                    ),
                   )
-                  as MerchantOrderDtoOutputOrder;
+                  as MerchantOrderWithTimelineDtoOutputOrder;
           result.order.replace(valueDes);
           break;
         default:

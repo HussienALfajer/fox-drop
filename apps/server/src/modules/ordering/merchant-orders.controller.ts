@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -25,6 +26,8 @@ import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { linesBody, linesOfBody, paymentLines } from './captain-orders.controller.js';
 import { minor } from './customer-quote.controller.js';
+import { AppHistories, HISTORY_PAGE, HistoryRefusedError } from './app-histories.js';
+import { timeline } from './customer-timeline.js';
 import { PickupCommands } from './pickup-commands.js';
 import { currentRequests, type PickupRequestView } from './pickup-views.js';
 import { type MerchantCommand, OrderCommandRefusedError, OrderCommands } from './order-commands.js';
@@ -298,6 +301,89 @@ class MerchantOrdersDto extends createZodDto(
 
 class MerchantOrderDto extends createZodDto(z.object({ order: boardOrder })) {}
 
+// A page's cursor: the placing time and id of the last order shown.
+const HISTORY_CURSOR = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)_([0-9a-f-]{36})$/;
+
+class MerchantOrderHistoryQueryDto extends createZodDto(
+  z
+    .object({
+      from: z.iso
+        .date()
+        .optional()
+        .describe('The first business day, YYYY-MM-DD on the city clock; with `to`.'),
+      to: z.iso.date().optional().describe('The last business day, included; with `from`.'),
+      status: z.enum(orderStatuses).optional(),
+      number: z
+        .string()
+        .regex(/^\d{1,12}$/)
+        .optional()
+        .describe('The order number without «#»; within the range.'),
+      cursor: z
+        .string()
+        .regex(HISTORY_CURSOR)
+        .refine((cursor) => !Number.isNaN(Date.parse(cursor.split('_')[0]!)), 'a real moment')
+        .optional()
+        .describe('The `next` of the page before; none for the first page.'),
+    })
+    .refine((query) => (query.from === undefined) === (query.to === undefined), {
+      message: 'from and to go together',
+    }),
+) {}
+
+class MerchantOrderHistoryDto extends createZodDto(
+  z.object({
+    owner: z
+      .boolean()
+      .describe(
+        'An owner sees the commission and the net and picks any range; a cashier not (S12).',
+      ),
+    fromDay: z.iso
+      .date()
+      .describe('The range read: by default today and the 7 business days before.'),
+    toDay: z.iso.date(),
+    orders: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          number: z.string(),
+          placedAt: z.iso.datetime().describe('«الوقت».'),
+          day: z.iso.date().describe('The business day it was placed on.'),
+          status: z.enum(orderStatuses),
+          testOrder: z.boolean().describe('«طلب تجريبي» (RA §8.16).'),
+          redelivery: z.boolean().describe('«إعادة توصيل مجانية» (AP §9.9.3).'),
+          itemCount: z.int().min(0).describe('«عدد الأصناف»: the quantities added up.'),
+          currency: z.string().length(3),
+          itemsValue: minor.describe('«قيمة الأصناف», for every user.'),
+          owner: boardOrder.shape.owner.describe(
+            'RA §8.18: the commission and the net, to owners only (null for a cashier, and on a cancelled or rejected order).',
+          ),
+        }),
+      )
+      .describe(`Newest first, ${HISTORY_PAGE} a page.`),
+    next: z.string().nullable().describe('The cursor of the next page; null at the end.'),
+  }),
+) {}
+
+const timelineSteps = [
+  'placed',
+  'accepted',
+  'picked_up',
+  'arrived',
+  'delivered',
+  'failed',
+  'rejected',
+  'cancelled',
+] as const;
+
+class MerchantOrderWithTimelineDto extends createZodDto(
+  z.object({
+    order: boardOrder,
+    timeline: z
+      .array(z.object({ step: z.enum(timelineSteps), at: z.iso.datetime() }))
+      .describe('RA §8.18: the steps the order reached, oldest first.'),
+  }),
+) {}
+
 class MerchantRejectDto extends createZodDto(
   z.object({
     reason: z
@@ -403,6 +489,7 @@ export class MerchantOrdersController {
     private readonly pickups: PickupCommands,
     private readonly accounts: MerchantAccountsService,
     private readonly settings: SettingsService,
+    private readonly histories: AppHistories,
   ) {}
 
   @Get('orders')
@@ -415,6 +502,91 @@ export class MerchantOrdersController {
       this.commands.prepTimeChooser(restaurantId, new Date()),
     ]);
     return { orders: await this.boardOrders(session, restaurantId, orders), prepTime };
+  }
+
+  // RA §8.18 «السجل» (slice 2.40): the restaurant's orders in a range of
+  // business days. A cashier sees today and the 7 business days before
+  // (S12; any other range 403 cashier_window) and no money but the items
+  // value; an owner any range up to a year with the commission and the net.
+  // 400 invalid_period.
+  @Get('orders/history')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantOrderHistoryDto })
+  async history(
+    @CurrentAppSession() session: AppSession,
+    @Query() query: MerchantOrderHistoryQueryDto,
+  ) {
+    const restaurantId = await this.restaurantOf(session);
+    const owner = session.merchant?.role === 'owner';
+    const match = query.cursor === undefined ? null : HISTORY_CURSOR.exec(query.cursor);
+    const page = await this.historyRefusals(() =>
+      this.histories.restaurantPage(
+        restaurantId,
+        !owner,
+        {
+          ...(query.from === undefined ? {} : { fromDay: query.from }),
+          ...(query.to === undefined ? {} : { toDay: query.to }),
+          ...(query.status === undefined ? {} : { status: query.status }),
+          ...(query.number === undefined ? {} : { number: BigInt(query.number) }),
+          ...(match ? { after: { placedAt: new Date(match[1]!), id: match[2]! } } : {}),
+        },
+        new Date(),
+      ),
+    );
+    const money = owner ? await this.orders.ownerMoney(page.orders) : new Map<string, null>();
+    const last = page.orders.at(-1);
+    return {
+      owner,
+      fromDay: page.fromDay,
+      toDay: page.toDay,
+      orders: page.orders.map((order) => ({
+        id: order.id,
+        number: order.number.toString(),
+        placedAt: order.placedAt.toISOString(),
+        day: page.dayOf(order),
+        status: order.status,
+        testOrder: order.testOrder,
+        redelivery: order.redelivery !== null,
+        itemCount: order.lines.reduce((count, line) => count + line.quantity, 0),
+        currency: order.currency,
+        itemsValue: order.money.itemsValue.toString(),
+        owner: ownerBody(money, order),
+      })),
+      next: page.more && last ? `${last.placedAt.toISOString()}_${last.id}` : null,
+    };
+  }
+
+  // RA §8.18 «التفاصيل»: the order as the board shows it (RA §8.4) with its
+  // timeline. 404 unknown_order for another restaurant's, and for a
+  // cashier's outside their window.
+  @Get('orders/:orderId')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantOrderWithTimelineDto })
+  async order(@CurrentAppSession() session: AppSession, @Param() params: MerchantOrderParamsDto) {
+    const restaurantId = await this.restaurantOf(session);
+    const found = await this.histories.restaurantOrder(
+      restaurantId,
+      params.orderId,
+      session.merchant?.role !== 'owner',
+      new Date(),
+    );
+    if (!found) {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_order' });
+    }
+    const [order] = await this.boardOrders(session, restaurantId, [found]);
+    return { order: order!, timeline: timeline(found) };
+  }
+
+  private async historyRefusals<T>(run: () => Promise<T>): Promise<T> {
+    try {
+      return await run();
+    } catch (error) {
+      if (!(error instanceof HistoryRefusedError)) throw error;
+      if (error.refusal === 'cashier_window') {
+        throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: error.refusal });
+      }
+      throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
+    }
   }
 
   // RA §8.5: «قبول — {د} د». 409 order_state_changed with the order as it is
