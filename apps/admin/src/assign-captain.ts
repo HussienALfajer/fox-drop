@@ -80,6 +80,14 @@ export function pickerQuery(orderId: string) {
 export type AssignRefusal =
   'order_not_assignable' | 'captain_not_eligible' | 'captain_has_offer' | 'unknown_captain';
 
+// Why «تعيين» was refused (AP §9.3.2), for the picker and the live map.
+export const assignRefusalKeys = {
+  order_not_assignable: 'assign.refused.orderNotAssignable',
+  captain_not_eligible: 'assign.refused.captainNotEligible',
+  captain_has_offer: 'assign.refused.captainHasOffer',
+  unknown_captain: 'assign.refused.unknownCaptain',
+} as const satisfies Record<AssignRefusal, string>;
+
 export type AssignResult =
   | { status: 'offered'; order: DispatchState; expiresAt: string }
   | { status: 'assigned'; order: DispatchState }
@@ -104,6 +112,42 @@ const refusals: readonly string[] = [
   'unknown_captain',
 ] satisfies AssignRefusal[];
 
+// One «تعيين» sent with its key: the answer, or null for a failure the
+// caller may retry with the same key.
+export async function postAssign(
+  orderId: string,
+  captainId: string,
+  key: string,
+): Promise<AssignResult | null> {
+  const { data, error, response } = await api.POST('/v1/admin/orders/{orderId}/assign', {
+    params: { path: { orderId }, header: { 'Idempotency-Key': key } },
+    body: { captainId },
+  });
+  if (data) {
+    const { order } = data;
+    return order.offer
+      ? { status: 'offered', order, expiresAt: order.offer.expiresAt }
+      : { status: 'assigned', order };
+  }
+  const body = error as { error?: unknown; reasons?: unknown } | undefined;
+  const refusal = body?.error;
+  if (
+    (response.status === 409 || response.status === 404) &&
+    typeof refusal === 'string' &&
+    refusals.includes(refusal)
+  ) {
+    // A reason the panel does not know yet is left out of the explanation.
+    const reasons = Array.isArray(body?.reasons)
+      ? (body.reasons as unknown[]).filter(
+          (reason): reason is IneligibleReason =>
+            typeof reason === 'string' && knownReasons.includes(reason),
+        )
+      : [];
+    return { status: 'refused', refusal: refusal as AssignRefusal, reasons };
+  }
+  return null;
+}
+
 // With dispatch.manual_assign_requires_accept (true) the captain gets an
 // offer and the answer carries it; without it the order is the captain's at
 // once (AP §9.3.2). A retry of the same choice sends the same
@@ -118,35 +162,10 @@ export function useAssignCaptain(orderId: string) {
         key = crypto.randomUUID();
         keys.current.set(captainId, key);
       }
-      const { data, error, response } = await api.POST('/v1/admin/orders/{orderId}/assign', {
-        params: { path: { orderId }, header: { 'Idempotency-Key': key } },
-        body: { captainId },
-      });
-      if (data) {
-        keys.current.delete(captainId);
-        const { order } = data;
-        return order.offer
-          ? { status: 'offered', order, expiresAt: order.offer.expiresAt }
-          : { status: 'assigned', order };
-      }
-      const body = error as { error?: unknown; reasons?: unknown } | undefined;
-      const refusal = body?.error;
-      if (
-        (response.status === 409 || response.status === 404) &&
-        typeof refusal === 'string' &&
-        refusals.includes(refusal)
-      ) {
-        keys.current.delete(captainId);
-        // A reason the panel does not know yet is left out of the explanation.
-        const reasons = Array.isArray(body?.reasons)
-          ? (body.reasons as unknown[]).filter(
-              (reason): reason is IneligibleReason =>
-                typeof reason === 'string' && knownReasons.includes(reason),
-            )
-          : [];
-        return { status: 'refused', refusal: refusal as AssignRefusal, reasons };
-      }
-      throw new Error('The assignment failed.');
+      const result = await postAssign(orderId, captainId, key);
+      if (result === null) throw new Error('The assignment failed.');
+      keys.current.delete(captainId);
+      return result;
     },
     onSettled: () =>
       Promise.all([

@@ -15,7 +15,7 @@ Slice 2.39, the live map (`docs/roadmap.md`, Phase 2).
 ### Plan
 
 - [x] Server: the map's read (zones, restaurants with their state, captains with their state and last point, the active orders) and the `ops_map:` channel's publications (AP §9.4, architecture §6.2).
-- [ ] Panel: `/live-map` with its layers, the side menu's «الخريطة الحية», and the assignment from the map.
+- [x] Panel: `/live-map` with its layers, the side menu's «الخريطة الحية», and the assignment from the map.
 - [ ] Review, fixes, hand over to 2.40.
 
 ### Left from 2.38b (the cloud session's branch)

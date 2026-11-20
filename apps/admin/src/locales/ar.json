@@ -5212,6 +5212,7 @@
     "user": "حسابي ({{roles}})",
     "module": {
       "operations": "غرفة العمليات",
+      "liveMap": "الخريطة الحية",
       "restaurants": "المطاعم",
       "captains": "الكباتن",
       "customers": "الزبائن",
@@ -5238,5 +5239,75 @@
       "customer": "زبون: {{name}}",
       "noName": "بلا اسم"
     }
+  },
+  "liveMap": {
+    "title": "الخريطة الحية",
+    "explain": "المناطق والمطاعم والكباتن والطلبات النشطة. تتحدث مواقع الكباتن كل 10 ثوانٍ.",
+    "map": "خريطة المدينة الحية",
+    "noMap": "لا مناطق ولا مطاعم لهذه المدينة بعد، فلا خريطة.",
+    "mapFailed": "تعذّر عرض الخريطة. القوائم أدناه تبقى.",
+    "filters": "التصفية",
+    "availableOnly": "المتاحون فقط",
+    "vehicle": "المركبة",
+    "allVehicles": "كل المركبات",
+    "layer": {
+      "restaurants": "المطاعم",
+      "captains": "الكباتن",
+      "orders": "الطلبات",
+      "zones": "المناطق"
+    },
+    "captains": "الكباتن ({{count}})",
+    "noCaptains": "لا كباتن بهذه التصفية.",
+    "captainLine": "{{name}} — {{colour}}: {{state}}",
+    "blocked": "(محجوب: حد أحمر)",
+    "orderTooltip": "طلب #{{number}}",
+    "restaurants": "المطاعم ({{count}})",
+    "restaurantLine": "{{name}} — {{colour}}: {{state}}",
+    "orders": "الطلبات النشطة ({{count}})",
+    "noOrders": "لا طلبات نشطة.",
+    "orderLine": "طلب #{{number}} ({{status}}) من {{restaurant}}",
+    "needsCaptain": "بلا كابتن",
+    "activeOrders": "الطلبات النشطة: {{count}}",
+    "colour": {
+      "available": "أخضر",
+      "busy": "برتقالي",
+      "offline": "رمادي",
+      "open": "أخضر",
+      "paused": "كهرماني",
+      "closed": "رمادي"
+    },
+    "captainState": {
+      "available": "متاح",
+      "noOffers": "متصل ولا تصله عروض",
+      "busy": "مشغول",
+      "lastOrder": "آخر طلب",
+      "offline": "غير متصل",
+      "suspended": "موقوف"
+    },
+    "restaurantState": {
+      "open": "مفتوح",
+      "busy": "مفتوح (وضع الانشغال)",
+      "paused": "متوقف مؤقتاً",
+      "closed": "مغلق",
+      "holiday": "إغلاق عطلة",
+      "suspended": "معلّق"
+    },
+    "card": {
+      "state": "الحالة",
+      "vehicle": "المركبة",
+      "order": "الطلب الحالي",
+      "noOrder": "لا طلب",
+      "lastFix": "آخر موقع",
+      "noFix": "لا موقع بعد",
+      "cash": "حد النقد",
+      "phone": "الهاتف",
+      "call": "إظهار الرقم للاتصال",
+      "noPhone": "لا رقم مسجّل"
+    },
+    "assign": "عيّنه لطلب",
+    "assignTitle": "تعيين {{name}} لطلب",
+    "assignTo": "طلب #{{number}} من {{restaurant}}",
+    "noOrdersToAssign": "لا طلبات بلا كابتن الآن.",
+    "close": "إغلاق"
   }
 }

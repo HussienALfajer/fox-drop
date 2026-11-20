@@ -17,6 +17,7 @@ import { canSeeHomeSections } from './home-sections.js';
 import { canSeeLostDemand } from './lost-demand.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { canSeeMassPushes } from './mass-pushes.js';
+import { canSeeLiveMap } from './live-map.js';
 import { canReviewMenuChanges } from './menu-change-requests.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { ZONES_READ } from './peak-bonus.js';
@@ -29,11 +30,12 @@ import { type AdminSession, can } from './session.js';
 import { ADMIN_TEAM } from './team.js';
 import { canReadTickets } from './tickets.js';
 
-// AP §7.1 the side menu's modules, in its order. Dashboard, the live map and
-// the order history have no page yet (slices 2.39 and 2.40), so they are not
-// listed until they do.
+// AP §7.1 the side menu's modules, in its order. Dashboard and the order
+// history have no page yet (slice 2.40), so they are not listed until they
+// do.
 export const MODULES = [
   'operations',
+  'liveMap',
   'restaurants',
   'captains',
   'customers',
@@ -65,6 +67,7 @@ export const MENU_LINKS = {
     path: '/emergency-code',
     allowed: holds(EMERGENCY_CODE_PERMISSION),
   },
+  liveMap: { module: 'liveMap', path: '/live-map', allowed: canSeeLiveMap },
   restaurantList: { module: 'restaurants', path: '/restaurants', allowed: canSeeRestaurantList },
   drafts: { module: 'restaurants', path: '/restaurant-drafts', allowed: canSeeDrafts },
   menuChanges: {

@@ -27,6 +27,8 @@ function MenuLink({ id }: { id: MenuLinkId }) {
   switch (id) {
     case 'orders':
       return <Link to="/orders">{t('board.title')}</Link>;
+    case 'liveMap':
+      return <Link to="/live-map">{t('liveMap.title')}</Link>;
     case 'alerts':
       return <Link to="/alerts">{t('alerts.title')}</Link>;
     case 'emergencyCode':

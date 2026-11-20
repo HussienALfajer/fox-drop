@@ -68,6 +68,8 @@ import { CityProfilePage } from './city-profile-page.js';
 import { DefaultsPage, DispatchRulesPage } from './city-settings-page.js';
 import { SETTINGS_MANAGE, SWITCH_DISPATCH_MODE } from './city-settings.js';
 import { ZonesPage } from './zones-page.js';
+import { canSeeLiveMap } from './live-map.js';
+import { LiveMapPage } from './live-map-page.js';
 import { ReceiptPage } from './receipt-page.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { RestaurantStatementsPage } from './restaurant-statements-page.js';
@@ -610,6 +612,18 @@ const officeRoute = createRoute({
   component: OfficePage,
 });
 
+// AP §9.4 «الخريطة الحية» (slice 2.39): live_map.read (OWN, OPS, SUP);
+// OWN and OPS assign from it (operations.manage).
+const liveMapRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/live-map',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeLiveMap(context.session)) throw redirect({ to: '/' });
+  },
+  component: LiveMapPage,
+});
+
 // AP §9.12.2 «مناطق الخدمة» (slice 2.37c): read with zones.read (OWN, OPS,
 // FIN); OWN draws, edits and activates a zone (zones.manage).
 const zonesRoute = createRoute({
@@ -934,6 +948,7 @@ const routeTree = rootRoute.addChildren([
     menuChangeRoute,
     officeRoute,
     zonesRoute,
+    liveMapRoute,
     citiesRoute,
     defaultsRoute,
     dispatchRulesRoute,
