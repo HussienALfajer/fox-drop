@@ -1514,6 +1514,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainOfferNoPay => 'الأجر غير محدد';
 
   @override
+  String captainOfferRing(String pay, String restaurant) {
+    return 'عرض جديد: $pay — $restaurant';
+  }
+
+  @override
   String get captainAccept => 'قبول';
 
   @override

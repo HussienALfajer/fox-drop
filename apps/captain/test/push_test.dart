@@ -138,6 +138,25 @@ void main() {
     await app.done(tester);
   });
 
+  // CA §4.4 (slice 2.43): a push's ring lasts until the offer's end.
+  test('an offer push rings until the offer ends, and nothing else rings', () {
+    final now = DateTime.utc(2026, 11, 20, 9);
+    final end = now.add(const Duration(seconds: 40)).toIso8601String();
+    expect(
+      offerRingTime({'target': 'offer', 'expiresAt': end}, now),
+      const Duration(seconds: 40),
+    );
+    expect(
+      offerRingTime({
+        'target': 'offer',
+        'expiresAt': end,
+      }, now.add(const Duration(minutes: 1))),
+      isNull,
+    );
+    expect(offerRingTime({'target': 'offer'}, now), isNull);
+    expect(offerRingTime({'target': 'order', 'expiresAt': end}, now), isNull);
+  });
+
   test('an offer or an order opens home, a receipt «عهدتي», a statement '
       'the statement; the others nothing yet', () {
     expect(pushTargetPath({'target': 'offer', 'orderId': orderId}), '/');

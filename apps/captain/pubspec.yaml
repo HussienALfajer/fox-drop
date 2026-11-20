@@ -9,6 +9,8 @@ environment:
 resolution: workspace
 
 dependencies:
+  # The offer's ring, the device check's readers (CA §4.4–4.5, slice 2.43).
+  core_alerts: any
   core_api: any
   core_auth: any
   core_l10n: any
@@ -23,7 +25,6 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_riverpod: 3.4.3
-  flutter_ringtone_player: 4.0.0+4
   geolocator: 14.0.2
   go_router: 18.1.3
   # «إبلاغ عن مشكلة» (CA §13, slice 2.24c): the report's photo.

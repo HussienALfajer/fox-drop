@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- The app calls the FOX DROP API. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- CA §4.3: the location every 10 seconds while online, through
@@ -17,6 +18,14 @@
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <!-- The offer ring keeps the screen on while online (wakelock_plus). -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- core_alerts brings the restaurant's receiving service (specialUse);
+         the captain app keeps its process alive with the background
+         location's service of type location instead (CA §4.3, slice 2.43),
+         so it declares neither the service, its start after a reboot nor
+         its permission. -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
+        tools:node="remove"/>
     <application
         android:label="تطبيق الكابتن"
         android:name="${applicationName}"
@@ -43,6 +52,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <service
+            android:name="com.foxdrop.core_alerts.ReceivingService"
+            tools:node="remove"/>
+        <receiver
+            android:name="com.foxdrop.core_alerts.StartReceiver"
+            tools:node="remove"/>
         <!-- A push whose channel does not exist yet shows on «chime»
              (packages/core_push/CLAUDE.md). -->
         <meta-data

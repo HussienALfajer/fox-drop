@@ -1,20 +1,23 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:core_alerts/core_alerts.dart';
+import 'package:core_l10n/core_l10n.dart';
+import 'package:flutter/widgets.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'door_payment.dart';
 import 'work.dart';
 
-/// The sounds of CA §4.4. Until the design's bundled sounds (owner decision
-/// 2026-11-07, as the restaurant app), the offer ring is the phone's alarm
-/// sound, looping on the alarm stream so the media volume and silent mode do
-/// not mute it, and the chime and the cancellation sound are the phone's
-/// notification sound.
+/// The sounds of CA §4.4 through `core_alerts` (architecture §14.2): the
+/// offer loops the bundled offer sound on the alarm stream, so the media
+/// volume and silent mode do not mute it, vibrates, and shows over the lock
+/// screen (full screen where allowed, heads-up otherwise; CA §18 item 6)
+/// with its text; the chime and the cancellation sound play once.
 abstract interface class Ringer {
-  void ring();
+  /// Rings the offer with [text] («عرض جديد: {الأجر} — {المطعم}», CA §14
+  /// #1) until [stop]; called every second while it rings.
+  void ring(String text);
   void stop();
   void chime();
 
@@ -22,49 +25,56 @@ abstract interface class Ringer {
   void cancellation();
 }
 
-/// The phone's sounds through `flutter_ringtone_player` (Android; iOS waits
-/// for its slice). The plugin loops only on Android 9 and later and the
-/// system can stop a sound, so while ringing the alarm starts again every
-/// [replayEvery] (`apps/merchant/CLAUDE.md`).
-class PhoneRinger implements Ringer {
-  PhoneRinger({this.replayEvery = const Duration(seconds: 10)});
+/// One sound loop and one prompt: a ring already playing changes only when
+/// its text does. Off Android `NoAlerts` plays nothing (iOS is slice 2.46).
+class AlertsRinger implements Ringer {
+  AlertsRinger(this.alerts, this.title);
 
-  final Duration replayEvery;
-  final _player = FlutterRingtonePlayer();
-  Timer? _replay;
+  final Alerts alerts;
 
-  bool get _supported => defaultTargetPlatform == TargetPlatform.android;
-
-  void _play() => unawaited(_player.playAlarm(looping: true, asAlarm: true));
+  /// The prompt's title, the brand.
+  final String title;
+  String? _playing;
 
   @override
-  void ring() {
-    if (!_supported || _replay != null) return;
-    _play();
-    _replay = Timer.periodic(replayEvery, (_) => _play());
+  void ring(String text) {
+    if (_playing == text) return;
+    _playing = text;
+    unawaited(
+      alerts.ring(RingSound.offer, title: title, body: text, vibrate: true),
+    );
   }
 
   @override
   void stop() {
-    if (!_supported || _replay == null) return;
-    _replay?.cancel();
-    _replay = null;
-    unawaited(_player.stop());
+    if (_playing == null) return;
+    _playing = null;
+    unawaited(alerts.stopRing());
   }
 
   @override
   void chime() {
-    // One player: a chime would end the ring, which is louder anyway.
-    if (!_supported || _replay != null) return;
-    unawaited(_player.playNotification());
+    // One sound at a time: the ring is louder anyway.
+    if (_playing != null) return;
+    unawaited(alerts.chime());
   }
 
-  // The bundled cancellation sound waits for the design (the design stop).
   @override
-  void cancellation() => chime();
+  void cancellation() {
+    if (_playing != null) return;
+    unawaited(alerts.chime(cancellation: true));
+  }
 }
 
-final ringerProvider = Provider<Ringer>((ref) => PhoneRinger());
+/// The native layer; tests give a `FakeAlerts`.
+final alertsProvider = Provider<Alerts>((ref) => platformAlerts());
+
+final ringerProvider = Provider<Ringer>(
+  (ref) => AlertsRinger(
+    ref.watch(alertsProvider),
+    lookupAppLocalizations(const Locale('ar')).captainAppName,
+  ),
+);
 
 /// Keeps the screen on while the captain is online (owner decision
 /// 2026-11-07); tests replace it.

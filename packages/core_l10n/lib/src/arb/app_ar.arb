@@ -808,6 +808,8 @@
   "@captainWaitingPayMayApply": {"description": "Under the offer pay (CA §8.2)."},
   "captainOfferNoPay": "الأجر غير محدد",
   "@captainOfferNoPay": {"description": "An offer without a pay table. The spec gives no wording."},
+  "captainOfferRing": "عرض جديد: {pay} — {restaurant}",
+  "@captainOfferRing": {"description": "The offer's ring over the lock screen and its push (CA §14 #1, §4.4); pay is the order pay or captainOfferNoPay.", "placeholders": {"pay": {"type": "String"}, "restaurant": {"type": "String"}}},
   "captainAccept": "قبول",
   "@captainAccept": {"description": "Accept the offer (CA §8.3)."},
   "captainDecline": "رفض",

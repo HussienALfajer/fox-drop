@@ -2518,6 +2518,12 @@ abstract class AppLocalizations {
   /// **'الأجر غير محدد'**
   String get captainOfferNoPay;
 
+  /// The offer's ring over the lock screen and its push (CA §14 #1, §4.4); pay is the order pay or captainOfferNoPay.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض جديد: {pay} — {restaurant}'**
+  String captainOfferRing(String pay, String restaurant);
+
   /// Accept the offer (CA §8.3).
   ///
   /// In ar, this message translates to:

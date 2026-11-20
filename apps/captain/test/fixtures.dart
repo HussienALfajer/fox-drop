@@ -509,14 +509,21 @@ class FakeLocation implements LocationSource {
 
 class FakeRinger implements Ringer {
   bool ringing = false;
+  String? ringText;
   int chimes = 0;
   int cancellations = 0;
 
   @override
-  void ring() => ringing = true;
+  void ring(String text) {
+    ringing = true;
+    ringText = text;
+  }
 
   @override
-  void stop() => ringing = false;
+  void stop() {
+    ringing = false;
+    ringText = null;
+  }
 
   @override
   void chime() => chimes++;

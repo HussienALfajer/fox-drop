@@ -3,6 +3,8 @@ import 'package:captain/src/work/commands.dart';
 import 'package:captain/src/work/door_payment.dart';
 import 'package:captain/src/work/location.dart';
 import 'package:captain/src/work/work.dart';
+import 'package:core_alerts/core_alerts.dart';
+import 'package:core_alerts/testing.dart';
 import 'package:core_api/core_api.dart';
 import 'package:core_time/core_time.dart';
 import 'package:dio/dio.dart';
@@ -73,6 +75,26 @@ DioException refused(int status, [Object? body]) => DioException(
 );
 
 void main() {
+  // CA §4.4 (slice 2.43): the offer through core_alerts.
+  test('rings the offer once per text, vibrating, and keeps chimes off it', () {
+    final alerts = FakeAlerts();
+    final ringer = AlertsRinger(alerts, 'تطبيق الكابتن');
+    ringer.ring('عرض جديد: 35 ₺ — مطعم الشام');
+    ringer.ring('عرض جديد: 35 ₺ — مطعم الشام');
+    ringer.chime();
+    ringer.cancellation();
+    expect(alerts.calls, ['ring']);
+    expect(alerts.ringing, RingSound.offer);
+    expect(alerts.ringVibrates, isTrue);
+    expect(alerts.ringStopsAfter, isNull);
+    ringer.stop();
+    ringer.stop();
+    ringer.chime();
+    ringer.cancellation();
+    expect(alerts.calls, ['ring', 'stopRing']);
+    expect((alerts.chimes, alerts.cancellations), (1, 1));
+  });
+
   group('the door payment (CA §9.7)', () {
     test('reads typed amounts in minor units, and back', () {
       expect(minorOf('410'), '41000');

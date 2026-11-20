@@ -306,7 +306,7 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
     final offer = _work?.offer;
     final ringing = ringingOffer(_work, now, ref.read(answeredProvider).offers);
     if (ringing != null) {
-      _ringer.ring();
+      _ringer.ring(AppLocalizations.of(context).offerRingText(ringing));
     } else {
       _ringer.stop();
     }

@@ -150,6 +150,8 @@ void main() {
     expect(find.textContaining('أحمد'), findsNothing);
     await app.advance(tester, const Duration(seconds: 1));
     expect(app.ringer.ringing, isTrue);
+    // CA §14 #1: the prompt over the lock screen says it.
+    expect(app.ringer.ringText, 'عرض جديد: 35 ₺ — مطعم الشام');
 
     app.work(availability: [availabilityJson(state: 'online_available')]);
     await app.advance(tester, const Duration(seconds: 1));
