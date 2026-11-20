@@ -38,9 +38,9 @@ A row is an item, or one bullet of an item that has bullets (AP-31 to AP-33, RA-
 
 AP-33b, RA-5, RA-9, RA-21, RA-23, RA-24, RA-26, RA-27, RA-29, CU-3, CU-5, CU-10, plus RA-28's tray and window-to-front logic. Each row's note says what to assert.
 
-### Proposed slices (pending the owner's approval)
+### Gap slices (approved by the owner on 2026-11-21)
 
-To build before the staging rehearsal (L.10); once approved they go in `docs/roadmap.md`:
+To build before the staging rehearsal (L.10); they are in `docs/roadmap.md` under L.1:
 
 - **L.1a Test gaps** (`test/dod-test-gaps`): the 12 rows above, tests only; a test that finds a bug fixes it in the same slice.
 - **L.1b Calls and notices** (`feat/dod-calls-and-notices`): «اتصال بالكابتن» in the restaurant app (RA-10) and the customer app (CU-17), the captain's recorded call and WhatsApp taps (CA-13), the waiting-pay line (CA-10) and the late apology (CU-19).
