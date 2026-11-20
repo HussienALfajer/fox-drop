@@ -53,6 +53,8 @@ step "Folders"
 install -d -m 750 -o "$user" -g "$user" "$home" "$home/releases" "$home/shared" "$home/shared/db"
 install -d -m 700 -o root -g root "$backups"
 install -d -m 755 "$acme"
+# The restaurant app's Windows downloads (slice 2.44), which nginx serves.
+install -d -m 755 "/var/www/foxdrop-$environment-downloads" "/var/www/foxdrop-$environment-downloads/windows"
 if [ ! -d "$home/repo.git" ]; then
   sudo -u "$user" -H git clone --quiet --mirror "$repository" "$home/repo.git"
 fi
@@ -124,8 +126,10 @@ install -m 755 "$infra/server/deploy-ssh.sh" /usr/local/bin/foxdrop-deploy-ssh
 install -m 755 "$infra/server/backup.sh" /usr/local/bin/foxdrop-backup
 install -m 755 "$infra/server/osrm-build.sh" /usr/local/bin/foxdrop-osrm-build
 install -m 755 "$infra/server/maps-build.sh" /usr/local/bin/foxdrop-maps-build
+install -m 755 "$infra/server/windows-publish.sh" /usr/local/bin/foxdrop-windows-publish
 sudoers=$(mktemp)
 echo "foxdrop-deploy ALL=(root) NOPASSWD: /usr/local/bin/foxdrop-deploy staging *" >"$sudoers"
+echo "foxdrop-deploy ALL=(root) NOPASSWD: /usr/local/bin/foxdrop-windows-publish staging" >>"$sudoers"
 visudo --check --quiet --file "$sudoers" || die "the sudoers rule does not parse"
 install -m 440 "$sudoers" /etc/sudoers.d/foxdrop-deploy
 rm -f "$sudoers"

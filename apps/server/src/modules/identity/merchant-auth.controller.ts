@@ -68,7 +68,10 @@ class MerchantCodeRequestDto extends createZodDto(
 
 class MerchantWindowsRegistrationDto extends createZodDto(
   z.object({
-    code: z.string().regex(/^\d{8}$/).describe('The owner’s pairing code.'),
+    code: z
+      .string()
+      .regex(/^\d{8}$/)
+      .describe('The owner’s pairing code.'),
     deviceId,
     publicKey: z.base64().max(64).describe('The raw 32-byte Ed25519 public key, in base64.'),
   }),
