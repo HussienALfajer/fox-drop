@@ -180,6 +180,10 @@ class _$AdminManualEntriesDtoOutputEntriesInner
   final AdminManualEntriesDtoOutputEntriesInnerReversedBy? reversedBy;
   @override
   final bool reversible;
+  @override
+  final String? orderId;
+  @override
+  final String? orderNumber;
 
   factory _$AdminManualEntriesDtoOutputEntriesInner([
     void Function(AdminManualEntriesDtoOutputEntriesInnerBuilder)? updates,
@@ -200,6 +204,8 @@ class _$AdminManualEntriesDtoOutputEntriesInner
     this.corrects,
     this.reversedBy,
     required this.reversible,
+    this.orderId,
+    this.orderNumber,
   }) : super._();
   @override
   AdminManualEntriesDtoOutputEntriesInner rebuild(
@@ -226,7 +232,9 @@ class _$AdminManualEntriesDtoOutputEntriesInner
         journal == other.journal &&
         corrects == other.corrects &&
         reversedBy == other.reversedBy &&
-        reversible == other.reversible;
+        reversible == other.reversible &&
+        orderId == other.orderId &&
+        orderNumber == other.orderNumber;
   }
 
   @override
@@ -245,6 +253,8 @@ class _$AdminManualEntriesDtoOutputEntriesInner
     _$hash = $jc(_$hash, corrects.hashCode);
     _$hash = $jc(_$hash, reversedBy.hashCode);
     _$hash = $jc(_$hash, reversible.hashCode);
+    _$hash = $jc(_$hash, orderId.hashCode);
+    _$hash = $jc(_$hash, orderNumber.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -266,7 +276,9 @@ class _$AdminManualEntriesDtoOutputEntriesInner
           ..add('journal', journal)
           ..add('corrects', corrects)
           ..add('reversedBy', reversedBy)
-          ..add('reversible', reversible))
+          ..add('reversible', reversible)
+          ..add('orderId', orderId)
+          ..add('orderNumber', orderNumber))
         .toString();
   }
 }
@@ -346,6 +358,14 @@ class AdminManualEntriesDtoOutputEntriesInnerBuilder
   bool? get reversible => _$this._reversible;
   set reversible(bool? reversible) => _$this._reversible = reversible;
 
+  String? _orderId;
+  String? get orderId => _$this._orderId;
+  set orderId(String? orderId) => _$this._orderId = orderId;
+
+  String? _orderNumber;
+  String? get orderNumber => _$this._orderNumber;
+  set orderNumber(String? orderNumber) => _$this._orderNumber = orderNumber;
+
   AdminManualEntriesDtoOutputEntriesInnerBuilder() {
     AdminManualEntriesDtoOutputEntriesInner._defaults(this);
   }
@@ -366,6 +386,8 @@ class AdminManualEntriesDtoOutputEntriesInnerBuilder
       _corrects = $v.corrects?.toBuilder();
       _reversedBy = $v.reversedBy?.toBuilder();
       _reversible = $v.reversible;
+      _orderId = $v.orderId;
+      _orderNumber = $v.orderNumber;
       _$v = null;
     }
     return this;
@@ -441,6 +463,8 @@ class AdminManualEntriesDtoOutputEntriesInnerBuilder
               r'AdminManualEntriesDtoOutputEntriesInner',
               'reversible',
             ),
+            orderId: orderId,
+            orderNumber: orderNumber,
           );
     } catch (_) {
       late String _$failedField;

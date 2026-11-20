@@ -63,6 +63,8 @@ import { AdminDeliveryFeesController } from './admin-delivery-fees.controller.js
 import { AdminPayTablesController } from './admin-pay-tables.controller.js';
 import { AdminSearchController } from './admin-search.controller.js';
 import { AdminSearch } from './admin-search.js';
+import { OrderHistoryService } from './order-history.js';
+import { AdminOrderHistoryController } from './admin-order-history.controller.js';
 import {
   AdminEmergencyStopController,
   CaptainEmergencyStopController,
@@ -116,6 +118,7 @@ import {
     AdminDeliveryFeesController,
     AdminPayTablesController,
     AdminSearchController,
+    AdminOrderHistoryController,
     CaptainOrderRouteController,
     CustomerOrderRouteController,
   ],
@@ -141,8 +144,15 @@ import {
     RestaurantFiguresService,
     CaptainFiguresService,
     AdminSearch,
+    OrderHistoryService,
   ],
-  exports: [QuoteService, OrdersService, RestaurantFiguresService, CaptainFiguresService],
+  exports: [
+    QuoteService,
+    OrdersService,
+    RestaurantFiguresService,
+    CaptainFiguresService,
+    OrderHistoryService,
+  ],
 })
 export class OrderingModule {}
 
@@ -217,6 +227,19 @@ export {
 export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
 export { HANDOVER_FROM } from './handover.js';
 export { type RestaurantFigures, RestaurantFiguresService } from './restaurant-figures.js';
+export {
+  ADMIN_HISTORY_EXPORT_MAX,
+  type AdminHistoryFilter,
+  type AdminHistoryRow,
+  type CorrectionTarget,
+  FINISHED_STATUSES,
+  type HistoryFilterRefusal,
+  type HistoryKind,
+  historyKinds,
+  orderHistoryFilterBody,
+  type OrderHistoryFilterBody,
+  OrderHistoryService,
+} from './order-history.js';
 export { type CaptainFigures, CaptainFiguresService, ON_TIME_WINDOW } from './captain-figures.js';
 export {
   type CostOrder,

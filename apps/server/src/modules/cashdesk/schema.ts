@@ -522,9 +522,19 @@ export const manualEntries = cashdesk.table(
     reason: text('reason').notNull(),
     adminAccountId: uuid('admin_account_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    // AP §9.5 (slice 2.40): the finished order an adjustment corrects, from
+    // «سجل الطلبات»; ordering's id, a plain column.
+    orderId: uuid('order_id'),
   },
   (table) => [
     uniqueIndex('manual_entries_journal').on(table.journalId),
+    index('manual_entries_order')
+      .on(table.orderId)
+      .where(sql`${table.orderId} IS NOT NULL`),
+    check(
+      'manual_entries_order_adjustment',
+      sql`${table.orderId} IS NULL OR ${table.kind} = 'adjustment'`,
+    ),
     uniqueIndex('manual_entries_reverses_journal').on(table.reversesJournalId),
     index('manual_entries_city_created').on(table.cityId, table.createdAt.desc()),
     check('manual_entries_kind_values', sql`${table.kind} IN ('adjustment', 'reversal')`),

@@ -13,6 +13,8 @@ const AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnum_dailyReport =
     const AdminExportDtoOutputKindEnum._('dailyReport');
 const AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnum_costReport =
     const AdminExportDtoOutputKindEnum._('costReport');
+const AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnum_orderHistory =
+    const AdminExportDtoOutputKindEnum._('orderHistory');
 
 AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnumValueOf(
   String name,
@@ -24,6 +26,8 @@ AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnumValueOf(
       return _$adminExportDtoOutputKindEnum_dailyReport;
     case 'costReport':
       return _$adminExportDtoOutputKindEnum_costReport;
+    case 'orderHistory':
+      return _$adminExportDtoOutputKindEnum_orderHistory;
     default:
       throw ArgumentError(name);
   }
@@ -35,6 +39,7 @@ _$adminExportDtoOutputKindEnumValues =
       _$adminExportDtoOutputKindEnum_restaurantStatement,
       _$adminExportDtoOutputKindEnum_dailyReport,
       _$adminExportDtoOutputKindEnum_costReport,
+      _$adminExportDtoOutputKindEnum_orderHistory,
     ]);
 
 const AdminExportDtoOutputStatusEnum _$adminExportDtoOutputStatusEnum_pending =
@@ -82,11 +87,13 @@ class _$AdminExportDtoOutputKindEnumSerializer
     'restaurantStatement': 'restaurant_statement',
     'dailyReport': 'daily_report',
     'costReport': 'cost_report',
+    'orderHistory': 'order_history',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_statement': 'restaurantStatement',
     'daily_report': 'dailyReport',
     'cost_report': 'costReport',
+    'order_history': 'orderHistory',
   };
 
   @override

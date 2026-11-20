@@ -28,6 +28,8 @@ part 'admin_manual_entry_dto_output.g.dart';
 /// * [corrects]
 /// * [reversedBy]
 /// * [reversible]
+/// * [orderId] - A financial correction from «سجل الطلبات»: the finished order it corrects.
+/// * [orderNumber]
 @BuiltValue()
 abstract class AdminManualEntryDtoOutput
     implements
@@ -72,6 +74,13 @@ abstract class AdminManualEntryDtoOutput
 
   @BuiltValueField(wireName: r'reversible')
   bool get reversible;
+
+  /// A financial correction from «سجل الطلبات»: the finished order it corrects.
+  @BuiltValueField(wireName: r'orderId')
+  String? get orderId;
+
+  @BuiltValueField(wireName: r'orderNumber')
+  String? get orderNumber;
 
   AdminManualEntryDtoOutput._();
 
@@ -180,6 +189,20 @@ class _$AdminManualEntryDtoOutputSerializer
       object.reversible,
       specifiedType: const FullType(bool),
     );
+    yield r'orderId';
+    yield object.orderId == null
+        ? null
+        : serializers.serialize(
+            object.orderId,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'orderNumber';
+    yield object.orderNumber == null
+        ? null
+        : serializers.serialize(
+            object.orderNumber,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -336,6 +359,26 @@ class _$AdminManualEntryDtoOutputSerializer
                   )
                   as bool;
           result.reversible = valueDes;
+          break;
+        case r'orderId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.orderId = valueDes;
+          break;
+        case r'orderNumber':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.orderNumber = valueDes;
           break;
         default:
           unhandled.add(key);

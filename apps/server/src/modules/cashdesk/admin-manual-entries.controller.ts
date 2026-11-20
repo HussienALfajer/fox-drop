@@ -1,4 +1,4 @@
-import { Body, Get, HttpCode, Post, Query, Req } from '@nestjs/common';
+import { Body, Get, HttpCode, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
@@ -64,6 +64,11 @@ const entryBody = z.object({
     .object({ journalId: z.uuid(), manualEntryId: z.uuid().nullable(), at: z.iso.datetime() })
     .nullable(),
   reversible: z.boolean(),
+  orderId: z
+    .uuid()
+    .nullable()
+    .describe('A financial correction from «سجل الطلبات»: the finished order it corrects.'),
+  orderNumber: z.string().nullable(),
 });
 
 class AdminManualEntryDto extends createZodDto(entryBody) {}
@@ -162,6 +167,8 @@ function entryBodyOf(entry: ManualEntry) {
         }
       : null,
     reversible: entry.reversible,
+    orderId: entry.order?.id ?? null,
+    orderNumber: entry.order?.number?.toString() ?? null,
   };
 }
 
@@ -286,5 +293,119 @@ export class AdminManualEntriesController {
         currencies: found.currencies,
       };
     });
+  }
+}
+
+class AdminOrderCorrectionParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
+
+class AdminOrderCorrectionDto extends createZodDto(
+  z.object({
+    party,
+    partyId: z.uuid(),
+    account: adjustedAccount,
+    currency,
+    amount: signedMinor.describe("From the party's view, never zero."),
+    reason,
+  }),
+) {}
+
+class AdminOrderCorrectionsDto extends createZodDto(
+  z.object({
+    finished: z.boolean().describe('Only a finished order is corrected (AP §9.5).'),
+    canCorrect: z
+      .boolean()
+      .describe('order_history.financial_correction (OWN, FIN) on a finished order.'),
+    entries: z.array(entryBody).describe("The order's corrections, oldest first."),
+    accounts: z
+      .array(
+        z.object({
+          partyKind: party,
+          partyId: z.uuid(),
+          partyName: z.string(),
+          account: adjustedAccount,
+          currencies: z.array(currency),
+        }),
+      )
+      .describe(
+        "What a correction may reach: the order's restaurant, customer (dues only where they have some) and every captain who held it; empty unless canCorrect.",
+      ),
+  }),
+) {}
+
+// AP §9.5 «سجل الطلبات» (slice 2.40): a finished order is read-only; OWN and
+// FIN post a financial correction, an adjustment linked to the order with a
+// reason (owner decision 2026-11-20: a manual entry of «القيود التصحيحية»).
+@AdminController('orders')
+export class AdminOrderCorrectionsController {
+  constructor(private readonly entries: ManualEntriesService) {}
+
+  // The order's corrections, and for OWN and FIN the dialog's choices.
+  // 404 unknown_order.
+  @Get(':orderId/financial-corrections')
+  @RequirePermission('order_history.read')
+  @ZodResponse({ status: 200, type: AdminOrderCorrectionsDto })
+  async list(
+    @Param() params: AdminOrderCorrectionParamsDto,
+    @CurrentAdminSession() session: AdminSession,
+  ) {
+    const choices = await this.entries.orderCorrectionChoices(params.orderId, new Date());
+    if (!choices) {
+      throw new NotFoundException({
+        statusCode: 404,
+        error: 'unknown_order',
+        message: `order ${params.orderId} not found`,
+      });
+    }
+    const canCorrect =
+      choices.finished && session.permissions.includes('order_history.financial_correction');
+    const found = await this.entries.ofOrder(params.orderId);
+    return {
+      finished: choices.finished,
+      canCorrect,
+      entries: found.map(entryBodyOf),
+      accounts: canCorrect
+        ? choices.accounts.map((each) => ({
+            partyKind: each.party.kind,
+            partyId: each.party.id,
+            partyName: each.party.name,
+            account: each.account,
+            currencies: each.currencies,
+          }))
+        : [],
+    };
+  }
+
+  // Refused 404 unknown_order, unknown_party; 409 order_not_finished,
+  // no_base_currency; 400 not_order_party, reason_required, invalid_amounts,
+  // invalid_currency, invalid_account.
+  @Post(':orderId/financial-corrections')
+  @RequirePermission('order_history.financial_correction')
+  @Idempotent()
+  @ZodResponse({ status: 201, type: AdminManualEntryDto })
+  correct(
+    @Param() params: AdminOrderCorrectionParamsDto,
+    @Body() body: AdminOrderCorrectionDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () =>
+      entryBodyOf(
+        await this.entries.correctOrder(
+          deskUser(session, request),
+          params.orderId,
+          {
+            idempotencyKey,
+            party: body.party,
+            partyId: body.partyId,
+            account: body.account,
+            currency: body.currency,
+            amount: BigInt(body.amount),
+            reason: body.reason,
+          },
+          new Date(),
+        ),
+      ),
+    );
   }
 }

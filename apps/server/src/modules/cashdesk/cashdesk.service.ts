@@ -69,6 +69,11 @@ export type CashDeskRefusal =
   // «القيود التصحيحية» (slice 2.20c).
   | 'unknown_party'
   | 'unknown_journal'
+  // AP §9.5 (slice 2.40): a financial correction's order: none, not
+  // finished, or a party it does not have.
+  | 'unknown_order'
+  | 'order_not_finished'
+  | 'not_order_party'
   | 'invalid_currency'
   | 'invalid_account'
   | 'no_base_currency'
