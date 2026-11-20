@@ -48,7 +48,15 @@ const period = z.object({
   to: day.describe('The last business day, included; at most 366 days, not after today.'),
 });
 
-class AdminReportQueryDto extends createZodDto(period) {}
+class AdminReportQueryDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    from: day.optional().describe('The first business day; with `to`, or neither.'),
+    to: day
+      .optional()
+      .describe('The last business day, included; the last 7 days when both are left out.'),
+  }),
+) {}
 
 class AdminReportExportBodyDto extends createZodDto(period) {}
 
@@ -160,9 +168,18 @@ export class AdminReportsController {
     @CurrentAdminSession() session: AdminSession,
   ) {
     allowed(params.report, session);
+    const now = new Date();
     try {
+      if ((query.from === undefined) !== (query.to === undefined)) {
+        throw new ReportRefusedError('invalid_period');
+      }
+      const asked =
+        query.from !== undefined && query.to !== undefined
+          ? { from: query.from, to: query.to }
+          : await this.reports.defaultPeriod(query.cityId, now);
+      if (asked === null) throw new ReportRefusedError('unknown_city');
       return reportBody(
-        await this.reports.report(params.report, query.cityId, query.from, query.to, new Date()),
+        await this.reports.report(params.report, query.cityId, asked.from, asked.to, now),
       );
     } catch (error) {
       return refusal(error);

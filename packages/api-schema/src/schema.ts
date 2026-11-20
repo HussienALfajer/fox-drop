@@ -34927,10 +34927,10 @@ export interface operations {
         parameters: {
             query: {
                 cityId: string;
-                /** @description The first business day. */
-                from: string;
-                /** @description The last business day, included; at most 366 days, not after today. */
-                to: string;
+                /** @description The first business day; with `to`, or neither. */
+                from?: string;
+                /** @description The last business day, included; the last 7 days when both are left out. */
+                to?: string;
             };
             header?: never;
             path: {

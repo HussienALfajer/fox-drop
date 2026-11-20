@@ -6,6 +6,7 @@ import {
   costReportLabels,
   dailyReportLabels,
   orderHistoryLabels,
+  reportLabels,
   restaurantStatementLabels,
 } from './export-labels.js';
 
@@ -66,5 +67,22 @@ describe('the order history export', () => {
     expect(orderHistoryLabels.status).toEqual(panel.order.status);
     expect(orderHistoryLabels.outcome).toEqual(panel.order.outcome);
     expect(orderHistoryLabels.responsible).toEqual(panel.order.responsible);
+  });
+});
+
+// «التقارير»'s files name every report, table, column and code as the panel
+// does (AP §9.17, slice 2.41).
+describe('the reports export', () => {
+  it('names every report, table, column and code with the panel’s words', () => {
+    const panel = JSON.parse(
+      readFileSync(new URL('../../../../admin/src/locales/ar.json', import.meta.url), 'utf8'),
+    ) as { reports: Record<string, unknown> };
+    expect(panel.reports).toMatchObject({
+      kind: reportLabels.title,
+      table: reportLabels.table,
+      rowHeader: reportLabels.rowHeader,
+      column: reportLabels.column,
+      code: reportLabels.code,
+    });
   });
 });

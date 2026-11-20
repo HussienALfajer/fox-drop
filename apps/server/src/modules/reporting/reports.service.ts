@@ -4,7 +4,7 @@ import { periodFits } from '../cashdesk/index.js';
 import { CustomersService, LostDemandService, maskedPhone } from '../customers/index.js';
 import { DispatchService } from '../dispatch/index.js';
 import { FxRefusedError, FxService } from '../fx/index.js';
-import { cutoffOn, GeoService } from '../geo/index.js';
+import { cutoffOn, GeoService, lastCutoff } from '../geo/index.js';
 import { CustomerAccountsService } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { PromoCodeUsesService } from '../marketing/index.js';
@@ -81,6 +81,9 @@ export class ReportRefusedError extends Error {
 }
 
 const DAY_MS = 86_400_000;
+
+// The days a report opens on when no period is asked.
+export const DEFAULT_REPORT_DAYS = 7;
 const nextDay = (day: string) => new Date(Date.parse(day) + DAY_MS).toISOString().slice(0, 10);
 
 // The business days from one to another, both included.
@@ -111,6 +114,20 @@ export class ReportsService {
     private readonly codes: PromoCodeUsesService,
     private readonly content: ContentService,
   ) {}
+
+  // The period a report opens on: the last DEFAULT_REPORT_DAYS business
+  // days, today's included (decided by us, as the cost report's).
+  async defaultPeriod(cityId: string, now: Date): Promise<{ from: string; to: string } | null> {
+    if ((await this.geo.cityTimeZone(cityId)) === null) return null;
+    const clock = await this.days.clock(cityId);
+    const to = new Intl.DateTimeFormat('en-CA', { timeZone: clock.timeZone }).format(
+      lastCutoff(now, clock.cutoffMinutes, clock.timeZone),
+    );
+    const from = new Date(Date.parse(to) - (DEFAULT_REPORT_DAYS - 1) * DAY_MS)
+      .toISOString()
+      .slice(0, 10);
+    return { from, to };
+  }
 
   // Why a period's report cannot be read, or null: as the cost report's.
   async check(

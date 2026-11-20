@@ -21556,9 +21556,9 @@
           },
           {
             "name": "from",
-            "required": true,
+            "required": false,
             "in": "query",
-            "description": "The first business day.",
+            "description": "The first business day; with `to`, or neither.",
             "schema": {
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
               "type": "string"
@@ -21566,9 +21566,9 @@
           },
           {
             "name": "to",
-            "required": true,
+            "required": false,
             "in": "query",
-            "description": "The last business day, included; at most 366 days, not after today.",
+            "description": "The last business day, included; the last 7 days when both are left out.",
             "schema": {
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
               "type": "string"

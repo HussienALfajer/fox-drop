@@ -18,6 +18,7 @@ import {
   type DevelopmentCodeSender,
 } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { reportLabels } from '../content/index.js';
 import { SettingsService } from '../settings/index.js';
 
 // «التقارير» (AP §9.17, §6.2; slice 2.41): every report over a period of
@@ -300,9 +301,31 @@ describe('«التقارير» (AP §9.17)', () => {
       '2',
       '0',
     ]);
-    for (const kind of ['timings', 'captains', 'lost_demand', 'codes', 'finance']) {
+    for (const kind of [
+      'orders',
+      'timings',
+      'restaurants',
+      'captains',
+      'customers',
+      'lost_demand',
+      'codes',
+      'finance',
+    ]) {
       const answer = await report(own, kind);
       expect(answer.statusCode, `${kind}: ${answer.body}`).toBe(200);
+      // Every table, header and column has its Arabic words (the file's and
+      // the panel's).
+      for (const table of answer.json().tables as (Table & {
+        rowKind: string;
+        columns: { key: string }[];
+      })[]) {
+        const key = `${kind}.${table.key}`;
+        expect(reportLabels.table, key).toHaveProperty([key]);
+        if (table.rowKind !== 'none') expect(reportLabels.rowHeader, key).toHaveProperty([key]);
+        for (const column of table.columns) {
+          expect(reportLabels.column, column.key).toHaveProperty([column.key]);
+        }
+      }
     }
   });
 
@@ -323,8 +346,13 @@ describe('«التقارير» (AP §9.17)', () => {
     expect((await report(data, 'orders')).statusCode).toBe(403);
   });
 
-  it('refuses a wrong period and an unknown city', async () => {
+  it('opens on the last 7 business days, and refuses a wrong period and an unknown city', async () => {
     const own = await admin(['OWN']);
+    const opened = (await own.get(`/v1/admin/reports/timings?cityId=${azaz}`)).json();
+    expect(opened.toDay).toBe(day);
+    expect(Date.parse(opened.toDay) - Date.parse(opened.fromDay)).toBe(6 * 86_400_000);
+    const half = await own.get(`/v1/admin/reports/timings?cityId=${azaz}&from=${day}`);
+    expect(half.statusCode).toBe(400);
     const after = new Date(Date.parse(day) + 86_400_000).toISOString().slice(0, 10);
     for (const [from, to] of [
       [day, after],

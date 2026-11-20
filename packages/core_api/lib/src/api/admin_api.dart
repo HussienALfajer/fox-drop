@@ -20115,8 +20115,8 @@ class AdminApi {
   /// Parameters:
   /// * [report]
   /// * [cityId]
-  /// * [from] - The first business day.
-  /// * [to] - The last business day, included; at most 366 days, not after today.
+  /// * [from] - The first business day; with `to`, or neither.
+  /// * [to] - The last business day, included; the last 7 days when both are left out.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -20129,8 +20129,8 @@ class AdminApi {
   Future<Response<AdminReportDtoOutput>> adminReportsReport({
     required String report,
     required String cityId,
-    required String from,
-    required String to,
+    String? from,
+    String? to,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -20161,8 +20161,14 @@ class AdminApi {
         cityId,
         const FullType(String),
       ),
-      r'from': encodeQueryParameter(_serializers, from, const FullType(String)),
-      r'to': encodeQueryParameter(_serializers, to, const FullType(String)),
+      if (from != null)
+        r'from': encodeQueryParameter(
+          _serializers,
+          from,
+          const FullType(String),
+        ),
+      if (to != null)
+        r'to': encodeQueryParameter(_serializers, to, const FullType(String)),
     };
 
     final _response = await _dio.request<Object>(
