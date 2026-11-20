@@ -4,25 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.46, iOS for the customer and captain apps (`docs/roadmap.md`, Phase 2), the last slice of Phase 2's devices and platforms.
+Launch readiness (`docs/roadmap.md`, after Phase 2): not split into slices yet. Planned, not started.
 
-- **Roadmap line:** 2.46 iOS for the customer and captain apps: flavors, APNs, time-sensitive offers, the Critical Alerts entitlement, background location (architecture §13–14, CA §18 item 2). An offer reaches an iPhone.
-- **Specs:** architecture §13 (13-customer-app.md), §14 (14-captain-app.md: §14.1 background location on iOS, §14.2 time-sensitive notifications and critical alerts, §14.3 `isSimulatedBySoftware`), §8 (pushes, APNs through FCM), §16; CA §4.3–4.5, §14, §18 item 2 (K15); CU §4.4, §14.
-- **Branch:** `feat/ios-customer-captain`.
-- **Already built (reuse):** the Android flavors, FCM pushes and channels (slices 1.x, 2.3), the captain's background location with `flutter_background_geolocation` and its Android licence, the offer over the lock screen and the device check (slice 2.43), `core_alerts`' native layer (slice 2.42).
-- **Ask the owner first:** the Apple Developer account (organisation or individual) and who holds it; the bundle identifiers; the APNs key uploaded to Firebase; whether to apply for the Critical Alerts entitlement now (K15) and what the app does until Apple answers; `flutter_background_geolocation`'s iOS licence (architecture §22 item 8); how the iOS builds are made and signed without a Mac here (a macOS CI runner, TestFlight) and who tests on which iPhones; the split into pull requests if it is larger than one.
+- **Roadmap line:** Launch readiness: captain simulator load test, real-device lab, staging rehearsal (architecture §18).
+- **Specs:** architecture §18 (18-testing-and-quality.md), §17 (environments, the production deploy), §22 (risks and open items: the paid licences, item 8; App Check from Azaz, item 9); the four definitions of done (AP §19, RA, CA, CU `19-definition-of-done.md`).
+- **Branch:** to name per slice once split.
+- **First:** run the `slice-plan` skill on it and get the owner's approval of the split; ask the owner who tests on which real phones (Android and, through TestFlight, iPhones), when the staging rehearsal runs, and the production environment's hosting and accounts (a production deploy is the owner's to approve).
 
 ### Plan
 
-**Owner decisions 2026-11-20:** no Apple Developer account yet: build everything that needs none now (the flavors, the entitlements, the Swift layer, the pushes' APNs part, background location), checked by an unsigned macOS build in CI; signing and TestFlight through a GitHub Actions macOS job once the account exists (its job written now, skipped until its secrets are set); apply for Critical Alerts now and build the fallback (time-sensitive offers with a 30 s sound and the ring switch confirmed); iOS bundle IDs as Android's (`com.foxdrop.customer`, `com.foxdrop.captain`, `.dev` and `.staging`); one pull request.
+- [ ] Split launch readiness into slices with `slice-plan` and write them into `docs/roadmap.md` after the owner's approval.
 
-- [x] Read architecture §13–14, CA §4.3–4.5, §14, §18 item 2 and the Android work of 2.42–2.43; write this plan.
-- [x] Server: the APNs part of every push (priority, expiry, the bundled sound per channel, `time-sensitive` for a captain's offer and the customer's arrival and door ping, `critical` for the offer behind `APNS_CRITICAL_ALERTS`); the device check's iPhone codes (`background_refresh`, `low_power_mode`, `ring_switch`) and the panel's labels.
-- [x] iOS projects: the three flavors (schemes and build configurations, the bundle IDs), Info.plist keys (location always, background modes), entitlements (push, time-sensitive, App Attest), the bundled sounds copied into the app; App Check and push on iOS (`core_auth`, `core_push`).
-- [x] `core_alerts`' iOS layer (Swift): the ring in the foreground and a time-sensitive notification when the app leaves it, the chime, the readings (notifications and time-sensitive, Background App Refresh, Low Power Mode) and the settings page; the captain's device check on iPhone (CA §4.5's iPhone column) and the notification permission with critical alerts.
-- [x] The captain's background location on iOS (`flutter_background_geolocation` with its licence in Info.plist, else `geolocator`'s background updates), one point every 10 seconds, «دائماً» asked on iOS.
-- [x] CI: the unsigned iOS builds of both apps on macOS for pull requests; the signed TestFlight job, skipped until its secrets exist; the deploy skill and CLAUDE.md files.
-- [ ] Review, then hand over to the next slice of `docs/roadmap.md`.
+### Left from 2.46 (`feat/ios-customer-captain`)
+
+- **Before deploying to staging:** migration 0149 (expand only: `notifications.push_devices_platform` takes `ios`). `push-token` routes take `platform: ios`; every push carries an `apns` part (no effect on Android); a campaign's push carries `content-available`. The device check codes gain `background_refresh`, `low_power_mode` and `ring_switch` (the panel's labels too). New server variable `APNS_CRITICAL_ALERTS` (default `false`, `infra/compose.yaml` passes it to the worker): leave it off until Apple grants Critical Alerts. Android apps need no new build.
+- **To check once the Apple account exists (the `deploy` skill, «The staging iOS builds», steps 1–8):** 1. Install the staging customer and captain apps from TestFlight. 2. Customer: sign in, place a test order; lock the phone when the captain arrives: «الكابتن عند الباب…» shows as a time-sensitive notification, also in a Focus. 3. Captain: sign in, «متصل»: «فحص الجهاز» shows the iPhone's checks; allow «دائماً», confirm the ring switch with «فعّلته», «تشغيل عرض تجريبي», lock the phone: the offer sound plays; «سمعت الصوت», «حفظ نتيجة الفحص»; the panel's captain profile shows it. 4. With the app open, an offer rings and vibrates; lock the phone during it: one notification takes over with the offer sound. 5. Close the app and have operations offer an order: the push rings for up to 30 s (with the ring switch on). 6. Walk with the phone in a pocket for 10 minutes online: the panel's map shows a point every 10 s.
+- **Owner decisions 2026-11-20:** no Apple Developer account yet, all that needs none built now; GitHub Actions on macOS and TestFlight once it exists (`staging-ios`, skipped until the repository variable `STAGING_IOS_TEAM_ID`); apply for Critical Alerts now, with the time-sensitive fallback; Android's bundle IDs; one pull request.
+- **Decided by us (to confirm with the owner):** the minimum iOS is 15.5, MapLibre's (CU §4.1 and CA §4.1 say iOS 15); the iPhone check codes and their Arabic wording; the offer's iOS sound is the placeholder loop written out for 29 s (`fd_offer_30s.wav`); the customer's arrival and door ping are time-sensitive, every other push active (a silent one passive); a ring that leaves the foreground becomes one local notification, and none when the offer's push already shows; Critical Alerts are asked at every «متصل» until granted; the Motion purpose string; a campaign's push wakes the customer app for its receipt.
+- **Not yet:** nothing ran on a real iPhone (the owner, through TestFlight); the Critical Alerts entitlement (Apple's answer); the background location licence for iOS (the same Transistorsoft key as Android's, to check); the customer app's `Podfile.lock` (the first Mac build); «ابدأ الملاحة» with Apple Maps (CA §4.6); ending one offer may clear another offer's push that arrived meanwhile.
+- **Checked:** `pnpm verify` passed locally (Docker); the macOS CI job `ios-release` builds both apps unsigned (see the pull request).
 
 ### Left from 2.45d (the cloud session's branch)
 
