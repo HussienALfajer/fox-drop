@@ -1,4 +1,4 @@
-"""Writes the placeholder sounds of RA §4.4 (owner decision 2026-11-20:
+"""Writes the placeholder sounds of RA §4.4 and CA §4.4 (owner decision 2026-11-20:
 placeholders until the design's sounds): distinct tones, generated here, so
 they carry no licence. Run from the package: python3 tool/placeholder_sounds.py
 """
@@ -41,3 +41,5 @@ write('fd_pickup_request', [tone(659, 0.15), tone(784, 0.15), tone(988, 0.25), s
 write('fd_cancellation', [tone(587, 0.3), silence(0.05), tone(392, 0.4), silence(0.5)])
 # A chime: one soft note, played once.
 write('fd_chime', [tone(1047, 0.35, 0.5)])
+# The captain's offer (CA §4.4): three bright beeps, repeated.
+write('fd_offer', [tone(1175, 0.12), silence(0.06)] * 3 + [silence(0.4)])

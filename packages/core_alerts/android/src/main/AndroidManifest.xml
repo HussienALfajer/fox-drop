@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- RA §4.4: the ring's full-screen prompt over the lock screen. -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <!-- CA §4.4: the captain's offer vibrates while it rings. -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- RA §4.5 check 2: the device check asks to leave battery optimisation. -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <!-- RA §4.5 check 3: the brands' auto-start pages (DeviceCheck.kt), visible
