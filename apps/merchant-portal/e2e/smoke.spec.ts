@@ -394,14 +394,17 @@ test('opens the statement, prints it and exports it to Excel', async ({ page }) 
   await expect(page.getByText(/تسوية يدوية: فرق جرد/)).toContainText('من قرّر: FOX DROP');
 
   // «طباعة / حفظ PDF» opens the browser's print, without the portal's bar.
+  // The page's window, typed here without the DOM's types (tsconfig.node.json).
+  type Printing = { print: () => void; printed: boolean };
   await page.evaluate(() => {
-    (window as unknown as { printed: boolean }).printed = false;
-    window.print = () => {
-      (window as unknown as { printed: boolean }).printed = true;
+    const page = globalThis as unknown as Printing;
+    page.printed = false;
+    page.print = () => {
+      page.printed = true;
     };
   });
   await page.getByRole('button', { name: 'طباعة / حفظ PDF' }).click();
-  expect(await page.evaluate(() => (window as unknown as { printed: boolean }).printed)).toBe(true);
+  expect(await page.evaluate(() => (globalThis as unknown as Printing).printed)).toBe(true);
   await page.emulateMedia({ media: 'print' });
   await expect(page.getByRole('button', { name: 'تصدير Excel' })).toBeHidden();
   await expect(page.getByRole('heading', { name: 'كشف الأسبوع — مطعم التجربة' })).toBeVisible();
