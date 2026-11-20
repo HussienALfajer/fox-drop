@@ -172,7 +172,12 @@ export class AppSignInService {
     if (appCheckRequired) {
       const attested =
         request.party === 'merchant' && request.platform === 'windows'
-          ? await this.windowsDevices.verify(request.deviceId, request.deviceSignature, now)
+          ? await this.windowsDevices.verify(
+              request.deviceId,
+              request.phone,
+              request.deviceSignature,
+              now,
+            )
           : await this.appCheck.verify(request.appCheckToken, now);
       if (!attested) throw new CodeRequestRefusedError('app_check_failed');
     }

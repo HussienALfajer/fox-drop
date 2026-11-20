@@ -6015,4 +6015,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String merchantCheckSleepAfter(int minutes) {
     return 'ينام الكمبيوتر الآن بعد $minutes د دون استخدام.';
   }
+
+  @override
+  String get merchantPairingOtherRestaurant =>
+      'هذا الكمبيوتر مربوط بمطعم آخر. تواصل مع FOX DROP.';
 }

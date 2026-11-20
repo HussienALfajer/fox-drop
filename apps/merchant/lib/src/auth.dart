@@ -24,6 +24,9 @@ final AuthScope merchantAuth = AuthScope(
     deviceSignature: onWindows
         ? ref.watch(windowsRegistrationProvider).sign
         : null,
+    onAttestationRefused: onWindows
+        ? () => ref.read(pairingNeededProvider.notifier).refused()
+        : null,
   ),
   offersOperationsCode: true,
 );

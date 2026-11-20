@@ -6,6 +6,7 @@ import 'package:core_alerts/core_alerts.dart';
 import 'package:core_auth/core_auth.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:crypto/crypto.dart';
+import 'package:cryptography/cryptography.dart' hide Hash;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +20,31 @@ import '../board/board.dart';
 /// API's host): `--dart-define=WINDOWS_UPDATE_FEED=https://…/downloads/windows/`.
 /// Without it (development) the app never updates itself.
 const _feed = String.fromEnvironment('WINDOWS_UPDATE_FEED');
+
+/// The raw Ed25519 public key (base64) whose signature of the feed
+/// (`releases.win.json.sig`) the app checks before it trusts the feed, so a
+/// file put on the server by anyone but CI's signing step is never installed
+/// (slice 2.44). Without it the app never updates itself.
+const _feedPublicKey = String.fromEnvironment('WINDOWS_FEED_PUBLIC_KEY');
+
+/// Whether [signature] (base64) is [publicKey]'s Ed25519 signature of [feed]'s
+/// bytes.
+Future<bool> feedSigned(String feed, String signature, String publicKey) async {
+  try {
+    return await Ed25519().verify(
+      utf8.encode(feed),
+      signature: Signature(
+        base64.decode(signature.trim()),
+        publicKey: SimplePublicKey(
+          base64.decode(publicKey),
+          type: KeyPairType.ed25519,
+        ),
+      ),
+    );
+  } on Object {
+    return false;
+  }
+}
 
 /// How often the feed is read after the start.
 const updateCheckEvery = Duration(hours: 1);
@@ -161,13 +187,14 @@ String _join(Directory directory, String name) =>
     '${directory.path}${Platform.pathSeparator}$name';
 
 /// RA §4.2 on Windows (slice 2.44): reads the feed at the start and every
-/// [updateCheckEvery], downloads a newer full package in the background
+/// [updateCheckEvery], trusts it only with its signature, downloads a newer full package in the background
 /// (checked against its SHA-256), and restarts into it through Velopack's
 /// `Update.exe apply` as soon as [mayRestart] allows.
 class WindowsUpdater {
   WindowsUpdater({
     required this.install,
     required this.feed,
+    required this.publicKey,
     required this.http,
     required this.mayRestart,
     required this.restart,
@@ -175,6 +202,7 @@ class WindowsUpdater {
 
   final VelopackInstall install;
   final Uri feed;
+  final String publicKey;
   final Dio http;
   final bool Function() mayRestart;
 
@@ -200,7 +228,15 @@ class WindowsUpdater {
         feed.resolve('releases.win.json'),
         options: Options(responseType: ResponseType.plain),
       );
-      final newest = newestFull(answer.data ?? '{}');
+      final signature = await http.getUri<String>(
+        feed.resolve('releases.win.json.sig'),
+        options: Options(responseType: ResponseType.plain),
+      );
+      final text = answer.data ?? '';
+      if (!await feedSigned(text, signature.data ?? '', publicKey)) {
+        throw StateError('the update feed is not signed by FOX DROP');
+      }
+      final newest = newestFull(text);
       if (newest == null || !(newest.version > install.version)) return;
       _ready = await _download(newest);
       await idle();
@@ -253,7 +289,9 @@ class WindowsUpdater {
 /// runs and the board's changes let it restart. Nothing elsewhere.
 final windowsUpdateProvider = Provider<void>((ref) {
   final alerts = ref.watch(alertsProvider);
-  if (_feed.isEmpty || alerts is! WindowsAlerts) return;
+  if (_feed.isEmpty || _feedPublicKey.isEmpty || alerts is! WindowsAlerts) {
+    return;
+  }
   final install = VelopackInstall.find();
   if (install == null) return;
   bool allowed() => mayRestartForUpdate(
@@ -263,6 +301,7 @@ final windowsUpdateProvider = Provider<void>((ref) {
   final updater = WindowsUpdater(
     install: install,
     feed: Uri.parse(_feed.endsWith('/') ? _feed : '$_feed/'),
+    publicKey: _feedPublicKey,
     http: Dio(),
     mayRestart: allowed,
     restart: (apply) => alerts.quitNow(beforeQuit: apply),

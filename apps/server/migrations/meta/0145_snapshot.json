@@ -1,5 +1,5 @@
 {
-  "id": "0d03a3e5-7d5d-4f95-b251-498e2ded36dd",
+  "id": "b1ac9685-86c8-4e21-b0bb-e6df75396d0f",
   "prevId": "42befb9e-211f-4154-8ac1-a8bb153d2d62",
   "version": "7",
   "dialect": "postgresql",
@@ -9067,6 +9067,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "city_id": {
+          "name": "city_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "restaurant_id": {
           "name": "restaurant_id",
           "type": "uuid",
@@ -9092,7 +9098,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "windows_devices_pairing": {
+          "name": "windows_devices_pairing",
+          "columns": [
+            {
+              "expression": "pairing_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "windows_devices_pairing_id_windows_pairings_id_fk": {
           "name": "windows_devices_pairing_id_windows_pairings_id_fk",
@@ -9175,6 +9197,21 @@
           "columns": [
             {
               "expression": "code_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "windows_pairings_created_by": {
+          "name": "windows_pairings_created_by",
+          "columns": [
+            {
+              "expression": "created_by",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

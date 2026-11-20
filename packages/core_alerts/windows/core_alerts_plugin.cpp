@@ -7,8 +7,8 @@
 //   front, where Windows keeps it from coming forward (RA §4.3).
 // - readings {appUserModelId}: the device check's checks 1, 3, 5 and 6
 //   (RA §4.5): notifications allowed, started with Windows, the output muted
-//   or its volume, and how long the computer waits before it sleeps on mains
-//   power (0: never).
+//   or its volume, and how long the computer waits before it sleeps or
+//   hibernates (0: never).
 // - setStartup {on}: the current user's Run entry for this executable.
 #include "include/core_alerts/core_alerts_plugin_c_api.h"
 
@@ -24,6 +24,7 @@
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
+#include <initializer_list>
 #include <memory>
 #include <optional>
 #include <string>
@@ -37,6 +38,10 @@ using flutter::EncodableValue;
 constexpr wchar_t kRunKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 constexpr wchar_t kRunValue[] = L"FOX DROP";
+// Task Manager's and Settings' startup switch, which leaves the Run value
+// in place: an odd first byte means turned off.
+constexpr wchar_t kStartupApprovedKey[] =
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
 
 // GUID_SLEEP_SUBGROUP and GUID_STANDBY_TIMEOUT of winnt.h, spelled here so
 // no GUID library is needed.
@@ -44,6 +49,9 @@ constexpr GUID kSleepSubgroup = {
     0x238c9fa8, 0x0aad, 0x41ed, {0x83, 0xf4, 0x97, 0xbe, 0x24, 0x2c, 0x8f, 0x20}};
 constexpr GUID kStandbyTimeout = {
     0x29f6c1db, 0x86da, 0x48c5, {0x9f, 0xdb, 0xf2, 0xb6, 0x7b, 0x1f, 0x44, 0xda}};
+// GUID_HIBERNATE_TIMEOUT.
+constexpr GUID kHibernateTimeout = {
+    0x9d7815a6, 0x7ee4, 0x497e, {0x88, 0x88, 0x51, 0x5a, 0x05, 0xf0, 0x23, 0x64}};
 
 std::wstring Wide(const std::string& utf8) {
   if (utf8.empty()) return std::wstring();
@@ -114,7 +122,16 @@ bool StartsWithWindows() {
                    nullptr, value, &size) != ERROR_SUCCESS) {
     return false;
   }
-  return _wcsicmp(value, RunCommand().c_str()) == 0;
+  if (_wcsicmp(value, RunCommand().c_str()) != 0) return false;
+  BYTE approved[12];
+  DWORD approved_size = sizeof(approved);
+  if (RegGetValueW(HKEY_CURRENT_USER, kStartupApprovedKey, kRunValue,
+                   RRF_RT_REG_BINARY, nullptr, approved,
+                   &approved_size) == ERROR_SUCCESS &&
+      approved_size > 0 && (approved[0] & 1) == 1) {
+    return false;
+  }
+  return true;
 }
 
 bool SetStartup(bool on) {
@@ -134,6 +151,8 @@ bool SetStartup(bool on) {
     if (status == ERROR_FILE_NOT_FOUND) status = ERROR_SUCCESS;
   }
   RegCloseKey(key);
+  // Turned on here, it is on whatever Task Manager said before.
+  RegDeleteKeyValueW(HKEY_CURRENT_USER, kStartupApprovedKey, kRunValue);
   return status == ERROR_SUCCESS;
 }
 
@@ -168,18 +187,29 @@ void ReadOutput(bool* muted, int* volume_percent) {
   enumerator->Release();
 }
 
-// Seconds before the computer sleeps on mains power under the active plan;
-// 0 when it never does or the plan cannot be read.
+// Seconds before the computer sleeps or hibernates under the active plan,
+// on mains power or on battery, whichever comes first; 0 when it never does
+// or the plan cannot be read.
 int SleepAfterSeconds() {
   GUID* scheme = nullptr;
   if (PowerGetActiveScheme(nullptr, &scheme) != ERROR_SUCCESS) return 0;
-  DWORD seconds = 0;
-  if (PowerReadACValueIndex(nullptr, scheme, &kSleepSubgroup, &kStandbyTimeout,
-                            &seconds) != ERROR_SUCCESS) {
-    seconds = 0;
+  DWORD soonest = 0;
+  for (const GUID* setting : {&kStandbyTimeout, &kHibernateTimeout}) {
+    for (bool on_battery : {false, true}) {
+      DWORD seconds = 0;
+      DWORD read = on_battery
+                       ? PowerReadDCValueIndex(nullptr, scheme, &kSleepSubgroup,
+                                               setting, &seconds)
+                       : PowerReadACValueIndex(nullptr, scheme, &kSleepSubgroup,
+                                               setting, &seconds);
+      if (read == ERROR_SUCCESS && seconds > 0 &&
+          (soonest == 0 || seconds < soonest)) {
+        soonest = seconds;
+      }
+    }
   }
   LocalFree(scheme);
-  return static_cast<int>(seconds);
+  return static_cast<int>(soonest);
 }
 
 class CoreAlertsPlugin : public flutter::Plugin {

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cryptography/cryptography.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:merchant/src/windows/update.dart';
 
@@ -75,6 +76,26 @@ void main() {
         ),
         isFalse,
       );
+    },
+  );
+
+  test(
+    'trusts a feed only with the key’s signature of its exact bytes',
+    () async {
+      final algorithm = Ed25519();
+      final keyPair = await algorithm.newKeyPair();
+      final publicKey = base64.encode((await keyPair.extractPublicKey()).bytes);
+      const feed = '{"Assets":[]}';
+      final signature = base64.encode(
+        (await algorithm.sign(utf8.encode(feed), keyPair: keyPair)).bytes,
+      );
+      expect(await feedSigned(feed, signature, publicKey), isTrue);
+      expect(await feedSigned('$feed ', signature, publicKey), isFalse);
+      final other = base64.encode(
+        (await (await algorithm.newKeyPair()).extractPublicKey()).bytes,
+      );
+      expect(await feedSigned(feed, signature, other), isFalse);
+      expect(await feedSigned(feed, 'not base64', publicKey), isFalse);
     },
   );
 }

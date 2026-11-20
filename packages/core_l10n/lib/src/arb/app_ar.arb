@@ -3317,5 +3317,7 @@
   "merchantCheckSleepHow": "اجعل «السكون» عند التوصيل بالكهرباء «أبداً»، فالكمبيوتر النائم لا يرن.",
   "@merchantCheckSleepHow": {"description": "How to pass check 6 on Windows (slice 2.44)."},
   "merchantCheckSleepAfter": "ينام الكمبيوتر الآن بعد {minutes} د دون استخدام.",
-  "@merchantCheckSleepAfter": {"description": "The sleep timeout on mains power (RA §4.5 check 6).", "placeholders": {"minutes": {"type": "int"}}}
+  "@merchantCheckSleepAfter": {"description": "The sleep timeout on mains power (RA §4.5 check 6).", "placeholders": {"minutes": {"type": "int"}}},
+  "merchantPairingOtherRestaurant": "هذا الكمبيوتر مربوط بمطعم آخر. تواصل مع FOX DROP.",
+  "@merchantPairingOtherRestaurant": {"description": "Pairing a PC already registered to another restaurant (slice 2.44)."}
 }

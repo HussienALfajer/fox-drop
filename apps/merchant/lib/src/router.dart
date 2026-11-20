@@ -44,7 +44,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final changes = ValueNotifier(0);
   ref.listen(merchantAuth.session, (previous, next) => changes.value++);
   ref.listen(merchantSessionProvider, (previous, next) => changes.value++);
-  ref.listen(windowsRegisteredProvider, (previous, next) => changes.value++);
+  ref.listen(pairingNeededProvider, (previous, next) => changes.value++);
   final platform = ref.watch(platformCheckProvider);
   final terms = ref.watch(termsCheckProvider);
   final router = GoRouter(
@@ -57,12 +57,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (platform.status.blocks) return to('/blocked');
       if (at == '/blocked') return '/';
       if (session.value is! SignedIn) {
-        // Windows (slice 2.44): the owner's code registers the PC first.
-        if (onWindows) {
-          final registered = ref.read(windowsRegisteredProvider);
-          if (!registered.hasValue) return to('/starting');
-          if (registered.value == false) return to('/windows-pairing');
-        }
+        // Windows (slice 2.44): once the server refused its signature, the
+        // owner's code registers the PC before sign-in.
+        if (ref.read(pairingNeededProvider)) return to('/windows-pairing');
         return to('/sign-in');
       }
       final user = ref.read(merchantSessionProvider);

@@ -4813,6 +4813,7 @@
       "merchant_accounts.view": "عرض أرقام حسابات المطعم",
       "merchant_device.rename": "تسمية جهاز المطعم",
       "merchant_device.windows_pairing": "رمز ربط كمبيوتر بويندوز",
+      "merchant_device.windows_register": "ربط كمبيوتر بويندوز",
       "merchant_devices.sign_out": "تسجيل خروج أجهزة المطعم",
       "menu.bulk_price": "تعديل جماعي للأسعار",
       "menu.category.create": "إضافة قسم إلى القائمة",

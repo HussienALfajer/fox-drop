@@ -7948,7 +7948,7 @@ export interface components {
              * @enum {string}
              */
             platform?: "android" | "ios" | "windows";
-            /** @description Windows only (slice 2.44): the registered PC's Ed25519 signature of `fox-drop/merchant-code-request\n{deviceId}\n{signedAt}`, in place of App Check. */
+            /** @description Windows only (slice 2.44): the registered PC's Ed25519 signature of `fox-drop/merchant-code-request\n{deviceId}\n{phone}\n{signedAt}`, in place of App Check. */
             deviceSignature?: {
                 /** Format: date-time */
                 signedAt: string;

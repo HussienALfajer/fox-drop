@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:core_api/core_api.dart';
 import 'package:core_auth/testing.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:core_time/core_time.dart';
@@ -21,6 +22,22 @@ void main() {
         clock: ServerClock(deviceNow: () => DateTime.utc(2026, 11, 20, 9)),
       );
 
+  test(
+    'forgets the key the server refused, and reads a failing store as unpaired',
+    () async {
+      final store = MemorySecureStore();
+      await store.write(windowsKeyStoreKey, 'AAAA');
+      final pc = registration(FakeServer(), store);
+      expect(await pc.registered(), isTrue);
+      await pc.forget();
+      expect(await pc.registered(), isFalse);
+      expect(
+        await registration(FakeServer(), _BrokenStore()).registered(),
+        isFalse,
+      );
+    },
+  );
+
   test('keeps the key only once the server registered it', () async {
     final server = FakeServer()
       ..on(path, [
@@ -31,7 +48,7 @@ void main() {
     final store = MemorySecureStore();
     final pc = registration(server, store);
     expect(await pc.registered(), isFalse);
-    expect(await pc.sign(deviceId), isNull);
+    expect(await pc.sign(deviceId, '+963912345678'), isNull);
     expect(await pc.register('12345678'), PairingRefusal.invalidCode);
     expect(await pc.register('12345678'), PairingRefusal.tooMany);
     expect(await pc.registered(), isFalse);
@@ -55,11 +72,20 @@ void main() {
           as String,
     );
 
-    final signature = (await pc.sign(deviceId))!;
+    final signature = (await pc.sign(deviceId, '+963912345678'))!;
     expect(signature.signedAt, DateTime.utc(2026, 11, 20, 9));
+    // The wire carries exactly the text signed.
+    expect(
+      standardSerializers.serializeWith(
+        MerchantCodeRequestDtoDeviceSignature.serializer,
+        signature,
+      ),
+      containsPair('signedAt', '2026-11-20T09:00:00.000Z'),
+    );
     final verified = await Ed25519().verify(
       utf8.encode(
-        'fox-drop/merchant-code-request\n$deviceId\n2026-11-20T09:00:00.000Z',
+        'fox-drop/merchant-code-request\n$deviceId\n+963912345678\n'
+        '2026-11-20T09:00:00.000Z',
       ),
       signature: Signature(
         base64.decode(signature.signature),
@@ -68,4 +94,15 @@ void main() {
     );
     expect(verified, isTrue);
   });
+}
+
+class _BrokenStore implements SecureStore {
+  @override
+  Future<String?> read(String key) async => throw StateError('locked');
+
+  @override
+  Future<void> write(String key, String value) async {}
+
+  @override
+  Future<void> delete(String key) async {}
 }

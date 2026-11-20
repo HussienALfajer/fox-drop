@@ -6,9 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'registration.dart';
 
-/// «ربط هذا الكمبيوتر» (RA §4.3, slice 2.44): on Windows, before the first
-/// sign-in, the owner's pairing code registers this PC. Unstyled until the
-/// design.
+/// «ربط هذا الكمبيوتر» (RA §4.3, slice 2.44): on Windows, once the server
+/// refused a code request's signature, the owner's pairing code registers
+/// this PC; sign-in follows. Unstyled until the design.
 class WindowsPairingScreen extends ConsumerStatefulWidget {
   const WindowsPairingScreen({super.key});
 
@@ -41,7 +41,7 @@ class _WindowsPairingScreenState extends ConsumerState<WindowsPairingScreen> {
       _busy = false;
       _refusal = refusal;
     });
-    if (refusal == null) ref.invalidate(windowsRegisteredProvider);
+    if (refusal == null) ref.read(pairingNeededProvider.notifier).paired();
   }
 
   @override
@@ -69,6 +69,8 @@ class _WindowsPairingScreenState extends ConsumerState<WindowsPairingScreen> {
               PairingRefusal.invalidCode => l10n.merchantPairingInvalid,
               PairingRefusal.tooMany => l10n.merchantPairingTooMany,
               PairingRefusal.terminated => l10n.merchantPairingTerminated,
+              PairingRefusal.otherRestaurant =>
+                l10n.merchantPairingOtherRestaurant,
               PairingRefusal.failed => l10n.merchantPairingFailed,
             }),
           const SizedBox(height: 16),

@@ -17,11 +17,17 @@ const windowsKeyStoreKey = 'windows.signing_key';
 
 /// What the PC signs for a code request; the server checks the same text
 /// (`windows-devices.service.ts`, `codeRequestMessage`).
-String codeRequestMessage(String deviceId, String signedAt) =>
-    'fox-drop/merchant-code-request\n$deviceId\n$signedAt';
+String codeRequestMessage(String deviceId, String phone, String signedAt) =>
+    'fox-drop/merchant-code-request\n$deviceId\n$phone\n$signedAt';
 
 /// Why a pairing code was refused.
-enum PairingRefusal { invalidCode, tooMany, terminated, failed }
+enum PairingRefusal {
+  invalidCode,
+  tooMany,
+  terminated,
+  otherRestaurant,
+  failed,
+}
 
 /// RA §4.3, architecture §8.3.3 item 1 (slice 2.44): the restaurant app on
 /// Windows has no App Check, so an owner's pairing code registers the PC's
@@ -42,8 +48,23 @@ class WindowsRegistration {
   final ServerClock clock;
   final _ed25519 = Ed25519();
 
-  Future<bool> registered() async =>
-      await store.read(windowsKeyStoreKey) != null;
+  /// False when the store cannot be read either, so the PC pairs again
+  /// rather than waits (`packages/core_auth/CLAUDE.md` «Never stuck»).
+  Future<bool> registered() async {
+    try {
+      return await store.read(windowsKeyStoreKey) != null;
+    } on Object {
+      return false;
+    }
+  }
+
+  /// The server refused the signature: the key is dropped and the PC pairs
+  /// again.
+  Future<void> forget() async {
+    try {
+      await store.delete(windowsKeyStoreKey);
+    } on Object catch (_) {}
+  }
 
   /// Registers this PC with [code]; null once registered.
   Future<PairingRefusal?> register(String code) async {
@@ -61,10 +82,13 @@ class WindowsRegistration {
         ),
       );
     } on DioException catch (error) {
-      return switch (error.response?.statusCode) {
-        400 => PairingRefusal.invalidCode,
-        429 => PairingRefusal.tooMany,
-        403 => PairingRefusal.terminated,
+      final body = error.response?.data;
+      final code = body is Map ? body['error'] : null;
+      return switch ((error.response?.statusCode, code)) {
+        (400, _) => PairingRefusal.invalidCode,
+        (429, _) => PairingRefusal.tooMany,
+        (403, 'other_restaurant') => PairingRefusal.otherRestaurant,
+        (403, _) => PairingRefusal.terminated,
         _ => PairingRefusal.failed,
       };
     }
@@ -74,8 +98,16 @@ class WindowsRegistration {
 
   /// The signature a code request carries, on the server's clock; null
   /// before the PC is registered.
-  Future<MerchantCodeRequestDtoDeviceSignature?> sign(String deviceId) async {
-    final seed = await store.read(windowsKeyStoreKey);
+  Future<MerchantCodeRequestDtoDeviceSignature?> sign(
+    String deviceId,
+    String phone,
+  ) async {
+    final String? seed;
+    try {
+      seed = await store.read(windowsKeyStoreKey);
+    } on Object {
+      return null;
+    }
     if (seed == null) return null;
     final keyPair = await _ed25519.newKeyPairFromSeed(base64.decode(seed));
     final signedAt = DateTime.fromMillisecondsSinceEpoch(
@@ -83,7 +115,9 @@ class WindowsRegistration {
       isUtc: true,
     );
     final signature = await _ed25519.sign(
-      utf8.encode(codeRequestMessage(deviceId, signedAt.toIso8601String())),
+      utf8.encode(
+        codeRequestMessage(deviceId, phone, signedAt.toIso8601String()),
+      ),
       keyPair: keyPair,
     );
     return MerchantCodeRequestDtoDeviceSignature(
@@ -107,8 +141,23 @@ final windowsRegistrationProvider = Provider<WindowsRegistration>(
   ),
 );
 
-/// True once this PC is registered, and always away from Windows.
-final windowsRegisteredProvider = FutureProvider<bool>(
-  (ref) async =>
-      !onWindows || await ref.watch(windowsRegistrationProvider).registered(),
+/// Whether sign-in waits for «ربط هذا الكمبيوتر»: a Windows code request
+/// whose signature the server refused (`app_check_failed`: never paired, or
+/// a key the server no longer knows), until the PC is paired. A PC signs in
+/// unpaired while the server does not require App Check (slice 2.44).
+class PairingNeeded extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  /// The refusal: the stored key is dropped.
+  Future<void> refused() async {
+    await ref.read(windowsRegistrationProvider).forget();
+    state = true;
+  }
+
+  void paired() => state = false;
+}
+
+final pairingNeededProvider = NotifierProvider<PairingNeeded, bool>(
+  PairingNeeded.new,
 );

@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'merchant_code_request_dto_device_signature.g.dart';
 
-/// Windows only (slice 2.44): the registered PC's Ed25519 signature of `fox-drop/merchant-code-request\\n{deviceId}\\n{signedAt}`, in place of App Check.
+/// Windows only (slice 2.44): the registered PC's Ed25519 signature of `fox-drop/merchant-code-request\\n{deviceId}\\n{phone}\\n{signedAt}`, in place of App Check.
 ///
 /// Properties:
 /// * [signedAt]

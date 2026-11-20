@@ -256,7 +256,7 @@ jobs:
   # of docs only, or of no Dart.
   verify:
     if: always()
-    needs: [changes, contract, format, typescript, server, dart, flutter]
+    needs: [changes, contract, format, typescript, server, dart, flutter, windows-release]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -556,6 +556,12 @@ jobs:
     needs: [changes, verify]
     runs-on: windows-latest
     timeout-minutes: 40
+    environment: staging
+    # One build at a time, in the order of the merges, so an older build
+    # never publishes after a newer one.
+    concurrency:
+      group: staging-windows
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v7
 
@@ -592,13 +598,31 @@ jobs:
             --build-number "$GITHUB_RUN_NUMBER" \
             --dart-define="API_BASE_URL=https://$api_host" \
             --dart-define="WINDOWS_UPDATE_FEED=$feed" \
+            --dart-define="WINDOWS_FEED_PUBLIC_KEY=$FEED_PUBLIC_KEY" \
             --dart-define="UPDATE_URL=${feed}FOXDROP.Merchant.Staging-win-Setup.exe"
           dotnet tool install --global vpk --version 1.2.161
           vpk pack --packId FOXDROP.Merchant.Staging --packVersion "$version" \
             --packDir build/windows/x64/runner/Release --mainExe merchant.exe \
             --packTitle "FOX DROP Merchant (staging)" --skipVeloAppCheck \
             --outputDir "$RUNNER_TEMP/releases"
+          # The feed's signature, which the app checks before it updates
+          # (a key kept apart from the deploy key; the deploy skill). Without
+          # it the installed apps never update themselves.
+          if [ -n "$FEED_SIGNING_KEY" ] && [ -n "$FEED_PUBLIC_KEY" ]; then
+            printf '%s\n' "$FEED_SIGNING_KEY" > "$RUNNER_TEMP/feed.pem"
+            openssl pkeyutl -sign -rawin -inkey "$RUNNER_TEMP/feed.pem" \
+              -in "$RUNNER_TEMP/releases/releases.win.json" | base64 -w0 \
+              > "$RUNNER_TEMP/releases/releases.win.json.sig"
+            rm "$RUNNER_TEMP/feed.pem"
+          else
+            echo "::warning::No feed signing key: the staging PCs will not update themselves"
+          fi
           ls -l "$RUNNER_TEMP/releases"
+        env:
+          # A PEM Ed25519 private key (a secret of the staging environment)
+          # and its raw public key in base64 (a variable).
+          FEED_SIGNING_KEY: ${{ secrets.STAGING_WINDOWS_FEED_KEY }}
+          FEED_PUBLIC_KEY: ${{ vars.STAGING_WINDOWS_FEED_PUBLIC_KEY }}
 
       - uses: actions/upload-artifact@v5
         with:

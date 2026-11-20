@@ -6,8 +6,9 @@
 # sudo. nginx serves the folder as /downloads/windows/ on every host of the
 # environment (api.conf.template).
 #
-# Only Velopack's own files are taken: the feed, the installer, the portable
-# zip and the packages. The packages land first and the feed last, so an app
+# Only Velopack's own files are taken: the feed and its signature (which the
+# app checks with a key the deploy key never holds), the installer, the
+# portable zip and the packages. The packages land first and the feed last, so an app
 # never reads a feed whose package is missing. Packages older than 14 days
 # that the feed no longer names are removed.
 set -euo pipefail
@@ -19,11 +20,13 @@ install -d -m 755 "$target"
 
 incoming=$(mktemp -d)
 trap 'rm -rf "$incoming"' EXIT
-# 1 GB at most, no links, no folders: only plain files at the top.
-head -c 1073741824 | tar -x -C "$incoming" --no-same-owner --no-same-permissions
+# Extracted by nobody, never root, 1 GB at most; then only plain files at
+# the top with Velopack's names are copied by root.
+chown nobody "$incoming"
+head -c 1073741824 | runuser -u nobody -- tar -x -C "$incoming" --no-same-owner --no-same-permissions
 
 id='FOXDROP\.Merchant\.[A-Za-z]+'
-allowed="^(releases\.win\.json|assets\.win\.json|RELEASES|$id-win-Setup\.exe|$id-win-Portable\.zip|$id-[0-9A-Za-z.+-]+-(full|delta)\.nupkg)$"
+allowed="^(releases\.win\.json|releases\.win\.json\.sig|assets\.win\.json|RELEASES|$id-win-Setup\.exe|$id-win-Portable\.zip|$id-[0-9A-Za-z.+-]+-(full|delta)\.nupkg)$"
 shopt -s nullglob dotglob
 files=()
 for path in "$incoming"/*; do

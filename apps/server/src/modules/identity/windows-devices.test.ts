@@ -11,7 +11,11 @@ import { FxService } from '../fx/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { CODE_SENDER, type DevelopmentCodeSender, MerchantAccountsService } from './index.js';
-import { codeRequestMessage, PAIRING_ATTEMPTS_PER_HOUR } from './windows-devices.service.js';
+import {
+  codeRequestMessage,
+  PAIRING_ATTEMPTS_PER_HOUR,
+  PAIRING_CODES_PER_HOUR,
+} from './windows-devices.service.js';
 
 // RA §4.3, architecture §8.3.3 item 1 (slice 2.44; owner decision
 // 2026-11-20): an owner's pairing code registers a Windows PC, whose signed
@@ -128,6 +132,7 @@ function codeRequest(
   deviceId: string,
   privateKey: ReturnType<typeof newKey>['privateKey'] | null,
   signedAt = new Date().toISOString(),
+  signedPhone = phone,
 ) {
   return app.inject({
     method: 'POST',
@@ -142,7 +147,7 @@ function codeRequest(
           signedAt,
           signature: sign(
             null,
-            Buffer.from(codeRequestMessage(deviceId, signedAt)),
+            Buffer.from(codeRequestMessage(deviceId, signedPhone, signedAt)),
             privateKey,
           ).toString('base64'),
         },
@@ -217,6 +222,40 @@ describe('the registration', () => {
     expect(expired.json()).toMatchObject({ error: 'invalid_code' });
   });
 
+  it('never moves a PC registered to another restaurant, and audits a registration', async () => {
+    const first = await restaurant();
+    const second = await restaurant();
+    const deviceId = randomUUID();
+    const key = newKey();
+    expect(
+      (await register(await pairingCode(first.owner), deviceId, key.publicKey)).statusCode,
+    ).toBe(200);
+    const moved = await register(await pairingCode(second.owner), deviceId, newKey().publicKey);
+    expect(moved.statusCode).toBe(403);
+    expect(moved.json()).toMatchObject({ error: 'other_restaurant' });
+    const rows = await sql.query(
+      'SELECT restaurant_id, public_key FROM identity.windows_devices WHERE device_id = $1',
+      [deviceId],
+    );
+    expect(rows.rows).toEqual([{ restaurant_id: first.id, public_key: key.publicKey }]);
+    const audited = await sql.query(
+      "SELECT changes::text AS changes FROM audit.events WHERE action = 'merchant_device.windows_register' AND target_id = $1",
+      [first.id],
+    );
+    expect(audited.rows).toHaveLength(1);
+    expect(audited.rows[0].changes).toContain(deviceId);
+    expect(audited.rows[0].changes).not.toContain(key.publicKey);
+  });
+
+  it('refuses a terminated restaurant’s code', async () => {
+    const { owner, id } = await restaurant();
+    const code = await pairingCode(owner);
+    await merchants.setAccountStatus(id, 'terminated', change);
+    const refused = await register(code, randomUUID(), newKey().publicKey);
+    expect(refused.statusCode).toBe(403);
+    expect(refused.json()).toMatchObject({ error: 'restaurant_terminated' });
+  });
+
   it('lets one IP address try PAIRING_ATTEMPTS_PER_HOUR codes an hour', async () => {
     const ip = '203.0.113.9';
     for (let i = 0; i < PAIRING_ATTEMPTS_PER_HOUR; i += 1) {
@@ -231,7 +270,26 @@ describe('the registration', () => {
   });
 });
 
+describe('a restaurant’s pairing codes', () => {
+  it('are PAIRING_CODES_PER_HOUR an hour', async () => {
+    const { owner } = await restaurant();
+    for (let i = 0; i < PAIRING_CODES_PER_HOUR; i += 1) await pairingCode(owner);
+    const limited = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/devices/windows-pairing',
+      ...owner,
+    });
+    expect(limited.statusCode).toBe(429);
+    expect(limited.json()).toMatchObject({ error: 'too_many' });
+  });
+});
+
 describe('a registered PC’s code request (architecture §8.3.3 item 1)', () => {
+  it('needs no signature while App Check is not required', async () => {
+    const { cashierPhone } = await restaurant();
+    expect((await codeRequest(cashierPhone, randomUUID(), null)).statusCode).toBe(200);
+  });
+
   it('passes where App Check is required only with a fresh signature of its own key', async () => {
     // The cashier's number: the owner's had a code at sign-in, within its
     // resend wait.
@@ -255,6 +313,14 @@ describe('a registered PC’s code request (architecture §8.3.3 item 1)', () =>
           key.privateKey,
           new Date(Date.now() - 6 * 60 * 1000).toISOString(),
         ),
+        await codeRequest(
+          phone,
+          deviceId,
+          key.privateKey,
+          new Date(Date.now() + 6 * 60 * 1000).toISOString(),
+        ),
+        // Signed for another number.
+        await codeRequest(phone, deviceId, key.privateKey, undefined, newPhone()),
       ];
       for (const refused of refusals) {
         expect(refused.statusCode).toBe(403);

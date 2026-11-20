@@ -61,7 +61,7 @@ class MerchantCodeRequestDto extends createZodDto(
       .optional()
       .describe(
         "Windows only (slice 2.44): the registered PC's Ed25519 signature of " +
-          '`fox-drop/merchant-code-request\\n{deviceId}\\n{signedAt}`, in place of App Check.',
+          '`fox-drop/merchant-code-request\\n{deviceId}\\n{phone}\\n{signedAt}`, in place of App Check.',
       ),
   }),
 ) {}
@@ -188,7 +188,8 @@ export class MerchantAuthController {
   // RA §4.3, architecture §8.3.3 item 1 (slice 2.44): a Windows PC
   // registers with an owner's pairing code before its first sign-in; its
   // code requests then carry its signature. 400 invalid_code (wrong, expired
-  // or used: one answer), invalid_key; 403 restaurant_terminated; 429
+  // or used: one answer), invalid_key; 403 restaurant_terminated,
+  // other_restaurant (the PC is another restaurant's); 429
   // too_many with Retry-After after PAIRING_ATTEMPTS_PER_HOUR from one IP
   // address. No key: a repeat finds its code used.
   @Post('windows-registration')
@@ -214,6 +215,7 @@ export class MerchantAuthController {
             HttpStatus.TOO_MANY_REQUESTS,
           );
         case 'restaurant_terminated':
+        case 'other_restaurant':
           throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, ...answer });
         default:
           throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...answer });

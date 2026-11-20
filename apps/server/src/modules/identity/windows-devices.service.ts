@@ -25,11 +25,15 @@ export const DEVICE_SIGNATURE_WINDOW_MS = 5 * 60 * 1000;
 const ED25519_KEY_BYTES = 32;
 const ED25519_SIGNATURE_BYTES = 64;
 
-// What a registered Windows PC signs for a code request: its installation
-// and the moment, in ISO 8601 (`signedAt`). The app signs the same text
-// (`apps/merchant/lib/src/windows/registration.dart`).
-export function codeRequestMessage(deviceId: string, signedAt: string): string {
-  return `fox-drop/merchant-code-request\n${deviceId}\n${signedAt}`;
+// The pairing codes one restaurant may make per hour (fixed, decided by us):
+// each registers a PC that passes the code request's attestation.
+export const PAIRING_CODES_PER_HOUR = 10;
+
+// What a registered Windows PC signs for a code request: its installation,
+// the number in E.164 and the moment, in ISO 8601 (`signedAt`). The app signs
+// the same text (`apps/merchant/lib/src/windows/registration.dart`).
+export function codeRequestMessage(deviceId: string, phone: string, signedAt: string): string {
+  return `fox-drop/merchant-code-request\n${deviceId}\n${phone}\n${signedAt}`;
 }
 
 export interface DeviceSignature {
@@ -39,10 +43,13 @@ export interface DeviceSignature {
 }
 
 // invalid_code: no open code matches (wrong, expired or used); too_many:
-// the IP address's attempts of the hour are spent (retryAfterSec).
+// the IP address's attempts (or the restaurant's codes) of the hour are
+// spent (retryAfterSec); other_restaurant: the installation is registered to
+// another restaurant, which never moves it.
 export class WindowsPairingRefusedError extends Error {
   constructor(
-    readonly refusal: 'invalid_code' | 'too_many' | 'invalid_key' | 'restaurant_terminated',
+    readonly refusal:
+      'invalid_code' | 'too_many' | 'invalid_key' | 'restaurant_terminated' | 'other_restaurant',
     readonly retryAfterSec = 0,
   ) {
     super(`windows pairing refused: ${refusal}`);
@@ -76,6 +83,17 @@ export class WindowsDevicesService {
   ): Promise<{ code: string; expiresAt: Date }> {
     const restaurant = await this.merchants.restaurant(owner.restaurantId);
     if (!restaurant) throw new Error('an owner without a restaurant');
+    const made = await this.limits.reserve(
+      [
+        {
+          key: `identity:windows-pairing:restaurant:${owner.restaurantId}`,
+          windowMs: HOUR_MS,
+          max: PAIRING_CODES_PER_HOUR,
+        },
+      ],
+      now,
+    );
+    if (!made.reserved) throw new WindowsPairingRefusedError('too_many', made.retryAfterSec);
     const expiresAt = new Date(now.getTime() + PAIRING_CODE_MINUTES * 60 * 1000);
     return this.database.db.transaction(async (tx) => {
       // A code another restaurant's open code already has is drawn again.
@@ -148,7 +166,12 @@ export class WindowsDevicesService {
     const codeHash = this.secrets.pairingCodeHash(input.code);
     return this.database.db.transaction(async (tx) => {
       const [pairing] = await tx
-        .select({ id: windowsPairings.id, restaurantId: windowsPairings.restaurantId })
+        .select({
+          id: windowsPairings.id,
+          cityId: windowsPairings.cityId,
+          restaurantId: windowsPairings.restaurantId,
+          createdBy: windowsPairings.createdBy,
+        })
         .from(windowsPairings)
         .where(
           and(
@@ -162,20 +185,49 @@ export class WindowsDevicesService {
       if ((await this.merchants.lockedAccountStatus(tx, pairing.restaurantId)) === 'terminated') {
         throw new WindowsPairingRefusedError('restaurant_terminated');
       }
+      // A PC is paired again only to its own restaurant: one owner never
+      // replaces another restaurant's key.
+      const [existing] = await tx
+        .select({ restaurantId: windowsDevices.restaurantId })
+        .from(windowsDevices)
+        .where(eq(windowsDevices.deviceId, input.deviceId))
+        .for('update');
+      if (existing && existing.restaurantId !== pairing.restaurantId) {
+        throw new WindowsPairingRefusedError('other_restaurant');
+      }
       await tx
         .update(windowsPairings)
         .set({ usedAt: now })
         .where(eq(windowsPairings.id, pairing.id));
       const registration = {
+        cityId: pairing.cityId,
         restaurantId: pairing.restaurantId,
         publicKey: input.publicKey,
         pairingId: pairing.id,
         registeredAt: now,
       };
-      await tx
-        .insert(windowsDevices)
-        .values({ deviceId: input.deviceId, ...registration })
-        .onConflictDoUpdate({ target: windowsDevices.deviceId, set: registration });
+      if (existing) {
+        await tx
+          .update(windowsDevices)
+          .set(registration)
+          .where(eq(windowsDevices.deviceId, input.deviceId));
+      } else {
+        await tx.insert(windowsDevices).values({ deviceId: input.deviceId, ...registration });
+      }
+      // AP §4.6: the owner whose code it was is the actor; never the key or
+      // the code.
+      await this.audit.recordWrite(
+        {
+          actor: { type: 'merchant', id: pairing.createdBy, role: 'owner' },
+          context,
+          cityId: pairing.cityId,
+          action: 'merchant_device.windows_register',
+          target: { type: 'restaurant', id: pairing.restaurantId },
+          before: null,
+          after: { deviceId: input.deviceId, pairingId: pairing.id, again: Boolean(existing) },
+        },
+        tx,
+      );
       return { restaurantId: pairing.restaurantId };
     });
   }
@@ -186,6 +238,7 @@ export class WindowsDevicesService {
   // code request's limits still apply.
   async verify(
     deviceId: string,
+    phone: string,
     signature: DeviceSignature | undefined,
     now: Date,
   ): Promise<boolean> {
@@ -209,6 +262,11 @@ export class WindowsDevicesService {
       },
       format: 'jwk',
     });
-    return verify(null, Buffer.from(codeRequestMessage(deviceId, signature.signedAt)), key, bytes);
+    return verify(
+      null,
+      Buffer.from(codeRequestMessage(deviceId, phone, signature.signedAt)),
+      key,
+      bytes,
+    );
   }
 }

@@ -10039,6 +10039,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'ينام الكمبيوتر الآن بعد {minutes} د دون استخدام.'**
   String merchantCheckSleepAfter(int minutes);
+
+  /// Pairing a PC already registered to another restaurant (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الكمبيوتر مربوط بمطعم آخر. تواصل مع FOX DROP.'**
+  String get merchantPairingOtherRestaurant;
 }
 
 class _AppLocalizationsDelegate

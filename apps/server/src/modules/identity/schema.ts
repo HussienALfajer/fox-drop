@@ -621,19 +621,27 @@ export const windowsPairings = identity.table(
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     usedAt: timestamp('used_at', { withTimezone: true }),
   },
-  (table) => [index('windows_pairings_code').on(table.codeHash)],
+  (table) => [
+    index('windows_pairings_code').on(table.codeHash),
+    index('windows_pairings_created_by').on(table.createdBy),
+  ],
 );
 
 // A registered Windows PC: the public half of the Ed25519 key it made when
 // it was paired, which signs its code requests in place of an App Check
 // token. Pairing the same installation again replaces its key.
-export const windowsDevices = identity.table('windows_devices', {
-  deviceId: uuid('device_id').primaryKey(),
-  restaurantId: uuid('restaurant_id').notNull(),
-  // The raw 32-byte Ed25519 public key in base64.
-  publicKey: text('public_key').notNull(),
-  pairingId: uuid('pairing_id')
-    .notNull()
-    .references(() => windowsPairings.id),
-  registeredAt: timestamp('registered_at', { withTimezone: true }).notNull(),
-});
+export const windowsDevices = identity.table(
+  'windows_devices',
+  {
+    deviceId: uuid('device_id').primaryKey(),
+    cityId: uuid('city_id').notNull(),
+    restaurantId: uuid('restaurant_id').notNull(),
+    // The raw 32-byte Ed25519 public key in base64.
+    publicKey: text('public_key').notNull(),
+    pairingId: uuid('pairing_id')
+      .notNull()
+      .references(() => windowsPairings.id),
+    registeredAt: timestamp('registered_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [index('windows_devices_pairing').on(table.pairingId)],
+);
