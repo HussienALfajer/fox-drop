@@ -157,7 +157,7 @@ jobs:
 
       # The traces of a failed smoke test (playwright.config.ts).
       - if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: playwright-results
           path: apps/*/test-results/
@@ -681,7 +681,7 @@ jobs:
           # empty until the owner buys it, and none for the other apps.
           FOXDROP_BGGEO_LICENSE: ${{ secrets[format('STAGING_{0}_BGGEO_LICENSE', matrix.key)] }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: foxdrop-${{ matrix.app }}-staging-${{ github.run_number }}
           path: apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-staging-release.apk
@@ -767,7 +767,7 @@ jobs:
           FEED_SIGNING_KEY: ${{ secrets.STAGING_WINDOWS_FEED_KEY }}
           FEED_PUBLIC_KEY: ${{ vars.STAGING_WINDOWS_FEED_PUBLIC_KEY }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: foxdrop-merchant-windows-staging-${{ github.run_number }}
           path: ${{ runner.temp }}/releases
@@ -784,7 +784,7 @@ jobs:
       group: publish-windows
       cancel-in-progress: false
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: foxdrop-merchant-windows-staging-${{ github.run_number }}
           path: releases
