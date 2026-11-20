@@ -4,20 +4,21 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 2 of `docs/claude-code-workflow.md`: fewer requests, smaller results. Planned, not started. Phase 1 (the context diet) merged with `chore/claude-context-diet`; the second audit (2026-11-21) reordered the later phases.
+Phase 2 of `docs/claude-code-workflow.md`: fewer requests, smaller results. Built and merged except the two steps that need later sessions (switching the guard to enforce, measuring a slice). Phase 1 (the context diet) merged with `chore/claude-context-diet`; the second audit (2026-11-21) reordered the later phases.
 
 - **Branch:** `chore/fewer-requests`.
 - **Why:** 83% of assistant messages hold one tool call and 12,178 of them are a single Bash command (`sed -n`, `grep -n`, `python -`, `git diff`), each a request that resends the whole context.
 
 ### Plan
 
-- [ ] Fix the Git Bash profile: the pinned Node on PATH without a prefix, no fnm error on every command, no silent skip after `cd … &&`. Then delete the workaround from the memory notes.
-- [ ] A `PreToolUse` hook on Bash, in observe mode first: reading a tracked file with `sed -n`, `cat`, `head` or `tail`, or editing one with `sed -i` or an inline script, is refused with the tool to use instead.
-- [ ] Root `CLAUDE.md`: independent tool calls in one message; `git diff --stat` first.
-- [ ] A hook that cuts a test command's output to its failures and summary.
-- [ ] `scripts/claude-audit.mjs`, the audit as a committed script.
-- [ ] `infra/server/check-order-ledger.sql` line 3 still names `ordering/CLAUDE.md` for «The atomic pickup»: point it at `docs/code/apps/server/src/modules/ordering.md` in a pull request that changes code anyway.
-- [ ] Measure one slice session against the baseline.
+- [x] Fix the Git Bash profile (`~/.bashrc`, outside the repository): the pinned Node on PATH without a prefix, no fnm cd hook. The memory note is rewritten.
+- [x] `.claude/hooks/bash.mjs`, a `PreToolUse` hook on Bash in observe mode: logs to `.claude/bash-guard.log` reads of tracked files with `sed -n`, `cat`, `head` or `tail`, and edits with `sed -i`, `perl -i` or an inline script.
+- [x] Root `CLAUDE.md`: independent tool calls in one message; `git diff --stat` first.
+- [x] The same hook pipes a command of tests only through `.claude/hooks/test-summary.mjs` (failures and summary, the whole output saved).
+- [x] `scripts/claude-audit.mjs`, the audit as a committed script.
+- [x] `infra/server/check-order-ledger.sql` points at `docs/code/…/ordering.md` and `ledger.md`.
+- [ ] After two sessions: `node scripts/claude-audit.mjs` shows the guard log; check it for false positives, then set `MODE = 'enforce'` in `.claude/hooks/bash.mjs`.
+- [ ] Measure one slice session against the baseline: `node scripts/claude-audit.mjs --session=<id>`, single-Bash requests under half of 67.7%.
 
 ## After that
 

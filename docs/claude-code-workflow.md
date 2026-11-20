@@ -49,6 +49,8 @@ The largest lever left: the cost is the context times the number of requests, an
 
 Done when: a slice session shows under half the single-Bash requests of the baseline.
 
+Status (2026-11-21): items 1 to 4 and 6 are in. The owner's `~/.bashrc` (outside the repository) puts the Node of the nearest `.node-version` first on PATH, without fnm's cd hook. `.claude/hooks/bash.mjs` runs before every Bash call: in observe mode (`MODE` at its top) it logs to `.claude/bash-guard.log` what it would refuse, and it rewrites a command made only of test commands (and `cd`) to pipe through `.claude/hooks/test-summary.mjs`, which keeps output up to 120 lines whole and otherwise the `===` step headers, the failure lines with their context and the last 40 lines, and saves the whole output to a temporary file it names; the exit status stays the test command's. `pnpm verify` runs their tests (`.claude/hooks/hooks.test.mjs`). Item 5 is the project setting already (`effortLevel: medium`); `high` per turn stays the owner's choice. Left: read the guard log after two sessions and switch `MODE` to `enforce`, and measure one slice session with `node scripts/claude-audit.mjs --session=<id>` (the whole history on 2026-11-21: 135 sessions, 18,030 main requests, 67.7% of them a single Bash call).
+
 ## Phase 3: the owner's own settings (with the owner, outside the repository)
 
 About a third of every request's context after phase 1.
