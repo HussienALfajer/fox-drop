@@ -103,6 +103,8 @@ String? pushTargetPath(Map<String, String> data) => switch (data) {
   {'target': 'account'} => '/account',
   // RA §16 #29: «تم حل بلاغك» over «الدعم», whose «بلاغاتي» shows it.
   {'target': 'ticket'} => '/support',
+  // RA §16 #27 (slice 2.42): «لا يوجد جهاز يستقبل الطلبات» over «الأجهزة».
+  {'target': 'devices'} => '/settings/devices',
   _ => null,
 };
 

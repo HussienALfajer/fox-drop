@@ -393,6 +393,8 @@ void main() {
         pushTargetPath({'target': 'ticket', 'ticketId': 't1'}),
         '/support',
       );
+      // RA §16 #27 (slice 2.42): no receiving device opens «الأجهزة».
+      expect(pushTargetPath({'target': 'devices'}), '/settings/devices');
       // RA §16 #30–#31 (slice 2.19e).
       expect(
         pushTargetPath({'target': 'statement', 'statementId': 's1'}),
