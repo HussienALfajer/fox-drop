@@ -4,26 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.44, the restaurant app on Windows (`docs/roadmap.md`, Phase 2).
+Slice 2.45, the owner web portal (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.44 The restaurant app on Windows: auto-start, tray, quit confirmation, the window to the front on a ring, native notifications, self-update outside active orders, the device registration that ends the App Check exemption (RA §4, architecture §12). An order rings on the restaurant's PC.
-- **Specs:** RA §4.1–4.7 (docs/product/v1/restaurant-app/: the Windows rows of the platforms, the ring, the device check's `sleep` check 6), architecture §12.3 (`window_manager`, `tray_manager`, `launch_at_startup`, toasts, the power plan, Velopack, code signing), §11.2 (`core_alerts`: `NoAlerts` stands in on Windows until now), §15 (App Check and its Windows exemption), §22 item 8 (the code-signing certificate, a paid licence).
+- **Roadmap line:** 2.45 The owner web portal: sign-in (S14), every owner feature except receiving orders, live orders read-only, exports (RA §17), «التقييمات» with the custom range on `GET /v1/merchant/ratings` (moved from 2.26b, owner decision 2026-11-17). The owner opens the statement in a browser.
+- **Specs:** RA §17 (docs/product/v1/restaurant-app/17-owner-web-portal.md), S14, RA §4.1 (the portal's row), §4.10 (the terms in the portal), §11–§14 (the owner features), §13 with the ratings' custom range; architecture §10 (the panel and the portal), §15.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Ask the owner first:** the split into pull requests; the code-signing certificate (EV, OV or Azure Trusted Signing: who buys it, and the plan until then, as the background location licence of 2.43); where the installer and its updates are hosted (Velopack's feed); how the device registration ends the App Check exemption (architecture §15). A Windows PC is needed to prove a ring; the cloud container builds no Windows app.
-- **Already built (reuse):** `packages/core_alerts` (`Alerts`, `NoAlerts`, `DeviceReadings`; the Android layer of 2.42–2.43), `apps/merchant/lib/src/receiving/` (the device check screen, `sleep` already in the server's codes, RA §4.5), `packages/core_commands`, the merchant devices' report (`PUT /v1/merchant/device`, `platform` `windows` in `merchants.devices`).
+- **Ask the owner first:** the split into pull requests (the portal is large); the portal's sign-in (S14: the same WhatsApp code as the app, or another way); the design stop (`apps/merchant-portal` is unstyled until the design system is ready); and, from 2.44, whether the portal also gives Windows pairing codes, and how a restaurant whose only device is a Windows PC gets its first code (an operations-issued code is one option).
+- **Already built (reuse):** `apps/merchant-portal` (the shell), the merchant routes the app uses, the Excel exports of `reporting` (slice 2.41), the statement's and receipts' routes (slice 2.19e).
 
 ### Plan
 
-- [x] Ask the owner the split, the certificate, the update feed and the registration; write the plan.
-- [x] The server: the Windows device registration (owner's pairing code, the device's Ed25519 key, the signed code request that ends the App Check exemption).
-- [x] The restaurant app: «ربط هذا الكمبيوتر» on Windows before sign-in, the code request's signature, and the owner's pairing code in «الأجهزة».
-- [x] `core_alerts` on Windows: the Win32 plugin (the looping sound, the readings, the taskbar flash), the tray, the window, start with Windows, the toasts.
-- [x] The restaurant app on Windows: the quit confirmation, the window to the front on a ring, the device check's Windows checks (check 6 `sleep`).
-- [x] Self-update through Velopack: the feed, the background download, the restart only outside a ring, a pickup prompt and active orders.
-- [x] CI and staging: the Windows build on every pull request, the staging installer packed with `vpk` and published to `/downloads/windows/` on the API host.
-- [ ] The docs, the review, the handover.
+- [ ] Ask the owner the split, the sign-in and the design; write the plan.
 
-**Owner decisions 2026-11-20:** one pull request; Azure Trusted Signing later, the staging installer unsigned until then (SmartScreen warns); the installer and its updates on the Contabo server through nginx; a pairing code from an owner registers a Windows PC.
+### Left from 2.44 (the cloud session's branch)
+
+- **Before deploying to staging:** migration 0145 (expand only: `identity.windows_pairings`, `identity.windows_devices`). New routes: `POST /v1/merchant/devices/windows-pairing` (owners), `POST /v1/merchant/auth/windows-registration` (public); the code request takes `deviceSignature`. Run `provision.sh` from this merge's commit on `main` (the publish script `foxdrop-windows-publish`, its sudo rule, `/var/www/foxdrop-staging-downloads/windows/`, nginx's `/downloads/windows/` and the sign-in limit on the registration): until then `publish-windows` fails. For the PCs to update themselves: the feed's signing key (the deploy skill, «The staging Windows installer»: the secret `STAGING_WINDOWS_FEED_KEY` and the variable `STAGING_WINDOWS_FEED_PUBLIC_KEY` of the `staging` environment). Every Windows PC must be paired before `otp.app_check_required` is turned on.
+- **To check on staging (after the merge, the deploy and the provisioning), on a Windows 10 or 11 PC:** 1. Download `https://<API host>/downloads/windows/FOXDROP.Merchant.Staging-win-Setup.exe` and install it («More info» › «Run anyway»: unsigned). 2. Sign in (while App Check is not required it signs in unpaired); then on the owner's Android app «الإعدادات» › «الأجهزة» › «ربط كمبيوتر بويندوز», and with App Check required type the code at «ربط هذا الكمبيوتر». 3. «فحص الجهاز»: notifications, «التشغيل مع ويندوز», the sound not muted, the sleep warning, the test ring. 4. Minimise the window, place a test order: it rings through the speakers, the window comes forward (or the taskbar button flashes) and a notification shows. 5. Close the window: it stays in the tray; the tray's «إغلاق التطبيق» asks first. 6. Start the app again from its shortcut while it runs: the running window shows, no second copy. 7. Restart the PC: the app starts. 8. With the feed key set and no active orders, merge another change: within an hour the app restarts into the new version.
+- **Owner decisions 2026-11-20:** one pull request; Azure Trusted Signing later (the staging installer is unsigned); the installer and the feed on the Contabo server through nginx; an owner's pairing code registers a PC.
+- **Decided by us (to confirm with the owner):** the pairing code is 8 digits, valid 10 minutes, once, 10 per restaurant per hour, 10 tries per IP per hour; a signature is valid 5 minutes and names the device and the number; a PC signs in unpaired while App Check is not required and pairs at its first refused code request; a PC registered to one restaurant is never moved to another; the app updates only from a feed signed by a key apart from the deploy key, and restarts only signed out or with an empty board that rings nothing; checks 3, 5 and 6 on Windows read Task Manager's startup switch, the output's mute or zero volume, and any sleep or hibernate timeout; all new Arabic wording.
+- **Not yet:** code signing; Focus Assist (Do Not Disturb) on Windows; removing a PC's registration when an owner signs it out; binding a sign-in to the PC's restaurant; staging and production installed side by side on one PC (they would share the notification ID and the startup entry); the Win32 plugin has no unit tests.
+- **Not checked locally:** no Windows or Docker in the cloud container: the Windows build and the server's database tests ran in CI only (see the pull request's test plan).
 
 ### Left from 2.43 (the cloud session's branch)
 
