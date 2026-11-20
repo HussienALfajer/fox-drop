@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title></title>
+    <!-- RA §17 (slice 2.45d): the statement prints to PDF without the
+         portal's bar and buttons; no other styling until the design. -->
+    <style>
+      @media print {
+        [data-print='hide'] {
+          display: none;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

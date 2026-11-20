@@ -106,7 +106,8 @@ export function daysOf(fromDay: string, toDay: string): string[] {
 
 // What an owner asks of the reports (RA §11, §17): a period, a business day
 // (the daily summary) or the portal's custom range of business days.
-export type OwnerAsked = { period: OwnerPeriod } | { day: string } | { fromDay: string; toDay: string };
+export type OwnerAsked =
+  { period: OwnerPeriod } | { day: string } | { fromDay: string; toDay: string };
 
 // The moments an owner's ask covers, or null for a day not started yet (or
 // not a day) and a range that does not fit or ends after today; a period

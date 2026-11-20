@@ -23,8 +23,15 @@ import {
 // RA §15, §17 (slice 2.45c): «الدعم» as the app's: the team's call and
 // WhatsApp, «إبلاغ عن مشكلة» (a type, optionally an order, a data change's
 // subject, a note and a photo), «بلاغاتي» and the FAQ. `report` opens the
-// form on a type, as «طلب تعديل» does from the settings.
-export function SupportPage({ report }: { report?: string | undefined }) {
+// form on a type, as «طلب تعديل» does from the settings; `order` on an
+// order, as an order's page does (one of «السجل» too, slice 2.45d).
+export function SupportPage({
+  report,
+  order,
+}: {
+  report?: string | undefined;
+  order?: { id: string; number: string } | undefined;
+}) {
   const { t } = useTranslation();
   const content = useQuery(contentQuery);
 
@@ -37,7 +44,11 @@ export function SupportPage({ report }: { report?: string | undefined }) {
       {content.isPending && <p>{t('app.loading')}</p>}
       {content.isError && <p role="alert">{t('support.typesFailed')}</p>}
       {content.data && (
-        <ReportForm types={content.data.reasons.merchant_ticket_type} initialType={report ?? ''} />
+        <ReportForm
+          types={content.data.reasons.merchant_ticket_type}
+          initialType={report ?? ''}
+          initialOrder={order}
+        />
       )}
       <MyReports />
       <section>
@@ -56,19 +67,30 @@ export function SupportPage({ report }: { report?: string | undefined }) {
 function ReportForm({
   types,
   initialType,
+  initialOrder,
 }: {
   types: { code: string; label: string; note: 'none' | 'optional' | 'required' }[];
   initialType: string;
+  initialOrder: { id: string; number: string } | undefined;
 }) {
   const { t } = useTranslation();
   const board = useQuery(boardQuery);
   const send = useSendReport();
+  const within = useWithin();
   const photos = usePhotoUpload('report');
   const [typeCode, setType] = useState(
     types.some((each) => each.code === initialType) ? initialType : '',
   );
   const [subject, setSubject] = useState<DataChangeSubject | ''>('');
-  const [orderId, setOrderId] = useState('');
+  const [orderId, setOrderId] = useState(initialOrder?.id ?? '');
+  // The board's orders, and the one the page was opened on when it has left
+  // the board.
+  const orders = [
+    ...(board.data ?? []).map((order) => ({ id: order.id, number: order.number })),
+    ...(initialOrder && !board.data?.some((order) => order.id === initialOrder.id)
+      ? [initialOrder]
+      : []),
+  ];
   const [note, setNote] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -142,7 +164,7 @@ function ReportForm({
           {t('support.order')}
           <select value={orderId} onChange={(e) => setOrderId(e.target.value)}>
             <option value="">{t('support.noOrder')}</option>
-            {board.data?.map((order) => (
+            {orders.map((order) => (
               <option key={order.id} value={order.id}>
                 {t('support.orderNumber', { number: order.number })}
               </option>
@@ -174,7 +196,7 @@ function ReportForm({
           <p role="status">
             {t('support.sent', {
               number: sent.number,
-              within: within(t, sent.replyWithinMinutes),
+              within: within(sent.replyWithinMinutes),
             })}
           </p>
         )}
@@ -184,11 +206,15 @@ function ReportForm({
   );
 }
 
-function within(t: ReturnType<typeof useTranslation>['t'], minutes: number): string {
-  const time = replyWithin(minutes);
-  return 'hours' in time
-    ? t('support.withinHours', { count: time.hours })
-    : t('support.withinMinutes', { count: time.minutes });
+// «سنرد عليك خلال …» in hours or minutes.
+function useWithin() {
+  const { t } = useTranslation();
+  return (minutes: number): string => {
+    const time = replyWithin(minutes);
+    return 'hours' in time
+      ? t('support.withinHours', { count: time.hours })
+      : t('support.withinMinutes', { count: time.minutes });
+  };
 }
 
 function MyReports() {

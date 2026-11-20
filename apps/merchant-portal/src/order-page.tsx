@@ -37,7 +37,10 @@ function Detail({ detail }: { detail: OrderDetail }) {
   return (
     <>
       <h1>{t('order.title', { number: order.number })}</h1>
-      <ContactLinks orderNumber={order.number} />
+      <ContactLinks orderNumber={order.number} />{' '}
+      <Link to="/support" search={{ order: order.id, number: order.number }}>
+        {t('order.report')}
+      </Link>
       <p>{t(`order.status.${order.status}`)}</p>
       <p>
         {order.customer.firstName
