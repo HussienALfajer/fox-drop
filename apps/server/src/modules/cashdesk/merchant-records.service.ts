@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FxService } from '../fx/index.js';
-import { AdminSessionsService } from '../identity/index.js';
-import { type ActorType, LedgerService } from '../ledger/index.js';
+import { LedgerService } from '../ledger/index.js';
 import { type MerchantReceipt, MerchantSettlementService } from './merchant-settlement.service.js';
 import {
   type StatementLine,
@@ -9,9 +8,13 @@ import {
   type StatementStatus,
 } from './merchant-statement.js';
 import {
-  MerchantStatementsService,
-  type MerchantStatementView,
-} from './merchant-statements.service.js';
+  type Decider,
+  MerchantStatementReads,
+  type MerchantStatementRead,
+} from './merchant-statement-reads.js';
+import { MerchantStatementsService } from './merchant-statements.service.js';
+
+export type { Decider, MerchantStatementRead };
 
 // The receipts the restaurant app lists (decided by us: the latest, as the
 // captain's; a few a week is a year of them).
@@ -31,17 +34,6 @@ export interface MerchantStatementRow {
   unpaid: bigint;
 }
 
-// «من قرّر» on an exception (RA §12.5): who posted its journal, an admin by
-// name; null on an order line or a payment.
-export interface Decider {
-  type: ActorType;
-  name: string | null;
-}
-
-export type MerchantStatementRead = Omit<MerchantStatementView, 'lines'> & {
-  lines: (MerchantStatementView['lines'][number] & { decidedBy: Decider | null })[];
-};
-
 // RA §12.3–12.5 (slice 2.19e): «الكشوف» and «الإيصالات» in the restaurant
 // app, the restaurant's own only.
 @Injectable()
@@ -51,7 +43,7 @@ export class MerchantRecordsService {
     private readonly settlements: MerchantSettlementService,
     private readonly ledger: LedgerService,
     private readonly fx: FxService,
-    private readonly admins: AdminSessionsService,
+    private readonly reads: MerchantStatementReads,
   ) {}
 
   // The latest statements (a year), newest first, each with its status.
@@ -76,41 +68,13 @@ export class MerchantRecordsService {
   }
 
   // One statement, null when it is another restaurant's or unknown.
-  async statement(
-    restaurantId: string,
-    statementId: string,
-  ): Promise<MerchantStatementRead | null> {
-    const found = await this.statements.statement(statementId, restaurantId);
-    if (!found) return null;
-    const deciders = await this.deciders(found.lines);
-    return {
-      ...found,
-      lines: found.lines.map((line) => ({
-        ...line,
-        decidedBy: line.kind === 'exception' ? (deciders.get(line.journalId) ?? null) : null,
-      })),
-    };
+  statement(restaurantId: string, statementId: string): Promise<MerchantStatementRead | null> {
+    return this.reads.statement(restaurantId, statementId);
   }
 
-  // «من قرّر» of each exception by its journal (RA §12.5): who posted it, a
-  // staff member by name. Shared by the statement and «الحساب»'s week.
-  async deciders(lines: readonly StatementLine[]): Promise<Map<string, Decider>> {
-    const exceptions = lines.flatMap((line) => (line.kind === 'exception' ? [line.journalId] : []));
-    const actors = await this.ledger.journalActors(exceptions);
-    const names = await this.admins.names(
-      [...actors.values()].flatMap((actor) =>
-        actor.type === 'admin' && actor.id !== null ? [actor.id] : [],
-      ),
-    );
-    return new Map(
-      [...actors].map(([journalId, actor]) => [
-        journalId,
-        {
-          type: actor.type,
-          name: actor.type === 'admin' && actor.id ? (names.get(actor.id) ?? null) : null,
-        },
-      ]),
-    );
+  // «من قرّر» of each exception, shared with «الحساب»'s week.
+  deciders(lines: readonly StatementLine[]): Promise<Map<string, Decider>> {
+    return this.reads.deciders(lines);
   }
 
   async receipts(restaurantId: string): Promise<MerchantReceipt[]> {

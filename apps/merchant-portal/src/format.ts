@@ -111,3 +111,15 @@ export function formatClock(ms: number): string {
   const minutes = Math.floor(seconds / 60);
   return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
 }
+
+// A business day (YYYY-MM-DD, already on the city's clock) with its weekday,
+// «السبت 21 نوفمبر 2026».
+export function formatDay(day: string): string {
+  return new Intl.DateTimeFormat('ar-u-nu-latn', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${day}T00:00:00Z`));
+}

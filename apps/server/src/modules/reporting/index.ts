@@ -41,6 +41,7 @@ import { DailyReportService } from './daily-report.service.js';
 import { ExportsService } from './exports.service.js';
 import { ExportsWorker } from './exports.worker.js';
 import { AdminReportsController } from './admin-reports.controller.js';
+import { MerchantExportsController } from './merchant-exports.controller.js';
 import { MerchantFiguresController } from './merchant-figures.controller.js';
 import { ReportsService } from './reports.service.js';
 
@@ -91,6 +92,7 @@ const imports = [
     AdminExportsController,
     MerchantPriceLogController,
     MerchantFiguresController,
+    MerchantExportsController,
   ],
   providers: [
     ExportsService,

@@ -510,7 +510,7 @@ export class MerchantOrdersController {
   // value; an owner any range up to a year with the commission and the net.
   // 400 invalid_period.
   @Get('orders/history')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantOrderHistoryDto })
   async history(
     @CurrentAppSession() session: AppSession,

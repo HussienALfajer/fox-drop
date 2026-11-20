@@ -7860,6 +7860,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/exports/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantExportsReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/exports/order-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantExportsHistory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/exports/statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantExportsStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/exports/{exportId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantExportsRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -22908,6 +22972,42 @@ export interface components {
             current: components["schemas"]["MerchantFigures_Output"];
             previous: components["schemas"]["MerchantFigures_Output"];
         };
+        MerchantReportExportDto: {
+            /** @description RA §11: «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً»; or `from` and `to`. */
+            period: ("today" | "yesterday" | "last_7_days" | "last_30_days") | null;
+            /** @description The custom range’s first business day. */
+            from: string | null;
+            /** @description Its last business day, included: at most 366, not after today. */
+            to: string | null;
+        };
+        MerchantExportDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "merchant_report" | "merchant_order_history" | "merchant_statement";
+            /** @enum {string} */
+            status: "pending" | "ready" | "expired";
+            fileName: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description Until when it can be downloaded. */
+            expiresAt: string | null;
+            /** @description Asked with download=true while ready: a signed download on the portal’s origin, valid 5 minutes. */
+            url: string | null;
+        };
+        MerchantHistoryExportDto: {
+            /** @description The first business day. */
+            from: string;
+            /** @description The last business day, included: at most 366 days. */
+            to: string;
+            status: ("placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed") | null;
+            /** @description The order number without «#». */
+            number: string | null;
+        };
+        MerchantStatementExportDto: {
+            /** Format: uuid */
+            statementId: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -32788,8 +32888,12 @@ export interface operations {
     merchantRatingsRead: {
         parameters: {
             query?: {
-                /** @description Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً». */
+                /** @description Business days on the city’s clock (RA §11): «الكل» (the default), «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً»; or `from` and `to`. */
                 period?: "all" | "today" | "yesterday" | "last_7_days" | "last_30_days";
+                /** @description The portal’s custom range (RA §17): its first business day, with `to`, in place of `period`. */
+                from?: string;
+                /** @description The last business day, included: at most 366 days, not after today. */
+                to?: string;
                 /** @description Only the ratings with these stars; the summary counts every star. */
                 stars?: number;
                 /** @description The page, from 0, for «عرض المزيد». */
@@ -35824,6 +35928,10 @@ export interface operations {
                 period?: "today" | "yesterday" | "last_7_days" | "last_30_days";
                 /** @description A business day on the city’s clock, for the daily summary; or `period`. */
                 day?: string;
+                /** @description The portal’s custom range (RA §17): its first business day, with `to`. */
+                from?: string;
+                /** @description The last business day, included: at most 366 days, not after today. */
+                to?: string;
             };
             header?: never;
             path?: never;
@@ -35838,6 +35946,112 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantFiguresDto_Output"];
+                };
+            };
+        };
+    };
+    merchantExportsReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantReportExportDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantExportDto_Output"];
+                };
+            };
+        };
+    };
+    merchantExportsHistory: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantHistoryExportDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantExportDto_Output"];
+                };
+            };
+        };
+    };
+    merchantExportsStatement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantStatementExportDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantExportDto_Output"];
+                };
+            };
+        };
+    };
+    merchantExportsRead: {
+        parameters: {
+            query?: {
+                /** @description true signs a download URL (audited); the state alone otherwise. */
+                download?: "true" | "false";
+            };
+            header?: never;
+            path: {
+                exportId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantExportDto_Output"];
                 };
             };
         };

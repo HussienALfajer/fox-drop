@@ -10,10 +10,20 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BoardPage } from './board-page.js';
+import { HistoryPage } from './history-page.js';
 import { LayoutPage } from './layout-page.js';
 import { MenuPage } from './menu-page.js';
+import {
+  AccountPage,
+  ReceiptPage,
+  ReceiptsPage,
+  StatementPage,
+  StatementsPage,
+} from './money-page.js';
 import { BulkPricePage, PreviewPage, PriceLogPage, QuickEditPage } from './menu-tools-page.js';
 import { OrderPage } from './order-page.js';
+import { RatingsPage } from './ratings-page.js';
+import { ReportsPage } from './reports-page.js';
 import { sessionQuery } from './session.js';
 import { SignInPage } from './sign-in-page.js';
 import { SettingsPage } from './settings-page.js';
@@ -142,17 +152,76 @@ const settingsRoutes = (
   }),
 );
 
-// `report` opens «إبلاغ عن مشكلة» on a type (the settings' «طلب تعديل»).
+// RA §8.18, §11–13, §17 (slice 2.45d): the reports, the history, the
+// ratings and the money section.
+const recordRoutes = (
+  [
+    ['/reports', ReportsPage],
+    ['/history', HistoryPage],
+    ['/ratings', RatingsPage],
+    ['/account', AccountPage],
+    ['/statements', StatementsPage],
+    ['/receipts', ReceiptsPage],
+  ] as const
+).map(([path, Page]) =>
+  createRoute({
+    getParentRoute: () => signedInRoute,
+    path,
+    component: () => (
+      <AfterTerms>
+        <Page />
+      </AfterTerms>
+    ),
+  }),
+);
+
+const statementRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/statements/$statementId',
+  component: function Statement() {
+    const { statementId } = statementRoute.useParams();
+    return (
+      <AfterTerms>
+        <StatementPage statementId={statementId} />
+      </AfterTerms>
+    );
+  },
+});
+
+const receiptRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/receipts/$receiptId',
+  component: function Receipt() {
+    const { receiptId } = receiptRoute.useParams();
+    return (
+      <AfterTerms>
+        <ReceiptPage receiptId={receiptId} />
+      </AfterTerms>
+    );
+  },
+});
+
+// `report` opens «إبلاغ عن مشكلة» on a type (the settings' «طلب تعديل»),
+// `order` and `number` on an order (an order's page).
 const supportRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/support',
-  validateSearch: (search: Record<string, unknown>): { report?: string } =>
-    typeof search.report === 'string' ? { report: search.report } : {},
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { report?: string; order?: string; number?: string } => ({
+    ...(typeof search.report === 'string' ? { report: search.report } : {}),
+    ...(typeof search.order === 'string' && typeof search.number === 'string'
+      ? { order: search.order, number: String(search.number) }
+      : {}),
+  }),
   component: function Support() {
-    const { report } = supportRoute.useSearch();
+    const { report, order, number } = supportRoute.useSearch();
     return (
       <AfterTerms>
-        <SupportPage report={report} />
+        <SupportPage
+          report={report}
+          order={order !== undefined && number !== undefined ? { id: order, number } : undefined}
+        />
       </AfterTerms>
     );
   },
@@ -175,6 +244,9 @@ export function createPortalRouter(queryClient: QueryClient) {
         statusRoute,
         ...menuRoutes,
         ...settingsRoutes,
+        ...recordRoutes,
+        statementRoute,
+        receiptRoute,
         supportRoute,
         termsRoute,
       ]),

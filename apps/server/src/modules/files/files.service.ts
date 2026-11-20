@@ -362,13 +362,15 @@ export class FilesService {
     );
   }
 
-  // A short signed GET of a private file on the panel's origin, saved as
+  // A short signed GET of a private file on the panel's origin (or the
+  // owner web portal's, for its own exports, slice 2.45d), saved as
   // `fileName` (RFC 6266, with an ASCII fallback).
   async privateDownloadUrl(
     key: string,
     fileName: string,
     seconds: number,
     now = new Date(),
+    from: 'panel' | 'portal' = 'panel',
   ): Promise<string> {
     const encoded = encodeURIComponent(fileName).replace(
       /['()*]/g,
@@ -376,7 +378,7 @@ export class FilesService {
     );
     const extension = /\.[a-z0-9]+$/i.exec(fileName)?.[0] ?? '';
     return getSignedUrl(
-      this.store.uploads,
+      from === 'portal' ? this.store.portal() : this.store.uploads,
       new GetObjectCommand({
         Bucket: PRIVATE_DOCS_BUCKET,
         Key: key,

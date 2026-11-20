@@ -5,13 +5,14 @@ import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
-import { MerchantPeriodService, periodFits } from '../cashdesk/index.js';
+import { MerchantPeriodService, MerchantStatementReads, periodFits } from '../cashdesk/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import {
   costReportLabels,
   dailyReportLabels,
+  merchantExportLabels,
   orderHistoryLabels,
   reportLabels,
 } from '../content/index.js';
@@ -20,10 +21,26 @@ import { CaptainsService } from '../captains/index.js';
 import {
   ADMIN_HISTORY_EXPORT_MAX,
   type AdminHistoryFilter,
+  AppHistories,
   OrderHistoryService,
+  OrdersService,
+  type orderStatuses,
 } from '../ordering/index.js';
 import { orderHistoryWorkbook } from './order-history-workbook.js';
-import { exports, type ExportKind, type ExportStatus } from './schema.js';
+import {
+  merchantHistoryWorkbook,
+  merchantReportWorkbook,
+  merchantStatementWorkbook,
+} from './merchant-workbooks.js';
+import {
+  type AdminExportKind,
+  adminExportKinds,
+  exports,
+  type ExportKind,
+  type ExportStatus,
+  type MerchantExportKind,
+  merchantExportKinds,
+} from './schema.js';
 import { costReportWorkbook } from './cost-report-workbook.js';
 import { type CostReportRefusal, CostReportService } from './cost-report.service.js';
 import { dailyReportWorkbook } from './daily-report-workbook.js';
@@ -33,13 +50,19 @@ import { reportWorkbook } from './report-workbook.js';
 import {
   mayRead,
   mayReadMoney,
+  type OwnerAsked,
   type ReportKind,
   type ReportRefusal,
   ReportsService,
 } from './reports.service.js';
+import { ownerPeriods, type OwnerPeriod } from './restaurant-report.js';
 
 // Architecture §5.9: an export stays in private-docs this long.
 export const EXPORT_KEEP_MS = 24 * 60 * 60_000;
+// The orders whose owner money lines the history's export reads at once
+// (each picked-up one is a query; the pool has 10 connections).
+const OWNER_MONEY_CHUNK = 10;
+
 // How long a download URL stays valid: long enough to start the download.
 export const EXPORT_URL_SECONDS = 5 * 60;
 
@@ -51,6 +74,7 @@ export type ExportsRefusal =
   | 'idempotency_key_reused'
   | 'unknown_export'
   | 'too_many_rows'
+  | 'unknown_statement'
   | DailyReportRefusal
   | CostReportRefusal
   | ReportRefusal;
@@ -119,12 +143,55 @@ export interface ReportParams {
   money: boolean;
 }
 
+// RA §17 (slice 2.45d): the owner web portal's exports, each of the
+// owner's restaurant: the reports of the business days `from` to `to` (a
+// period's, resolved when asked, with the period kept; null for a custom
+// range), «السجل» of a range, and one weekly statement.
+export interface MerchantReportParams {
+  restaurantId: string;
+  period: OwnerPeriod | null;
+  from: string | null;
+  to: string | null;
+}
+
+export interface MerchantHistoryParams {
+  restaurantId: string;
+  from: string;
+  to: string;
+  status: (typeof orderStatuses)[number] | null;
+  number: string | null;
+}
+
+export interface MerchantStatementParams {
+  restaurantId: string;
+  statementId: string;
+}
+
 type ExportParams =
   | RestaurantStatementParams
   | DailyReportParams
   | CostReportParams
   | OrderHistoryParams
-  | ReportParams;
+  | ReportParams
+  | MerchantReportParams
+  | MerchantHistoryParams
+  | MerchantStatementParams;
+
+// A restaurant owner asking from the portal: their account and restaurant.
+export interface MerchantExportUser {
+  accountId: string;
+  restaurantId: string;
+  cityId: string;
+  // RA §5.5: a terminated restaurant's owners keep the statements only.
+  terminated: boolean;
+  actor: AuditActor;
+  context: AuditRequestContext;
+}
+
+const isMerchantKind = (kind: ExportKind): kind is MerchantExportKind =>
+  (merchantExportKinds as readonly string[]).includes(kind);
+const isAdminKind = (kind: ExportKind): kind is AdminExportKind =>
+  (adminExportKinds as readonly string[]).includes(kind);
 
 // The permission each kind of export is read with: the one its screen asks.
 export const exportPermissions = {
@@ -134,15 +201,17 @@ export const exportPermissions = {
   order_history: 'order_history.read',
   // Each report's own (`reportPermissions`), checked by `mayReadExport`.
   report: 'reports.all',
-} as const satisfies Record<ExportKind, string>;
+} as const satisfies Record<AdminExportKind, string>;
 
 // Whether a user may read an export: its kind's permission; a report's, its
 // report's (and `exports.phone_numbers` for one with the numbers in full).
+// The portal's own kinds are never the panel's.
 export function mayReadExport(
   kind: ExportKind,
   params: unknown,
   permissions: readonly string[],
 ): boolean {
+  if (!isAdminKind(kind)) return false;
   if (kind !== 'report') return permissions.includes(exportPermissions[kind]);
   const asked = params as ReportParams;
   return (
@@ -178,7 +247,150 @@ export class ExportsService {
     private readonly history: OrderHistoryService,
     private readonly captains: CaptainsService,
     private readonly reportsOf: ReportsService,
+    private readonly histories: AppHistories,
+    private readonly orders: OrdersService,
+    private readonly statements: MerchantStatementReads,
   ) {}
+
+  // RA §17 (slice 2.45d): «تصدير Excel» of the reports in the portal, a
+  // period or a custom range of the owner's restaurant, as the panel's
+  // exports: recorded, written by the worker, downloaded from the portal.
+  async requestMerchantReport(
+    user: MerchantExportUser,
+    asked: { period: OwnerPeriod } | { from: string; to: string },
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<ExportView> {
+    const period = 'period' in asked ? asked.period : null;
+    const repeat = await this.byKey(user.accountId, idempotencyKey);
+    if (repeat) {
+      // The same ask: the period, or the range typed (a period's days are
+      // resolved when first asked, so a repeat after the cutoff still answers).
+      const first = repeat.params as MerchantReportParams;
+      const same =
+        repeat.kind === 'merchant_report' &&
+        first.restaurantId === user.restaurantId &&
+        first.period === period &&
+        ('period' in asked || (first.from === asked.from && first.to === asked.to));
+      if (!same) throw new ExportsRefusedError('idempotency_key_reused');
+      return this.viewOf(repeat, now, null);
+    }
+    const days = await this.reportsOf.ownerDays(
+      user.cityId,
+      'period' in asked ? asked : { fromDay: asked.from, toDay: asked.to },
+      now,
+    );
+    if (days === null) throw new ExportsRefusedError('invalid_period');
+    if ((await this.fx.baseCurrency(user.cityId)) === null) {
+      throw new ExportsRefusedError('no_base_currency');
+    }
+    // The business days the period covers when asked, so the file is the
+    // one its name says even when the worker writes it after the cutoff.
+    const params: MerchantReportParams = {
+      restaurantId: user.restaurantId,
+      period,
+      from: days.fromDay,
+      to: days.toDay,
+    };
+    const fileName = `${merchantExportLabels.report.title} ${days.fromDay} - ${days.toDay}.xlsx`;
+    return this.record(user, 'merchant_report', user.cityId, params, fileName, idempotencyKey, now);
+  }
+
+  // «تصدير Excel» of «السجل» in the portal: a range (at most 366 days),
+  // narrowed by the status and the number, of at most
+  // MERCHANT_HISTORY_EXPORT_MAX orders (`too_many_rows`).
+  async requestMerchantHistory(
+    user: MerchantExportUser,
+    asked: Omit<MerchantHistoryParams, 'restaurantId'>,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<ExportView> {
+    const params: MerchantHistoryParams = { restaurantId: user.restaurantId, ...asked };
+    const repeat = await this.byKey(user.accountId, idempotencyKey);
+    if (repeat) return this.answerRepeat(repeat, 'merchant_order_history', params, now);
+    const range = await this.histories.restaurantRange(user.restaurantId, historyFilterOf(params));
+    if (range === 'invalid_period') throw new ExportsRefusedError('invalid_period');
+    if (range === 'too_many') throw new ExportsRefusedError('too_many_rows');
+    const fileName = `${merchantExportLabels.history.title} ${params.from} - ${params.to}.xlsx`;
+    return this.record(
+      user,
+      'merchant_order_history',
+      user.cityId,
+      params,
+      fileName,
+      idempotencyKey,
+      now,
+    );
+  }
+
+  // «تصدير Excel» of a weekly statement in the portal (RA §12.3, §17); a
+  // terminated restaurant's owners keep it (RA §5.5).
+  async requestMerchantStatement(
+    user: MerchantExportUser,
+    statementId: string,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<ExportView> {
+    const params: MerchantStatementParams = { restaurantId: user.restaurantId, statementId };
+    const repeat = await this.byKey(user.accountId, idempotencyKey);
+    if (repeat) return this.answerRepeat(repeat, 'merchant_statement', params, now);
+    const statement = await this.statements.statement(user.restaurantId, statementId);
+    if (!statement) throw new ExportsRefusedError('unknown_statement');
+    const timeZone = await this.geo.cityTimeZone(statement.cityId);
+    if (timeZone === null) throw new Error(`city ${statement.cityId} does not exist`);
+    const day = new Intl.DateTimeFormat('en-CA', { timeZone }).format(statement.cutoff);
+    const fileName = `${merchantExportLabels.statement.title} ${day}.xlsx`;
+    return this.record(
+      user,
+      'merchant_statement',
+      statement.cityId,
+      params,
+      fileName,
+      idempotencyKey,
+      now,
+    );
+  }
+
+  // A portal export's state, to the owner who asked for it, while it is of
+  // their restaurant, and once it is terminated only a statement's
+  // (`unknown_export` otherwise); with `download`, while
+  // ready, a fresh URL signed for the portal's origin, audited as a view.
+  async viewMerchant(
+    exportId: string,
+    user: MerchantExportUser,
+    now: Date,
+    download = false,
+  ): Promise<ExportView> {
+    const [row] = await this.database.db
+      .select()
+      .from(exports)
+      .where(and(eq(exports.id, exportId), eq(exports.requestedBy, user.accountId)));
+    if (
+      !row ||
+      !isMerchantKind(row.kind) ||
+      (row.params as { restaurantId?: unknown }).restaurantId !== user.restaurantId ||
+      (user.terminated && row.kind !== 'merchant_statement')
+    ) {
+      throw new ExportsRefusedError('unknown_export');
+    }
+    const view = this.viewOf(row, now, null);
+    if (!download || view.status !== 'ready' || row.objectKey === null) return view;
+    const url = await this.files.privateDownloadUrl(
+      row.objectKey,
+      row.fileName,
+      EXPORT_URL_SECONDS,
+      now,
+      'portal',
+    );
+    await this.audit.recordView({
+      actor: user.actor,
+      context: user.context,
+      cityId: row.cityId,
+      action: 'export.download',
+      target: { type: 'export', id: row.id },
+    });
+    return { ...view, url };
+  }
 
   // «تصدير Excel» of a report of «التقارير» (AP §9.17, slice 2.41), as the
   // statement's. The customers report holds the top customers' numbers in
@@ -283,7 +495,7 @@ export class ExportsService {
   // Records the export and queues its job in one transaction, audited (AP
   // §5.4). A request sent twice at once answers the one recorded.
   private async record(
-    user: ExportUser,
+    user: Pick<ExportUser, 'accountId' | 'actor' | 'context'>,
     kind: ExportKind,
     cityId: string,
     params: ExportParams,
@@ -390,7 +602,74 @@ export class ExportsService {
         return this.orderHistoryFile(row.params as OrderHistoryParams);
       case 'report':
         return this.reportFile(row.params as ReportParams, now);
+      case 'merchant_report':
+        return this.merchantReportFile(row.params as MerchantReportParams, now);
+      case 'merchant_order_history':
+        return this.merchantHistoryFile(row.params as MerchantHistoryParams);
+      case 'merchant_statement':
+        return this.merchantStatementFile(row.params as MerchantStatementParams);
     }
+  }
+
+  // The portal's reports as they stand when the worker writes them (a
+  // period running today ends then).
+  private async merchantReportFile(params: MerchantReportParams, now: Date): Promise<Buffer> {
+    const restaurant = await this.merchants.restaurant(params.restaurantId);
+    if (!restaurant) throw new Error(`restaurant ${params.restaurantId} does not exist`);
+    const asked = ownerAskedOf(params);
+    const [report, days, currencies] = await Promise.all([
+      this.reportsOf.restaurantReport(restaurant, asked, now),
+      this.reportsOf.ownerDays(restaurant.cityId, asked, now),
+      this.fx.currencies(),
+    ]);
+    if (report === null || days === null) {
+      throw new Error(`the reports of ${params.restaurantId} cannot be read`);
+    }
+    return merchantReportWorkbook(
+      { restaurantName: restaurant.nameAr, ...days, ...report },
+      new Map(currencies.map((each) => [each.code, each.decimals])),
+    );
+  }
+
+  // «السجل»'s orders as they stand when the worker writes the file, with
+  // the owner's money lines (RA §8.18).
+  private async merchantHistoryFile(params: MerchantHistoryParams): Promise<Buffer> {
+    const found = await this.histories.restaurantAll(params.restaurantId, historyFilterOf(params));
+    if (typeof found === 'string') {
+      throw new Error(`the history export of ${params.restaurantId} is refused: ${found}`);
+    }
+    // A chunk at a time: ownerMoney reads each picked-up order's edits, and
+    // the worker's pool is shared with the timers and the outbox.
+    const owner: Map<
+      string,
+      { commission: bigint; discountShare: bigint; merchantNet: bigint } | null
+    > = new Map();
+    for (let start = 0; start < found.orders.length; start += OWNER_MONEY_CHUNK) {
+      const chunk = await this.orders.ownerMoney(
+        found.orders.slice(start, start + OWNER_MONEY_CHUNK),
+      );
+      for (const [id, money] of chunk) owner.set(id, money);
+    }
+    const currencies = await this.fx.currencies();
+    return merchantHistoryWorkbook(
+      { fromDay: params.from, toDay: params.to, ...found, owner },
+      new Map(currencies.map((each) => [each.code, each.decimals])),
+    );
+  }
+
+  private async merchantStatementFile(params: MerchantStatementParams): Promise<Buffer> {
+    const statement = await this.statements.statement(params.restaurantId, params.statementId);
+    if (!statement) throw new Error(`statement ${params.statementId} cannot be read`);
+    const [timeZone, currencies] = await Promise.all([
+      this.geo.cityTimeZone(statement.cityId),
+      this.fx.currencies(),
+    ]);
+    if (timeZone === null) throw new Error(`city ${statement.cityId} does not exist`);
+    return merchantStatementWorkbook(
+      statement,
+      timeZone,
+      new Map(currencies.map((each) => [each.code, each.decimals])),
+    );
   }
 
   // The report as it stands when the worker writes it (a period that ends
@@ -528,4 +807,25 @@ export class ExportsService {
       url,
     };
   }
+}
+
+// The days the export covers; one asked before slice 2.45d's fix kept only
+// its period.
+function ownerAskedOf(params: MerchantReportParams): OwnerAsked {
+  if (params.from !== null && params.to !== null) {
+    return { fromDay: params.from, toDay: params.to };
+  }
+  if (params.period !== null && (ownerPeriods as readonly string[]).includes(params.period)) {
+    return { period: params.period };
+  }
+  throw new Error('a report export without its days');
+}
+
+function historyFilterOf(params: MerchantHistoryParams) {
+  return {
+    fromDay: params.from,
+    toDay: params.to,
+    ...(params.status === null ? {} : { status: params.status }),
+    ...(params.number === null ? {} : { number: BigInt(params.number) }),
+  };
 }

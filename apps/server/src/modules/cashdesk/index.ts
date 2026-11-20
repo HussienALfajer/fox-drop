@@ -35,6 +35,7 @@ import { MerchantAccountController } from './merchant-account.controller.js';
 import { MerchantAccountService } from './merchant-account.service.js';
 import { MerchantRecordsController } from './merchant-records.controller.js';
 import { MerchantRecordsService } from './merchant-records.service.js';
+import { MerchantStatementReads } from './merchant-statement-reads.js';
 import { MerchantPeriodService } from './merchant-period.service.js';
 import { MerchantSettlementService } from './merchant-settlement.service.js';
 import { MerchantStatementsService } from './merchant-statements.service.js';
@@ -79,6 +80,7 @@ import { SettlementService } from './settlement.service.js';
     EarningsService,
     MerchantAccountService,
     MerchantRecordsService,
+    MerchantStatementReads,
     SettlementService,
     MerchantStatementsService,
     MerchantSettlementService,
@@ -112,7 +114,8 @@ export class CashDeskWorkerModule {}
 // A restaurant's statement for any period (AP §9.10.5, slice 2.19g) and the
 // restaurants' balances and overdue settlements (the daily report, AP
 // §9.10.1, slice 2.20d), for the reporting module's screens and Excel
-// exports, in the API and the worker.
+// exports, in the API and the worker; and a restaurant's weekly statement
+// for the owner web portal's Excel export (slice 2.45d).
 @Module({
   imports: [
     DatabaseModule,
@@ -124,9 +127,10 @@ export class CashDeskWorkerModule {}
     OrderingModule,
     SettingsModule,
     MerchantsModule,
+    IdentityModule,
   ],
-  providers: [MerchantPeriodService, MerchantStatementsService],
-  exports: [MerchantPeriodService, MerchantStatementsService],
+  providers: [MerchantPeriodService, MerchantStatementsService, MerchantStatementReads],
+  exports: [MerchantPeriodService, MerchantStatementsService, MerchantStatementReads],
 })
 export class CashDeskPeriodModule {}
 
@@ -159,6 +163,11 @@ export {
   MerchantSettlementService,
 } from './merchant-settlement.service.js';
 export { type ExceptionCause } from './merchant-statement.js';
+export {
+  type Decider,
+  type MerchantStatementRead,
+  MerchantStatementReads,
+} from './merchant-statement-reads.js';
 export { merchantExceptionCauses, merchantStatementLineKinds } from './schema.js';
 export {
   type MerchantStatement,

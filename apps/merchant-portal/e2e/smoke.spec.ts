@@ -98,6 +98,9 @@ async function signedOutApi(page: Page) {
   await page.route('**/v1/merchant/emergency-stop', (route) =>
     route.fulfill({ json: { active: false, startedAt: null } }),
   );
+  await page.route('**/v1/merchant/account/overdue', (route) =>
+    route.fulfill({ json: { overdue: null } }),
+  );
   // Real time is down in the smoke test: the board polls.
   await page.route('**/v1/merchant/realtime/token', (route) =>
     route.fulfill({ status: 503, json: { error: 'realtime_unavailable' } }),
@@ -269,4 +272,146 @@ test('pairs a Windows PC and signs another browser out from the portal', async (
   expect((await sent).url()).toContain(lostLaptop.sessionId);
   await expect(page.getByText('Chrome على Windows')).toHaveCount(0);
   await expect(page.getByText('هذا المتصفح')).toBeVisible();
+});
+
+// RA §12.3, §17 (slice 2.45d): the owner opens the week's statement in a
+// browser, prints it to PDF and downloads it as Excel.
+test('opens the statement, prints it and exports it to Excel', async ({ page }) => {
+  await signedOutApi(page);
+  await page.route('**/v1/merchant/auth/portal/session', (route) =>
+    route.fulfill({ json: session }),
+  );
+  const statementId = '0190f3a0-0000-7000-8000-000000000031';
+  const exportId = '0190f3a0-0000-7000-8000-000000000032';
+  const cutoff = '2026-11-21T03:00:00.000Z';
+  await page.route('**/v1/merchant/statements', (route) =>
+    route.fulfill({
+      json: {
+        statements: [
+          {
+            id: statementId,
+            cutoff,
+            periodFrom: '2026-11-14T03:00:00.000Z',
+            currency: 'TRY',
+            weekTotal: '4600',
+            totalDue: '4600',
+            status: 'unpaid',
+            unpaid: '4600',
+          },
+        ],
+      },
+    }),
+  );
+  await page.route(`**/v1/merchant/statements/${statementId}`, (route) =>
+    route.fulfill({
+      json: {
+        id: statementId,
+        restaurantName: session.restaurantName,
+        cutoff,
+        periodFrom: '2026-11-14T03:00:00.000Z',
+        currency: 'TRY',
+        orders: 1,
+        itemsValue: '24000',
+        commission: '3600',
+        discountShare: '0',
+        exceptions: '1000',
+        weekTotal: '4600',
+        previousDue: '0',
+        paid: '0',
+        earlierUnpaid: '0',
+        totalDue: '4600',
+        status: 'unpaid',
+        unpaid: '4600',
+        lines: [
+          {
+            kind: 'order',
+            at: '2026-11-20T10:30:00.000Z',
+            orderId: '0190f3a0-0000-7000-8000-000000000033',
+            orderNumber: '10001',
+            itemsValue: '24000',
+            pickupLines: [{ currency: 'TRY', amount: '24000' }],
+            commission: '3600',
+            discountShare: '0',
+            cause: null,
+            amount: null,
+            reason: null,
+            decidedBy: null,
+            decidedByName: null,
+          },
+          {
+            kind: 'exception',
+            at: '2026-11-20T11:00:00.000Z',
+            orderId: null,
+            orderNumber: null,
+            itemsValue: null,
+            pickupLines: null,
+            commission: null,
+            discountShare: null,
+            cause: 'adjustment',
+            amount: '1000',
+            reason: 'فرق جرد',
+            decidedBy: 'admin',
+            decidedByName: null,
+          },
+        ],
+      },
+    }),
+  );
+  const exported = {
+    id: exportId,
+    kind: 'merchant_statement',
+    fileName: 'كشف الأسبوع 2026-11-21.xlsx',
+    createdAt: new Date().toISOString(),
+    expiresAt: null,
+    url: null,
+  };
+  await page.route('**/v1/merchant/exports/statement', (route) =>
+    route.fulfill({ status: 202, json: { ...exported, status: 'pending' } }),
+  );
+  await page.route(`**/v1/merchant/exports/${exportId}*`, (route) =>
+    route.fulfill({
+      json: {
+        ...exported,
+        status: 'ready',
+        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+        url: route.request().url().includes('download=true')
+          ? `${new URL(page.url()).origin}/private-docs/exports/${exportId}.xlsx`
+          : null,
+      },
+    }),
+  );
+  await page.route('**/private-docs/exports/*', (route) =>
+    route.fulfill({
+      body: 'xlsx',
+      headers: { 'content-disposition': 'attachment; filename="download.xlsx"' },
+    }),
+  );
+
+  await page.goto('/statements');
+  await page.getByRole('link', { name: /المستحق/ }).click();
+  await expect(page.getByRole('heading', { name: 'كشف الأسبوع — مطعم التجربة' })).toBeVisible();
+  await expect(page.getByText('الحالة: غير مسدّد')).toBeVisible();
+  await expect(page.getByText(/تسوية يدوية: فرق جرد/)).toContainText('من قرّر: FOX DROP');
+
+  // «طباعة / حفظ PDF» opens the browser's print, without the portal's bar.
+  // The page's window, typed here without the DOM's types (tsconfig.node.json).
+  type Printing = { print: () => void; printed: boolean };
+  await page.evaluate(() => {
+    const page = globalThis as unknown as Printing;
+    page.printed = false;
+    page.print = () => {
+      page.printed = true;
+    };
+  });
+  await page.getByRole('button', { name: 'طباعة / حفظ PDF' }).click();
+  expect(await page.evaluate(() => (globalThis as unknown as Printing).printed)).toBe(true);
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.getByRole('button', { name: 'تصدير Excel' })).toBeHidden();
+  await expect(page.getByRole('heading', { name: 'كشف الأسبوع — مطعم التجربة' })).toBeVisible();
+  await page.emulateMedia({ media: 'screen' });
+
+  await page.getByRole('button', { name: 'تصدير Excel' }).click();
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: /تنزيل/ }).click();
+  expect((await download).url()).toContain(`/private-docs/exports/${exportId}.xlsx`);
 });

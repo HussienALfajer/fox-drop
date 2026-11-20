@@ -25,6 +25,12 @@ class MerchantFiguresQueryDto extends createZodDto(
     day: day
       .optional()
       .describe('A business day on the city’s clock, for the daily summary; or `period`.'),
+    from: day
+      .optional()
+      .describe('The portal’s custom range (RA §17): its first business day, with `to`.'),
+    to: day
+      .optional()
+      .describe('The last business day, included: at most 366 days, not after today.'),
   }),
 ) {}
 
@@ -103,7 +109,8 @@ function body(figures: RestaurantFigures) {
 }
 
 // RA §11 (slice 2.41): the owners' reports in the restaurant app, and a
-// day's figures for «الملخص اليومي». Owners only (a cashier gets 403
+// day's figures for «الملخص اليومي»; the owner web portal's custom range
+// too (RA §17, slice 2.45d). Owners only (a cashier gets 403
 // owner_only); a terminated restaurant keeps only the money section (RA
 // §5.5, 403 restaurant_terminated).
 @MerchantController()
@@ -113,10 +120,11 @@ export class MerchantFiguresController {
     private readonly merchants: MerchantsService,
   ) {}
 
-  // One of `period` and `day` (400 invalid_period otherwise, or a day not
-  // started yet); 409 no_base_currency.
+  // One of `period`, `day` and `from` with `to` (400 invalid_period
+  // otherwise, or a day not started yet, or a range longer than 366 days or
+  // ending after today); 409 no_base_currency.
   @Get('figures')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantFiguresDto })
   async read(@CurrentAppSession() session: AppSession, @Query() query: MerchantFiguresQueryDto) {
     const merchant = session.merchant;
@@ -134,14 +142,20 @@ export class MerchantFiguresController {
     }
     const invalid = () =>
       new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: 'invalid_period' });
-    if ((query.period === undefined) === (query.day === undefined)) throw invalid();
+    if ((query.from === undefined) !== (query.to === undefined)) throw invalid();
+    const asked =
+      query.period !== undefined
+        ? { period: query.period }
+        : query.day !== undefined
+          ? { day: query.day }
+          : query.from !== undefined
+            ? { fromDay: query.from, toDay: query.to! }
+            : null;
+    const given = [query.period, query.day, query.from].filter((each) => each !== undefined);
+    if (asked === null || given.length !== 1) throw invalid();
     let report;
     try {
-      report = await this.reports.restaurantReport(
-        restaurant,
-        query.period !== undefined ? { period: query.period } : { day: query.day! },
-        new Date(),
-      );
+      report = await this.reports.restaurantReport(restaurant, asked, new Date());
     } catch (error) {
       if (error instanceof ReportRefusedError && error.refusal === 'no_base_currency') {
         throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });

@@ -121,6 +121,26 @@ describe('«التقييمات» of the restaurant', () => {
     const yesterday = (await read(owner, '?period=yesterday')).json();
     expect(yesterday).toMatchObject({ count: 0, average: null, ratings: [], more: false });
 
+    // The portal's custom range (RA §17, slice 2.45d): business days, both
+    // included, at most 366, never after today.
+    const todayDay = today.ratings[0].day as string;
+    const oldDay = week.ratings.at(-1).day as string;
+    const plus = (day: string, days: number) =>
+      new Date(Date.parse(day) + days * DAY).toISOString().slice(0, 10);
+    expect((await read(owner, `?from=${todayDay}&to=${todayDay}`)).json().count).toBe(2);
+    expect((await read(owner, `?from=${oldDay}&to=${oldDay}`)).json().count).toBe(1);
+    expect((await read(owner, `?from=${oldDay}&to=${todayDay}`)).json().count).toBe(3);
+    for (const query of [
+      `?from=${todayDay}`,
+      `?from=${todayDay}&to=${todayDay}&period=today`,
+      `?from=${todayDay}&to=${plus(todayDay, -1)}`,
+      `?from=${todayDay}&to=${plus(todayDay, 1)}`,
+      `?from=${plus(todayDay, -366)}&to=${todayDay}`,
+    ]) {
+      const refused = await read(owner, query);
+      expect([query, refused.statusCode]).toEqual([query, 400]);
+    }
+
     expect((await read(owner, '?stars=6')).statusCode).toBe(400);
     expect((await read(owner, '?period=week')).statusCode).toBe(400);
     expect((await read(owner, '?page=-1')).statusCode).toBe(400);

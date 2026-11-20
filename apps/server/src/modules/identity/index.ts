@@ -107,7 +107,11 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
 export class IdentityModule {}
 
 export { OtpSenderModule } from './otp-sender.module.js';
-export { ADMIN_SESSION_COOKIE, RouteAccessGuard } from './route-access.guard.js';
+export {
+  ADMIN_SESSION_COOKIE,
+  PORTAL_SESSION_COOKIE,
+  RouteAccessGuard,
+} from './route-access.guard.js';
 export { AdminSessionsService, type AdminSession } from './admin-sessions.service.js';
 export { AppSessionsService, type AppParty, type AppSession } from './app-sessions.service.js';
 export { adminPermissions, type AdminPermission } from './permissions.js';

@@ -104,6 +104,32 @@ export function daysOf(fromDay: string, toDay: string): string[] {
   return days;
 }
 
+// What an owner asks of the reports (RA §11, §17): a period, a business day
+// (the daily summary) or the portal's custom range of business days.
+export type OwnerAsked =
+  { period: OwnerPeriod } | { day: string } | { fromDay: string; toDay: string };
+
+// The moments an owner's ask covers, or null for a day not started yet (or
+// not a day) and a range that does not fit or ends after today; a period
+// running today ends now.
+export function ownerBounds(
+  asked: OwnerAsked,
+  now: Date,
+  clock: { cutoffMinutes: number; timeZone: string },
+): { from: Date; to: Date } | null {
+  if ('period' in asked) {
+    const bounds = periodBounds(asked.period, now, clock.cutoffMinutes, clock.timeZone);
+    return { from: bounds.from!, to: bounds.to ?? now };
+  }
+  const fromDay = 'day' in asked ? asked.day : asked.fromDay;
+  const toDay = 'day' in asked ? asked.day : asked.toDay;
+  if (!periodFits(fromDay, toDay)) return null;
+  const from = cutoffOn(fromDay, clock.cutoffMinutes, clock.timeZone);
+  if (cutoffOn(toDay, clock.cutoffMinutes, clock.timeZone) > now) return null;
+  const end = cutoffOn(nextDay(toDay), clock.cutoffMinutes, clock.timeZone);
+  return { from, to: end < now ? end : now };
+}
+
 // AP §9.17 (slice 2.41): a report over the business days `from` to `to` on
 // the city's clock, each included, read from the modules' public services.
 // `fullPhones` answers the top customers' numbers in full (an export with
@@ -140,14 +166,36 @@ export class ReportsService {
     return { from, to };
   }
 
+  // The business days an owner's ask covers on the city's clock (the
+  // portal's export checks it and names its file by them), or null as
+  // `ownerBounds`.
+  async ownerDays(
+    cityId: string,
+    asked: OwnerAsked,
+    now: Date,
+  ): Promise<{ fromDay: string; toDay: string } | null> {
+    const clock = await this.days.clock(cityId);
+    const bounds = ownerBounds(asked, now, clock);
+    if (bounds === null) return null;
+    const dayOf = (at: Date) =>
+      new Intl.DateTimeFormat('en-CA', { timeZone: clock.timeZone }).format(
+        lastCutoff(at, clock.cutoffMinutes, clock.timeZone),
+      );
+    return { fromDay: dayOf(bounds.from), toDay: dayOf(new Date(bounds.to.getTime() - 1)) };
+  }
+
   // RA §11 (slice 2.41): a restaurant's figures over an owner's period, or a
   // business day (`day`, the daily summary), with the previous period of
   // the same length for the arrows: «اليوم» so far against the same length
   // of yesterday from its cutoff, a whole day or 7 or 30 days against those
-  // just before. A day not started yet (or not a day) is null.
+  // just before. The owner web portal's custom range (RA §17, slice 2.45d;
+  // owner decision 2026-11-20) is the business days `fromDay` to `toDay`,
+  // both included, at most 366 (`periodFits`), against as long just before
+  // it; one that runs today ends now. A day not started yet (or not a day),
+  // and a range that does not fit or ends after today, is null.
   async restaurantReport(
     restaurant: { id: string; cityId: string },
-    asked: { period: OwnerPeriod } | { day: string },
+    asked: OwnerAsked,
     now: Date,
   ): Promise<{
     from: Date;
@@ -157,18 +205,9 @@ export class ReportsService {
     previous: RestaurantFigures;
   } | null> {
     const clock = await this.days.clock(restaurant.cityId);
-    let from: Date;
-    let to: Date;
-    if ('period' in asked) {
-      const bounds = periodBounds(asked.period, now, clock.cutoffMinutes, clock.timeZone);
-      from = bounds.from!;
-      to = bounds.to ?? now;
-    } else {
-      from = cutoffOn(asked.day, clock.cutoffMinutes, clock.timeZone);
-      if (from > now) return null;
-      const end = cutoffOn(nextDay(asked.day), clock.cutoffMinutes, clock.timeZone);
-      to = end < now ? end : now;
-    }
+    const bounds = ownerBounds(asked, now, clock);
+    if (bounds === null) return null;
+    const { from, to } = bounds;
     const length = to.getTime() - from.getTime();
     const before = new Date(from.getTime() - length);
     const currency = await this.fx.baseCurrency(restaurant.cityId);
