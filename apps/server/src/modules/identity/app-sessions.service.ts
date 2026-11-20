@@ -463,7 +463,8 @@ export function portalAppSession(portal: PortalSession): AppSession {
     id: portal.id,
     party: 'merchant',
     accountId: portal.account.id,
-    deviceId: portal.browserId,
+    // Marked, so the audit of a portal change never reads as an app device's.
+    deviceId: `portal:${portal.browserId}`,
     merchant: portal.account,
     captain: null,
     applicant: false,

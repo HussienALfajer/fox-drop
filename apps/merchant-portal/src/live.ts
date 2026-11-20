@@ -45,7 +45,11 @@ function websocketUrl(): string {
 // bundle (E7). A 401 means the session ended: api.ts returns to sign-in.
 async function connectionToken(): Promise<string> {
   const { data, response } = await api.POST('/v1/merchant/realtime/token');
-  if (response.status === 401) throw new UnauthorizedError('the session ended');
+  // 401: the session ended; 403: the restaurant was terminated (RA §5.5).
+  // Either way the client stops reconnecting.
+  if (response.status === 401 || response.status === 403) {
+    throw new UnauthorizedError('no connection for this session');
+  }
   if (!data) throw new Error(`The real-time token failed (${response.status}).`);
   return data.token;
 }
@@ -85,3 +89,6 @@ export const FALLBACK_POLL_MS = 30_000;
 
 // Whether the layout's channel is live, for the pages that poll without it.
 export const LiveContext = createContext(false);
+
+// The restaurant's city clock, from the session, for every time shown.
+export const TimeZoneContext = createContext('Asia/Damascus');

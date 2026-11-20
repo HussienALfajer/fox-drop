@@ -23388,13 +23388,22 @@
             "type": "string",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "restaurantName": {
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "The restaurant's city clock (IANA), for the times the portal shows and takes."
           }
         },
         "required": [
           "accountId",
           "restaurantId",
           "name",
-          "sessionId"
+          "sessionId",
+          "restaurantName",
+          "timeZone"
         ],
         "additionalProperties": false
       },

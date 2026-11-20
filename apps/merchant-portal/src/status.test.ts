@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { controlsOf, type RestaurantStatus, stateLabel } from './status.js';
+import { controlsOf, holidayOf, type RestaurantStatus, stateLabel } from './status.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -63,5 +63,29 @@ describe('the status from the portal (RA §7.1–7.2, §17)', () => {
       canBusyMode: false,
     });
     expect(controlsOf(status({}))).toMatchObject({ canPause: true, canBusyMode: true });
+  });
+});
+
+describe('the holiday close typed on the city clock (RA §10)', () => {
+  const now = Date.parse('2026-11-20T10:00:00Z');
+
+  it('reads the wall times in the city’s zone', () => {
+    expect(
+      holidayOf({ from: '', to: '2026-11-22T09:00', message: ' عطلة ' }, 'Asia/Damascus', now),
+    ).toEqual({ startsAt: null, endsAt: '2026-11-22T06:00:00.000Z', message: 'عطلة' });
+  });
+
+  it('refuses an end before the start or before now', () => {
+    expect(
+      holidayOf(
+        { from: '2026-11-23T09:00', to: '2026-11-22T09:00', message: '' },
+        'Asia/Damascus',
+        now,
+      ),
+    ).toBeNull();
+    expect(
+      holidayOf({ from: '', to: '2026-11-20T12:00', message: '' }, 'Asia/Damascus', now),
+    ).toBeNull();
+    expect(holidayOf({ from: '', to: '', message: '' }, 'Asia/Damascus', now)).toBeNull();
   });
 });

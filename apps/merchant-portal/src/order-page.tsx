@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
+import { use } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TimeZoneContext } from './live.js';
 import { type OrderDetail, orderQuery } from './board.js';
 import { formatMoney, formatTime } from './format.js';
 
@@ -28,6 +30,7 @@ export function OrderPage({ orderId }: { orderId: string }) {
 
 function Detail({ detail }: { detail: OrderDetail }) {
   const { t } = useTranslation();
+  const timeZone = use(TimeZoneContext);
   const { order, timeline } = detail;
   const money = (amount: string) => formatMoney(amount, order.currency);
   return (
@@ -82,19 +85,22 @@ function Detail({ detail }: { detail: OrderDetail }) {
         <p>
           {t('order.prep', {
             minutes: order.acceptance.prepMin,
-            at: formatTime(order.acceptance.at),
+            at: formatTime(order.acceptance.at, timeZone),
           })}
         </p>
       )}
-      {order.readyAt && <p>{t('order.readyAt', { at: formatTime(order.readyAt) })}</p>}
+      {order.readyAt && <p>{t('order.readyAt', { at: formatTime(order.readyAt, timeZone) })}</p>}
       {order.pickup.pickedUpAt && (
-        <p>{t('order.pickedUpAt', { at: formatTime(order.pickup.pickedUpAt) })}</p>
+        <p>{t('order.pickedUpAt', { at: formatTime(order.pickup.pickedUpAt, timeZone) })}</p>
       )}
       <h2>{t('order.timelineTitle')}</h2>
       <ol>
         {timeline.map((step) => (
           <li key={step.step}>
-            {t('order.stepAt', { step: t(`order.step.${step.step}`), at: formatTime(step.at) })}
+            {t('order.stepAt', {
+              step: t(`order.step.${step.step}`),
+              at: formatTime(step.at, timeZone),
+            })}
           </li>
         ))}
       </ol>

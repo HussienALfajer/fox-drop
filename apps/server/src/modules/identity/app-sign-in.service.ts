@@ -272,6 +272,7 @@ export class AppSignInService {
           party: request.party,
           phoneHash,
           deviceId: request.deviceId,
+          portal: request.party === 'merchant' && request.portal === true,
           // A code never sent is stored as a value no code matches, so a
           // guessed code is a wrong code and never makes an applicant
           // (slice 2.34a).
@@ -396,6 +397,7 @@ export class AppSignInService {
       phone: request.phone,
       deviceId: request.browserId,
       code: request.code,
+      portal: true,
     };
     const result = await this.database.db.transaction(async (tx) => {
       const refused = await this.useCodeIn(tx, codeRequest, phoneHash, maxAttempts, now);
@@ -464,6 +466,9 @@ export class AppSignInService {
     if (
       !code ||
       (code.deviceId !== null && code.deviceId !== request.deviceId) ||
+      // RA §17 (slice 2.45a): a code the portal asked for, without App
+      // Check, never signs in to an app, nor an app's code to the portal.
+      (code.issuedBy === null && code.portal !== (request.portal === true)) ||
       now.getTime() >= code.expiresAt.getTime() ||
       code.attempts >= maxAttempts
     ) {
@@ -508,7 +513,9 @@ export class AppSignInService {
     const [row] = await tx
       .select({ id: merchantAccounts.id })
       .from(merchantAccounts)
-      .where(and(eq(merchantAccounts.id, merchant.id), isNull(merchantAccounts.removedAt)));
+      .where(and(eq(merchantAccounts.id, merchant.id), isNull(merchantAccounts.removedAt)))
+      // A removal in progress commits first, so no session starts after it.
+      .for('share');
     return row ? { id: row.id, created: false } : null;
   }
 

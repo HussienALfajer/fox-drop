@@ -15,6 +15,10 @@ class _$MerchantPortalSessionDtoOutput extends MerchantPortalSessionDtoOutput {
   final String name;
   @override
   final String sessionId;
+  @override
+  final String restaurantName;
+  @override
+  final String timeZone;
 
   factory _$MerchantPortalSessionDtoOutput([
     void Function(MerchantPortalSessionDtoOutputBuilder)? updates,
@@ -25,6 +29,8 @@ class _$MerchantPortalSessionDtoOutput extends MerchantPortalSessionDtoOutput {
     required this.restaurantId,
     required this.name,
     required this.sessionId,
+    required this.restaurantName,
+    required this.timeZone,
   }) : super._();
   @override
   MerchantPortalSessionDtoOutput rebuild(
@@ -42,7 +48,9 @@ class _$MerchantPortalSessionDtoOutput extends MerchantPortalSessionDtoOutput {
         accountId == other.accountId &&
         restaurantId == other.restaurantId &&
         name == other.name &&
-        sessionId == other.sessionId;
+        sessionId == other.sessionId &&
+        restaurantName == other.restaurantName &&
+        timeZone == other.timeZone;
   }
 
   @override
@@ -52,6 +60,8 @@ class _$MerchantPortalSessionDtoOutput extends MerchantPortalSessionDtoOutput {
     _$hash = $jc(_$hash, restaurantId.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, sessionId.hashCode);
+    _$hash = $jc(_$hash, restaurantName.hashCode);
+    _$hash = $jc(_$hash, timeZone.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -62,7 +72,9 @@ class _$MerchantPortalSessionDtoOutput extends MerchantPortalSessionDtoOutput {
           ..add('accountId', accountId)
           ..add('restaurantId', restaurantId)
           ..add('name', name)
-          ..add('sessionId', sessionId))
+          ..add('sessionId', sessionId)
+          ..add('restaurantName', restaurantName)
+          ..add('timeZone', timeZone))
         .toString();
   }
 }
@@ -91,6 +103,15 @@ class MerchantPortalSessionDtoOutputBuilder
   String? get sessionId => _$this._sessionId;
   set sessionId(String? sessionId) => _$this._sessionId = sessionId;
 
+  String? _restaurantName;
+  String? get restaurantName => _$this._restaurantName;
+  set restaurantName(String? restaurantName) =>
+      _$this._restaurantName = restaurantName;
+
+  String? _timeZone;
+  String? get timeZone => _$this._timeZone;
+  set timeZone(String? timeZone) => _$this._timeZone = timeZone;
+
   MerchantPortalSessionDtoOutputBuilder() {
     MerchantPortalSessionDtoOutput._defaults(this);
   }
@@ -102,6 +123,8 @@ class MerchantPortalSessionDtoOutputBuilder
       _restaurantId = $v.restaurantId;
       _name = $v.name;
       _sessionId = $v.sessionId;
+      _restaurantName = $v.restaurantName;
+      _timeZone = $v.timeZone;
       _$v = null;
     }
     return this;
@@ -143,6 +166,16 @@ class MerchantPortalSessionDtoOutputBuilder
             sessionId,
             r'MerchantPortalSessionDtoOutput',
             'sessionId',
+          ),
+          restaurantName: BuiltValueNullFieldError.checkNotNull(
+            restaurantName,
+            r'MerchantPortalSessionDtoOutput',
+            'restaurantName',
+          ),
+          timeZone: BuiltValueNullFieldError.checkNotNull(
+            timeZone,
+            r'MerchantPortalSessionDtoOutput',
+            'timeZone',
           ),
         );
     replace(_$result);

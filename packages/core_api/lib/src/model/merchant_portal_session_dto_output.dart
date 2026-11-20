@@ -15,6 +15,8 @@ part 'merchant_portal_session_dto_output.g.dart';
 /// * [restaurantId]
 /// * [name]
 /// * [sessionId]
+/// * [restaurantName]
+/// * [timeZone] - The restaurant's city clock (IANA), for the times the portal shows and takes.
 @BuiltValue()
 abstract class MerchantPortalSessionDtoOutput
     implements
@@ -33,6 +35,13 @@ abstract class MerchantPortalSessionDtoOutput
 
   @BuiltValueField(wireName: r'sessionId')
   String get sessionId;
+
+  @BuiltValueField(wireName: r'restaurantName')
+  String get restaurantName;
+
+  /// The restaurant's city clock (IANA), for the times the portal shows and takes.
+  @BuiltValueField(wireName: r'timeZone')
+  String get timeZone;
 
   MerchantPortalSessionDtoOutput._();
 
@@ -82,6 +91,16 @@ class _$MerchantPortalSessionDtoOutputSerializer
     yield r'sessionId';
     yield serializers.serialize(
       object.sessionId,
+      specifiedType: const FullType(String),
+    );
+    yield r'restaurantName';
+    yield serializers.serialize(
+      object.restaurantName,
+      specifiedType: const FullType(String),
+    );
+    yield r'timeZone';
+    yield serializers.serialize(
+      object.timeZone,
       specifiedType: const FullType(String),
     );
   }
@@ -146,6 +165,24 @@ class _$MerchantPortalSessionDtoOutputSerializer
                   )
                   as String;
           result.sessionId = valueDes;
+          break;
+        case r'restaurantName':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.restaurantName = valueDes;
+          break;
+        case r'timeZone':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.timeZone = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, use, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TimeZoneContext } from './live.js';
+import { serverNow } from './clock.js';
 import { formatDateTime, formatTime } from './format.js';
 import { callLink, contactQuery } from './session.js';
 import {
   type StatusCommand,
   controlsOf,
-  instantOf,
+  holidayOf,
   stateLabel,
   statusQuery,
   useStatusCommand,
@@ -19,10 +21,12 @@ export function StatusPage() {
   const status = useQuery(statusQuery);
   const contact = useQuery(contactQuery);
   const command = useStatusCommand();
+  const timeZone = use(TimeZoneContext);
   const [refused, setRefused] = useState(false);
 
   if (status.isPending) return <p>{t('app.loading')}</p>;
   if (status.isError) return <p role="alert">{t('app.error')}</p>;
+  if (status.data === 'terminated') return <p role="alert">{t('layout.terminated')}</p>;
   const data = status.data;
   const controls = controlsOf(data);
   const label = stateLabel(data);
@@ -40,15 +44,15 @@ export function StatusPage() {
           ? t('status.state.busyMode', { minutes: label.minutes })
           : label.key === 'holiday'
             ? label.until
-              ? t('status.state.holiday', { date: formatDateTime(label.until) })
+              ? t('status.state.holiday', { date: formatDateTime(label.until, timeZone) })
               : t('status.state.holidayOpenEnded')
             : t(`status.state.${label.key}`)}
       </p>
       {data.state === 'paused' && data.stateUntil && (
-        <p>{t('status.pauseEnds', { at: formatTime(data.stateUntil) })}</p>
+        <p>{t('status.pauseEnds', { at: formatTime(data.stateUntil, timeZone) })}</p>
       )}
-      {data.closesAt && <p>{t('status.closesAt', { at: formatTime(data.closesAt) })}</p>}
-      {data.opensAt && <p>{t('status.opensAt', { at: formatDateTime(data.opensAt) })}</p>}
+      {data.closesAt && <p>{t('status.closesAt', { at: formatTime(data.closesAt, timeZone) })}</p>}
+      {data.opensAt && <p>{t('status.opensAt', { at: formatDateTime(data.opensAt, timeZone) })}</p>}
       {data.maxActiveOrders !== null && data.activeOrders !== null && (
         <p>
           {data.state === 'busy'
@@ -94,7 +98,7 @@ export function StatusPage() {
           <p>
             {t('status.busyOn', {
               minutes: data.busyMode.extraMin,
-              until: formatTime(data.busyMode.until),
+              until: formatTime(data.busyMode.until, timeZone),
             })}
           </p>
         )}
@@ -130,6 +134,7 @@ function Holiday({
   run: (command: StatusCommand) => void;
 }) {
   const { t } = useTranslation();
+  const timeZone = use(TimeZoneContext);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [message, setMessage] = useState('');
@@ -137,20 +142,9 @@ function Holiday({
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    const startsAt = instantOf(from);
-    const endsAt = instantOf(to);
-    const valid =
-      endsAt !== null &&
-      (from === '' || startsAt !== null) &&
-      Date.parse(endsAt) > (startsAt === null ? Date.now() : Date.parse(startsAt));
-    setInvalid(!valid);
-    if (!valid || endsAt === null) return;
-    run({
-      kind: 'holiday',
-      startsAt,
-      endsAt,
-      message: message.trim() === '' ? null : message.trim(),
-    });
+    const holidayClose = holidayOf({ from, to, message }, timeZone, serverNow());
+    setInvalid(holidayClose === null);
+    if (holidayClose) run({ kind: 'holiday', ...holidayClose });
   }
 
   return (
@@ -160,8 +154,8 @@ function Holiday({
         <>
           <p>
             {t('status.holidaySet', {
-              from: formatDateTime(holiday.startsAt),
-              to: formatDateTime(holiday.endsAt),
+              from: formatDateTime(holiday.startsAt, timeZone),
+              to: formatDateTime(holiday.endsAt, timeZone),
             })}
           </p>
           {holiday.message && (

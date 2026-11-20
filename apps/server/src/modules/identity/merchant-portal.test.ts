@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Valkey } from 'iovalkey';
 import { ApiModule } from '../../api.module.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -11,9 +11,12 @@ import { createOpenApiDocument } from '../../http/openapi.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { FxService } from '../fx/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { RealtimeAccess } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
+import { AppSessionsService } from './app-sessions.service.js';
 import { MerchantAccountsService } from './merchant-accounts.service.js';
+import { IDENTITY_SECRETS, type IdentitySecrets } from './secrets.js';
 import { PORTAL_SESSION_COOKIE } from './route-access.guard.js';
 
 // The owner web portal's sign-in and session (RA §17, §5.2–5.3, S14; slice
@@ -311,4 +314,182 @@ describe('the routes the portal reaches (RA §17)', () => {
     }
     expect(allowed.filter((route) => !reached.includes(route))).toEqual([]);
   }, 120_000);
+});
+
+// An app's sign-in on a new device; the raw answer.
+async function appSignIn(phone: string, deviceId = randomUUID()) {
+  await app.inject({
+    method: 'POST',
+    url: '/v1/merchant/auth/code',
+    payload: { phone, deviceId },
+  });
+  return app.inject({
+    method: 'POST',
+    url: '/v1/merchant/auth/sign-in',
+    payload: { phone, deviceId, code: sender.lastCode(phone) },
+  });
+}
+
+describe('codes stay where they were asked for (architecture §8.3.3 item 1)', () => {
+  it('never signs in to the app with a portal code, nor to the portal with an app code', async () => {
+    const owner = await user(await restaurant(), 'owner');
+    const deviceId = randomUUID();
+    expect((await requestCode(owner.phone, deviceId)).statusCode).toBe(200);
+    const intoApp = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/auth/sign-in',
+      payload: { phone: owner.phone, deviceId, code: sender.lastCode(owner.phone) },
+    });
+    expect([intoApp.statusCode, intoApp.json().error]).toEqual([400, 'code_expired']);
+
+    const other = await user(await restaurant(), 'owner');
+    const browserId = randomUUID();
+    await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/auth/code',
+      payload: { phone: other.phone, deviceId: browserId },
+    });
+    const intoPortal = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/auth/portal/sign-in',
+      payload: { phone: other.phone, browserId, code: sender.lastCode(other.phone) },
+    });
+    expect([intoPortal.statusCode, intoPortal.json().error]).toEqual([400, 'code_expired']);
+  });
+
+  it("refuses a cashier's code at the portal's sign-in and uses it up", async () => {
+    const cashier = await user(await restaurant(), 'cashier');
+    const secrets = app.get<IdentitySecrets>(IDENTITY_SECRETS);
+    const browserId = randomUUID();
+    await sql.query(
+      `INSERT INTO identity.app_sign_in_codes
+         (party, phone_hash, device_id, portal, code_hash, expires_at, created_at)
+       VALUES ('merchant', $1, $2, true, $3, now() + interval '5 minutes', now())`,
+      [
+        secrets.phoneHash(cashier.phone),
+        browserId,
+        secrets.signInCodeHash(cashier.phone, '123456'),
+      ],
+    );
+    const refused = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/auth/portal/sign-in',
+      payload: { phone: cashier.phone, browserId, code: '123456' },
+    });
+    expect([refused.statusCode, refused.json().error]).toEqual([403, 'owner_only']);
+    const code = await sql.query(
+      'SELECT end_reason FROM identity.app_sign_in_codes WHERE device_id = $1',
+      [browserId],
+    );
+    expect(code.rows).toEqual([{ end_reason: 'used' }]);
+  });
+});
+
+describe('the portal session at work (RA §17)', () => {
+  it('answers the restaurant and its clock, and keeps one session per browser', async () => {
+    const id = await restaurant();
+    const owner = await user(id, 'owner');
+    const browserId = randomUUID();
+    const first = await portalSignIn(owner.phone, browserId);
+    expect((await session(first.cookies)).json()).toMatchObject({
+      restaurantId: id,
+      timeZone: 'Asia/Damascus',
+    });
+    await sql.query(
+      "UPDATE identity.app_sign_in_codes SET created_at = now() - interval '1 hour' WHERE device_id = $1",
+      [browserId],
+    );
+    const second = await portalSignIn(owner.phone, browserId);
+    expect((await session(second.cookies)).statusCode).toBe(200);
+    expect((await session(first.cookies)).statusCode).toBe(401);
+  });
+
+  it('closes the restaurant for a holiday from the portal, audited with the owner', async () => {
+    const id = await restaurant();
+    const owner = await user(id, 'owner');
+    const { cookies } = await portalSignIn(owner.phone);
+    const endsAt = new Date(Date.now() + 2 * 86_400_000).toISOString();
+    const closed = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/restaurant/holiday-close',
+      cookies,
+      payload: { startsAt: null, endsAt, message: null },
+    });
+    expect(closed.statusCode).toBe(200);
+    expect(closed.json().holiday).toMatchObject({ endsAt });
+    const audited = await sql.query(
+      `SELECT actor_id, device FROM audit.events
+       WHERE action = 'restaurant.holiday_close' AND actor_type = 'merchant' AND actor_id = $1`,
+      [owner.accountId],
+    );
+    expect(audited.rows[0]?.device).toMatch(/^portal:/);
+    const ended = await app.inject({
+      method: 'DELETE',
+      url: '/v1/merchant/restaurant/holiday-close',
+      cookies,
+    });
+    expect(ended.statusCode).toBe(200);
+  });
+
+  it("answers another restaurant's order 404, and refuses a cross-origin request", async () => {
+    const owner = await user(await restaurant(), 'owner');
+    const { cookies } = await portalSignIn(owner.phone);
+    const order = await app.inject({
+      method: 'GET',
+      url: `/v1/merchant/orders/${randomUUID()}`,
+      cookies,
+    });
+    expect([order.statusCode, order.json().error]).toEqual([404, 'unknown_order']);
+    const cross = await app.inject({
+      method: 'GET',
+      url: '/v1/merchant/orders',
+      cookies,
+      headers: { 'sec-fetch-site': 'same-site' },
+    });
+    expect([cross.statusCode, cross.json().error]).toEqual([403, 'cross_origin']);
+  });
+
+  it("takes an app's token when a request carries both, and keeps the portal's sign-out the portal's", async () => {
+    const id = await restaurant();
+    const owner = await user(id, 'owner');
+    const appOwner = await user(id, 'owner');
+    const { cookies } = await portalSignIn(owner.phone);
+    const { accessToken } = (await appSignIn(appOwner.phone)).json();
+    const both = await app.inject({
+      method: 'GET',
+      url: '/v1/merchant/auth/session',
+      cookies,
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    expect([both.statusCode, both.json().accountId]).toEqual([200, appOwner.accountId]);
+    const appSignOut = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/auth/portal/sign-out',
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    expect([appSignOut.statusCode, appSignOut.json().error]).toEqual([403, 'not_in_portal']);
+  });
+});
+
+describe("the portal's real time (architecture §6.1, RA §4.3)", () => {
+  it("subscribes to its own restaurant's channel only, and ends with the session", async () => {
+    const id = await restaurant();
+    const owner = await user(id, 'owner');
+    const { cookies } = await portalSignIn(owner.phone);
+    const { sessionId } = (await session(cookies)).json();
+    const access = app.get(RealtimeAccess);
+    const meta = { party: 'merchant', accountId: owner.accountId };
+    const subscribe = (channel: string) =>
+      access.subscribe('merchant', { user: sessionId, channel, meta });
+    expect(await subscribe(`merchant:${id}`)).toEqual({ result: {} });
+    expect(await subscribe(`merchant:${await restaurant()}`)).toMatchObject({
+      error: { code: 403 },
+    });
+
+    const ended = vi.spyOn(app.get(AppSessionsService), 'notifyEnded');
+    await app.inject({ method: 'POST', url: '/v1/merchant/auth/portal/sign-out', cookies });
+    expect(ended).toHaveBeenCalledWith([sessionId]);
+    ended.mockRestore();
+    expect(await subscribe(`merchant:${id}`)).toHaveProperty('disconnect');
+  });
 });

@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, Outlet, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { LiveContext, useMerchantChannel } from './live.js';
+import { LiveContext, TimeZoneContext, useMerchantChannel } from './live.js';
 import { type PortalSession, useSignOut } from './session.js';
-import { emergencyStopQuery } from './status.js';
+import { emergencyStopQuery, statusQuery } from './status.js';
 import { termsQuery } from './terms.js';
 
 // RA §17: the signed-in portal, unstyled until the design (owner decision
@@ -15,7 +15,9 @@ export function LayoutPage({ session }: { session: PortalSession }) {
   const signOut = useSignOut();
   const terms = useQuery(termsQuery);
   const stop = useQuery(emergencyStopQuery);
-  const live = useMerchantChannel(session.restaurantId);
+  const status = useQuery(statusQuery);
+  const terminated = status.data === 'terminated';
+  const live = useMerchantChannel(terminated ? undefined : session.restaurantId);
 
   return (
     <>
@@ -41,9 +43,15 @@ export function LayoutPage({ session }: { session: PortalSession }) {
           {t('layout.termsPending')} <Link to="/terms">{t('layout.termsShow')}</Link>
         </p>
       )}
-      <LiveContext value={live}>
-        <Outlet />
-      </LiveContext>
+      {terminated ? (
+        <p role="alert">{t('layout.terminated')}</p>
+      ) : (
+        <TimeZoneContext value={session.timeZone}>
+          <LiveContext value={live}>
+            <Outlet />
+          </LiveContext>
+        </TimeZoneContext>
+      )}
     </>
   );
 }

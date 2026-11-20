@@ -8168,6 +8168,9 @@ export interface components {
             name: string;
             /** Format: uuid */
             sessionId: string;
+            restaurantName: string;
+            /** @description The restaurant's city clock (IANA), for the times the portal shows and takes. */
+            timeZone: string;
         };
         MerchantPortalSignedOutDto_Output: {
             /** @constant */

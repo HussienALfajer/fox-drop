@@ -648,6 +648,21 @@ export class MerchantsService implements OnModuleInit {
 
   // A restaurant with its whole record, or null: none, or a draft still
   // without its pin or operations.
+  // The restaurant's name and its city's clock, for the owner web portal's
+  // times (RA §17, slice 2.45a); null for an unknown restaurant.
+  async nameAndTimeZone(
+    restaurantId: string,
+  ): Promise<{ nameAr: string; timeZone: string } | null> {
+    const [row] = await this.database.db
+      .select({ cityId: restaurants.cityId, nameAr: restaurants.nameAr })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+    if (!row) return null;
+    const timeZone = await this.geo.cityTimeZone(row.cityId);
+    if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
+    return { nameAr: row.nameAr, timeZone };
+  }
+
   async restaurant(restaurantId: string, at = new Date()): Promise<Restaurant | null> {
     const [row] = await this.database.db
       .select({

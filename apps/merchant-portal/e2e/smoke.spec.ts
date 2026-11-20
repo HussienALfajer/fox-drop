@@ -6,6 +6,8 @@ const session = {
   restaurantId: '0190f3a0-0000-7000-8000-000000000002',
   name: 'سامر',
   sessionId: '0190f3a0-0000-7000-8000-000000000003',
+  restaurantName: 'مطعم التجربة',
+  timeZone: 'Asia/Damascus',
 };
 
 function boardOrder(minutesAgo: number) {
@@ -73,6 +75,24 @@ async function signedOutApi(page: Page) {
   await page.route('**/v1/merchant/terms', (route) =>
     route.fulfill({
       json: { version: 1, body: 'الشروط', publishedAt: new Date().toISOString(), pending: false },
+    }),
+  );
+  await page.route('**/v1/merchant/restaurant/status', (route) =>
+    route.fulfill({
+      json: {
+        state: 'open',
+        pauseSource: null,
+        stateUntil: null,
+        closesAt: null,
+        opensAt: null,
+        busyMode: null,
+        activeOrders: null,
+        maxActiveOrders: null,
+        holiday: null,
+        pauseChoicesMin: [15, 30, 60],
+        busyExtraOptionsMin: [10, 20],
+        busyReminderMin: 60,
+      },
     }),
   );
   await page.route('**/v1/merchant/emergency-stop', (route) =>

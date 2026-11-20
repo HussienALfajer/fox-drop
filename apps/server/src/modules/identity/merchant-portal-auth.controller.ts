@@ -8,6 +8,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
@@ -20,6 +21,7 @@ import { type AppSession, AppSessionsService } from './app-sessions.service.js';
 import { AppSignInService, SignInCodeRefusedError } from './app-sign-in.service.js';
 import { MerchantSignInRefusedError } from './merchant-accounts.service.js';
 import { PortalSessionsService } from './portal-sessions.service.js';
+import { MerchantsService } from '../merchants/index.js';
 import { PORTAL_SESSION_COOKIE } from './route-access.guard.js';
 
 const browserId = z
@@ -44,7 +46,16 @@ class MerchantPortalSignedInDto extends createZodDto(
   z.object({ ...owner, expiresAt: z.iso.datetime() }),
 ) {}
 
-class MerchantPortalSessionDto extends createZodDto(z.object({ ...owner, sessionId: z.uuid() })) {}
+class MerchantPortalSessionDto extends createZodDto(
+  z.object({
+    ...owner,
+    sessionId: z.uuid(),
+    restaurantName: z.string(),
+    timeZone: z
+      .string()
+      .describe("The restaurant's city clock (IANA), for the times the portal shows and takes."),
+  }),
+) {}
 
 class MerchantPortalSignedOutDto extends createZodDto(
   z.object({ status: z.literal('signed_out') }),
@@ -68,6 +79,7 @@ export class MerchantPortalAuthController {
     private readonly signInService: AppSignInService,
     private readonly sessions: AppSessionsService,
     private readonly portalSessions: PortalSessionsService,
+    private readonly merchants: MerchantsService,
   ) {}
 
   // 403 not_registered, restaurant_draft, owner_only (a cashier's number)
@@ -133,13 +145,18 @@ export class MerchantPortalAuthController {
   @Get('session')
   @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantPortalSessionDto })
-  current(@CurrentAppSession() session: AppSession) {
-    return portalOnly(session, {
+  async current(@CurrentAppSession() session: AppSession) {
+    portalOnly(session, null);
+    const restaurant = await this.merchants.nameAndTimeZone(session.merchant!.restaurantId);
+    if (!restaurant) throw new UnauthorizedException();
+    return {
       accountId: session.accountId,
       restaurantId: session.merchant!.restaurantId,
       name: session.merchant!.name,
       sessionId: session.id,
-    });
+      restaurantName: restaurant.nameAr,
+      timeZone: restaurant.timeZone,
+    };
   }
 
   @Post('sign-out')

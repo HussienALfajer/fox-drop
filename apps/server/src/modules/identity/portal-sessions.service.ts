@@ -40,6 +40,17 @@ export class PortalSessionsService {
     sessionDays: number,
     now: Date,
   ): Promise<{ id: string; token: string; expiresAt: Date }> {
+    // A browser keeps one session per owner: signing in again ends the last.
+    await tx
+      .update(merchantPortalSessions)
+      .set({ endedAt: now, endReason: 'new_sign_in' })
+      .where(
+        and(
+          eq(merchantPortalSessions.accountId, accountId),
+          eq(merchantPortalSessions.browserId, browserId),
+          isNull(merchantPortalSessions.endedAt),
+        ),
+      );
     const token = newToken();
     const expiresAt = new Date(now.getTime() + sessionDays * 86_400_000);
     const [session] = await tx

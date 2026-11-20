@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TimeZoneContext } from './live.js';
 import { formatDateTime } from './format.js';
 import { termsQuery, useAcceptTerms } from './terms.js';
 
 // RA §4.10: the terms in force, accepted by the owner with «أوافق».
 export function TermsPage() {
   const { t } = useTranslation();
+  const timeZone = use(TimeZoneContext);
   const terms = useQuery(termsQuery);
   const accept = useAcceptTerms();
   const [outdated, setOutdated] = useState(false);
@@ -19,7 +21,7 @@ export function TermsPage() {
     <main>
       <h1>{t('terms.title')}</h1>
       {pending && <p>{t('terms.newVersion')}</p>}
-      <p>{t('terms.publishedAt', { date: formatDateTime(publishedAt) })}</p>
+      <p>{t('terms.publishedAt', { date: formatDateTime(publishedAt, timeZone) })}</p>
       {body.split('\n').map((paragraph, index) => (
         <p key={index}>{paragraph}</p>
       ))}

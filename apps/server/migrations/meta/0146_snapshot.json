@@ -1,5 +1,5 @@
 {
-  "id": "c3898687-1011-4443-b978-346b166c3374",
+  "id": "754619e2-879a-49fd-8067-2e300e311bab",
   "prevId": "b1ac9685-86c8-4e21-b0bb-e6df75396d0f",
   "version": "7",
   "dialect": "postgresql",
@@ -8312,6 +8312,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "portal": {
+          "name": "portal",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "code_hash": {
           "name": "code_hash",
           "type": "text",
@@ -8865,8 +8872,8 @@
           "method": "btree",
           "with": {}
         },
-        "merchant_portal_sessions_open_account": {
-          "name": "merchant_portal_sessions_open_account",
+        "merchant_portal_sessions_account": {
+          "name": "merchant_portal_sessions_account",
           "columns": [
             {
               "expression": "account_id",
@@ -8876,7 +8883,6 @@
             }
           ],
           "isUnique": false,
-          "where": "\"identity\".\"merchant_portal_sessions\".\"ended_at\" IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -8904,7 +8910,7 @@
       "checkConstraints": {
         "merchant_portal_sessions_end_reason_values": {
           "name": "merchant_portal_sessions_end_reason_values",
-          "value": "\"identity\".\"merchant_portal_sessions\".\"end_reason\" IN ('sign_out', 'account_removed')"
+          "value": "\"identity\".\"merchant_portal_sessions\".\"end_reason\" IN ('sign_out', 'account_removed', 'new_sign_in')"
         },
         "merchant_portal_sessions_ended": {
           "name": "merchant_portal_sessions_ended",

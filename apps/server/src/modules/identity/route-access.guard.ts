@@ -64,6 +64,13 @@ export class RouteAccessGuard implements CanActivate {
         ? request.cookies[PORTAL_SESSION_COOKIE]
         : undefined;
     if (portalToken && (access.kind === 'app_session' || access.kind === 'optional_app_session')) {
+      // Same-site is not same-origin: a browser that names another site or a
+      // sibling host as the request's source is refused (defence in depth
+      // beside the cookie's SameSite=Strict).
+      const fetchSite = request.headers['sec-fetch-site'];
+      if (fetchSite !== undefined && fetchSite !== 'same-origin') {
+        throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'cross_origin' });
+      }
       if (!access.portal) {
         throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'not_in_portal' });
       }
