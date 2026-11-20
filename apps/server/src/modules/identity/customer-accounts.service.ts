@@ -226,6 +226,23 @@ export class CustomerAccountsService {
     return new Map(rows.map((row) => [row.id, row]));
   }
 
+  // AP §9.1.2 «New customers» (slice 2.40): the accounts registered in
+  // [from, to), an account continuing a closed one on the same number (a
+  // lineage) left out. Accounts have no city: every city's.
+  async newCustomersBetween(from: Date, to: Date): Promise<number> {
+    const [row] = await this.database.db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(customerAccounts)
+      .where(
+        and(
+          isNull(customerAccounts.lineageId),
+          sql`${customerAccounts.createdAt} >= ${from.toISOString()}`,
+          sql`${customerAccounts.createdAt} < ${to.toISOString()}`,
+        ),
+      );
+    return Number(row?.count ?? 0);
+  }
+
   // AP §9.8 (slice 2.25c): every account a number has had, newest first, so
   // the panel's search by number shows a closed account beside its new one.
   async customersByPhone(phone: string): Promise<string[]> {

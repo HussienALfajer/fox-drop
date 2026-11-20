@@ -29,6 +29,41 @@ export const partyAccounts = {
 // the customer owes.
 export type Direction = 'up' | 'down';
 
+// The words of each party, account and direction (the screen's and the
+// order's correction, slice 2.40).
+export const partyKeys = {
+  captain: 'manualEntries.party.captain',
+  restaurant: 'manualEntries.party.restaurant',
+  customer: 'manualEntries.party.customer',
+} as const satisfies Record<Party, string>;
+
+export const accountKeys = {
+  'captain.custody': 'manualEntries.account.custody',
+  'captain.earnings': 'manualEntries.account.earnings',
+  'merchant.account': 'manualEntries.account.merchant',
+  'customer.dues': 'manualEntries.account.dues',
+} as const satisfies Record<PartyAccount, string>;
+
+// What each direction does to the account, in the party's terms.
+export const directionKeys = {
+  'captain.custody': {
+    up: 'manualEntries.direction.custodyUp',
+    down: 'manualEntries.direction.custodyDown',
+  },
+  'captain.earnings': {
+    up: 'manualEntries.direction.earningsUp',
+    down: 'manualEntries.direction.earningsDown',
+  },
+  'merchant.account': {
+    up: 'manualEntries.direction.merchantUp',
+    down: 'manualEntries.direction.merchantDown',
+  },
+  'customer.dues': {
+    up: 'manualEntries.direction.duesUp',
+    down: 'manualEntries.direction.duesDown',
+  },
+} as const satisfies Record<PartyAccount, Record<Direction, string>>;
+
 // The amount typed in the currency's major units, signed by the direction,
 // as the minor units the server takes; null while it is not an amount above
 // zero.

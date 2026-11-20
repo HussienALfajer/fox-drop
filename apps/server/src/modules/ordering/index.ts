@@ -14,6 +14,7 @@ import { ContentModule } from '../content/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AuditModule } from '../audit/index.js';
 import { ActiveOrders } from './active-orders.js';
+import { AppHistories } from './app-histories.js';
 import { CaptainOrders } from './captain-orders.js';
 import { CaptainOrdersController } from './captain-orders.controller.js';
 import { DeliveryBooking } from './delivery-booking.js';
@@ -58,11 +59,14 @@ import { MerchantRatingsController } from './merchant-ratings.controller.js';
 import { RatingPagesService } from './rating-pages.js';
 import { CaptainFiguresService } from './captain-figures.js';
 import { RestaurantFiguresService } from './restaurant-figures.js';
+import { DashboardOrdersService } from './dashboard-orders.js';
 import { AdminRestaurantOverviewController } from './admin-restaurant-overview.controller.js';
 import { AdminDeliveryFeesController } from './admin-delivery-fees.controller.js';
 import { AdminPayTablesController } from './admin-pay-tables.controller.js';
 import { AdminSearchController } from './admin-search.controller.js';
 import { AdminSearch } from './admin-search.js';
+import { OrderHistoryService } from './order-history.js';
+import { AdminOrderHistoryController } from './admin-order-history.controller.js';
 import {
   AdminEmergencyStopController,
   CaptainEmergencyStopController,
@@ -116,6 +120,7 @@ import {
     AdminDeliveryFeesController,
     AdminPayTablesController,
     AdminSearchController,
+    AdminOrderHistoryController,
     CaptainOrderRouteController,
     CustomerOrderRouteController,
   ],
@@ -140,9 +145,20 @@ import {
     OrderRoutes,
     RestaurantFiguresService,
     CaptainFiguresService,
+    DashboardOrdersService,
     AdminSearch,
+    AppHistories,
+    OrderHistoryService,
   ],
-  exports: [QuoteService, OrdersService, RestaurantFiguresService, CaptainFiguresService],
+  exports: [
+    QuoteService,
+    OrdersService,
+    RestaurantFiguresService,
+    CaptainFiguresService,
+    DashboardOrdersService,
+    AppHistories,
+    OrderHistoryService,
+  ],
 })
 export class OrderingModule {}
 
@@ -216,8 +232,29 @@ export {
 } from './quote.service.js';
 export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
 export { HANDOVER_FROM } from './handover.js';
+export {
+  AppHistories,
+  type CaptainHistoryRow,
+  captainSteps,
+  HISTORY_PAGE,
+  HistoryRefusedError,
+} from './app-histories.js';
 export { type RestaurantFigures, RestaurantFiguresService } from './restaurant-figures.js';
+export {
+  ADMIN_HISTORY_EXPORT_MAX,
+  type AdminHistoryFilter,
+  type AdminHistoryRow,
+  type CorrectionTarget,
+  FINISHED_STATUSES,
+  type HistoryFilterRefusal,
+  type HistoryKind,
+  historyKinds,
+  orderHistoryFilterBody,
+  type OrderHistoryFilterBody,
+  OrderHistoryService,
+} from './order-history.js';
 export { type CaptainFigures, CaptainFiguresService, ON_TIME_WINDOW } from './captain-figures.js';
+export { type DashboardOrderRow, DashboardOrdersService } from './dashboard-orders.js';
 export {
   type CostOrder,
   type OperatingCostCause,

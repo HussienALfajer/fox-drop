@@ -38,6 +38,7 @@ export async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
       case 'unknown_visitor':
       case 'unknown_party':
       case 'unknown_journal':
+      case 'unknown_order':
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'not_your_session':
       case 'not_payout_day':
@@ -48,6 +49,7 @@ export async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
       case 'invalid_visitor':
       case 'invalid_currency':
       case 'invalid_account':
+      case 'not_order_party':
         throw new BadRequestException(body(HttpStatus.BAD_REQUEST));
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));

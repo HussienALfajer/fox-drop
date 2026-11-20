@@ -63,8 +63,10 @@ const modules = (permissions: string[]) => menuOf(sessionBody(permissions)).map(
 describe('the side menu (AP §7.1)', () => {
   it("leaves Finance out of an OPS user's menu, and OWN's own modules", () => {
     expect(modules(OPS)).toEqual([
+      'dashboard',
       'operations',
       'liveMap',
+      'orderHistory',
       'restaurants',
       'captains',
       'customers',
@@ -121,6 +123,8 @@ describe('the side menu (AP §7.1)', () => {
     expect(moduleOfPath('/cash-desk/sessions')).toBe('finance');
     expect(moduleOfPath('/orders/0190/assign')).toBe('operations');
     expect(moduleOfPath('/live-map')).toBe('liveMap');
+    expect(moduleOfPath('/dashboard')).toBe('dashboard');
+    expect(moduleOfPath('/order-history')).toBe('orderHistory');
     expect(moduleOfPath('/restaurants-x')).toBeNull();
   });
 });

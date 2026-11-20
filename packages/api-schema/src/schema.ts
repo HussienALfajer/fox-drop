@@ -4804,6 +4804,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantOrdersHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantOrdersOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orders/{orderId}/accept": {
         parameters: {
             query?: never;
@@ -6052,6 +6084,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/order-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrderHistoryRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/route": {
         parameters: {
             query?: never;
@@ -6756,6 +6804,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/financial-corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminOrderCorrectionsList"];
+        put?: never;
+        post: operations["adminOrderCorrectionsCorrect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/restaurant-settlements/preview": {
         parameters: {
             query?: never;
@@ -6988,6 +7052,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["captainEarningsRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainHistoryHistory"];
         put?: never;
         post?: never;
         delete?: never;
@@ -7428,6 +7508,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDashboardRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cost-report": {
         parameters: {
             query?: never;
@@ -7438,6 +7534,22 @@ export interface paths {
         get: operations["adminCostReportReport"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/order-history/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminExportsRequestOrderHistory"];
         delete?: never;
         options?: never;
         head?: never;
@@ -14257,6 +14369,270 @@ export interface components {
                 defaultMin: number;
             };
         };
+        MerchantOrderHistoryDto_Output: {
+            /** @description An owner sees the commission and the net and picks any range; a cashier not (S12). */
+            owner: boolean;
+            /**
+             * Format: date
+             * @description The range read: by default today and the 7 business days before.
+             */
+            fromDay: string;
+            /** Format: date */
+            toDay: string;
+            /** @description Newest first, 20 a page. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /**
+                 * Format: date-time
+                 * @description «الوقت».
+                 */
+                placedAt: string;
+                /**
+                 * Format: date
+                 * @description The business day it was placed on.
+                 */
+                day: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description «طلب تجريبي» (RA §8.16). */
+                testOrder: boolean;
+                /** @description «إعادة توصيل مجانية» (AP §9.9.3). */
+                redelivery: boolean;
+                /** @description «عدد الأصناف»: the quantities added up. */
+                itemCount: number;
+                currency: string;
+                /** @description «قيمة الأصناف», for every user. */
+                itemsValue: string;
+                /** @description RA §8.18: the commission and the net, to owners only (null for a cashier, and on a cancelled or rejected order). */
+                owner: {
+                    /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
+                    testOrder: boolean;
+                    /** @description The rate at placing in basis points (1500 is 15%); null on a test order. */
+                    commissionBp: number | null;
+                    /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
+                    commission: string | null;
+                    /** @description The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order. */
+                    discountShare: string | null;
+                    /** @description The restaurant-funded discount is on the delivery fee (RA S18), not the items. */
+                    discountOnDelivery: boolean;
+                    /** @description «صافيك من الطلب»; null on a test order. */
+                    merchantNet: string | null;
+                } | null;
+            }[];
+            /** @description The cursor of the next page; null at the end. */
+            next: string | null;
+        };
+        MerchantOrderWithTimelineDto_Output: {
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /** @description «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them. */
+                redeliveryOf: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                } | null;
+                /** @description RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode). */
+                testOrder: boolean;
+                /**
+                 * @description AP §8.1; the board column (RA §8.1–8.2).
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3). */
+                version: number;
+                /** Format: date-time */
+                placedAt: string;
+                /** @description While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3). */
+                acceptAlertAt: string | null;
+                /** @description «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3). */
+                autoCancelAt: string | null;
+                /** @description Null until the order is accepted. */
+                acceptance: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The prep time chosen (RA §8.5). */
+                    prepMin: number;
+                    /**
+                     * Format: date-time
+                     * @description While accepted, the prep countdown runs to it; past it the card turns red and counts up, «متأخر {د} د» (RA §8.7).
+                     */
+                    prepDueAt: string;
+                    /** @description «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant. */
+                    deviceName: string | null;
+                    /** @description Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5). */
+                    byOperations: boolean;
+                } | null;
+                /** @description «الطلب جاهز» (RA §8.8). */
+                readyAt: string | null;
+                /** @description Never the phone number, the last name or the full address (RA §8.4). */
+                customer: {
+                    /** @description Null while the customer has not completed the account (CU §5.3). */
+                    firstName: string | null;
+                    neighbourhood: string;
+                };
+                /** @description The customer's note. */
+                note: string | null;
+                lines: {
+                    /**
+                     * Format: uuid
+                     * @description «صنف غير متوفر» picks the items by it (RA §8.6).
+                     */
+                    itemId: string;
+                    name: string;
+                    quantity: number;
+                    options: {
+                        name: string;
+                    }[];
+                    note: string | null;
+                    /** @description Integer minor units (AP §8.6). */
+                    lineTotal: string;
+                }[];
+                currency: string;
+                /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
+                itemsValue: string;
+                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line. */
+                owner: {
+                    /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
+                    testOrder: boolean;
+                    /** @description The rate at placing in basis points (1500 is 15%); null on a test order. */
+                    commissionBp: number | null;
+                    /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
+                    commission: string | null;
+                    /** @description The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order. */
+                    discountShare: string | null;
+                    /** @description The restaurant-funded discount is on the delivery fee (RA S18), not the items. */
+                    discountOnDelivery: boolean;
+                    /** @description «صافيك من الطلب»; null on a test order. */
+                    merchantNet: string | null;
+                } | null;
+                /** @description The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts. */
+                captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
+                /** @description From assignment (RA §8.9); the photo and the ETA come with their slices. */
+                captain: {
+                    firstName: string;
+                    /** @enum {string} */
+                    vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                } | null;
+                /** @description While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null. */
+                captainArrival: {
+                    /**
+                     * Format: date-time
+                     * @description «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it.
+                     */
+                    at: string;
+                    /**
+                     * Format: date-time
+                     * @description Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9).
+                     */
+                    waitingAlertAt: string;
+                } | null;
+                /** @description RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise. */
+                itemReport: {
+                    /** Format: date-time */
+                    at: string;
+                    items: {
+                        /** Format: uuid */
+                        itemId: string;
+                        name: string;
+                        /** @enum {string} */
+                        until: "tomorrow" | "turned_back_on";
+                    }[];
+                    /** @description A reason of Content's item_unavailable_note list, its label as chosen. */
+                    note: {
+                        code: string;
+                        label: string;
+                    } | null;
+                } | null;
+                /** @description RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup. */
+                edits: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description Items added or a quantity raised: every device rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل», and pickup requests wait (RA §8.10, §16 #16); otherwise it chimes «تم تعديل الطلب #{رقم}» once and stays on the card (RA §16 #17). */
+                    addsItems: boolean;
+                    /** @description The prompt lists them (RA §8.13). */
+                    changes: {
+                        /**
+                         * @description A line whose options changed is removed and added again.
+                         * @enum {string}
+                         */
+                        kind: "added" | "removed" | "quantity";
+                        name: string;
+                        options: string[];
+                        quantity: number;
+                        /** @description quantity: the quantity before. */
+                        quantityBefore?: number;
+                    }[];
+                    /** @description The new items value after this edit. */
+                    itemsValue: string;
+                    /** @description Items added to a ready order: back to «قيد التحضير» with this many minutes from the edit (RA §8.13); null otherwise. */
+                    extraPrepMin: number | null;
+                }[];
+                /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
+                cancellation: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The code of Content's ops_cancel list. */
+                    reason: string;
+                    /** @description {السبب} of «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}». */
+                    label: string;
+                    /** @description Always true: only operations cancel after acceptance. */
+                    byOperations: boolean;
+                } | null;
+                /** @description The pickup confirmation (RA §8.10). */
+                pickup: {
+                    /** @description The latest request; while open every device rings with the pickup prompt (RA §8.10 item 3). */
+                    request: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "open" | "confirmed" | "rejected" | "voided";
+                        /** @description automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام». */
+                        outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
+                        amount: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @description «400 ₺» or «5 $ + 195 ₺». */
+                        lines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[];
+                        /** @description The lines in the base currency, by the order rates. */
+                        baseEquivalent: string;
+                        /**
+                         * Format: date-time
+                         * @description «يُؤكَّد تلقائياً خلال {ث} ث» counts down to it.
+                         */
+                        confirmBy: string;
+                        closedAt: string | null;
+                        /** @description The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10). */
+                        closedByUserName: string | null;
+                        closedByDeviceName: string | null;
+                    } | null;
+                    /** @description «تم الاستلام». */
+                    pickedUpAt: string | null;
+                    /** @description «لم يُضغط جاهز» (S8). */
+                    readyNotPressed: boolean;
+                    /** @description «المبلغ غير صحيح» stays on the order until then after the pickup (RA §8.10 item 8); null once disputed or before the pickup. */
+                    disputeUntil: string | null;
+                    disputedAt: string | null;
+                };
+            };
+            /** @description RA §8.18: the steps the order reached, oldest first. */
+            timeline: {
+                /** @enum {string} */
+                step: "placed" | "accepted" | "picked_up" | "arrived" | "delivered" | "failed" | "rejected" | "cancelled";
+                /** Format: date-time */
+                at: string;
+            }[];
+        };
         MerchantAcceptDto: {
             /** @description Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise. */
             prepMin: number;
@@ -17878,6 +18254,67 @@ export interface components {
                 maskedPhone: string;
             }[];
         };
+        AdminOrderHistoryQueryDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The order number, with or without #. */
+            number: string | null;
+            /** @description The customer phone in any usual form; customers.reveal_phone (OWN, OPS, SUP). */
+            customerPhone: string | null;
+            restaurantId: string | null;
+            /** @description The captain who held the order last. */
+            captainId: string | null;
+            /** @description The first business day, YYYY-MM-DD on the city clock. */
+            from: string | null;
+            /** @description The last business day, included. */
+            to: string | null;
+            status: ("placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed") | null;
+            outcome: ("normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other") | null;
+            /** @description The outcome's party in force, or operations' cancellation's. */
+            responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+            /** @description The code used, any letter case. */
+            code: string | null;
+            zoneId: string | null;
+            /**
+             * @description all, real or test orders.
+             * @enum {string}
+             */
+            kind: "all" | "real" | "test";
+            /** @description The `next` of the page before; null for the first page. */
+            cursor: string | null;
+        };
+        AdminOrderHistoryDto_Output: {
+            /** @description Newest first. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** Format: date-time */
+                placedAt: string;
+                /** Format: uuid */
+                restaurantId: string;
+                restaurantName: string;
+                /** @description The customer's neighbourhood at placing. */
+                neighbourhood: string;
+                captainId: string | null;
+                captainName: string | null;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                outcome: ("normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other") | null;
+                responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+                total: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description From placing to delivery; null unless delivered. */
+                deliveryMinutes: number | null;
+                code: string | null;
+                testOrder: boolean;
+                redelivery: boolean;
+            }[];
+            /** @description The cursor of the next 50 orders; null at the end. */
+            next: string | null;
+        };
         CaptainOrderRouteDto_Output: {
             /** @enum {string} */
             leg: "to_restaurant" | "to_customer";
@@ -19793,6 +20230,9 @@ export interface components {
                     at: string;
                 } | null;
                 reversible: boolean;
+                /** @description A financial correction from «سجل الطلبات»: the finished order it corrects. */
+                orderId: string | null;
+                orderNumber: string | null;
             }[];
         };
         AdminManualAdjustmentDto: {
@@ -19875,6 +20315,9 @@ export interface components {
                 at: string;
             } | null;
             reversible: boolean;
+            /** @description A financial correction from «سجل الطلبات»: the finished order it corrects. */
+            orderId: string | null;
+            orderNumber: string | null;
         };
         AdminManualReversalDto: {
             /** Format: uuid */
@@ -19930,6 +20373,106 @@ export interface components {
                 reversible: boolean;
                 reversed: boolean;
             }[];
+        };
+        AdminOrderCorrectionsDto_Output: {
+            /** @description Only a finished order is corrected (AP §9.5). */
+            finished: boolean;
+            /** @description order_history.financial_correction (OWN, FIN) on a finished order. */
+            canCorrect: boolean;
+            /** @description The order's corrections, oldest first. */
+            entries: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "adjustment" | "reversal";
+                /** @enum {string} */
+                partyKind: "captain" | "restaurant" | "customer";
+                /** Format: uuid */
+                partyId: string;
+                partyName: string;
+                reason: string;
+                /** Format: uuid */
+                adminId: string;
+                adminName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** @description The journal the entry posted. */
+                journal: {
+                    /** Format: uuid */
+                    journalId: string;
+                    /** @description The ledger journal type, such as earn.adjustment. */
+                    type: string;
+                    reason: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                    lines: {
+                        /** @description The party account, such as captain.earnings. */
+                        purpose: string;
+                        currency: string;
+                        /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                        amount: string;
+                    }[];
+                    orderId: string | null;
+                    orderNumber: string | null;
+                    /** @description The manual entry that posted it, if one did. */
+                    manualEntryId: string | null;
+                };
+                /** @description A reversal: the journal it cancels. */
+                corrects: {
+                    /** Format: uuid */
+                    journalId: string;
+                    /** @description The ledger journal type, such as earn.adjustment. */
+                    type: string;
+                    reason: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                    lines: {
+                        /** @description The party account, such as captain.earnings. */
+                        purpose: string;
+                        currency: string;
+                        /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                        amount: string;
+                    }[];
+                    orderId: string | null;
+                    orderNumber: string | null;
+                    /** @description The manual entry that posted it, if one did. */
+                    manualEntryId: string | null;
+                } | null;
+                reversedBy: {
+                    /** Format: uuid */
+                    journalId: string;
+                    manualEntryId: string | null;
+                    /** Format: date-time */
+                    at: string;
+                } | null;
+                reversible: boolean;
+                /** @description A financial correction from «سجل الطلبات»: the finished order it corrects. */
+                orderId: string | null;
+                orderNumber: string | null;
+            }[];
+            /** @description What a correction may reach: the order's restaurant, customer (dues only where they have some) and every captain who held it; empty unless canCorrect. */
+            accounts: {
+                /** @enum {string} */
+                partyKind: "captain" | "restaurant" | "customer";
+                /** Format: uuid */
+                partyId: string;
+                partyName: string;
+                /** @enum {string} */
+                account: "captain.custody" | "captain.earnings" | "merchant.account" | "customer.dues";
+                currencies: string[];
+            }[];
+        };
+        AdminOrderCorrectionDto: {
+            /** @enum {string} */
+            party: "captain" | "restaurant" | "customer";
+            /** Format: uuid */
+            partyId: string;
+            /** @enum {string} */
+            account: "captain.custody" | "captain.earnings" | "merchant.account" | "customer.dues";
+            currency: string;
+            /** @description From the party's view, never zero. */
+            amount: string;
+            reason: string;
         };
         AdminRestaurantSettlementPreviewRequestDto: {
             /** Format: uuid */
@@ -20466,6 +21009,64 @@ export interface components {
             nextPayout: string;
             /** @enum {string} */
             negativePolicy: "carry_forward" | "collect_at_desk";
+        };
+        CaptainOrderHistoryDto_Output: {
+            /** @description The city's base currency, the pay's. */
+            payCurrency: string;
+            /** @description Newest first, 20 a page. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** Format: date-time */
+                placedAt: string;
+                /**
+                 * Format: date
+                 * @description The business day it was placed on, for the grouping.
+                 */
+                day: string;
+                restaurantName: string;
+                /** @description «الحي» only: never the customer's name, phone or address (K8). */
+                neighbourhood: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description How it ended (AP Appendix C); null when not delivered or failed. */
+                outcome: ("normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other") | null;
+                testOrder: boolean;
+                /** @description «إعادة توصيل مجانية». */
+                redelivery: boolean;
+                /** @description «سلّمته لكابتن آخر»: the captain handed it over; the order went on without them. */
+                handedOver: boolean;
+                /** @description The pay earned for it in the base (order, waiting and peak); null for none. */
+                pay: string | null;
+                /** @description «دفعت للمطعم»: the confirmed pickup payment. */
+                paidToRestaurant: {
+                    currency: string;
+                    /** @description Integer minor units of its currency. */
+                    amount: string;
+                }[];
+                /** @description «قبضت»: what the captain received at the door. */
+                collected: {
+                    currency: string;
+                    /** @description Integer minor units of its currency. */
+                    amount: string;
+                }[];
+                /** @description «الباقي»: the change given back. */
+                change: {
+                    currency: string;
+                    /** @description Integer minor units of its currency. */
+                    amount: string;
+                }[];
+                /** @description The captain's own steps, oldest first (CA §9.13 detail). */
+                steps: {
+                    /** @enum {string} */
+                    step: "assigned" | "received_handover" | "arrived_at_restaurant" | "picked_up" | "handed_over" | "arrived_at_customer" | "delivered" | "failed" | "cancelled";
+                    /** Format: date-time */
+                    at: string;
+                }[];
+            }[];
+            /** @description The cursor of the next page; null at the end. */
+            next: string | null;
         };
         CaptainStatementListDto_Output: {
             /** @description Newest first. */
@@ -21511,6 +22112,135 @@ export interface components {
                 };
             }[];
         };
+        AdminDashboardDto_Output: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            day: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            lastWeekDay: string;
+            status: {
+                captains: {
+                    online: number;
+                    available: number;
+                    busy: number;
+                    cashBlocked: number;
+                };
+                restaurants: {
+                    open: number;
+                    busy: number;
+                    paused: number;
+                    closed: number;
+                    holiday: number;
+                    suspended: number;
+                };
+                /** @description Null until the receiving devices’ presence. */
+                withoutDevice: number | null;
+            };
+            today: {
+                /**
+                 * Format: date-time
+                 * @description The business day’s cutoff.
+                 */
+                from: string;
+                /**
+                 * Format: date-time
+                 * @description Today: now; last week: the same moment of its day.
+                 */
+                until: string;
+                orders: {
+                    placed: number;
+                    delivered: number;
+                    /** @description Placed to arrived now. */
+                    inProgress: number;
+                    cancelled: number;
+                    rejected: number;
+                    failed: number;
+                    /** @description Of the delivered: placing to delivery, one decimal. */
+                    deliveryMinutes: number | null;
+                    /** @description Of the delivered: at or before the promised time. */
+                    onTimeBp: number | null;
+                    /** @description Delivered ÷ placed. */
+                    successBp: number | null;
+                    firstOrders: number;
+                };
+                /** @description In the base; null while an amount has no rate. */
+                money: {
+                    currency: string;
+                    /** @description The customer totals of the orders delivered. */
+                    gmv: string;
+                    itemsValue: string;
+                    deliveryFees: string;
+                    commission: string;
+                    margin: string;
+                } | null;
+                /** @description Accounts registered, every city’s. */
+                newCustomers: number;
+            };
+            lastWeek: {
+                /**
+                 * Format: date-time
+                 * @description The business day’s cutoff.
+                 */
+                from: string;
+                /**
+                 * Format: date-time
+                 * @description Today: now; last week: the same moment of its day.
+                 */
+                until: string;
+                orders: {
+                    placed: number;
+                    delivered: number;
+                    /** @description Placed to arrived now. */
+                    inProgress: number;
+                    cancelled: number;
+                    rejected: number;
+                    failed: number;
+                    /** @description Of the delivered: placing to delivery, one decimal. */
+                    deliveryMinutes: number | null;
+                    /** @description Of the delivered: at or before the promised time. */
+                    onTimeBp: number | null;
+                    /** @description Delivered ÷ placed. */
+                    successBp: number | null;
+                    firstOrders: number;
+                };
+                /** @description In the base; null while an amount has no rate. */
+                money: {
+                    currency: string;
+                    /** @description The customer totals of the orders delivered. */
+                    gmv: string;
+                    itemsValue: string;
+                    deliveryFees: string;
+                    commission: string;
+                    margin: string;
+                } | null;
+                /** @description Accounts registered, every city’s. */
+                newCustomers: number;
+            };
+            tasks: {
+                /** @enum {string} */
+                key: "compensationApprovals" | "menuChanges" | "applications" | "probationReviews" | "expiringDocuments" | "acceptanceReviews" | "shortfalls" | "cashBlocked" | "settlementsDue" | "overdueRestaurants" | "payoutsDue";
+                count: number;
+            }[];
+            hours: {
+                hour: string;
+                today: number;
+                lastWeek: number;
+            }[];
+            topRestaurants: {
+                /** Format: uuid */
+                restaurantId: string;
+                name: string;
+                orders: number;
+            }[];
+            troubledRestaurants: {
+                /** Format: uuid */
+                restaurantId: string;
+                name: string;
+                rejected: number;
+                late: number;
+            }[];
+        };
         AdminCostReportDto_Output: {
             /** Format: uuid */
             cityId: string;
@@ -21579,19 +22309,38 @@ export interface components {
                 total: string;
             }[];
         };
-        AdminRestaurantStatementExportDto: {
+        AdminOrderHistoryExportDto: {
             /** Format: uuid */
-            restaurantId: string;
-            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            cityId: string;
+            /** @description The order number, with or without #. */
+            number: string | null;
+            /** @description The customer phone in any usual form; customers.reveal_phone (OWN, OPS, SUP). */
+            customerPhone: string | null;
+            restaurantId: string | null;
+            /** @description The captain who held the order last. */
+            captainId: string | null;
+            /** @description The first business day; an export needs a period. */
             from: string;
-            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            /** @description The last business day, included; at most 366 days. */
             to: string;
+            status: ("placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed") | null;
+            outcome: ("normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other") | null;
+            /** @description The outcome's party in force, or operations' cancellation's. */
+            responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+            /** @description The code used, any letter case. */
+            code: string | null;
+            zoneId: string | null;
+            /**
+             * @description all, real or test orders.
+             * @enum {string}
+             */
+            kind: "all" | "real" | "test";
         };
         AdminExportDto_Output: {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "restaurant_statement" | "daily_report" | "cost_report";
+            kind: "restaurant_statement" | "daily_report" | "cost_report" | "order_history";
             /** @enum {string} */
             status: "pending" | "ready" | "expired";
             fileName: string;
@@ -21601,6 +22350,14 @@ export interface components {
             expiresAt: string | null;
             /** @description Asked with download=true while ready: a signed download on the panel’s origin, valid 5 minutes. */
             url: string | null;
+        };
+        AdminRestaurantStatementExportDto: {
+            /** Format: uuid */
+            restaurantId: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            from: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            to: string;
         };
         AdminDailyReportExportDto: {
             /** Format: uuid */
@@ -29371,6 +30128,58 @@ export interface operations {
             };
         };
     };
+    merchantOrdersHistory: {
+        parameters: {
+            query?: {
+                /** @description The first business day, YYYY-MM-DD on the city clock; with `to`. */
+                from?: string;
+                /** @description The last business day, included; with `from`. */
+                to?: string;
+                status?: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description The order number without «#»; within the range. */
+                number?: string;
+                /** @description The `next` of the page before; none for the first page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderHistoryDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrdersOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderWithTimelineDto_Output"];
+                };
+            };
+        };
+    };
     merchantOrdersAccept: {
         parameters: {
             query?: never;
@@ -31589,6 +32398,30 @@ export interface operations {
             };
         };
     };
+    adminOrderHistoryRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOrderHistoryQueryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderHistoryDto_Output"];
+                };
+            };
+        };
+    };
     captainOrderRouteRoute: {
         parameters: {
             query?: never;
@@ -32817,6 +33650,57 @@ export interface operations {
             };
         };
     };
+    adminOrderCorrectionsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCorrectionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrderCorrectionsCorrect: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOrderCorrectionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminManualEntryDto_Output"];
+                };
+            };
+        };
+    };
     adminRestaurantSettlementPreview: {
         parameters: {
             query?: never;
@@ -33180,6 +34064,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainEarningsDto_Output"];
+                };
+            };
+        };
+    };
+    captainHistoryHistory: {
+        parameters: {
+            query?: {
+                /** @description The first business day, YYYY-MM-DD on the city clock; with `to`. None: every order. */
+                from?: string;
+                /** @description The last business day, included; with `from`. */
+                to?: string;
+                /** @description The `next` of the page before; none for the first page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderHistoryDto_Output"];
                 };
             };
         };
@@ -33881,6 +34792,28 @@ export interface operations {
             };
         };
     };
+    adminDashboardRead: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDashboardDto_Output"];
+                };
+            };
+        };
+    };
     adminCostReportReport: {
         parameters: {
             query: {
@@ -33903,6 +34836,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCostReportDto_Output"];
+                };
+            };
+        };
+    };
+    adminExportsRequestOrderHistory: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOrderHistoryExportDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminExportDto_Output"];
                 };
             };
         };

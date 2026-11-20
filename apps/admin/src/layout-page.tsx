@@ -25,10 +25,14 @@ import { ticketStatusKeys } from './tickets.js';
 function MenuLink({ id }: { id: MenuLinkId }) {
   const { t } = useTranslation();
   switch (id) {
+    case 'dashboard':
+      return <Link to="/dashboard">{t('dashboard.title')}</Link>;
     case 'orders':
       return <Link to="/orders">{t('board.title')}</Link>;
     case 'liveMap':
       return <Link to="/live-map">{t('liveMap.title')}</Link>;
+    case 'orderHistory':
+      return <Link to="/order-history">{t('orderHistory.title')}</Link>;
     case 'alerts':
       return <Link to="/alerts">{t('alerts.title')}</Link>;
     case 'emergencyCode':

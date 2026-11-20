@@ -23,6 +23,8 @@ import { AlertsMonitor } from './alerts-monitor.js';
 import { AlertsPage } from './alerts-page.js';
 import { HomePage } from './home-page.js';
 import { OrderDetailPage } from './order-detail-page.js';
+import { OrderHistoryPage } from './order-history-page.js';
+import { canSeeOrderHistory, historySearchOf } from './order-history.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
@@ -30,6 +32,8 @@ import { CaptainBalancesPage } from './captain-balances-page.js';
 import { CostReportPage } from './cost-report-page.js';
 import { DailyReportPage } from './daily-report-page.js';
 import { ExchangeRatesPage } from './exchange-rates-page.js';
+import { canSeeDashboard } from './dashboard.js';
+import { DashboardPage } from './dashboard-page.js';
 import { CASH_DESK_RECORD, CUSTOMERS_READ } from './customers.js';
 import { CustomerProfilePage, CustomerReceiptPage, CustomersPage } from './customers-page.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
@@ -168,10 +172,26 @@ function SignedInLayout() {
   return receivesAlerts(session) ? <AlertsMonitor cityCode={city}>{page}</AlertsMonitor> : page;
 }
 
+// AP §9.1: the dashboard is the panel's start for a session that may read
+// it (slice 2.40); the others keep the start page.
 const homeRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/',
+  beforeLoad: ({ context }) => {
+    if (canSeeDashboard(context.session)) throw redirect({ to: '/dashboard' });
+  },
   component: HomePage,
+});
+
+// AP §9.1 «لوحة التحكم» (slice 2.40): OWN, OPS, SUP, FIN.
+const dashboardRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/dashboard',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeDashboard(context.session)) throw redirect({ to: '/' });
+  },
+  component: DashboardPage,
 });
 
 const emergencyCodeRoute = createRoute({
@@ -202,6 +222,21 @@ const ordersRoute = createRoute({
     if (!can(context.session, OPERATIONS_READ)) throw redirect({ to: '/' });
   },
   component: OrdersBoardPage,
+});
+
+// AP §9.5 «سجل الطلبات» (slice 2.40): OWN, OPS, SUP and FIN; the filters
+// in the search but the customer's phone, which stays in the page.
+const orderHistoryRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/order-history',
+  validateSearch: (search: Record<string, unknown>) => ({
+    ...citySearch(search),
+    ...historySearchOf(search),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeOrderHistory(context.session)) throw redirect({ to: '/' });
+  },
+  component: OrderHistoryPage,
 });
 
 // The detail opens beside the board (AP §9.2.1), and the picker inside it.
@@ -924,6 +959,7 @@ const routeTree = rootRoute.addChildren([
   signInRoute,
   signedInRoute.addChildren([
     homeRoute,
+    dashboardRoute,
     emergencyCodeRoute,
     emergencyStopRoute,
     contentRoute,
@@ -984,6 +1020,7 @@ const routeTree = rootRoute.addChildren([
     captainApplicationRoute,
     alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute, handoverRoute])]),
+    orderHistoryRoute,
   ]),
 ]);
 

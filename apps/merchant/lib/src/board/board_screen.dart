@@ -181,11 +181,26 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
         return Scaffold(
           // RA §6.1 #3, §9: «القائمة», until the navigation of RA §6.2 (the
           // top bar's actions already fill a phone's width).
-          floatingActionButton: FloatingActionButton.small(
-            key: const Key('open-menu'),
-            tooltip: l10n.merchantMenu,
-            onPressed: () => context.push('/menu'),
-            child: const Icon(Icons.restaurant_menu),
+          // RA §8.18: «السجل», everyone, beside it (an owner's top bar has
+          // no room left).
+          floatingActionButton: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton.small(
+                key: const Key('open-history'),
+                heroTag: 'open-history',
+                tooltip: l10n.merchantHistory,
+                onPressed: () => context.push('/history'),
+                child: const Icon(Icons.history),
+              ),
+              FloatingActionButton.small(
+                key: const Key('open-menu'),
+                heroTag: 'open-menu',
+                tooltip: l10n.merchantMenu,
+                onPressed: () => context.push('/menu'),
+                child: const Icon(Icons.restaurant_menu),
+              ),
+            ],
           ),
           appBar: AppBar(
             title: Text(l10n.merchantAppName),

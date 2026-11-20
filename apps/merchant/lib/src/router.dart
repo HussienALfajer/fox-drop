@@ -11,6 +11,7 @@ import 'board/board_screen.dart';
 import 'board/order_screen.dart';
 import 'device.dart';
 import 'device_name_screen.dart';
+import 'history/history_screen.dart';
 import 'menu/bulk_price_screen.dart';
 import 'menu/menu_screen.dart';
 import 'menu/preview_screen.dart';
@@ -64,6 +65,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/orders/:id',
         builder: (context, state) =>
             OrderScreen(orderId: state.pathParameters['id']!),
+      ),
+      // RA §8.18 (slice 2.40): «السجل» for owners and cashiers (a cashier's
+      // range is fixed by the server); an order's detail over it.
+      GoRoute(
+        path: '/history',
+        builder: (context, state) => const HistoryScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (context, state) =>
+                HistoryOrderScreen(orderId: state.pathParameters['id']!),
+          ),
+        ],
       ),
       // RA §6.1 #4, §10: the status for everyone, the hours for owners.
       GoRoute(

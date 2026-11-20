@@ -79,9 +79,8 @@ class CaptainShell extends ConsumerWidget {
   }
 }
 
-/// CA §6.2 «المزيد»: the other screens. For now «أدائي», the settings,
-/// the work rules, the FAQ and support; the profile and history screens
-/// join with their slices.
+/// CA §6.2 «المزيد»: the other screens: «أدائي», «السجل», «ملفي», the
+/// settings, the work rules, the FAQ and support.
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
 
@@ -97,6 +96,12 @@ class MoreScreen extends StatelessWidget {
             key: const Key('more-performance'),
             title: Text(l10n.captainPerformance),
             onTap: () => context.push('/performance'),
+          ),
+          // CA §9.13 (slice 2.40): «السجل».
+          ListTile(
+            key: const Key('more-history'),
+            title: Text(l10n.captainHistory),
+            onTap: () => context.push('/history'),
           ),
           // CA §12 (slice 2.36c): «ملفي», with the documents and the contract.
           ListTile(

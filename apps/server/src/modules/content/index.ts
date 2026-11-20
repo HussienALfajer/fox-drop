@@ -58,7 +58,12 @@ export {
 } from './content.service.js';
 export { GENERIC_CUSTOMER_TEXT, NOTE_MAX, type ReasonList } from './lists.js';
 export { NotificationTexts, type RenderedNotification } from './notification-texts.service.js';
-export { costReportLabels, dailyReportLabels, restaurantStatementLabels } from './export-labels.js';
+export {
+  costReportLabels,
+  dailyReportLabels,
+  orderHistoryLabels,
+  restaurantStatementLabels,
+} from './export-labels.js';
 export {
   applicationDocumentLabels,
   formatDate,

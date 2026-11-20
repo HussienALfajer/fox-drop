@@ -48,6 +48,8 @@ import { canEdit } from './order-edit.js';
 import { ChangeTime } from './order-time-change-page.js';
 import { canChangeTime } from './order-time-change.js';
 import { OrderCompensations } from './order-compensation-page.js';
+import { OrderCorrections } from './order-corrections-page.js';
+import { canReadCorrections } from './order-corrections.js';
 import { OrderTickets } from './order-tickets-page.js';
 import { Badges } from './orders-board-page.js';
 import {
@@ -272,6 +274,10 @@ export function OrderDetailPage() {
       <OrderCompensations orderId={orderId} timeZone={city.timeZone} />
       {/* AP §9.3.1 «tickets linked», §9.3.2 «فتح تذكرة» (slice 2.23a). */}
       <OrderTickets orderId={orderId} hasCaptain={detail.captain !== null} city={city} />
+      {/* AP §9.5 «تصحيح مالي» of a finished order, OWN and FIN (slice 2.40). */}
+      {canReadCorrections(session) && (
+        <OrderCorrections orderId={orderId} timeZone={city.timeZone} />
+      )}
       {canChangeTime(session, detail) && (
         <ChangeTime
           key={orderId}

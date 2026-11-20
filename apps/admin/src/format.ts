@@ -21,13 +21,23 @@ export function decimalOf(minor: string, currency: string): `${number}` {
 }
 
 export function formatMoney(money: { amount: string; currency: string }): string {
-  const digits = digitsOf(money.currency);
+  return moneyFormat(money.currency, 'auto').format(decimalOf(money.amount, money.currency));
+}
+
+// A change, with a + on a gain (the dashboard, slice 2.40).
+export function formatSignedMoney(money: { amount: string; currency: string }): string {
+  return moneyFormat(money.currency, 'exceptZero').format(decimalOf(money.amount, money.currency));
+}
+
+function moneyFormat(currency: string, signDisplay: 'auto' | 'exceptZero') {
+  const digits = digitsOf(currency);
   return new Intl.NumberFormat('ar-u-nu-latn', {
     style: 'currency',
-    currency: money.currency,
+    currency,
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
-  }).format(decimalOf(money.amount, money.currency));
+    signDisplay,
+  });
 }
 
 export function formatTime(at: string, timeZone: string): string {

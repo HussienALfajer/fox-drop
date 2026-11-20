@@ -1727,6 +1727,83 @@
       "none": "غير محدد"
     }
   },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "status": "الحالة الآن",
+    "switchMode": "تغيير طريقة التوزيع",
+    "captains": "الكباتن",
+    "captain": {
+      "online": "متصلون: {{count}}",
+      "available": "متاحون: {{count}}",
+      "busy": "مشغولون: {{count}}",
+      "cashBlocked": "محجوبون لعدم تسليم النقد: {{count}}"
+    },
+    "restaurants": "المطاعم",
+    "restaurant": {
+      "open": "مفتوحة: {{count}}",
+      "busy": "مشغولة (بلغت أقصى عدد طلبات): {{count}}",
+      "paused": "متوقفة مؤقتاً: {{count}}",
+      "closed": "مغلقة حسب الجدول: {{count}}",
+      "holiday": "في إغلاق عطلة: {{count}}",
+      "suspended": "معلّقة: {{count}}",
+      "name": "المطعم"
+    },
+    "withoutDevice": "مفتوحة بلا جهاز استقبال متصل: {{count}}",
+    "withoutDeviceLater": "مفتوحة بلا جهاز استقبال متصل: غير متاح بعد",
+    "today": "اليوم",
+    "compared": "مقارنة بيوم {{weekday}} الماضي ({{day}}) حتى الساعة نفسها.",
+    "tile": "المؤشر",
+    "todayColumn": "اليوم",
+    "lastWeekColumn": "الأسبوع الماضي",
+    "change": "التغيير",
+    "none": "—",
+    "tiles": {
+      "placed": "الطلبات",
+      "delivered": "طلبات مسلّمة",
+      "inProgress": "طلبات قيد التنفيذ",
+      "cancelled": "طلبات ملغاة",
+      "rejected": "طلبات مرفوضة",
+      "failed": "طلبات لم تُسلَّم",
+      "gmv": "إجمالي ما دفعه الزبائن",
+      "itemsValue": "قيمة الأصناف",
+      "deliveryFees": "رسوم التوصيل",
+      "commission": "العمولات",
+      "margin": "هامش المنصة",
+      "deliveryMinutes": "متوسط وقت التوصيل",
+      "onTime": "نسبة التوصيل في الوقت",
+      "success": "نسبة النجاح (المسلّمة ÷ المطلوبة)",
+      "newCustomers": "زبائن جدد (كل المدن)",
+      "firstOrders": "طلبات أولى"
+    },
+    "moneyMissing": "لا يمكن حساب المبالغ الآن: عملة بلا سعر صرف.",
+    "countsNote": "الطلبات تُعدّ بوقت طلبها وبحالتها في تلك اللحظة من اليوم، والمبالغ بوقت تسليمها.",
+    "newCustomersNote": "الزبائن الجدد: الحسابات المسجلة في كل المدن.",
+    "alerts": "التنبيهات",
+    "tasks": "المهام",
+    "noTasks": "لا مهام لأدوارك.",
+    "task": {
+      "compensationApprovals": "طلبات موافقة على تعويض: {{count}}",
+      "menuChanges": "طلبات تعديل القائمة: {{count}}",
+      "applications": "طلبات انضمام للمراجعة: {{count}}",
+      "probationReviews": "مراجعات فترة التجربة: {{count}}",
+      "expiringDocuments": "مستندات تنتهي: {{count}}",
+      "acceptanceReviews": "مراجعات نسبة القبول: {{count}}",
+      "shortfalls": "نقص في التحصيل مفتوح: {{count}}",
+      "cashBlocked": "كباتن محجوبون لعدم تسليم النقد: {{count}}",
+      "settlementsDue": "تسويات مطاعم مستحقة: {{count}}",
+      "overdueRestaurants": "مطاعم متأخرة في التسوية: {{count}}",
+      "payoutsDue": "تصفيات الخميس المستحقة: {{count}}"
+    },
+    "perHour": "الطلبات في كل ساعة",
+    "hour": "الساعة",
+    "top": "أكثر المطاعم طلبات اليوم",
+    "orders": "الطلبات",
+    "noOrders": "لا طلبات اليوم بعد.",
+    "troubled": "مطاعم بأكثر رفض أو تأخير اليوم",
+    "rejected": "رفض",
+    "late": "تأخير في التحضير",
+    "noTrouble": "لا رفض ولا تأخير اليوم."
+  },
   "dailyReport": {
     "title": "التقرير اليومي",
     "day": "اليوم التجاري",
@@ -5211,8 +5288,10 @@
     },
     "user": "حسابي ({{roles}})",
     "module": {
+      "dashboard": "لوحة التحكم",
       "operations": "غرفة العمليات",
       "liveMap": "الخريطة الحية",
+      "orderHistory": "سجل الطلبات",
       "restaurants": "المطاعم",
       "captains": "الكباتن",
       "customers": "الزبائن",
@@ -5309,5 +5388,59 @@
     "assignTo": "طلب #{{number}} من {{restaurant}}",
     "noOrdersToAssign": "لا طلبات بلا كابتن الآن.",
     "close": "إغلاق"
+  },
+  "orderHistory": {
+    "title": "سجل الطلبات",
+    "readOnly": "الطلبات المنتهية للقراءة فقط. يصحّح المالك والمالية مبالغ طلب منتهٍ من تفاصيله بقيد تصحيحي.",
+    "filters": "تصفية الطلبات",
+    "any": "الكل",
+    "number": "رقم الطلب",
+    "phone": "رقم هاتف الزبون",
+    "from": "من يوم",
+    "to": "إلى يوم",
+    "zone": "المنطقة",
+    "find": "عرض",
+    "more": "عرض المزيد",
+    "empty": "لا طلبات بهذه الشروط.",
+    "none": "—",
+    "minutes": "{{minutes}} د",
+    "redelivery": "إعادة توصيل مجانية",
+    "exportNeedsPeriod": "اختر يوماً للبداية وآخر للنهاية لتصدير Excel.",
+    "kind": {
+      "all": "الكل",
+      "real": "حقيقي",
+      "test": "تجريبي"
+    },
+    "column": {
+      "number": "الرقم",
+      "time": "الوقت",
+      "restaurant": "المطعم",
+      "neighbourhood": "حي الزبون",
+      "captain": "الكابتن",
+      "status": "الحالة",
+      "outcome": "النتيجة",
+      "responsible": "الجهة المسؤولة",
+      "total": "الإجمالي",
+      "deliveryTime": "مدة التوصيل (دقيقة)",
+      "code": "الكود",
+      "kind": "النوع"
+    },
+    "refused": {
+      "invalidPeriod": "يوم النهاية قبل يوم البداية، أو الفترة أطول من 366 يوماً.",
+      "invalidPhone": "رقم الهاتف غير صالح.",
+      "tooManyRows": "الطلبات في هذه الفترة أكثر من 50000، وهو أقصى ما يحمله ملف واحد. اختر فترة أقصر أو أضف تصفية.",
+      "phoneNotAllowed": "البحث برقم الزبون غير متاح لدورك."
+    }
+  },
+  "orderCorrections": {
+    "title": "التصحيحات المالية",
+    "empty": "لا تصحيحات مالية على هذا الطلب.",
+    "open": "تصحيح مالي",
+    "refused": {
+      "notFinished": "لا يُصحَّح إلا طلب منتهٍ.",
+      "notOrderParty": "هذا الطرف ليس من أطراف الطلب."
+    },
+    "entry": "{{type}}: {{party}} {{amounts}}",
+    "account": "{{party}} {{name}}: {{account}}"
   }
 }

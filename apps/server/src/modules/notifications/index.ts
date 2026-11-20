@@ -195,7 +195,7 @@ export { type ChannelCheck, RealtimeAccess } from './realtime-access.js';
 export { requireRealtime } from './realtime-config.js';
 export { PlatformRelay } from './platform-relay.js';
 export { PublishFailedError, RealtimePublisher } from './realtime-publisher.js';
-export { type AlertCode, alertCodes } from './alert-rules.js';
+export { type AlertCode, alertCodes, receivedCodes } from './alert-rules.js';
 export { type PushRecipient } from './push-devices.js';
 export {
   CAPTAIN_NOTICE_TTL_MS,

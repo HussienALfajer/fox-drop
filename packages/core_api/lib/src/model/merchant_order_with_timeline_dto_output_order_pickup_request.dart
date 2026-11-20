@@ -8,7 +8,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_order_dto_output_order_pickup_request.g.dart';
+part 'merchant_order_with_timeline_dto_output_order_pickup_request.g.dart';
 
 /// The latest request; while open every device rings with the pickup prompt (RA §8.10 item 3).
 ///
@@ -24,22 +24,22 @@ part 'merchant_order_dto_output_order_pickup_request.g.dart';
 /// * [closedByUserName] - The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).
 /// * [closedByDeviceName]
 @BuiltValue()
-abstract class MerchantOrderDtoOutputOrderPickupRequest
+abstract class MerchantOrderWithTimelineDtoOutputOrderPickupRequest
     implements
         Built<
-          MerchantOrderDtoOutputOrderPickupRequest,
-          MerchantOrderDtoOutputOrderPickupRequestBuilder
+          MerchantOrderWithTimelineDtoOutputOrderPickupRequest,
+          MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder
         > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
   @BuiltValueField(wireName: r'status')
-  MerchantOrderDtoOutputOrderPickupRequestStatusEnum get status;
+  MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum get status;
   // enum statusEnum {  open,  confirmed,  rejected,  voided,  };
 
   /// automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».
   @BuiltValueField(wireName: r'outcome')
-  MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum? get outcome;
+  MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum? get outcome;
   // enum outcomeEnum {  restaurant,  automatic,  operations,  amount_incorrect,  incomplete,  cancelled,  };
 
   @BuiltValueField(wireName: r'amount')
@@ -67,34 +67,41 @@ abstract class MerchantOrderDtoOutputOrderPickupRequest
   @BuiltValueField(wireName: r'closedByDeviceName')
   String? get closedByDeviceName;
 
-  MerchantOrderDtoOutputOrderPickupRequest._();
+  MerchantOrderWithTimelineDtoOutputOrderPickupRequest._();
 
-  factory MerchantOrderDtoOutputOrderPickupRequest([
-    void updates(MerchantOrderDtoOutputOrderPickupRequestBuilder b),
-  ]) = _$MerchantOrderDtoOutputOrderPickupRequest;
+  factory MerchantOrderWithTimelineDtoOutputOrderPickupRequest([
+    void updates(MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder b),
+  ]) = _$MerchantOrderWithTimelineDtoOutputOrderPickupRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantOrderDtoOutputOrderPickupRequestBuilder b) => b;
+  static void _defaults(
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrderDtoOutputOrderPickupRequest> get serializer =>
-      _$MerchantOrderDtoOutputOrderPickupRequestSerializer();
+  static Serializer<MerchantOrderWithTimelineDtoOutputOrderPickupRequest>
+  get serializer =>
+      _$MerchantOrderWithTimelineDtoOutputOrderPickupRequestSerializer();
 }
 
-class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
-    implements PrimitiveSerializer<MerchantOrderDtoOutputOrderPickupRequest> {
+class _$MerchantOrderWithTimelineDtoOutputOrderPickupRequestSerializer
+    implements
+        PrimitiveSerializer<
+          MerchantOrderWithTimelineDtoOutputOrderPickupRequest
+        > {
   @override
   final Iterable<Type> types = const [
-    MerchantOrderDtoOutputOrderPickupRequest,
-    _$MerchantOrderDtoOutputOrderPickupRequest,
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequest,
+    _$MerchantOrderWithTimelineDtoOutputOrderPickupRequest,
   ];
 
   @override
-  final String wireName = r'MerchantOrderDtoOutputOrderPickupRequest';
+  final String wireName =
+      r'MerchantOrderWithTimelineDtoOutputOrderPickupRequest';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantOrderDtoOutputOrderPickupRequest object, {
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -106,7 +113,7 @@ class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
     yield serializers.serialize(
       object.status,
       specifiedType: const FullType(
-        MerchantOrderDtoOutputOrderPickupRequestStatusEnum,
+        MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum,
       ),
     );
     yield r'outcome';
@@ -115,7 +122,7 @@ class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
         : serializers.serialize(
             object.outcome,
             specifiedType: const FullType.nullable(
-              MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum,
+              MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum,
             ),
           );
     yield r'amount';
@@ -166,7 +173,7 @@ class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
   @override
   Object serialize(
     Serializers serializers,
-    MerchantOrderDtoOutputOrderPickupRequest object, {
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -181,7 +188,7 @@ class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantOrderDtoOutputOrderPickupRequestBuilder result,
+    required MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -202,10 +209,10 @@ class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      MerchantOrderDtoOutputOrderPickupRequestStatusEnum,
+                      MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum,
                     ),
                   )
-                  as MerchantOrderDtoOutputOrderPickupRequestStatusEnum;
+                  as MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum;
           result.status = valueDes;
           break;
         case r'outcome':
@@ -213,10 +220,10 @@ class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum,
+                      MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum,
                     ),
                   )
-                  as MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum?;
+                  as MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum?;
           if (valueDes == null) continue;
           result.outcome = valueDes;
           break;
@@ -299,12 +306,13 @@ class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
   }
 
   @override
-  MerchantOrderDtoOutputOrderPickupRequest deserialize(
+  MerchantOrderWithTimelineDtoOutputOrderPickupRequest deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantOrderDtoOutputOrderPickupRequestBuilder();
+    final result =
+        MerchantOrderWithTimelineDtoOutputOrderPickupRequestBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -319,66 +327,92 @@ class _$MerchantOrderDtoOutputOrderPickupRequestSerializer
   }
 }
 
-class MerchantOrderDtoOutputOrderPickupRequestStatusEnum extends EnumClass {
+class MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+    extends EnumClass {
   @BuiltValueEnumConst(wireName: r'open')
-  static const MerchantOrderDtoOutputOrderPickupRequestStatusEnum open =
-      _$merchantOrderDtoOutputOrderPickupRequestStatusEnum_open;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+  open = _$merchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum_open;
   @BuiltValueEnumConst(wireName: r'confirmed')
-  static const MerchantOrderDtoOutputOrderPickupRequestStatusEnum confirmed =
-      _$merchantOrderDtoOutputOrderPickupRequestStatusEnum_confirmed;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+  confirmed =
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum_confirmed;
   @BuiltValueEnumConst(wireName: r'rejected')
-  static const MerchantOrderDtoOutputOrderPickupRequestStatusEnum rejected =
-      _$merchantOrderDtoOutputOrderPickupRequestStatusEnum_rejected;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+  rejected =
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum_rejected;
   @BuiltValueEnumConst(wireName: r'voided')
-  static const MerchantOrderDtoOutputOrderPickupRequestStatusEnum voided =
-      _$merchantOrderDtoOutputOrderPickupRequestStatusEnum_voided;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+  voided =
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum_voided;
 
-  static Serializer<MerchantOrderDtoOutputOrderPickupRequestStatusEnum>
+  static Serializer<
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+  >
   get serializer =>
-      _$merchantOrderDtoOutputOrderPickupRequestStatusEnumSerializer;
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnumSerializer;
 
-  const MerchantOrderDtoOutputOrderPickupRequestStatusEnum._(String name)
-    : super(name);
-
-  static BuiltSet<MerchantOrderDtoOutputOrderPickupRequestStatusEnum>
-  get values => _$merchantOrderDtoOutputOrderPickupRequestStatusEnumValues;
-  static MerchantOrderDtoOutputOrderPickupRequestStatusEnum valueOf(
+  const MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum._(
     String name,
-  ) => _$merchantOrderDtoOutputOrderPickupRequestStatusEnumValueOf(name);
+  ) : super(name);
+
+  static BuiltSet<
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+  >
+  get values =>
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnumValues;
+  static MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum valueOf(
+    String name,
+  ) => _$merchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnumValueOf(
+    name,
+  );
 }
 
 /// automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».
-class MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum extends EnumClass {
+class MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+    extends EnumClass {
   @BuiltValueEnumConst(wireName: r'restaurant')
-  static const MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum restaurant =
-      _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnum_restaurant;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+  restaurant =
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum_restaurant;
   @BuiltValueEnumConst(wireName: r'automatic')
-  static const MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum automatic =
-      _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnum_automatic;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+  automatic =
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum_automatic;
   @BuiltValueEnumConst(wireName: r'operations')
-  static const MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum operations =
-      _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnum_operations;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+  operations =
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum_operations;
   @BuiltValueEnumConst(wireName: r'amount_incorrect')
-  static const MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
   amountIncorrect =
-      _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnum_amountIncorrect;
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum_amountIncorrect;
   @BuiltValueEnumConst(wireName: r'incomplete')
-  static const MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum incomplete =
-      _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnum_incomplete;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+  incomplete =
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum_incomplete;
   @BuiltValueEnumConst(wireName: r'cancelled')
-  static const MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum cancelled =
-      _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnum_cancelled;
+  static const MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+  cancelled =
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum_cancelled;
 
-  static Serializer<MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum>
+  static Serializer<
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+  >
   get serializer =>
-      _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnumSerializer;
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnumSerializer;
 
-  const MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum._(String name)
-    : super(name);
-
-  static BuiltSet<MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum>
-  get values => _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnumValues;
-  static MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum valueOf(
+  const MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum._(
     String name,
-  ) => _$merchantOrderDtoOutputOrderPickupRequestOutcomeEnumValueOf(name);
+  ) : super(name);
+
+  static BuiltSet<
+    MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+  >
+  get values =>
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnumValues;
+  static MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+  valueOf(String name) =>
+      _$merchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnumValueOf(
+        name,
+      );
 }

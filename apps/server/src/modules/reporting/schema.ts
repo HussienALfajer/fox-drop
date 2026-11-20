@@ -6,8 +6,14 @@ export const reporting = pgSchema('reporting');
 
 // What an export holds (architecture §5.9). Slice 2.19g: a restaurant's
 // statement for a period (AP §9.10.5); slice 2.20d: the daily report
-// (AP §9.10.1); slice 2.22d: the cost report (AP §9.10.6).
-export const exportKinds = ['restaurant_statement', 'daily_report', 'cost_report'] as const;
+// (AP §9.10.1); slice 2.22d: the cost report (AP §9.10.6); slice 2.40:
+// «سجل الطلبات» (AP §9.5).
+export const exportKinds = [
+  'restaurant_statement',
+  'daily_report',
+  'cost_report',
+  'order_history',
+] as const;
 export type ExportKind = (typeof exportKinds)[number];
 
 // pending: the worker has not written it yet; ready: in private-docs until
@@ -28,7 +34,7 @@ export const exports = reporting.table(
     kind: text('kind', { enum: exportKinds }).notNull(),
     // What was asked, by kind: { restaurantId, from, to } for a statement,
     // { cityId, day } for a daily report, { cityId, from, to } for a cost
-    // report.
+    // report, the filters for the order history.
     params: jsonb('params').notNull(),
     // The admin account (identity's id, a plain column) that asked for it.
     requestedBy: uuid('requested_by').notNull(),
@@ -47,7 +53,7 @@ export const exports = reporting.table(
     uniqueIndex('exports_requester_key').on(table.requestedBy, table.idempotencyKey),
     check(
       'exports_kind_values',
-      sql`${table.kind} IN ('restaurant_statement', 'daily_report', 'cost_report')`,
+      sql`${table.kind} IN ('restaurant_statement', 'daily_report', 'cost_report', 'order_history')`,
     ),
     check('exports_status_values', sql`${table.status} IN ('pending', 'ready', 'expired')`),
     check(

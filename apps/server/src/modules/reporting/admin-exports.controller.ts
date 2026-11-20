@@ -1,5 +1,8 @@
 import {
+  BadRequestException,
   Body,
+  ConflictException,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -18,6 +21,7 @@ import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
+import { orderHistoryFilterBody, OrderHistoryService } from '../ordering/index.js';
 import { costReportRefusal } from './admin-cost-report.controller.js';
 import { dailyReportRefusal } from './admin-daily-report.controller.js';
 import { day, restaurantPeriodQuery } from './admin-restaurant-statements.controller.js';
@@ -35,6 +39,13 @@ class AdminDailyReportExportDto extends createZodDto(z.object({ cityId: z.uuid()
 
 class AdminCostReportExportDto extends createZodDto(
   z.object({ cityId: z.uuid(), from: day, to: day }),
+) {}
+
+class AdminOrderHistoryExportDto extends createZodDto(
+  orderHistoryFilterBody.extend({
+    from: day.describe('The first business day; an export needs a period.'),
+    to: day.describe('The last business day, included; at most 366 days.'),
+  }),
 ) {}
 
 class AdminExportParamsDto extends createZodDto(z.object({ exportId: z.uuid() })) {}
@@ -100,6 +111,8 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
         throw costReportRefusal(error.refusal);
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));
+      case 'too_many_rows':
+        throw new ConflictException(body(HttpStatus.CONFLICT));
       case 'invalid_day':
       case 'unknown_city':
       case 'no_base_currency':
@@ -114,7 +127,51 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
 // download is audited (AP §5.4).
 @AdminController()
 export class AdminExportsController {
-  constructor(private readonly exports: ExportsService) {}
+  constructor(
+    private readonly exports: ExportsService,
+    private readonly history: OrderHistoryService,
+  ) {}
+
+  // «تصدير Excel» of «سجل الطلبات» (AP §9.5, slice 2.40): the filters of
+  // the list with a period. 202, as the statement's. 400 invalid_period,
+  // invalid_phone; 403 phone_not_allowed; 409 too_many_rows (more than
+  // ADMIN_HISTORY_EXPORT_MAX orders: a shorter period or more filters);
+  // 422 idempotency_key_reused.
+  @Post('order-history/exports')
+  @RequirePermission('order_history.read')
+  @Idempotent()
+  @HttpCode(202)
+  @ZodResponse({ status: 202, type: AdminExportDto })
+  async requestOrderHistory(
+    @Body() body: AdminOrderHistoryExportDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    const resolved = await this.history.resolve(body, session.permissions);
+    if (resolved === 'phone_not_allowed') {
+      throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: resolved });
+    }
+    if (resolved === 'invalid_phone' || resolved === 'invalid_period') {
+      throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: resolved });
+    }
+    const filter = resolved;
+    return refusalsAsHttp(async () =>
+      exportBody(
+        await this.exports.requestOrderHistory(
+          exportUser(session, request),
+          {
+            ...filter,
+            number: filter.number === null ? null : filter.number.toString(),
+            from: body.from,
+            to: body.to,
+          },
+          idempotencyKey,
+          new Date(),
+        ),
+      ),
+    );
+  }
 
   // «تصدير Excel» of a restaurant's statement for a period (AP §9.10.5).
   // 202: the worker writes it; read it with GET /v1/admin/exports/{id}.
@@ -198,7 +255,7 @@ export class AdminExportsController {
   // kind's permission (`exportPermissions`; 404 unknown_export for anyone
   // else); with download=true while ready, a download URL, audited.
   @Get('exports/:exportId')
-  @RequireAnyPermission('restaurants.statements', 'finance.read')
+  @RequireAnyPermission('restaurants.statements', 'finance.read', 'order_history.read')
   @ZodResponse({ status: 200, type: AdminExportDto })
   view(
     @Param() params: AdminExportParamsDto,

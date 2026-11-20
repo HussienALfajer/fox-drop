@@ -396,6 +396,18 @@ Serializers _$serializers =
           ..add(AdminDailyReportDtoOutputPreviousInner.serializer)
           ..add(AdminDailyReportDtoOutputRestaurants.serializer)
           ..add(AdminDailyReportExportDto.serializer)
+          ..add(AdminDashboardDtoOutput.serializer)
+          ..add(AdminDashboardDtoOutputHoursInner.serializer)
+          ..add(AdminDashboardDtoOutputStatus.serializer)
+          ..add(AdminDashboardDtoOutputStatusCaptains.serializer)
+          ..add(AdminDashboardDtoOutputStatusRestaurants.serializer)
+          ..add(AdminDashboardDtoOutputTasksInner.serializer)
+          ..add(AdminDashboardDtoOutputTasksInnerKeyEnum.serializer)
+          ..add(AdminDashboardDtoOutputToday.serializer)
+          ..add(AdminDashboardDtoOutputTodayMoney.serializer)
+          ..add(AdminDashboardDtoOutputTodayOrders.serializer)
+          ..add(AdminDashboardDtoOutputTopRestaurantsInner.serializer)
+          ..add(AdminDashboardDtoOutputTroubledRestaurantsInner.serializer)
           ..add(AdminDeliveryFeePreviewDtoOutput.serializer)
           ..add(AdminDeliveryFeePreviewDtoOutputDistance.serializer)
           ..add(AdminDeliveryFeePreviewDtoOutputDistanceMethodEnum.serializer)
@@ -694,6 +706,17 @@ Serializers _$serializers =
             AdminOrderCompensationsDtoOutputCompensationsInnerStatusEnum
                 .serializer,
           )
+          ..add(AdminOrderCorrectionDto.serializer)
+          ..add(AdminOrderCorrectionDtoAccountEnum.serializer)
+          ..add(AdminOrderCorrectionDtoPartyEnum.serializer)
+          ..add(AdminOrderCorrectionsDtoOutput.serializer)
+          ..add(AdminOrderCorrectionsDtoOutputAccountsInner.serializer)
+          ..add(
+            AdminOrderCorrectionsDtoOutputAccountsInnerAccountEnum.serializer,
+          )
+          ..add(
+            AdminOrderCorrectionsDtoOutputAccountsInnerPartyKindEnum.serializer,
+          )
           ..add(AdminOrderDtoOutput.serializer)
           ..add(AdminOrderDtoOutputOrder.serializer)
           ..add(AdminOrderDtoOutputOrderAcceptance.serializer)
@@ -806,6 +829,21 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderTimelineInnerItemReport.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerTimeChange.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerToEnum.serializer)
+          ..add(AdminOrderHistoryDtoOutput.serializer)
+          ..add(AdminOrderHistoryDtoOutputOrdersInner.serializer)
+          ..add(AdminOrderHistoryDtoOutputOrdersInnerOutcomeEnum.serializer)
+          ..add(AdminOrderHistoryDtoOutputOrdersInnerResponsibleEnum.serializer)
+          ..add(AdminOrderHistoryDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(AdminOrderHistoryExportDto.serializer)
+          ..add(AdminOrderHistoryExportDtoKindEnum.serializer)
+          ..add(AdminOrderHistoryExportDtoOutcomeEnum.serializer)
+          ..add(AdminOrderHistoryExportDtoResponsibleEnum.serializer)
+          ..add(AdminOrderHistoryExportDtoStatusEnum.serializer)
+          ..add(AdminOrderHistoryQueryDto.serializer)
+          ..add(AdminOrderHistoryQueryDtoKindEnum.serializer)
+          ..add(AdminOrderHistoryQueryDtoOutcomeEnum.serializer)
+          ..add(AdminOrderHistoryQueryDtoResponsibleEnum.serializer)
+          ..add(AdminOrderHistoryQueryDtoStatusEnum.serializer)
           ..add(AdminOrderOffersDtoOutput.serializer)
           ..add(AdminOrderOffersDtoOutputOffersInner.serializer)
           ..add(AdminOrderOffersDtoOutputOffersInnerKindEnum.serializer)
@@ -1421,6 +1459,19 @@ Serializers _$serializers =
           ..add(CaptainOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
           ..add(CaptainOrderDtoOutputOrderRedeliveryOf.serializer)
           ..add(CaptainOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(CaptainOrderHistoryDtoOutput.serializer)
+          ..add(CaptainOrderHistoryDtoOutputOrdersInner.serializer)
+          ..add(CaptainOrderHistoryDtoOutputOrdersInnerOutcomeEnum.serializer)
+          ..add(
+            CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                .serializer,
+          )
+          ..add(CaptainOrderHistoryDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(CaptainOrderHistoryDtoOutputOrdersInnerStepsInner.serializer)
+          ..add(
+            CaptainOrderHistoryDtoOutputOrdersInnerStepsInnerStepEnum
+                .serializer,
+          )
           ..add(CaptainOrderRouteDtoOutput.serializer)
           ..add(CaptainOrderRouteDtoOutputLegEnum.serializer)
           ..add(CaptainOrderRouteDtoOutputRoute.serializer)
@@ -1840,15 +1891,32 @@ Serializers _$serializers =
           ..add(MerchantNewUploadDtoContentTypeEnum.serializer)
           ..add(MerchantOptionGroupRequestDto.serializer)
           ..add(MerchantOrderDtoOutput.serializer)
-          ..add(MerchantOrderDtoOutputOrder.serializer)
-          ..add(MerchantOrderDtoOutputOrderCaptainTrackEnum.serializer)
-          ..add(MerchantOrderDtoOutputOrderPickup.serializer)
-          ..add(MerchantOrderDtoOutputOrderPickupRequest.serializer)
-          ..add(MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
-          ..add(MerchantOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
-          ..add(MerchantOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(MerchantOrderHistoryDtoOutput.serializer)
+          ..add(MerchantOrderHistoryDtoOutputOrdersInner.serializer)
+          ..add(MerchantOrderHistoryDtoOutputOrdersInnerOwner.serializer)
+          ..add(MerchantOrderHistoryDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(MerchantOrderProblemBodyDto.serializer)
           ..add(MerchantOrderSettingsDto.serializer)
+          ..add(MerchantOrderWithTimelineDtoOutput.serializer)
+          ..add(MerchantOrderWithTimelineDtoOutputOrder.serializer)
+          ..add(
+            MerchantOrderWithTimelineDtoOutputOrderCaptainTrackEnum.serializer,
+          )
+          ..add(MerchantOrderWithTimelineDtoOutputOrderPickup.serializer)
+          ..add(MerchantOrderWithTimelineDtoOutputOrderPickupRequest.serializer)
+          ..add(
+            MerchantOrderWithTimelineDtoOutputOrderPickupRequestOutcomeEnum
+                .serializer,
+          )
+          ..add(
+            MerchantOrderWithTimelineDtoOutputOrderPickupRequestStatusEnum
+                .serializer,
+          )
+          ..add(MerchantOrderWithTimelineDtoOutputOrderStatusEnum.serializer)
+          ..add(MerchantOrderWithTimelineDtoOutputTimelineInner.serializer)
+          ..add(
+            MerchantOrderWithTimelineDtoOutputTimelineInnerStepEnum.serializer,
+          )
           ..add(MerchantOrdersDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerAcceptance.serializer)
@@ -2568,6 +2636,31 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminDashboardDtoOutputTasksInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputTasksInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDashboardDtoOutputHoursInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDashboardDtoOutputTopRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputTopRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDashboardDtoOutputTroubledRestaurantsInner),
+            ]),
+            () =>
+                ListBuilder<AdminDashboardDtoOutputTroubledRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminDeliveryFeesDtoOutputVersionsInner),
             ]),
             () => ListBuilder<AdminDeliveryFeesDtoOutputVersionsInner>(),
@@ -2825,6 +2918,18 @@ Serializers _$serializers =
               const FullType(AdminManualEntriesDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminManualEntriesDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminManualEntriesDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminManualEntriesDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderCorrectionsDtoOutputAccountsInner),
+            ]),
+            () => ListBuilder<AdminOrderCorrectionsDtoOutputAccountsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3160,6 +3265,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminOrderDtoOutputOrderReassignChoicesReasonsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminOrderHistoryDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4116,6 +4227,54 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CaptainOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<CaptainOrderHistoryDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerPaidToRestaurantInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainOrderHistoryDtoOutputOrdersInnerStepsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainOrderHistoryDtoOutputOrdersInnerStepsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainPayCalculationDtoOutputAnnouncedInner),
             ]),
             () => ListBuilder<CaptainPayCalculationDtoOutputAnnouncedInner>(),
@@ -4888,6 +5047,19 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<MerchantOrderHistoryDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantOrderWithTimelineDtoOutputTimelineInner),
+            ]),
+            () =>
+                ListBuilder<MerchantOrderWithTimelineDtoOutputTimelineInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantOrdersDtoOutputOrdersInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInner>(),
@@ -5125,6 +5297,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
