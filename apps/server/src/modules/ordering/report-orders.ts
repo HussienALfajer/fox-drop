@@ -64,6 +64,8 @@ export type ReportScope = { cityId: string } | { restaurantId: string };
 export interface ReportItem {
   itemId: string;
   name: string;
+  // The sales' currency (the orders').
+  currency: string;
   quantity: number;
   sales: bigint;
 }
@@ -148,6 +150,7 @@ export class ReportOrdersService {
     const rows = await this.database.db
       .select({
         itemId: orderLines.itemId,
+        currency: orders.currency,
         name: sql<string>`(array_agg(${orderLines.itemName} ORDER BY ${orderLines.orderPlacedAt} DESC))[1]`,
         quantity: sql<number>`sum(${orderLines.quantity})::int`,
         sales: sql<string>`sum(${orderLines.lineTotal})::text`,
@@ -166,7 +169,7 @@ export class ReportOrdersService {
           lt(orderLines.orderPlacedAt, to),
         ),
       )
-      .groupBy(orderLines.itemId);
+      .groupBy(orderLines.itemId, orders.currency);
     return rows.map((row) => ({ ...row, sales: BigInt(row.sales) }));
   }
 

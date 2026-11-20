@@ -1840,6 +1840,14 @@ Serializers _$serializers =
           ..add(MerchantDevicesDtoOutputDevicesInner.serializer)
           ..add(MerchantDevicesDtoOutputDevicesInnerPlatformEnum.serializer)
           ..add(MerchantEmergencyStopDtoOutput.serializer)
+          ..add(MerchantFiguresDtoOutput.serializer)
+          ..add(MerchantFiguresDtoOutputCurrent.serializer)
+          ..add(MerchantFiguresDtoOutputCurrentHoursInner.serializer)
+          ..add(MerchantFiguresDtoOutputCurrentPauseMinutes.serializer)
+          ..add(MerchantFiguresDtoOutputCurrentRating.serializer)
+          ..add(MerchantFiguresDtoOutputCurrentRejectionsInner.serializer)
+          ..add(MerchantFiguresDtoOutputCurrentTopByQuantityInner.serializer)
+          ..add(MerchantFiguresDtoOutputPrevious.serializer)
           ..add(MerchantHolidayCloseDto.serializer)
           ..add(MerchantHoursDtoOutput.serializer)
           ..add(MerchantHoursDtoOutputCoverage.serializer)
@@ -4979,6 +4987,66 @@ Serializers _$serializers =
               const FullType(MerchantDevicesDtoOutputDevicesInner),
             ]),
             () => ListBuilder<MerchantDevicesDtoOutputDevicesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresDtoOutputCurrentRejectionsInner),
+            ]),
+            () => ListBuilder<MerchantFiguresDtoOutputCurrentRejectionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresDtoOutputCurrentTopByQuantityInner),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantFiguresDtoOutputCurrentTopByQuantityInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresDtoOutputCurrentTopByQuantityInner),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantFiguresDtoOutputCurrentTopByQuantityInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresDtoOutputCurrentHoursInner),
+            ]),
+            () => ListBuilder<MerchantFiguresDtoOutputCurrentHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresDtoOutputCurrentRejectionsInner),
+            ]),
+            () => ListBuilder<MerchantFiguresDtoOutputCurrentRejectionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresDtoOutputCurrentTopByQuantityInner),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantFiguresDtoOutputCurrentTopByQuantityInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresDtoOutputCurrentTopByQuantityInner),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantFiguresDtoOutputCurrentTopByQuantityInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantFiguresDtoOutputCurrentHoursInner),
+            ]),
+            () => ListBuilder<MerchantFiguresDtoOutputCurrentHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

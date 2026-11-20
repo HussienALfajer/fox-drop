@@ -14,6 +14,7 @@ import { GeoService, type Point } from '../geo/index.js';
 import {
   ADMIN_SESSION_COOKIE,
   AdminSessionsService,
+  MerchantAccountsService,
   CODE_SENDER,
   type DevelopmentCodeSender,
 } from '../identity/index.js';
@@ -400,5 +401,51 @@ describe('«التقارير» (AP §9.17)', () => {
     const ops = await admin(['OPS']);
     expect((await ops.get(`/v1/admin/exports/${finance.json().id}`)).statusCode).toBe(404);
     expect((await fin.get(`/v1/admin/exports/${finance.json().id}`)).statusCode).toBe(200);
+  });
+});
+
+// RA §11 (slice 2.41): the owners' reports and the daily summary.
+describe('the restaurant’s reports (RA §11)', () => {
+  it('answers an owner the period’s figures with the previous period, never a cashier', async () => {
+    const { id, item } = await restaurant('مطعم الملخص');
+    const owner = phoneNumber();
+    const cashier = phoneNumber();
+    const accounts = app.get(MerchantAccountsService);
+    await accounts.addAccount(id, { role: 'owner', name: 'owner', phone: owner }, change);
+    await accounts.addAccount(id, { role: 'cashier', name: 'cashier', phone: cashier }, change);
+    const customer = await signIn('customer', phoneNumber());
+    const cancelling = await signIn('customer', phoneNumber());
+    await place(id, item, customer);
+    const cancelled = await place(id, item, cancelling);
+    await cancel(cancelled.id, cancelling);
+
+    const headers = await signIn('merchant', owner);
+    const read = (query: string) =>
+      app.inject({ method: 'GET', url: `/v1/merchant/figures?${query}`, headers });
+    const today = await read('period=today');
+    expect(today.statusCode, today.body).toBe(200);
+    expect(today.json().current).toMatchObject({
+      received: 2,
+      acceptedByYou: 0,
+      unanswered: 0,
+      // One left to answer: the customer's cancellation asked nothing.
+      acceptanceBp: 0,
+      delivered: 0,
+      sales: '0',
+      averageOrder: null,
+    });
+    expect(today.json().current.hours).toHaveLength(24);
+    expect(today.json().previous).toMatchObject({ received: 0 });
+    const summary = await read(`day=${day}`);
+    expect(summary.json().current.received).toBe(2);
+    for (const query of ['', 'period=today&day=' + day, 'day=2999-01-01']) {
+      expect((await read(query)).statusCode, query).toBe(400);
+    }
+    const asCashier = await app.inject({
+      method: 'GET',
+      url: '/v1/merchant/figures?period=today',
+      headers: await signIn('merchant', cashier),
+    });
+    expect(asCashier.json()).toMatchObject({ error: 'owner_only' });
   });
 });

@@ -753,6 +753,7 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/merchant/account': 'app_session',
   'GET /v1/merchant/account/overdue': 'app_session',
   'GET /v1/merchant/ratings': 'app_session',
+  'GET /v1/merchant/figures': 'app_session',
   'GET /v1/merchant/statements': 'app_session',
   'GET /v1/merchant/statements/{statementId}': 'app_session',
   'GET /v1/merchant/receipts': 'app_session',

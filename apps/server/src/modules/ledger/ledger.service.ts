@@ -533,21 +533,24 @@ export class LedgerService {
       .filter((row) => row.amount !== 0n);
   }
 
-  // AP §9.17 «Captains» (slice 2.41): the entries of some journal types on
-  // a purpose's accounts from `from` (included) to `to` (excluded), summed
-  // per owner and currency, from the party's view (a captain's earnings: +
-  // what they earned).
+  // AP §9.17 «Captains», RA §11 (slice 2.41): the entries of some journal
+  // types on a purpose's accounts from `from` (included) to `to`
+  // (excluded), summed per owner, journal type and currency, from the
+  // party's view (a captain's earnings: + what they earned; a restaurant's
+  // account: + it owes); one owner's only when `ownerId` is given.
   async ownerTotals(
     cityId: string,
     purpose: AccountPurpose,
     types: readonly JournalType[],
     from: Date,
     to: Date,
-  ): Promise<{ ownerId: string; currency: string; amount: bigint }[]> {
+    ownerId: string | null = null,
+  ): Promise<{ ownerId: string; type: JournalType; currency: string; amount: bigint }[]> {
     if (types.length === 0) return [];
     const rows = await this.database.db
       .select({
         ownerId: accounts.ownerId,
+        type: journals.type,
         currency: entries.currency,
         sum: sql<string>`sum(${entries.amount})::text`,
       })
@@ -558,17 +561,25 @@ export class LedgerService {
         and(
           eq(journals.cityId, cityId),
           eq(accounts.purpose, purpose),
+          ownerId === null ? undefined : eq(accounts.ownerId, ownerId),
           inArray(journals.type, [...types]),
           gte(entries.createdAt, from),
           lt(entries.createdAt, to),
         ),
       )
-      .groupBy(accounts.ownerId, entries.currency);
+      .groupBy(accounts.ownerId, journals.type, entries.currency);
     const sign = accountPurposes[purpose].sign;
     return rows.flatMap((row) =>
       row.ownerId === null
         ? []
-        : [{ ownerId: row.ownerId, currency: row.currency, amount: BigInt(row.sum) * sign }],
+        : [
+            {
+              ownerId: row.ownerId,
+              type: row.type as JournalType,
+              currency: row.currency,
+              amount: BigInt(row.sum) * sign,
+            },
+          ],
     );
   }
 

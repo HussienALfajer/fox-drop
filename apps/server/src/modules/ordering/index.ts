@@ -258,6 +258,7 @@ export {
 } from './order-history.js';
 export { type CaptainFigures, CaptainFiguresService, ON_TIME_WINDOW } from './captain-figures.js';
 export { type DashboardOrderRow, DashboardOrdersService } from './dashboard-orders.js';
+export { periodBounds } from './rating-pages.js';
 export {
   type ReportItem,
   type ReportOrder,

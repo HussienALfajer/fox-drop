@@ -7668,6 +7668,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/figures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantFiguresRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -22490,6 +22506,146 @@ export interface components {
                 at: string;
             }[];
         };
+        MerchantFiguresDto_Output: {
+            /** Format: date-time */
+            from: string;
+            /**
+             * Format: date-time
+             * @description The period’s end, or now while it runs.
+             */
+            to: string;
+            /** @description The money’s currency, the city’s base. */
+            currency: string;
+            current: {
+                /** @description Orders that reached the restaurant. */
+                received: number;
+                acceptedByYou: number;
+                /** @description Accepted on the restaurant’s behalf (RA §8.15). */
+                acceptedByOperations: number;
+                rejected: number;
+                rejections: {
+                    label: string;
+                    byOperations: boolean;
+                    count: number;
+                }[];
+                /** @description Cancelled automatically for no response (RA §8.3). */
+                unanswered: number;
+                /** @description Accepted by you ÷ (received − cancelled by the customer before any answer). */
+                acceptanceBp: number | null;
+                delivered: number;
+                /** @description Items value of the delivered orders, after any edits. */
+                sales: string;
+                averageOrder: string | null;
+                /** @description From the restaurant account’s entries of the period (RA §12). */
+                commission: string;
+                /** @description Restaurant-funded discounts, from the same entries. */
+                discounts: string;
+                /** @description Sales less the commission and the discounts. */
+                net: string;
+                /** @description Placed to accepted, by restaurant users only. */
+                acceptMinutes: number | null;
+                prepActualMinutes: number | null;
+                prepChosenMinutes: number | null;
+                /** @description Ready (or picked up) after the time chosen ÷ accepted. */
+                lateBp: number | null;
+                readyNotPressed: number;
+                captainWaitMinutes: number | null;
+                rating: {
+                    count: number;
+                    average: number | null;
+                };
+                topByQuantity: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** @description Its name on the latest order. */
+                    name: string;
+                    quantity: number;
+                    sales: string;
+                }[];
+                topBySales: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** @description Its name on the latest order. */
+                    name: string;
+                    quantity: number;
+                    sales: string;
+                }[];
+                hours: {
+                    hour: number;
+                    delivered: number;
+                }[];
+                pauseMinutes: {
+                    restaurant: number;
+                    ops: number;
+                    auto: number;
+                };
+            };
+            /** @description The previous period of the same length, for the arrows. */
+            previous: {
+                /** @description Orders that reached the restaurant. */
+                received: number;
+                acceptedByYou: number;
+                /** @description Accepted on the restaurant’s behalf (RA §8.15). */
+                acceptedByOperations: number;
+                rejected: number;
+                rejections: {
+                    label: string;
+                    byOperations: boolean;
+                    count: number;
+                }[];
+                /** @description Cancelled automatically for no response (RA §8.3). */
+                unanswered: number;
+                /** @description Accepted by you ÷ (received − cancelled by the customer before any answer). */
+                acceptanceBp: number | null;
+                delivered: number;
+                /** @description Items value of the delivered orders, after any edits. */
+                sales: string;
+                averageOrder: string | null;
+                /** @description From the restaurant account’s entries of the period (RA §12). */
+                commission: string;
+                /** @description Restaurant-funded discounts, from the same entries. */
+                discounts: string;
+                /** @description Sales less the commission and the discounts. */
+                net: string;
+                /** @description Placed to accepted, by restaurant users only. */
+                acceptMinutes: number | null;
+                prepActualMinutes: number | null;
+                prepChosenMinutes: number | null;
+                /** @description Ready (or picked up) after the time chosen ÷ accepted. */
+                lateBp: number | null;
+                readyNotPressed: number;
+                captainWaitMinutes: number | null;
+                rating: {
+                    count: number;
+                    average: number | null;
+                };
+                topByQuantity: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** @description Its name on the latest order. */
+                    name: string;
+                    quantity: number;
+                    sales: string;
+                }[];
+                topBySales: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** @description Its name on the latest order. */
+                    name: string;
+                    quantity: number;
+                    sales: string;
+                }[];
+                hours: {
+                    hour: number;
+                    delivered: number;
+                }[];
+                pauseMinutes: {
+                    restaurant: number;
+                    ops: number;
+                    auto: number;
+                };
+            };
+        };
     };
     responses: never;
     parameters: never;
@@ -35129,6 +35285,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantPriceLogDto_Output"];
+                };
+            };
+        };
+    };
+    merchantFiguresRead: {
+        parameters: {
+            query?: {
+                /** @description RA §11: «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً»; or `day`. */
+                period?: "today" | "yesterday" | "last_7_days" | "last_30_days";
+                /** @description A business day on the city’s clock, for the daily summary; or `period`. */
+                day?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantFiguresDto_Output"];
                 };
             };
         };

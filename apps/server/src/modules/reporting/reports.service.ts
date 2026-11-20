@@ -9,7 +9,7 @@ import { CustomerAccountsService } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { PromoCodeUsesService } from '../marketing/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { ReportOrdersService } from '../ordering/index.js';
+import { periodBounds, ReportOrdersService } from '../ordering/index.js';
 import { ContentService } from '../content/index.js';
 import { DailyReportService } from './daily-report.service.js';
 import {
@@ -24,6 +24,11 @@ import {
   topCustomerIds,
 } from './report-tables.js';
 import { financeReport } from './finance-report.js';
+import {
+  type OwnerPeriod,
+  type RestaurantFigures,
+  restaurantFigures,
+} from './restaurant-report.js';
 
 // AP §9.17: the reports of «التقارير», each exported to Excel.
 export const reportKinds = [
@@ -127,6 +132,81 @@ export class ReportsService {
       .toISOString()
       .slice(0, 10);
     return { from, to };
+  }
+
+  // RA §11 (slice 2.41): a restaurant's figures over an owner's period, or a
+  // business day (`day`, the daily summary), with the previous period of
+  // the same length for the arrows: «اليوم» so far against the same length
+  // of yesterday from its cutoff, a whole day or 7 or 30 days against those
+  // just before. A day not started yet (or not a day) is null.
+  async restaurantReport(
+    restaurant: { id: string; cityId: string },
+    asked: { period: OwnerPeriod } | { day: string },
+    now: Date,
+  ): Promise<{
+    from: Date;
+    to: Date;
+    currency: string;
+    current: RestaurantFigures;
+    previous: RestaurantFigures;
+  } | null> {
+    const clock = await this.days.clock(restaurant.cityId);
+    let from: Date;
+    let to: Date;
+    if ('period' in asked) {
+      const bounds = periodBounds(asked.period, now, clock.cutoffMinutes, clock.timeZone);
+      from = bounds.from!;
+      to = bounds.to ?? now;
+    } else {
+      from = cutoffOn(asked.day, clock.cutoffMinutes, clock.timeZone);
+      if (from > now) return null;
+      const end = cutoffOn(nextDay(asked.day), clock.cutoffMinutes, clock.timeZone);
+      to = end < now ? end : now;
+    }
+    const length = to.getTime() - from.getTime();
+    const before = new Date(from.getTime() - length);
+    const currency = (await this.fx.baseCurrency(restaurant.cityId)) ?? '';
+    const [current, previous] = await Promise.all([
+      this.restaurantFigures(restaurant, from, to, currency, clock),
+      this.restaurantFigures(restaurant, before, from, currency, clock),
+    ]);
+    return { from, to, currency, current, previous };
+  }
+
+  private async restaurantFigures(
+    restaurant: { id: string; cityId: string },
+    from: Date,
+    to: Date,
+    currency: string,
+    clock: { timeZone: string; cutoffMinutes: number },
+  ): Promise<RestaurantFigures> {
+    const [orders, items, ratings, pauses, money] = await Promise.all([
+      this.orders.placedBetween({ restaurantId: restaurant.id }, from, to),
+      this.orders.deliveredItems(restaurant.id, from, to),
+      this.orders.ratingsBetween('restaurant', [restaurant.id], from, to),
+      this.merchants.pauseMinutes([restaurant.id], from, to),
+      this.ledger.ownerTotals(
+        restaurant.cityId,
+        'merchant.account',
+        ['merchant.commission', 'merchant.discount_share'],
+        from,
+        to,
+        restaurant.id,
+      ),
+    ]);
+    const sum = (type: string) =>
+      money
+        .filter((row) => row.type === type && row.currency === currency)
+        .reduce((total, row) => total + row.amount, 0n);
+    return restaurantFigures({
+      orders,
+      items: items.filter((item) => item.currency === currency),
+      rating: ratings.get(restaurant.id),
+      pauses: pauses.get(restaurant.id),
+      money: { commission: sum('merchant.commission'), discounts: sum('merchant.discount_share') },
+      currency,
+      clock,
+    });
   }
 
   // Why a period's report cannot be read, or null: as the cost report's.
