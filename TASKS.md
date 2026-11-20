@@ -16,7 +16,7 @@ Slice 2.42, receiving in the restaurant app (`docs/roadmap.md`, Phase 2).
 
 - [x] Ask the owner the split and the open items; write the plan. Owner decisions 2026-11-20: one pull request; placeholder sounds until the design; full-screen intents requested and checked, with the heads-up notification and its looping sound as the fallback (RA §21 item 4, to verify at submission).
 - [x] Server: each device’s ring setting and device check (migration), the app's routes, the panel's and the app's device lists, the activation's device check required (AP §9.6.3 step 8).
-- [ ] Server: presence (Centrifugo pings every 20 s, presence on `merchant:`), the worker's 60-second rule, the receiving device, «مطعم مفتوح بلا جهاز استقبال» with the owners' push (RA §16 #27), the dashboard's `withoutDevice`, Ring pushes silent on owner devices with ringing off.
+- [x] Server: presence (Centrifugo pings every 20 s, presence on `merchant:`), the worker's 60-second rule, the receiving device, «مطعم مفتوح بلا جهاز استقبال» with the owners' push (RA §16 #27), the dashboard's `withoutDevice`, Ring pushes silent on owner devices with ringing off.
 - [ ] Panel: the devices' ringing, connection and check; the new alert.
 - [ ] `core_alerts` (Android): the foreground service, restart after reboot and update, the ring on the alarm stream with bundled placeholder sounds, full-screen intents with the heads-up fallback, the device check's readers.
 - [ ] Restaurant app: the ringer on `core_alerts`, «الرنين على هذا الجهاز», the device check screen and banner, its result sent.

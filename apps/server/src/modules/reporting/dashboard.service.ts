@@ -4,7 +4,11 @@ import { MerchantStatementsService, SettlementService } from '../cashdesk/index.
 import { FxRefusedError } from '../fx/index.js';
 import { cutoffOn, lastCutoff } from '../geo/index.js';
 import { CustomerAccountsService } from '../identity/index.js';
-import { ChangeRequestsService, MerchantsService } from '../merchants/index.js';
+import {
+  ChangeRequestsService,
+  MerchantsService,
+  ReceivingDevicesService,
+} from '../merchants/index.js';
 import { type AlertCode, AlertsService, receivedCodes } from '../notifications/index.js';
 import { DashboardOrdersService } from '../ordering/index.js';
 import type { DailyFigures } from './daily-figures.js';
@@ -60,7 +64,9 @@ export interface Dashboard {
     restaurants: Record<DashboardRestaurantState, number>;
     // Open restaurants with no receiving device connected: null until the
     // presence of slice 2.42.
-    withoutDevice: number | null;
+    // AP §9.1.1: the open or busy restaurants with no receiving device, as
+    // the worker last saw them (RA §4.6, slice 2.42).
+    withoutDevice: number;
   };
   today: DashboardPeriod;
   lastWeek: DashboardPeriod;
@@ -101,6 +107,7 @@ export class DashboardService {
     private readonly alerts: AlertsService,
     private readonly statements: MerchantStatementsService,
     private readonly settlements: SettlementService,
+    private readonly receiving: ReceivingDevicesService,
   ) {}
 
   // Throws DailyReportRefusedError unknown_city.
@@ -139,6 +146,10 @@ export class DashboardService {
         ),
       ),
     ]);
+    const openIds = rows
+      .filter((_, index) => states[index] === 'open' || states[index] === 'busy')
+      .map((row) => row.id);
+    const withoutDevice = (await this.receiving.withoutDevice(openIds)).size;
     const names = new Map(rows.map((row) => [row.id, row.nameAr]));
     const named = <T extends { restaurantId: string }>(each: T) => ({
       ...each,
@@ -164,7 +175,7 @@ export class DashboardService {
         restaurants: restaurantCounts(
           states.filter((state): state is DashboardRestaurantState => state !== null),
         ),
-        withoutDevice: null,
+        withoutDevice,
       },
       today: {
         from: todayFrom,

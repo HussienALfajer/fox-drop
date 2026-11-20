@@ -134,7 +134,9 @@ export class PushRelay {
         token: target.token,
         title: row.title ?? PUSH_TITLE,
         body: row.body,
-        channel: row.level,
+        // RA §4.4, §16: an owner's device with ringing off hears a ring
+        // silently.
+        channel: row.level === 'ring' && target.ringingOff ? 'silent' : row.level,
         priority: row.priority,
         data: { ...row.data, messageId: row.id },
         ttlSeconds: Math.max(1, Math.floor((row.expiresAt.getTime() - now.getTime()) / 1000)),

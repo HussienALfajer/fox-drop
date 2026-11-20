@@ -45464,7 +45464,8 @@
                     "probation_ending",
                     "probation_overdue",
                     "document_expiring",
-                    "acceptance_review"
+                    "acceptance_review",
+                    "restaurant_without_device"
                   ],
                   "description": "The rule of AP §9.1.3."
                 },
@@ -45721,7 +45722,8 @@
               "probation_ending",
               "probation_overdue",
               "document_expiring",
-              "acceptance_review"
+              "acceptance_review",
+              "restaurant_without_device"
             ],
             "description": "The rule of AP §9.1.3."
           },
@@ -84826,17 +84828,10 @@
                 "additionalProperties": false
               },
               "withoutDevice": {
-                "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "description": "Null until the receiving devices’ presence."
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "Open or busy restaurants with no receiving device now (RA §4.6)."
               }
             },
             "required": [

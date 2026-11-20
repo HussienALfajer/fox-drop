@@ -148,7 +148,8 @@ describe('push tokens (architecture §8.1)', () => {
       { role: 'cashier', name: 'كاشير', phone: cashierPhone },
       change,
     );
-    await register('merchant', await signIn('merchant', ownerPhone), 'token-owner');
+    const owner = await signIn('merchant', ownerPhone);
+    await register('merchant', owner, 'token-owner');
     await register('merchant', await signIn('merchant', cashierPhone), 'token-cashier');
     expect(await tokens({ party: 'merchant', restaurantId: restaurant, owners: false })).toEqual([
       'token-cashier',
@@ -173,6 +174,35 @@ describe('push tokens (architecture §8.1)', () => {
         })
       ).sort(),
     ).toEqual(['token-cashier', 'token-owner']);
+
+    // RA §4.4 (slice 2.42): an owner's device with ringing off is marked, so
+    // the relay sends it a ring silently.
+    const named = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/auth/device',
+      headers: owner,
+      payload: { name: 'هاتف المالك', platform: 'android', appVersion: '1.0.0' },
+    });
+    expect(named.statusCode).toBe(200);
+    expect(
+      (
+        await app.inject({
+          method: 'PUT',
+          url: '/v1/merchant/device',
+          headers: owner,
+          payload: { appVersion: '1.0.0', ringing: false },
+        })
+      ).statusCode,
+    ).toBe(200);
+    const targets = await devices.targets({
+      party: 'merchant',
+      restaurantId: restaurant,
+      owners: false,
+    });
+    expect(targets.map((target) => [target.token, target.ringingOff]).sort()).toEqual([
+      ['token-cashier', false],
+      ['token-owner', true],
+    ]);
   });
 
   it("reaches a captain's device, and forgets a token Firebase no longer knows", async () => {

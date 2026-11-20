@@ -58,6 +58,22 @@ export class ReceivingDevicesService {
     if (updated.length === 0) throw new MerchantsRefusedError('unknown_device', 'no such device');
   }
 
+  // RA §4.4: of these devices, those with ringing off.
+  async ringingOff(restaurantId: string, deviceIds: string[]): Promise<Set<string>> {
+    if (deviceIds.length === 0) return new Set();
+    const rows = await this.database.db
+      .select({ deviceId: devices.deviceId })
+      .from(devices)
+      .where(
+        and(
+          eq(devices.restaurantId, restaurantId),
+          inArray(devices.deviceId, deviceIds),
+          eq(devices.ringing, false),
+        ),
+      );
+    return new Set(rows.map((row) => row.deviceId));
+  }
+
   // AP §9.6.3 step 8: the devices whose latest check passed.
   async passedChecks(restaurantId: string): Promise<number> {
     const [row] = await this.database.db

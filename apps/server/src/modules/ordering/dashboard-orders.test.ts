@@ -71,7 +71,8 @@ describe("the dashboard's orders", () => {
     ).toBe(after.today.orders.placed);
     expect(after.topRestaurants[0]).toMatchObject({ restaurantId: restaurant });
     expect(after.status.restaurants.open + after.status.restaurants.busy).toBeGreaterThan(0);
-    expect(after.status.withoutDevice).toBeNull();
+    // No worker read the channels here: no restaurant counts as without a device.
+    expect(after.status.withoutDevice).toBe(0);
     // Last week: the business day 7 days before, read to the same moment.
     expect(Date.parse(after.day) - Date.parse(after.lastWeekDay)).toBe(7 * DAY);
     expect(Date.parse(after.lastWeek.until) - Date.parse(after.lastWeek.from)).toBe(

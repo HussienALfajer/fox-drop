@@ -40,7 +40,11 @@ beforeAll(async () => {
   sql = new pg.Pool({ connectionString: database.appUrl });
   const devices = {
     targets: async (recipient: PushRecipient) =>
-      (devicesOf.get(keyOf(recipient)) ?? []).map((token) => ({ sessionId: token, token })),
+      (devicesOf.get(keyOf(recipient)) ?? []).map((token) => ({
+        sessionId: token,
+        token,
+        ringingOff: token.startsWith('quiet'),
+      })),
     invalidate: async (_executor: unknown, tokens: string[]) => {
       invalidated.push(...tokens);
     },
@@ -125,6 +129,24 @@ describe('the push relay (architecture §8.1)', () => {
       ttlSeconds: 600,
     });
     expect(await relay.drain(now)).toBe(0);
+  });
+
+  // RA §4.4, §16 (slice 2.42): an owner's device with ringing off.
+  it('sends a ring silently to a device with ringing off, and every other level as it is', async () => {
+    const restaurantId = randomUUID();
+    devicesOf.set(restaurantId, ['cashier', 'quiet-owner']);
+    const recipient = { party: 'merchant' as const, restaurantId, owners: false };
+    const ring = push('', { recipient, level: 'ring', priority: 'high' });
+    const chime = push('', { recipient, level: 'chime' });
+    const now = new Date();
+    await queue.enqueue(db, [ring, chime], now);
+    await relay.drain(now);
+    expect(sent.map((one) => [one.token, one.channel])).toEqual([
+      ['cashier', 'ring'],
+      ['quiet-owner', 'silent'],
+      ['cashier', 'chime'],
+      ['quiet-owner', 'chime'],
+    ]);
   });
 
   it('is done without any device, and forgets the tokens Firebase no longer knows', async () => {

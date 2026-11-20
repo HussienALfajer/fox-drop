@@ -114,6 +114,10 @@ export const alertCodes = [
   // captain's acceptance over captain.acceptance_window_offers below
   // captain.acceptance_review_pct, until it is back at it or above.
   'acceptance_review',
+  // «مطعم مفتوح بلا جهاز استقبال» (AP §9.1.3, RA §4.6; slice 2.42): open or
+  // busy with no receiving device for merchant.no_device_alert_min, until a
+  // device receives or the restaurant stops being open.
+  'restaurant_without_device',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -166,6 +170,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   probation_overdue: rule('warning', OPERATIONS, 'captain'),
   document_expiring: rule('information', OPERATIONS, 'captain'),
   acceptance_review: rule('information', OPERATIONS, 'captain'),
+  restaurant_without_device: rule('warning', OPERATIONS, 'restaurant'),
 };
 
 function rule(

@@ -5,6 +5,14 @@
 # CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY, CENTRIFUGO_HTTP_API_KEY and
 # CENTRIFUGO_PROXIES (the proxies "merchant", "customer", "captain" and "admin", each sending
 # X-Centrifugo-Proxy-Secret).
+# RA §4.3, architecture §6.3 (slice 2.42): the restaurant devices' heartbeat
+# is Centrifugo's ping every 20 s, which the client answers; a connection
+# that misses it closes and leaves the channel's presence. The worker reads
+# the presence every 20 s and marks a device disconnected 60 s after it last
+# saw it.
+client:
+  ping_interval: 20s
+  pong_timeout: 8s
 channel:
   namespaces:
     # merchant:{restaurant_id}, every signed-in device of the restaurant
@@ -14,6 +22,8 @@ channel:
       history_size: 100
       history_ttl: 600s
       force_recovery: true
+      # Which devices are on the channel: the receiving-device rule (RA §4.6).
+      presence: true
       # The API checks every subscription (§6.1).
       subscribe_proxy_enabled: true
       subscribe_proxy_name: merchant

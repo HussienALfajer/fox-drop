@@ -12,7 +12,7 @@ class _$AdminDashboardDtoOutputStatus extends AdminDashboardDtoOutputStatus {
   @override
   final AdminDashboardDtoOutputStatusRestaurants restaurants;
   @override
-  final int? withoutDevice;
+  final int withoutDevice;
 
   factory _$AdminDashboardDtoOutputStatus([
     void Function(AdminDashboardDtoOutputStatusBuilder)? updates,
@@ -21,7 +21,7 @@ class _$AdminDashboardDtoOutputStatus extends AdminDashboardDtoOutputStatus {
   _$AdminDashboardDtoOutputStatus._({
     required this.captains,
     required this.restaurants,
-    this.withoutDevice,
+    required this.withoutDevice,
   }) : super._();
   @override
   AdminDashboardDtoOutputStatus rebuild(
@@ -123,7 +123,11 @@ class AdminDashboardDtoOutputStatusBuilder
           _$AdminDashboardDtoOutputStatus._(
             captains: captains.build(),
             restaurants: restaurants.build(),
-            withoutDevice: withoutDevice,
+            withoutDevice: BuiltValueNullFieldError.checkNotNull(
+              withoutDevice,
+              r'AdminDashboardDtoOutputStatus',
+              'withoutDevice',
+            ),
           );
     } catch (_) {
       late String _$failedField;
