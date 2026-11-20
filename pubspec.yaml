@@ -10,6 +10,7 @@ workspace:
   - apps/merchant
   - packages/core_alerts
   - packages/core_api
+  - packages/core_commands
   - packages/core_auth
   - packages/core_l10n
   - packages/core_maps

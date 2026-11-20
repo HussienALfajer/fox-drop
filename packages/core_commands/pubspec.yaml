@@ -1,0 +1,18 @@
+name: core_commands
+description: The apps' outgoing command queue that survives a restart (architecture §11.2, RA §4.7).
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  core_storage: any
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: 6.0.0
+  flutter_test:
+    sdk: flutter

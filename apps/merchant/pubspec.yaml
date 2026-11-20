@@ -11,6 +11,7 @@ resolution: workspace
 dependencies:
   built_collection: 5.1.2
   core_alerts: any
+  core_commands: any
   core_api: any
   core_auth: any
   core_l10n: any

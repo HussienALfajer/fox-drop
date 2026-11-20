@@ -1,3 +1,4 @@
+import 'package:core_commands/core_commands.dart';
 import 'package:core_alerts/core_alerts.dart';
 import 'package:core_alerts/testing.dart';
 import 'dart:convert';
@@ -1786,4 +1787,47 @@ void main() {
       await app.done(tester);
     },
   );
+
+  // RA §4.7, architecture §11.2 (slice 2.42): a command a restart
+  // interrupted is sent again with its key, shows «جارٍ الإرسال…» meanwhile,
+  // and leaves the queue once answered.
+  testWidgets('a command a restart interrupted goes again with its key', (
+    tester,
+  ) async {
+    final store = MemoryDeviceStore();
+    final queue = CommandQueue(store);
+    await queue.put(
+      QueuedCommand(
+        key: 'key-before-restart',
+        kind: 'accept',
+        subject: _orderId,
+        accountId: _accountId,
+        args: const {'prepMin': 25},
+        queuedAt: DateTime.now().toUtc(),
+      ),
+    );
+    final app = _Board();
+    final accepted = orderJson(
+      status: 'accepted',
+      version: 2,
+      acceptedAfter: const Duration(minutes: 1),
+    );
+    app.server.on('/v1/merchant/orders/$_orderId/accept', [
+      FakeAnswer(200, {'order': accepted}),
+    ]);
+    await app.pump(
+      tester,
+      [
+        FakeAnswer(200, boardJson([orderJson()])),
+        FakeAnswer(200, boardJson([accepted])),
+      ],
+      overrides: [commandQueueProvider.overrideWithValue(queue)],
+    );
+    await app.up(tester);
+    final sent = app.server.to('/v1/merchant/orders/$_orderId/accept').single;
+    expect(sent.headers['Idempotency-Key'], 'key-before-restart');
+    expect(sent.data, {'prepMin': 25});
+    expect(await queue.pending(DateTime.now().toUtc()), isEmpty);
+    await app.done(tester);
+  });
 }

@@ -20,7 +20,7 @@ Slice 2.42, receiving in the restaurant app (`docs/roadmap.md`, Phase 2).
 - [x] Panel: the devices' ringing, connection and check; the new alert.
 - [x] `core_alerts` (Android): the foreground service, restart after reboot and update, the ring on the alarm stream with bundled placeholder sounds, full-screen intents with the heads-up fallback, the device check's readers.
 - [x] Restaurant app: the ringer on `core_alerts`, «الرنين على هذا الجهاز», the device check screen and banner, its result sent.
-- [ ] `core_commands`: the persistent command queue; the board's commands on it.
+- [x] `core_commands`: the persistent command queue; the board's commands on it.
 - [x] The red bar on every screen and the offline chime.
 - [ ] Docs, review, handover.
 
