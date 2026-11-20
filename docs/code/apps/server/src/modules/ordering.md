@@ -1,6 +1,6 @@
 # ordering module
 
-> Moved here from `apps/server/src/modules/ordering/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/ordering/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The quote, the order, its state machine, edits and outcomes (architecture §4.2). So far the versioned quote of a cart (CU §10.1–10.6; AP §8.4, §8.6), placing the order (CU §10.7; AP §8.1, §4.8; RA §7.4; D23) and the restaurant's acceptance and «الطلب جاهز» (RA §8.5–8.8, §18), relaying its events to the apps (architecture §5.5, §6.2), and the reads the apps fetch for the full state (CU §11, RA §8).
 

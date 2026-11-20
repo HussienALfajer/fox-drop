@@ -1,6 +1,6 @@
 # customers module
 
-> Moved here from `apps/server/src/modules/customers/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/customers/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The customers' profiles and saved addresses (architecture §4.2; CU §5.3, §7), and their browsing of the restaurants that deliver to a point (CU §8.2, §8.4, §9.1–9.4). The late-cancellation strikes and review stop (docs/domain/08), the blocks and the dues read (AP §8.8, §9.8; slice 2.25a), and the panel's customers module (AP §9.8).
 

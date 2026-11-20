@@ -1,6 +1,6 @@
 # cashdesk module
 
-> Moved here from `apps/server/src/modules/cashdesk/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/cashdesk/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The cash desk «الصندوق» at the office counter: drawer sessions, numbered receipts and the desk's transactions (architecture §4.2; AP §9.10.3, §4.8, §8.5.1, §8.5.4). The money itself moves only through the ledger.
 

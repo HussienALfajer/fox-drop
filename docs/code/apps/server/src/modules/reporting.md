@@ -1,6 +1,6 @@
 # reporting module
 
-> Moved here from `apps/server/src/modules/reporting/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/reporting/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 Statements, reports and exports (architecture §4.2, §5.9). Slice 2.19g: «كشوف المطاعم» (AP §9.10.5) and the first Excel export; slice 2.20d: «التقرير اليومي» (AP §9.10.1); slice 2.22d: «كلفة التعويضات والخصومات» (AP §9.10.6). It reads other modules through their public services and owns only `reporting.exports`.
 

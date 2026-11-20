@@ -1,6 +1,6 @@
 # apps/merchant-portal
 
-> Moved here from `apps/merchant-portal/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/merchant-portal/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The owner web portal «بوابة المطعم» (architecture §10.4, RA §17): the same stack and rules as the admin panel, in `apps/admin/CLAUDE.md` (the API through `api` only, same origin, the feature and page pairs, Arabic and right to left, no styling until the design). It calls the `merchant` route group, serves on port 5174 in development and previews on 4174 for its smoke test.
 

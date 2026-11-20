@@ -1,6 +1,6 @@
 # packages/core_platform
 
-> Moved here from `packages/core_platform/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `packages/core_platform/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The forced update and maintenance (slice 2.4a), the terms and privacy (slice 2.4b) and the emergency stop (slice 2.4d) of the three Flutter apps (CU §4.2, §4.7, RA §4.2, §4.10, §8.17, CA §4.2, §4.8, §6.3). The server side is `GET /v1/{party}/platform` in the settings module (`apps/server/src/modules/settings/CLAUDE.md`, «The apps' read»), which the panel's «التطبيقات» sets (AP §9.14).
 

@@ -1,6 +1,6 @@
 # dispatch module
 
-> Moved here from `apps/server/src/modules/dispatch/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/dispatch/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 Eligibility, ranking, offers, assignments and handovers (architecture §4.2): manual dispatch (D6, the launch mode: operations' offers and direct assignments), the automatic dispatcher of «آلي» and «مختلط» (slice 2.15b), the captain's answer and the offer timer (AP §9.3.2, §9.12.6, §8.3; CA §8, §15; owner decisions 2026-11-06 and 2026-11-11).
 

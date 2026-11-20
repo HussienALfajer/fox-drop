@@ -1,6 +1,6 @@
 # packages/core_alerts
 
-> Moved here from `packages/core_alerts/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `packages/core_alerts/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The native ringing layer of the restaurant app (architecture §11.2, §12.2; RA §4.3–4.5; slice 2.42) and of the captain app (architecture §14.2; CA §4.4–4.5; slice 2.43; its iOS layer slice 2.46), and the restaurant app's Windows layer (architecture §12.3; RA §4.3–4.5; slice 2.44).
 

@@ -1,6 +1,6 @@
 # notifications module
 
-> Moved here from `apps/server/src/modules/notifications/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/notifications/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 Push, in-app messages, real-time publishing and sound levels (architecture §4.2). So far real-time publishing through Centrifugo, its connection tokens and its subscription proxy (architecture §6.1–6.2; RA §4.3; CU §4.3), the panel's alerts (AP §7.3, §9.1.3), and push on Android through FCM with the customer's stored notifications (architecture §8.1; CU §13–14; slice 2.3a).
 

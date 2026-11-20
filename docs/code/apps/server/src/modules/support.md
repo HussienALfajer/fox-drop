@@ -1,6 +1,6 @@
 # support module
 
-> Moved here from `apps/server/src/modules/support/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/support/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 Tickets «الدعم» (architecture §4.2; AP §9.9). Compensation and its approvals live in `marketing`. Slice 2.23a built manual tickets, their list, page, notes, assignee, status, SLA timers and «تذكرة عاجلة»; 2.23b resolving, closing, the resolution message, «سعر مختلف عن المحل» and the pickup dispute's ticket with «تصحيح في الحسابات»; 2.23c the money of a problem after delivery and «كود تعويض»; 2.23d «إعادة توصيل مجانية»; 2.24a the customer app's reports; 2.24b the restaurant app's support; 2.24c the captain app's.
 
