@@ -26,22 +26,28 @@ class DeviceCheckScreen extends ConsumerStatefulWidget {
 
 class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
   bool? _heard;
+  // The brand's auto-start, confirmed again on each run (CA §4.5).
+  bool _autostartConfirmed = false;
   bool _playing = false;
   int? _delayMs;
   int? _gpsMetres;
   bool _measuring = false;
   bool _saving = false;
   late final Alerts _alerts = ref.read(alertsProvider);
+  late final Ringer _ringer = ref.read(ringerProvider);
 
   @override
   void initState() {
     super.initState();
     unawaited(_measure());
+    unawaited(
+      ref.read(deviceStoreProvider).write(deviceCheckOpenedKey, 'true'),
+    );
   }
 
   @override
   void dispose() {
-    if (_playing) unawaited(_alerts.stopRing());
+    if (_playing) _ringer.stopTest();
     super.dispose();
   }
 
@@ -68,28 +74,15 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
   /// Check 6: the offer's ring for 30 seconds, time to lock the phone.
   void _play(AppLocalizations l10n) {
     setState(() => _playing = true);
-    unawaited(
-      _alerts.ring(
-        RingSound.offer,
-        title: l10n.captainAppName,
-        body: l10n.captainCheckTestOfferRing,
-        vibrate: true,
-        stopAfter: testOfferRings,
-      ),
-    );
+    _ringer.test(l10n.captainCheckTestOfferRing, testOfferRings);
   }
 
   void _answer(bool heard) {
-    unawaited(_alerts.stopRing());
+    _ringer.stopTest();
     setState(() {
       _playing = false;
       _heard = heard;
     });
-  }
-
-  Future<void> _confirmAutostart() async {
-    await ref.read(deviceStoreProvider).write(autostartConfirmedKey, 'true');
-    ref.invalidate(autostartConfirmedProvider);
   }
 
   Future<void> _save(List<CheckItem> failed, AppLocalizations l10n) async {
@@ -112,7 +105,7 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final readings = ref.watch(phoneReadingsProvider);
-    final confirmed = ref.watch(autostartConfirmedProvider).value ?? false;
+    final confirmed = _autostartConfirmed;
     final access = ref.read(phoneAccessReaderProvider);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.captainDeviceCheck)),
@@ -196,7 +189,8 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
                     if (!confirmed)
                       TextButton(
                         key: const Key('autostart-done'),
-                        onPressed: () => unawaited(_confirmAutostart()),
+                        onPressed: () =>
+                            setState(() => _autostartConfirmed = true),
                         child: Text(l10n.captainCheckAutostartDone),
                       ),
                   ],

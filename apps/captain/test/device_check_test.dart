@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:captain/src/device_check/device_check.dart';
+import 'package:captain/src/device_check/device_check_screen.dart';
 import 'package:core_alerts/core_alerts.dart';
 import 'package:core_auth/testing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'fixtures.dart';
 
@@ -124,13 +126,11 @@ void main() {
     await app.settle(tester);
     await tester.tap(find.byKey(const Key('test-offer')));
     await app.settle(tester);
-    expect(app.alerts.calls, ['ring']);
-    expect(app.alerts.ringing, RingSound.offer);
-    expect(app.alerts.ringBody, 'عرض تجريبي — فحص الجهاز');
-    expect(app.alerts.ringStopsAfter, testOfferRings);
+    expect(app.ringer.testText, 'عرض تجريبي — فحص الجهاز');
+    expect(app.ringer.testLength, testOfferRings);
     await tester.tap(find.byKey(const Key('test-offer-heard')));
     await app.settle(tester);
-    expect(app.alerts.ringing, isNull);
+    expect(app.ringer.testText, isNull);
 
     await tester.ensureVisible(find.byKey(const Key('save-check')));
     await app.settle(tester);
@@ -140,6 +140,16 @@ void main() {
       'failed': ['battery'],
     });
     expect(find.text('حُفظت نتيجة الفحص.'), findsOneWidget);
+
+    // Closing the check goes online, whatever it found (CA §4.5).
+    app.server.on('/v1/captain/availability/online', [
+      FakeAnswer(200, availabilityJson(state: 'online_available')),
+    ]);
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    GoRouter.of(tester.element(find.byType(DeviceCheckScreen))).pop();
+    await app.settle(tester);
+    expect(app.server.to('/v1/captain/availability/online'), hasLength(1));
+    expect(find.text('متصل متاح'), findsOneWidget);
     await app.done(tester);
   });
 

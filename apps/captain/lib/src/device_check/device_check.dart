@@ -171,14 +171,10 @@ List<CheckItem> failedItems(PhoneReadings readings, CheckAnswers answers) {
   ];
 }
 
-/// The device store's mark of the brand's auto-start the captain confirmed.
-const autostartConfirmedKey = 'captain.autostart_confirmed';
-
-final autostartConfirmedProvider = FutureProvider<bool>(
-  (ref) async =>
-      await ref.watch(deviceStoreProvider).read(autostartConfirmedKey) ==
-      'true',
-);
+/// The device store's mark that the check was opened on this phone, so the
+/// first «متصل» opens it once, whether it was saved or not (CA §4.5: it never
+/// blocks going online).
+const deviceCheckOpenedKey = 'captain.device_check_opened';
 
 /// This phone's last device check as the server keeps it (`GET
 /// /v1/captain/device/check`), null before its first; the captain's report
@@ -228,20 +224,29 @@ final deviceCheckBannerProvider = Provider<bool>((ref) {
   final readings = ref.watch(phoneReadingsProvider).value;
   final last = ref.watch(thisDeviceCheckProvider).value;
   if (readings == null || last == null) return false;
-  final confirmed = ref.watch(autostartConfirmedProvider).value ?? false;
+  // The auto-start counts as the last check found it: the captain confirms
+  // it again only on a new run (CA §4.5).
+  final autostart = !last.failed.contains(
+    CaptainDeviceCheckOutputFailedEnum.autostart,
+  );
   return failedReadings(
         readings,
-        CheckAnswers(autostartConfirmed: confirmed),
+        CheckAnswers(autostartConfirmed: autostart),
       ).isNotEmpty ||
       last.failed.contains(CaptainDeviceCheckOutputFailedEnum.testOffer);
 });
 
 /// CA §4.5: the check runs before the first time a captain goes online on
-/// this phone: true while it never ran here and the platform has something
-/// to check. A failed read asks nothing (it never blocks going online).
+/// this phone: true while it was never opened nor saved here and the
+/// platform has something to check. A failed read asks nothing (it never
+/// blocks going online).
 Future<bool> deviceCheckNeeded(WidgetRef ref) async {
   try {
     if (await ref.read(phoneReadingsProvider.future) == null) return false;
+    if (await ref.read(deviceStoreProvider).read(deviceCheckOpenedKey) !=
+        null) {
+      return false;
+    }
     return await ref.read(thisDeviceCheckProvider.future) == null;
   } on Object {
     return false;

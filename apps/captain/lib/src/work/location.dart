@@ -95,13 +95,17 @@ typedef KeptFix = ({String id, Fix fix});
 /// system had stopped the app, is sent once it runs again), and goes on
 /// after the app is closed and after a reboot until [track]'s listener
 /// stops it. Its Android licence comes from the build
-/// (`FOXDROP_BGGEO_LICENSE`); a debug build works without one. A release
+/// (`FOXDROP_BGGEO_LICENSE`, the CI secret `STAGING_CAPTAIN_BGGEO_LICENSE`);
+/// a debug build works without one. A release
 /// build without it (staging until the owner buys it) tracks through
 /// `geolocator`'s foreground service as before, its points kept in memory.
 class PhoneLocationSource implements LocationSource {
   PhoneLocationSource();
 
-  bool _ready = false;
+  Future<void>? _readying;
+
+  // Whether a [track] listener wants the library running now.
+  bool _listening = false;
 
   // Without the library: the points tracked and not sent, oldest first.
   final _memory = <Fix>[];
@@ -146,9 +150,20 @@ class PhoneLocationSource implements LocationSource {
     }
   }
 
-  // Once per run of the app, before any other call of the library.
-  Future<void> _readyOnce() async {
-    if (_ready) return;
+  // Once per run of the app, before any other call of the library (its
+  // rule: `ready` once and only once). The library remembers that it ran
+  // (`stopOnTerminate` false, `startOnBoot` true), so `ready` resumes it
+  // after the system ended the app or a reboot: unless a listener wants it
+  // now, it stops there, never tracking while offline or signed out (CA
+  // §4.3).
+  Future<void> _readyOnce() =>
+      _readying ??= _ready().catchError((Object error) {
+        // A failed `ready` is tried again by the next call.
+        _readying = null;
+        throw error;
+      });
+
+  Future<void> _ready() async {
     // The notification's text is the one string outside a widget: the
     // service shows it before any screen does.
     final l10n = lookupAppLocalizations(const Locale('ar'));
@@ -167,7 +182,12 @@ class PhoneLocationSource implements LocationSource {
             policy: bg.LocationFilterPolicy.passThrough,
           ),
         ),
-        activity: const bg.ActivityConfig(disableStopDetection: true),
+        // No motion detection: no stop detection to feed, and no «النشاط
+        // البدني» permission to ask for.
+        activity: const bg.ActivityConfig(
+          disableStopDetection: true,
+          disableMotionActivityUpdates: true,
+        ),
         app: bg.AppConfig(
           stopOnTerminate: false,
           startOnBoot: true,
@@ -185,7 +205,17 @@ class PhoneLocationSource implements LocationSource {
         logger: const bg.LoggerConfig(logLevel: bg.LogLevel.error),
       ),
     );
-    _ready = true;
+    if (!_listening) await _stopLibrary();
+  }
+
+  Future<void> _stopLibrary() async {
+    try {
+      if ((await bg.BackgroundGeolocation.state).enabled) {
+        await bg.BackgroundGeolocation.stop();
+      }
+    } on Object catch (error) {
+      debugPrint('Background location stop: $error');
+    }
   }
 
   @override
@@ -198,28 +228,31 @@ class PhoneLocationSource implements LocationSource {
       });
     }
     bg.Subscription? subscription;
+    var cancelled = false;
     late final StreamController<Fix> controller;
     controller = StreamController<Fix>(
       onListen: () async {
+        _listening = true;
         try {
           await _readyOnce();
+          if (cancelled) return;
           subscription = bg.BackgroundGeolocation.onLocation((location) {
             if (!location.sample) controller.add(_fix(location));
           }, (error) => controller.addError(error));
           await bg.BackgroundGeolocation.start();
           // Moving at once: no stationary state waits for motion.
-          await bg.BackgroundGeolocation.changePace(true);
+          if (!cancelled) await bg.BackgroundGeolocation.changePace(true);
+          // A cancel that came while starting found nothing to stop.
+          if (cancelled) await _stopLibrary();
         } on Object catch (error) {
-          controller.addError(error);
+          if (!cancelled) controller.addError(error);
         }
       },
       onCancel: () async {
+        cancelled = true;
+        _listening = false;
         await subscription?.remove();
-        try {
-          await bg.BackgroundGeolocation.stop();
-        } on Object catch (error) {
-          debugPrint('Background location stop: $error');
-        }
+        await _stopLibrary();
       },
     );
     return controller.stream;
@@ -284,6 +317,7 @@ class PhoneLocationSource implements LocationSource {
   Future<void> clear() async {
     if (!_background) return _memory.clear();
     await _readyOnce();
+    if (!_listening) await _stopLibrary();
     await bg.BackgroundGeolocation.destroyLocations();
   }
 
@@ -404,7 +438,8 @@ class LocationTracker {
     unawaited(flush());
   }
 
-  /// A position taken for a command, kept as the latest.
+  /// A position taken for a command, kept as the latest; the server keeps
+  /// it with the command (CA §15), so it is not sent again as a point.
   void remember(Fix fix) => _record(fix);
 
   /// A position taken while offline: the latest, never sent (CA §4.3).

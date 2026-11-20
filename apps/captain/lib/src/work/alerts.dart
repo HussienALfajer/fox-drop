@@ -18,28 +18,54 @@ abstract interface class Ringer {
   /// Rings the offer with [text] («عرض جديد: {الأجر} — {المطعم}», CA §14
   /// #1) until [stop]; called every second while it rings.
   void ring(String text);
+
+  /// Called every second while no offer rings.
   void stop();
   void chime();
 
   /// An order operations cancelled (CA §9.10, §14 #11).
   void cancellation();
+
+  /// CA §4.5 check 6: the offer's ring with [text] for [length], unless an
+  /// offer rings; [stop] leaves it alone until [stopTest].
+  void test(String text, Duration length);
+  void stopTest();
 }
 
-/// One sound loop and one prompt: a ring already playing changes only when
-/// its text does. Off Android `NoAlerts` plays nothing (iOS is slice 2.46).
+/// One sound loop and one prompt. The native ring is the process's, and an
+/// offer's push rings it too from its own isolate (`main.dart`), until the
+/// offer's end on the phone's clock: so every [resendEvery] a ringing offer
+/// is rung again (which also lifts the push's timer) and a quiet one stopped
+/// again (a push that came after the offer was answered here). Off Android
+/// `NoAlerts` plays nothing (iOS is slice 2.46).
 class AlertsRinger implements Ringer {
-  AlertsRinger(this.alerts, this.title);
+  AlertsRinger(
+    this.alerts,
+    this.title, {
+    this.resendEvery = const Duration(seconds: 5),
+  });
 
   final Alerts alerts;
 
   /// The prompt's title, the brand.
   final String title;
+  final Duration resendEvery;
   String? _playing;
+  bool _testing = false;
+  final _since = Stopwatch();
+
+  bool get _due => !_since.isRunning || _since.elapsed >= resendEvery;
+
+  void _sent() => _since
+    ..reset()
+    ..start();
 
   @override
   void ring(String text) {
-    if (_playing == text) return;
+    if (_playing == text && !_due) return;
     _playing = text;
+    _testing = false;
+    _sent();
     unawaited(
       alerts.ring(RingSound.offer, title: title, body: text, vibrate: true),
     );
@@ -47,22 +73,47 @@ class AlertsRinger implements Ringer {
 
   @override
   void stop() {
-    if (_playing == null) return;
+    if (_testing) return;
+    if (_playing == null && !_due) return;
     _playing = null;
+    _sent();
     unawaited(alerts.stopRing());
   }
 
   @override
   void chime() {
     // One sound at a time: the ring is louder anyway.
-    if (_playing != null) return;
+    if (_playing != null || _testing) return;
     unawaited(alerts.chime());
   }
 
   @override
   void cancellation() {
-    if (_playing != null) return;
+    if (_playing != null || _testing) return;
     unawaited(alerts.chime(cancellation: true));
+  }
+
+  @override
+  void test(String text, Duration length) {
+    if (_playing != null) return;
+    _testing = true;
+    unawaited(
+      alerts.ring(
+        RingSound.offer,
+        title: title,
+        body: text,
+        vibrate: true,
+        stopAfter: length,
+      ),
+    );
+  }
+
+  @override
+  void stopTest() {
+    if (!_testing) return;
+    _testing = false;
+    _sent();
+    unawaited(alerts.stopRing());
   }
 }
 

@@ -95,6 +95,36 @@ void main() {
     expect((alerts.chimes, alerts.cancellations), (1, 1));
   });
 
+  // A push's ring shares the native ring: a ringing offer is rung again
+  // (lifting the push's timer) and a quiet one stopped again, each
+  // resendEvery; the test offer is left alone until stopTest.
+  test('rings again and stops again in turn, and keeps the test offer', () {
+    final alerts = FakeAlerts();
+    final ringer = AlertsRinger(
+      alerts,
+      'تطبيق الكابتن',
+      resendEvery: Duration.zero,
+    );
+    ringer.ring('عرض');
+    ringer.ring('عرض');
+    ringer.stop();
+    ringer.stop();
+    expect(alerts.calls, ['ring', 'ring', 'stopRing', 'stopRing']);
+    alerts.calls.clear();
+    ringer.test('عرض تجريبي', const Duration(seconds: 30));
+    ringer.stop();
+    expect(alerts.calls, ['ring']);
+    expect(alerts.ringStopsAfter, const Duration(seconds: 30));
+    ringer.stopTest();
+    expect(alerts.calls, ['ring', 'stopRing']);
+    // An offer that rings keeps its ring: no test over it.
+    alerts.calls.clear();
+    ringer.ring('عرض');
+    ringer.test('عرض تجريبي', const Duration(seconds: 30));
+    ringer.stopTest();
+    expect(alerts.calls, ['ring']);
+  });
+
   group('the door payment (CA §9.7)', () {
     test('reads typed amounts in minor units, and back', () {
       expect(minorOf('410'), '41000');

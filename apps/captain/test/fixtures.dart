@@ -570,6 +570,19 @@ class FakeRinger implements Ringer {
 
   @override
   void cancellation() => cancellations++;
+
+  /// CA §4.5 check 6: the test offer's text while it rings.
+  String? testText;
+  Duration? testLength;
+
+  @override
+  void test(String text, Duration length) {
+    testText = text;
+    testLength = length;
+  }
+
+  @override
+  void stopTest() => testText = null;
 }
 
 class FakeTransport implements RealtimeTransport {

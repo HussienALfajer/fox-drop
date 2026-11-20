@@ -164,10 +164,11 @@ class _AvailabilityView extends ConsumerWidget {
     final suspended = state.state == AvailabilityState.suspended;
     Future<void> toggle(bool on) async {
       // CA §4.5 (slice 2.43): the device check runs before the first «متصل»
-      // on this phone; the captain goes online after it (it never blocks).
+      // on this phone, then the captain goes online, whatever it found (it
+      // never blocks).
       if (on && await deviceCheckNeeded(ref)) {
-        if (context.mounted) unawaited(context.push('/device-check'));
-        return;
+        if (!context.mounted) return;
+        await context.push('/device-check');
       }
       // CA §4.5: the checks the app reads are read again at «متصل».
       if (on) ref.invalidate(phoneReadingsProvider);

@@ -503,9 +503,9 @@ jobs:
           # Where the update screen's button leads (RA §4.2); empty hides it.
           UPDATE_URL: ${{ vars[format('STAGING_{0}_UPDATE_URL', matrix.key)] }}
           # The captain app's background location licence (slice 2.43,
-          # architecture §22 item 8); empty until the owner buys it, and
-          # unused by the other apps.
-          FOXDROP_BGGEO_LICENSE: ${{ secrets.FOXDROP_BGGEO_LICENSE }}
+          # architecture §22 item 8), generated for the staging app ID;
+          # empty until the owner buys it, and none for the other apps.
+          FOXDROP_BGGEO_LICENSE: ${{ secrets[format('STAGING_{0}_BGGEO_LICENSE', matrix.key)] }}
 
       - uses: actions/upload-artifact@v5
         with:
