@@ -96,7 +96,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       - run: pnpm install --frozen-lockfile
 
@@ -393,7 +393,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       # Caches the Gradle distribution and dependencies, so a build does not
       # download them from GitHub and Maven each run (a 504 on the wrapper's
@@ -616,7 +616,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       # Caches the Gradle distribution and dependencies, so a build does not
       # download them from GitHub and Maven each run (a 504 on the wrapper's
