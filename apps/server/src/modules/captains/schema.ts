@@ -91,6 +91,12 @@ export const captainRecords = captains.table(
     maxPickupAmount: bigint('max_pickup_amount', { mode: 'bigint' }),
     maxPickupCurrency: text('max_pickup_currency'),
     maxPickupSetAt: timestamp('max_pickup_set_at', { withTimezone: true }),
+    // CA §4.5, AP §9.7.4 (slice 2.43): the last device check, the app
+    // installation that ran it, and its failed checks' codes
+    // (`captainDeviceCheckCodes`); a new phone has none until it runs one.
+    deviceCheckedAt: timestamp('device_checked_at', { withTimezone: true }),
+    deviceCheckDeviceId: text('device_check_device_id'),
+    deviceCheckFailed: text('device_check_failed').array(),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -108,6 +114,11 @@ export const captainRecords = captains.table(
           AND (${table.suspendedUntil} IS NULL OR ${table.status} = 'suspended')`,
     ),
     check('captains_custody_limit', sql`${table.custodyLimit} > 0`),
+    check(
+      'captains_device_check_complete',
+      sql`(${table.deviceCheckedAt} IS NULL) = (${table.deviceCheckDeviceId} IS NULL)
+          AND (${table.deviceCheckedAt} IS NULL) = (${table.deviceCheckFailed} IS NULL)`,
+    ),
     check(
       'captains_max_pickup',
       sql`(${table.maxPickupAmount} IS NULL) = (${table.maxPickupCurrency} IS NULL)

@@ -179,6 +179,10 @@ export class OutboxPushes {
     const facts = await this.facts(type, payload, now);
     if (facts === null) return [];
     const pushes = orderPushes(type, payload.reason, facts);
+    const offerExpiresAt =
+      (type === 'order.offered' || type === 'order.handover_offered') && payload.offerExpiresAt
+        ? payload.offerExpiresAt
+        : null;
     return Promise.all(
       pushes.map(async (push) => {
         const rendered = await this.texts.render(push.templateKey, push.values);
@@ -189,12 +193,15 @@ export class OutboxPushes {
           body: rendered.body,
           level: rendered.level,
           priority: rendered.priority,
-          data: push.data,
-          // CA §14 #1–2: an offer's push ends with the offer.
-          ...((type === 'order.offered' || type === 'order.handover_offered') &&
-          payload.offerExpiresAt
-            ? { expiresAt: new Date(payload.offerExpiresAt) }
-            : {}),
+          // CA §14 #1–2: an offer's push ends with the offer, and carries its
+          // end, so the captain app's ring from a push stops with it (CA
+          // §4.4, slice 2.43).
+          ...(offerExpiresAt
+            ? {
+                data: { ...push.data, expiresAt: offerExpiresAt },
+                expiresAt: new Date(offerExpiresAt),
+              }
+            : { data: push.data }),
         };
       }),
     );

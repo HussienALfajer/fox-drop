@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_app_device_check.dart';
 import 'package:core_api/src/model/admin_captain_list_dto_output_captains_inner_custody_closed_due.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -17,6 +18,7 @@ part 'admin_captain_profile_dto_output_app.g.dart';
 /// * [maxPickupAnswered]
 /// * [carriedCurrencies]
 /// * [expiredInRow] - The latest answered offers that expired in a row.
+/// * [deviceCheck]
 @BuiltValue()
 abstract class AdminCaptainProfileDtoOutputApp
     implements
@@ -36,6 +38,9 @@ abstract class AdminCaptainProfileDtoOutputApp
   /// The latest answered offers that expired in a row.
   @BuiltValueField(wireName: r'expiredInRow')
   int get expiredInRow;
+
+  @BuiltValueField(wireName: r'deviceCheck')
+  AdminCaptainProfileDtoOutputAppDeviceCheck? get deviceCheck;
 
   AdminCaptainProfileDtoOutputApp._();
 
@@ -91,6 +96,15 @@ class _$AdminCaptainProfileDtoOutputAppSerializer
       object.expiredInRow,
       specifiedType: const FullType(int),
     );
+    yield r'deviceCheck';
+    yield object.deviceCheck == null
+        ? null
+        : serializers.serialize(
+            object.deviceCheck,
+            specifiedType: const FullType.nullable(
+              AdminCaptainProfileDtoOutputAppDeviceCheck,
+            ),
+          );
   }
 
   @override
@@ -155,6 +169,18 @@ class _$AdminCaptainProfileDtoOutputAppSerializer
               serializers.deserialize(value, specifiedType: const FullType(int))
                   as int;
           result.expiredInRow = valueDes;
+          break;
+        case r'deviceCheck':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCaptainProfileDtoOutputAppDeviceCheck,
+                    ),
+                  )
+                  as AdminCaptainProfileDtoOutputAppDeviceCheck?;
+          if (valueDes == null) continue;
+          result.deviceCheck.replace(valueDes);
           break;
         default:
           unhandled.add(key);

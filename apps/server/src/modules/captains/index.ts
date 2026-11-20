@@ -18,6 +18,7 @@ import { CaptainAvailabilityController } from './captain-availability.controller
 import { CaptainNotesService } from './captain-notes.service.js';
 import { CaptainContractController } from './captain-contract.controller.js';
 import { CaptainDocumentsController } from './captain-documents.controller.js';
+import { CaptainDeviceController } from './captain-device.controller.js';
 import { CaptainPayTableController } from './captain-pay-table.controller.js';
 import { CaptainPeakBonusController } from './captain-peak-bonus.controller.js';
 import { CaptainsService } from './captains.service.js';
@@ -47,6 +48,7 @@ import { ViolationsService } from './violations.service.js';
     CaptainApplicationController,
     CaptainAvailabilityController,
     CaptainPeakBonusController,
+    CaptainDeviceController,
     CaptainPayTableController,
     CaptainContractController,
     CaptainDocumentsController,
@@ -91,6 +93,11 @@ export type {
   OnlineBlock,
 } from './availability.js';
 export type { LivePosition } from './live-positions.js';
+export {
+  type CaptainDeviceCheck,
+  type CaptainDeviceCheckCode,
+  captainDeviceCheckCodes,
+} from './device-check.js';
 export {
   type ApplicationDocumentKind,
   type ApplicationStage,

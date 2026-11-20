@@ -335,6 +335,21 @@ function App(props: { captain: CaptainProfile; city: City; session: AdminSession
         <dd>{listFormat.format(app.carriedCurrencies)}</dd>
         <dt>{t('captainProfile.app.expiredInRow')}</dt>
         <dd>{app.expiredInRow}</dd>
+        <dt>{t('captainProfile.app.deviceCheck')}</dt>
+        <dd>
+          {app.deviceCheck === null
+            ? t('captainProfile.app.checkNone')
+            : app.deviceCheck.passed
+              ? t('captainProfile.app.checkPassed', {
+                  time: formatDateTime(app.deviceCheck.at, city.timeZone),
+                })
+              : t('captainProfile.app.checkFailed', {
+                  time: formatDateTime(app.deviceCheck.at, city.timeZone),
+                  items: app.deviceCheck.failed
+                    .map((code) => t(`captainProfile.app.check.${code}`))
+                    .join('، '),
+                })}
+        </dd>
       </dl>
       {can(session, CAPTAINS_MANAGE) && captain.status !== 'terminated' && (
         <>

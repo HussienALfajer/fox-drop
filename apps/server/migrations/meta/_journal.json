@@ -1009,6 +1009,13 @@
       "when": 1795143446225,
       "tag": "0143_merchants_receiving_devices",
       "breakpoints": true
+    },
+    {
+      "idx": 144,
+      "version": "7",
+      "when": 1795158688279,
+      "tag": "0144_captains_device_check",
+      "breakpoints": true
     }
   ]
 }

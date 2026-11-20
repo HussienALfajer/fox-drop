@@ -26,6 +26,7 @@ import { AuditService } from '../audit/index.js';
 import {
   ApplicationPipelineService,
   CAPTAIN_NOTE_MAX,
+  captainDeviceCheckCodes,
   CaptainNoteKeyReusedError,
   CaptainNotesService,
   CaptainsRefusedError,
@@ -178,6 +179,14 @@ class AdminCaptainProfileDto extends createZodDto(
       maxPickupAnswered: z.boolean(),
       carriedCurrencies: z.array(z.string().length(3)),
       expiredInRow: z.int().describe('The latest answered offers that expired in a row.'),
+      deviceCheck: z
+        .object({
+          at: z.iso.datetime(),
+          passed: z.boolean(),
+          failed: z.array(z.enum(captainDeviceCheckCodes)),
+        })
+        .nullable()
+        .describe('The last device check (CA §4.5), of whichever phone ran it; null before one.'),
     }),
   }),
 ) {}
@@ -379,7 +388,7 @@ export class AdminCaptainProfileController {
     const now = new Date();
     const captain = await this.found(params.captainId, now);
     const { cityId } = captain;
-    const [balance, state, files, figures, earnings, window, phone, carried, maxPickup] =
+    const [balance, state, files, figures, earnings, window, phone, carried, maxPickup, check] =
       await Promise.all([
         this.captains.balance(captain.id, now),
         captain.status === 'terminated' ? null : this.captains.state(captain.id, now),
@@ -390,6 +399,7 @@ export class AdminCaptainProfileController {
         this.accounts.phone(captain.id),
         this.captains.carriedCurrencies(captain.id),
         this.captains.maxPickup(captain.id),
+        this.captains.deviceCheck(captain.id),
       ]).catch((error: unknown) => {
         // The cash cannot be read while a currency held has no rate or the
         // city no base (the list leaves such a captain out).
@@ -454,6 +464,11 @@ export class AdminCaptainProfileController {
         maxPickupAnswered: maxPickup.answered,
         carriedCurrencies: carried.carried,
         expiredInRow: expiredInRow(latest),
+        deviceCheck: check && {
+          at: check.at.toISOString(),
+          passed: check.passed,
+          failed: check.failed,
+        },
       },
     };
   }
