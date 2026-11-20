@@ -6084,6 +6084,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/order-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrderHistoryRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/route": {
         parameters: {
             query?: never;
@@ -6782,6 +6798,22 @@ export interface paths {
         get: operations["adminManualEntriesAccount"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/financial-corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminOrderCorrectionsList"];
+        put?: never;
+        post: operations["adminOrderCorrectionsCorrect"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7502,6 +7534,22 @@ export interface paths {
         get: operations["adminCostReportReport"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/order-history/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminExportsRequestOrderHistory"];
         delete?: never;
         options?: never;
         head?: never;
@@ -18206,6 +18254,67 @@ export interface components {
                 maskedPhone: string;
             }[];
         };
+        AdminOrderHistoryQueryDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The order number, with or without #. */
+            number: string | null;
+            /** @description The customer phone in any usual form; customers.reveal_phone (OWN, OPS, SUP). */
+            customerPhone: string | null;
+            restaurantId: string | null;
+            /** @description The captain who held the order last. */
+            captainId: string | null;
+            /** @description The first business day, YYYY-MM-DD on the city clock. */
+            from: string | null;
+            /** @description The last business day, included. */
+            to: string | null;
+            status: ("placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed") | null;
+            outcome: ("normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other") | null;
+            /** @description The outcome's party in force, or operations' cancellation's. */
+            responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+            /** @description The code used, any letter case. */
+            code: string | null;
+            zoneId: string | null;
+            /**
+             * @description all, real or test orders.
+             * @enum {string}
+             */
+            kind: "all" | "real" | "test";
+            /** @description The `next` of the page before; null for the first page. */
+            cursor: string | null;
+        };
+        AdminOrderHistoryDto_Output: {
+            /** @description Newest first. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** Format: date-time */
+                placedAt: string;
+                /** Format: uuid */
+                restaurantId: string;
+                restaurantName: string;
+                /** @description The customer's neighbourhood at placing. */
+                neighbourhood: string;
+                captainId: string | null;
+                captainName: string | null;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                outcome: ("normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other") | null;
+                responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+                total: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description From placing to delivery; null unless delivered. */
+                deliveryMinutes: number | null;
+                code: string | null;
+                testOrder: boolean;
+                redelivery: boolean;
+            }[];
+            /** @description The cursor of the next 50 orders; null at the end. */
+            next: string | null;
+        };
         CaptainOrderRouteDto_Output: {
             /** @enum {string} */
             leg: "to_restaurant" | "to_customer";
@@ -20121,6 +20230,9 @@ export interface components {
                     at: string;
                 } | null;
                 reversible: boolean;
+                /** @description A financial correction from «سجل الطلبات»: the finished order it corrects. */
+                orderId: string | null;
+                orderNumber: string | null;
             }[];
         };
         AdminManualAdjustmentDto: {
@@ -20203,6 +20315,9 @@ export interface components {
                 at: string;
             } | null;
             reversible: boolean;
+            /** @description A financial correction from «سجل الطلبات»: the finished order it corrects. */
+            orderId: string | null;
+            orderNumber: string | null;
         };
         AdminManualReversalDto: {
             /** Format: uuid */
@@ -20258,6 +20373,106 @@ export interface components {
                 reversible: boolean;
                 reversed: boolean;
             }[];
+        };
+        AdminOrderCorrectionsDto_Output: {
+            /** @description Only a finished order is corrected (AP §9.5). */
+            finished: boolean;
+            /** @description order_history.financial_correction (OWN, FIN) on a finished order. */
+            canCorrect: boolean;
+            /** @description The order's corrections, oldest first. */
+            entries: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "adjustment" | "reversal";
+                /** @enum {string} */
+                partyKind: "captain" | "restaurant" | "customer";
+                /** Format: uuid */
+                partyId: string;
+                partyName: string;
+                reason: string;
+                /** Format: uuid */
+                adminId: string;
+                adminName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** @description The journal the entry posted. */
+                journal: {
+                    /** Format: uuid */
+                    journalId: string;
+                    /** @description The ledger journal type, such as earn.adjustment. */
+                    type: string;
+                    reason: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                    lines: {
+                        /** @description The party account, such as captain.earnings. */
+                        purpose: string;
+                        currency: string;
+                        /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                        amount: string;
+                    }[];
+                    orderId: string | null;
+                    orderNumber: string | null;
+                    /** @description The manual entry that posted it, if one did. */
+                    manualEntryId: string | null;
+                };
+                /** @description A reversal: the journal it cancels. */
+                corrects: {
+                    /** Format: uuid */
+                    journalId: string;
+                    /** @description The ledger journal type, such as earn.adjustment. */
+                    type: string;
+                    reason: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                    lines: {
+                        /** @description The party account, such as captain.earnings. */
+                        purpose: string;
+                        currency: string;
+                        /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                        amount: string;
+                    }[];
+                    orderId: string | null;
+                    orderNumber: string | null;
+                    /** @description The manual entry that posted it, if one did. */
+                    manualEntryId: string | null;
+                } | null;
+                reversedBy: {
+                    /** Format: uuid */
+                    journalId: string;
+                    manualEntryId: string | null;
+                    /** Format: date-time */
+                    at: string;
+                } | null;
+                reversible: boolean;
+                /** @description A financial correction from «سجل الطلبات»: the finished order it corrects. */
+                orderId: string | null;
+                orderNumber: string | null;
+            }[];
+            /** @description What a correction may reach: the order's restaurant, customer (dues only where they have some) and every captain who held it; empty unless canCorrect. */
+            accounts: {
+                /** @enum {string} */
+                partyKind: "captain" | "restaurant" | "customer";
+                /** Format: uuid */
+                partyId: string;
+                partyName: string;
+                /** @enum {string} */
+                account: "captain.custody" | "captain.earnings" | "merchant.account" | "customer.dues";
+                currencies: string[];
+            }[];
+        };
+        AdminOrderCorrectionDto: {
+            /** @enum {string} */
+            party: "captain" | "restaurant" | "customer";
+            /** Format: uuid */
+            partyId: string;
+            /** @enum {string} */
+            account: "captain.custody" | "captain.earnings" | "merchant.account" | "customer.dues";
+            currency: string;
+            /** @description From the party's view, never zero. */
+            amount: string;
+            reason: string;
         };
         AdminRestaurantSettlementPreviewRequestDto: {
             /** Format: uuid */
@@ -22094,19 +22309,38 @@ export interface components {
                 total: string;
             }[];
         };
-        AdminRestaurantStatementExportDto: {
+        AdminOrderHistoryExportDto: {
             /** Format: uuid */
-            restaurantId: string;
-            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            cityId: string;
+            /** @description The order number, with or without #. */
+            number: string | null;
+            /** @description The customer phone in any usual form; customers.reveal_phone (OWN, OPS, SUP). */
+            customerPhone: string | null;
+            restaurantId: string | null;
+            /** @description The captain who held the order last. */
+            captainId: string | null;
+            /** @description The first business day; an export needs a period. */
             from: string;
-            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            /** @description The last business day, included; at most 366 days. */
             to: string;
+            status: ("placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed") | null;
+            outcome: ("normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other") | null;
+            /** @description The outcome's party in force, or operations' cancellation's. */
+            responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+            /** @description The code used, any letter case. */
+            code: string | null;
+            zoneId: string | null;
+            /**
+             * @description all, real or test orders.
+             * @enum {string}
+             */
+            kind: "all" | "real" | "test";
         };
         AdminExportDto_Output: {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "restaurant_statement" | "daily_report" | "cost_report";
+            kind: "restaurant_statement" | "daily_report" | "cost_report" | "order_history";
             /** @enum {string} */
             status: "pending" | "ready" | "expired";
             fileName: string;
@@ -22116,6 +22350,14 @@ export interface components {
             expiresAt: string | null;
             /** @description Asked with download=true while ready: a signed download on the panel’s origin, valid 5 minutes. */
             url: string | null;
+        };
+        AdminRestaurantStatementExportDto: {
+            /** Format: uuid */
+            restaurantId: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            from: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            to: string;
         };
         AdminDailyReportExportDto: {
             /** Format: uuid */
@@ -32156,6 +32398,30 @@ export interface operations {
             };
         };
     };
+    adminOrderHistoryRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOrderHistoryQueryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderHistoryDto_Output"];
+                };
+            };
+        };
+    };
     captainOrderRouteRoute: {
         parameters: {
             query?: never;
@@ -33384,6 +33650,57 @@ export interface operations {
             };
         };
     };
+    adminOrderCorrectionsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCorrectionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrderCorrectionsCorrect: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOrderCorrectionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminManualEntryDto_Output"];
+                };
+            };
+        };
+    };
     adminRestaurantSettlementPreview: {
         parameters: {
             query?: never;
@@ -34519,6 +34836,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCostReportDto_Output"];
+                };
+            };
+        };
+    };
+    adminExportsRequestOrderHistory: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOrderHistoryExportDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminExportDto_Output"];
                 };
             };
         };

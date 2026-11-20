@@ -429,6 +429,9 @@ import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart'
 import 'package:core_api/src/model/admin_order_compensation_dto_output.dart';
 import 'package:core_api/src/model/admin_order_compensations_dto_output.dart';
 import 'package:core_api/src/model/admin_order_compensations_dto_output_compensations_inner.dart';
+import 'package:core_api/src/model/admin_order_correction_dto.dart';
+import 'package:core_api/src/model/admin_order_corrections_dto_output.dart';
+import 'package:core_api/src/model/admin_order_corrections_dto_output_accounts_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
@@ -484,6 +487,10 @@ import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.d
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
+import 'package:core_api/src/model/admin_order_history_dto_output.dart';
+import 'package:core_api/src/model/admin_order_history_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/admin_order_history_export_dto.dart';
+import 'package:core_api/src/model/admin_order_history_query_dto.dart';
 import 'package:core_api/src/model/admin_order_offers_dto_output.dart';
 import 'package:core_api/src/model/admin_order_offers_dto_output_offers_inner.dart';
 import 'package:core_api/src/model/admin_order_ticket_dto_output.dart';
@@ -1639,6 +1646,9 @@ part 'serializers.g.dart';
   AdminOrderCompensationDtoOutput,
   AdminOrderCompensationsDtoOutput,
   AdminOrderCompensationsDtoOutputCompensationsInner,
+  AdminOrderCorrectionDto,
+  AdminOrderCorrectionsDtoOutput,
+  AdminOrderCorrectionsDtoOutputAccountsInner,
   AdminOrderDtoOutput,
   AdminOrderDtoOutputOrder,
   AdminOrderDtoOutputOrderAcceptance,
@@ -1694,6 +1704,10 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderTimelineInnerActor,
   AdminOrderDtoOutputOrderTimelineInnerItemReport,
   AdminOrderDtoOutputOrderTimelineInnerTimeChange,
+  AdminOrderHistoryDtoOutput,
+  AdminOrderHistoryDtoOutputOrdersInner,
+  AdminOrderHistoryExportDto,
+  AdminOrderHistoryQueryDto,
   AdminOrderOffersDtoOutput,
   AdminOrderOffersDtoOutputOffersInner,
   AdminOrderTicketDtoOutput,
@@ -2600,6 +2614,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminOrderHistoryDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerOrderDtoOutputOrderRedeliveriesInner),
             ]),
             () => ListBuilder<CustomerOrderDtoOutputOrderRedeliveriesInner>(),
@@ -2703,6 +2723,12 @@ Serializers serializers =
               FullType(CaptainPeakBonusDtoOutputActiveInner),
             ]),
             () => ListBuilder<CaptainPeakBonusDtoOutputActiveInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderCorrectionsDtoOutputAccountsInner),
+            ]),
+            () => ListBuilder<AdminOrderCorrectionsDtoOutputAccountsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(MerchantRejectDtoItemsInner)]),

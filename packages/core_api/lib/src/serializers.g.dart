@@ -706,6 +706,17 @@ Serializers _$serializers =
             AdminOrderCompensationsDtoOutputCompensationsInnerStatusEnum
                 .serializer,
           )
+          ..add(AdminOrderCorrectionDto.serializer)
+          ..add(AdminOrderCorrectionDtoAccountEnum.serializer)
+          ..add(AdminOrderCorrectionDtoPartyEnum.serializer)
+          ..add(AdminOrderCorrectionsDtoOutput.serializer)
+          ..add(AdminOrderCorrectionsDtoOutputAccountsInner.serializer)
+          ..add(
+            AdminOrderCorrectionsDtoOutputAccountsInnerAccountEnum.serializer,
+          )
+          ..add(
+            AdminOrderCorrectionsDtoOutputAccountsInnerPartyKindEnum.serializer,
+          )
           ..add(AdminOrderDtoOutput.serializer)
           ..add(AdminOrderDtoOutputOrder.serializer)
           ..add(AdminOrderDtoOutputOrderAcceptance.serializer)
@@ -818,6 +829,21 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderTimelineInnerItemReport.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerTimeChange.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerToEnum.serializer)
+          ..add(AdminOrderHistoryDtoOutput.serializer)
+          ..add(AdminOrderHistoryDtoOutputOrdersInner.serializer)
+          ..add(AdminOrderHistoryDtoOutputOrdersInnerOutcomeEnum.serializer)
+          ..add(AdminOrderHistoryDtoOutputOrdersInnerResponsibleEnum.serializer)
+          ..add(AdminOrderHistoryDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(AdminOrderHistoryExportDto.serializer)
+          ..add(AdminOrderHistoryExportDtoKindEnum.serializer)
+          ..add(AdminOrderHistoryExportDtoOutcomeEnum.serializer)
+          ..add(AdminOrderHistoryExportDtoResponsibleEnum.serializer)
+          ..add(AdminOrderHistoryExportDtoStatusEnum.serializer)
+          ..add(AdminOrderHistoryQueryDto.serializer)
+          ..add(AdminOrderHistoryQueryDtoKindEnum.serializer)
+          ..add(AdminOrderHistoryQueryDtoOutcomeEnum.serializer)
+          ..add(AdminOrderHistoryQueryDtoResponsibleEnum.serializer)
+          ..add(AdminOrderHistoryQueryDtoStatusEnum.serializer)
           ..add(AdminOrderOffersDtoOutput.serializer)
           ..add(AdminOrderOffersDtoOutputOffersInner.serializer)
           ..add(AdminOrderOffersDtoOutputOffersInnerKindEnum.serializer)
@@ -2895,6 +2921,18 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminManualEntriesDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminManualEntriesDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderCorrectionsDtoOutputAccountsInner),
+            ]),
+            () => ListBuilder<AdminOrderCorrectionsDtoOutputAccountsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(
                 AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner,
               ),
@@ -3227,6 +3265,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminOrderDtoOutputOrderReassignChoicesReasonsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminOrderHistoryDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -5253,6 +5297,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

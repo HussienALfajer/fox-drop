@@ -9,8 +9,11 @@ import { MerchantPeriodService, periodFits } from '../cashdesk/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
-import { costReportLabels, dailyReportLabels } from '../content/index.js';
+import { costReportLabels, dailyReportLabels, orderHistoryLabels } from '../content/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { CaptainsService } from '../captains/index.js';
+import { type AdminHistoryFilter, OrderHistoryService } from '../ordering/index.js';
+import { orderHistoryWorkbook } from './order-history-workbook.js';
 import { exports, type ExportKind, type ExportStatus } from './schema.js';
 import { costReportWorkbook } from './cost-report-workbook.js';
 import { type CostReportRefusal, CostReportService } from './cost-report.service.js';
@@ -77,13 +80,23 @@ export interface CostReportParams {
   to: string;
 }
 
-type ExportParams = RestaurantStatementParams | DailyReportParams | CostReportParams;
+// AP §9.5 (slice 2.40): the history's filters as resolved, JSON-safe (the
+// number as text, the customer's account in place of the phone).
+export type OrderHistoryParams = Omit<AdminHistoryFilter, 'number' | 'from' | 'to'> & {
+  number: string | null;
+  from: string;
+  to: string;
+};
+
+type ExportParams =
+  RestaurantStatementParams | DailyReportParams | CostReportParams | OrderHistoryParams;
 
 // The permission each kind of export is read with: the one its screen asks.
 export const exportPermissions = {
   restaurant_statement: 'restaurants.statements',
   daily_report: 'finance.read',
   cost_report: 'finance.read',
+  order_history: 'order_history.read',
 } as const satisfies Record<ExportKind, string>;
 
 export interface ExportJob {
@@ -109,7 +122,24 @@ export class ExportsService {
     private readonly geo: GeoService,
     private readonly reports: DailyReportService,
     private readonly costs: CostReportService,
+    private readonly history: OrderHistoryService,
+    private readonly captains: CaptainsService,
   ) {}
+
+  // «تصدير Excel» of «سجل الطلبات» (AP §9.5, slice 2.40), as the
+  // statement's: a period of business days is required (at most 366).
+  async requestOrderHistory(
+    user: ExportUser,
+    params: OrderHistoryParams,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<ExportView> {
+    const repeat = await this.byKey(user.accountId, idempotencyKey);
+    if (repeat) return this.answerRepeat(repeat, 'order_history', params, now);
+    if (!periodFits(params.from, params.to)) throw new ExportsRefusedError('invalid_period');
+    const fileName = `${orderHistoryLabels.title} ${params.from} - ${params.to}.xlsx`;
+    return this.record(user, 'order_history', params.cityId, params, fileName, idempotencyKey, now);
+  }
 
   // «تصدير Excel» of a restaurant's statement (AP §9.10.5): records the
   // export and queues its job in one transaction, audited (AP §5.4). A
@@ -275,7 +305,37 @@ export class ExportsService {
         return this.dailyReportFile(row.params as DailyReportParams, now);
       case 'cost_report':
         return this.costReportFile(row.params as CostReportParams, now);
+      case 'order_history':
+        return this.orderHistoryFile(row.params as OrderHistoryParams);
     }
+  }
+
+  // The orders as they stand when the worker writes the file.
+  private async orderHistoryFile(params: OrderHistoryParams): Promise<Buffer> {
+    const rows = await this.history.all({
+      ...params,
+      number: params.number === null ? null : BigInt(params.number),
+    });
+    const [timeZone, currencies, restaurants, captains] = await Promise.all([
+      this.geo.cityTimeZone(params.cityId),
+      this.fx.currencies(),
+      this.merchants.names([...new Set(rows.map((row) => row.restaurantId))]),
+      this.captains.names([
+        ...new Set(rows.flatMap((row) => (row.captainId ? [row.captainId] : []))),
+      ]),
+    ]);
+    if (timeZone === null) throw new Error(`city ${params.cityId} does not exist`);
+    return orderHistoryWorkbook(
+      {
+        fromDay: params.from,
+        toDay: params.to,
+        timeZone,
+        rows,
+        restaurantNames: new Map([...restaurants].map(([id, name]) => [id, name.nameAr])),
+        captainNames: captains,
+      },
+      new Map(currencies.map((each) => [each.code, each.decimals])),
+    );
   }
 
   // The report as it stands when the worker writes it (a period that ends

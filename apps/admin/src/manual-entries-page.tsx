@@ -6,12 +6,14 @@ import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime, formatMoney } from './format.js';
 import {
   type AccountEntry,
+  accountKeys,
   adjustmentBody,
   balanceWordsOf,
+  type Direction,
+  directionKeys,
   entryAnchorOf,
   entryLinkOf,
   formKeyOf,
-  type Direction,
   type JournalSummary,
   MANUAL_ADJUSTMENT,
   type ManualEntry,
@@ -19,6 +21,7 @@ import {
   PARTIES,
   type Party,
   type PartyAccount,
+  partyKeys,
   partyAccounts,
   typeKeyOf,
   useAccount,
@@ -31,39 +34,6 @@ import { can } from './session.js';
 
 const route = getRouteApi('/signed-in/manual-entries');
 const signedIn = getRouteApi('/signed-in');
-
-const partyKeys = {
-  captain: 'manualEntries.party.captain',
-  restaurant: 'manualEntries.party.restaurant',
-  customer: 'manualEntries.party.customer',
-} as const satisfies Record<Party, string>;
-
-const accountKeys = {
-  'captain.custody': 'manualEntries.account.custody',
-  'captain.earnings': 'manualEntries.account.earnings',
-  'merchant.account': 'manualEntries.account.merchant',
-  'customer.dues': 'manualEntries.account.dues',
-} as const satisfies Record<PartyAccount, string>;
-
-// What each direction does to the account, in the party's terms.
-const directionKeys = {
-  'captain.custody': {
-    up: 'manualEntries.direction.custodyUp',
-    down: 'manualEntries.direction.custodyDown',
-  },
-  'captain.earnings': {
-    up: 'manualEntries.direction.earningsUp',
-    down: 'manualEntries.direction.earningsDown',
-  },
-  'merchant.account': {
-    up: 'manualEntries.direction.merchantUp',
-    down: 'manualEntries.direction.merchantDown',
-  },
-  'customer.dues': {
-    up: 'manualEntries.direction.duesUp',
-    down: 'manualEntries.direction.duesDown',
-  },
-} as const satisfies Record<PartyAccount, Record<Direction, string>>;
 
 const refusalKeys = {
   invalid_amounts: 'manualEntries.refusal.invalidAmounts',

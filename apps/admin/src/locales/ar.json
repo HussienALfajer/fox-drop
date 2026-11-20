@@ -5290,6 +5290,7 @@
       "dashboard": "لوحة التحكم",
       "operations": "غرفة العمليات",
       "liveMap": "الخريطة الحية",
+      "orderHistory": "سجل الطلبات",
       "restaurants": "المطاعم",
       "captains": "الكباتن",
       "customers": "الزبائن",
@@ -5386,5 +5387,58 @@
     "assignTo": "طلب #{{number}} من {{restaurant}}",
     "noOrdersToAssign": "لا طلبات بلا كابتن الآن.",
     "close": "إغلاق"
+  },
+  "orderHistory": {
+    "title": "سجل الطلبات",
+    "readOnly": "الطلبات المنتهية للقراءة فقط. يصحّح المالك والمالية مبالغ طلب منتهٍ من تفاصيله بقيد تصحيحي.",
+    "filters": "تصفية الطلبات",
+    "any": "الكل",
+    "number": "رقم الطلب",
+    "phone": "رقم هاتف الزبون",
+    "from": "من يوم",
+    "to": "إلى يوم",
+    "zone": "المنطقة",
+    "find": "عرض",
+    "more": "عرض المزيد",
+    "empty": "لا طلبات بهذه الشروط.",
+    "none": "—",
+    "minutes": "{{minutes}} د",
+    "redelivery": "إعادة توصيل مجانية",
+    "exportNeedsPeriod": "اختر يوماً للبداية وآخر للنهاية لتصدير Excel.",
+    "kind": {
+      "all": "الكل",
+      "real": "حقيقي",
+      "test": "تجريبي"
+    },
+    "column": {
+      "number": "الرقم",
+      "time": "الوقت",
+      "restaurant": "المطعم",
+      "neighbourhood": "حي الزبون",
+      "captain": "الكابتن",
+      "status": "الحالة",
+      "outcome": "النتيجة",
+      "responsible": "الجهة المسؤولة",
+      "total": "الإجمالي",
+      "deliveryTime": "مدة التوصيل (دقيقة)",
+      "code": "الكود",
+      "kind": "النوع"
+    },
+    "refused": {
+      "invalidPeriod": "يوم النهاية قبل يوم البداية، أو الفترة أطول من 366 يوماً.",
+      "invalidPhone": "رقم الهاتف غير صالح.",
+      "phoneNotAllowed": "البحث برقم الزبون غير متاح لدورك."
+    }
+  },
+  "orderCorrections": {
+    "title": "التصحيحات المالية",
+    "empty": "لا تصحيحات مالية على هذا الطلب.",
+    "open": "تصحيح مالي",
+    "refused": {
+      "notFinished": "لا يُصحَّح إلا طلب منتهٍ.",
+      "notOrderParty": "هذا الطرف ليس من أطراف الطلب."
+    },
+    "entry": "{{type}}: {{party}} {{amounts}}",
+    "account": "{{party}} {{name}}: {{account}}"
   }
 }

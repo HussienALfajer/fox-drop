@@ -17240,6 +17240,42 @@
         ]
       }
     },
+    "/v1/admin/order-history": {
+      "post": {
+        "operationId": "adminOrderHistoryRead",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOrderHistoryQueryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderHistoryDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/captain/orders/{orderId}/route": {
       "get": {
         "operationId": "captainOrderRouteRoute",
@@ -19432,6 +19468,98 @@
         ]
       }
     },
+    "/v1/admin/orders/{orderId}/financial-corrections": {
+      "get": {
+        "operationId": "adminOrderCorrectionsList",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCorrectionsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "adminOrderCorrectionsCorrect",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOrderCorrectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminManualEntryDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/cash-desk/restaurant-settlements/preview": {
       "post": {
         "operationId": "adminRestaurantSettlementPreview",
@@ -21379,6 +21507,53 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminCostReportDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/order-history/exports": {
+      "post": {
+        "operationId": "adminExportsRequestOrderHistory",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOrderHistoryExportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminExportDto_Output"
                 }
               }
             },
@@ -67102,6 +67277,388 @@
         ],
         "additionalProperties": false
       },
+      "AdminOrderHistoryQueryDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#?\\d{1,12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The order number, with or without #."
+          },
+          "customerPhone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The customer phone in any usual form; customers.reveal_phone (OWN, OPS, SUP)."
+          },
+          "restaurantId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "captainId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The captain who held the order last."
+          },
+          "from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The first business day, YYYY-MM-DD on the city clock."
+          },
+          "to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The last business day, included."
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "placed",
+                  "accepted",
+                  "ready",
+                  "picked_up",
+                  "arrived",
+                  "delivered",
+                  "rejected",
+                  "cancelled",
+                  "failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "normal",
+                  "free",
+                  "fake",
+                  "damaged",
+                  "wrong_refused",
+                  "failed_other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "responsible": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "restaurant",
+                  "captain",
+                  "customer",
+                  "platform"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The outcome's party in force, or operations' cancellation's."
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The code used, any letter case."
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "all",
+              "real",
+              "test"
+            ],
+            "description": "all, real or test orders."
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z)_([0-9a-f-]{36})$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The `next` of the page before; null for the first page."
+          }
+        },
+        "required": [
+          "cityId",
+          "number",
+          "customerPhone",
+          "restaurantId",
+          "captainId",
+          "from",
+          "to",
+          "status",
+          "outcome",
+          "responsible",
+          "code",
+          "zoneId",
+          "kind",
+          "cursor"
+        ]
+      },
+      "AdminOrderHistoryDto_Output": {
+        "type": "object",
+        "properties": {
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string"
+                },
+                "placedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "restaurantId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "restaurantName": {
+                  "type": "string"
+                },
+                "neighbourhood": {
+                  "type": "string",
+                  "description": "The customer's neighbourhood at placing."
+                },
+                "captainId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "captainName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "placed",
+                    "accepted",
+                    "ready",
+                    "picked_up",
+                    "arrived",
+                    "delivered",
+                    "rejected",
+                    "cancelled",
+                    "failed"
+                  ]
+                },
+                "outcome": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "normal",
+                        "free",
+                        "fake",
+                        "damaged",
+                        "wrong_refused",
+                        "failed_other"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "responsible": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "restaurant",
+                        "captain",
+                        "customer",
+                        "platform"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "total": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^\\d{1,18}$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                },
+                "deliveryMinutes": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "From placing to delivery; null unless delivered."
+                },
+                "code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "testOrder": {
+                  "type": "boolean"
+                },
+                "redelivery": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "number",
+                "placedAt",
+                "restaurantId",
+                "restaurantName",
+                "neighbourhood",
+                "captainId",
+                "captainName",
+                "status",
+                "outcome",
+                "responsible",
+                "total",
+                "deliveryMinutes",
+                "code",
+                "testOrder",
+                "redelivery"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first."
+          },
+          "next": {
+            "description": "The cursor of the next 50 orders; null at the end.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "orders",
+          "next"
+        ],
+        "additionalProperties": false
+      },
       "CaptainOrderRouteDto_Output": {
         "type": "object",
         "properties": {
@@ -75413,6 +75970,25 @@
                 },
                 "reversible": {
                   "type": "boolean"
+                },
+                "orderId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A financial correction from «سجل الطلبات»: the finished order it corrects."
+                },
+                "orderNumber": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -75428,7 +76004,9 @@
                 "journal",
                 "corrects",
                 "reversedBy",
-                "reversible"
+                "reversible",
+                "orderId",
+                "orderNumber"
               ],
               "additionalProperties": false
             }
@@ -75783,6 +76361,25 @@
           },
           "reversible": {
             "type": "boolean"
+          },
+          "orderId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A financial correction from «سجل الطلبات»: the finished order it corrects."
+          },
+          "orderNumber": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -75798,7 +76395,9 @@
           "journal",
           "corrects",
           "reversedBy",
-          "reversible"
+          "reversible",
+          "orderId",
+          "orderNumber"
         ],
         "additionalProperties": false
       },
@@ -76040,6 +76639,457 @@
           "entries"
         ],
         "additionalProperties": false
+      },
+      "AdminOrderCorrectionsDto_Output": {
+        "type": "object",
+        "properties": {
+          "finished": {
+            "type": "boolean",
+            "description": "Only a finished order is corrected (AP §9.5)."
+          },
+          "canCorrect": {
+            "type": "boolean",
+            "description": "order_history.financial_correction (OWN, FIN) on a finished order."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "adjustment",
+                    "reversal"
+                  ]
+                },
+                "partyKind": {
+                  "type": "string",
+                  "enum": [
+                    "captain",
+                    "restaurant",
+                    "customer"
+                  ]
+                },
+                "partyId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "partyName": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "adminId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "adminName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "journal": {
+                  "type": "object",
+                  "properties": {
+                    "journalId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "The ledger journal type, such as earn.adjustment."
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "purpose": {
+                            "type": "string",
+                            "description": "The party account, such as captain.earnings."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$"
+                          },
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?\\d{1,18}$",
+                            "description": "From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes."
+                          }
+                        },
+                        "required": [
+                          "purpose",
+                          "currency",
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "orderId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "orderNumber": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "manualEntryId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The manual entry that posted it, if one did."
+                    }
+                  },
+                  "required": [
+                    "journalId",
+                    "type",
+                    "reason",
+                    "createdAt",
+                    "lines",
+                    "orderId",
+                    "orderNumber",
+                    "manualEntryId"
+                  ],
+                  "additionalProperties": false,
+                  "description": "The journal the entry posted."
+                },
+                "corrects": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "journalId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "The ledger journal type, such as earn.adjustment."
+                        },
+                        "reason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "lines": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "purpose": {
+                                "type": "string",
+                                "description": "The party account, such as captain.earnings."
+                              },
+                              "currency": {
+                                "type": "string",
+                                "pattern": "^[A-Z]{3}$"
+                              },
+                              "amount": {
+                                "type": "string",
+                                "pattern": "^-?\\d{1,18}$",
+                                "description": "From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes."
+                              }
+                            },
+                            "required": [
+                              "purpose",
+                              "currency",
+                              "amount"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "orderId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "orderNumber": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "manualEntryId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The manual entry that posted it, if one did."
+                        }
+                      },
+                      "required": [
+                        "journalId",
+                        "type",
+                        "reason",
+                        "createdAt",
+                        "lines",
+                        "orderId",
+                        "orderNumber",
+                        "manualEntryId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A reversal: the journal it cancels."
+                },
+                "reversedBy": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "journalId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "manualEntryId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "journalId",
+                        "manualEntryId",
+                        "at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "reversible": {
+                  "type": "boolean"
+                },
+                "orderId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A financial correction from «سجل الطلبات»: the finished order it corrects."
+                },
+                "orderNumber": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "partyKind",
+                "partyId",
+                "partyName",
+                "reason",
+                "adminId",
+                "adminName",
+                "createdAt",
+                "journal",
+                "corrects",
+                "reversedBy",
+                "reversible",
+                "orderId",
+                "orderNumber"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The order's corrections, oldest first."
+          },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "partyKind": {
+                  "type": "string",
+                  "enum": [
+                    "captain",
+                    "restaurant",
+                    "customer"
+                  ]
+                },
+                "partyId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "partyName": {
+                  "type": "string"
+                },
+                "account": {
+                  "type": "string",
+                  "enum": [
+                    "captain.custody",
+                    "captain.earnings",
+                    "merchant.account",
+                    "customer.dues"
+                  ]
+                },
+                "currencies": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$"
+                  }
+                }
+              },
+              "required": [
+                "partyKind",
+                "partyId",
+                "partyName",
+                "account",
+                "currencies"
+              ],
+              "additionalProperties": false
+            },
+            "description": "What a correction may reach: the order's restaurant, customer (dues only where they have some) and every captain who held it; empty unless canCorrect."
+          }
+        },
+        "required": [
+          "finished",
+          "canCorrect",
+          "entries",
+          "accounts"
+        ],
+        "additionalProperties": false
+      },
+      "AdminOrderCorrectionDto": {
+        "type": "object",
+        "properties": {
+          "party": {
+            "type": "string",
+            "enum": [
+              "captain",
+              "restaurant",
+              "customer"
+            ]
+          },
+          "partyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "account": {
+            "type": "string",
+            "enum": [
+              "captain.custody",
+              "captain.earnings",
+              "merchant.account",
+              "customer.dues"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "From the party's view, never zero."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "party",
+          "partyId",
+          "account",
+          "currency",
+          "amount",
+          "reason"
+        ]
       },
       "AdminRestaurantSettlementPreviewRequestDto": {
         "type": "object",
@@ -84155,29 +85205,179 @@
         ],
         "additionalProperties": false
       },
-      "AdminRestaurantStatementExportDto": {
+      "AdminOrderHistoryExportDto": {
         "type": "object",
         "properties": {
-          "restaurantId": {
+          "cityId": {
             "type": "string",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
+          "number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#?\\d{1,12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The order number, with or without #."
+          },
+          "customerPhone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The customer phone in any usual form; customers.reveal_phone (OWN, OPS, SUP)."
+          },
+          "restaurantId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "captainId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The captain who held the order last."
+          },
           "from": {
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-            "description": "A business day on the city’s clock, YYYY-MM-DD."
+            "description": "The first business day; an export needs a period."
           },
           "to": {
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-            "description": "A business day on the city’s clock, YYYY-MM-DD."
+            "description": "The last business day, included; at most 366 days."
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "placed",
+                  "accepted",
+                  "ready",
+                  "picked_up",
+                  "arrived",
+                  "delivered",
+                  "rejected",
+                  "cancelled",
+                  "failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "normal",
+                  "free",
+                  "fake",
+                  "damaged",
+                  "wrong_refused",
+                  "failed_other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "responsible": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "restaurant",
+                  "captain",
+                  "customer",
+                  "platform"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The outcome's party in force, or operations' cancellation's."
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The code used, any letter case."
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "all",
+              "real",
+              "test"
+            ],
+            "description": "all, real or test orders."
           }
         },
         "required": [
+          "cityId",
+          "number",
+          "customerPhone",
           "restaurantId",
+          "captainId",
           "from",
-          "to"
+          "to",
+          "status",
+          "outcome",
+          "responsible",
+          "code",
+          "zoneId",
+          "kind"
         ]
       },
       "AdminExportDto_Output": {
@@ -84193,7 +85393,8 @@
             "enum": [
               "restaurant_statement",
               "daily_report",
-              "cost_report"
+              "cost_report",
+              "order_history"
             ]
           },
           "status": {
@@ -84243,6 +85444,31 @@
           "url"
         ],
         "additionalProperties": false
+      },
+      "AdminRestaurantStatementExportDto": {
+        "type": "object",
+        "properties": {
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "A business day on the city’s clock, YYYY-MM-DD."
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "A business day on the city’s clock, YYYY-MM-DD."
+          }
+        },
+        "required": [
+          "restaurantId",
+          "from",
+          "to"
+        ]
       },
       "AdminDailyReportExportDto": {
         "type": "object",

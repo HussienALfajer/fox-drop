@@ -430,6 +430,9 @@ export 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart'
 export 'package:core_api/src/model/admin_order_compensation_dto_output.dart';
 export 'package:core_api/src/model/admin_order_compensations_dto_output.dart';
 export 'package:core_api/src/model/admin_order_compensations_dto_output_compensations_inner.dart';
+export 'package:core_api/src/model/admin_order_correction_dto.dart';
+export 'package:core_api/src/model/admin_order_corrections_dto_output.dart';
+export 'package:core_api/src/model/admin_order_corrections_dto_output_accounts_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
@@ -485,6 +488,10 @@ export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.d
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
+export 'package:core_api/src/model/admin_order_history_dto_output.dart';
+export 'package:core_api/src/model/admin_order_history_dto_output_orders_inner.dart';
+export 'package:core_api/src/model/admin_order_history_export_dto.dart';
+export 'package:core_api/src/model/admin_order_history_query_dto.dart';
 export 'package:core_api/src/model/admin_order_offers_dto_output.dart';
 export 'package:core_api/src/model/admin_order_offers_dto_output_offers_inner.dart';
 export 'package:core_api/src/model/admin_order_ticket_dto_output.dart';

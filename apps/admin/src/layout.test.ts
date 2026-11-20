@@ -66,6 +66,7 @@ describe('the side menu (AP §7.1)', () => {
       'dashboard',
       'operations',
       'liveMap',
+      'orderHistory',
       'restaurants',
       'captains',
       'customers',
@@ -123,6 +124,7 @@ describe('the side menu (AP §7.1)', () => {
     expect(moduleOfPath('/orders/0190/assign')).toBe('operations');
     expect(moduleOfPath('/live-map')).toBe('liveMap');
     expect(moduleOfPath('/dashboard')).toBe('dashboard');
+    expect(moduleOfPath('/order-history')).toBe('orderHistory');
     expect(moduleOfPath('/restaurants-x')).toBeNull();
   });
 });

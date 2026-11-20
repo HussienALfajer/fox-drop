@@ -163,3 +163,54 @@ export const costReportLabels = {
     none: 'غير محدد',
   },
 } as const;
+
+// Slice 2.40: «سجل الطلبات» (AP §9.5). Its columns are the panel's
+// `orderHistory.column`, the statuses, outcomes and parties the panel's
+// `order.status`, `order.outcome` and `order.responsible`, keyed as the panel
+// keys them (export-labels.test.ts keeps them equal).
+export const orderHistoryLabels = {
+  sheet: 'سجل الطلبات',
+  title: 'سجل الطلبات',
+  test: 'تجريبي',
+  real: 'حقيقي',
+  redelivery: 'إعادة توصيل مجانية',
+  column: {
+    number: 'الرقم',
+    time: 'الوقت',
+    restaurant: 'المطعم',
+    neighbourhood: 'حي الزبون',
+    captain: 'الكابتن',
+    status: 'الحالة',
+    outcome: 'النتيجة',
+    responsible: 'الجهة المسؤولة',
+    total: 'الإجمالي',
+    deliveryTime: 'مدة التوصيل (دقيقة)',
+    code: 'الكود',
+    kind: 'النوع',
+  },
+  status: {
+    placed: 'بانتظار المطعم',
+    accepted: 'قيد التحضير',
+    ready: 'جاهز',
+    pickedUp: 'مع الكابتن',
+    arrived: 'الكابتن وصل',
+    delivered: 'تم التسليم',
+    rejected: 'مرفوض',
+    cancelled: 'ملغى',
+    failed: 'فشل التسليم',
+  },
+  outcome: {
+    normal: 'عادي',
+    free: 'مجاني',
+    fake: 'وهمي',
+    damaged: 'تالف',
+    wrongRefused: 'خطأ ورفضه الزبون',
+    failedOther: 'تعذّر التسليم',
+  },
+  responsible: {
+    restaurant: 'المطعم',
+    captain: 'الكابتن',
+    customer: 'الزبون',
+    platform: 'المنصة',
+  },
+} as const;

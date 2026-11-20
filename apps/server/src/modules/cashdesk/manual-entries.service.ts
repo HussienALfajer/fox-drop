@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -19,7 +19,7 @@ import {
   LedgerService,
 } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { OrdersService } from '../ordering/index.js';
+import { OrderHistoryService, OrdersService } from '../ordering/index.js';
 import {
   CashDeskRefusedError,
   CashDeskService,
@@ -122,6 +122,9 @@ export interface ManualEntry {
   // The reversal of this entry's journal, by a manual entry or otherwise.
   reversedBy: { journalId: string; manualEntryId: string | null; at: Date } | null;
   reversible: boolean;
+  // AP §9.5 (slice 2.40): the finished order a financial correction is
+  // linked to.
+  order: { id: string; number: bigint | null } | null;
 }
 
 export interface AccountEntryView extends JournalSummary {
@@ -139,6 +142,17 @@ export interface AdjustCommand {
   // From the party's view, never zero.
   amount: bigint;
   reason: string;
+}
+
+// AP §9.5 «تصحيح مالي» (slice 2.40): an adjustment on one account of one of
+// the finished order's parties, linked to the order; its city is the order's.
+export type OrderCorrectionCommand = Omit<AdjustCommand, 'cityId'>;
+
+// Who and what a correction of the order may reach, for the dialog.
+export interface OrderCorrectionChoices {
+  cityId: string;
+  finished: boolean;
+  accounts: { party: PartyRef; account: AdjustedAccount; currencies: string[] }[];
 }
 
 export interface ReverseCommand {
@@ -168,11 +182,75 @@ export class ManualEntriesService {
     private readonly fx: FxService,
     private readonly admins: AdminSessionsService,
     private readonly orders: OrdersService,
+    private readonly history: OrderHistoryService,
     private readonly desk: CashDeskService,
   ) {}
 
+  // AP §9.5: OWN and FIN correct a finished order's money with an adjustment
+  // on an account of its restaurant, its customer or a captain who held it,
+  // with a reason, linked to the order (owner decision 2026-11-20). The
+  // order's own journals stay as they are: «تغيير النتيجة» reverses them.
+  async correctOrder(
+    user: DeskUser,
+    orderId: string,
+    command: OrderCorrectionCommand,
+    now: Date,
+  ): Promise<ManualEntry> {
+    const target = await this.history.correctionTarget(orderId);
+    if (!target) throw new CashDeskRefusedError('unknown_order', `order ${orderId} not found`);
+    if (!target.finished) {
+      throw new CashDeskRefusedError('order_not_finished', 'only a finished order is corrected');
+    }
+    const parties = orderParties(target);
+    if (!parties.some((each) => each.kind === command.party && each.id === command.partyId)) {
+      throw new CashDeskRefusedError('not_order_party', `${command.party} is not of the order`);
+    }
+    return this.adjust(user, { ...command, cityId: target.cityId }, now, orderId);
+  }
+
+  // The order's parties, each account a correction may reach and its
+  // currencies; a customer's dues only where they have some (as `adjust`).
+  async orderCorrectionChoices(orderId: string, now: Date): Promise<OrderCorrectionChoices | null> {
+    const target = await this.history.correctionTarget(orderId);
+    if (!target) return null;
+    const accounts: OrderCorrectionChoices['accounts'] = [];
+    for (const each of orderParties(target)) {
+      const party = await this.partyOf(target.cityId, each.kind, each.id, now).catch(() => null);
+      if (!party) continue;
+      for (const account of partyAccounts[each.kind]) {
+        if (
+          account === 'customer.dues' &&
+          (await this.ledger.ownerAccounts(target.cityId, each.id, account)).length === 0
+        ) {
+          continue;
+        }
+        accounts.push({
+          party,
+          account,
+          currencies: await this.currenciesOf(target.cityId, account),
+        });
+      }
+    }
+    return { cityId: target.cityId, finished: target.finished, accounts };
+  }
+
+  // The order's financial corrections, oldest first.
+  async ofOrder(orderId: string): Promise<ManualEntry[]> {
+    const rows = await this.database.db
+      .select({ id: manualEntries.id })
+      .from(manualEntries)
+      .where(eq(manualEntries.orderId, orderId))
+      .orderBy(asc(manualEntries.createdAt), asc(manualEntries.id));
+    return this.entries(rows.map((row) => row.id));
+  }
+
   // A manual entry on one account of one party, against platform.adjustments.
-  async adjust(user: DeskUser, command: AdjustCommand, now: Date): Promise<ManualEntry> {
+  async adjust(
+    user: DeskUser,
+    command: AdjustCommand,
+    now: Date,
+    orderId: string | null = null,
+  ): Promise<ManualEntry> {
     const reason = command.reason.trim();
     if (!reason) throw new CashDeskRefusedError('reason_required', 'an adjustment says why');
     if (command.amount === 0n) {
@@ -184,7 +262,9 @@ export class ManualEntriesService {
         `${command.party} has no ${command.account}`,
       );
     }
-    const requestHash = hashOf(['adjust', command]);
+    const requestHash = hashOf(
+      orderId === null ? ['adjust', command] : ['adjust', command, orderId],
+    );
     const replayed = await this.replay(user, command.idempotencyKey, requestHash, now);
     if (replayed) return replayed;
 
@@ -248,6 +328,7 @@ export class ManualEntriesService {
         journalId,
         reversesJournalId: null,
         reason,
+        orderId,
       });
       await this.audit.recordWrite(
         {
@@ -265,6 +346,7 @@ export class ManualEntriesService {
             amount: command.amount.toString(),
             journalId,
             reason,
+            ...(orderId === null ? {} : { orderId }),
           },
         },
         tx,
@@ -334,6 +416,7 @@ export class ManualEntriesService {
         journalId,
         reversesJournalId: journal.id,
         reason,
+        orderId: null,
       });
       await this.audit.recordWrite(
         {
@@ -488,6 +571,9 @@ export class ManualEntriesService {
     const reversalRecords = await this.ledger.journalRecords(reversals);
     const summaries = await this.summaries([...journals, ...reversalRecords]);
     const names = await this.names(rows);
+    const numbers = await this.orders.orderNumbers(
+      rows.flatMap((row) => (row.orderId ? [row.orderId] : [])),
+    );
     return ids.flatMap((id) => {
       const row = rows.find((each) => each.id === id);
       if (!row) return [];
@@ -518,6 +604,7 @@ export class ManualEntriesService {
               }
             : null,
           reversible: reversible(journal) && journal.reversedById === null,
+          order: row.orderId ? { id: row.orderId, number: numbers.get(row.orderId) ?? null } : null,
         },
       ];
     });
@@ -665,6 +752,7 @@ export class ManualEntriesService {
       journalId: string;
       reversesJournalId: string | null;
       reason: string;
+      orderId: string | null;
     },
   ): Promise<string> {
     const [created] = await tx
@@ -734,6 +822,18 @@ function signOf(purpose: AccountPurpose): bigint | null {
   if (purpose in accountSigns) return accountSigns[purpose as AdjustedAccount];
   if (purpose === 'captain.deposit') return -1n;
   return null;
+}
+
+function orderParties(target: {
+  restaurantId: string;
+  customerAccountId: string;
+  captainIds: string[];
+}): { kind: ManualEntryParty; id: string }[] {
+  return [
+    { kind: 'restaurant', id: target.restaurantId },
+    { kind: 'customer', id: target.customerAccountId },
+    ...target.captainIds.map((id) => ({ kind: 'captain' as const, id })),
+  ];
 }
 
 function partyOfJournal(journal: JournalRecord): { kind: ManualEntryParty; id: string } | null {

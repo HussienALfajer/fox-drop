@@ -22,7 +22,10 @@ import { CaptainCustodyController } from './captain-custody.controller.js';
 import { CaptainEarningsController } from './captain-earnings.controller.js';
 import { CaptainHistoryController } from './captain-history.controller.js';
 import { CaptainStatementsController } from './captain-statements.controller.js';
-import { AdminManualEntriesController } from './admin-manual-entries.controller.js';
+import {
+  AdminManualEntriesController,
+  AdminOrderCorrectionsController,
+} from './admin-manual-entries.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
 import { DepositsService } from './deposits.service.js';
 import { CustomerDuesService } from './customer-dues.service.js';
@@ -59,6 +62,7 @@ import { SettlementService } from './settlement.service.js';
   controllers: [
     AdminCashDeskController,
     AdminManualEntriesController,
+    AdminOrderCorrectionsController,
     AdminRestaurantSettlementController,
     AdminRestaurantTerminationController,
     AdminCustomerDuesController,
