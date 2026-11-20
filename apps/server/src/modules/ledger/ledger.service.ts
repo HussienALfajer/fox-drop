@@ -536,8 +536,9 @@ export class LedgerService {
   // AP §9.17 «Captains», RA §11 (slice 2.41): the entries of some journal
   // types on a purpose's accounts from `from` (included) to `to`
   // (excluded), summed per owner, journal type and currency, from the
-  // party's view (a captain's earnings: + what they earned; a restaurant's
-  // account: + it owes); one owner's only when `ownerId` is given.
+  // party's view as the catalogue signs it (a captain's earnings: + what
+  // they earned; a restaurant's account: + the platform owes it, so its
+  // commission reads below zero); one owner's only when `ownerId` is given.
   async ownerTotals(
     cityId: string,
     purpose: AccountPurpose,

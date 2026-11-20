@@ -152,3 +152,25 @@ export function useExportReport() {
     },
   });
 }
+
+// AP §9.17 «ranking by …»: a table's rows sorted by a column, the highest
+// first (`descending`) or the lowest; a row without a value last either way,
+// ties in the server's order. Text and codes sort by their text.
+export function sortRows(
+  table: ReportTable,
+  column: number,
+  descending: boolean,
+): ReportTable['rows'] {
+  const kind = table.columns[column]?.kind;
+  const numeric = kind !== 'code' && kind !== 'text';
+  return table.rows
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => {
+      const x = a.row.cells[column] ?? null;
+      const y = b.row.cells[column] ?? null;
+      if (x === null || y === null) return x === y ? a.index - b.index : x === null ? 1 : -1;
+      const order = numeric ? Number(x) - Number(y) : x.localeCompare(y, 'ar');
+      return (descending ? -order : order) || a.index - b.index;
+    })
+    .map(({ row }) => row);
+}

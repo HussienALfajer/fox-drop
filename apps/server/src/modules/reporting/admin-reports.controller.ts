@@ -25,6 +25,7 @@ import { ExportsRefusedError, ExportsService } from './exports.service.js';
 import { ROW_CODES, reportColumnKinds, reportRowKinds } from './report-tables.js';
 import {
   mayRead,
+  mayReadMoney,
   type Report,
   reportKinds,
   ReportRefusedError,
@@ -179,7 +180,10 @@ export class AdminReportsController {
           : await this.reports.defaultPeriod(query.cityId, now);
       if (asked === null) throw new ReportRefusedError('unknown_city');
       return reportBody(
-        await this.reports.report(params.report, query.cityId, asked.from, asked.to, now),
+        await this.reports.report(params.report, query.cityId, asked.from, asked.to, now, {
+          fullPhones: false,
+          money: mayReadMoney(session.permissions),
+        }),
       );
     } catch (error) {
       return refusal(error);

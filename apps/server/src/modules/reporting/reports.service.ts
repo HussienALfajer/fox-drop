@@ -59,6 +59,12 @@ export const reportPermissions: Record<ReportKind, readonly string[]> = {
   finance: ['reports.all', 'reports.financial'],
 };
 
+// AP §6.2 «Captains: Full, except money» for OPS: the captains report's
+// earnings are read with the financial reports or all of them.
+export function mayReadMoney(permissions: readonly string[]): boolean {
+  return permissions.includes('reports.all') || permissions.includes('reports.financial');
+}
+
 export function mayRead(kind: ReportKind, permissions: readonly string[]): boolean {
   return reportPermissions[kind].some((permission) => permissions.includes(permission));
 }
@@ -165,7 +171,8 @@ export class ReportsService {
     }
     const length = to.getTime() - from.getTime();
     const before = new Date(from.getTime() - length);
-    const currency = (await this.fx.baseCurrency(restaurant.cityId)) ?? '';
+    const currency = await this.fx.baseCurrency(restaurant.cityId);
+    if (currency === null) throw new ReportRefusedError('no_base_currency');
     const [current, previous] = await Promise.all([
       this.restaurantFigures(restaurant, from, to, currency, clock),
       this.restaurantFigures(restaurant, before, from, currency, clock),
@@ -194,8 +201,10 @@ export class ReportsService {
         restaurant.id,
       ),
     ]);
-    const sum = (type: string) =>
-      money
+    // The restaurant account reads + when the platform owes the restaurant
+    // (the catalogue's sign), so what the restaurant owes is its negation.
+    const owes = (type: string) =>
+      -money
         .filter((row) => row.type === type && row.currency === currency)
         .reduce((total, row) => total + row.amount, 0n);
     return restaurantFigures({
@@ -203,7 +212,10 @@ export class ReportsService {
       items: items.filter((item) => item.currency === currency),
       rating: ratings.get(restaurant.id),
       pauses: pauses.get(restaurant.id),
-      money: { commission: sum('merchant.commission'), discounts: sum('merchant.discount_share') },
+      money: {
+        commission: owes('merchant.commission'),
+        discounts: owes('merchant.discount_share'),
+      },
       currency,
       clock,
     });
@@ -230,7 +242,7 @@ export class ReportsService {
     fromDay: string,
     toDay: string,
     now: Date,
-    options: { fullPhones: boolean } = { fullPhones: false },
+    options: { fullPhones: boolean; money: boolean } = { fullPhones: false, money: true },
   ): Promise<Report> {
     const refusal = await this.check(cityId, fromDay, toDay, now);
     if (refusal !== null) throw new ReportRefusedError(refusal);
@@ -306,7 +318,14 @@ export class ReportsService {
           this.ledger.ownerTotals(
             cityId,
             'captain.earnings',
-            ['earn.order_pay', 'earn.waiting_pay', 'earn.peak_bonus', 'earn.bonus', 'earn.charge'],
+            [
+              'earn.order_pay',
+              'earn.waiting_pay',
+              'earn.peak_bonus',
+              'earn.bonus',
+              'earn.charge',
+              'earn.adjustment',
+            ],
             from,
             to,
           ),
@@ -339,7 +358,9 @@ export class ReportsService {
           orders,
           offers,
           faults,
-          earnings: earned,
+          // AP §6.2: OPS reads captains «except money»: the earnings stay
+          // empty for a reader without the financial reports.
+          earnings: options.money ? earned : null,
           onlineMinutes: online,
           ratings,
         });

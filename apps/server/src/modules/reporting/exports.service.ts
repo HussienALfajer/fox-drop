@@ -30,7 +30,13 @@ import { dailyReportWorkbook } from './daily-report-workbook.js';
 import { type DailyReportRefusal, DailyReportService } from './daily-report.service.js';
 import { statementWorkbook } from './statement-workbook.js';
 import { reportWorkbook } from './report-workbook.js';
-import { mayRead, type ReportKind, type ReportRefusal, ReportsService } from './reports.service.js';
+import {
+  mayRead,
+  mayReadMoney,
+  type ReportKind,
+  type ReportRefusal,
+  ReportsService,
+} from './reports.service.js';
 
 // Architecture §5.9: an export stays in private-docs this long.
 export const EXPORT_KEEP_MS = 24 * 60 * 60_000;
@@ -109,6 +115,8 @@ export interface ReportParams {
   from: string;
   to: string;
   phones: boolean;
+  // The captains' earnings, for a reader of the money (`mayReadMoney`).
+  money: boolean;
 }
 
 type ExportParams =
@@ -139,7 +147,8 @@ export function mayReadExport(
   const asked = params as ReportParams;
   return (
     mayRead(asked.report, permissions) &&
-    (!asked.phones || permissions.includes('exports.phone_numbers'))
+    (!asked.phones || permissions.includes('exports.phone_numbers')) &&
+    (asked.money === false || mayReadMoney(permissions))
   );
 }
 
@@ -177,13 +186,14 @@ export class ExportsService {
   // is audited with `phones` either way.
   async requestReport(
     user: ExportUser,
-    params: Omit<ReportParams, 'phones'>,
+    params: Omit<ReportParams, 'phones' | 'money'>,
     idempotencyKey: string,
     now: Date,
   ): Promise<ExportView> {
     const full: ReportParams = {
       ...params,
       phones: params.report === 'customers' && user.permissions.includes('exports.phone_numbers'),
+      money: mayReadMoney(user.permissions),
     };
     const repeat = await this.byKey(user.accountId, idempotencyKey);
     if (repeat) return this.answerRepeat(repeat, 'report', full, now);
@@ -389,6 +399,8 @@ export class ExportsService {
     const [report, currencies] = await Promise.all([
       this.reportsOf.report(params.report, params.cityId, params.from, params.to, now, {
         fullPhones: params.phones,
+        // An export asked before the field existed read the money.
+        money: params.money !== false,
       }),
       this.fx.currencies(),
     ]);

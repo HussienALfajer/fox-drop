@@ -1,4 +1,11 @@
-import { BadRequestException, ForbiddenException, Get, HttpStatus, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Get,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
@@ -6,7 +13,7 @@ import { MerchantController } from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { day } from './admin-restaurant-statements.controller.js';
-import { ReportsService } from './reports.service.js';
+import { ReportRefusedError, ReportsService } from './reports.service.js';
 import { ownerPeriods, type RestaurantFigures } from './restaurant-report.js';
 
 class MerchantFiguresQueryDto extends createZodDto(
@@ -107,7 +114,7 @@ export class MerchantFiguresController {
   ) {}
 
   // One of `period` and `day` (400 invalid_period otherwise, or a day not
-  // started yet).
+  // started yet); 409 no_base_currency.
   @Get('figures')
   @AppSignedIn()
   @ZodResponse({ status: 200, type: MerchantFiguresDto })
@@ -128,11 +135,19 @@ export class MerchantFiguresController {
     const invalid = () =>
       new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: 'invalid_period' });
     if ((query.period === undefined) === (query.day === undefined)) throw invalid();
-    const report = await this.reports.restaurantReport(
-      restaurant,
-      query.period !== undefined ? { period: query.period } : { day: query.day! },
-      new Date(),
-    );
+    let report;
+    try {
+      report = await this.reports.restaurantReport(
+        restaurant,
+        query.period !== undefined ? { period: query.period } : { day: query.day! },
+        new Date(),
+      );
+    } catch (error) {
+      if (error instanceof ReportRefusedError && error.refusal === 'no_base_currency') {
+        throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
+      }
+      throw error;
+    }
     if (report === null) throw invalid();
     return {
       from: report.from.toISOString(),

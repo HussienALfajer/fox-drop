@@ -11,6 +11,7 @@ import {
   type ReportKind,
   reportsOf,
   rowName,
+  sortRows,
   useExportReport,
   useReport,
   type Words,
@@ -184,49 +185,93 @@ function ReportView({
           to: formatDateTime(report.to, timeZone),
         })}
       </p>
-      {report.tables.map((table) => {
-        const key = `${report.report}.${table.key}`;
-        const title = words(`reports.table.${key}`, table.key);
-        const named = table.rowKind !== 'none';
-        return (
-          <section key={table.key} aria-label={title}>
-            <h3>{title}</h3>
-            {table.rows.length === 0 ? (
-              <p>{t('reports.empty')}</p>
-            ) : (
-              <table>
-                <thead>
-                  <tr>
-                    {named ? <th scope="col">{words(`reports.rowHeader.${key}`, '')}</th> : null}
-                    {table.columns.map((column) => (
-                      <th scope="col" key={column.key}>
-                        {words(`reports.column.${column.key}`, column.key)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {table.rows.map((row, index) => (
-                    <tr key={rowKey(row.code, row.label, index)}>
-                      {named ? <th scope="row">{rowName(table, row, words)}</th> : null}
-                      {table.columns.map((column, cell) => (
-                        <td key={column.key}>
-                          {cellText(
-                            column,
-                            row.cells[cell] ?? null,
-                            row.currency ?? report.currency,
-                            words,
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-        );
-      })}
+      {report.tables.map((table) => (
+        <ReportTableView
+          key={table.key}
+          report={report.report}
+          table={table}
+          currency={report.currency}
+          words={words}
+        />
+      ))}
     </>
+  );
+}
+
+// One table; a press on a column's header sorts by it, the highest first,
+// and again the lowest (AP §9.17 «ranking by …»).
+function ReportTableView({
+  report,
+  table,
+  currency,
+  words,
+}: {
+  report: ReportKind;
+  table: Report['tables'][number];
+  currency: string;
+  words: Words;
+}) {
+  const { t } = useTranslation();
+  const [sort, setSort] = useState<{ column: number; descending: boolean } | null>(null);
+  const key = `${report}.${table.key}`;
+  const title = words(`reports.table.${key}`, table.key);
+  const named = table.rowKind !== 'none';
+  const rows = sort === null ? table.rows : sortRows(table, sort.column, sort.descending);
+  return (
+    <section aria-label={title}>
+      <h3>{title}</h3>
+      {table.rows.length === 0 ? (
+        <p>{t('reports.empty')}</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              {named ? <th scope="col">{words(`reports.rowHeader.${key}`, '')}</th> : null}
+              {table.columns.map((column, index) => (
+                <th
+                  scope="col"
+                  key={column.key}
+                  aria-sort={
+                    sort?.column === index
+                      ? sort.descending
+                        ? 'descending'
+                        : 'ascending'
+                      : undefined
+                  }
+                >
+                  {table.rows.length > 1 ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSort({
+                          column: index,
+                          descending: sort?.column === index ? !sort.descending : true,
+                        })
+                      }
+                    >
+                      {words(`reports.column.${column.key}`, column.key)}
+                    </button>
+                  ) : (
+                    words(`reports.column.${column.key}`, column.key)
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={rowKey(row.code, row.label, index)}>
+                {named ? <th scope="row">{rowName(table, row, words)}</th> : null}
+                {table.columns.map((column, cell) => (
+                  <td key={column.key}>
+                    {cellText(column, row.cells[cell] ?? null, row.currency ?? currency, words)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
   );
 }

@@ -85,6 +85,7 @@ test('shows a report as tables and exports it', async ({ page }) => {
   const outcomes = main.getByRole('region', { name: 'نتائج الطلبات بعد الاستلام' });
   await expect(outcomes.getByRole('row', { name: 'وهمي 2' })).toBeVisible();
 
+  await expect(outcomes.getByRole('button', { name: 'الطلبات' })).toHaveCount(0);
   await main.getByRole('button', { name: 'تصدير Excel' }).click();
   await expect(main.getByRole('status')).toBeVisible();
   expect(exported).toEqual({ cityId, from: '2026-11-14', to: '2026-11-20' });

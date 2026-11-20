@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import ar from './locales/ar.json';
-import { cellText, REPORT_KINDS, reportsOf, rowName, type ReportTable } from './reports.js';
+import {
+  cellText,
+  REPORT_KINDS,
+  reportsOf,
+  rowName,
+  sortRows,
+  type ReportTable,
+} from './reports.js';
 import type { AdminSession } from './session.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
@@ -65,5 +72,25 @@ describe('the reports', () => {
       'غيّرت رأيي',
     );
     expect(rowName(table('day', null), row('2026-11-20', null), words)).toBe('2026-11-20');
+  });
+
+  it('sorts a ranking by a column, a row without a value last', () => {
+    const row = (label: string, value: string | null) => ({
+      code: null,
+      label,
+      currency: null,
+      cells: [value],
+    });
+    const table = {
+      key: 'ranking',
+      rowKind: 'label',
+      rowCodes: null,
+      columns: [{ key: 'acceptance', kind: 'bp' }],
+      rows: [row('أ', '5000'), row('ب', null), row('ج', '9000'), row('د', '700')],
+    } as ReportTable;
+    const labels = (descending: boolean) =>
+      sortRows(table, 0, descending).map((each) => each.label);
+    expect(labels(true)).toEqual(['ج', 'أ', 'د', 'ب']);
+    expect(labels(false)).toEqual(['د', 'أ', 'ج', 'ب']);
   });
 });

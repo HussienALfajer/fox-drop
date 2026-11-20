@@ -428,8 +428,8 @@ export function timingsReport(orders: readonly ReportOrder[]): ReportTable[] {
 // What the restaurants report reads beside the orders.
 export interface RestaurantsReportInput {
   orders: readonly ReportOrder[];
-  // The city's restaurants that had an order or a pause in the period, and
-  // every active one, by name.
+  // The city's active and suspended restaurants and any other with an order
+  // in the period, by name.
   restaurants: readonly { id: string; name: string }[];
   ratings: ReadonlyMap<string, { count: number; total: number }>;
   // Minutes paused in the period, by source.
@@ -458,8 +458,8 @@ const stars = (rating: { count: number; total: number } | undefined) =>
   rating === undefined || rating.count === 0 ? null : (rating.total / rating.count).toFixed(1);
 
 // AP §9.17 «Restaurants»: a ranking by orders, sales, acceptance,
-// rejections, late rate, rating, unanswered orders and pause minutes; the
-// panel sorts by any column, the most orders first.
+// rejections, late rate, rating, unanswered orders and pause minutes, the
+// most orders first; the panel sorts by any column.
 export function restaurantsReport(input: RestaurantsReportInput): ReportTable[] {
   const byRestaurant = groupBy(input.orders, (row) => row.restaurantId);
   return [
@@ -510,7 +510,8 @@ export interface CaptainsReportInput {
   orders: readonly ReportOrder[];
   offers: ReadonlyMap<string, { accepted: number; answered: number }>;
   faults: ReadonlyMap<string, number>;
-  earnings: ReadonlyMap<string, bigint>;
+  // Null for a reader without the money (AP §6.2): the column stays empty.
+  earnings: ReadonlyMap<string, bigint> | null;
   onlineMinutes: ReadonlyMap<string, number>;
   ratings: ReadonlyMap<string, { count: number; total: number }>;
 }
@@ -560,7 +561,7 @@ export function captainsReport(input: CaptainsReportInput): ReportTable[] {
               String(offers?.answered ?? 0),
               String(input.faults.get(captain.id) ?? 0),
               cell(basisPoints(onTime, orders.length)),
-              (input.earnings.get(captain.id) ?? 0n).toString(),
+              input.earnings === null ? null : (input.earnings.get(captain.id) ?? 0n).toString(),
               String(input.onlineMinutes.get(captain.id) ?? 0),
               stars(rating),
               String(rating?.count ?? 0),

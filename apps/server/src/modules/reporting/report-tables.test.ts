@@ -239,6 +239,21 @@ describe('the captains report (AP §9.17)', () => {
   });
 });
 
+describe('the captains report without the money (AP §6.2)', () => {
+  it('leaves the earnings empty', () => {
+    const [ranking] = captainsReport({
+      captains: [{ id: 'c1', name: 'كابتن' }],
+      orders: [],
+      offers: new Map(),
+      faults: new Map(),
+      earnings: null,
+      onlineMinutes: new Map(),
+      ratings: new Map(),
+    });
+    expect(ranking!.rows[0]!.cells[5]).toBeNull();
+  });
+});
+
 describe('the customers report (AP §9.17, CU U4)', () => {
   const orders = [
     order({ customerAccountId: 'a1', firstOrder: true }),

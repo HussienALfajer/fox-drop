@@ -19,6 +19,7 @@ import {
   type DevelopmentCodeSender,
 } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { LedgerService } from '../ledger/index.js';
 import { reportLabels } from '../content/index.js';
 import { SettingsService } from '../settings/index.js';
 
@@ -344,6 +345,25 @@ describe('«التقارير» (AP §9.17)', () => {
     expect((await report(fin, 'finance')).statusCode).toBe(200);
     expect((await report(fin, 'codes')).statusCode).toBe(200);
     expect((await report(fin, 'captains')).statusCode).toBe(403);
+    // AP §6.2: OPS reads the captains «except money».
+    const earningsOf = (body: { tables: (Table & { columns: { key: string }[] })[] }) => {
+      const ranking = tableOf(body, 'ranking') as Table & { columns: { key: string }[] };
+      const column = ranking.columns.findIndex((each) => each.key === 'earnings');
+      return ranking.rows.map((row) => row.cells[column]);
+    };
+    const own = await admin(['OWN']);
+    await app.get(CaptainsService).createCaptain(
+      azaz,
+      {
+        name: 'كابتن التقارير',
+        vehicle: 'motorbike',
+        plateNumber: '123',
+        custodyLimit: { amount: 100_000n, currency: 'TRY' },
+      },
+      change,
+    );
+    expect(earningsOf((await report(ops, 'captains')).json())).toEqual([null]);
+    expect(earningsOf((await report(own, 'captains')).json())).toEqual(['0']);
     expect((await report(data, 'orders')).statusCode).toBe(403);
   });
 
@@ -419,6 +439,31 @@ describe('the restaurant’s reports (RA §11)', () => {
     const cancelled = await place(id, item, cancelling);
     await cancel(cancelled.id, cancelling);
 
+    // A commission the restaurant owes, as a delivery posts it.
+    const ledger = app.get(LedgerService);
+    await db.db.transaction(async (tx) => {
+      const own = await ledger.openAccount(
+        { cityId: azaz, purpose: 'merchant.account', ownerId: id, currency: 'TRY' },
+        tx,
+      );
+      const revenue = await ledger.openAccount(
+        { cityId: azaz, purpose: 'platform.revenue_commission', ownerId: null, currency: 'TRY' },
+        tx,
+      );
+      await ledger.post(
+        {
+          cityId: azaz,
+          type: 'merchant.commission',
+          source: { kind: 'order', id: randomUUID() },
+          actor: { type: 'system', id: null },
+          entries: [
+            { accountId: own, currency: 'TRY', amount: 1_800n },
+            { accountId: revenue, currency: 'TRY', amount: -1_800n },
+          ],
+        },
+        tx,
+      );
+    });
     const headers = await signIn('merchant', owner);
     const read = (query: string) =>
       app.inject({ method: 'GET', url: `/v1/merchant/figures?${query}`, headers });
@@ -433,6 +478,10 @@ describe('the restaurant’s reports (RA §11)', () => {
       delivered: 0,
       sales: '0',
       averageOrder: null,
+      // What the restaurant owes reads above zero, the net below the sales.
+      commission: '1800',
+      discounts: '0',
+      net: '-1800',
     });
     expect(today.json().current.hours).toHaveLength(24);
     expect(today.json().previous).toMatchObject({ received: 0 });
