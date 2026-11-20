@@ -2,4 +2,4 @@
 <!-- The ring sounds are found by name (Ringer.kt), so resource shrinking in
      a release build must keep them. -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@raw/fd_new_order,@raw/fd_pickup_request,@raw/fd_cancellation,@raw/fd_chime" />
+    tools:keep="@raw/fd_new_order,@raw/fd_pickup_request,@raw/fd_cancellation,@raw/fd_chime,@raw/fd_offer" />

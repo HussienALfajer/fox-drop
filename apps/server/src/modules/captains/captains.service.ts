@@ -38,6 +38,11 @@ import {
 } from './applications.js';
 import { captainUploads } from './captain-documents.js';
 import {
+  type CaptainDeviceCheck,
+  type CaptainDeviceCheckCode,
+  captainDeviceCheckCodes,
+} from './device-check.js';
+import {
   type Availability,
   availability,
   type AvailabilityInput,
@@ -834,6 +839,50 @@ export class CaptainsService implements OnModuleInit {
         .where(eq(captainRecords.id, captainId));
     });
     return this.maxPickup(captainId);
+  }
+
+  // CA §4.5, AP §9.7.4 (slice 2.43): the captain's last device check, or
+  // null before the first. The app asks for its own device's (`deviceId`):
+  // a check run on another phone is null for it, so a new phone runs one
+  // before it goes online; the panel reads it whatever the phone.
+  async deviceCheck(captainId: string, deviceId?: string): Promise<CaptainDeviceCheck | null> {
+    const [row] = await this.database.db
+      .select({
+        at: captainRecords.deviceCheckedAt,
+        deviceId: captainRecords.deviceCheckDeviceId,
+        failed: captainRecords.deviceCheckFailed,
+      })
+      .from(captainRecords)
+      .where(eq(captainRecords.id, captainId));
+    if (!row) throw new CaptainsRefusedError('unknown_captain', 'no such captain');
+    if (row.at === null || row.deviceId === null || row.failed === null) return null;
+    if (deviceId !== undefined && row.deviceId !== deviceId) return null;
+    const failed = row.failed as CaptainDeviceCheckCode[];
+    return { at: row.at, deviceId: row.deviceId, passed: failed.length === 0, failed };
+  }
+
+  // CA §15 «Report the device check»: replaces the last one with this
+  // device's, the failed codes once each in the catalogue's order. The
+  // captain's own report, so it is not audited; it sets a value, so a
+  // repeat needs no key.
+  async recordDeviceCheck(
+    captainId: string,
+    deviceId: string,
+    failed: readonly CaptainDeviceCheckCode[],
+  ): Promise<CaptainDeviceCheck> {
+    const codes = captainDeviceCheckCodes.filter((code) => failed.includes(code));
+    const [row] = await this.database.db
+      .update(captainRecords)
+      .set({
+        deviceCheckedAt: sql`now()`,
+        deviceCheckDeviceId: deviceId,
+        deviceCheckFailed: codes,
+        updatedAt: sql`now()`,
+      })
+      .where(eq(captainRecords.id, captainId))
+      .returning({ at: captainRecords.deviceCheckedAt });
+    if (!row?.at) throw new CaptainsRefusedError('unknown_captain', 'no such captain');
+    return { at: row.at, deviceId, passed: codes.length === 0, failed: codes };
   }
 
   // Whether the city has a pay table, in force or to come, for the seed.

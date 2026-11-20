@@ -10,7 +10,7 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { PUSH_SENDER, type PushMessage, type PushResult } from './fcm-sender.js';
 import { PushDevices, type PushRecipient } from './push-devices.js';
 import { PushQueue, type QueuedPush } from './push-queue.js';
-import { PushRelay, retryDelayMs } from './push-relay.js';
+import { channelOf, PushRelay, retryDelayMs } from './push-relay.js';
 
 // Architecture §8.1: a queued push reaches every live device of its
 // recipient at least once, is tried again on a passing failure until it
@@ -105,6 +105,16 @@ const row = async (source: string) =>
       [source],
     )
   ).rows[0];
+
+// CA §4.4 (slice 2.43): a captain's offer rings on the captain app's
+// channel with the bundled offer sound; every other push on its level.
+describe('the channel of a push', () => {
+  it('sends a captain’s offer to ring_offer', () => {
+    expect(channelOf({ party: 'captain', level: 'offer' }, false)).toBe('ring_offer');
+    expect(channelOf({ party: 'captain', level: 'chime' }, false)).toBe('chime');
+    expect(channelOf({ party: 'customer', level: 'offer' }, false)).toBe('offer');
+  });
+});
 
 describe('the push relay (architecture §8.1)', () => {
   it("sends to each of the recipient's devices once, with the app's channel and what a tap opens", async () => {

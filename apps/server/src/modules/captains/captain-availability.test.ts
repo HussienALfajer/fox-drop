@@ -358,3 +358,41 @@ describe('the location route (CA §4.3, architecture §7.3)', () => {
     expect(offGlobe.statusCode).toBe(400);
   });
 });
+
+// CA §4.5, §15 (slice 2.43): this phone's last device check.
+describe('the device check routes (CA §4.5)', () => {
+  it('keeps the signed-in captain’s check of this phone only', async () => {
+    const { captainId, headers } = await signedIn();
+    const other = await signedIn();
+    expect((await app.inject({ method: 'GET', url: '/v1/captain/device/check' })).statusCode).toBe(
+      401,
+    );
+    const first = await call(headers, 'GET', '/v1/captain/device/check');
+    expect(first.statusCode).toBe(200);
+    expect(first.json()).toEqual({ check: null });
+    const saved = await app.inject({
+      method: 'PUT',
+      url: '/v1/captain/device/check',
+      headers,
+      payload: { failed: ['test_offer', 'battery'] },
+    });
+    expect(saved.statusCode).toBe(200);
+    expect(saved.json()).toMatchObject({
+      check: { passed: false, failed: ['battery', 'test_offer'] },
+    });
+    expect((await call(headers, 'GET', '/v1/captain/device/check')).json()).toEqual(saved.json());
+    // Another captain reads and writes only their own.
+    expect((await call(other.headers, 'GET', '/v1/captain/device/check')).json()).toEqual({
+      check: null,
+    });
+    expect(await captains.deviceCheck(other.captainId)).toBeNull();
+    expect((await captains.deviceCheck(captainId))?.failed).toEqual(['battery', 'test_offer']);
+    const unknown = await app.inject({
+      method: 'PUT',
+      url: '/v1/captain/device/check',
+      headers,
+      payload: { failed: ['sleep'] },
+    });
+    expect(unknown.statusCode).toBe(400);
+  });
+});

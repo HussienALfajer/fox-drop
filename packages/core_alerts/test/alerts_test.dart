@@ -41,12 +41,39 @@ void main() {
         'sound': 'fd_pickup_request',
         'title': 'FOX DROP',
         'body': 'طلب جديد #10001',
+        'vibrate': false,
+        'stopAfterMs': null,
       });
       expect(RingSound.values.map(soundName), [
         'fd_new_order',
         'fd_pickup_request',
         'fd_cancellation',
+        'fd_offer',
       ]);
+    },
+  );
+
+  test(
+    'rings an offer with vibration until its end, and plays a sound once',
+    () async {
+      const alerts = AndroidAlerts();
+      await alerts.ring(
+        RingSound.offer,
+        title: 'FOX DROP',
+        body: 'عرض جديد: 25 ₺ — مطعم الاختبار',
+        vibrate: true,
+        stopAfter: const Duration(seconds: 42),
+      );
+      await alerts.chime(cancellation: true);
+      expect(calls.first.arguments, {
+        'sound': 'fd_offer',
+        'title': 'FOX DROP',
+        'body': 'عرض جديد: 25 ₺ — مطعم الاختبار',
+        'vibrate': true,
+        'stopAfterMs': 42000,
+      });
+      expect(calls.last.method, 'chime');
+      expect(calls.last.arguments, {'sound': 'fd_cancellation'});
     },
   );
 

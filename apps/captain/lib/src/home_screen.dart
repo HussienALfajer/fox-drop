@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'api.dart';
 import 'custody.dart';
 import 'custody_screen.dart';
+import 'device_check/device_check.dart';
 import 'peak_bonus.dart';
 import 'platform.dart';
 import 'profile/profile_notices.dart';
@@ -162,6 +163,16 @@ class _AvailabilityView extends ConsumerWidget {
     final sending = ref.watch(commandsProvider).contains('availability');
     final suspended = state.state == AvailabilityState.suspended;
     Future<void> toggle(bool on) async {
+      // CA §4.5 (slice 2.43): the device check runs before the first «متصل»
+      // on this phone, then the captain goes online, whatever it found (it
+      // never blocks).
+      if (on && await deviceCheckNeeded(ref)) {
+        if (!context.mounted) return;
+        await context.push('/device-check');
+      }
+      // CA §4.5: the checks the app reads are read again at «متصل».
+      if (on) ref.invalidate(phoneReadingsProvider);
+      if (!context.mounted) return;
       // K2: «أقصى مبلغ أحمله» is asked the first time while unanswered.
       if (on) await askMaxPickupUnanswered(context, ref);
       if (!context.mounted) return;
@@ -306,7 +317,7 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
     final offer = _work?.offer;
     final ringing = ringingOffer(_work, now, ref.read(answeredProvider).offers);
     if (ringing != null) {
-      _ringer.ring();
+      _ringer.ring(AppLocalizations.of(context).offerRingText(ringing));
     } else {
       _ringer.stop();
     }
@@ -411,6 +422,18 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
               // CA §6.3 item 2, after no connection.
               if (ref.watch(emergencyStopProvider) case final stop?)
                 EmergencyStopBanner(check: stop),
+              // CA §4.5, §6.3 item 4 (slice 2.43): yellow with the design.
+              if (ref.watch(deviceCheckBannerProvider))
+                MaterialBanner(
+                  key: const Key('device-check-banner'),
+                  content: Text(l10n.captainDeviceCheckBanner),
+                  actions: [
+                    TextButton(
+                      onPressed: () => unawaited(context.push('/device-check')),
+                      child: Text(l10n.captainDeviceCheck),
+                    ),
+                  ],
+                ),
               Expanded(child: widget.child),
             ],
           ),

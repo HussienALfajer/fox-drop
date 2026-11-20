@@ -4,13 +4,14 @@ import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
-import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import com.foxdrop.core_alerts.ReceivingService
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -20,6 +21,15 @@ class MainActivity : FlutterActivity() {
         super.onCreate(savedInstanceState)
         createPushChannels()
     }
+
+    // CA §4.3–4.4 (slice 2.43, packages/core_alerts): one Flutter engine for
+    // the app, kept when the activity is gone, so the work feed, the
+    // location and the offer's ring go on while the background location's
+    // foreground service keeps the process alive.
+    override fun provideFlutterEngine(context: Context): FlutterEngine =
+        ReceivingService.engine(context)
+
+    override fun shouldDestroyEngineWithHost(): Boolean = false
 
     // CA §9.11 «طوارئ» (slice 2.13c): calls operations directly with the
     // call permission (CA §4.5 check 8), otherwise opens the dialer with the
@@ -53,16 +63,20 @@ class MainActivity : FlutterActivity() {
     // (creating an existing channel changes nothing the captain set).
     private fun createPushChannels() {
         val manager = getSystemService(NotificationManager::class.java) ?: return
-        // A new offer rings with the phone's alarm sound on the alarm
-        // stream, as the app's own offer ring does, until the bundled sounds.
+        // A new offer rings with the bundled offer sound on the alarm stream
+        // (slice 2.43); the push's background isolate also rings it, looping
+        // over the lock screen (main.dart's ringOffer). A channel keeps its
+        // first sound, so the bundled one has its own id (`ring_offer`, which
+        // the server sends the offers to) and the earlier `offer` goes.
+        manager.deleteNotificationChannel("offer")
         manager.createNotificationChannel(
             NotificationChannel(
-                "offer",
+                "ring_offer",
                 getString(R.string.push_channel_offer),
                 NotificationManager.IMPORTANCE_HIGH,
             ).apply {
                 setSound(
-                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
+                    Uri.parse("android.resource://$packageName/raw/fd_offer"),
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)

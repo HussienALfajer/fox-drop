@@ -27,6 +27,12 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // CA §4.3, architecture §14.1, §22 item 8 (slice 2.43): the Android
+        // licence of flutter_background_geolocation, a CI secret per
+        // environment, tied to its app ID (never in the repository); a debug
+        // build tracks without it, a release build only once it is set.
+        manifestPlaceholders["backgroundGeolocationLicence"] =
+            System.getenv("FOXDROP_BGGEO_LICENSE") ?: ""
     }
 
     // Architecture §11.4: development, staging and production, each with its
@@ -68,6 +74,9 @@ android {
             signingConfig = signingConfigs.getByName(
                 if (releaseKeystore != null) "release" else "debug",
             )
+            // flutter_background_geolocation's install guide (5.9.2) requires
+            // resources kept whole in a release build (slice 2.43).
+            isShrinkResources = false
         }
     }
 }

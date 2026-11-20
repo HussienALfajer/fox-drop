@@ -478,6 +478,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_background_geolocation:
+    dependency: transitive
+    description:
+      name: flutter_background_geolocation
+      sha256: "28d5f83671ca03910c62cf4b7024151dc1221a8ce8d5d2f734549b119d9e7d4f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.9.2"
   flutter_cache_manager:
     dependency: transitive
     description:

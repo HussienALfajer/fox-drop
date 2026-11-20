@@ -995,6 +995,13 @@ describe("the order's pushes (architecture §8.1, CU §14, RA §16, CA §14)", (
         party: 'captain',
         level: 'offer',
       });
+      // CA §4.4 (slice 2.43): the offer's end, for the ring a push starts.
+      const { rows } = await sql.query<{ expires: string; ends: Date }>(
+        `SELECT data->>'expiresAt' AS expires, expires_at AS ends FROM notifications.push_messages
+         WHERE data->>'orderId' = $1 AND template_key = 'captain.new_offer'`,
+        [orderId],
+      );
+      expect(new Date(rows[0]!.expires).getTime()).toBe(rows[0]!.ends.getTime());
     } finally {
       await captains.goOffline(captainId, new Date());
     }

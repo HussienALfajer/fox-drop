@@ -3,6 +3,8 @@ import 'package:captain/src/work/commands.dart';
 import 'package:captain/src/work/door_payment.dart';
 import 'package:captain/src/work/location.dart';
 import 'package:captain/src/work/work.dart';
+import 'package:core_alerts/core_alerts.dart';
+import 'package:core_alerts/testing.dart';
 import 'package:core_api/core_api.dart';
 import 'package:core_time/core_time.dart';
 import 'package:dio/dio.dart';
@@ -73,6 +75,56 @@ DioException refused(int status, [Object? body]) => DioException(
 );
 
 void main() {
+  // CA §4.4 (slice 2.43): the offer through core_alerts.
+  test('rings the offer once per text, vibrating, and keeps chimes off it', () {
+    final alerts = FakeAlerts();
+    final ringer = AlertsRinger(alerts, 'تطبيق الكابتن');
+    ringer.ring('عرض جديد: 35 ₺ — مطعم الشام');
+    ringer.ring('عرض جديد: 35 ₺ — مطعم الشام');
+    ringer.chime();
+    ringer.cancellation();
+    expect(alerts.calls, ['ring']);
+    expect(alerts.ringing, RingSound.offer);
+    expect(alerts.ringVibrates, isTrue);
+    expect(alerts.ringStopsAfter, isNull);
+    ringer.stop();
+    ringer.stop();
+    ringer.chime();
+    ringer.cancellation();
+    expect(alerts.calls, ['ring', 'stopRing']);
+    expect((alerts.chimes, alerts.cancellations), (1, 1));
+  });
+
+  // A push's ring shares the native ring: a ringing offer is rung again
+  // (lifting the push's timer) and a quiet one stopped again, each
+  // resendEvery; the test offer is left alone until stopTest.
+  test('rings again and stops again in turn, and keeps the test offer', () {
+    final alerts = FakeAlerts();
+    final ringer = AlertsRinger(
+      alerts,
+      'تطبيق الكابتن',
+      resendEvery: Duration.zero,
+    );
+    ringer.ring('عرض');
+    ringer.ring('عرض');
+    ringer.stop();
+    ringer.stop();
+    expect(alerts.calls, ['ring', 'ring', 'stopRing', 'stopRing']);
+    alerts.calls.clear();
+    ringer.test('عرض تجريبي', const Duration(seconds: 30));
+    ringer.stop();
+    expect(alerts.calls, ['ring']);
+    expect(alerts.ringStopsAfter, const Duration(seconds: 30));
+    ringer.stopTest();
+    expect(alerts.calls, ['ring', 'stopRing']);
+    // An offer that rings keeps its ring: no test over it.
+    alerts.calls.clear();
+    ringer.ring('عرض');
+    ringer.test('عرض تجريبي', const Duration(seconds: 30));
+    ringer.stopTest();
+    expect(alerts.calls, ['ring']);
+  });
+
   group('the door payment (CA §9.7)', () {
     test('reads typed amounts in minor units, and back', () {
       expect(minorOf('410'), '41000');
@@ -533,7 +585,7 @@ void main() {
           restaurant.latitude,
           pin.latitude,
         ]);
-        expect(tracker.queued, 0);
+        expect(await tracker.queued, 0);
       },
     );
 
@@ -546,20 +598,36 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         answers.add(refused(0));
         await tracker.flush();
-        expect(tracker.queued, 1);
+        expect(await tracker.queued, 1);
         answers.add(refused(503));
         await tracker.flush();
-        expect(tracker.queued, 1);
+        expect(await tracker.queued, 1);
         answers.add(refused(409, {'error': 'not_online'}));
         await tracker.flush();
-        expect(tracker.queued, 0);
+        expect(await tracker.queued, 0);
       },
     );
 
-    test('a point seen offline is the latest but never sent', () {
+    test('a point seen offline is the latest but never sent', () async {
       tracker.see(fixAt(restaurant));
       expect(tracker.latest, isNotNull);
-      expect(tracker.queued, 0);
+      expect(await tracker.queued, 0);
+    });
+
+    // CA §4.3, architecture §14.1 (slice 2.43): the source keeps the points
+    // (the library's database on Android), so those recorded before the app
+    // stopped, or while it did not run, are sent once it runs again.
+    test('sends the points the source kept before a restart', () async {
+      source.kept.addAll([fixAt(restaurant), fixAt(pin)]);
+      // Back offline after the restart: the points still go.
+      tracker.stop();
+      await Future<void>.delayed(Duration.zero);
+      expect(sent.single.map((p) => p.latitude), [
+        restaurant.latitude,
+        pin.latitude,
+      ]);
+      expect(sent.single.first.recordedAt, now.add(const Duration(seconds: 5)));
+      expect(source.kept, isEmpty);
     });
 
     test('a session that ends stops everything and drops the points', () async {
@@ -569,7 +637,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       tracker.reset();
       expect(tracker.tracking, isFalse);
-      expect(tracker.queued, 0);
+      expect(await tracker.queued, 0);
       expect(tracker.latest, isNull);
     });
 

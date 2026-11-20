@@ -111,6 +111,7 @@ import 'package:core_api/src/model/admin_captain_orders_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_phone_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output_app.dart';
+import 'package:core_api/src/model/admin_captain_profile_dto_output_app_device_check.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output_custody.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output_custody_currencies_inner.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output_earnings.dart';
@@ -843,6 +844,8 @@ import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary.d
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_custody_change.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_hand_in_today.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
+import 'package:core_api/src/model/captain_device_check_output.dart';
+import 'package:core_api/src/model/captain_device_check_report_dto.dart';
 import 'package:core_api/src/model/captain_document_replacement_dto.dart';
 import 'package:core_api/src/model/captain_documents_dto_output.dart';
 import 'package:core_api/src/model/captain_documents_dto_output_documents_inner.dart';
@@ -920,6 +923,7 @@ import 'package:core_api/src/model/captain_statement_dto_output.dart';
 import 'package:core_api/src/model/captain_statement_list_dto_output.dart';
 import 'package:core_api/src/model/captain_statement_list_dto_output_statements_inner.dart';
 import 'package:core_api/src/model/captain_statement_list_dto_output_statements_inner_payout.dart';
+import 'package:core_api/src/model/captain_this_device_check_dto_output.dart';
 import 'package:core_api/src/model/captain_tokens_dto_output.dart';
 import 'package:core_api/src/model/captain_went_offline_dto_output.dart';
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
@@ -1344,6 +1348,7 @@ part 'serializers.g.dart';
   AdminCaptainPhoneDtoOutput,
   AdminCaptainProfileDtoOutput,
   AdminCaptainProfileDtoOutputApp,
+  AdminCaptainProfileDtoOutputAppDeviceCheck,
   AdminCaptainProfileDtoOutputCustody,
   AdminCaptainProfileDtoOutputCustodyCurrenciesInner,
   AdminCaptainProfileDtoOutputEarnings,
@@ -2076,6 +2081,8 @@ part 'serializers.g.dart';
   CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
   CaptainDeliverySummaryDtoOutputSummaryHandInToday,
   CaptainDeliverySummaryDtoOutputSummaryPay,
+  CaptainDeviceCheckOutput,
+  CaptainDeviceCheckReportDto,
   CaptainDocumentReplacementDto,
   CaptainDocumentsDtoOutput,
   CaptainDocumentsDtoOutputDocumentsInner,
@@ -2153,6 +2160,7 @@ part 'serializers.g.dart';
   CaptainStatementListDtoOutput,
   CaptainStatementListDtoOutputStatementsInner,
   CaptainStatementListDtoOutputStatementsInnerPayout,
+  CaptainThisDeviceCheckDtoOutput,
   CaptainTokensDtoOutput,
   CaptainWentOfflineDtoOutput,
   CaptainWentOfflineDtoOutputHandIn,

@@ -96,6 +96,16 @@ String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
   _ => null,
 };
 
+/// How long an offer's push rings (CA §4.4): until the offer's end in its
+/// data, or null for any other push and an offer already over.
+Duration? offerRingTime(Map<String, dynamic> data, DateTime now) {
+  if (data['target'] != 'offer') return null;
+  final end = DateTime.tryParse('${data['expiresAt'] ?? ''}');
+  if (end == null) return null;
+  final left = end.difference(now);
+  return left > Duration.zero ? left : null;
+}
+
 /// Opens the target of the push the captain tapped: the one that started
 /// the app, and each one tapped while it ran in the background.
 final pushTapsProvider = Provider<void>((ref) {

@@ -60,6 +60,8 @@ class CoreAlertsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activit
                     call.argument<String>("sound") ?: "fd_new_order",
                     call.argument<String>("title") ?: "",
                     call.argument<String>("body") ?: "",
+                    call.argument<Boolean>("vibrate") ?: false,
+                    call.argument<Number>("stopAfterMs")?.toLong(),
                 )
                 result.success(null)
             }
@@ -68,7 +70,7 @@ class CoreAlertsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activit
                 result.success(null)
             }
             "chime" -> {
-                Ringer.chime(context)
+                Ringer.chime(context, call.argument<String>("sound") ?: "fd_chime")
                 result.success(null)
             }
             "readings" -> result.success(DeviceCheck.readings(context))

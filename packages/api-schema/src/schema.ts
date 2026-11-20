@@ -3172,6 +3172,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/device/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainDeviceCheck"];
+        put: operations["captainDeviceReport"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/pay-table": {
         parameters: {
             query?: never;
@@ -10706,6 +10722,21 @@ export interface components {
                     name: string;
                 }[];
             }[];
+        };
+        CaptainDeviceCheck_Output: {
+            /** Format: date-time */
+            at: string;
+            /** @description No failed item. */
+            passed: boolean;
+            failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
+        };
+        CaptainThisDeviceCheckDto_Output: {
+            /** @description This phone’s latest device check (CA §4.5); null before its first. */
+            check: components["schemas"]["CaptainDeviceCheck_Output"] | null;
+        };
+        CaptainDeviceCheckReportDto: {
+            /** @description The checks of CA §4.5 that failed; empty when all passed. */
+            failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
         };
         CaptainPayMoney_Output: {
             amount: string;
@@ -21682,6 +21713,13 @@ export interface components {
                 carriedCurrencies: string[];
                 /** @description The latest answered offers that expired in a row. */
                 expiredInRow: number;
+                /** @description The last device check (CA §4.5), of whichever phone ran it; null before one. */
+                deviceCheck: {
+                    /** Format: date-time */
+                    at: string;
+                    passed: boolean;
+                    failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
+                } | null;
             };
         };
         AdminCaptainPhoneDto_Output: {
@@ -27642,6 +27680,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainPeakBonusDto_Output"];
+                };
+            };
+        };
+    };
+    captainDeviceCheck: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainThisDeviceCheckDto_Output"];
+                };
+            };
+        };
+    };
+    captainDeviceReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainDeviceCheckReportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainThisDeviceCheckDto_Output"];
                 };
             };
         };

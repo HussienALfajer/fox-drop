@@ -2,9 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// RA §4.4: the bundled ring sounds, distinct for a new order, a pickup
-/// request, and a cancellation or an edit. Placeholders until the design's
-/// sounds (owner decision 2026-11-20).
-enum RingSound { newOrder, pickupRequest, cancellation }
+/// request, and a cancellation or an edit; CA §4.4: the captain's offer.
+/// Placeholders until the design's sounds (owner decision 2026-11-20).
+enum RingSound { newOrder, pickupRequest, cancellation, offer }
 
 /// What the device check reads of the phone (RA §4.5 checks 1–5).
 class DeviceReadings {
@@ -70,17 +70,22 @@ abstract interface class Alerts {
 
   /// Loops [sound] on the alarm stream with a full-screen prompt where the
   /// system allows it, else a heads-up notification (RA §4.4, §21 item 4),
-  /// until [stopRing]. A ring already playing changes its sound and text.
+  /// until [stopRing], or [stopAfter] when given (CA §4.4: an offer rings
+  /// until its end). [vibrate] vibrates the phone while it rings (CA §4.4).
+  /// A ring already playing changes its sound and text.
   Future<void> ring(
     RingSound sound, {
     required String title,
     required String body,
+    bool vibrate = false,
+    Duration? stopAfter,
   });
 
   Future<void> stopRing();
 
-  /// Plays the chime once.
-  Future<void> chime();
+  /// Plays the chime once, or the cancellation sound (CA §4.4, §14 #11),
+  /// never over a ring.
+  Future<void> chime({bool cancellation = false});
 
   /// The device check's readings, or null where the platform has none.
   Future<DeviceReadings?> readings();
@@ -103,13 +108,15 @@ class NoAlerts implements Alerts {
     RingSound sound, {
     required String title,
     required String body,
+    bool vibrate = false,
+    Duration? stopAfter,
   }) async {}
 
   @override
   Future<void> stopRing() async {}
 
   @override
-  Future<void> chime() async {}
+  Future<void> chime({bool cancellation = false}) async {}
 
   @override
   Future<DeviceReadings?> readings() async => null;
@@ -141,17 +148,24 @@ class AndroidAlerts implements Alerts {
     RingSound sound, {
     required String title,
     required String body,
+    bool vibrate = false,
+    Duration? stopAfter,
   }) => _channel.invokeMethod('ring', {
     'sound': soundName(sound),
     'title': title,
     'body': body,
+    'vibrate': vibrate,
+    'stopAfterMs': stopAfter?.inMilliseconds,
   });
 
   @override
   Future<void> stopRing() => _channel.invokeMethod('stopRing');
 
   @override
-  Future<void> chime() => _channel.invokeMethod('chime');
+  Future<void> chime({bool cancellation = false}) => _channel.invokeMethod(
+    'chime',
+    {'sound': cancellation ? 'fd_cancellation' : 'fd_chime'},
+  );
 
   @override
   Future<DeviceReadings?> readings() async {
@@ -170,6 +184,7 @@ String soundName(RingSound sound) => switch (sound) {
   RingSound.newOrder => 'fd_new_order',
   RingSound.pickupRequest => 'fd_pickup_request',
   RingSound.cancellation => 'fd_cancellation',
+  RingSound.offer => 'fd_offer',
 };
 
 /// The platform's layer: Android's, else none.

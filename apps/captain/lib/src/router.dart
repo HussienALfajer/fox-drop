@@ -31,6 +31,7 @@ import 'shell.dart';
 import 'starting_screen.dart';
 import 'statements_screen.dart';
 import 'support/report_screen.dart';
+import 'device_check/device_check_screen.dart';
 import 'support/support_screen.dart';
 import 'terms.dart';
 import 'work/work.dart';
@@ -194,6 +195,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      // CA §4.5 (slice 2.43): «فحص الجهاز», from «الإعدادات», the banner and
+      // the first «متصل» on this phone.
+      GoRoute(
+        path: '/device-check',
+        builder: (context, state) => const DeviceCheckScreen(),
       ),
       // CA §12 (slice 2.36c): «ملفي», which opens the documents, the contract
       // and the peak windows.

@@ -36,8 +36,11 @@ type Row = typeof pushMessages.$inferSelect;
 // The Android channel of a push: its level, except a restaurant's ring,
 // which the restaurant app plays with its bundled sound on `ring_order`
 // (slice 2.42, packages/core_push/CLAUDE.md: a channel keeps its first sound),
-// and silently on an owner's device with ringing off (RA §4.4, §16).
+// and silently on an owner's device with ringing off (RA §4.4, §16), and a
+// captain's offer, which the captain app plays with its bundled offer sound
+// on `ring_offer` (CA §4.4, slice 2.43).
 export function channelOf(row: Pick<Row, 'level' | 'party'>, ringingOff: boolean): string {
+  if (row.level === 'offer' && row.party === 'captain') return 'ring_offer';
   if (row.level !== 'ring' || row.party !== 'merchant') return row.level;
   return ringingOff ? 'silent' : 'ring_order';
 }

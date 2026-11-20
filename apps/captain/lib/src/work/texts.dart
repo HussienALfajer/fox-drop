@@ -37,6 +37,15 @@ String? foodText(AppLocalizations l10n, EndedFood? food) => switch (food) {
 extension CaptainTexts on AppLocalizations {
   String moneyOf(Money value) => formatMoney(value.amount, value.currency);
 
+  /// The ring's text over the lock screen (CA §14 #1).
+  String offerRingText(Offer offer) {
+    final pay = offer.pay;
+    return captainOfferRing(
+      pay == null ? captainOfferNoPay : formatMoney(pay.amount, pay.currency),
+      offer.restaurant.name,
+    );
+  }
+
   String stateText(AvailabilityState state) => switch (state) {
     AvailabilityState.onlineAvailable => captainStateAvailable,
     AvailabilityState.busy => captainStateBusy,

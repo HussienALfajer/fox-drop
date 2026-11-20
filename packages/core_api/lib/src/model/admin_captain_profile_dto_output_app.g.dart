@@ -16,6 +16,8 @@ class _$AdminCaptainProfileDtoOutputApp
   final BuiltList<String> carriedCurrencies;
   @override
   final int expiredInRow;
+  @override
+  final AdminCaptainProfileDtoOutputAppDeviceCheck? deviceCheck;
 
   factory _$AdminCaptainProfileDtoOutputApp([
     void Function(AdminCaptainProfileDtoOutputAppBuilder)? updates,
@@ -26,6 +28,7 @@ class _$AdminCaptainProfileDtoOutputApp
     required this.maxPickupAnswered,
     required this.carriedCurrencies,
     required this.expiredInRow,
+    this.deviceCheck,
   }) : super._();
   @override
   AdminCaptainProfileDtoOutputApp rebuild(
@@ -43,7 +46,8 @@ class _$AdminCaptainProfileDtoOutputApp
         maxPickup == other.maxPickup &&
         maxPickupAnswered == other.maxPickupAnswered &&
         carriedCurrencies == other.carriedCurrencies &&
-        expiredInRow == other.expiredInRow;
+        expiredInRow == other.expiredInRow &&
+        deviceCheck == other.deviceCheck;
   }
 
   @override
@@ -53,6 +57,7 @@ class _$AdminCaptainProfileDtoOutputApp
     _$hash = $jc(_$hash, maxPickupAnswered.hashCode);
     _$hash = $jc(_$hash, carriedCurrencies.hashCode);
     _$hash = $jc(_$hash, expiredInRow.hashCode);
+    _$hash = $jc(_$hash, deviceCheck.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -63,7 +68,8 @@ class _$AdminCaptainProfileDtoOutputApp
           ..add('maxPickup', maxPickup)
           ..add('maxPickupAnswered', maxPickupAnswered)
           ..add('carriedCurrencies', carriedCurrencies)
-          ..add('expiredInRow', expiredInRow))
+          ..add('expiredInRow', expiredInRow)
+          ..add('deviceCheck', deviceCheck))
         .toString();
   }
 }
@@ -99,6 +105,14 @@ class AdminCaptainProfileDtoOutputAppBuilder
   int? get expiredInRow => _$this._expiredInRow;
   set expiredInRow(int? expiredInRow) => _$this._expiredInRow = expiredInRow;
 
+  AdminCaptainProfileDtoOutputAppDeviceCheckBuilder? _deviceCheck;
+  AdminCaptainProfileDtoOutputAppDeviceCheckBuilder get deviceCheck =>
+      _$this._deviceCheck ??=
+          AdminCaptainProfileDtoOutputAppDeviceCheckBuilder();
+  set deviceCheck(
+    AdminCaptainProfileDtoOutputAppDeviceCheckBuilder? deviceCheck,
+  ) => _$this._deviceCheck = deviceCheck;
+
   AdminCaptainProfileDtoOutputAppBuilder() {
     AdminCaptainProfileDtoOutputApp._defaults(this);
   }
@@ -110,6 +124,7 @@ class AdminCaptainProfileDtoOutputAppBuilder
       _maxPickupAnswered = $v.maxPickupAnswered;
       _carriedCurrencies = $v.carriedCurrencies.toBuilder();
       _expiredInRow = $v.expiredInRow;
+      _deviceCheck = $v.deviceCheck?.toBuilder();
       _$v = null;
     }
     return this;
@@ -146,6 +161,7 @@ class AdminCaptainProfileDtoOutputAppBuilder
               r'AdminCaptainProfileDtoOutputApp',
               'expiredInRow',
             ),
+            deviceCheck: _deviceCheck?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -155,6 +171,9 @@ class AdminCaptainProfileDtoOutputAppBuilder
 
         _$failedField = 'carriedCurrencies';
         carriedCurrencies.build();
+
+        _$failedField = 'deviceCheck';
+        _deviceCheck?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminCaptainProfileDtoOutputApp',

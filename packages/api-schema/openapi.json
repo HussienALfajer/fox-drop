@@ -8171,6 +8171,66 @@
         ]
       }
     },
+    "/v1/captain/device/check": {
+      "get": {
+        "operationId": "captainDeviceCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainThisDeviceCheckDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      },
+      "put": {
+        "operationId": "captainDeviceReport",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainDeviceCheckReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainThisDeviceCheckDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/captain/pay-table": {
       "get": {
         "operationId": "captainPayTablePayTable",
@@ -34411,6 +34471,94 @@
           "active"
         ],
         "additionalProperties": false
+      },
+      "CaptainDeviceCheck_Output": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "passed": {
+            "type": "boolean",
+            "description": "No failed item."
+          },
+          "failed": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "notifications",
+                "location",
+                "battery",
+                "autostart",
+                "full_screen",
+                "alarm_volume",
+                "do_not_disturb",
+                "test_offer",
+                "connection",
+                "gps_accuracy",
+                "call"
+              ]
+            }
+          }
+        },
+        "required": [
+          "at",
+          "passed",
+          "failed"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainThisDeviceCheckDto_Output": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CaptainDeviceCheck_Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "This phone’s latest device check (CA §4.5); null before its first."
+          }
+        },
+        "required": [
+          "check"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainDeviceCheckReportDto": {
+        "type": "object",
+        "properties": {
+          "failed": {
+            "maxItems": 11,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "notifications",
+                "location",
+                "battery",
+                "autostart",
+                "full_screen",
+                "alarm_volume",
+                "do_not_disturb",
+                "test_offer",
+                "connection",
+                "gps_accuracy",
+                "call"
+              ]
+            },
+            "description": "The checks of CA §4.5 that failed; empty when all passed."
+          }
+        },
+        "required": [
+          "failed"
+        ]
       },
       "CaptainPayMoney_Output": {
         "type": "object",
@@ -82241,13 +82389,60 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991,
                 "description": "The latest answered offers that expired in a row."
+              },
+              "deviceCheck": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "passed": {
+                        "type": "boolean"
+                      },
+                      "failed": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "notifications",
+                            "location",
+                            "battery",
+                            "autostart",
+                            "full_screen",
+                            "alarm_volume",
+                            "do_not_disturb",
+                            "test_offer",
+                            "connection",
+                            "gps_accuracy",
+                            "call"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "passed",
+                      "failed"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The last device check (CA §4.5), of whichever phone ran it; null before one."
               }
             },
             "required": [
               "maxPickup",
               "maxPickupAnswered",
               "carriedCurrencies",
-              "expiredInRow"
+              "expiredInRow",
+              "deviceCheck"
             ],
             "additionalProperties": false
           }

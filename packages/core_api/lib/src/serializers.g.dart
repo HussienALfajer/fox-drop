@@ -206,6 +206,8 @@ Serializers _$serializers =
           ..add(AdminCaptainPhoneDtoOutput.serializer)
           ..add(AdminCaptainProfileDtoOutput.serializer)
           ..add(AdminCaptainProfileDtoOutputApp.serializer)
+          ..add(AdminCaptainProfileDtoOutputAppDeviceCheck.serializer)
+          ..add(AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum.serializer)
           ..add(AdminCaptainProfileDtoOutputContractPhaseEnum.serializer)
           ..add(AdminCaptainProfileDtoOutputCustody.serializer)
           ..add(AdminCaptainProfileDtoOutputCustodyBlocksEnum.serializer)
@@ -1423,6 +1425,10 @@ Serializers _$serializers =
           ..add(CaptainDeliverySummaryDtoOutputSummaryCustodyChange.serializer)
           ..add(CaptainDeliverySummaryDtoOutputSummaryHandInToday.serializer)
           ..add(CaptainDeliverySummaryDtoOutputSummaryPay.serializer)
+          ..add(CaptainDeviceCheckOutput.serializer)
+          ..add(CaptainDeviceCheckOutputFailedEnum.serializer)
+          ..add(CaptainDeviceCheckReportDto.serializer)
+          ..add(CaptainDeviceCheckReportDtoFailedEnum.serializer)
           ..add(CaptainDocumentReplacementDto.serializer)
           ..add(CaptainDocumentsDtoOutput.serializer)
           ..add(CaptainDocumentsDtoOutputDocumentsInner.serializer)
@@ -1538,6 +1544,7 @@ Serializers _$serializers =
           ..add(CaptainStatementListDtoOutput.serializer)
           ..add(CaptainStatementListDtoOutputStatementsInner.serializer)
           ..add(CaptainStatementListDtoOutputStatementsInnerPayout.serializer)
+          ..add(CaptainThisDeviceCheckDtoOutput.serializer)
           ..add(CaptainTokensDtoOutput.serializer)
           ..add(CaptainWentOfflineDtoOutput.serializer)
           ..add(CaptainWentOfflineDtoOutputHandIn.serializer)
@@ -2311,6 +2318,17 @@ Serializers _$serializers =
               const FullType(AdminCaptainOffersDtoOutputOffersInner),
             ]),
             () => ListBuilder<AdminCaptainOffersDtoOutputOffersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4239,6 +4257,18 @@ Serializers _$serializers =
               const FullType(CaptainCustodyDtoOutputReceiptsInnerLinesInner),
             ]),
             () => ListBuilder<CaptainCustodyDtoOutputReceiptsInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainDeviceCheckOutputFailedEnum),
+            ]),
+            () => ListBuilder<CaptainDeviceCheckOutputFailedEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainDeviceCheckReportDtoFailedEnum),
+            ]),
+            () => ListBuilder<CaptainDeviceCheckReportDtoFailedEnum>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

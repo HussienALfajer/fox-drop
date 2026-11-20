@@ -313,6 +313,34 @@ describe('CaptainsService.setCustodyLimit', () => {
   });
 });
 
+// CA §4.5, §15, AP §9.7.4 (slice 2.43): the last device check, per phone.
+describe('the device check', () => {
+  it('keeps the last check of the phone that ran it', async () => {
+    const { id } = await captain();
+    expect(await captains.deviceCheck(id, 'phone-1')).toBeNull();
+    const first = await captains.recordDeviceCheck(id, 'phone-1', [
+      'test_offer',
+      'notifications',
+      'test_offer',
+    ]);
+    expect(first).toMatchObject({
+      deviceId: 'phone-1',
+      passed: false,
+      failed: ['notifications', 'test_offer'],
+    });
+    expect(await captains.deviceCheck(id, 'phone-1')).toEqual(first);
+    // Another phone has run none; the panel reads the last whatever the phone.
+    expect(await captains.deviceCheck(id, 'phone-2')).toBeNull();
+    expect(await captains.deviceCheck(id)).toEqual(first);
+    const second = await captains.recordDeviceCheck(id, 'phone-2', []);
+    expect(second).toMatchObject({ passed: true, failed: [] });
+    expect(await captains.deviceCheck(id, 'phone-1')).toBeNull();
+    await expect(
+      sql.query('UPDATE captains.captains SET device_check_failed = NULL WHERE id = $1', [id]),
+    ).rejects.toThrow(/captains_device_check_complete/);
+  });
+});
+
 describe('CaptainsService.setPayTable', () => {
   it('starts the first table now and every later one 7 days or more after', async () => {
     const cityId = await city();

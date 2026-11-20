@@ -62,7 +62,13 @@ const profile = {
   cancellations: 1,
   acceptance: { accepted: 45, answered: 50 },
   rating: { count: 20, average: 4.6 },
-  app: { maxPickup: null, maxPickupAnswered: true, carriedCurrencies: ['TRY'], expiredInRow: 0 },
+  app: {
+    maxPickup: null,
+    maxPickupAnswered: true,
+    carriedCurrencies: ['TRY'],
+    expiredInRow: 0,
+    deviceCheck: { at: '2026-11-20T09:00:00.000Z', passed: false, failed: ['test_offer'] },
+  },
 };
 
 // AP §9.7.3–9.7.5 «الكباتن» (slice 2.36a): the list sorted by the highest
@@ -127,6 +133,14 @@ test('sorts the captains by custody, opens one and suspends it', async ({ page }
   await expect(overview.getByText('90% من آخر 50 عرضاً')).toBeVisible();
   await expect(overview.getByText('90% من آخر 50 طلباً مسلّماً')).toBeVisible();
   await expect(overview.getByText('5.5 ساعة').first()).toBeVisible();
+
+  // AP §9.7.4 «التطبيق» (slice 2.43): the last device check.
+  await page.getByRole('link', { name: 'التطبيق', exact: true }).click();
+  await expect(
+    page
+      .getByRole('region', { name: 'التطبيق' })
+      .getByText(/^لم ينجح في .+: لم يُسمع صوت العرض التجريبي$/),
+  ).toBeVisible();
 
   await page.getByRole('link', { name: 'المخالفات والإيقافات' }).click();
   const form = page.getByRole('form', { name: 'الإيقاف وإعادة التفعيل' });
