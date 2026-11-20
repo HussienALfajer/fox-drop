@@ -2,7 +2,8 @@
 
 > Moved here from `packages/core_platform/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
-The forced update and maintenance (slice 2.4a), the terms and privacy (slice 2.4b) and the emergency stop (slice 2.4d) of the three Flutter apps (CU §4.2, §4.7, RA §4.2, §4.10, §8.17, CA §4.2, §4.8, §6.3). The server side is `GET /v1/{party}/platform` in the settings module (`apps/server/src/modules/settings/CLAUDE.md`, «The apps' read»), which the panel's «التطبيقات» sets (AP §9.14).
+The forced update and maintenance (slice 2.4a), the terms and privacy (slice 2.4b) and the emergency stop (slice 2.4d) of the three Flutter apps (CU §4.2, §4.7, RA §4.2, §4.10, §8.17, CA §4.2, §4.8, §6.3).
+The server side is `GET /v1/{party}/platform` in the settings module (`apps/server/src/modules/settings/CLAUDE.md`, «The apps' read»), which the panel's «التطبيقات» sets (AP §9.14).
 
 ## Layout
 
@@ -15,11 +16,35 @@ The forced update and maintenance (slice 2.4a), the terms and privacy (slice 2.4
 
 ## Rules
 
-- **When the app checks** ("at launch and on every reconnect"): `start()` reads now and on each return to the foreground (`AppLifecycleListener.onResume`); a failed read is tried again, 5 s doubling to 5 minutes, so the check follows the connection coming back; a `check()` while a read runs reads once more after it, so an answer older than the call never stands. Until the first answer the status is `PlatformStatus.clear`: a server out of reach never locks the app.
-- **Platform broadcasts (RA §18, CA §15; slice 2.4d):** `followPlatformBroadcasts` listens to the app's own channel beside its `LiveFeed` (which ignores publications without an order): the channel connecting, the first time and every reconnect, reads the platform and the stop again ("on every reconnect"); `platform.emergency_stop` reads the stop, `platform.app_changed` the platform. A broadcast is only a cue: the state is always the read's answer. The restaurant and captain apps follow their `merchant:` and `captain:` channel while signed in (their `platformBroadcastsProvider`); the customer app has no channel of its own and follows the stop on an open order's `order:` channel only.
-- **The emergency stop (AP §9.1.6, D7; slice 2.4d):** `EmergencyStopCheck` keeps `GET /v1/{party}/emergency-stop` current (the customer's read takes the delivery point and carries the browsing message and the delay notice). Until the first answer it is `EmergencyStop.none`. `switched` gives each start or end seen after an earlier answer (never the state the app opened in), for the chime of RA §16 #34 and CA §14 #31. `EmergencyStopBanner` («المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.») is placed by each screen under its top bar, after the offline bar (RA §6.3, CA §6.3). Its red waits for the design.
-- **The server decides:** the app sends its version and the server answers `updateNeed`; the app never compares versions. A version not in the form `1.4.0` is answered as below any minimum, never refused.
-- **Blocking:** each app turns `status.blocks` (maintenance, or a required update) into its router's redirect to `/blocked`, which shows `PlatformBlockScreen`, maintenance first since an update does not end it. What stays reachable is each app's rule (its `CLAUDE.md` «Update and maintenance»): the customer's active order, the captain's current order, nothing in the restaurant app.
-- **The banner** of a suggested update is dismissed for the app's run (`dismissBanner`) and comes back at the next start. `UpdateBannerFrame` wraps `MaterialApp.router`'s `builder` child, so it shows over every screen.
-- **The update button** opens `--dart-define=UPDATE_URL` (the store page, or the FOX DROP website's download for the platform, RA §4.2), with the system's browser or store; without it the button is hidden. It is not a setting: Appendix A has none, and each platform's build has its own address.
-- **Terms (AP §9.13):** `GET /v1/{party}/terms` (the content module) answers the version in force and `pending` for the signed-in account. `TermsCheck` reads it at `start()` and on each return to the foreground, so a version published meanwhile is asked for on the next open, with the same retries; until the first answer it is null and nothing waits on it (the server refuses what a pending version blocks). Each app makes one per sign-in (its provider watches the auth state). `accept(version)` sends the version the screen showed; a `409 terms_outdated` reads again and answers `outdated`, so the screen shows the newer text. `TermsScreen` shows the text and, while pending, «أوافق على الشروط وسياسة الخصوصية». What a pending version blocks is each app's rule (its `CLAUDE.md` «Terms»): the customer's ordering, the captain's going online, a restaurant owner's screens other than Orders.
+- **When the app checks** ("at launch and on every reconnect"): `start()` reads now and on each return to the foreground (`AppLifecycleListener.onResume`);
+  a failed read is tried again, 5 s doubling to 5 minutes, so the check follows the connection coming back;
+  a `check()` while a read runs reads once more after it, so an answer older than the call never stands.
+  Until the first answer the status is `PlatformStatus.clear`: a server out of reach never locks the app.
+- **Platform broadcasts (RA §18, CA §15; slice 2.4d):** `followPlatformBroadcasts` listens to the app's own channel beside its `LiveFeed` (which ignores publications without an order): the channel connecting, the first time and every reconnect, reads the platform and the stop again ("on every reconnect");
+  `platform.emergency_stop` reads the stop, `platform.app_changed` the platform.
+  A broadcast is only a cue: the state is always the read's answer.
+  The restaurant and captain apps follow their `merchant:` and `captain:` channel while signed in (their `platformBroadcastsProvider`);
+  the customer app has no channel of its own and follows the stop on an open order's `order:` channel only.
+- **The emergency stop (AP §9.1.6, D7; slice 2.4d):** `EmergencyStopCheck` keeps `GET /v1/{party}/emergency-stop` current (the customer's read takes the delivery point and carries the browsing message and the delay notice).
+  Until the first answer it is `EmergencyStop.none`.
+  `switched` gives each start or end seen after an earlier answer (never the state the app opened in), for the chime of RA §16 #34 and CA §14 #31.
+  `EmergencyStopBanner` («المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.») is placed by each screen under its top bar, after the offline bar (RA §6.3, CA §6.3).
+  Its red waits for the design.
+- **The server decides:** the app sends its version and the server answers `updateNeed`;
+  the app never compares versions.
+  A version not in the form `1.4.0` is answered as below any minimum, never refused.
+- **Blocking:** each app turns `status.blocks` (maintenance, or a required update) into its router's redirect to `/blocked`, which shows `PlatformBlockScreen`, maintenance first since an update does not end it.
+  What stays reachable is each app's rule (its `CLAUDE.md` «Update and maintenance»): the customer's active order, the captain's current order, nothing in the restaurant app.
+- **The banner** of a suggested update is dismissed for the app's run (`dismissBanner`) and comes back at the next start.
+  `UpdateBannerFrame` wraps `MaterialApp.router`'s `builder` child, so it shows over every screen.
+- **The update button** opens `--dart-define=UPDATE_URL` (the store page, or the FOX DROP website's download for the platform, RA §4.2), with the system's browser or store;
+  without it the button is hidden.
+  It is not a setting: Appendix A has none, and each platform's build has its own address.
+- **Terms (AP §9.13):** `GET /v1/{party}/terms` (the content module) answers the version in force and `pending` for the signed-in account.
+  `TermsCheck` reads it at `start()` and on each return to the foreground, so a version published meanwhile is asked for on the next open, with the same retries;
+  until the first answer it is null and nothing waits on it (the server refuses what a pending version blocks).
+  Each app makes one per sign-in (its provider watches the auth state).
+  `accept(version)` sends the version the screen showed;
+  a `409 terms_outdated` reads again and answers `outdated`, so the screen shows the newer text.
+  `TermsScreen` shows the text and, while pending, «أوافق على الشروط وسياسة الخصوصية».
+  What a pending version blocks is each app's rule (its `CLAUDE.md` «Terms»): the customer's ordering, the captain's going online, a restaurant owner's screens other than Orders.
