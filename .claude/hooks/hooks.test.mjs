@@ -54,6 +54,13 @@ describe('the Bash guard', () => {
     assert.deepEqual(rules('python scripts/tool.py'), []);
   });
 
+  it('allows inline scripts that only print, and a file redirected into a command', () => {
+    assert.deepEqual(rules(`node -e "process.stdout.write(String(1 + 1))"`), []);
+    assert.deepEqual(rules('python -c "import sys; sys.stderr.write(\'x\')"'), []);
+    assert.deepEqual(rules(`node -e "f.write('x')"`), ['edit']);
+    assert.deepEqual(rules('docker compose exec -T postgres psql < docs/roadmap.md'), []);
+  });
+
   it('splits on operators but not inside quotes', () => {
     const [first, second] = parse("grep -n 'a|b; c' x && echo ok");
     assert.deepEqual(first[0].words, ['grep', '-n', 'a|b; c', 'x']);

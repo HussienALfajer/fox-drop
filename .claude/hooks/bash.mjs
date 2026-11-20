@@ -128,7 +128,7 @@ function fileArgs(name, args) {
 const READERS = new Set(['cat', 'head', 'tail', 'sed']);
 const INTERPRETERS = new Set(['python', 'python3', 'py', 'node', 'deno', 'bun']);
 const WRITES =
-  /write_text|write_bytes|writeFileSync|writeFile\(|\.write\(|open\([^)]*['"][wa]\+?b?['"]/;
+  /write_text|write_bytes|writeFileSync|writeFile\(|(?<!std(?:out|err))\.write\(|open\([^)]*['"][wa]\+?b?['"]/;
 const SCRATCH = /scratchpad|[\\/]te?mp[\\/]|AppData[\\/]Local[\\/]Temp/i;
 
 /** Turns /d/fox-drop and ~ into paths Node resolves on Windows too. */
@@ -166,7 +166,7 @@ export function check(command, cwd, isTracked) {
           findings.push({
             rule: 'read',
             file: tracked,
-            reason: `Read ${tracked} with the Read tool (offset and limit for a line range) or search it with Grep, not \`${name}\`.`,
+            reason: `Read ${tracked} with the Read tool (offset and limit for a line range) or search it with Grep, not \`${name}\`; to feed it to a command, redirect it (\`command < ${tracked}\`).`,
           });
       } else if (INTERPRETERS.has(name)) {
         const inline = args.findIndex((arg) => /^-[ce]$/.test(arg));

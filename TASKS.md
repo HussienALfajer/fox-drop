@@ -19,7 +19,7 @@ Phase 4 of `docs/claude-code-workflow.md`: fast checks. Planned, not started. It
 
 ## Waiting for the owner
 
-- The gap slices of L.1 (`docs/launch/dod-checklist.md`, «Proposed slices»): L.1a `test/dod-test-gaps`, L.1b `feat/dod-calls-and-notices`, L.1c `feat/dod-offline-and-zone-preview`. Once approved, add them to `docs/roadmap.md` before L.10.
+- The gap slices of L.1 (`docs/launch/dod-checklist.md`, «Proposed slices»): L.1a `test/dod-test-gaps`, L.1b `feat/dod-calls-and-notices`, L.1c `feat/dod-offline-browsing`. Once approved, add them to `docs/roadmap.md` before L.10.
 - Phase 3 of `docs/claude-code-workflow.md` (the owner's MCP servers, plugins, skills and status line, outside the repository), with the owner in a session.
 
 ## After that
