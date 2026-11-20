@@ -16,6 +16,7 @@ Phase 2 of `docs/claude-code-workflow.md`: fewer requests, smaller results. Plan
 - [ ] Root `CLAUDE.md`: independent tool calls in one message; `git diff --stat` first.
 - [ ] A hook that cuts a test command's output to its failures and summary.
 - [ ] `scripts/claude-audit.mjs`, the audit as a committed script.
+- [ ] `infra/server/check-order-ledger.sql` line 3 still names `ordering/CLAUDE.md` for «The atomic pickup»: point it at `docs/code/apps/server/src/modules/ordering.md` in a pull request that changes code anyway.
 - [ ] Measure one slice session against the baseline.
 
 ## After that
