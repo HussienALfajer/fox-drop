@@ -7,7 +7,7 @@
 | Platform      | Minimum              | Notes                                                       |
 | ------------- | -------------------- | ----------------------------------------------------------- |
 | Android phone | Android 8.0 (API 26) | Full behaviour, including a foreground service while online |
-| iPhone        | iOS 15               | Same features. Background rules differ (§4.3, §4.4).        |
+| iPhone        | iOS 15.5             | Same features. Background rules differ (§4.3, §4.4).        |
 
 - Both apps MUST have the same features and rules. They are one Flutter codebase, with `flutter_background_geolocation` for location and native layers for offers and sounds (technology-stack §14).
 - Phones only. Tablets are not a target, but the layout MUST not break on one.
