@@ -7428,6 +7428,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDashboardRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cost-report": {
         parameters: {
             query?: never;
@@ -21511,6 +21527,135 @@ export interface components {
                 };
             }[];
         };
+        AdminDashboardDto_Output: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            day: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            lastWeekDay: string;
+            status: {
+                captains: {
+                    online: number;
+                    available: number;
+                    busy: number;
+                    cashBlocked: number;
+                };
+                restaurants: {
+                    open: number;
+                    busy: number;
+                    paused: number;
+                    closed: number;
+                    holiday: number;
+                    suspended: number;
+                };
+                /** @description Null until the receiving devices’ presence. */
+                withoutDevice: number | null;
+            };
+            today: {
+                /**
+                 * Format: date-time
+                 * @description The business day’s cutoff.
+                 */
+                from: string;
+                /**
+                 * Format: date-time
+                 * @description Today: now; last week: the same moment of its day.
+                 */
+                until: string;
+                orders: {
+                    placed: number;
+                    delivered: number;
+                    /** @description Placed to arrived now. */
+                    inProgress: number;
+                    cancelled: number;
+                    rejected: number;
+                    failed: number;
+                    /** @description Of the delivered: placing to delivery, one decimal. */
+                    deliveryMinutes: number | null;
+                    /** @description Of the delivered: at or before the promised time. */
+                    onTimeBp: number | null;
+                    /** @description Delivered ÷ placed. */
+                    successBp: number | null;
+                    firstOrders: number;
+                };
+                /** @description In the base; null while an amount has no rate. */
+                money: {
+                    currency: string;
+                    /** @description The customer totals of the orders delivered. */
+                    gmv: string;
+                    itemsValue: string;
+                    deliveryFees: string;
+                    commission: string;
+                    margin: string;
+                } | null;
+                /** @description Accounts registered, every city’s. */
+                newCustomers: number;
+            };
+            lastWeek: {
+                /**
+                 * Format: date-time
+                 * @description The business day’s cutoff.
+                 */
+                from: string;
+                /**
+                 * Format: date-time
+                 * @description Today: now; last week: the same moment of its day.
+                 */
+                until: string;
+                orders: {
+                    placed: number;
+                    delivered: number;
+                    /** @description Placed to arrived now. */
+                    inProgress: number;
+                    cancelled: number;
+                    rejected: number;
+                    failed: number;
+                    /** @description Of the delivered: placing to delivery, one decimal. */
+                    deliveryMinutes: number | null;
+                    /** @description Of the delivered: at or before the promised time. */
+                    onTimeBp: number | null;
+                    /** @description Delivered ÷ placed. */
+                    successBp: number | null;
+                    firstOrders: number;
+                };
+                /** @description In the base; null while an amount has no rate. */
+                money: {
+                    currency: string;
+                    /** @description The customer totals of the orders delivered. */
+                    gmv: string;
+                    itemsValue: string;
+                    deliveryFees: string;
+                    commission: string;
+                    margin: string;
+                } | null;
+                /** @description Accounts registered, every city’s. */
+                newCustomers: number;
+            };
+            tasks: {
+                /** @enum {string} */
+                key: "compensationApprovals" | "menuChanges" | "applications" | "probationReviews" | "expiringDocuments" | "acceptanceReviews" | "shortfalls" | "cashBlocked" | "settlementsDue" | "overdueRestaurants" | "payoutsDue";
+                count: number;
+            }[];
+            hours: {
+                hour: string;
+                today: number;
+                lastWeek: number;
+            }[];
+            topRestaurants: {
+                /** Format: uuid */
+                restaurantId: string;
+                name: string;
+                orders: number;
+            }[];
+            troubledRestaurants: {
+                /** Format: uuid */
+                restaurantId: string;
+                name: string;
+                rejected: number;
+                late: number;
+            }[];
+        };
         AdminCostReportDto_Output: {
             /** Format: uuid */
             cityId: string;
@@ -33877,6 +34022,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminDailyReportDto_Output"];
+                };
+            };
+        };
+    };
+    adminDashboardRead: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDashboardDto_Output"];
                 };
             };
         };

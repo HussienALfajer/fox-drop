@@ -396,6 +396,18 @@ Serializers _$serializers =
           ..add(AdminDailyReportDtoOutputPreviousInner.serializer)
           ..add(AdminDailyReportDtoOutputRestaurants.serializer)
           ..add(AdminDailyReportExportDto.serializer)
+          ..add(AdminDashboardDtoOutput.serializer)
+          ..add(AdminDashboardDtoOutputHoursInner.serializer)
+          ..add(AdminDashboardDtoOutputStatus.serializer)
+          ..add(AdminDashboardDtoOutputStatusCaptains.serializer)
+          ..add(AdminDashboardDtoOutputStatusRestaurants.serializer)
+          ..add(AdminDashboardDtoOutputTasksInner.serializer)
+          ..add(AdminDashboardDtoOutputTasksInnerKeyEnum.serializer)
+          ..add(AdminDashboardDtoOutputToday.serializer)
+          ..add(AdminDashboardDtoOutputTodayMoney.serializer)
+          ..add(AdminDashboardDtoOutputTodayOrders.serializer)
+          ..add(AdminDashboardDtoOutputTopRestaurantsInner.serializer)
+          ..add(AdminDashboardDtoOutputTroubledRestaurantsInner.serializer)
           ..add(AdminDeliveryFeePreviewDtoOutput.serializer)
           ..add(AdminDeliveryFeePreviewDtoOutputDistance.serializer)
           ..add(AdminDeliveryFeePreviewDtoOutputDistanceMethodEnum.serializer)
@@ -2565,6 +2577,31 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminDailyReportDtoOutputNowOverdueRestaurantsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDashboardDtoOutputTasksInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputTasksInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDashboardDtoOutputHoursInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDashboardDtoOutputTopRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputTopRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDashboardDtoOutputTroubledRestaurantsInner),
+            ]),
+            () =>
+                ListBuilder<AdminDashboardDtoOutputTroubledRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

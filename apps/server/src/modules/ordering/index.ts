@@ -58,6 +58,7 @@ import { MerchantRatingsController } from './merchant-ratings.controller.js';
 import { RatingPagesService } from './rating-pages.js';
 import { CaptainFiguresService } from './captain-figures.js';
 import { RestaurantFiguresService } from './restaurant-figures.js';
+import { DashboardOrdersService } from './dashboard-orders.js';
 import { AdminRestaurantOverviewController } from './admin-restaurant-overview.controller.js';
 import { AdminDeliveryFeesController } from './admin-delivery-fees.controller.js';
 import { AdminPayTablesController } from './admin-pay-tables.controller.js';
@@ -140,9 +141,16 @@ import {
     OrderRoutes,
     RestaurantFiguresService,
     CaptainFiguresService,
+    DashboardOrdersService,
     AdminSearch,
   ],
-  exports: [QuoteService, OrdersService, RestaurantFiguresService, CaptainFiguresService],
+  exports: [
+    QuoteService,
+    OrdersService,
+    RestaurantFiguresService,
+    CaptainFiguresService,
+    DashboardOrdersService,
+  ],
 })
 export class OrderingModule {}
 
@@ -218,6 +226,7 @@ export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
 export { HANDOVER_FROM } from './handover.js';
 export { type RestaurantFigures, RestaurantFiguresService } from './restaurant-figures.js';
 export { type CaptainFigures, CaptainFiguresService, ON_TIME_WINDOW } from './captain-figures.js';
+export { type DashboardOrderRow, DashboardOrdersService } from './dashboard-orders.js';
 export {
   type CostOrder,
   type OperatingCostCause,
