@@ -19,7 +19,7 @@ Phase 4 of `docs/claude-code-workflow.md`: fast checks. Planned, not started. It
 
 ## Waiting for the owner
 
-- Phase 3 of `docs/claude-code-workflow.md` (the owner's MCP servers, plugins, skills and status line, outside the repository), with the owner in a session.
+- Phase 3 of `docs/claude-code-workflow.md`: applied on 2026-11-21 except what only the app's settings can turn off (the `marketing` and `social-media-skills` plugins). Its "done when" (under 45K tokens at the start, no MCP delta) is to check with `/context` in a new session.
 
 ## After that
 

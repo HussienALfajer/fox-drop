@@ -62,6 +62,19 @@ About a third of every request's context after phase 1.
 
 Done when: `/context` at the start of a new session shows under 45K tokens, and a session's transcript has no MCP delta.
 
+Status (2026-11-21, with the owner): items 1 to 4 applied on the owner's machine, with backups in `~/.claude/backups/2026-11-21-phase3`.
+
+- `premiere-pro`, `higgsfield`, `hostinger` and `hostinger-dns` are in the project's `disabledMcpServers` in `~/.claude.json`; turn `hostinger` on with `/mcp` for domain work.
+- `figma` and `ui-ux-pro-max` are off in the git-ignored `.claude/settings.local.json`.
+- The 37 video, Remotion and Instagram skills moved to `~/.claude/skills-off`; only `vertex-server` stays.
+- The Canva connector is off by default.
+- The unused proxy and the plain-text key are gone from `~/.claude/settings.json`; nothing listened on its port.
+- `~/.claude/statusline.mjs` shows the model, the context used and the 5-hour and weekly limits (terminal `claude` only).
+
+Left to the owner in the app's settings: the `marketing` plugin (13 connectors) and the `social-media-skills` plugin, which no settings file controls.
+
+Found: the Bash guard refuses an inline script that writes files outside the repository (here `~/.claude.json`), a false positive. The fix is to flag only scripts that name a path inside the repository.
+
 ## Phase 4: fast checks (`chore/fast-verify`)
 
 1. One script classifies a change's paths; `ci.yml` and `verify.mjs` share it.
