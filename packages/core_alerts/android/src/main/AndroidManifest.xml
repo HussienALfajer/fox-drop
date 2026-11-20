@@ -1,0 +1,34 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- RA §4.3: the foreground service that keeps the app receiving with the
+         screen off, started again after a reboot and an update. specialUse:
+         dataSync is limited to 6 hours a day on Android 15, and receiving
+         lasts the restaurant's hours (architecture §12.2; check the Play
+         policy at submission, RA §21 item 4). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- RA §4.4: the ring's full-screen prompt over the lock screen. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <!-- RA §4.5 check 2: the device check asks to leave battery optimisation. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <application>
+        <service
+            android:name="com.foxdrop.core_alerts.ReceivingService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps a restaurant's order receiver connected so new orders ring with the screen off"/>
+        </service>
+        <receiver
+            android:name="com.foxdrop.core_alerts.StartReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

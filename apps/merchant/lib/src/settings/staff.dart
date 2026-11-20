@@ -112,6 +112,9 @@ class RestaurantDevice {
     required this.signedIn,
     required this.lastSeenAt,
     required this.thisDevice,
+    required this.ringing,
+    required this.connected,
+    required this.checkPassed,
   });
 
   final String deviceId;
@@ -127,6 +130,12 @@ class RestaurantDevice {
 
   /// The device this app runs on.
   final bool thisDevice;
+
+  /// RA §14.2 (slice 2.42): whether ring events ring on it, whether it is
+  /// connected now, and its last device check (null before any).
+  final bool ringing;
+  final bool connected;
+  final bool? checkPassed;
 }
 
 List<RestaurantDevice> _devicesOf(MerchantDevicesDtoOutput dto) => [
@@ -143,11 +152,14 @@ List<RestaurantDevice> _devicesOf(MerchantDevicesDtoOutput dto) => [
       signedIn: each.signedIn,
       lastSeenAt: each.lastSeenAt,
       thisDevice: each.thisDevice,
+      ringing: each.ringing,
+      connected: each.connected,
+      checkPassed: each.deviceCheck?.passed,
     ),
 ];
 
 /// `GET /v1/merchant/devices` and its commands, the owners'; read on
-/// opening «الأجهزة». The ring setting and the device check join with 2.42.
+/// opening «الأجهزة».
 class DevicesNotifier extends AsyncNotifier<List<RestaurantDevice>> {
   MerchantApi get _api => ref.read(coreApiProvider).getMerchantApi();
 

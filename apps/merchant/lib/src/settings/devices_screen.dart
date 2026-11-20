@@ -95,6 +95,19 @@ class DevicesScreen extends ConsumerWidget {
                         else
                           l10n.merchantDeviceSignedOut,
                         lastActiveText(l10n, device.lastSeenAt),
+                        if (device.ringing)
+                          l10n.merchantDeviceRinging
+                        else
+                          l10n.merchantDeviceSilent,
+                        if (device.connected)
+                          l10n.merchantDeviceConnected
+                        else
+                          l10n.merchantDeviceNotConnected,
+                        switch (device.checkPassed) {
+                          true => l10n.merchantDeviceCheckOk,
+                          false => l10n.merchantDeviceCheckNotOk,
+                          null => l10n.merchantCheckNone,
+                        },
                       ].join(' · '),
                     ),
                   ),

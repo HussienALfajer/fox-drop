@@ -1,3 +1,4 @@
+import 'package:core_alerts/core_alerts.dart';
 import 'dart:async';
 
 import 'package:core_api/core_api.dart';
@@ -201,13 +202,23 @@ Board board(List<Map<String, Object?>> orders) => standardSerializers
 
 class FakeRinger implements Ringer {
   bool ringing = false;
+  RingSound? sound;
+  String? text;
   int chimes = 0;
 
   @override
-  void ring() => ringing = true;
+  void ring(RingSound sound, String text) {
+    ringing = true;
+    this.sound = sound;
+    this.text = text;
+  }
 
   @override
-  void stop() => ringing = false;
+  void stop() {
+    ringing = false;
+    sound = null;
+    text = null;
+  }
 
   @override
   void chime() => chimes++;

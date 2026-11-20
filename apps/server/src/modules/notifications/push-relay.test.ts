@@ -132,7 +132,7 @@ describe('the push relay (architecture §8.1)', () => {
   });
 
   // RA §4.4, §16 (slice 2.42): an owner's device with ringing off.
-  it('sends a ring silently to a device with ringing off, and every other level as it is', async () => {
+  it('sends a restaurant’s ring on its bundled sound’s channel, silently with ringing off', async () => {
     const restaurantId = randomUUID();
     devicesOf.set(restaurantId, ['cashier', 'quiet-owner']);
     const recipient = { party: 'merchant' as const, restaurantId, owners: false };
@@ -142,7 +142,7 @@ describe('the push relay (architecture §8.1)', () => {
     await queue.enqueue(db, [ring, chime], now);
     await relay.drain(now);
     expect(sent.map((one) => [one.token, one.channel])).toEqual([
-      ['cashier', 'ring'],
+      ['cashier', 'ring_order'],
       ['quiet-owner', 'silent'],
       ['cashier', 'chime'],
       ['quiet-owner', 'chime'],

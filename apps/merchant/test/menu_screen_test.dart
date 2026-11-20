@@ -1,3 +1,4 @@
+import 'package:core_alerts/testing.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -103,6 +104,7 @@ class _App {
         ),
         photoPutProvider.overrideWithValue((url, photo) async => puts.add(url)),
         ringerProvider.overrideWithValue(ringer),
+        alertsProvider.overrideWithValue(FakeAlerts()),
         keepScreenOnProvider.overrideWithValue((on) {}),
         notificationPermissionProvider.overrideWithValue(
           FakeNotificationPermission(allowed: true),

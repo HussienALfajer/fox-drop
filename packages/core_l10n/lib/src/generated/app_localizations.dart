@@ -7436,7 +7436,7 @@ abstract class AppLocalizations {
   /// **'{platform} · الإصدار {version}'**
   String merchantDeviceDetails(String platform, String version);
 
-  /// Marks the device the owner is using. The spec gives no wording.
+  /// The device's own settings (RA §14.3 «This device»).
   ///
   /// In ar, this message translates to:
   /// **'هذا الجهاز'**
@@ -9361,6 +9361,270 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّرت مشاركة الصورة، حاول مرة أخرى'**
   String get merchantReportsShareFailed;
+
+  /// The owner's ring setting of this device (RA §4.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'الرنين على هذا الجهاز'**
+  String get merchantRingOnThisDevice;
+
+  /// What turning ringing off does (RA §4.4; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'عند إيقافه تظهر الطلبات الجديدة على هذا الجهاز بإشعار صامت. أجهزة الاستقبال الأخرى ترن كالمعتاد.'**
+  String get merchantRingOnThisDeviceExplain;
+
+  /// A cashier's device always rings (RA §4.4, fixed).
+  ///
+  /// In ar, this message translates to:
+  /// **'جهاز الكاشير يرن دائماً.'**
+  String get merchantCashierAlwaysRings;
+
+  /// The device check (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'فحص الجهاز'**
+  String get merchantDeviceCheck;
+
+  /// The banner while a device check item fails (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الجهاز قد لا يرن عند وصول طلب — أكمل فحص الجهاز'**
+  String get merchantDeviceCheckBanner;
+
+  /// The device check's introduction (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'يتأكد هذا الفحص أن الجهاز يرن عند وصول طلب حتى والشاشة مطفأة. أكمل كل خطوة حتى تظهر «تم».'**
+  String get merchantDeviceCheckIntro;
+
+  /// Check 1 (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات مسموحة'**
+  String get merchantCheckNotifications;
+
+  /// How to pass check 1.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح الإعدادات واسمح بإشعارات التطبيق.'**
+  String get merchantCheckNotificationsHow;
+
+  /// Check 2 (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'توفير البطارية متوقف للتطبيق'**
+  String get merchantCheckBattery;
+
+  /// How to pass check 2.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر «السماح» أو «غير مقيّد» حتى لا يوقف الهاتف التطبيق والشاشة مطفأة.'**
+  String get merchantCheckBatteryHow;
+
+  /// Check 3 (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'التشغيل التلقائي مسموح'**
+  String get merchantCheckAutostart;
+
+  /// How to pass check 3 (the brand's page; screenshots with the design).
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح صفحة التشغيل التلقائي في هاتفك وفعّله لتطبيق المطعم، ثم اضغط «فعّلته».'**
+  String get merchantCheckAutostartHow;
+
+  /// The user confirms the brand's auto-start setting (RA §4.5 check 3).
+  ///
+  /// In ar, this message translates to:
+  /// **'فعّلته'**
+  String get merchantCheckAutostartDone;
+
+  /// Check 4 (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'إشعارات ملء الشاشة مسموحة'**
+  String get merchantCheckFullScreen;
+
+  /// How to pass check 4 (Android 14 and later).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسمح للتطبيق بعرض الإشعارات بملء الشاشة، ليظهر الطلب الجديد فوق شاشة القفل.'**
+  String get merchantCheckFullScreenHow;
+
+  /// Check 5 (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'صوت المنبّه 70% على الأقل ووضع «عدم الإزعاج» لا يمنعه'**
+  String get merchantCheckAlarm;
+
+  /// How to pass check 5.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارفع صوت المنبّه، واسمح بالمنبّهات في وضع «عدم الإزعاج» أو أوقفه.'**
+  String get merchantCheckAlarmHow;
+
+  /// The alarm volume now (RA §4.5 check 5).
+  ///
+  /// In ar, this message translates to:
+  /// **'صوت المنبّه الآن {percent}%'**
+  String merchantCheckAlarmVolume(int percent);
+
+  /// Do Not Disturb silences alarms now (RA §4.5 check 5).
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع «عدم الإزعاج» يمنع المنبّهات الآن.'**
+  String get merchantCheckDoNotDisturb;
+
+  /// Check 7 (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'رنين تجريبي'**
+  String get merchantCheckTestRing;
+
+  /// How to pass check 7.
+  ///
+  /// In ar, this message translates to:
+  /// **'شغّل الرنين، ثم اضغط «سمعت الصوت» إن سمعته.'**
+  String get merchantCheckTestRingHow;
+
+  /// Plays the new-order sound (RA §4.5 check 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'تشغيل رنين تجريبي'**
+  String get merchantCheckTestRingPlay;
+
+  /// The user heard the test ring (RA §4.5 check 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'سمعت الصوت'**
+  String get merchantCheckTestRingHeard;
+
+  /// The user did not hear the test ring.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم أسمع'**
+  String get merchantCheckTestRingNotHeard;
+
+  /// Check 8 (RA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الاتصال بالخادم'**
+  String get merchantCheckConnection;
+
+  /// The server connection's delay (RA §4.5 check 8).
+  ///
+  /// In ar, this message translates to:
+  /// **'متصل — التأخر {ms} ملي ثانية'**
+  String merchantCheckConnectionDelay(int ms);
+
+  /// Check 8 failed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الاتصال بالخادم'**
+  String get merchantCheckConnectionFailed;
+
+  /// A check passed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم'**
+  String get merchantCheckDone;
+
+  /// A check not passed yet.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل'**
+  String get merchantCheckNotDone;
+
+  /// Opens the system settings of a check.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح الإعدادات'**
+  String get merchantCheckOpenSettings;
+
+  /// Sends the device check's result (RA §4.5: shown in the panel).
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ نتيجة الفحص'**
+  String get merchantCheckSave;
+
+  /// The result was sent.
+  ///
+  /// In ar, this message translates to:
+  /// **'حُفظت نتيجة الفحص.'**
+  String get merchantCheckSaved;
+
+  /// The result could not be sent.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر حفظ النتيجة، حاول مرة أخرى'**
+  String get merchantCheckSaveFailed;
+
+  /// Every check passed.
+  ///
+  /// In ar, this message translates to:
+  /// **'اجتاز هذا الجهاز الفحص.'**
+  String get merchantCheckPassedAll;
+
+  /// A check failed.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يجتز هذا الجهاز الفحص بعد: أكمل الخطوات الناقصة.'**
+  String get merchantCheckNotPassed;
+
+  /// The Windows device check comes with the Windows slice (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'فحص الجهاز على ويندوز يأتي مع تطبيق ويندوز.'**
+  String get merchantCheckWindowsLater;
+
+  /// The device's last check (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر فحص: {time}'**
+  String merchantCheckLast(String time);
+
+  /// No check yet.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُفحص هذا الجهاز بعد.'**
+  String get merchantCheckNone;
+
+  /// A device that rings (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'يرن'**
+  String get merchantDeviceRinging;
+
+  /// An owner's device with ringing off (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'صامت'**
+  String get merchantDeviceSilent;
+
+  /// A device connected now (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'متصل الآن'**
+  String get merchantDeviceConnected;
+
+  /// A device not connected (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متصل'**
+  String get merchantDeviceNotConnected;
+
+  /// The device's last check passed (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'اجتاز فحص الجهاز'**
+  String get merchantDeviceCheckOk;
+
+  /// The device's last check failed (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يجتز فحص الجهاز'**
+  String get merchantDeviceCheckNotOk;
 }
 
 class _AppLocalizationsDelegate

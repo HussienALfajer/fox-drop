@@ -29,6 +29,8 @@ import 'starting_screen.dart';
 import 'status/hours_screen.dart';
 import 'support/report_screen.dart';
 import 'support/support_screen.dart';
+import 'receiving/device_check_screen.dart';
+import 'receiving/this_device_screen.dart';
 import 'terms.dart';
 
 /// Signed out, every route leads to sign-in; signed in on a device without a
@@ -119,6 +121,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'report',
             builder: (context, state) => const ReportScreen(),
+          ),
+        ],
+      ),
+      // RA §4.4–4.5, §14.3 «This device» (slice 2.42): every user's.
+      GoRoute(
+        path: '/device',
+        builder: (context, state) => const ThisDeviceScreen(),
+        routes: [
+          GoRoute(
+            path: 'check',
+            builder: (context, state) => const DeviceCheckScreen(),
           ),
         ],
       ),

@@ -42,7 +42,11 @@ final termsPendingProvider = Provider<bool>((ref) {
 /// S13: while a version is pending, an owner reaches only Orders and the
 /// terms. Orders keep arriving and ringing (RA §4.10).
 bool ownerScreenWaits(String path) =>
-    path != '/' && path != '/terms' && !path.startsWith('/orders/');
+    path != '/' &&
+    path != '/terms' &&
+    !path.startsWith('/orders/') &&
+    // RA §4.5: the device check and the ring setting keep the orders ringing.
+    !path.startsWith('/device');
 
 /// RA §4.10, §5.2 item 3: an owner is asked for a new version on the next
 /// open (or when the app resumes), once per version, over the board; the
