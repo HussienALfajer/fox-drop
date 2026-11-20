@@ -4,31 +4,30 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 2 of `docs/claude-code-workflow.md`: fewer requests, smaller results. Built and merged except the two steps that need later sessions (switching the guard to enforce, measuring a slice). Phase 1 (the context diet) merged with `chore/claude-context-diet`; the second audit (2026-11-21) reordered the later phases.
+Launch readiness (`docs/roadmap.md`), slice L.1: the definition-of-done audit. Split into L.1–L.11 with the owner's approval on 2026-11-21. Planned, not started.
 
-- **Branch:** `chore/fewer-requests`.
-- **Why:** 83% of assistant messages hold one tool call and 12,178 of them are a single Bash command (`sed -n`, `grep -n`, `python -`, `git diff`), each a request that resends the whole context.
+- **Branch:** `docs/dod-checklist`.
+- **Specs:** AP §14, RA §22, CA §19, CU §19 (the four definitions of done); architecture §17, §18.
+- **Delivers:** `docs/launch/dod-checklist.md`, one row per item (AP 33, RA 30, CA 28, CU 28): the test that proves it (file and test name) or the staging demonstration that shows it (who, which device), and its state (covered, demo only, gap). Gaps larger than a fix become slices before L.10, with the owner's approval.
+- **Owner decisions 2026-11-21:** the owner tests alone on their own phones (Android now, iPhone through TestFlight once the Apple Developer account exists); one full staging rehearsal before launch (L.10, the owner sets the date); production on the current Contabo server next to staging, with its own Firebase project and WhatsApp numbers.
 
 ### Plan
 
-- [x] Fix the Git Bash profile (`~/.bashrc`, outside the repository): the pinned Node on PATH without a prefix, no fnm cd hook. The memory note is rewritten.
-- [x] `.claude/hooks/bash.mjs`, a `PreToolUse` hook on Bash in observe mode: logs to `.claude/bash-guard.log` reads of tracked files with `sed -n`, `cat`, `head` or `tail`, and edits with `sed -i`, `perl -i` or an inline script.
-- [x] Root `CLAUDE.md`: independent tool calls in one message; `git diff --stat` first.
-- [x] The same hook pipes a command of tests only through `.claude/hooks/test-summary.mjs` (failures and summary, the whole output saved).
-- [x] `scripts/claude-audit.mjs`, the audit as a committed script.
-- [x] `infra/server/check-order-ledger.sql` points at `docs/code/…/ordering.md` and `ledger.md`.
+- [ ] Read each definition of done and grep `apps/` and `docs/code/` for the tests of each item (send the search to the `Explore` agent, one spec at a time).
+- [ ] Write `docs/launch/dod-checklist.md` and link it from `docs/README.md`.
+- [ ] Present the gaps to the owner; record approved fix slices in `docs/roadmap.md` before L.10.
+
+### Branches of the later slices
+
+L.2 `test/permission-matrix`, L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.
+
+## Also open
+
+Phase 2 of `docs/claude-code-workflow.md` (`chore/fewer-requests`, merged in pull request 218):
+
 - [ ] After two sessions: `node scripts/claude-audit.mjs` shows the guard log; check it for false positives, then set `MODE = 'enforce'` in `.claude/hooks/bash.mjs`.
-- [ ] Measure one slice session against the baseline: `node scripts/claude-audit.mjs --session=<id>`, single-Bash requests under half of 67.7%.
+- [ ] Measure one slice session against the baseline (single-Bash requests under half of 67.7%). A planning session (2026-11-21, `5e6c2ce1`, 14 requests) measured 14.3% single-Bash requests; a slice session is still to measure.
 
 ## After that
 
-In the order of `docs/claude-code-workflow.md`: phase 3 (the owner's MCP servers, plugins and skills, with the owner), phase 4 (fast checks, `chore/fast-verify`), phase 5 (CI filters).
-
-## Next
-
-Launch readiness (`docs/roadmap.md`, after Phase 2): not split into slices yet. Planned, not started.
-
-- **Roadmap line:** Launch readiness: captain simulator load test, real-device lab, staging rehearsal (architecture §18).
-- **Specs:** architecture §18 (18-testing-and-quality.md), §17 (environments, the production deploy), §22 (risks and open items: the paid licences, item 8; App Check from Azaz, item 9); the four definitions of done (AP §19, RA, CA, CU `19-definition-of-done.md`).
-- **Branch:** to name per slice once split.
-- **First:** run the `slice-plan` skill on it and get the owner's approval of the split; ask the owner who tests on which real phones (Android and, through TestFlight, iPhones), when the staging rehearsal runs, and the production environment's hosting and accounts (a production deploy is the owner's to approve).
+In the order of `docs/claude-code-workflow.md`: phase 3 (the owner's MCP servers, plugins and skills, with the owner), phase 4 (fast checks, `chore/fast-verify`), phase 5 (CI filters). Then L.2 onwards.
