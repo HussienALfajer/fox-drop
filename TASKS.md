@@ -27,8 +27,8 @@ Slice 2.40, the dashboard and order histories (`docs/roadmap.md`, Phase 2).
 - [x] The dashboard's page: `/dashboard` (`dashboard.read`; first in `MODULES`, the panel's home for a session that holds it): the status strip (the emergency stop and dispatch mode reused), the tiles with last week's value and the change, the alerts list (the `/alerts` list reused), the tasks with their links, the charts as tables.
 - [ ] «سجل الطلبات»'s server: `GET /v1/admin/order-history` with AP §9.5's filters and columns, a page at a time; the customer's phone filter for the roles that see phones; the Excel export with Arabic headers; `POST /v1/admin/orders/{orderId}/financial-corrections` (`order_history.financial_correction`) on a finished order.
 - [ ] «سجل الطلبات»'s page: `/order-history` (`order_history.read`; second in `MODULES`): the filters in the search, the table, the order's detail and timeline (the board's detail reused), the export, the correction for OWN and FIN.
-- [ ] The restaurant's «السجل» (RA §8.18): `GET /v1/merchant/orders/history` (the cashier's fixed window and columns, the owner's range with commission and net) and its screen in the restaurant app with the order's detail and timeline.
-- [ ] The captain's «السجل» (CA §9.13): `GET /v1/captain/orders/history` (by business day, a date range, the pay and the custody effect, no customer name, phone or exact address, K8) and its screen in the captain app with the captain's own steps.
+- [x] The restaurant's «السجل» (RA §8.18): `GET /v1/merchant/orders/history` (the cashier's fixed window and columns, the owner's range with commission and net) and its screen in the restaurant app with the order's detail and timeline.
+- [x] The captain's «السجل» (CA §9.13): `GET /v1/captain/orders/history` (by business day, a date range, the pay and the custody effect, no customer name, phone or exact address, K8) and its screen in the captain app with the captain's own steps.
 - [ ] Review, then hand over to 2.41.
 
 ### Left from 2.39 (the cloud session's branch)
