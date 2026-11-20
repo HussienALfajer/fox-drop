@@ -10,13 +10,13 @@ Slice 2.45c, the settings, staff and devices in the owner web portal (`docs/road
 - **Specs:** RA §17, §10 (10-status-and-hours.md), §14 (14-staff-devices-and-settings.md), §15 (15-support.md), §5.4 (the portal's column), §18; architecture §10.4.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
 - **Already built (reuse):** the portal's session, `portal: true` and the menu's pattern (slices 2.45a–b, `apps/merchant-portal/CLAUDE.md`); the owners' routes of the app: `GET`/`PUT /v1/merchant/restaurant/hours`, `PUT /v1/merchant/restaurant/order-settings`, `GET`/`PUT /v1/merchant/settings/pickup-currencies` (`merchants/merchant-status.controller.ts`), «الموظفون» and «الأجهزة» with `POST /v1/merchant/devices/windows-pairing` (`identity/merchant-staff.controller.ts`), support (`ordering/merchant-reports.controller.ts`, `GET /v1/merchant/content`, `GET /v1/merchant/contact`; a report's photo is `POST /v1/merchant/uploads/report-photo`, signed for the apps' host: sign it for the portal's origin as 2.45b did the item photo, with nginx's `/private-docs/incoming/` on the portal's host). The portal session's own «الأجهزة» row (end another browser's portal session, a lost laptop) is 2.45a's «Not yet».
-- **Ask the owner first:** whether «الأجهزة» in the portal lists the owner's portal browsers and lets them sign one out (2.45a left it for here); the design stop still holds (unstyled).
+- **Owner decision 2026-11-20:** «الأجهزة» in the portal lists the restaurant's open portal sessions and lets an owner sign one out, in the portal only; the design stop still holds (unstyled).
 
 ### Plan
 
-- [ ] Read RA §10, §14, §15 and the owners' routes; write this plan as one step per commit.
-- [ ] Server: open the owners' settings, staff, devices, pairing and support routes to the portal (`portal: true`, `merchant-portal.test.ts`'s list); the report photo from the portal's origin.
-- [ ] Portal: «الإعدادات» (hours, prep time, maximum active orders, pickup currencies), «الموظفون», «الأجهزة» with «ربط كمبيوتر بويندوز», «الدعم»; unit and smoke tests.
+- [x] Read RA §10, §14, §15 and the owners' routes; write this plan as one step per commit. Owner decision 2026-11-20: «الأجهزة» in the portal lists the restaurant's open portal sessions and lets an owner sign one out, in the portal only (the app unchanged).
+- [ ] Server: open the owners' hours, order settings, pickup currencies, staff, devices, Windows pairing and support routes to the portal (`portal: true`, `merchant-portal.test.ts`'s list); the report photo signed for the portal's origin (nginx's `/private-docs/incoming/` on the portal's host, Vite's proxy); the portal sessions' list and sign-out (`GET /v1/merchant/portal-sessions`, `POST /v1/merchant/portal-sessions/{sessionId}/sign-out`, portal only, a migration widening the end reasons with `signed_out_by_owner`).
+- [ ] Portal: «الأوقات والإعدادات» (the weekly schedule, prep time, maximum active orders, the read-only fields with «طلب تعديل», pickup currencies), «الموظفون», «الأجهزة» (rename, sign out, «ربط كمبيوتر بويندوز», the portal sessions), «الدعم» (contact, «إبلاغ عن مشكلة» with a photo, «بلاغاتي», the FAQ); unit and smoke tests.
 - [ ] Review, then hand over to 2.45d.
 
 ### Left from 2.45b (the cloud session's branch)
