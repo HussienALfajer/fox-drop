@@ -1,13 +1,16 @@
+import 'dart:async';
+
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'carried_currencies.dart';
 import 'max_pickup.dart';
 import 'max_pickup_form.dart';
 
 /// «الإعدادات» (owner decision 2026-11-11): «أقصى مبلغ أحمله» and «العملات
-/// التي أحملها» for now (CA §10.5); it grows with the captain's settings.
+/// التي أحملها» (CA §10.5), and «فحص الجهاز» (CA §4.5, slice 2.43).
 /// Each section reads on its own, so one failing never hides the other.
 /// Unstyled until the design.
 class SettingsScreen extends StatelessWidget {
@@ -87,6 +90,12 @@ class SettingsBody extends ConsumerWidget {
           ],
           _ => [const LinearProgressIndicator()],
         },
+        // CA §4.5 (slice 2.43): run again from Settings.
+        ListTile(
+          key: const Key('settings-device-check'),
+          title: Text(l10n.captainDeviceCheck),
+          onTap: () => unawaited(context.push('/device-check')),
+        ),
       ],
     );
   }

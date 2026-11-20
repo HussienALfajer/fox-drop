@@ -1514,6 +1514,146 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainOfferNoPay => 'الأجر غير محدد';
 
   @override
+  String get captainDeviceCheck => 'فحص الجهاز';
+
+  @override
+  String get captainDeviceCheckBanner =>
+      'هاتفك قد لا يرن عند وصول عرض — أكمل فحص الجهاز';
+
+  @override
+  String get captainDeviceCheckIntro =>
+      'يتأكد هذا الفحص أن هاتفك يرن ويتابع موقعك عند وصول عرض حتى والشاشة مقفلة. أكمل كل خطوة حتى تظهر «تم». يمكنك الاتصال قبل أن تكمله.';
+
+  @override
+  String get captainCheckNotifications => 'الإشعارات مسموحة';
+
+  @override
+  String get captainCheckNotificationsHow =>
+      'افتح الإعدادات واسمح بإشعارات التطبيق.';
+
+  @override
+  String get captainCheckLocation => 'الموقع مسموح «دائماً» وبدقة';
+
+  @override
+  String get captainCheckLocationHow =>
+      'اختر «السماح دائماً» واترك «الموقع الدقيق» مفعّلاً، ليصل موقعك والشاشة مقفلة.';
+
+  @override
+  String get captainCheckBattery => 'توفير البطارية متوقف للتطبيق';
+
+  @override
+  String get captainCheckBatteryHow =>
+      'اختر «السماح» أو «غير مقيّد» حتى لا يوقف الهاتف التطبيق والشاشة مقفلة.';
+
+  @override
+  String get captainCheckAutostart => 'التشغيل التلقائي مسموح';
+
+  @override
+  String get captainCheckAutostartHow =>
+      'افتح صفحة التشغيل التلقائي في هاتفك وفعّله لتطبيق الكابتن، ثم اضغط «فعّلته».';
+
+  @override
+  String get captainCheckAutostartDone => 'فعّلته';
+
+  @override
+  String get captainCheckFullScreen => 'إشعارات ملء الشاشة مسموحة';
+
+  @override
+  String get captainCheckFullScreenHow =>
+      'اسمح للتطبيق بعرض الإشعارات بملء الشاشة، ليظهر العرض فوق شاشة القفل.';
+
+  @override
+  String get captainCheckAlarm =>
+      'صوت المنبّه 70% على الأقل ووضع «عدم الإزعاج» لا يمنعه';
+
+  @override
+  String get captainCheckAlarmHow =>
+      'ارفع صوت المنبّه، واسمح بالمنبّهات في وضع «عدم الإزعاج» أو أوقفه.';
+
+  @override
+  String get captainCheckTestOffer => 'عرض تجريبي والشاشة مقفلة';
+
+  @override
+  String get captainCheckTestOfferHow =>
+      'اضغط «تشغيل عرض تجريبي» ثم أقفل الشاشة. إن سمعت الصوت افتح الهاتف واضغط «سمعت الصوت».';
+
+  @override
+  String get captainCheckTestOfferPlay => 'تشغيل عرض تجريبي';
+
+  @override
+  String get captainCheckTestOfferRing => 'عرض تجريبي — فحص الجهاز';
+
+  @override
+  String get captainCheckTestOfferHeard => 'سمعت الصوت';
+
+  @override
+  String get captainCheckTestOfferNotHeard => 'لم أسمع';
+
+  @override
+  String get captainCheckConnection => 'الاتصال بالخادم ودقة الموقع';
+
+  @override
+  String get captainCheckConnectionFailed =>
+      'تعذّر الاتصال بالخادم أو تحديد موقعك بدقة. اخرج إلى مكان مفتوح وحاول مرة أخرى.';
+
+  @override
+  String get captainCheckCall => 'إذن الاتصال لزر «طوارئ»';
+
+  @override
+  String get captainCheckCallHow =>
+      'اسمح للتطبيق بإجراء المكالمات، ليتصل زر «طوارئ» بالعمليات مباشرة.';
+
+  @override
+  String get captainCheckAllow => 'السماح';
+
+  @override
+  String get captainCheckDone => 'تم';
+
+  @override
+  String get captainCheckNotDone => 'لم يكتمل';
+
+  @override
+  String get captainCheckOpenSettings => 'فتح الإعدادات';
+
+  @override
+  String get captainCheckSave => 'حفظ نتيجة الفحص';
+
+  @override
+  String get captainCheckSaved => 'حُفظت نتيجة الفحص.';
+
+  @override
+  String get captainCheckSaveFailed => 'تعذّر حفظ النتيجة، حاول مرة أخرى';
+
+  @override
+  String get captainCheckPassedAll => 'اجتاز هاتفك الفحص.';
+
+  @override
+  String get captainCheckNotPassed =>
+      'لم يجتز هاتفك الفحص بعد: أكمل الخطوات الناقصة. يمكنك الاتصال، لكن قد لا يرن هاتفك عند وصول عرض.';
+
+  @override
+  String get captainCheckReadFailed =>
+      'تعذّرت قراءة إعدادات الهاتف، اضغط لإعادة المحاولة';
+
+  @override
+  String get captainCheckUnavailable =>
+      'فحص الجهاز على آيفون يأتي مع تطبيق آيفون.';
+
+  @override
+  String captainCheckAlarmVolume(int percent) {
+    return 'صوت المنبّه الآن $percent%';
+  }
+
+  @override
+  String get captainCheckDoNotDisturb =>
+      'وضع «عدم الإزعاج» يمنع المنبّهات الآن.';
+
+  @override
+  String captainCheckConnectionResult(int ms, int metres) {
+    return 'متصل — التأخر $ms ملي ثانية، دقة الموقع $metres م';
+  }
+
+  @override
   String captainOfferRing(String pay, String restaurant) {
     return 'عرض جديد: $pay — $restaurant';
   }

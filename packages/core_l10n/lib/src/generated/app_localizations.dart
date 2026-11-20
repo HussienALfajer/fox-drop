@@ -2518,6 +2518,246 @@ abstract class AppLocalizations {
   /// **'الأجر غير محدد'**
   String get captainOfferNoPay;
 
+  /// «فحص الجهاز» (CA §4.5, Appendix B), in «الإعدادات» and before the first «متصل».
+  ///
+  /// In ar, this message translates to:
+  /// **'فحص الجهاز'**
+  String get captainDeviceCheck;
+
+  /// The yellow banner while a check fails (CA §4.5, §6.3 item 4).
+  ///
+  /// In ar, this message translates to:
+  /// **'هاتفك قد لا يرن عند وصول عرض — أكمل فحص الجهاز'**
+  String get captainDeviceCheckBanner;
+
+  /// The check's introduction (CA §4.5: a failed check never blocks going online).
+  ///
+  /// In ar, this message translates to:
+  /// **'يتأكد هذا الفحص أن هاتفك يرن ويتابع موقعك عند وصول عرض حتى والشاشة مقفلة. أكمل كل خطوة حتى تظهر «تم». يمكنك الاتصال قبل أن تكمله.'**
+  String get captainDeviceCheckIntro;
+
+  /// Check 1 (CA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات مسموحة'**
+  String get captainCheckNotifications;
+
+  /// Check 1, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح الإعدادات واسمح بإشعارات التطبيق.'**
+  String get captainCheckNotificationsHow;
+
+  /// Check 2 (CA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع مسموح «دائماً» وبدقة'**
+  String get captainCheckLocation;
+
+  /// Check 2, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر «السماح دائماً» واترك «الموقع الدقيق» مفعّلاً، ليصل موقعك والشاشة مقفلة.'**
+  String get captainCheckLocationHow;
+
+  /// Check 3, battery optimisation (CA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'توفير البطارية متوقف للتطبيق'**
+  String get captainCheckBattery;
+
+  /// Check 3, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر «السماح» أو «غير مقيّد» حتى لا يوقف الهاتف التطبيق والشاشة مقفلة.'**
+  String get captainCheckBatteryHow;
+
+  /// Check 3, the brand's auto-start (CA §4.5), confirmed by the captain.
+  ///
+  /// In ar, this message translates to:
+  /// **'التشغيل التلقائي مسموح'**
+  String get captainCheckAutostart;
+
+  /// Check 3, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح صفحة التشغيل التلقائي في هاتفك وفعّله لتطبيق الكابتن، ثم اضغط «فعّلته».'**
+  String get captainCheckAutostartHow;
+
+  /// The captain confirms the brand's auto-start (CA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'فعّلته'**
+  String get captainCheckAutostartDone;
+
+  /// Check 4 (CA §4.5, Android 14+).
+  ///
+  /// In ar, this message translates to:
+  /// **'إشعارات ملء الشاشة مسموحة'**
+  String get captainCheckFullScreen;
+
+  /// Check 4, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسمح للتطبيق بعرض الإشعارات بملء الشاشة، ليظهر العرض فوق شاشة القفل.'**
+  String get captainCheckFullScreenHow;
+
+  /// Check 5 (CA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'صوت المنبّه 70% على الأقل ووضع «عدم الإزعاج» لا يمنعه'**
+  String get captainCheckAlarm;
+
+  /// Check 5, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارفع صوت المنبّه، واسمح بالمنبّهات في وضع «عدم الإزعاج» أو أوقفه.'**
+  String get captainCheckAlarmHow;
+
+  /// Check 6 (CA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض تجريبي والشاشة مقفلة'**
+  String get captainCheckTestOffer;
+
+  /// Check 6, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط «تشغيل عرض تجريبي» ثم أقفل الشاشة. إن سمعت الصوت افتح الهاتف واضغط «سمعت الصوت».'**
+  String get captainCheckTestOfferHow;
+
+  /// Check 6, plays the offer sound for 30 seconds.
+  ///
+  /// In ar, this message translates to:
+  /// **'تشغيل عرض تجريبي'**
+  String get captainCheckTestOfferPlay;
+
+  /// The test offer's text over the lock screen (CA §4.5 check 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض تجريبي — فحص الجهاز'**
+  String get captainCheckTestOfferRing;
+
+  /// Check 6 (CA §4.5, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'سمعت الصوت'**
+  String get captainCheckTestOfferHeard;
+
+  /// Check 6, not heard.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم أسمع'**
+  String get captainCheckTestOfferNotHeard;
+
+  /// Check 7 (CA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الاتصال بالخادم ودقة الموقع'**
+  String get captainCheckConnection;
+
+  /// Check 7 failed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الاتصال بالخادم أو تحديد موقعك بدقة. اخرج إلى مكان مفتوح وحاول مرة أخرى.'**
+  String get captainCheckConnectionFailed;
+
+  /// Check 8 (CA §4.5, §9.11).
+  ///
+  /// In ar, this message translates to:
+  /// **'إذن الاتصال لزر «طوارئ»'**
+  String get captainCheckCall;
+
+  /// Check 8, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسمح للتطبيق بإجراء المكالمات، ليتصل زر «طوارئ» بالعمليات مباشرة.'**
+  String get captainCheckCallHow;
+
+  /// Asks the phone for a permission the check needs.
+  ///
+  /// In ar, this message translates to:
+  /// **'السماح'**
+  String get captainCheckAllow;
+
+  /// A check that passed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم'**
+  String get captainCheckDone;
+
+  /// A check that did not pass yet.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل'**
+  String get captainCheckNotDone;
+
+  /// Opens the system's page of a check.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح الإعدادات'**
+  String get captainCheckOpenSettings;
+
+  /// Sends the result (CA §15), which the panel shows (AP §9.7.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ نتيجة الفحص'**
+  String get captainCheckSave;
+
+  /// The result was saved.
+  ///
+  /// In ar, this message translates to:
+  /// **'حُفظت نتيجة الفحص.'**
+  String get captainCheckSaved;
+
+  /// The result could not be saved.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر حفظ النتيجة، حاول مرة أخرى'**
+  String get captainCheckSaveFailed;
+
+  /// Every check passed.
+  ///
+  /// In ar, this message translates to:
+  /// **'اجتاز هاتفك الفحص.'**
+  String get captainCheckPassedAll;
+
+  /// A check failed (CA §4.5: it only warns).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يجتز هاتفك الفحص بعد: أكمل الخطوات الناقصة. يمكنك الاتصال، لكن قد لا يرن هاتفك عند وصول عرض.'**
+  String get captainCheckNotPassed;
+
+  /// The phone's readings failed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت قراءة إعدادات الهاتف، اضغط لإعادة المحاولة'**
+  String get captainCheckReadFailed;
+
+  /// Where the app reads nothing yet (iOS, slice 2.46).
+  ///
+  /// In ar, this message translates to:
+  /// **'فحص الجهاز على آيفون يأتي مع تطبيق آيفون.'**
+  String get captainCheckUnavailable;
+
+  /// Check 5's reading (CA §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'صوت المنبّه الآن {percent}%'**
+  String captainCheckAlarmVolume(int percent);
+
+  /// Check 5: Do Not Disturb silences alarms.
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع «عدم الإزعاج» يمنع المنبّهات الآن.'**
+  String get captainCheckDoNotDisturb;
+
+  /// Check 7's readings (CA §4.5): the server's delay and the GPS accuracy.
+  ///
+  /// In ar, this message translates to:
+  /// **'متصل — التأخر {ms} ملي ثانية، دقة الموقع {metres} م'**
+  String captainCheckConnectionResult(int ms, int metres);
+
   /// The offer's ring over the lock screen and its push (CA §14 #1, §4.4); pay is the order pay or captainOfferNoPay.
   ///
   /// In ar, this message translates to:

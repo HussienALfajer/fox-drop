@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:captain/src/api.dart';
 import 'package:captain/src/app.dart';
 import 'package:captain/src/auth.dart';
+import 'package:captain/src/device_check/device_check.dart';
 import 'package:captain/src/joining/application.dart';
 import 'package:captain/src/joining/photo_check.dart';
 import 'package:captain/src/profile/profile.dart';
@@ -16,6 +17,7 @@ import 'package:captain/src/work/call.dart';
 import 'package:captain/src/work/commands.dart';
 import 'package:captain/src/work/location.dart';
 import 'package:captain/src/work/route.dart';
+import 'package:core_alerts/testing.dart';
 import 'package:core_auth/testing.dart';
 import 'package:core_maps/core_maps.dart';
 import 'package:core_push/testing.dart';
@@ -525,6 +527,26 @@ class FakeLocation implements LocationSource {
   }
 }
 
+/// CA §4.5 checks 2 and 8, everything allowed unless a test says otherwise.
+class FakePhoneAccess implements PhoneAccessReader {
+  PhoneAccess access = const PhoneAccess(
+    locationAlways: true,
+    locationPrecise: true,
+    callAllowed: true,
+  );
+  int locationSettingsOpened = 0;
+  int callRequested = 0;
+
+  @override
+  Future<PhoneAccess> read() async => access;
+
+  @override
+  Future<void> openLocationSettings() async => locationSettingsOpened++;
+
+  @override
+  Future<void> requestCall() async => callRequested++;
+}
+
 class FakeRinger implements Ringer {
   bool ringing = false;
   String? ringText;
@@ -599,6 +621,10 @@ class TestApp {
   final server = FakeServer();
   final transport = FakeTransport();
   final ringer = FakeRinger();
+  // The native layer reads nothing unless a test gives readings (slice
+  // 2.43): no device check then.
+  final alerts = FakeAlerts();
+  final access = FakePhoneAccess();
   final location = FakeLocation(fixAt(restaurant));
   final launched = <Uri>[];
   final push = FakePush();
@@ -748,6 +774,8 @@ class TestApp {
         appVersionProvider.overrideWith((ref) async => '0.1.0+1'),
         realtimeTransportProvider.overrideWithValue(transport),
         ringerProvider.overrideWithValue(ringer),
+        alertsProvider.overrideWithValue(alerts),
+        phoneAccessReaderProvider.overrideWithValue(access),
         keepScreenOnProvider.overrideWithValue((on) {}),
         locationSourceProvider.overrideWithValue(location),
         pushProvider.overrideWithValue(push),
