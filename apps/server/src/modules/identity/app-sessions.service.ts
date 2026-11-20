@@ -15,6 +15,7 @@ import {
   merchantAccounts,
 } from './schema.js';
 import { newToken, tokenHash } from './secrets.js';
+import { type PortalSession, PortalSessionsService } from './portal-sessions.service.js';
 
 export type AppParty = (typeof appParties)[number];
 export type AppSessionEndReason = (typeof appSessionEndReasons)[number];
@@ -36,6 +37,10 @@ export interface AppSession {
   // captain yet. The guard lets it call only the routes declared
   // `AppSignedIn({ applicants: true })`.
   applicant: boolean;
+  // RA §17 (slice 2.45a): an owner signed in to the web portal, not an app.
+  // Its id is a portal session's and its device the browser; the guard lets
+  // it call only the routes declared `AppSignedIn({ portal: true })`.
+  portal: boolean;
 }
 
 export interface AppTokens {
@@ -84,6 +89,7 @@ export class AppSessionsService {
     private readonly keys: AppSigningKeys,
     private readonly merchantAccounts: MerchantAccountsService,
     private readonly captainAccounts: CaptainAccountsService,
+    private readonly portalSessions: PortalSessionsService,
   ) {}
 
   // Called by the sign-in inside its transaction. A device holds one session
@@ -260,6 +266,12 @@ export class AppSessionsService {
         ),
       );
     if (open?.endReason === 'other_device') return 'other_device';
+    // RA §17 (slice 2.45a): a restaurant's connection may be an owner's
+    // portal session, checked as the portal's requests are.
+    if (!open && party === 'merchant') {
+      const portal = await this.portalSessions.openSession(accountId, sessionId, now);
+      return portal ? portalAppSession(portal) : null;
+    }
     if (!open || open.endedAt) return null;
     let merchant: MerchantAccount | null = null;
     if (party === 'merchant') {
@@ -285,6 +297,7 @@ export class AppSessionsService {
       merchant,
       captain,
       applicant,
+      portal: false,
     };
   }
 
@@ -441,4 +454,20 @@ export class AppSessionsService {
       .returning({ id: appSessions.id });
     return ended.length > 0;
   }
+}
+
+// The app session a portal session stands for (RA §17, slice 2.45a): an
+// owner of the restaurant, on the browser it signed in from.
+export function portalAppSession(portal: PortalSession): AppSession {
+  return {
+    id: portal.id,
+    party: 'merchant',
+    accountId: portal.account.id,
+    // Marked, so the audit of a portal change never reads as an app device's.
+    deviceId: `portal:${portal.browserId}`,
+    merchant: portal.account,
+    captain: null,
+    applicant: false,
+    portal: true,
+  };
 }

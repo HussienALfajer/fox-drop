@@ -4,17 +4,29 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.45, the owner web portal (`docs/roadmap.md`, Phase 2).
+Slice 2.45b, the menu in the owner web portal (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.45 The owner web portal: sign-in (S14), every owner feature except receiving orders, live orders read-only, exports (RA §17), «التقييمات» with the custom range on `GET /v1/merchant/ratings` (moved from 2.26b, owner decision 2026-11-17). The owner opens the statement in a browser.
-- **Specs:** RA §17 (docs/product/v1/restaurant-app/17-owner-web-portal.md), S14, RA §4.1 (the portal's row), §4.10 (the terms in the portal), §11–§14 (the owner features), §13 with the ratings' custom range; architecture §10 (the panel and the portal), §15.
+- **Roadmap line:** 2.45b The menu in the portal: availability, prices, items, photos, categories and options, the price log and the preview (RA §9). The owner changes a price from a browser.
+- **Specs:** RA §17, §9 (docs/product/v1/restaurant-app/09-menu.md), §5.4 (owners: menu prices, items, photos, categories and options; availability), §18; architecture §10.4.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Ask the owner first:** the split into pull requests (the portal is large); the portal's sign-in (S14: the same WhatsApp code as the app, or another way); the design stop (`apps/merchant-portal` is unstyled until the design system is ready); and, from 2.44, whether the portal also gives Windows pairing codes, and how a restaurant whose only device is a Windows PC gets its first code (an operations-issued code is one option).
-- **Already built (reuse):** `apps/merchant-portal` (the shell), the merchant routes the app uses, the Excel exports of `reporting` (slice 2.41), the statement's and receipts' routes (slice 2.19e).
+- **Already built (reuse):** the portal's session and the `@AppSignedIn({ portal: true })` opt-in (slice 2.45a, `apps/server/src/modules/identity/CLAUDE.md`); the owners' menu routes of the app (`merchants/merchant-menu.controller.ts`, slice 2.32a–b: availability, prices, hiding, windows, order, bulk price, change requests with photos), «سجل الأسعار» (`reporting/merchant-price-log.controller.ts`) and «معاينة كما يراها الزبون» (`customers/merchant-menu-preview.controller.ts`); the item photo upload (`POST /v1/merchant/uploads/item-photo`, signed for the apps' host: check it works from the portal's origin, which the panel's uploads do through `/public-media/`).
+- **Ask the owner first:** nothing new expected (the split, the sign-in and the design were decided on 2026-11-20); the design stop still holds (unstyled).
 
 ### Plan
 
-- [ ] Ask the owner the split, the sign-in and the design; write the plan.
+- [ ] Read RA §9 and the owners' menu routes; write this plan as one step per commit.
+- [ ] Server: open the owners' menu routes, the price log and the preview to the portal (`portal: true`), with `merchant-portal.test.ts`'s list; the photo upload from the portal's origin.
+- [ ] Portal: «القائمة» (availability, prices, hiding, windows, order, bulk price, change requests with photos), the price log and the preview; unit and smoke tests.
+- [ ] Review, then hand over to 2.45c.
+
+### Left from 2.45a (the cloud session's branch)
+
+- **Before deploying to staging:** migration 0146 (expand only: `identity.merchant_portal_sessions`, `identity.app_sign_in_codes.portal` with a default). New routes: `POST /v1/merchant/auth/portal/code`, `POST /v1/merchant/auth/portal/sign-in` (public), `GET /v1/merchant/auth/portal/session`, `POST /v1/merchant/auth/portal/sign-out`. Run `provision.sh` from this merge's commit on `main`, so nginx limits the portal's sign-in routes; the compose file lets Centrifugo accept the portal's origin (`PORTAL_HOST`), so the deploy must restart Centrifugo.
+- **To check on staging (after the merge, the deploy and the provisioning):** 1. Open `https://<portal host>/` in a browser: the sign-in page, in Arabic, right to left. 2. Type an owner's number: the code arrives on WhatsApp; type it: «الطلبات» opens with the banner «لاستقبال الطلبات استخدم تطبيق أندرويد أو ويندوز». 3. Place a test order from the customer app: it appears in «جديدة» without reloading, with the auto-cancel countdown and no button; accept it on the restaurant's phone: it moves to «قيد التحضير» with the prep countdown. 4. «الحالة»: «إيقاف 15 د», then «استئناف الاستقبال»; «وضع الضغط +10 د» and its end; a holiday close and «إنهاء الإغلاق»; each also shows on the phone. 5. A cashier's number at the portal: «بوابة المطعم لمالكي المطاعم…». 6. «تسجيل الخروج»: the sign-in page; the panel's «أجهزة المطعم» never lists the browser, and «مطعم مفتوح بلا جهاز استقبال» still fires with only the portal open.
+- **Owner decisions 2026-11-20:** the portal in four pull requests (2.45a–d); the portal's code request has no App Check, is sent to owners' numbers only and is held by the request limits; unstyled until the design; Windows pairing codes from the portal (2.45c).
+- **Decided by us (to confirm with the owner):** the portal's session is its own table behind the HTTP-only cookie `__Host-fox_drop_portal`, 30 days from the sign-in, so it is never a device; a code keeps where it was asked for (a portal code never signs in to the app, nor an app code to the portal); a new sign-in from the same browser ends the earlier one there; a route serves the portal only when it declares `portal: true`, any other answers `403 not_in_portal`; cross-origin requests are refused (`Sec-Fetch-Site`); the read-only board leaves out a delivered order within its dispute window and an order cancelled until «حسناً»; until the terms are accepted every screen but «الطلبات» shows the terms; a terminated restaurant's owner sees one sentence until the money section (2.45d); the wording «بوابة المطعم لمالكي المطاعم. استخدم تطبيق المطعم للدخول ككاشير.» and the terminated sentence.
+- **Not yet:** the owner cannot end their other browsers' portal sessions (a lost laptop) short of being removed: with «الأجهزة» in 2.45c; the captain line's ETA («يصل خلال {د} د») is in neither the app nor the portal; the receiving sweep's presence ignores the portal by reading app sessions only, which no test drives through a real Centrifugo with a portal connection.
+- **Not checked locally:** no Docker in the cloud container: the server's database tests (`merchant-portal.test.ts` and the rest) ran in CI only; the smoke test ran locally with the container's Chromium.
 
 ### Left from 2.44 (the cloud session's branch)
 

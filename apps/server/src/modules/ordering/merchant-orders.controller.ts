@@ -493,7 +493,7 @@ export class MerchantOrdersController {
   ) {}
 
   @Get('orders')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantOrdersDto })
   async board(@CurrentAppSession() session: AppSession) {
     const restaurantId = await this.restaurantOf(session);
@@ -560,7 +560,7 @@ export class MerchantOrdersController {
   // timeline. 404 unknown_order for another restaurant's, and for a
   // cashier's outside their window.
   @Get('orders/:orderId')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantOrderWithTimelineDto })
   async order(@CurrentAppSession() session: AppSession, @Param() params: MerchantOrderParamsDto) {
     const restaurantId = await this.restaurantOf(session);

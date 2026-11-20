@@ -31,6 +31,8 @@ import { EmergencySignInService } from './emergency-sign-in.service.js';
 import { MerchantAccountsService } from './merchant-accounts.service.js';
 import { RestaurantDevicesService } from './restaurant-devices.service.js';
 import { MerchantAuthController } from './merchant-auth.controller.js';
+import { MerchantPortalAuthController } from './merchant-portal-auth.controller.js';
+import { PortalSessionsService } from './portal-sessions.service.js';
 import { OtpSenderNumbersController } from './otp-sender-numbers.controller.js';
 import { OtpSenderPoolService } from './otp-sender-pool.service.js';
 import { PhoneCipher } from './phone-cipher.js';
@@ -56,6 +58,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     AdminTeamController,
     CustomerAuthController,
     MerchantAuthController,
+    MerchantPortalAuthController,
     CaptainAuthController,
     OtpSenderNumbersController,
     EmergencySignInController,
@@ -77,6 +80,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     { provide: APP_CHECK_VERIFIER, useFactory: appCheckVerifierFromEnvironment },
     AppSigningKeys,
     AppSessionsService,
+    PortalSessionsService,
     AppSignInService,
     WindowsDevicesService,
     MerchantAccountsService,

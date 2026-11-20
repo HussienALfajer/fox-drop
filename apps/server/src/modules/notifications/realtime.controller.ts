@@ -71,7 +71,7 @@ export class MerchantRealtimeController {
   ) {}
 
   @Post('token')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(HttpStatus.OK)
   @ZodResponse({ status: HttpStatus.OK, type: RealtimeTokenDto })
   async token(@CurrentAppSession() session: AppSession) {

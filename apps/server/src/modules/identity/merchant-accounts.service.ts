@@ -5,15 +5,17 @@ import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { type AccountStatus, MerchantsService } from '../merchants/index.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
-import { appSessions, merchantAccounts, merchantRoles } from './schema.js';
+import { appSessions, merchantAccounts, merchantPortalSessions, merchantRoles } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
 export type MerchantRole = (typeof merchantRoles)[number];
 
 // Why a restaurant user cannot sign in (RA §5.2 items 3–4, §5.5): the number
 // belongs to no restaurant, the restaurant is still a draft, or a cashier's
-// restaurant was terminated.
-export type MerchantSignInRefusal = 'not_registered' | 'restaurant_draft' | 'restaurant_terminated';
+// restaurant was terminated; or a cashier signs in to the owner web portal
+// (owner_only, RA §17, slice 2.45a).
+export type MerchantSignInRefusal =
+  'not_registered' | 'restaurant_draft' | 'restaurant_terminated' | 'owner_only';
 
 export class MerchantSignInRefusedError extends Error {
   constructor(readonly refusal: MerchantSignInRefusal) {
@@ -266,6 +268,18 @@ export class MerchantAccountsService implements OnModuleInit {
           ),
         )
         .returning({ id: appSessions.id });
+      // An owner's portal sessions too (RA §5.3, slice 2.45a); their ids go
+      // to notifyEnded with the devices', so their real-time connections end.
+      const endedInPortal = await tx
+        .update(merchantPortalSessions)
+        .set({ endedAt: now, endReason: 'account_removed' })
+        .where(
+          and(
+            eq(merchantPortalSessions.accountId, accountId),
+            isNull(merchantPortalSessions.endedAt),
+          ),
+        )
+        .returning({ id: merchantPortalSessions.id });
       await this.audit.recordWrite(
         {
           actor: change.actor,
@@ -278,7 +292,7 @@ export class MerchantAccountsService implements OnModuleInit {
         },
         tx,
       );
-      return ended.map((row) => row.id);
+      return [...ended, ...endedInPortal].map((row) => row.id);
     });
   }
 

@@ -118,7 +118,7 @@ export class MerchantTermsController {
   constructor(private readonly terms: TermsService) {}
 
   @Get()
-  @AppSignedInOrGuest()
+  @AppSignedInOrGuest({ portal: true })
   @ZodResponse({ status: 200, type: TermsDto })
   get(@OptionalAppSession() session: AppSession | null) {
     return read(this.terms, 'merchant', session);
@@ -126,7 +126,7 @@ export class MerchantTermsController {
 
   // RA §4.10, S13: only owners accept; a cashier gets 403 owner_only.
   @Post('accept')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(200)
   @ZodResponse({ status: 200, type: TermsAcceptedDto })
   accept(@CurrentAppSession() session: AppSession, @Body() body: TermsAcceptDto) {

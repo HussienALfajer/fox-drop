@@ -72,8 +72,11 @@ test("Centrifugo runs development's image and calls this environment's API", () 
       ['admin', 'http://api:3000/v1/admin/realtime/subscribe'],
     ],
   );
-  // Browsers connect only from the panel's origin.
-  assert.equal(centrifugo.environment.CENTRIFUGO_CLIENT_ALLOWED_ORIGINS, 'https://${ADMIN_HOST:?}');
+  // Browsers connect only from the panel's and the portal's origins.
+  assert.equal(
+    centrifugo.environment.CENTRIFUGO_CLIENT_ALLOWED_ORIGINS,
+    'https://${ADMIN_HOST:?} https://${PORTAL_HOST:?}',
+  );
   // Only the API and the worker get its settings, and only the API the
   // token and proxy secrets.
   const realtime = (name) =>
@@ -249,6 +252,6 @@ test("nginx serves the Windows downloads for reads only, from the publish script
   // A PC's registration is limited like a code request.
   assert.match(
     read('nginx/api.conf.template'),
-    /auth\/\(sign-in\|code\|setup\/\|windows-registration\)/,
+    /auth\/\(sign-in\|code\|setup\/\|windows-registration\|portal\/\(sign-in\|code\)\)/,
   );
 });

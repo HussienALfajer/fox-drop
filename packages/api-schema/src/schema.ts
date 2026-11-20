@@ -484,6 +484,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/auth/portal/code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantPortalAuthRequestCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/auth/portal/sign-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantPortalAuthSignIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/auth/portal/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantPortalAuthCurrent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/auth/portal/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantPortalAuthSignOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/auth/code": {
         parameters: {
             query?: never;
@@ -8054,6 +8118,61 @@ export interface components {
             status: "saved";
         };
         MerchantSignedOutDto_Output: {
+            /** @constant */
+            status: "signed_out";
+        };
+        MerchantPortalCodeRequestDto: {
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /**
+             * Format: uuid
+             * @description The browser: a random id the portal keeps, which the code is bound to.
+             */
+            browserId: string;
+        };
+        MerchantPortalCodeSentDto_Output: {
+            /**
+             * @description Where the code went (architecture §8.3.4).
+             * @constant
+             */
+            channel: "whatsapp";
+            /** @description When the app may offer «إعادة الإرسال». */
+            resendAfterSec: number;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        MerchantPortalSignInDto: {
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /**
+             * Format: uuid
+             * @description The browser: a random id the portal keeps, which the code is bound to.
+             */
+            browserId: string;
+            code: string;
+        };
+        MerchantPortalSignedInDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            restaurantId: string;
+            name: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        MerchantPortalSessionDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            restaurantId: string;
+            name: string;
+            /** Format: uuid */
+            sessionId: string;
+            restaurantName: string;
+            /** @description The restaurant's city clock (IANA), for the times the portal shows and takes. */
+            timeZone: string;
+        };
+        MerchantPortalSignedOutDto_Output: {
             /** @constant */
             status: "signed_out";
         };
@@ -23439,6 +23558,94 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantSignedOutDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPortalAuthRequestCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantPortalCodeRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPortalCodeSentDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPortalAuthSignIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantPortalSignInDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPortalSignedInDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPortalAuthCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPortalSessionDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPortalAuthSignOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPortalSignedOutDto_Output"];
                 };
             };
         };

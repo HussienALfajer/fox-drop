@@ -13,8 +13,8 @@ export type RouteAccess =
   | { kind: 'admin_session' }
   | { kind: 'admin_permission'; permission: string }
   | { kind: 'admin_any_permission'; permissions: string[] }
-  | { kind: 'app_session'; applicants?: true }
-  | { kind: 'optional_app_session' }
+  | { kind: 'app_session'; applicants?: true; portal?: true }
+  | { kind: 'optional_app_session'; portal?: true }
   | { kind: 'realtime_proxy' };
 
 export const ROUTE_ACCESS = 'fox_drop:route_access';
@@ -60,18 +60,24 @@ export const CurrentAdminSession = createParamDecorator(
 // that app (architecture §15.1). A captain app's applicant (CA §5.1, slice
 // 2.34a) is refused with 403 applicant unless the route says
 // `{ applicants: true }`: the application's routes, the session and the
-// sign-out, the terms.
-export const AppSignedIn = (options: { applicants?: true } = {}) =>
+// sign-out, the terms. A restaurant route the owner web portal may call
+// (RA §17, slice 2.45a) says `{ portal: true }`: it then also takes the
+// portal's session cookie; any other answers the portal 403 not_in_portal.
+export const AppSignedIn = (options: { applicants?: true; portal?: true } = {}) =>
   SetMetadata(ROUTE_ACCESS, {
     kind: 'app_session',
     ...(options.applicants ? { applicants: true as const } : {}),
+    ...(options.portal ? { portal: true as const } : {}),
   } satisfies RouteAccess);
 
 // An app route open to guests that answers more to a signed-in user, such as
 // the customer's quote (CU §5.1, §10.6): without a token it runs as a guest;
-// with one, the token must be valid.
-export const AppSignedInOrGuest = () =>
-  SetMetadata(ROUTE_ACCESS, { kind: 'optional_app_session' } satisfies RouteAccess);
+// with one, the token must be valid. `{ portal: true }` as for AppSignedIn.
+export const AppSignedInOrGuest = (options: { portal?: true } = {}) =>
+  SetMetadata(ROUTE_ACCESS, {
+    kind: 'optional_app_session',
+    ...(options.portal ? { portal: true as const } : {}),
+  } satisfies RouteAccess);
 
 // The app session of an @AppSignedInOrGuest() route; null for a guest.
 export const OptionalAppSession = createParamDecorator(
