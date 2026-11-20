@@ -6,25 +6,59 @@ The typed settings of AP §4.4 and Appendix A, cached in Valkey (architecture §
 
 ## Rules
 
-- **The catalogue is Appendix A** (`catalogue.ts`): each key with its type, unit, value schema, default, scope (`global` or `city`) and edit roles. `catalogue.test.ts` reads the appendix and fails when a key, scope, edit role or plain default differs, so a new setting goes into the appendix first, then into the catalogue in the same order.
-- **Types:** the eight of AP §4.4, plus `distance`, `speed` and `time_of_day`, which Appendix A needs. Money is `{ amountMinor, currency }` in integer minor units; only a zero amount may leave the currency empty. A rounding unit is in minor units of its key's currency.
+- **The catalogue is Appendix A** (`catalogue.ts`): each key with its type, unit, value schema, default, scope (`global` or `city`) and edit roles.
+  `catalogue.test.ts` reads the appendix and fails when a key, scope, edit role or plain default differs, so a new setting goes into the appendix first, then into the catalogue in the same order.
+- **Types:** the eight of AP §4.4, plus `distance`, `speed` and `time_of_day`, which Appendix A needs.
+  Money is `{ amountMinor, currency }` in integer minor units;
+  only a zero amount may leave the currency empty.
+  A rounding unit is in minor units of its key's currency.
 - **"Before launch"** values have no default (`beforeLaunch`): they read as null until the owner enters them. "—" in the appendix is a nullable value whose default is null.
-- **Keys with a parameter** (`<vehicle>`, `<app>`, `<code>`) are one entry in the catalogue and one setting per parameter: pass the parameter in the target, such as `{ cityId, parameter: 'TRY' }`. The stored key is the concrete one, such as `currency.TRY.rounding_unit`.
-- **Read** with `SettingsService.get(key, target)`: the stored value of that scope, or the default. Inside a transaction pass it as the third argument, so a cache miss reads through its connection instead of waiting for a second one. Never read `settings.values` from another module.
-- **Change** with `update` or `reset` («استعادة القيمة الافتراضية»). Each one, in one transaction, writes the value, appends to `settings.changes` (the value in effect before and after, the editor and their roles, the reason) and records `setting.update` or `setting.reset` through the `audit` module. A change that leaves the value in effect as it was writes nothing, so setting a key to its default value does not pin it. Changes of one setting take turns on an advisory lock.
+- **Keys with a parameter** (`<vehicle>`, `<app>`, `<code>`) are one entry in the catalogue and one setting per parameter: pass the parameter in the target, such as `{ cityId, parameter: 'TRY' }`.
+  The stored key is the concrete one, such as `currency.TRY.rounding_unit`.
+- **Read** with `SettingsService.get(key, target)`: the stored value of that scope, or the default.
+  Inside a transaction pass it as the third argument, so a cache miss reads through its connection instead of waiting for a second one.
+  Never read `settings.values` from another module.
+- **Change** with `update` or `reset` («استعادة القيمة الافتراضية»).
+  Each one, in one transaction, writes the value, appends to `settings.changes` (the value in effect before and after, the editor and their roles, the reason) and records `setting.update` or `setting.reset` through the `audit` module.
+  A change that leaves the value in effect as it was writes nothing, so setting a key to its default value does not pin it.
+  Changes of one setting take turns on an advisory lock.
 - **Listeners:** a module that must act on a change in its transaction registers with `onChanged` (as fx does with `useCityCurrencies`), so this module imports none of them: each change that commits a new value in effect calls every listener with the transaction, the concrete and catalogue keys and the city (the notifications module's broadcast of an app's settings, slice 2.4c).
 - **Reset** needs a default: a "Before launch" value cannot go back to empty once entered.
 - **The system** (`editor: 'system'`) sets the placeholder values of development and staging (`src/seed/`): no role check, no editor id or roles in the history, and the actor `system` in the audit log.
-- **Currencies** (AP §8.6): in a city setting, a `currency.<code>` key names one of the city's currencies, enabled or not, and an amount (`captain.remit_tolerance`, the suggested cash limits, a late compensation amount) is in the city's base currency; otherwise `wrong_currency`. The check runs in the change's transaction on `lockCityCurrencies`, the lock every change of the city's currencies takes, so a base change and a money setting never pass each other. `cityAmounts` gives fx the stored amounts, so it refuses a base change while one is in another currency. The `fx` module owns the currencies and registers itself with `useCityCurrencies` when it starts, since it reads its rounding settings here; without it, a check or a list fails.
-- **Refusals** throw `SettingRefusedError` with its `refusal`: a currency outside the city or an amount outside its base currency, a role outside the entry's edit roles, a missing reason where `reasonRequired` (owner decision 2026-11-05: the settings with money impact), a value its schema rejects, a city on a global setting or none on a city setting, a wrong parameter, a key outside the catalogue, a city that is not a UUID, a reason over 500 characters, a reset without a default. The routes map them to HTTP errors (below).
-- **Cache:** `settings:<fingerprint>:<city or global>:<key>` holds `<version>:<JSON>` for ten minutes. The fingerprint hashes the entry's default and schema, so a deploy that changes either never reads an older cache. Every stored row counts its changes in `version`; a read and a change both write the cache through `SET_IF_NEWER`, so a slow read never puts back a value a change replaced. A stored value the schema no longer accepts reads as the default, with a warning.
-- **Without Valkey:** commands fail at once (no offline queue), and reads go to PostgreSQL. A change made while Valkey cannot be reached is not in the cache, so every server may serve the older cached value for up to ten minutes.
+- **Currencies** (AP §8.6): in a city setting, a `currency.<code>` key names one of the city's currencies, enabled or not, and an amount (`captain.remit_tolerance`, the suggested cash limits, a late compensation amount) is in the city's base currency;
+  otherwise `wrong_currency`.
+  The check runs in the change's transaction on `lockCityCurrencies`, the lock every change of the city's currencies takes, so a base change and a money setting never pass each other.
+  `cityAmounts` gives fx the stored amounts, so it refuses a base change while one is in another currency.
+  The `fx` module owns the currencies and registers itself with `useCityCurrencies` when it starts, since it reads its rounding settings here;
+  without it, a check or a list fails.
+- **Refusals** throw `SettingRefusedError` with its `refusal`: a currency outside the city or an amount outside its base currency, a role outside the entry's edit roles, a missing reason where `reasonRequired` (owner decision 2026-11-05: the settings with money impact), a value its schema rejects, a city on a global setting or none on a city setting, a wrong parameter, a key outside the catalogue, a city that is not a UUID, a reason over 500 characters, a reset without a default.
+  The routes map them to HTTP errors (below).
+- **Cache:** `settings:<fingerprint>:<city or global>:<key>` holds `<version>:<JSON>` for ten minutes.
+  The fingerprint hashes the entry's default and schema, so a deploy that changes either never reads an older cache.
+  Every stored row counts its changes in `version`;
+  a read and a change both write the cache through `SET_IF_NEWER`, so a slow read never puts back a value a change replaced.
+  A stored value the schema no longer accepts reads as the default, with a warning.
+- **Without Valkey:** commands fail at once (no offline queue), and reads go to PostgreSQL.
+  A change made while Valkey cannot be reached is not in the cache, so every server may serve the older cached value for up to ten minutes.
 - **No effective dates yet:** no Appendix A key is effective-dated. Captain pay tables are (AP §9.12.5), and live in their own screen.
-- **No deletes:** the application role cannot delete, so a reset keeps the row and sets `is_default`. The history is append-only (`migrations/0002_settings_values.sql`, proved by `src/database/migrations.test.ts`).
-- **Groups** (AP §9.14, owner decision 2026-11-05): each key's group screen follows its prefix (`settingGroupOf` in `catalogue.ts`): timers and limits (`platform`, `order`), dispatch (`dispatch`, `pricing`), customers (`customer`, `push`), captains, restaurants (`merchant`), support, finance (`finance`, `fx`, `currency`), security (`admin`, `otp`), apps (`app`). A new prefix fails `catalogue.test.ts` until it has a group.
-- **Routes** (`settings.controller.ts`, `/v1/admin/settings`): the list for a city (`GET ?cityId=`: its city settings and every global one), `PUT /{key}`, `POST /{key}/reset` and `GET /{key}/history` (the newest 100 changes), each by the concrete key, such as `currency.TRY.rounding_unit` (`parseKey`). A change answers with the setting as the list shows it.
-- **Who** (owner decision 2026-11-05): the Appendix A edit roles decide both reading and editing, key by key, so the routes are `@SignedIn()` and the service checks the roles (`role_may_not_edit`): OWN sees every setting, OPS only `dispatch.mode`, FIN only `currency.<code>.*`; SUP and DATA get `403`. The top bar's `GET /v1/admin/settings/dispatch-mode?cityId=` (slice 2.38b, AP §7.2) answers the city's `dispatch.mode` to every signed-in panel user. The permissions `settings.read` and `settings.manage` are OWN's rows of the AP §6.2 matrix; no route checks them.
-- **Listed parameters:** a `<vehicle>` or `<app>` key is listed once per value; a `currency.<code>.*` key once as itself with `parameter: null` (owner decision 2026-11-05: the panel's «أضف عملة», so every Appendix A setting is always listed) and once per currency of the city, from the `fx` module. A currency is set by its concrete key, such as `PUT /currency.USD.rounding_unit`.
-- **The apps' read** (`app-platform.controller.ts`, slice 2.4a; CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, §4.8): `GET /v1/{customer,merchant,captain}/platform?version=` is public (the update and maintenance screens come before sign-in) and answers `updateNeed` (`required` below `app.<app>.min_version`, `suggested` below `app.<app>.latest_version`, else `none`), `updateMessage`, `maintenance` and `maintenanceMessage`; a message is left out when unset. Versions are compared by `versionBelow` (`app-versions.ts`), the one comparison of the server (the quote's `update_required` and the captain's `version_below_minimum` use it): part by part, and a version not in the form `1.4.0` is below any minimum.
+- **No deletes:** the application role cannot delete, so a reset keeps the row and sets `is_default`.
+  The history is append-only (`migrations/0002_settings_values.sql`, proved by `src/database/migrations.test.ts`).
+- **Groups** (AP §9.14, owner decision 2026-11-05): each key's group screen follows its prefix (`settingGroupOf` in `catalogue.ts`): timers and limits (`platform`, `order`), dispatch (`dispatch`, `pricing`), customers (`customer`, `push`), captains, restaurants (`merchant`), support, finance (`finance`, `fx`, `currency`), security (`admin`, `otp`), apps (`app`).
+  A new prefix fails `catalogue.test.ts` until it has a group.
+- **Routes** (`settings.controller.ts`, `/v1/admin/settings`): the list for a city (`GET ?cityId=`: its city settings and every global one), `PUT /{key}`, `POST /{key}/reset` and `GET /{key}/history` (the newest 100 changes), each by the concrete key, such as `currency.TRY.rounding_unit` (`parseKey`).
+  A change answers with the setting as the list shows it.
+- **Who** (owner decision 2026-11-05): the Appendix A edit roles decide both reading and editing, key by key, so the routes are `@SignedIn()` and the service checks the roles (`role_may_not_edit`): OWN sees every setting, OPS only `dispatch.mode`, FIN only `currency.<code>.*`;
+  SUP and DATA get `403`.
+  The top bar's `GET /v1/admin/settings/dispatch-mode?cityId=` (slice 2.38b, AP §7.2) answers the city's `dispatch.mode` to every signed-in panel user.
+  The permissions `settings.read` and `settings.manage` are OWN's rows of the AP §6.2 matrix;
+  no route checks them.
+- **Listed parameters:** a `<vehicle>` or `<app>` key is listed once per value;
+  a `currency.<code>.*` key once as itself with `parameter: null` (owner decision 2026-11-05: the panel's «أضف عملة», so every Appendix A setting is always listed) and once per currency of the city, from the `fx` module.
+  A currency is set by its concrete key, such as `PUT /currency.USD.rounding_unit`.
+- **The apps' read** (`app-platform.controller.ts`, slice 2.4a; CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, §4.8): `GET /v1/{customer,merchant,captain}/platform?version=` is public (the update and maintenance screens come before sign-in) and answers `updateNeed` (`required` below `app.<app>.min_version`, `suggested` below `app.<app>.latest_version`, else `none`), `updateMessage`, `maintenance` and `maintenanceMessage`;
+  a message is left out when unset.
+  Versions are compared by `versionBelow` (`app-versions.ts`), the one comparison of the server (the quote's `update_required` and the captain's `version_below_minimum` use it): part by part, and a version not in the form `1.4.0` is below any minimum.
 - **HTTP errors:** `unknown_key` is `404`, `role_may_not_edit` `403`, every other refusal `400` with the refusal in `error`.
-- **Descriptions:** the list carries the key, not the Appendix A description; the panel shows each setting's Arabic name and description from its translation files, by key (AP §4.7). `panel-labels.test.ts` reads `apps/admin/src/locales/ar.json` and fails a key of the catalogue (but `app.*`, which «التطبيقات» names) without its `settings.name` and `settings.description`, a name left for a key gone, and an enum choice without its words (`settings.choice`, the weekdays shared), so a new setting gets its Arabic words in the same change.
+- **Descriptions:** the list carries the key, not the Appendix A description;
+  the panel shows each setting's Arabic name and description from its translation files, by key (AP §4.7).
+  `panel-labels.test.ts` reads `apps/admin/src/locales/ar.json` and fails a key of the catalogue (but `app.*`, which «التطبيقات» names) without its `settings.name` and `settings.description`, a name left for a key gone, and an enum choice without its words (`settings.choice`, the weekdays shared), so a new setting gets its Arabic words in the same change.

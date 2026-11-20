@@ -1,7 +1,7 @@
 -- Checks one delivered order's money in the ledger against AP §8.4
 -- (docs/domain/04-order-money.md), the code that books it
--- (apps/server/src/modules/ordering/CLAUDE.md, «The atomic pickup» and «The
--- atomic delivery») and the counter-accounts of
+-- (docs/code/apps/server/src/modules/ordering.md, «The atomic pickup» and
+-- «The atomic delivery») and the counter-accounts of
 -- apps/server/src/modules/ledger/CLAUDE.md. Read-only. Run it on the server
 -- as the database superuser, with the order's number
 -- (docs/runbooks/staging-cycle.md):
