@@ -1,3 +1,4 @@
+import 'history_screen.dart';
 import 'dart:async';
 
 import 'package:core_api/core_api.dart';
@@ -147,6 +148,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const MoreScreen(),
           ),
         ],
+      ),
+      // CA §9.13 «السجل» (slice 2.40), from «المزيد».
+      GoRoute(
+        path: '/history',
+        builder: (context, state) => const HistoryScreen(),
       ),
       GoRoute(
         path: '/work-rules',

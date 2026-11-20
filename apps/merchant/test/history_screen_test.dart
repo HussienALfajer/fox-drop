@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
