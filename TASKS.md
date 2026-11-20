@@ -17,11 +17,11 @@ Slice 2.43, the captain app in the background (`docs/roadmap.md`, Phase 2).
 ### Plan
 
 - [x] Ask the owner the split, the licence and the open items; write the plan.
-- [ ] Server: `PUT /v1/captain/device/check` (CA §4.5, §15 «Report the device check»), the last check on the captain (migration 0144) and in the panel's captain profile «التطبيق» (AP §9.7.4); the offer's push carries `expiresAt` and rings on `ring_offer` (the captain app's channel with the bundled offer sound).
-- [ ] `core_alerts` for the captain: the bundled offer sound, vibration while ringing, a ring that stops by itself at the offer's end (a push's ring when the app does not run).
-- [ ] Captain app: the offer rings through `core_alerts` (alarm stream, over the lock screen, full-screen or heads-up, vibration), one cached engine, the offer's push rings from the background isolate, the `ring_offer` channel; `flutter_ringtone_player` goes.
-- [ ] Captain app: `flutter_background_geolocation` tracks while online with its persistent queue (points kept across a restart and sent when the connection returns), its foreground service of type `location` with «أنت متصل — FOX DROP يتابع موقعك لتصلك العروض», the licence from the build.
-- [ ] Captain app: «فحص الجهاز» (CA §4.5 checks 1–8, Android), before the first «متصل» and from «الإعدادات», the re-reads at start and at «متصل», the yellow banner, the report to the server.
+- [x] Server: `PUT /v1/captain/device/check` (CA §4.5, §15 «Report the device check»), the last check on the captain (migration 0144) and in the panel's captain profile «التطبيق» (AP §9.7.4); the offer's push carries `expiresAt` and rings on `ring_offer` (the captain app's channel with the bundled offer sound).
+- [x] `core_alerts` for the captain: the bundled offer sound, vibration while ringing, a ring that stops by itself at the offer's end (a push's ring when the app does not run).
+- [x] Captain app: the offer rings through `core_alerts` (alarm stream, over the lock screen, full-screen or heads-up, vibration), one cached engine, the offer's push rings from the background isolate, the `ring_offer` channel; `flutter_ringtone_player` goes.
+- [x] Captain app: `flutter_background_geolocation` tracks while online with its persistent queue (points kept across a restart and sent when the connection returns), its foreground service of type `location` with «أنت متصل — FOX DROP يتابع موقعك لتصلك العروض», the licence from the build.
+- [x] Captain app: «فحص الجهاز» (CA §4.5 checks 1–8, Android), before the first «متصل» and from «الإعدادات», the re-reads at start and at «متصل», the yellow banner, the report to the server.
 - [ ] Rules in each folder's `CLAUDE.md`; review; hand over to 2.44.
 
 ### Left from 2.42 (the cloud session's branch)
