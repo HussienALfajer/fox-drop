@@ -30,7 +30,7 @@ export class MerchantReportsController {
   ) {}
 
   @Get()
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantReportsDto })
   async list(@CurrentAppSession() session: AppSession) {
     const merchant = session.merchant;

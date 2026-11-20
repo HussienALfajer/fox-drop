@@ -1030,6 +1030,13 @@
       "when": 1795171205818,
       "tag": "0146_identity_portal_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 147,
+      "version": "7",
+      "when": 1795175163853,
+      "tag": "0147_identity_portal_sign_out_by_owner",
+      "breakpoints": true
     }
   ]
 }

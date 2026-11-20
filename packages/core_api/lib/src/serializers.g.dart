@@ -1997,6 +1997,8 @@ Serializers _$serializers =
           ..add(MerchantPortalCodeSentDtoOutput.serializer)
           ..add(MerchantPortalCodeSentDtoOutputChannelEnum.serializer)
           ..add(MerchantPortalSessionDtoOutput.serializer)
+          ..add(MerchantPortalSessionsDtoOutput.serializer)
+          ..add(MerchantPortalSessionsDtoOutputSessionsInner.serializer)
           ..add(MerchantPortalSignInDto.serializer)
           ..add(MerchantPortalSignedInDtoOutput.serializer)
           ..add(MerchantPortalSignedOutDtoOutput.serializer)
@@ -5262,6 +5264,12 @@ Serializers _$serializers =
               const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
             ]),
             () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantPortalSessionsDtoOutputSessionsInner),
+            ]),
+            () => ListBuilder<MerchantPortalSessionsDtoOutputSessionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

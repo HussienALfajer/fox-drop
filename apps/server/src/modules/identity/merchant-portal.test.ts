@@ -42,6 +42,13 @@ beforeAll(async () => {
   process.env.VALKEY_URL = cache.url;
   process.env.IDENTITY_ENCRYPTION_KEY = randomBytes(32).toString('base64');
   process.env.FOX_DROP_ENVIRONMENT = 'development';
+  // Signing an upload needs no storage: only its settings (slice 2.45c).
+  process.env.STORAGE_URL ??= 'http://127.0.0.1:1';
+  process.env.STORAGE_KEY_ID ??= 'GK000000000000000000000001';
+  process.env.STORAGE_SECRET ??= '0'.repeat(64);
+  process.env.ADMIN_PANEL_URL ??= 'http://127.0.0.1:1';
+  process.env.APP_UPLOAD_URL ??= 'http://127.0.0.1:2';
+  process.env.MERCHANT_PORTAL_URL = 'https://portal.example.test';
   sql = new pg.Pool({ connectionString: database.appUrl });
   valkey = new Valkey(cache.url);
   app = await createApiApp(ApiModule);
@@ -269,7 +276,9 @@ describe('the routes the portal reaches (RA §17)', () => {
     // holiday close, the terms, the emergency stop, real time and the
     // portal's own session (its sign-out is left out: it ends the session).
     // The menu with its price log, preview and photos (slice 2.45b); the
-    // other owner features join with 2.45c–d; receiving orders never does.
+    // hours, settings, staff, devices with the Windows pairing and the
+    // portal sessions, and support (slice 2.45c); the money and reports
+    // join with 2.45d; receiving orders never does.
     const allowed = [
       'GET /v1/merchant/auth/portal/session',
       'GET /v1/merchant/orders',
@@ -304,6 +313,23 @@ describe('the routes the portal reaches (RA §17)', () => {
       'POST /v1/merchant/uploads/item-photo',
       'GET /v1/merchant/menu/price-log',
       'GET /v1/merchant/menu/customer-preview',
+      'GET /v1/merchant/restaurant/hours',
+      'PUT /v1/merchant/restaurant/hours',
+      'PUT /v1/merchant/restaurant/order-settings',
+      'GET /v1/merchant/settings/pickup-currencies',
+      'PUT /v1/merchant/settings/pickup-currencies',
+      'GET /v1/merchant/staff',
+      'POST /v1/merchant/staff',
+      'POST /v1/merchant/staff/{accountId}/remove',
+      'GET /v1/merchant/devices',
+      'PUT /v1/merchant/devices/{deviceId}/name',
+      'POST /v1/merchant/devices/{deviceId}/sign-out',
+      'POST /v1/merchant/devices/windows-pairing',
+      'GET /v1/merchant/portal-sessions',
+      'POST /v1/merchant/portal-sessions/{sessionId}/sign-out',
+      'POST /v1/merchant/uploads/report-photo',
+      'POST /v1/merchant/reports',
+      'GET /v1/merchant/reports',
     ];
     const document = createOpenApiDocument(app);
     const reached: string[] = [];
@@ -450,6 +476,104 @@ describe('the portal session at work (RA §17)', () => {
       cookies,
     });
     expect(ended.statusCode).toBe(200);
+  });
+
+  it("lists the restaurant's portal sessions and signs another browser out (RA §14.2)", async () => {
+    const id = await restaurant();
+    const owner = await user(id, 'owner');
+    const partner = await user(id, 'owner');
+    const mine = await portalSignIn(owner.phone);
+    const lost = await portalSignIn(partner.phone);
+    const listed = await app.inject({
+      method: 'GET',
+      url: '/v1/merchant/portal-sessions',
+      cookies: mine.cookies,
+    });
+    expect(listed.statusCode).toBe(200);
+    const sessions = listed.json().sessions as { sessionId: string; thisSession: boolean }[];
+    expect(sessions).toHaveLength(2);
+    expect(sessions.filter((each) => each.thisSession)).toHaveLength(1);
+    const lostId = sessions.find((each) => !each.thisSession)!.sessionId;
+
+    // Another restaurant's owner never reaches it.
+    const stranger = await portalSignIn((await user(await restaurant(), 'owner')).phone);
+    const foreign = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/portal-sessions/${lostId}/sign-out`,
+      cookies: stranger.cookies,
+    });
+    expect([foreign.statusCode, foreign.json().error]).toEqual([404, 'unknown_session']);
+
+    const signedOut = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/portal-sessions/${lostId}/sign-out`,
+      cookies: mine.cookies,
+    });
+    expect(signedOut.statusCode).toBe(200);
+    expect(signedOut.json().sessions).toHaveLength(1);
+    expect((await session(lost.cookies)).statusCode).toBe(401);
+    expect((await session(mine.cookies)).statusCode).toBe(200);
+    const ended = await sql.query(
+      'SELECT end_reason FROM identity.merchant_portal_sessions WHERE id = $1',
+      [lostId],
+    );
+    expect(ended.rows).toEqual([{ end_reason: 'signed_out_by_owner' }]);
+    const audited = await sql.query(
+      `SELECT actor_id, device FROM audit.events
+       WHERE action = 'merchant_portal_session.sign_out' AND target_id = $1`,
+      [id],
+    );
+    expect(audited.rows).toEqual([
+      { actor_id: owner.accountId, device: expect.stringMatching(/^portal:/) },
+    ]);
+    const again = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/portal-sessions/${lostId}/sign-out`,
+      cookies: mine.cookies,
+    });
+    expect([again.statusCode, again.json().error]).toEqual([404, 'unknown_session']);
+  });
+
+  it('pairs a Windows PC, sets the prep time and signs a report photo for the portal (slice 2.45c)', async () => {
+    const id = await restaurant();
+    const owner = await user(id, 'owner');
+    const { cookies } = await portalSignIn(owner.phone);
+    const pairing = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/devices/windows-pairing',
+      cookies,
+    });
+    expect(pairing.statusCode).toBe(200);
+    expect(pairing.json().code).toMatch(/^\d{8}$/);
+    expect(pairing.headers['cache-control']).toBe('no-store');
+
+    const hours = await app.inject({
+      method: 'GET',
+      url: '/v1/merchant/restaurant/hours',
+      cookies,
+    });
+    const settings = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/restaurant/order-settings',
+      cookies,
+      payload: { defaultPrepMin: hours.json().prepFloorMin, maxActiveOrders: 5 },
+    });
+    expect(settings.statusCode).toBe(200);
+    expect(settings.json()).toMatchObject({
+      defaultPrepMin: hours.json().prepFloorMin,
+      maxActiveOrders: 5,
+    });
+
+    const photo = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/uploads/report-photo',
+      cookies,
+      payload: { contentType: 'image/png', sizeBytes: 100 },
+    });
+    expect(photo.statusCode).toBe(201);
+    const url = new URL(photo.json().url);
+    expect(url.origin).toBe('https://portal.example.test');
+    expect(url.pathname).toMatch(/^\/private-docs\/incoming\//);
   });
 
   it("answers another restaurant's order 404, and refuses a cross-origin request", async () => {

@@ -40,6 +40,7 @@ import {
   RestaurantDevicesService,
 } from './restaurant-devices.service.js';
 import { merchantRoles } from './schema.js';
+import { PortalSessionsRefusedError, PortalSessionsService } from './portal-sessions.service.js';
 import { WindowsDevicesService, WindowsPairingRefusedError } from './windows-devices.service.js';
 
 class MerchantStaffDto extends createZodDto(
@@ -121,6 +122,30 @@ class MerchantDevicesDto extends createZodDto(
   }),
 ) {}
 
+class MerchantPortalSessionParamsDto extends createZodDto(z.object({ sessionId: z.uuid() })) {}
+
+class MerchantPortalSessionsDto extends createZodDto(
+  z.object({
+    sessions: z
+      .array(
+        z.object({
+          sessionId: z.uuid(),
+          ownerName: z.string(),
+          userAgent: z
+            .string()
+            .nullable()
+            .describe('The browser as it named itself at the sign-in; null when it did not.'),
+          signedInAt: z.iso.datetime(),
+          expiresAt: z.iso.datetime(),
+          thisSession: z.boolean().describe('The portal session making the request.'),
+        }),
+      )
+      .describe(
+        "The restaurant's open portal sessions, the latest sign-in first: never devices (RA §4.6).",
+      ),
+  }),
+) {}
+
 class MerchantWindowsPairingDto extends createZodDto(
   z.object({
     code: z.string().describe('8 digits, typed on the PC within 10 minutes; used once.'),
@@ -146,10 +171,11 @@ export class MerchantStaffController {
     private readonly sessions: AppSessionsService,
     private readonly receiving: ReceivingDevicesService,
     private readonly windowsDevices: WindowsDevicesService,
+    private readonly portalSessions: PortalSessionsService,
   ) {}
 
   @Get('staff')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantStaffDto })
   async staff(@CurrentAppSession() session: AppSession) {
     const { restaurantId } = await this.ownerOf(session);
@@ -157,7 +183,7 @@ export class MerchantStaffController {
   }
 
   @Post('staff')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(200)
   @ZodResponse({ status: 200, type: MerchantStaffDto })
   async addCashier(
@@ -180,7 +206,7 @@ export class MerchantStaffController {
   }
 
   @Post('staff/:accountId/remove')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(200)
   @ZodResponse({ status: 200, type: MerchantStaffDto })
   async removeCashier(
@@ -204,7 +230,7 @@ export class MerchantStaffController {
   }
 
   @Get('devices')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantDevicesDto })
   async listDevices(@CurrentAppSession() session: AppSession) {
     const { restaurantId } = await this.ownerOf(session);
@@ -212,7 +238,7 @@ export class MerchantStaffController {
   }
 
   @Put('devices/:deviceId/name')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantDevicesDto })
   async renameDevice(
     @CurrentAppSession() session: AppSession,
@@ -236,7 +262,7 @@ export class MerchantStaffController {
 
   // RA §14.2: the device goes back to sign-in; its user stays.
   @Post('devices/:deviceId/sign-out')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(200)
   @ZodResponse({ status: 200, type: MerchantDevicesDto })
   async signOutDevice(
@@ -262,7 +288,7 @@ export class MerchantStaffController {
   // makes a new code; the answer is not stored). 429 too_many after
   // PAIRING_CODES_PER_HOUR codes of the restaurant.
   @Post('devices/windows-pairing')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(200)
   @Header('Cache-Control', 'no-store')
   @ZodResponse({ status: 200, type: MerchantWindowsPairingDto })
@@ -288,6 +314,47 @@ export class MerchantStaffController {
       }
       throw error;
     }
+  }
+
+  // RA §14.2 (slice 2.45c, owner decision 2026-11-20): the owner web
+  // portal's open sessions, which «الأجهزة» in the portal lists so an owner
+  // signs out a lost laptop. The sign-out names its target, so it takes no
+  // key; its repeat is 404 unknown_session.
+  @Get('portal-sessions')
+  @AppSignedIn({ portal: true })
+  @ZodResponse({ status: 200, type: MerchantPortalSessionsDto })
+  async listPortalSessions(@CurrentAppSession() session: AppSession) {
+    const { restaurantId } = await this.ownerOf(session);
+    return this.portalSessionsAnswer(restaurantId, session);
+  }
+
+  @Post('portal-sessions/:sessionId/sign-out')
+  @AppSignedIn({ portal: true })
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantPortalSessionsDto })
+  async signOutPortalSession(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: MerchantPortalSessionParamsDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const owner = await this.ownerOf(session);
+    const restaurant = await this.merchants.cityAndStatus(owner.restaurantId);
+    if (restaurant === null) throw new NotFoundException();
+    try {
+      await this.portalSessions.signOutByOwner(
+        { id: owner.restaurantId, cityId: restaurant.cityId },
+        params.sessionId,
+        changeOf(owner, session, request),
+      );
+    } catch (error) {
+      if (error instanceof PortalSessionsRefusedError) {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
+      }
+      throw error;
+    }
+    // Its real-time connections end once the end committed.
+    this.sessions.notifyEnded([params.sessionId]);
+    return this.portalSessionsAnswer(owner.restaurantId, session);
   }
 
   // RA §5.4: staff and devices are the owners'; RA §5.5: a terminated
@@ -317,6 +384,20 @@ export class MerchantStaffController {
         phone: account.phone,
         devices: account.devices,
         lastActiveAt: account.lastActiveAt?.toISOString() ?? null,
+      })),
+    };
+  }
+
+  private async portalSessionsAnswer(restaurantId: string, session: AppSession) {
+    const open = await this.portalSessions.openSessions(restaurantId);
+    return {
+      sessions: open.map((row) => ({
+        sessionId: row.id,
+        ownerName: row.ownerName,
+        userAgent: row.userAgent,
+        signedInAt: row.signedInAt.toISOString(),
+        expiresAt: row.expiresAt.toISOString(),
+        thisSession: session.portal === true && row.id === session.id,
       })),
     };
   }

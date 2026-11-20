@@ -284,7 +284,7 @@ export class MerchantStatusController {
 
   // RA §10, §6.1: «الحالة والأوقات» is the owners'; cashiers see the status.
   @Get('restaurant/hours')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantHoursDto })
   async hours(@CurrentAppSession() session: AppSession) {
     const { restaurantId } = await this.notTerminated(ownerOf(session));
@@ -292,7 +292,7 @@ export class MerchantStatusController {
   }
 
   @Put('restaurant/hours')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantHoursDto })
   async setHours(
     @CurrentAppSession() session: AppSession,
@@ -307,7 +307,7 @@ export class MerchantStatusController {
   }
 
   @Put('restaurant/order-settings')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantHoursDto })
   async setOrderSettings(
     @CurrentAppSession() session: AppSession,
@@ -359,7 +359,7 @@ export class MerchantStatusController {
   // outside the city's other enabled currencies. Audited with the user and
   // the device; it applies to the pickups requested after it.
   @Get('settings/pickup-currencies')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantPickupCurrenciesDto })
   async pickupCurrencies(@CurrentAppSession() session: AppSession) {
     const { restaurantId } = await this.notTerminated(ownerOf(session));
@@ -367,7 +367,7 @@ export class MerchantStatusController {
   }
 
   @Put('settings/pickup-currencies')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantPickupCurrenciesDto })
   async setPickupCurrencies(
     @CurrentAppSession() session: AppSession,
