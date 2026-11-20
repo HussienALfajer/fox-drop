@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- System texts of the receiving service and the ring (RA §4.3–4.4): shown by
+     Android before or without the Flutter UI, so they live here, not in the
+     ARB files (apps/customer/CLAUDE.md «Arabic, right to left»). -->
+<resources>
+    <string name="core_alerts_receiving">FOX DROP يستقبل طلباتك</string>
+    <string name="core_alerts_channel_receiving">استقبال الطلبات</string>
+    <string name="core_alerts_channel_ring">رنين الطلبات</string>
+</resources>

@@ -15,7 +15,7 @@ part 'admin_dashboard_dto_output_status.g.dart';
 /// Properties:
 /// * [captains]
 /// * [restaurants]
-/// * [withoutDevice] - Null until the receiving devices’ presence.
+/// * [withoutDevice] - Open or busy restaurants with no receiving device now (RA §4.6).
 @BuiltValue()
 abstract class AdminDashboardDtoOutputStatus
     implements
@@ -29,9 +29,9 @@ abstract class AdminDashboardDtoOutputStatus
   @BuiltValueField(wireName: r'restaurants')
   AdminDashboardDtoOutputStatusRestaurants get restaurants;
 
-  /// Null until the receiving devices’ presence.
+  /// Open or busy restaurants with no receiving device now (RA §4.6).
   @BuiltValueField(wireName: r'withoutDevice')
-  int? get withoutDevice;
+  int get withoutDevice;
 
   AdminDashboardDtoOutputStatus._();
 
@@ -74,12 +74,10 @@ class _$AdminDashboardDtoOutputStatusSerializer
       specifiedType: const FullType(AdminDashboardDtoOutputStatusRestaurants),
     );
     yield r'withoutDevice';
-    yield object.withoutDevice == null
-        ? null
-        : serializers.serialize(
-            object.withoutDevice,
-            specifiedType: const FullType.nullable(int),
-          );
+    yield serializers.serialize(
+      object.withoutDevice,
+      specifiedType: const FullType(int),
+    );
   }
 
   @override
@@ -131,12 +129,8 @@ class _$AdminDashboardDtoOutputStatusSerializer
           break;
         case r'withoutDevice':
           final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(int),
-                  )
-                  as int?;
-          if (valueDes == null) continue;
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.withoutDevice = valueDes;
           break;
         default:

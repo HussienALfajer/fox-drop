@@ -16,6 +16,7 @@ import {
   CaptainNoticesWorkerModule,
   PlatformRelayWorkerModule,
   PushWorkerModule,
+  ReceivingWorkerModule,
 } from '../modules/notifications/index.js';
 import { OrderingWorkerModule } from '../modules/ordering/index.js';
 import { ReportingWorkerModule } from '../modules/reporting/index.js';
@@ -34,6 +35,7 @@ const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
     OrderingWorkerModule,
     DispatchWorkerModule,
     AlertsWorkerModule,
+    ReceivingWorkerModule,
     CaptainNoticesWorkerModule,
     PushWorkerModule,
     PlatformRelayWorkerModule,

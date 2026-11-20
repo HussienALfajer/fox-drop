@@ -1,3 +1,4 @@
+import { type DeviceCheck, type DeviceCheckCode } from './receiving.js';
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -166,6 +167,12 @@ export interface RestaurantDevice {
   appVersion: string;
   namedById: string;
   updatedAt: Date;
+  // RA §4.4 «الرنين على هذا الجهاز», the owner's setting (slice 2.42).
+  ringing: boolean;
+  // RA §4.5: the last device check, or null before any.
+  check: DeviceCheck | null;
+  // RA §4.3: the last moment the device was on its restaurant's channel.
+  presentAt: Date | null;
 }
 
 // RA §9.4, AP §9.1.3 (slice 2.32a): a restaurant's own price edit or bulk
@@ -1771,10 +1778,30 @@ export class MerchantsService implements OnModuleInit {
         appVersion: devices.appVersion,
         namedById: devices.namedById,
         updatedAt: devices.updatedAt,
+        ringing: devices.ringing,
+        checkedAt: devices.checkedAt,
+        checkPassed: devices.checkPassed,
+        checkFailed: devices.checkFailed,
+        checkDelayMs: devices.checkDelayMs,
+        presentAt: devices.presentAt,
       })
       .from(devices)
       .where(eq(devices.restaurantId, restaurantId))
-      .orderBy(desc(devices.updatedAt));
+      .orderBy(desc(devices.updatedAt))
+      .then((rows) =>
+        rows.map(({ checkedAt, checkPassed, checkFailed, checkDelayMs, ...row }) => ({
+          ...row,
+          check:
+            checkedAt === null
+              ? null
+              : {
+                  at: checkedAt,
+                  passed: checkPassed!,
+                  failed: (checkFailed ?? []) as DeviceCheckCode[],
+                  delayMs: checkDelayMs,
+                },
+        })),
+      );
   }
 
   async deviceNamed(restaurantId: string, deviceId: string): Promise<boolean> {

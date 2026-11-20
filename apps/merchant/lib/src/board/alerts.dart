@@ -1,66 +1,80 @@
 import 'dart:async';
 
 import 'package:core_realtime/core_realtime.dart';
-import 'package:flutter/foundation.dart';
+import 'package:core_alerts/core_alerts.dart';
+import 'package:core_l10n/core_l10n.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 
 import '../api.dart';
 import 'board.dart';
 import 'commands.dart';
+import 'texts.dart';
+import '../receiving/receiving.dart';
 
-/// The sounds of RA §4.4. Until the design's bundled sounds (owner decision
-/// 2026-11-07), the ring is the phone's alarm sound, looping on the alarm
-/// stream so the media volume and silent mode do not mute it, and the chime
-/// is the phone's notification sound.
+/// The sounds of RA §4.4: the ring loops the bundled sound of the oldest
+/// ringing item on the alarm stream, with a full-screen prompt that says
+/// it, until stopped; the chime plays once.
 abstract interface class Ringer {
-  void ring();
+  void ring(RingSound sound, String text);
   void stop();
   void chime();
+
+  /// RA §4.5 check 7: the new-order sound once more, through the same ring,
+  /// so stopping it never silences a real order: the board's next step (each
+  /// second) rings again what still rings.
+  void test(String text);
 }
 
-/// The phone's sounds through `flutter_ringtone_player` (Android). Windows
-/// has no player yet, so the calls do nothing there.
-///
-/// The plugin loops only on Android 9 and later, and the system may stop a
-/// sound (a call, another app taking the audio), so while ringing the alarm
-/// is started again every [replayEvery]; the stand-in sounds go with the
-/// bundled ones and `core_alerts` (architecture §12.2).
-class PhoneRinger implements Ringer {
-  PhoneRinger({this.replayEvery = const Duration(seconds: 10)});
+/// The ring through `core_alerts` (architecture §12.2), which keeps one
+/// sound loop and one prompt, so a ring already playing only changes them
+/// when they change. Windows has no native layer yet: nothing plays there.
+class AlertsRinger implements Ringer {
+  AlertsRinger(this.alerts, this.title);
 
-  final Duration replayEvery;
-  final _player = FlutterRingtonePlayer();
-  Timer? _replay;
+  final Alerts alerts;
 
-  bool get _supported => defaultTargetPlatform == TargetPlatform.android;
-
-  void _play() => unawaited(_player.playAlarm(looping: true, asAlarm: true));
+  /// The prompt's title, the brand.
+  final String title;
+  (RingSound, String)? _playing;
 
   @override
-  void ring() {
-    if (!_supported || _replay != null) return;
-    _play();
-    _replay = Timer.periodic(replayEvery, (_) => _play());
+  void ring(RingSound sound, String text) {
+    if (_playing == (sound, text)) return;
+    _playing = (sound, text);
+    unawaited(alerts.ring(sound, title: title, body: text));
   }
 
   @override
   void stop() {
-    if (!_supported || _replay == null) return;
-    _replay?.cancel();
-    _replay = null;
-    unawaited(_player.stop());
+    if (_playing == null) return;
+    _playing = null;
+    unawaited(alerts.stopRing());
   }
 
   @override
   void chime() {
-    // One player: a chime would end the ring, which is louder anyway.
-    if (!_supported || _replay != null) return;
-    unawaited(_player.playNotification());
+    // One sound at a time: the ring is louder anyway.
+    if (_playing != null) return;
+    unawaited(alerts.chime());
+  }
+
+  @override
+  void test(String text) {
+    _playing = (RingSound.newOrder, text);
+    unawaited(alerts.ring(RingSound.newOrder, title: title, body: text));
   }
 }
 
-final ringerProvider = Provider<Ringer>((ref) => PhoneRinger());
+/// The native layer; tests give a `FakeAlerts`.
+final alertsProvider = Provider<Alerts>((ref) => platformAlerts());
+
+final ringerProvider = Provider<Ringer>(
+  (ref) => AlertsRinger(
+    ref.watch(alertsProvider),
+    lookupAppLocalizations(const Locale('ar')).merchantAppName,
+  ),
+);
 
 /// A message the board shows with a chime (RA §8.3, §8.7, §8.9, §8.10).
 sealed class BoardNotice {
@@ -364,6 +378,7 @@ final boardAlertsProvider = Provider.autoDispose<void>((ref) {
   final ringer = ref.watch(ringerProvider);
   final clock = ref.watch(serverClockProvider);
   final memory = AlertMemory();
+  final l10n = lookupAppLocalizations(const Locale('ar'));
   final pending = <Map<String, Object?>>[];
   final refetchedFor = <String>{};
 
@@ -379,8 +394,13 @@ final boardAlertsProvider = Provider.autoDispose<void>((ref) {
       answeredHere: ref.read(boardCommandsProvider.notifier).answeredHere,
     );
     if (take) pending.clear();
-    if (result.ring) {
-      ringer.ring();
+    final rings = state.value == null
+        ? const <Ringing>[]
+        : ringing(state.value!);
+    // RA §4.4: an owner's device with «الرنين على هذا الجهاز» off shows the
+    // prompts without the ring.
+    if (result.ring && rings.isNotEmpty && ref.read(ringsHereProvider)) {
+      ringer.ring(ringSound(rings.first), ringText(l10n, rings.first));
     } else {
       ringer.stop();
     }

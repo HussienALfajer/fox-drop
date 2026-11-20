@@ -1,3 +1,6 @@
+import 'package:core_commands/core_commands.dart';
+import 'package:core_alerts/core_alerts.dart';
+import 'package:core_alerts/testing.dart';
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
@@ -117,6 +120,7 @@ class _Board {
   final server = FakeServer();
   final transport = FakeTransport();
   final ringer = FakeRinger();
+  final alerts = FakeAlerts();
   late final ProviderContainer container;
 
   Future<void> pump(
@@ -179,6 +183,7 @@ class _Board {
         appVersionProvider.overrideWith((ref) async => '0.1.0'),
         realtimeTransportProvider.overrideWithValue(transport),
         ringerProvider.overrideWithValue(ringer),
+        alertsProvider.overrideWithValue(alerts),
         keepScreenOnProvider.overrideWithValue((on) {}),
         notificationPermissionProvider.overrideWithValue(
           FakeNotificationPermission(allowed: true),
@@ -239,6 +244,11 @@ void main() {
     expect(find.text('طلب جديد #10001'), findsOneWidget);
     expect(find.text('يُلغى تلقائياً خلال 6:00'), findsWidgets);
     expect(app.ringer.ringing, isTrue);
+    // RA §4.4 (slice 2.42): the new order's bundled sound, and its prompt's
+    // text over the lock screen; the service receives while signed in.
+    expect(app.ringer.sound, RingSound.newOrder);
+    expect(app.ringer.text, 'طلب جديد #10001');
+    expect(app.alerts.receiving, isTrue);
     // RA §8.5: the default prep time, then «+» by the step.
     expect(find.text('قبول — 20 د'), findsWidgets);
     await tester.tap(find.byKey(const Key('prep-plus')));
@@ -1693,5 +1703,131 @@ void main() {
       expect(sent.data, {'reasonCode': 'other', 'note': 'الكيس ممزق'});
       await app.done(tester);
     });
+  });
+
+  // RA §4.4 (slice 2.42): an owner's device with ringing off shows the
+  // prompt without the ring.
+  testWidgets('an owner’s device with ringing off shows a new order silently', (
+    tester,
+  ) async {
+    final app = _Board(role: 'owner');
+    app.server.on('/v1/merchant/device', [
+      const FakeAnswer(200, {'ringing': false, 'check': null}),
+    ]);
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+    ]);
+    await app.up(tester);
+    expect(find.text('طلب جديد #10001'), findsOneWidget);
+    expect(app.ringer.ringing, isFalse);
+    await app.done(tester);
+  });
+
+  // RA §4.5 (slice 2.42): the device check opens at the first sign-in,
+  // opens each failing check's settings, plays the test ring and sends the
+  // result; the banner shows while a check fails.
+  testWidgets(
+    'the device check runs at the first sign-in and sends its result',
+    (tester) async {
+      final app = _Board();
+      app.alerts.deviceReadings = const DeviceReadings(
+        notificationsAllowed: true,
+        batteryOptimizationOff: false,
+        fullScreenAllowed: true,
+        alarmVolumePercent: 80,
+        doNotDisturbBlocks: false,
+        autostartPage: false,
+      );
+      app.server
+        ..on('/v1/merchant/device', [
+          const FakeAnswer(200, {'ringing': true, 'check': null}),
+        ])
+        ..on('/v1/merchant/device/check', [
+          const FakeAnswer(200, {
+            'ringing': true,
+            'check': {
+              'at': '2026-11-20T09:00:00.000Z',
+              'passed': false,
+              'failed': ['battery'],
+              'delayMs': 0,
+            },
+          }),
+        ]);
+      await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+      expect(find.text('فحص الجهاز'), findsWidgets);
+      final battery = find.byKey(const Key('check-battery'));
+      expect(
+        find.descendant(of: battery, matching: find.text('لم يكتمل')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('open-battery')));
+      expect(app.alerts.opened, [DeviceSetting.battery]);
+
+      await tester.ensureVisible(find.byKey(const Key('test-ring')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('test-ring')));
+      await tester.pumpAndSettle();
+      expect(app.ringer.sound, RingSound.newOrder);
+      await tester.tap(find.byKey(const Key('test-ring-heard')));
+      await tester.pumpAndSettle();
+      expect(app.ringer.ringing, isFalse);
+
+      await tester.ensureVisible(find.byKey(const Key('save-check')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('save-check')));
+      await tester.pumpAndSettle();
+      final sent = app.server.to('/v1/merchant/device/check').single;
+      expect((sent.data as Map)['failed'], ['battery']);
+      expect(find.text('حُفظت نتيجة الفحص.'), findsOneWidget);
+
+      // Back on the board, the banner says a check still fails.
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('device-check-banner')), findsOneWidget);
+      await app.done(tester);
+    },
+  );
+
+  // RA §4.7, architecture §11.2 (slice 2.42): a command a restart
+  // interrupted is sent again with its key, shows «جارٍ الإرسال…» meanwhile,
+  // and leaves the queue once answered.
+  testWidgets('a command a restart interrupted goes again with its key', (
+    tester,
+  ) async {
+    final store = MemoryDeviceStore();
+    final queue = CommandQueue(store);
+    await queue.put(
+      QueuedCommand(
+        key: 'key-before-restart',
+        kind: 'accept',
+        subject: _orderId,
+        accountId: _accountId,
+        args: const {'prepMin': 25},
+        queuedAt: DateTime.now().toUtc(),
+      ),
+    );
+    final app = _Board();
+    final accepted = orderJson(
+      status: 'accepted',
+      version: 2,
+      acceptedAfter: const Duration(minutes: 1),
+    );
+    app.server.on('/v1/merchant/orders/$_orderId/accept', [
+      FakeAnswer(200, {'order': accepted}),
+    ]);
+    await app.pump(
+      tester,
+      [
+        FakeAnswer(200, boardJson([orderJson()])),
+        FakeAnswer(200, boardJson([accepted])),
+      ],
+      overrides: [commandQueueProvider.overrideWithValue(queue)],
+    );
+    await app.up(tester);
+    final sent = app.server.to('/v1/merchant/orders/$_orderId/accept').single;
+    expect(sent.headers['Idempotency-Key'], 'key-before-restart');
+    expect(sent.data, {'prepMin': 25});
+    expect(await queue.pending(DateTime.now().toUtc()), isEmpty);
+    await app.done(tester);
   });
 }

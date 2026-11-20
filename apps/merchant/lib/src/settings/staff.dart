@@ -112,6 +112,9 @@ class RestaurantDevice {
     required this.signedIn,
     required this.lastSeenAt,
     required this.thisDevice,
+    required this.ringing,
+    required this.connected,
+    required this.checkPassed,
   });
 
   final String deviceId;
@@ -127,6 +130,12 @@ class RestaurantDevice {
 
   /// The device this app runs on.
   final bool thisDevice;
+
+  /// RA §14.2 (slice 2.42): whether ring events ring on it, whether it is
+  /// connected now, and its last device check (null before any).
+  final bool ringing;
+  final bool connected;
+  final bool? checkPassed;
 }
 
 List<RestaurantDevice> _devicesOf(MerchantDevicesDtoOutput dto) => [
@@ -143,17 +152,29 @@ List<RestaurantDevice> _devicesOf(MerchantDevicesDtoOutput dto) => [
       signedIn: each.signedIn,
       lastSeenAt: each.lastSeenAt,
       thisDevice: each.thisDevice,
+      ringing: each.ringing,
+      connected: each.connected,
+      checkPassed: each.deviceCheck?.passed,
     ),
 ];
 
 /// `GET /v1/merchant/devices` and its commands, the owners'; read on
-/// opening «الأجهزة». The ring setting and the device check join with 2.42.
+/// opening «الأجهزة».
 class DevicesNotifier extends AsyncNotifier<List<RestaurantDevice>> {
   MerchantApi get _api => ref.read(coreApiProvider).getMerchantApi();
 
+  /// RA §14.2, §4.6 (slice 2.42): the restaurant is open with no receiving
+  /// device, as the last answer says; set with each state.
+  bool withoutDevice = false;
+
+  List<RestaurantDevice> _take(MerchantDevicesDtoOutput dto) {
+    withoutDevice = dto.withoutDevice;
+    return _devicesOf(dto);
+  }
+
   @override
   Future<List<RestaurantDevice>> build() async =>
-      _devicesOf((await _api.merchantStaffListDevices()).data!);
+      _take((await _api.merchantStaffListDevices()).data!);
 
   /// False when the server did not take it: the list is read again.
   Future<bool> rename(String deviceId, String name) => _run(
@@ -171,7 +192,7 @@ class DevicesNotifier extends AsyncNotifier<List<RestaurantDevice>> {
     Future<Response<MerchantDevicesDtoOutput>> Function() command,
   ) async {
     try {
-      state = AsyncData(_devicesOf((await command()).data!));
+      state = AsyncData(_take((await command()).data!));
       return true;
     } on DioException {
       ref.invalidateSelf();

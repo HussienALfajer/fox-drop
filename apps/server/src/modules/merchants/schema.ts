@@ -358,14 +358,41 @@ export const devices = merchants.table(
     appVersion: text('app_version').notNull(),
     // The restaurant user who named or renamed it last.
     namedById: uuid('named_by_id').notNull(),
+    // RA §4.4 «الرنين على هذا الجهاز» (slice 2.42): an owner's setting on
+    // the device, on by default; a cashier's device always rings (fixed).
+    ringing: boolean('ringing').notNull().default(true),
+    // RA §4.5 (slice 2.42): the device's last check, its failed checks'
+    // codes (`deviceCheckCodes`) and the server connection's delay.
+    checkedAt: timestamp('checked_at', { withTimezone: true }),
+    checkPassed: boolean('check_passed'),
+    checkFailed: text('check_failed').array(),
+    checkDelayMs: integer('check_delay_ms'),
+    // RA §4.3 (slice 2.42): the last moment the worker saw the device on
+    // its restaurant's channel (Centrifugo's presence).
+    presentAt: timestamp('present_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (table) => [
     uniqueIndex('devices_restaurant_device').on(table.restaurantId, table.deviceId),
     check('devices_platform_values', sql`${table.platform} IN ('android', 'ios', 'windows')`),
+    check(
+      'devices_check_complete',
+      sql`(${table.checkedAt} IS NULL) = (${table.checkPassed} IS NULL) AND (${table.checkedAt} IS NULL) = (${table.checkFailed} IS NULL)`,
+    ),
   ],
 );
+
+// RA §4.6 (slice 2.42): since when an open or busy restaurant has had no
+// receiving device, as the worker last saw it; no row, or a null, while it
+// has one or is not open. «مطعم مفتوح بلا جهاز استقبال» counts from it.
+export const receiving = merchants.table('receiving', {
+  restaurantId: uuid('restaurant_id')
+    .primaryKey()
+    .references(() => restaurants.id),
+  withoutDeviceSince: timestamp('without_device_since', { withTimezone: true }),
+  updatedAt: updatedAt(),
+});
 
 // AP §9.6.6, RA §9: a menu category. An unpublished one waits for its change
 // request (RA §9.2). Availability off with an end is «حتى الغد»; without an

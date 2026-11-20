@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/merchant_device_check_output.dart';
 import 'package:core_api/src/model/admin_restaurant_devices_dto_output_devices_inner_user.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -20,8 +21,9 @@ part 'admin_restaurant_devices_dto_output_devices_inner.g.dart';
 /// * [user]
 /// * [signedIn]
 /// * [lastSeenAt] - Its session’s last refresh (every 15 minutes while open), or its end.
-/// * [ringing] - Null until the devices report it (2.42).
-/// * [deviceCheck] - Null until the device check (2.42).
+/// * [ringing] - Whether ring events ring on it: the owner’s setting, always for a cashier (RA §4.4).
+/// * [connected] - Signed in and on the restaurant’s channel within the last 60 s (RA §4.3).
+/// * [deviceCheck] - Its latest device check (RA §4.5), or null before any.
 @BuiltValue()
 abstract class AdminRestaurantDevicesDtoOutputDevicesInner
     implements
@@ -52,13 +54,17 @@ abstract class AdminRestaurantDevicesDtoOutputDevicesInner
   @BuiltValueField(wireName: r'lastSeenAt')
   DateTime? get lastSeenAt;
 
-  /// Null until the devices report it (2.42).
+  /// Whether ring events ring on it: the owner’s setting, always for a cashier (RA §4.4).
   @BuiltValueField(wireName: r'ringing')
-  bool? get ringing;
+  bool get ringing;
 
-  /// Null until the device check (2.42).
+  /// Signed in and on the restaurant’s channel within the last 60 s (RA §4.3).
+  @BuiltValueField(wireName: r'connected')
+  bool get connected;
+
+  /// Its latest device check (RA §4.5), or null before any.
   @BuiltValueField(wireName: r'deviceCheck')
-  String? get deviceCheck;
+  MerchantDeviceCheckOutput? get deviceCheck;
 
   AdminRestaurantDevicesDtoOutputDevicesInner._();
 
@@ -136,18 +142,21 @@ class _$AdminRestaurantDevicesDtoOutputDevicesInnerSerializer
             specifiedType: const FullType.nullable(DateTime),
           );
     yield r'ringing';
-    yield object.ringing == null
-        ? null
-        : serializers.serialize(
-            object.ringing,
-            specifiedType: const FullType.nullable(bool),
-          );
+    yield serializers.serialize(
+      object.ringing,
+      specifiedType: const FullType(bool),
+    );
+    yield r'connected';
+    yield serializers.serialize(
+      object.connected,
+      specifiedType: const FullType(bool),
+    );
     yield r'deviceCheck';
     yield object.deviceCheck == null
         ? null
         : serializers.serialize(
             object.deviceCheck,
-            specifiedType: const FullType.nullable(String),
+            specifiedType: const FullType.nullable(MerchantDeviceCheckOutput),
           );
   }
 
@@ -249,21 +258,31 @@ class _$AdminRestaurantDevicesDtoOutputDevicesInnerSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType.nullable(bool),
+                    specifiedType: const FullType(bool),
                   )
-                  as bool?;
-          if (valueDes == null) continue;
+                  as bool;
           result.ringing = valueDes;
+          break;
+        case r'connected':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.connected = valueDes;
           break;
         case r'deviceCheck':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType.nullable(String),
+                    specifiedType: const FullType.nullable(
+                      MerchantDeviceCheckOutput,
+                    ),
                   )
-                  as String?;
+                  as MerchantDeviceCheckOutput?;
           if (valueDes == null) continue;
-          result.deviceCheck = valueDes;
+          result.deviceCheck.replace(valueDes);
           break;
         default:
           unhandled.add(key);

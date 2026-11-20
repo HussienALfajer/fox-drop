@@ -21,7 +21,10 @@ interface CentrifugoError {
 
 interface CentrifugoReply {
   error?: CentrifugoError;
-  result?: { responses?: { error?: CentrifugoError }[] };
+  result?: {
+    responses?: { error?: CentrifugoError }[];
+    presence?: Record<string, { user?: string }>;
+  };
 }
 
 // Disconnects whose client must not reconnect with the same token
@@ -61,6 +64,17 @@ export class RealtimePublisher {
     disconnect: typeof SESSION_ENDED | typeof ACCESS_CHANGED = SESSION_ENDED,
   ): Promise<void> {
     await this.call('disconnect', { user: sessionId, disconnect });
+  }
+
+  // RA §4.3, §4.6 (slice 2.42): the users on a channel now, each an app
+  // session (the connection token's subject).
+  async presence(channel: string): Promise<Set<string>> {
+    const reply = await this.call('presence', { channel });
+    return new Set(
+      Object.values(reply.result?.presence ?? {})
+        .map((client) => client.user)
+        .filter((user): user is string => typeof user === 'string' && user.length > 0),
+    );
   }
 
   private async call(method: string, body: object): Promise<CentrifugoReply> {

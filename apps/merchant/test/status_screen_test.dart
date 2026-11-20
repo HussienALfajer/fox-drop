@@ -1,3 +1,4 @@
+import 'package:core_alerts/testing.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -89,6 +90,7 @@ class _App {
         appVersionProvider.overrideWith((ref) async => '0.1.0'),
         realtimeTransportProvider.overrideWithValue(transport),
         ringerProvider.overrideWithValue(ringer),
+        alertsProvider.overrideWithValue(FakeAlerts()),
         keepScreenOnProvider.overrideWithValue((on) {}),
         notificationPermissionProvider.overrideWithValue(
           FakeNotificationPermission(allowed: true),
@@ -535,8 +537,16 @@ void main() {
       'user': {'name': 'سامر', 'role': 'cashier'},
       'signedIn': signedIn,
       'lastSeenAt': '2026-11-19T09:00:00.000Z',
-      'ringing': null,
-      'deviceCheck': null,
+      'ringing': true,
+      'connected': signedIn,
+      'deviceCheck': signedIn
+          ? {
+              'at': '2026-11-19T08:00:00.000Z',
+              'passed': true,
+              'failed': <String>[],
+              'delayMs': 90,
+            }
+          : null,
       'thisDevice': false,
     };
     app.server
@@ -549,16 +559,20 @@ void main() {
       ])
       ..on('/v1/merchant/devices', [
         FakeAnswer(200, {
+          'withoutDevice': false,
           'devices': [device('كاشير 1', signedIn: true)],
         }),
       ])
       ..on('/v1/merchant/devices/kitchen/name', [
         FakeAnswer(200, {
+          'withoutDevice': false,
           'devices': [device('تابلت المطبخ', signedIn: true)],
         }),
       ])
       ..on('/v1/merchant/devices/kitchen/sign-out', [
         FakeAnswer(200, {
+          // Its only device signed out: none receives (RA §14.2, §4.6).
+          'withoutDevice': true,
           'devices': [device('تابلت المطبخ', signedIn: false)],
         }),
       ]);
@@ -570,6 +584,12 @@ void main() {
     expect(find.text('كاشير 1'), findsOneWidget);
     expect(find.textContaining('سامر (كاشير)'), findsOneWidget);
     expect(find.textContaining('أندرويد · الإصدار 1.2.0'), findsOneWidget);
+    expect(find.byKey(const Key('no-receiving-device')), findsNothing);
+    // RA §14.2 (slice 2.42): ringing, connection and the last check.
+    expect(
+      find.textContaining('يرن · متصل الآن · اجتاز فحص الجهاز'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const Key('rename-kitchen')));
     await tester.pumpAndSettle();
@@ -598,6 +618,11 @@ void main() {
     );
     expect(find.textContaining('غير مسجّل الدخول'), findsOneWidget);
     expect(find.byKey(const Key('sign-out-kitchen')), findsNothing);
+    // RA §14.2: the warning while no device receives.
+    expect(
+      find.text('لا يوجد جهاز يستقبل الطلبات في مطعمك الآن'),
+      findsOneWidget,
+    );
     await app.done(tester);
   });
 

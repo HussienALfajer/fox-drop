@@ -22,6 +22,7 @@ import {
   changeActionOf,
   changeFieldOf,
   changeLogQuery,
+  type DeviceCheck,
   devicesQuery,
   NOTE_MAX,
   noteOf,
@@ -317,7 +318,11 @@ function Devices(props: { restaurantId: string; city: City; session: AdminSessio
                 t('profile.devices.lastSeen', {
                   time: formatDateTime(device.lastSeenAt, props.city.timeZone),
                 })}{' '}
-              {t('profile.devices.reported', { value: t('profile.notYet') })}{' '}
+              {device.ringing ? t('profile.devices.ringing') : t('profile.devices.silent')}{' '}
+              {device.connected
+                ? t('profile.devices.connected')
+                : t('profile.devices.notConnected')}{' '}
+              <DeviceCheckText check={device.deviceCheck} timeZone={props.city.timeZone} />{' '}
               {allowed && device.signedIn && (
                 <button
                   type="button"
@@ -593,6 +598,29 @@ function ChangeLog({ restaurantId, city }: { restaurantId: string; city: City })
           );
         })}
       </ul>
+    </>
+  );
+}
+
+// RA §4.5 (slice 2.42): the device's last check, with what failed; Windows'
+// sleep check is a warning that never fails it.
+function DeviceCheckText(props: { check: DeviceCheck | null; timeZone: string }) {
+  const { t } = useTranslation();
+  if (props.check === null) return <>{t('profile.devices.checkNone')}</>;
+  const { failed, passed, at, delayMs } = props.check;
+  const names = (codes: DeviceCheck['failed']) =>
+    codes.map((code) => t(`profile.devices.check.${code}`)).join('، ');
+  const time = formatDateTime(at, props.timeZone);
+  const failing = failed.filter((code) => code !== 'sleep');
+  return (
+    <>
+      {passed
+        ? t('profile.devices.checkPassed', { time })
+        : t('profile.devices.checkFailed', { time, items: names(failing) })}
+      {failed.includes('sleep') && (
+        <> {t('profile.devices.checkWarning', { items: names(['sleep']) })}</>
+      )}
+      {delayMs !== null && <> {t('profile.devices.delay', { ms: delayMs })}</>}
     </>
   );
 }

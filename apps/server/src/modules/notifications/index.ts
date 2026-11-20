@@ -26,6 +26,7 @@ import { PlatformRelay, PlatformRelayWorker } from './platform-relay.js';
 import { RestaurantStateRelay, RestaurantStateRelayWorker } from './restaurant-state-relay.js';
 import { PushDevices } from './push-devices.js';
 import { PushQueue } from './push-queue.js';
+import { ReceivingSweep, ReceivingSweepWorker } from './receiving-sweep.js';
 import { CaptainCashNotices, CaptainCashNoticesWorker } from './captain-cash-notices.js';
 import {
   CaptainContractNotices,
@@ -127,7 +128,7 @@ export class CaptainNoticesWorkerModule {}
 // The worker's push relay (architecture §8.1): sends the queued pushes
 // through FCM to the live devices of their recipients.
 @Module({
-  imports: [DatabaseModule, OpenAppSessionsModule],
+  imports: [DatabaseModule, OpenAppSessionsModule, MerchantsModule],
   providers: [
     { provide: PUSH_SENDER, useFactory: () => pushSenderFromEnvironment() },
     PushDevices,
@@ -158,6 +159,21 @@ export class PushWorkerModule {}
   ],
 })
 export class AlertsWorkerModule {}
+
+// The worker's read of the restaurants' channels (receiving-sweep.ts): the
+// devices' presence and «مطعم مفتوح بلا جهاز استقبال» (RA §4.3–4.6).
+@Module({
+  imports: [
+    DatabaseModule,
+    GeoModule,
+    MerchantsModule,
+    OpenAppSessionsModule,
+    SettingsModule,
+    ContentModule,
+  ],
+  providers: [AlertsService, PushQueue, RealtimePublisher, ReceivingSweep, ReceivingSweepWorker],
+})
+export class ReceivingWorkerModule {}
 
 // The worker's relays of the platform broadcasts (platform-relay.ts) to the
 // restaurants', captains' and panel's channels, and of the restaurants' state

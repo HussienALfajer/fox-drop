@@ -1002,6 +1002,13 @@
       "when": 1795139227575,
       "tag": "0142_reporting_report_exports",
       "breakpoints": true
+    },
+    {
+      "idx": 143,
+      "version": "7",
+      "when": 1795143446225,
+      "tag": "0143_merchants_receiving_devices",
+      "breakpoints": true
     }
   ]
 }

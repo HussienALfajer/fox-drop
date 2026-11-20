@@ -1,3 +1,4 @@
+import 'package:core_alerts/core_alerts.dart';
 import 'package:core_l10n/core_l10n.dart';
 
 import 'alerts.dart';
@@ -163,3 +164,26 @@ List<({String amount, String currency})> requestLines(PickupRequest request) =>
       for (final line in request.lines)
         if (line != null) (amount: line.amount, currency: line.currency),
     ];
+
+/// RA §4.4: the ring's sound, by what rings first (the oldest).
+RingSound ringSound(Ringing item) => switch (item) {
+  NewOrderRinging() => RingSound.newOrder,
+  PickupRinging() => RingSound.pickupRequest,
+  CancelledRinging() || EditRinging() => RingSound.cancellation,
+};
+
+/// RA §16 #1, #13, #16, #18: the ring's full-screen prompt says what rings
+/// first, as its prompt on the board does.
+String ringText(AppLocalizations l10n, Ringing item) => switch (item) {
+  NewOrderRinging(:final order) => l10n.merchantNewOrder(order.number),
+  PickupRinging(:final order, :final request) => l10n.merchantPickupPrompt(
+    order.captain?.firstName ?? '',
+    request.amount == null
+        ? paymentLinesText(l10n, requestLines(request))
+        : l10n.formatMoney(request.amount!.amount, request.amount!.currency),
+    order.number,
+  ),
+  CancelledRinging(:final order, :final cancellation) =>
+    l10n.merchantCancelledByOperations(order.number, cancellation.label),
+  EditRinging(:final order) => l10n.merchantOrderEditedItemsAdded(order.number),
+};

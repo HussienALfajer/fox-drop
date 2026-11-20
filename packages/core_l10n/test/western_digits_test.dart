@@ -94,6 +94,12 @@ void main() {
     expect(l10n.formatCountdown(const Duration(seconds: -3)), '0:00');
     expect(l10n.merchantAccept(20), 'قبول — 20 د');
     expect(l10n.merchantAutoConfirmIn(60), 'يُؤكَّد تلقائياً خلال 60 ث');
+    // RA §4.5 (slice 2.42): the device check's alarm volume and delay.
+    expect(l10n.merchantCheckAlarmVolume(70), 'صوت المنبّه الآن 70%');
+    expect(
+      l10n.merchantCheckConnectionDelay(120),
+      'متصل — التأخر 120 ملي ثانية',
+    );
     expect(l10n.captainOfferPreparing(8), 'قيد التحضير — جاهز بعد 8 د تقريباً');
     expect(l10n.captainPreparing(12), 'قيد التحضير — جاهز بعد 12 د');
     expect(l10n.captainStep(2, 'عند المطعم'), 'الخطوة 2 من 4: عند المطعم');

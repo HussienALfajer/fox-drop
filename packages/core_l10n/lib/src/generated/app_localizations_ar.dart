@@ -5620,4 +5620,166 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get merchantReportsShareFailed =>
       'تعذّرت مشاركة الصورة، حاول مرة أخرى';
+
+  @override
+  String get merchantRingOnThisDevice => 'الرنين على هذا الجهاز';
+
+  @override
+  String get merchantRingOnThisDeviceExplain =>
+      'عند إيقافه تظهر الطلبات الجديدة على هذا الجهاز بإشعار صامت. أجهزة الاستقبال الأخرى ترن كالمعتاد.';
+
+  @override
+  String get merchantCashierAlwaysRings => 'جهاز الكاشير يرن دائماً.';
+
+  @override
+  String get merchantDeviceCheck => 'فحص الجهاز';
+
+  @override
+  String get merchantDeviceCheckBanner =>
+      'هذا الجهاز قد لا يرن عند وصول طلب — أكمل فحص الجهاز';
+
+  @override
+  String get merchantDeviceCheckIntro =>
+      'يتأكد هذا الفحص أن الجهاز يرن عند وصول طلب حتى والشاشة مطفأة. أكمل كل خطوة حتى تظهر «تم».';
+
+  @override
+  String get merchantCheckNotifications => 'الإشعارات مسموحة';
+
+  @override
+  String get merchantCheckNotificationsHow =>
+      'افتح الإعدادات واسمح بإشعارات التطبيق.';
+
+  @override
+  String get merchantCheckBattery => 'توفير البطارية متوقف للتطبيق';
+
+  @override
+  String get merchantCheckBatteryHow =>
+      'اختر «السماح» أو «غير مقيّد» حتى لا يوقف الهاتف التطبيق والشاشة مطفأة.';
+
+  @override
+  String get merchantCheckAutostart => 'التشغيل التلقائي مسموح';
+
+  @override
+  String get merchantCheckAutostartHow =>
+      'افتح صفحة التشغيل التلقائي في هاتفك وفعّله لتطبيق المطعم، ثم اضغط «فعّلته».';
+
+  @override
+  String get merchantCheckAutostartDone => 'فعّلته';
+
+  @override
+  String get merchantCheckFullScreen => 'إشعارات ملء الشاشة مسموحة';
+
+  @override
+  String get merchantCheckFullScreenHow =>
+      'اسمح للتطبيق بعرض الإشعارات بملء الشاشة، ليظهر الطلب الجديد فوق شاشة القفل.';
+
+  @override
+  String get merchantCheckAlarm =>
+      'صوت المنبّه 70% على الأقل ووضع «عدم الإزعاج» لا يمنعه';
+
+  @override
+  String get merchantCheckAlarmHow =>
+      'ارفع صوت المنبّه، واسمح بالمنبّهات في وضع «عدم الإزعاج» أو أوقفه.';
+
+  @override
+  String merchantCheckAlarmVolume(int percent) {
+    return 'صوت المنبّه الآن $percent%';
+  }
+
+  @override
+  String get merchantCheckDoNotDisturb =>
+      'وضع «عدم الإزعاج» يمنع المنبّهات الآن.';
+
+  @override
+  String get merchantCheckTestRing => 'رنين تجريبي';
+
+  @override
+  String get merchantCheckTestRingHow =>
+      'شغّل الرنين، ثم اضغط «سمعت الصوت» إن سمعته.';
+
+  @override
+  String get merchantCheckTestRingPlay => 'تشغيل رنين تجريبي';
+
+  @override
+  String get merchantCheckTestRingHeard => 'سمعت الصوت';
+
+  @override
+  String get merchantCheckTestRingNotHeard => 'لم أسمع';
+
+  @override
+  String get merchantCheckConnection => 'الاتصال بالخادم';
+
+  @override
+  String merchantCheckConnectionDelay(int ms) {
+    return 'متصل — التأخر $ms ملي ثانية';
+  }
+
+  @override
+  String get merchantCheckConnectionFailed => 'تعذّر الاتصال بالخادم';
+
+  @override
+  String get merchantCheckDone => 'تم';
+
+  @override
+  String get merchantCheckNotDone => 'لم يكتمل';
+
+  @override
+  String get merchantCheckOpenSettings => 'فتح الإعدادات';
+
+  @override
+  String get merchantCheckSave => 'حفظ نتيجة الفحص';
+
+  @override
+  String get merchantCheckSaved => 'حُفظت نتيجة الفحص.';
+
+  @override
+  String get merchantCheckSaveFailed => 'تعذّر حفظ النتيجة، حاول مرة أخرى';
+
+  @override
+  String get merchantCheckPassedAll => 'اجتاز هذا الجهاز الفحص.';
+
+  @override
+  String get merchantCheckNotPassed =>
+      'لم يجتز هذا الجهاز الفحص بعد: أكمل الخطوات الناقصة.';
+
+  @override
+  String get merchantCheckWindowsLater =>
+      'فحص الجهاز على ويندوز يأتي مع تطبيق ويندوز.';
+
+  @override
+  String merchantCheckLast(String time) {
+    return 'آخر فحص: $time';
+  }
+
+  @override
+  String get merchantCheckNone => 'لم يُفحص هذا الجهاز بعد.';
+
+  @override
+  String get merchantDeviceRinging => 'يرن';
+
+  @override
+  String get merchantDeviceSilent => 'صامت';
+
+  @override
+  String get merchantDeviceConnected => 'متصل الآن';
+
+  @override
+  String get merchantDeviceNotConnected => 'غير متصل';
+
+  @override
+  String get merchantDeviceCheckOk => 'اجتاز فحص الجهاز';
+
+  @override
+  String get merchantDeviceCheckNotOk => 'لم يجتز فحص الجهاز';
+
+  @override
+  String get merchantNoReceivingDevice =>
+      'لا يوجد جهاز يستقبل الطلبات في مطعمك الآن';
+
+  @override
+  String get merchantDeviceNotChecked => 'لم يُفحص بعد';
+
+  @override
+  String get merchantCheckReadFailed =>
+      'تعذّرت قراءة إعدادات الجهاز، اضغط لإعادة المحاولة';
 }

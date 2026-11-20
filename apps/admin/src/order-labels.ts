@@ -60,6 +60,7 @@ export const alertKeys = {
   probation_overdue: 'order.alert.probationOverdue',
   document_expiring: 'order.alert.documentExpiring',
   acceptance_review: 'order.alert.acceptanceReview',
+  restaurant_without_device: 'order.alert.restaurantWithoutDevice',
 } as const satisfies Record<AlertCode, string>;
 
 export const badgeKeys = {

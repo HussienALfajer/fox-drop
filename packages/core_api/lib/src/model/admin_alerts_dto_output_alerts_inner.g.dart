@@ -98,6 +98,9 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring =
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_acceptanceReview =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('acceptanceReview');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantWithoutDevice =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('restaurantWithoutDevice');
 
 AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
@@ -162,6 +165,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring;
     case 'acceptanceReview':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_acceptanceReview;
+    case 'restaurantWithoutDevice':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantWithoutDevice;
     default:
       throw ArgumentError(name);
   }
@@ -201,6 +206,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationOverdue,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_acceptanceReview,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantWithoutDevice,
       ],
     );
 
@@ -359,6 +365,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'probationOverdue': 'probation_overdue',
     'documentExpiring': 'document_expiring',
     'acceptanceReview': 'acceptance_review',
+    'restaurantWithoutDevice': 'restaurant_without_device',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -391,6 +398,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'probation_overdue': 'probationOverdue',
     'document_expiring': 'documentExpiring',
     'acceptance_review': 'acceptanceReview',
+    'restaurant_without_device': 'restaurantWithoutDevice',
   };
 
   @override

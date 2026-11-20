@@ -1,13 +1,15 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:core_api/core_api.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_auth/core_auth.dart';
+import 'package:core_commands/core_commands.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
+import '../device.dart';
+import '../push.dart';
 import 'board.dart';
 
 /// A board command (RA §8.5, §8.8, §8.10).
@@ -194,85 +196,57 @@ class CommandFailed extends CommandNotice {
 }
 
 /// The orders with a command in flight, which show «جارٍ الإرسال…» and
-/// cannot be pressed again (RA §4.7).
+/// cannot be pressed again (RA §4.7). Every command waits in the device's
+/// queue (`core_commands`) until the server answers, so one sent before a
+/// restart, a crash or the system ending the app is sent again with its key
+/// when the app starts (architecture §11.2).
 class BoardCommands extends Notifier<Set<String>> {
-  final Map<String, String> _keys = {};
-
   /// The pickup requests this device answered, whose closing it does not
   /// announce as another user's.
   final Set<String> answeredHere = {};
 
   /// Waits before each retry; tests make it short.
-  Duration Function(int attempt) backoff = (attempt) {
-    final base = min(15000, 1000 * pow(2, attempt).toInt());
-    return Duration(milliseconds: base ~/ 2 + Random().nextInt(base ~/ 2 + 1));
-  };
+  Duration Function(int attempt) backoff = retryDelay;
+
+  String? _resumedFor;
 
   @override
-  Set<String> build() => const {};
+  Set<String> build() {
+    // RA §4.7: the commands a restart interrupted go again, for the account
+    // signed in now; another account's are dropped.
+    ref.listen(merchantSessionProvider, (previous, next) {
+      final accountId = next.value?.accountId;
+      if (accountId != null && accountId != _resumedFor) {
+        _resumedFor = accountId;
+        unawaited(_resume(accountId));
+      }
+    }, fireImmediately: true);
+    return const {};
+  }
 
   MerchantApi get _api => ref.read(coreApiProvider).getMerchantApi();
+  CommandQueue get _queue => ref.read(commandQueueProvider);
 
-  Future<CommandNotice?> accept(String orderId, int prepMin) => _send(
-    orderId,
-    CommandKind.accept,
-    '$prepMin',
-    (key) => _api.merchantOrdersAccept(
-      orderId: orderId,
-      idempotencyKey: key,
-      merchantAcceptDto: MerchantAcceptDto((b) => b..prepMin = prepMin),
-    ),
-  );
+  Future<CommandNotice?> accept(String orderId, int prepMin) =>
+      _send(orderId, CommandKind.accept, {'prepMin': prepMin});
 
   /// «رفض» with its reason and steps (RA §8.6).
-  Future<CommandNotice?> reject(String orderId, Rejection rejection) => _send(
-    orderId,
-    CommandKind.reject,
-    rejection.body,
-    (key) => _api.merchantOrdersReject(
-      orderId: orderId,
-      idempotencyKey: key,
-      merchantRejectDto: MerchantRejectDto(
-        (b) => b
-          ..reason = rejection.reason.code
-          ..items = ListBuilder([
-            for (final entry in rejection.items.entries)
-              MerchantRejectDtoItemsInner(
-                (i) => i
-                  ..itemId = entry.key
-                  ..until = entry.value
-                      ? MerchantRejectDtoItemsInnerUntilEnum.tomorrow
-                      : MerchantRejectDtoItemsInnerUntilEnum.turnedBackOn,
-              ),
-          ])
-          ..busyExtraMin = switch (rejection.step) {
-            BusyModeStep(:final extraMin) => extraMin,
-            _ => null,
-          }
-          ..pauseMin = rejection.step is PauseStep ? tooBusyPauseMin : null,
-      ),
-    ),
-  );
+  Future<CommandNotice?> reject(String orderId, Rejection rejection) =>
+      _send(orderId, CommandKind.reject, {
+        'reason': rejection.reason.code,
+        'items': rejection.items,
+        'busyExtraMin': switch (rejection.step) {
+          BusyModeStep(:final extraMin) => extraMin,
+          _ => null,
+        },
+        'pauseMin': rejection.step is PauseStep ? tooBusyPauseMin : null,
+      });
 
-  Future<CommandNotice?> ready(String orderId) => _send(
-    orderId,
-    CommandKind.ready,
-    '',
-    (key) => _api.merchantOrdersReady(orderId: orderId, idempotencyKey: key),
-  );
+  Future<CommandNotice?> ready(String orderId) =>
+      _send(orderId, CommandKind.ready, const {});
 
-  Future<CommandNotice?> confirmPickup(String orderId, String requestId) {
-    return _send(
-      orderId,
-      CommandKind.confirmPickup,
-      requestId,
-      answers: requestId,
-      (key) => _api.merchantOrdersConfirmPickup(
-        orderId: orderId,
-        idempotencyKey: key,
-      ),
-    );
-  }
+  Future<CommandNotice?> confirmPickup(String orderId, String requestId) =>
+      _send(orderId, CommandKind.confirmPickup, {'requestId': requestId});
 
   /// «المبلغ غير صحيح» with what the restaurant received, before or after
   /// the pickup (RA §8.10 items 6 and 8).
@@ -280,140 +254,187 @@ class BoardCommands extends Notifier<Set<String>> {
     String orderId,
     String? requestId,
     List<({String amount, String currency})> received,
-  ) {
-    return _send(
-      orderId,
-      CommandKind.disputePickup,
-      '$requestId ${received.map((l) => '${l.amount} ${l.currency}').join(',')}',
-      answers: requestId,
-      (key) => _api.merchantOrdersDisputePickup(
-        orderId: orderId,
-        idempotencyKey: key,
-        merchantPickupDisputeDto: MerchantPickupDisputeDto(
-          (b) => b.receivedLines.addAll([
-            for (final line in received)
-              MerchantPickupDisputeDtoReceivedLinesInner(
-                (l) => l
-                  ..amount = line.amount
-                  ..currency = line.currency,
-              ),
-          ]),
-        ),
-      ),
-    );
-  }
+  ) => _send(orderId, CommandKind.disputePickup, {
+    'requestId': requestId,
+    'lines': [
+      for (final line in received)
+        {'amount': line.amount, 'currency': line.currency},
+    ],
+  });
 
   /// «الطلب غير مكتمل» (RA §8.10 item 7).
-  Future<CommandNotice?> incomplete(String orderId, String requestId) {
-    return _send(
-      orderId,
-      CommandKind.incomplete,
-      requestId,
-      answers: requestId,
-      (key) => _api.merchantOrdersPickupIncomplete(
-        orderId: orderId,
-        idempotencyKey: key,
-      ),
-    );
-  }
+  Future<CommandNotice?> incomplete(String orderId, String requestId) =>
+      _send(orderId, CommandKind.incomplete, {'requestId': requestId});
 
   /// «حسناً» on operations' cancellation after acceptance (RA §8.14, §18):
   /// every device's board drops the order, so the ring stops on all.
-  Future<CommandNotice?> acknowledgeCancellation(String orderId) => _send(
-    orderId,
-    CommandKind.acknowledgeCancellation,
-    '',
-    (key) => _api.merchantOrdersAcknowledgeCancellation(
-      orderId: orderId,
-      idempotencyKey: key,
-    ),
-  );
+  Future<CommandNotice?> acknowledgeCancellation(String orderId) =>
+      _send(orderId, CommandKind.acknowledgeCancellation, const {});
 
   /// «اطلعت على التعديل» (RA §8.13): the edits up to the newest one the
   /// prompt showed ([through]); the ring stops on every device and the
   /// captain's pickup is free, while a newer edit keeps ringing.
   Future<CommandNotice?> acknowledgeEdit(String orderId, DateTime through) =>
-      _send(
-        orderId,
-        CommandKind.acknowledgeEdit,
-        through.toIso8601String(),
-        (key) => _api.merchantOrdersAcknowledgeEdit(
-          orderId: orderId,
-          idempotencyKey: key,
-          merchantAcknowledgeEditDto: MerchantAcknowledgeEditDto(
-            (b) => b..through = through.toUtc(),
-          ),
-        ),
-      );
+      _send(orderId, CommandKind.acknowledgeEdit, {
+        'through': through.toUtc().toIso8601String(),
+      });
 
   /// «صنف غير متوفر — اتصلوا بالزبون» (RA §8.12).
   Future<CommandNotice?> reportItems(String orderId, ItemReport report) =>
-      _send(
-        orderId,
-        CommandKind.reportItems,
-        report.body,
-        (key) => _api.merchantOrdersReportItems(
-          orderId: orderId,
-          idempotencyKey: key,
-          merchantItemReportDto: MerchantItemReportDto(
-            (b) => b
-              ..items = ListBuilder([
-                for (final entry in report.items.entries)
-                  MerchantRejectDtoItemsInner(
-                    (i) => i
-                      ..itemId = entry.key
-                      ..until = entry.value
-                          ? MerchantRejectDtoItemsInnerUntilEnum.tomorrow
-                          : MerchantRejectDtoItemsInnerUntilEnum.turnedBackOn,
-                  ),
-              ])
-              ..note = report.note,
-          ),
-        ),
-      );
+      _send(orderId, CommandKind.reportItems, {
+        'items': report.items,
+        'note': report.note,
+      });
 
   /// «تراجع — الصنف متوفر»: the items come back on (RA §8.12).
-  Future<CommandNotice?> withdrawItemReport(String orderId) => _send(
-    orderId,
-    CommandKind.withdrawItemReport,
-    '',
-    (key) => _api.merchantOrdersWithdrawItemReport(
-      orderId: orderId,
-      idempotencyKey: key,
-    ),
-  );
+  Future<CommandNotice?> withdrawItemReport(String orderId) =>
+      _send(orderId, CommandKind.withdrawItemReport, const {});
 
-  // One command at a time per order. Its key belongs to the command's body:
-  // a call without an answer (none, a 5xx, a 408 or a 429) is sent again
-  // with the same key after a backoff until the server answers (RA §4.7),
-  // and an answered command drops it. [answers] is the pickup request the
-  // command closes, marked while it is sent and kept unless refused, so this
-  // device does not announce its own answer as another user's.
+  // The call of a command from what the queue keeps of it.
+  Future<Object?> _call(
+    CommandKind kind,
+    String orderId,
+    Map<String, Object?> args,
+    String key,
+  ) {
+    List<MerchantRejectDtoItemsInner> items() => [
+      for (final entry in (args['items']! as Map).cast<String, bool>().entries)
+        MerchantRejectDtoItemsInner(
+          (i) => i
+            ..itemId = entry.key
+            ..until = entry.value
+                ? MerchantRejectDtoItemsInnerUntilEnum.tomorrow
+                : MerchantRejectDtoItemsInnerUntilEnum.turnedBackOn,
+        ),
+    ];
+    return switch (kind) {
+      CommandKind.accept => _api.merchantOrdersAccept(
+        orderId: orderId,
+        idempotencyKey: key,
+        merchantAcceptDto: MerchantAcceptDto(
+          (b) => b..prepMin = args['prepMin']! as int,
+        ),
+      ),
+      CommandKind.reject => _api.merchantOrdersReject(
+        orderId: orderId,
+        idempotencyKey: key,
+        merchantRejectDto: MerchantRejectDto(
+          (b) => b
+            ..reason = args['reason']! as String
+            ..items = ListBuilder(items())
+            ..busyExtraMin = args['busyExtraMin'] as int?
+            ..pauseMin = args['pauseMin'] as int?,
+        ),
+      ),
+      CommandKind.ready => _api.merchantOrdersReady(
+        orderId: orderId,
+        idempotencyKey: key,
+      ),
+      CommandKind.confirmPickup => _api.merchantOrdersConfirmPickup(
+        orderId: orderId,
+        idempotencyKey: key,
+      ),
+      CommandKind.disputePickup => _api.merchantOrdersDisputePickup(
+        orderId: orderId,
+        idempotencyKey: key,
+        merchantPickupDisputeDto: MerchantPickupDisputeDto(
+          (b) => b.receivedLines.addAll([
+            for (final line
+                in (args['lines']! as List).cast<Map<String, Object?>>())
+              MerchantPickupDisputeDtoReceivedLinesInner(
+                (l) => l
+                  ..amount = line['amount'] as String
+                  ..currency = line['currency'] as String,
+              ),
+          ]),
+        ),
+      ),
+      CommandKind.incomplete => _api.merchantOrdersPickupIncomplete(
+        orderId: orderId,
+        idempotencyKey: key,
+      ),
+      CommandKind.acknowledgeCancellation =>
+        _api.merchantOrdersAcknowledgeCancellation(
+          orderId: orderId,
+          idempotencyKey: key,
+        ),
+      CommandKind.acknowledgeEdit => _api.merchantOrdersAcknowledgeEdit(
+        orderId: orderId,
+        idempotencyKey: key,
+        merchantAcknowledgeEditDto: MerchantAcknowledgeEditDto(
+          (b) => b..through = DateTime.parse(args['through']! as String),
+        ),
+      ),
+      CommandKind.reportItems => _api.merchantOrdersReportItems(
+        orderId: orderId,
+        idempotencyKey: key,
+        merchantItemReportDto: MerchantItemReportDto(
+          (b) => b
+            ..items = ListBuilder(items())
+            ..note = args['note'] as String?,
+        ),
+      ),
+      CommandKind.withdrawItemReport => _api.merchantOrdersWithdrawItemReport(
+        orderId: orderId,
+        idempotencyKey: key,
+      ),
+    };
+  }
+
+  // One command at a time per order. Its key belongs to the command and its
+  // arguments: kept in the queue until the server answers, a call without an
+  // answer (none, a 5xx, a 408 or a 429) is sent again with the same key
+  // after a backoff (RA §4.7), and an answered command leaves the queue.
   Future<CommandNotice?> _send(
     String orderId,
     CommandKind kind,
-    String body,
-    Future<Object?> Function(String key) call, {
-    String? answers,
-  }) async {
+    Map<String, Object?> args,
+  ) async {
     if (state.contains(orderId)) return null;
+    final accountId = ref.read(merchantSessionProvider).value?.accountId;
+    if (accountId == null) return const CommandFailed();
     state = {...state, orderId};
-    final command = '$orderId ${kind.name} $body';
-    final key = _keys[command] ??= uuidV4();
+    final queued = QueuedCommand(
+      key: uuidV4(),
+      kind: kind.name,
+      subject: orderId,
+      accountId: accountId,
+      args: args,
+      queuedAt: DateTime.now().toUtc(),
+    );
+    final same = (await _queue.pending(
+      DateTime.now().toUtc(),
+    )).where((each) => each.identity == queued.identity).firstOrNull;
+    return _drive(same ?? queued);
+  }
+
+  // [answers] (a pickup command's request) is marked while it is sent and
+  // kept unless refused, so this device does not announce its own answer as
+  // another user's.
+  Future<CommandNotice?> _drive(QueuedCommand command) async {
+    final kind = CommandKind.values.byName(command.kind);
+    final orderId = command.subject;
+    final answers = command.args['requestId'] as String?;
     if (answers != null) answeredHere.add(answers);
     try {
+      await _queue.put(command);
       for (var attempt = 0; ; attempt++) {
+        // A command belongs to the account that sent it: once another
+        // signed in, it is dropped rather than sent in their name.
+        if (ref.read(merchantSessionProvider).value?.accountId !=
+            command.accountId) {
+          await _queue.remove(command.key);
+          return null;
+        }
         try {
-          await call(key);
+          await _call(kind, orderId, command.args, command.key);
+          await _queue.remove(command.key);
           return null;
         } on DioException catch (error) {
           final answer = error.response;
-          final status = answer?.statusCode ?? 0;
-          if (answer != null &&
-              status < 500 &&
-              status != 408 &&
-              status != 429) {
+          if (answer != null && !unanswered(answer.statusCode)) {
             // Another device or the server answered first.
+            await _queue.remove(command.key);
             if (answers != null) answeredHere.remove(answers);
             return _refused(kind, answer);
           }
@@ -425,15 +446,31 @@ class BoardCommands extends Notifier<Set<String>> {
     } on Object {
       // An answer the client could not read: the board's next fetch shows
       // what happened.
+      await _queue.remove(command.key);
       return const CommandFailed();
     } finally {
-      _keys.remove(command);
       if (ref.mounted) {
         state = {...state}..remove(orderId);
         if (ref.exists(boardFeedProvider)) {
           unawaited(ref.read(boardFeedProvider)?.refresh());
         }
       }
+    }
+  }
+
+  // The queue's commands of the account signed in, each sent again as the
+  // board's own; the board fetched after each answer shows its outcome.
+  Future<void> _resume(String accountId) async {
+    final pending = await _queue.pending(DateTime.now().toUtc());
+    for (final command in pending) {
+      if (command.accountId != accountId ||
+          !CommandKind.values.any((kind) => kind.name == command.kind)) {
+        await _queue.remove(command.key);
+        continue;
+      }
+      if (state.contains(command.subject)) continue;
+      state = {...state, command.subject};
+      unawaited(_drive(command));
     }
   }
 
@@ -507,6 +544,11 @@ class BoardCommands extends Notifier<Set<String>> {
     }
   }
 }
+
+/// The device's command queue (architecture §11.2).
+final commandQueueProvider = Provider<CommandQueue>(
+  (ref) => CommandQueue(ref.watch(deviceStoreProvider)),
+);
 
 final boardCommandsProvider = NotifierProvider<BoardCommands, Set<String>>(
   BoardCommands.new,

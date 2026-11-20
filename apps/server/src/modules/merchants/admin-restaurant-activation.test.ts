@@ -14,7 +14,7 @@ import {
   AdminSessionsService,
   MerchantAccountsService,
 } from '../identity/index.js';
-import { MerchantsService } from './index.js';
+import { MerchantsService, ReceivingDevicesService } from './index.js';
 
 // The wizard's step 8 (AP §9.6.3; slice 2.30b): the checklist with the reason
 // of each missing item, OWN's waiver of the image rule, test mode and the
@@ -115,7 +115,7 @@ describe('step 8, the checklist and the activation', () => {
       menu: 'missing',
       menu_images: 'missing',
       owner_account: 'missing',
-      device_check: 'not_available',
+      device_check: 'missing',
       test_order: 'missing',
     });
     expect(first.json()).toMatchObject({
@@ -213,6 +213,20 @@ describe('step 8, the checklist and the activation', () => {
     merchants.countDeliveredTestOrders((restaurantId) =>
       Promise.resolve(restaurantId === id ? 1 : 0),
     );
+    // RA §4.5: a device must pass its check before the activation.
+    const noDevice = await ops('POST', `/${id}/activate`);
+    expect(noDevice.json()).toMatchObject({ statusCode: 409, error: 'checklist_incomplete' });
+    const deviceId = randomUUID();
+    await merchants.nameDevice(
+      id,
+      deviceId,
+      { name: 'كاشير 1', platform: 'android', appVersion: '1.0.0' },
+      { accountId: randomUUID(), role: 'cashier' },
+    );
+    const devices = app.get(ReceivingDevicesService);
+    await devices.recordCheck(id, deviceId, { failed: ['battery'], delayMs: 90 });
+    expect((await ops('POST', `/${id}/activate`)).statusCode).toBe(409);
+    await devices.recordCheck(id, deviceId, { failed: [], delayMs: 90 });
     const activated = await ops('POST', `/${id}/activate`);
     expect(activated.statusCode).toBe(200);
     expect(activated.json()).toMatchObject({

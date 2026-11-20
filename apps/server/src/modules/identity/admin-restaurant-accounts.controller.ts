@@ -18,7 +18,7 @@ import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '..
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import { AuditService } from '../audit/index.js';
-import { MerchantsService } from '../merchants/index.js';
+import { merchantDeviceCheckSchema, MerchantsService } from '../merchants/index.js';
 import type { AdminSession } from './admin-sessions.service.js';
 import { AppSessionsService } from './app-sessions.service.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
@@ -92,8 +92,17 @@ class AdminRestaurantDevicesDto extends createZodDto(
             .datetime()
             .nullable()
             .describe('Its session’s last refresh (every 15 minutes while open), or its end.'),
-          ringing: z.boolean().nullable().describe('Null until the devices report it (2.42).'),
-          deviceCheck: z.string().nullable().describe('Null until the device check (2.42).'),
+          ringing: z
+            .boolean()
+            .describe(
+              'Whether ring events ring on it: the owner’s setting, always for a cashier (RA §4.4).',
+            ),
+          connected: z
+            .boolean()
+            .describe('Signed in and on the restaurant’s channel within the last 60 s (RA §4.3).'),
+          deviceCheck: merchantDeviceCheckSchema
+            .nullable()
+            .describe('Its latest device check (RA §4.5), or null before any.'),
         }),
       )
       .describe('Every device named on the restaurant, the latest named first.'),
@@ -272,8 +281,7 @@ export class AdminRestaurantAccountsController {
       devices: devices.map((device) => ({
         ...device,
         lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
-        ringing: null,
-        deviceCheck: null,
+        deviceCheck: device.check && { ...device.check, at: device.check.at.toISOString() },
       })),
     };
   }

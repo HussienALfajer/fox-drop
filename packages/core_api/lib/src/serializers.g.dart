@@ -1831,9 +1831,14 @@ Serializers _$serializers =
             MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
                 .serializer,
           )
+          ..add(MerchantDeviceCheckDto.serializer)
+          ..add(MerchantDeviceCheckDtoFailedEnum.serializer)
+          ..add(MerchantDeviceCheckOutput.serializer)
+          ..add(MerchantDeviceCheckOutputFailedEnum.serializer)
           ..add(MerchantDeviceDto.serializer)
           ..add(MerchantDeviceDtoPlatformEnum.serializer)
           ..add(MerchantDeviceNameDto.serializer)
+          ..add(MerchantDeviceReportDto.serializer)
           ..add(MerchantDeviceSavedDtoOutput.serializer)
           ..add(MerchantDeviceSavedDtoOutputStatusEnum.serializer)
           ..add(MerchantDevicesDtoOutput.serializer)
@@ -2042,6 +2047,7 @@ Serializers _$serializers =
           ..add(MerchantStatusDtoOutputHoliday.serializer)
           ..add(MerchantStatusDtoOutputPauseSourceEnum.serializer)
           ..add(MerchantStatusDtoOutputStateEnum.serializer)
+          ..add(MerchantThisDeviceDtoOutput.serializer)
           ..add(MerchantTokensDtoOutput.serializer)
           ..add(MerchantUploadDtoOutput.serializer)
           ..add(PlatformDtoOutput.serializer)
@@ -4980,6 +4986,18 @@ Serializers _$serializers =
                 ListBuilder<
                   MerchantContentDtoOutputReasonsMerchantRejectionInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantDeviceCheckDtoFailedEnum),
+            ]),
+            () => ListBuilder<MerchantDeviceCheckDtoFailedEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantDeviceCheckOutputFailedEnum),
+            ]),
+            () => ListBuilder<MerchantDeviceCheckOutputFailedEnum>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

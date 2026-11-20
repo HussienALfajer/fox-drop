@@ -3,7 +3,10 @@ import 'package:core_platform/core_platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'board/alerts.dart';
 import 'platform.dart';
+import 'receiving/prompts.dart';
+import 'receiving/receiving.dart';
 import 'push.dart';
 import 'router.dart';
 import 'status/status.dart';
@@ -27,12 +30,22 @@ class MerchantApp extends ConsumerWidget {
     ref.watch(platformBroadcastsProvider);
     // RA §16 #3, #24, #25: the restaurant's state changes chime.
     ref.watch(statusChimesProvider);
+    // RA §4.3–4.5 (slice 2.42): the receiving service while signed in, the
+    // ring and the chimes whatever screen shows (or none, with the screen
+    // off), and the device check at the first sign-in.
+    ref.watch(receivingProvider);
+    ref.watch(boardAlertsProvider);
+    ref.watch(deviceCheckPromptProvider);
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
       routerConfig: router,
       // RA §4.2: the suggested update's banner over every screen.
-      builder: (context, child) =>
-          UpdateBannerFrame(check: platform, url: updateUrl(), child: child!),
+      // RA §4.7: the offline bar over every screen.
+      builder: (context, child) => UpdateBannerFrame(
+        check: platform,
+        url: updateUrl(),
+        child: OfflineFrame(child: child!),
+      ),
       onGenerateTitle: (context) =>
           AppLocalizations.of(context).merchantAppName,
       locale: const Locale('ar'),

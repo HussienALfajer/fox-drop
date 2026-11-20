@@ -30,6 +30,8 @@ import { MerchantsService } from './merchants.service.js';
 import { RestaurantMenuService } from './restaurant-menu.service.js';
 import { RestaurantDraftsService } from './restaurant-drafts.service.js';
 import { RestaurantStatusService } from './restaurant-status.service.js';
+import { ReceivingDevicesService } from './receiving-devices.service.js';
+import { MerchantDeviceController } from './merchant-device.controller.js';
 import { RestaurantStatusTimersWorker } from './status-timers.js';
 import { MerchantStatusController } from './merchant-status.controller.js';
 
@@ -49,6 +51,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
   ],
   controllers: [
     MerchantMenuController,
+    MerchantDeviceController,
     MerchantStatusController,
     AdminRestaurantImagesController,
     AdminRestaurantStatusController,
@@ -62,6 +65,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
   ],
   providers: [
     MerchantsService,
+    ReceivingDevicesService,
     RestaurantStatusService,
     RestaurantDraftsService,
     MenuEditorService,
@@ -75,6 +79,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
   ],
   exports: [
     MerchantsService,
+    ReceivingDevicesService,
     ChangeRequestsService,
     RestaurantStatusService,
     RestaurantDraftsService,
@@ -127,6 +132,16 @@ export {
   RestaurantStatusService,
 } from './restaurant-status.service.js';
 export { type StateKind, stateKinds } from './state-events.js';
+export { ReceivingDevicesService } from './receiving-devices.service.js';
+export { merchantDeviceCheckSchema } from './merchant-device.controller.js';
+export {
+  connectedAt,
+  type DeviceCheck,
+  type DeviceCheckCode,
+  deviceCheckCodes,
+  isReceiving,
+  withoutDeviceStep,
+} from './receiving.js';
 export {
   type DraftBasics,
   type DraftLocation,

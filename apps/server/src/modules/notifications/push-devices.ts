@@ -3,6 +3,7 @@ import { and, eq, inArray, isNull, ne, or } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AppSession, OpenAppSessions } from '../identity/index.js';
+import { ReceivingDevicesService } from '../merchants/index.js';
 import { pushDevices, pushPlatforms } from './schema.js';
 
 // Who a push goes to (CU §14, RA §16, CA §14): a customer's account, a
@@ -21,6 +22,9 @@ export type PushRecipient =
 export interface PushTarget {
   sessionId: string;
   token: string;
+  // RA §4.4, §16 (slice 2.42): an owner's device with «الرنين على هذا
+  // الجهاز» off, which gets ring pushes silently.
+  ringingOff: boolean;
 }
 
 type Executor = Pick<Database['db'], 'select' | 'update'>;
@@ -33,6 +37,7 @@ export class PushDevices {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly sessions: OpenAppSessions,
+    private readonly receiving: ReceivingDevicesService,
   ) {}
 
   async register(
@@ -119,11 +124,37 @@ export class PushDevices {
                     : eq(pushDevices.merchantRole, 'owner'),
               );
     const rows = await this.database.db
-      .select({ sessionId: pushDevices.sessionId, token: pushDevices.token })
+      .select({
+        sessionId: pushDevices.sessionId,
+        token: pushDevices.token,
+        merchantRole: pushDevices.merchantRole,
+      })
       .from(pushDevices)
       .where(where);
     const open = await this.sessions.of(rows.map((row) => row.sessionId));
-    return rows.filter((row) => open.has(row.sessionId));
+    const reached = rows.filter((row) => open.has(row.sessionId));
+    const owners = reached.filter((row) => row.merchantRole === 'owner');
+    const silent =
+      recipient.party === 'merchant' && owners.length > 0
+        ? await this.ringingOff(
+            recipient.restaurantId,
+            owners.map((row) => row.sessionId),
+          )
+        : new Set<string>();
+    return reached.map((row) => ({
+      sessionId: row.sessionId,
+      token: row.token,
+      ringingOff: silent.has(row.sessionId),
+    }));
+  }
+
+  // The sessions among these whose device has ringing off.
+  private async ringingOff(restaurantId: string, sessionIds: string[]): Promise<Set<string>> {
+    const devices = await this.sessions.devicesOf(sessionIds);
+    const off = await this.receiving.ringingOff(restaurantId, [...new Set(devices.values())]);
+    return new Set(
+      [...devices].filter(([, deviceId]) => off.has(deviceId)).map(([sessionId]) => sessionId),
+    );
   }
 
   // Firebase answered that these tokens are no longer registered.

@@ -6,6 +6,7 @@ import {
   priceChangeRestaurantOf,
   receivesAlerts,
   soundPlan,
+  withoutDeviceRestaurantOf,
 } from './alerts.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
@@ -80,6 +81,21 @@ describe('receivesAlerts', () => {
 });
 
 // AP §9.1.3 «مطعم متأخر في التسوية» (slice 2.19f): its restaurant only.
+describe('withoutDeviceRestaurantOf (RA §4.6, slice 2.42)', () => {
+  it('names the restaurant open without a receiving device, and nothing for another alert', () => {
+    const without = alert({
+      code: 'restaurant_without_device',
+      severity: 'warning',
+      subjectType: 'restaurant',
+      subjectId: 'r2',
+      orderNumber: null,
+      restaurantName: 'مطعم',
+    });
+    expect(withoutDeviceRestaurantOf(without)).toBe('r2');
+    expect(withoutDeviceRestaurantOf(alert({}))).toBeNull();
+  });
+});
+
 describe('overdueRestaurantOf', () => {
   it('names the restaurant of the overdue alert, and nothing for another alert', () => {
     const overdue = alert({

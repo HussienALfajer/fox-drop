@@ -7,9 +7,10 @@ import 'staff_screen.dart';
 
 /// «الأجهزة» (RA §14.2), the owners': each device with its user, platform,
 /// version and whether someone is signed in on it, renamed or signed out
-/// (after a confirmation; its user stays; never this device, RA §14.3). The ring setting, presence, the
-/// device check and the no-receiving-device banner join with 2.42.
-/// Unstyled until the design.
+/// (after a confirmation; its user stays; never this device, RA §14.3),
+/// with its ringing, connection and last device check, and the warning while
+/// the restaurant is open with no receiving device (slice 2.42). Unstyled
+/// until the design.
 class DevicesScreen extends ConsumerWidget {
   const DevicesScreen({super.key});
 
@@ -66,6 +67,12 @@ class DevicesScreen extends ConsumerWidget {
         ),
         AsyncData(:final value) => ListView(
           children: [
+            if (ref.read(devicesProvider.notifier).withoutDevice)
+              MaterialBanner(
+                key: const Key('no-receiving-device'),
+                content: Text(l10n.merchantNoReceivingDevice),
+                actions: const [SizedBox.shrink()],
+              ),
             for (final device in value)
               Column(
                 key: Key('device-${device.deviceId}'),
@@ -95,6 +102,19 @@ class DevicesScreen extends ConsumerWidget {
                         else
                           l10n.merchantDeviceSignedOut,
                         lastActiveText(l10n, device.lastSeenAt),
+                        if (device.ringing)
+                          l10n.merchantDeviceRinging
+                        else
+                          l10n.merchantDeviceSilent,
+                        if (device.connected)
+                          l10n.merchantDeviceConnected
+                        else
+                          l10n.merchantDeviceNotConnected,
+                        switch (device.checkPassed) {
+                          true => l10n.merchantDeviceCheckOk,
+                          false => l10n.merchantDeviceCheckNotOk,
+                          null => l10n.merchantDeviceNotChecked,
+                        },
                       ].join(' · '),
                     ),
                   ),

@@ -1,3 +1,4 @@
+import 'package:core_alerts/testing.dart';
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
@@ -90,6 +91,7 @@ class _App {
         appVersionProvider.overrideWith((ref) async => '0.1.0'),
         realtimeTransportProvider.overrideWithValue(transport),
         ringerProvider.overrideWithValue(ringer),
+        alertsProvider.overrideWithValue(FakeAlerts()),
         keepScreenOnProvider.overrideWithValue((on) {}),
         notificationPermissionProvider.overrideWithValue(
           FakeNotificationPermission(allowed: true),

@@ -9,12 +9,17 @@ part of 'merchant_devices_dto_output.dart';
 class _$MerchantDevicesDtoOutput extends MerchantDevicesDtoOutput {
   @override
   final BuiltList<MerchantDevicesDtoOutputDevicesInner> devices;
+  @override
+  final bool withoutDevice;
 
   factory _$MerchantDevicesDtoOutput([
     void Function(MerchantDevicesDtoOutputBuilder)? updates,
   ]) => (MerchantDevicesDtoOutputBuilder()..update(updates))._build();
 
-  _$MerchantDevicesDtoOutput._({required this.devices}) : super._();
+  _$MerchantDevicesDtoOutput._({
+    required this.devices,
+    required this.withoutDevice,
+  }) : super._();
   @override
   MerchantDevicesDtoOutput rebuild(
     void Function(MerchantDevicesDtoOutputBuilder) updates,
@@ -27,22 +32,26 @@ class _$MerchantDevicesDtoOutput extends MerchantDevicesDtoOutput {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantDevicesDtoOutput && devices == other.devices;
+    return other is MerchantDevicesDtoOutput &&
+        devices == other.devices &&
+        withoutDevice == other.withoutDevice;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, devices.hashCode);
+    _$hash = $jc(_$hash, withoutDevice.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'MerchantDevicesDtoOutput',
-    )..add('devices', devices)).toString();
+    return (newBuiltValueToStringHelper(r'MerchantDevicesDtoOutput')
+          ..add('devices', devices)
+          ..add('withoutDevice', withoutDevice))
+        .toString();
   }
 }
 
@@ -57,6 +66,11 @@ class MerchantDevicesDtoOutputBuilder
   set devices(ListBuilder<MerchantDevicesDtoOutputDevicesInner>? devices) =>
       _$this._devices = devices;
 
+  bool? _withoutDevice;
+  bool? get withoutDevice => _$this._withoutDevice;
+  set withoutDevice(bool? withoutDevice) =>
+      _$this._withoutDevice = withoutDevice;
+
   MerchantDevicesDtoOutputBuilder() {
     MerchantDevicesDtoOutput._defaults(this);
   }
@@ -65,6 +79,7 @@ class MerchantDevicesDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _devices = $v.devices.toBuilder();
+      _withoutDevice = $v.withoutDevice;
       _$v = null;
     }
     return this;
@@ -86,7 +101,16 @@ class MerchantDevicesDtoOutputBuilder
   _$MerchantDevicesDtoOutput _build() {
     _$MerchantDevicesDtoOutput _$result;
     try {
-      _$result = _$v ?? _$MerchantDevicesDtoOutput._(devices: devices.build());
+      _$result =
+          _$v ??
+          _$MerchantDevicesDtoOutput._(
+            devices: devices.build(),
+            withoutDevice: BuiltValueNullFieldError.checkNotNull(
+              withoutDevice,
+              r'MerchantDevicesDtoOutput',
+              'withoutDevice',
+            ),
+          );
     } catch (_) {
       late String _$failedField;
       try {

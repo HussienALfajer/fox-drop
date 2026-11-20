@@ -1,3 +1,4 @@
+import 'package:core_alerts/testing.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -103,6 +104,7 @@ class _App {
         appVersionProvider.overrideWith((ref) async => '0.1.0'),
         realtimeTransportProvider.overrideWithValue(FakeTransport()),
         ringerProvider.overrideWithValue(FakeRinger()),
+        alertsProvider.overrideWithValue(FakeAlerts()),
         keepScreenOnProvider.overrideWithValue((on) {}),
         pushProvider.overrideWithValue(push),
         notificationPermissionProvider.overrideWithValue(permission),
@@ -391,6 +393,8 @@ void main() {
         pushTargetPath({'target': 'ticket', 'ticketId': 't1'}),
         '/support',
       );
+      // RA §16 #27 (slice 2.42): no receiving device opens «الأجهزة».
+      expect(pushTargetPath({'target': 'devices'}), '/settings/devices');
       // RA §16 #30–#31 (slice 2.19e).
       expect(
         pushTargetPath({'target': 'statement', 'statementId': 's1'}),

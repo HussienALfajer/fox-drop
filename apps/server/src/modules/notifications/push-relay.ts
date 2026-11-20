@@ -33,6 +33,15 @@ export const PUSH_TITLE = 'FOX DROP';
 
 type Row = typeof pushMessages.$inferSelect;
 
+// The Android channel of a push: its level, except a restaurant's ring,
+// which the restaurant app plays with its bundled sound on `ring_order`
+// (slice 2.42, packages/core_push/CLAUDE.md: a channel keeps its first sound),
+// and silently on an owner's device with ringing off (RA §4.4, §16).
+export function channelOf(row: Pick<Row, 'level' | 'party'>, ringingOff: boolean): string {
+  if (row.level !== 'ring' || row.party !== 'merchant') return row.level;
+  return ringingOff ? 'silent' : 'ring_order';
+}
+
 function recipientOf(row: Row): PushRecipient {
   if (row.party === 'customer') return { party: 'customer', accountId: row.accountId! };
   if (row.party === 'captain') {
@@ -134,7 +143,7 @@ export class PushRelay {
         token: target.token,
         title: row.title ?? PUSH_TITLE,
         body: row.body,
-        channel: row.level,
+        channel: channelOf(row, target.ringingOff),
         priority: row.priority,
         data: { ...row.data, messageId: row.id },
         ttlSeconds: Math.max(1, Math.floor((row.expiresAt.getTime() - now.getTime()) / 1000)),

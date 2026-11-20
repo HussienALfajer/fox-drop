@@ -102,9 +102,11 @@ class _$AdminRestaurantDevicesDtoOutputDevicesInner
   @override
   final DateTime? lastSeenAt;
   @override
-  final bool? ringing;
+  final bool ringing;
   @override
-  final String? deviceCheck;
+  final bool connected;
+  @override
+  final MerchantDeviceCheckOutput? deviceCheck;
 
   factory _$AdminRestaurantDevicesDtoOutputDevicesInner([
     void Function(AdminRestaurantDevicesDtoOutputDevicesInnerBuilder)? updates,
@@ -119,7 +121,8 @@ class _$AdminRestaurantDevicesDtoOutputDevicesInner
     this.user,
     required this.signedIn,
     this.lastSeenAt,
-    this.ringing,
+    required this.ringing,
+    required this.connected,
     this.deviceCheck,
   }) : super._();
   @override
@@ -143,6 +146,7 @@ class _$AdminRestaurantDevicesDtoOutputDevicesInner
         signedIn == other.signedIn &&
         lastSeenAt == other.lastSeenAt &&
         ringing == other.ringing &&
+        connected == other.connected &&
         deviceCheck == other.deviceCheck;
   }
 
@@ -157,6 +161,7 @@ class _$AdminRestaurantDevicesDtoOutputDevicesInner
     _$hash = $jc(_$hash, signedIn.hashCode);
     _$hash = $jc(_$hash, lastSeenAt.hashCode);
     _$hash = $jc(_$hash, ringing.hashCode);
+    _$hash = $jc(_$hash, connected.hashCode);
     _$hash = $jc(_$hash, deviceCheck.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -175,6 +180,7 @@ class _$AdminRestaurantDevicesDtoOutputDevicesInner
           ..add('signedIn', signedIn)
           ..add('lastSeenAt', lastSeenAt)
           ..add('ringing', ringing)
+          ..add('connected', connected)
           ..add('deviceCheck', deviceCheck))
         .toString();
   }
@@ -225,9 +231,15 @@ class AdminRestaurantDevicesDtoOutputDevicesInnerBuilder
   bool? get ringing => _$this._ringing;
   set ringing(bool? ringing) => _$this._ringing = ringing;
 
-  String? _deviceCheck;
-  String? get deviceCheck => _$this._deviceCheck;
-  set deviceCheck(String? deviceCheck) => _$this._deviceCheck = deviceCheck;
+  bool? _connected;
+  bool? get connected => _$this._connected;
+  set connected(bool? connected) => _$this._connected = connected;
+
+  MerchantDeviceCheckOutputBuilder? _deviceCheck;
+  MerchantDeviceCheckOutputBuilder get deviceCheck =>
+      _$this._deviceCheck ??= MerchantDeviceCheckOutputBuilder();
+  set deviceCheck(MerchantDeviceCheckOutputBuilder? deviceCheck) =>
+      _$this._deviceCheck = deviceCheck;
 
   AdminRestaurantDevicesDtoOutputDevicesInnerBuilder() {
     AdminRestaurantDevicesDtoOutputDevicesInner._defaults(this);
@@ -244,7 +256,8 @@ class AdminRestaurantDevicesDtoOutputDevicesInnerBuilder
       _signedIn = $v.signedIn;
       _lastSeenAt = $v.lastSeenAt;
       _ringing = $v.ringing;
-      _deviceCheck = $v.deviceCheck;
+      _connected = $v.connected;
+      _deviceCheck = $v.deviceCheck?.toBuilder();
       _$v = null;
     }
     return this;
@@ -298,14 +311,26 @@ class AdminRestaurantDevicesDtoOutputDevicesInnerBuilder
               'signedIn',
             ),
             lastSeenAt: lastSeenAt,
-            ringing: ringing,
-            deviceCheck: deviceCheck,
+            ringing: BuiltValueNullFieldError.checkNotNull(
+              ringing,
+              r'AdminRestaurantDevicesDtoOutputDevicesInner',
+              'ringing',
+            ),
+            connected: BuiltValueNullFieldError.checkNotNull(
+              connected,
+              r'AdminRestaurantDevicesDtoOutputDevicesInner',
+              'connected',
+            ),
+            deviceCheck: _deviceCheck?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'user';
         _user?.build();
+
+        _$failedField = 'deviceCheck';
+        _deviceCheck?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminRestaurantDevicesDtoOutputDevicesInner',

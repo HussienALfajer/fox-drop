@@ -23,6 +23,7 @@ import 'board.dart';
 import 'commands.dart';
 import 'prompts.dart';
 import 'texts.dart';
+import '../receiving/receiving.dart';
 
 /// The server time, once a second, for every countdown on the board.
 final tickProvider = StreamProvider.autoDispose<DateTime>((ref) {
@@ -54,24 +55,17 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
     vsync: this,
   );
   late final void Function(bool) _keepScreenOn = ref.read(keepScreenOnProvider);
-  late final Ringer _ringer = ref.read(ringerProvider);
-  // Android may end the Flutter engine while the process lives on; the
-  // ring must not outlive it (RA §4.4).
-  late final AppLifecycleListener _lifecycle = AppLifecycleListener(
-    onDetach: _ringer.stop,
-  );
 
   @override
   void initState() {
     super.initState();
     _keepScreenOn(true);
-    _lifecycle;
   }
 
+  // The ring is the app's, not this screen's: it rings whatever screen
+  // shows, and with none (RA §4.3; `boardAlertsProvider` in `MerchantApp`).
   @override
   void dispose() {
-    _lifecycle.dispose();
-    _ringer.stop();
     _keepScreenOn(false);
     _tabs.dispose();
     super.dispose();
@@ -200,6 +194,21 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
                   onPressed: () => context.push('/reports'),
                   child: const Icon(Icons.bar_chart),
                 ),
+              // RA §6.1, §14.3: a cashier's settings are «هذا الجهاز» (an
+              // owner's are under «الإعدادات»); the top bar has no room.
+              if (!ref.watch(
+                merchantSessionProvider.select(
+                  (s) =>
+                      s.value?.role == MerchantSessionDtoOutputRoleEnum.owner,
+                ),
+              ))
+                FloatingActionButton.small(
+                  key: const Key('open-this-device'),
+                  heroTag: 'open-this-device',
+                  tooltip: l10n.merchantThisDevice,
+                  onPressed: () => context.push('/device'),
+                  child: const Icon(Icons.phonelink_ring),
+                ),
               FloatingActionButton.small(
                 key: const Key('open-history'),
                 heroTag: 'open-history',
@@ -326,12 +335,7 @@ class BoardAlertsLayer extends ConsumerWidget {
       canPop: rings.isEmpty,
       child: Column(
         children: [
-          if (state != null && !state.live)
-            MaterialBanner(
-              key: const Key('offline'),
-              content: Text(l10n.merchantOffline),
-              actions: const [SizedBox.shrink()],
-            ),
+          // The offline bar (RA §4.7) is over every screen (`OfflineFrame`).
           // RA §6.3 item 2, after no connection.
           if (ref.watch(emergencyStopProvider) case final stop?)
             EmergencyStopBanner(check: stop),
@@ -339,6 +343,18 @@ class BoardAlertsLayer extends ConsumerWidget {
           const StatusBanners(),
           // RA §6.3 item 7, owners only.
           const OverdueBanner(),
+          // RA §4.5: a check that fails now on this device.
+          if (ref.watch(deviceCheckBannerProvider))
+            MaterialBanner(
+              key: const Key('device-check-banner'),
+              content: Text(l10n.merchantDeviceCheckBanner),
+              actions: [
+                TextButton(
+                  onPressed: () => context.push('/device/check'),
+                  child: Text(l10n.merchantDeviceCheck),
+                ),
+              ],
+            ),
           Expanded(
             child: Stack(
               children: [

@@ -1,3 +1,4 @@
+import 'package:core_alerts/core_alerts.dart';
 import 'package:core_auth/core_auth.dart';
 import 'package:core_push/core_push.dart';
 import 'package:flutter/widgets.dart';
@@ -15,7 +16,7 @@ Future<void> main() async {
   // Firebase App Check for the code requests (packages/core_auth/CLAUDE.md).
   final appCheck = await startAppCheck();
   // Push on the Firebase app App Check started (packages/core_push/CLAUDE.md).
-  final push = startPush();
+  final push = startPush(background: wakeReceiving);
   runApp(
     ProviderScope(
       overrides: [
@@ -26,3 +27,9 @@ Future<void> main() async {
     ),
   );
 }
+
+/// RA §4.3: a high-priority push that arrives while the system ended the
+/// app starts the receiving service again, which runs the app, so the order
+/// rings from the board rather than only as the push's notification.
+@pragma('vm:entry-point')
+Future<void> wakeReceiving(RemoteMessage message) => AndroidAlerts.wake();

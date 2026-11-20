@@ -65,7 +65,9 @@ class AdminDashboardDto extends createZodDto(
           z.ZodInt
         >,
       ),
-      withoutDevice: z.int().nullable().describe('Null until the receiving devices’ presence.'),
+      withoutDevice: z
+        .int()
+        .describe('Open or busy restaurants with no receiving device now (RA §4.6).'),
     }),
     today: period,
     lastWeek: period,
