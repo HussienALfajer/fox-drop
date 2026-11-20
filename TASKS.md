@@ -4,17 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 2 of `docs/claude-code-workflow.md`: fast checks. Planned, not started. Phase 1 (the context diet) merged with `chore/claude-context-diet`.
+Phase 2 of `docs/claude-code-workflow.md`: fewer requests, smaller results. Planned, not started. Phase 1 (the context diet) merged with `chore/claude-context-diet`; the second audit (2026-11-21) reordered the later phases.
 
-- **Branch:** `chore/fast-verify`.
-- **Why:** the `checker` ran the full `pnpm verify` 305 times (median 3.7 min, p90 9.5 min, 25.6 h in all) with every Turborepo cache off; CI's `verify` runs the same set in 4–5 min.
+- **Branch:** `chore/fewer-requests`.
+- **Why:** 83% of assistant messages hold one tool call and 12,178 of them are a single Bash command (`sed -n`, `grep -n`, `python -`, `git diff`), each a request that resends the whole context.
 
 ### Plan
 
-- [ ] Move the path classification of CI's `changes` job into one script that `ci.yml` and `verify.mjs` share.
-- [ ] `node scripts/verify.mjs --changed`: only the parts the branch's changes need (Markdown only: Prettier on the changed files and the size check; TypeScript: `turbo --affected`; Dart: Melos `--diff`; the API contract only after a route or schema change); the `checker` runs it by default.
-- [ ] Turborepo cache for `lint` and `typecheck` only.
-- [ ] Measure: a Markdown-only change, a server change and a Flutter change, before and after.
+- [ ] Fix the Git Bash profile: the pinned Node on PATH without a prefix, no fnm error on every command, no silent skip after `cd … &&`. Then delete the workaround from the memory notes.
+- [ ] A `PreToolUse` hook on Bash, in observe mode first: reading a tracked file with `sed -n`, `cat`, `head` or `tail`, or editing one with `sed -i` or an inline script, is refused with the tool to use instead.
+- [ ] Root `CLAUDE.md`: independent tool calls in one message; `git diff --stat` first.
+- [ ] A hook that cuts a test command's output to its failures and summary.
+- [ ] `scripts/claude-audit.mjs`, the audit as a committed script.
+- [ ] Measure one slice session against the baseline.
+
+## After that
+
+In the order of `docs/claude-code-workflow.md`: phase 3 (the owner's MCP servers, plugins and skills, with the owner), phase 4 (fast checks, `chore/fast-verify`), phase 5 (CI filters).
 
 ## Next
 
