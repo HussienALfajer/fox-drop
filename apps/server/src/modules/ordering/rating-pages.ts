@@ -2,8 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, gte, inArray, lt, lte, sql, type SQL } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
-import { GeoService, lastCutoff } from '../geo/index.js';
+import { cutoffOn, GeoService, lastCutoff } from '../geo/index.js';
 import { SettingsService } from '../settings/index.js';
+import { rangeFits } from './app-histories.js';
 import { orders, ratings } from './schema.js';
 
 // CU §12.1 «Who sees what»: the restaurant's owners read its ratings without
@@ -41,6 +42,21 @@ export function periodBounds(
   for (let day = 1; day < DAYS[period]!; day += 1) from = before(from);
   return { from, to: null };
 }
+
+// The owner web portal's custom range (RA §13, §17; slice 2.45d, owner
+// decision 2026-11-20): business days, both included, at most 366
+// (`rangeFits`), never after the day being read.
+export interface RatingRange {
+  fromDay: string;
+  toDay: string;
+}
+
+export class RatingRangeRefusedError extends Error {
+  override readonly name = 'RatingRangeRefusedError';
+  readonly refusal = 'invalid_period';
+}
+
+const nextDay = (day: string) => new Date(Date.parse(day) + 86_400_000).toISOString().slice(0, 10);
 
 // Whose ratings: a restaurant's or a captain's, read on its city's clock.
 export type RatingTarget =
@@ -113,7 +129,14 @@ export class RatingPagesService {
   // as of `asOf` (now on the first page; never after now).
   async read(
     target: RatingTarget,
-    query: { period: RatingPeriod; stars: number | null; page: number; asOf: Date | null },
+    query: {
+      period: RatingPeriod;
+      // In place of the period when given.
+      range?: RatingRange | null;
+      stars: number | null;
+      page: number;
+      asOf: Date | null;
+    },
     now: Date,
     withOrder = false,
   ): Promise<RatingPage> {
@@ -125,7 +148,21 @@ export class RatingPagesService {
     if (timeZone === null) throw new Error('the city has no clock');
     const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
     const cutoffMinutes = hours * 60 + minutes;
-    const { from, to } = periodBounds(query.period, asOf, cutoffMinutes, timeZone);
+    const range = query.range ?? null;
+    if (
+      range !== null &&
+      (!rangeFits(range.fromDay, range.toDay) ||
+        cutoffOn(range.toDay, cutoffMinutes, timeZone) > asOf)
+    ) {
+      throw new RatingRangeRefusedError('the range does not fit');
+    }
+    const { from, to } =
+      range === null
+        ? periodBounds(query.period, asOf, cutoffMinutes, timeZone)
+        : {
+            from: cutoffOn(range.fromDay, cutoffMinutes, timeZone),
+            to: cutoffOn(nextDay(range.toDay), cutoffMinutes, timeZone),
+          };
     const inPeriod: SQL[] = [
       ...partyOf(target),
       eq(ratings.testOrder, false),

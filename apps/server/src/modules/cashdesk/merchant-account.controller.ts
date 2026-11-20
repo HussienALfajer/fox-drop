@@ -112,7 +112,8 @@ class MerchantOverdueDto extends createZodDto(
 ) {}
 
 // RA §12.2 «الحساب» (slice 2.19d): owners only (R10, a cashier gets 403
-// owner_only); a terminated restaurant's owners keep it (RA §5.5).
+// owner_only); a terminated restaurant's owners keep it (RA §5.5). The owner
+// web portal reads it too (RA §17, slice 2.45d).
 @MerchantController()
 export class MerchantAccountController {
   constructor(
@@ -121,7 +122,7 @@ export class MerchantAccountController {
   ) {}
 
   @Get('account/overdue')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantOverdueDto })
   async overdue(@CurrentAppSession() session: AppSession) {
     const restaurant = await this.ownersRestaurant(session);
@@ -136,7 +137,7 @@ export class MerchantAccountController {
   }
 
   @Get('account')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantAccountDto })
   async read(@CurrentAppSession() session: AppSession) {
     const restaurant = await this.ownersRestaurant(session);

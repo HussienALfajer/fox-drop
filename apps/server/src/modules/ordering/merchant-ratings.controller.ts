@@ -1,39 +1,53 @@
-import { ForbiddenException, Get, HttpStatus, Query } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Get, HttpStatus, Query } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { MerchantController } from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { ratingPeriods, RatingPagesService } from './rating-pages.js';
+import { RatingPagesService, ratingPeriods, RatingRangeRefusedError } from './rating-pages.js';
 
 class MerchantRatingsQueryDto extends createZodDto(
-  z.object({
-    period: z
-      .enum(ratingPeriods)
-      .default('all')
-      .describe(
-        'Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».',
-      ),
-    stars: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(5)
-      .optional()
-      .describe('Only the ratings with these stars; the summary counts every star.'),
-    page: z.coerce
-      .number()
-      .int()
-      .min(0)
-      .max(10_000)
-      .default(0)
-      .describe('The page, from 0, for «عرض المزيد».'),
-    asOf: z.iso
-      .datetime()
-      .optional()
-      .describe('The first page’s `asOf`, sent with every next page so the pages agree.'),
-  }),
+  z
+    .object({
+      period: z
+        .enum(ratingPeriods)
+        .default('all')
+        .describe(
+          'Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».',
+        ),
+      from: z.iso
+        .date()
+        .optional()
+        .describe(
+          'The portal’s custom range (RA §17): its first business day, with `to`, in place of `period`.',
+        ),
+      to: z.iso
+        .date()
+        .optional()
+        .describe('The last business day, included: at most 366 days, not after today.'),
+      stars: z.coerce
+        .number()
+        .int()
+        .min(1)
+        .max(5)
+        .optional()
+        .describe('Only the ratings with these stars; the summary counts every star.'),
+      page: z.coerce
+        .number()
+        .int()
+        .min(0)
+        .max(10_000)
+        .default(0)
+        .describe('The page, from 0, for «عرض المزيد».'),
+      asOf: z.iso
+        .datetime()
+        .optional()
+        .describe('The first page’s `asOf`, sent with every next page so the pages agree.'),
+    })
+    .refine((query) => (query.from === undefined) === (query.to === undefined), {
+      message: 'from and to go together',
+    }),
 ) {}
 
 class MerchantRatingsDto extends createZodDto(
@@ -64,7 +78,9 @@ class MerchantRatingsDto extends createZodDto(
 
 // RA §13, §6.1 row 7 (slice 2.26b): «التقييمات», owners only (a cashier
 // gets 403 owner_only); a terminated restaurant's owners keep only the
-// money section (RA §5.5, 403 restaurant_terminated). No replies (R16).
+// money section (RA §5.5, 403 restaurant_terminated). No replies (R16). The
+// owner web portal adds the custom range (RA §17, slice 2.45d; 400
+// invalid_period for one longer than 366 days or ending after today).
 @MerchantController()
 export class MerchantRatingsController {
   constructor(
@@ -73,7 +89,7 @@ export class MerchantRatingsController {
   ) {}
 
   @Get('ratings')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantRatingsDto })
   async read(@CurrentAppSession() session: AppSession, @Query() query: MerchantRatingsQueryDto) {
     const merchant = session.merchant;
@@ -89,15 +105,18 @@ export class MerchantRatingsController {
         error: 'restaurant_terminated',
       });
     }
-    const found = await this.ratings.read(
-      { party: 'restaurant', id: restaurant.id, cityId: restaurant.cityId },
-      {
-        period: query.period,
-        stars: query.stars ?? null,
-        page: query.page,
-        asOf: query.asOf === undefined ? null : new Date(query.asOf),
-      },
-      new Date(),
+    const found = await this.rangeRefusals(() =>
+      this.ratings.read(
+        { party: 'restaurant', id: restaurant.id, cityId: restaurant.cityId },
+        {
+          period: query.period,
+          range: query.from === undefined ? null : { fromDay: query.from, toDay: query.to! },
+          stars: query.stars ?? null,
+          page: query.page,
+          asOf: query.asOf === undefined ? null : new Date(query.asOf),
+        },
+        new Date(),
+      ),
     );
     // Never the order nor the time (RA §13), so they are left out here.
     return {
@@ -110,5 +129,14 @@ export class MerchantRatingsController {
         day,
       })),
     };
+  }
+
+  private async rangeRefusals<T>(run: () => Promise<T>): Promise<T> {
+    try {
+      return await run();
+    } catch (error) {
+      if (!(error instanceof RatingRangeRefusedError)) throw error;
+      throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
+    }
   }
 }

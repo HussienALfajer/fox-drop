@@ -1252,6 +1252,8 @@ class MerchantApi {
   /// Parameters:
   /// * [period] - RA §11: «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً»; or `day`.
   /// * [day] - A business day on the city’s clock, for the daily summary; or `period`.
+  /// * [from] - The portal’s custom range (RA §17): its first business day, with `to`.
+  /// * [to] - The last business day, included: at most 366 days, not after today.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1264,6 +1266,8 @@ class MerchantApi {
   Future<Response<MerchantFiguresDtoOutput>> merchantFiguresRead({
     String? period,
     String? day,
+    String? from,
+    String? to,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1288,6 +1292,14 @@ class MerchantApi {
         ),
       if (day != null)
         r'day': encodeQueryParameter(_serializers, day, const FullType(String)),
+      if (from != null)
+        r'from': encodeQueryParameter(
+          _serializers,
+          from,
+          const FullType(String),
+        ),
+      if (to != null)
+        r'to': encodeQueryParameter(_serializers, to, const FullType(String)),
     };
 
     final _response = await _dio.request<Object>(
@@ -5018,6 +5030,8 @@ class MerchantApi {
   ///
   /// Parameters:
   /// * [period] - Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».
+  /// * [from] - The portal’s custom range (RA §17): its first business day, with `to`, in place of `period`.
+  /// * [to] - The last business day, included: at most 366 days, not after today.
   /// * [stars] - Only the ratings with these stars; the summary counts every star.
   /// * [page] - The page, from 0, for «عرض المزيد».
   /// * [asOf] - The first page’s `asOf`, sent with every next page so the pages agree.
@@ -5032,6 +5046,8 @@ class MerchantApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<MerchantRatingsDtoOutput>> merchantRatingsRead({
     String? period = 'all',
+    Date? from,
+    Date? to,
     int? stars,
     int? page = 0,
     DateTime? asOf,
@@ -5057,6 +5073,10 @@ class MerchantApi {
           period,
           const FullType(String),
         ),
+      if (from != null)
+        r'from': encodeQueryParameter(_serializers, from, const FullType(Date)),
+      if (to != null)
+        r'to': encodeQueryParameter(_serializers, to, const FullType(Date)),
       if (stars != null)
         r'stars': encodeQueryParameter(
           _serializers,

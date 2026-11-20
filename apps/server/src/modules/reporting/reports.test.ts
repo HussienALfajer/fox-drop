@@ -36,6 +36,10 @@ let sql: pg.Pool;
 let azaz: string;
 let day: string;
 
+// A business day so many days before another (after it when negative).
+const daysBefore = (from: string, days: number) =>
+  new Date(Date.parse(from) - days * 86_400_000).toISOString().slice(0, 10);
+
 const system = { type: 'system', id: null, role: null } as const;
 const change = { actor: system, context: { ipAddress: null, device: null }, reason: 'test' };
 const bySystem = { editor: 'system', context: change.context, reason: 'test' } as const;
@@ -487,7 +491,22 @@ describe('the restaurant’s reports (RA §11)', () => {
     expect(today.json().previous).toMatchObject({ received: 0 });
     const summary = await read(`day=${day}`);
     expect(summary.json().current.received).toBe(2);
-    for (const query of ['', 'period=today&day=' + day, 'day=2999-01-01']) {
+    // The portal's custom range (RA §17, slice 2.45d): business days, both
+    // included, at most 366, not after today.
+    const range = await read(`from=${daysBefore(day, 6)}&to=${day}`);
+    expect(range.statusCode, range.body).toBe(200);
+    expect(range.json().current.received).toBe(2);
+    expect(range.json().previous.received).toBe(0);
+    for (const query of [
+      '',
+      'period=today&day=' + day,
+      'day=2999-01-01',
+      `from=${day}`,
+      `from=${day}&to=${day}&period=today`,
+      `from=${daysBefore(day, 366)}&to=${day}`,
+      `from=${day}&to=${daysBefore(day, -1)}`,
+      `from=${day}&to=${daysBefore(day, 1)}`,
+    ]) {
       expect((await read(query)).statusCode, query).toBe(400);
     }
     const asCashier = await app.inject({

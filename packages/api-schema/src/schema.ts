@@ -32790,6 +32790,10 @@ export interface operations {
             query?: {
                 /** @description Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً». */
                 period?: "all" | "today" | "yesterday" | "last_7_days" | "last_30_days";
+                /** @description The portal’s custom range (RA §17): its first business day, with `to`, in place of `period`. */
+                from?: string;
+                /** @description The last business day, included: at most 366 days, not after today. */
+                to?: string;
                 /** @description Only the ratings with these stars; the summary counts every star. */
                 stars?: number;
                 /** @description The page, from 0, for «عرض المزيد». */
@@ -35824,6 +35828,10 @@ export interface operations {
                 period?: "today" | "yesterday" | "last_7_days" | "last_30_days";
                 /** @description A business day on the city’s clock, for the daily summary; or `period`. */
                 day?: string;
+                /** @description The portal’s custom range (RA §17): its first business day, with `to`. */
+                from?: string;
+                /** @description The last business day, included: at most 366 days, not after today. */
+                to?: string;
             };
             header?: never;
             path?: never;

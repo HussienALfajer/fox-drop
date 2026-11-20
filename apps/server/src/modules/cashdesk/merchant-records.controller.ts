@@ -142,7 +142,8 @@ function receiptBody(found: MerchantReceipt) {
 }
 
 // RA §12.3–12.5, R10 (slice 2.19e): «الكشوف» and «الإيصالات», owners only
-// (a cashier gets 403 owner_only); another restaurant's is unknown.
+// (a cashier gets 403 owner_only); another restaurant's is unknown. The
+// owner web portal reads them too (RA §17, slice 2.45d).
 @MerchantController()
 export class MerchantRecordsController {
   constructor(
@@ -151,7 +152,7 @@ export class MerchantRecordsController {
   ) {}
 
   @Get('statements')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantStatementListDto })
   async statements(@CurrentAppSession() session: AppSession) {
     const restaurant = await this.ownersRestaurant(session);
@@ -171,7 +172,7 @@ export class MerchantRecordsController {
   }
 
   @Get('statements/:statementId')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantStatementDto })
   async statement(
     @CurrentAppSession() session: AppSession,
@@ -239,7 +240,7 @@ export class MerchantRecordsController {
   }
 
   @Get('receipts')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantReceiptListDto })
   async receipts(@CurrentAppSession() session: AppSession) {
     const restaurant = await this.ownersRestaurant(session);
@@ -247,7 +248,7 @@ export class MerchantRecordsController {
   }
 
   @Get('receipts/:receiptId')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantReceiptDto })
   async receipt(
     @CurrentAppSession() session: AppSession,

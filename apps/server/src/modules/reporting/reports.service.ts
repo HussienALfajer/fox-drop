@@ -144,10 +144,14 @@ export class ReportsService {
   // business day (`day`, the daily summary), with the previous period of
   // the same length for the arrows: «اليوم» so far against the same length
   // of yesterday from its cutoff, a whole day or 7 or 30 days against those
-  // just before. A day not started yet (or not a day) is null.
+  // just before. The owner web portal's custom range (RA §17, slice 2.45d;
+  // owner decision 2026-11-20) is the business days `fromDay` to `toDay`,
+  // both included, at most 366 (`periodFits`), against as long just before
+  // it; one that runs today ends now. A day not started yet (or not a day),
+  // and a range that does not fit or ends after today, is null.
   async restaurantReport(
     restaurant: { id: string; cityId: string },
-    asked: { period: OwnerPeriod } | { day: string },
+    asked: { period: OwnerPeriod } | { day: string } | { fromDay: string; toDay: string },
     now: Date,
   ): Promise<{
     from: Date;
@@ -163,6 +167,12 @@ export class ReportsService {
       const bounds = periodBounds(asked.period, now, clock.cutoffMinutes, clock.timeZone);
       from = bounds.from!;
       to = bounds.to ?? now;
+    } else if ('fromDay' in asked) {
+      if (!periodFits(asked.fromDay, asked.toDay)) return null;
+      from = cutoffOn(asked.fromDay, clock.cutoffMinutes, clock.timeZone);
+      if (cutoffOn(asked.toDay, clock.cutoffMinutes, clock.timeZone) > now) return null;
+      const end = cutoffOn(nextDay(asked.toDay), clock.cutoffMinutes, clock.timeZone);
+      to = end < now ? end : now;
     } else {
       from = cutoffOn(asked.day, clock.cutoffMinutes, clock.timeZone);
       if (from > now) return null;

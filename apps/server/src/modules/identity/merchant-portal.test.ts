@@ -277,8 +277,9 @@ describe('the routes the portal reaches (RA §17)', () => {
     // portal's own session (its sign-out is left out: it ends the session).
     // The menu with its price log, preview and photos (slice 2.45b); the
     // hours, settings, staff, devices with the Windows pairing and the
-    // portal sessions, and support (slice 2.45c); the money and reports
-    // join with 2.45d; receiving orders never does.
+    // portal sessions, and support (slice 2.45c); the reports, the history,
+    // the ratings, the account, statements and receipts (slice 2.45d);
+    // receiving orders never does.
     const allowed = [
       'GET /v1/merchant/auth/portal/session',
       'GET /v1/merchant/orders',
@@ -330,6 +331,15 @@ describe('the routes the portal reaches (RA §17)', () => {
       'POST /v1/merchant/uploads/report-photo',
       'POST /v1/merchant/reports',
       'GET /v1/merchant/reports',
+      'GET /v1/merchant/figures',
+      'GET /v1/merchant/orders/history',
+      'GET /v1/merchant/ratings',
+      'GET /v1/merchant/account',
+      'GET /v1/merchant/account/overdue',
+      'GET /v1/merchant/statements',
+      'GET /v1/merchant/statements/{statementId}',
+      'GET /v1/merchant/receipts',
+      'GET /v1/merchant/receipts/{receiptId}',
     ];
     const document = createOpenApiDocument(app);
     const reached: string[] = [];
