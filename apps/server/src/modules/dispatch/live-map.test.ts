@@ -117,21 +117,19 @@ describe('GET /v1/admin/live-map (AP §9.4, slice 2.39)', () => {
     const placed = await acceptedOrder(undefined, { accept: false });
     const captain = await onlineCaptain();
     const later = new Date(Date.now() + 1000);
-    await app
-      .get(CaptainsService)
-      .recordLocations(
-        captain.captainId,
-        [
-          {
-            latitude: 36.7,
-            longitude: 37.2,
-            accuracyMetres: 8,
-            recordedAt: later,
-            simulated: true,
-          },
-        ],
-        new Date(later.getTime() + 1),
-      );
+    await app.get(CaptainsService).recordLocations(
+      captain.captainId,
+      [
+        {
+          latitude: 36.7,
+          longitude: 37.2,
+          accuracyMetres: 8,
+          recordedAt: later,
+          simulated: true,
+        },
+      ],
+      new Date(later.getTime() + 1),
+    );
     const map = await readMap();
     expect(map.restaurants.map((each: { id: string }) => each.id)).not.toContain(draft);
     expect(map.orders.find((each: { id: string }) => each.id === placed.id)).toMatchObject({
