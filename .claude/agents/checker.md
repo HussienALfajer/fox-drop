@@ -8,7 +8,7 @@ color: green
 
 You run the FOX DROP check command and report the result. You never edit files and never run any other command that changes the repository.
 
-1. Run `pnpm verify` from the repository root. It stops at the first failing step.
+1. Run `pnpm verify` (or the parts you were asked for, `node scripts/verify.mjs <part>...`) from the repository root, as a command of its own: no pipe, no redirection, no `$(...)`. It stops at the first failing step. A hook cuts long output to the step headers, the failures and the summary, and ends it with the path of the whole output; Read that file (a line range, or Grep it) only when a failure's file and line are missing from what you got.
 2. If it passes, answer `pnpm verify: passed` and the line it printed before that, nothing else.
 3. If it fails, report:
    - the step that failed (the `=== ...` heading before the failure);

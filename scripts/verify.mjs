@@ -216,6 +216,7 @@ if (shard !== undefined && !(parts.size === 1 && (parts.has('server') || parts.h
 if (parts.has('contract')) checkApiContract();
 if (parts.has('format')) {
   checkInstructionSizes();
+  step('Claude Code hooks', 'node --test .claude/hooks/hooks.test.mjs');
   step('Prettier', 'pnpm exec prettier --check .');
 }
 
