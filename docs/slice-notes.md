@@ -5,6 +5,13 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from L.1 (`docs/dod-checklist`)
+
+- **Decisions pending the owner:** the three gap slices proposed in `docs/launch/dod-checklist.md` («Proposed slices»): L.1a the 20 missing tests, L.1b the calls and notices not built (RA-10, CU-17, CA-13, CA-10, CU-19), L.1c cached browsing offline with the address commands' `Idempotency-Key` (CU-28) and the zone preview calculator (AP-27). Once approved they go in `docs/roadmap.md` before L.10.
+- **Decided by us (to confirm with the owner):** a row per bullet where an item has bullets (152 rows); `gap` split into `build` and `test`; the audit read test titles only, so a `test` gap is to confirm against the test bodies before writing a new test.
+- **To check on staging:** the 8 `demo only` rows (AP-3, AP-21, RA-3, RA-28, CA-5, CA-6, CU-2, CU-20) need the owner's devices: the panel's alert sound, a printer, the Android phone locked 8 hours, the Windows PC, both phones with the screen off, a real WhatsApp code. L.9's device-lab runbook and L.10's rehearsal take them.
+- **Also done:** the Bash guard (`.claude/hooks/bash.mjs`) enforces since this slice: its observe-mode log held 5 entries over two sessions, all true (4 `sed -n` and 1 `cat` of tracked files).
+
 ## Left from 2.46 (`feat/ios-customer-captain`)
 
 - **Before deploying to staging:** migration 0149 (expand only: `notifications.push_devices_platform` takes `ios`).

@@ -4,30 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Launch readiness (`docs/roadmap.md`), slice L.1: the definition-of-done audit. Split into L.1–L.11 with the owner's approval on 2026-11-21. Planned, not started.
+Phase 4 of `docs/claude-code-workflow.md`: fast checks. Planned, not started. It comes before L.2 because every later slice runs the checks many times (the baseline: 25.6 hours of `pnpm verify` in the history).
 
-- **Branch:** `docs/dod-checklist`.
-- **Specs:** AP §14, RA §22, CA §19, CU §19 (the four definitions of done); architecture §17, §18.
-- **Delivers:** `docs/launch/dod-checklist.md`, one row per item (AP 33, RA 30, CA 28, CU 28): the test that proves it (file and test name) or the staging demonstration that shows it (who, which device), and its state (covered, demo only, gap). Gaps larger than a fix become slices before L.10, with the owner's approval.
-- **Owner decisions 2026-11-21:** the owner tests alone on their own phones (Android now, iPhone through TestFlight once the Apple Developer account exists); one full staging rehearsal before launch (L.10, the owner sets the date); production on the current Contabo server next to staging, with its own Firebase project and WhatsApp numbers.
+- **Branch:** `chore/fast-verify` (phase 5, `chore/ci-filters`, may ride with it: they share the classifier).
+- **Docs:** `docs/claude-code-workflow.md`, «Phase 4» and «Phase 5»; `scripts/verify.mjs`; `.github/workflows/ci.yml`; `.claude/agents/checker.md`.
 
 ### Plan
 
-- [ ] Read each definition of done and grep `apps/` and `docs/code/` for the tests of each item (send the search to the `Explore` agent, one spec at a time).
-- [ ] Write `docs/launch/dod-checklist.md` and link it from `docs/README.md`.
-- [ ] Present the gaps to the owner; record approved fix slices in `docs/roadmap.md` before L.10.
+- [ ] One script classifies a change's paths; `ci.yml` and `verify.mjs` share it, with its test.
+- [ ] `node scripts/verify.mjs --changed`, the `checker`'s default: Markdown only, Prettier on the changed files and the size check; TypeScript, `turbo --affected` and the server's `vitest run --changed origin/main` with the migrations, fixtures and the spec files tests read as `forceRerunTriggers`; Dart, Melos `--diff`; the API contract only after a route or schema change.
+- [ ] Turborepo cache for `lint` and `typecheck` only.
+- [ ] A `Stop` hook that runs the fast check when a turn ends with code changes and prints only failures.
+- [ ] Measure a Markdown-only change, a one-module server change and a Flutter change, before and after (done when the one-module server change checks in under a minute).
 
-### Branches of the later slices
+## Waiting for the owner
 
-L.2 `test/permission-matrix`, L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.
-
-## Also open
-
-Phase 2 of `docs/claude-code-workflow.md` (`chore/fewer-requests`, merged in pull request 218):
-
-- [ ] After two sessions: `node scripts/claude-audit.mjs` shows the guard log; check it for false positives, then set `MODE = 'enforce'` in `.claude/hooks/bash.mjs`.
-- [ ] Measure one slice session against the baseline (single-Bash requests under half of 67.7%). A planning session (2026-11-21, `5e6c2ce1`, 14 requests) measured 14.3% single-Bash requests; a slice session is still to measure.
+- The gap slices of L.1 (`docs/launch/dod-checklist.md`, «Proposed slices»): L.1a `test/dod-test-gaps`, L.1b `feat/dod-calls-and-notices`, L.1c `feat/dod-offline-and-zone-preview`. Once approved, add them to `docs/roadmap.md` before L.10.
+- Phase 3 of `docs/claude-code-workflow.md` (the owner's MCP servers, plugins, skills and status line, outside the repository), with the owner in a session.
 
 ## After that
 
-In the order of `docs/claude-code-workflow.md`: phase 3 (the owner's MCP servers, plugins and skills, with the owner), phase 4 (fast checks, `chore/fast-verify`), phase 5 (CI filters). Then L.2 onwards.
+Phase 5 (CI filters) if it did not ride with phase 4. Then launch readiness from L.2 (`docs/roadmap.md`), with the approved gap slices before L.10.
+
+Branches of the later slices: L.2 `test/permission-matrix`, L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.

@@ -2,7 +2,7 @@
 // call is a request that resends the whole context, so:
 // - reading a tracked file with cat, head, tail or sed -n, or editing one with
 //   sed -i, perl -i or an inline script, is refused with the tool to use
-//   (in observe mode it is only logged to .claude/bash-guard.log);
+//   (in observe mode it is only logged to .claude/bash-guard.log instead);
 // - a test command's output is cut to its failures and its summary.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // 'observe' logs what would be refused; 'enforce' refuses it.
-const MODE = 'observe';
+const MODE = 'enforce';
 
 /** Splits a command line into pipelines of stages; each stage is { words, heredoc }. */
 export function parse(command) {
