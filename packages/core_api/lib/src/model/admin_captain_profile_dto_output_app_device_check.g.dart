@@ -43,6 +43,19 @@ _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_gpsAccuracy =
 const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_call =
     const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._('call');
+const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+_$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_backgroundRefresh =
+    const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._(
+      'backgroundRefresh',
+    );
+const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+_$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_lowPowerMode =
+    const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._(
+      'lowPowerMode',
+    );
+const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+_$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_ringSwitch =
+    const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._('ringSwitch');
 
 AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumValueOf(String name) {
@@ -69,6 +82,12 @@ _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumValueOf(String name) {
       return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_gpsAccuracy;
     case 'call':
       return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_call;
+    case 'backgroundRefresh':
+      return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_backgroundRefresh;
+    case 'lowPowerMode':
+      return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_lowPowerMode;
+    case 'ringSwitch':
+      return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_ringSwitch;
     default:
       throw ArgumentError(name);
   }
@@ -76,21 +95,24 @@ _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumValueOf(String name) {
 
 final BuiltSet<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumValues =
-    BuiltSet<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>(
-      const <AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>[
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_notifications,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_location,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_battery,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_autostart,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_fullScreen,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_alarmVolume,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_doNotDisturb,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_testOffer,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_connection,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_gpsAccuracy,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_call,
-      ],
-    );
+    BuiltSet<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>(const <
+      AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+    >[
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_notifications,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_location,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_battery,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_autostart,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_fullScreen,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_alarmVolume,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_doNotDisturb,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_testOffer,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_connection,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_gpsAccuracy,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_call,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_backgroundRefresh,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_lowPowerMode,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_ringSwitch,
+    ]);
 
 Serializer<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumSerializer =
@@ -113,6 +135,9 @@ class _$AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnumSerializer
     'connection': 'connection',
     'gpsAccuracy': 'gps_accuracy',
     'call': 'call',
+    'backgroundRefresh': 'background_refresh',
+    'lowPowerMode': 'low_power_mode',
+    'ringSwitch': 'ring_switch',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'notifications': 'notifications',
@@ -126,6 +151,9 @@ class _$AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnumSerializer
     'connection': 'connection',
     'gps_accuracy': 'gpsAccuracy',
     'call': 'call',
+    'background_refresh': 'backgroundRefresh',
+    'low_power_mode': 'lowPowerMode',
+    'ring_switch': 'ringSwitch',
   };
 
   @override

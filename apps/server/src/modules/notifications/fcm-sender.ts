@@ -53,6 +53,19 @@ export interface PushMessage {
   data: Record<string, string>;
   // How long FCM keeps it for a phone that is off.
   ttlSeconds: number;
+  // How an iPhone shows it (architecture §8.1, slice 2.46): `time-sensitive`
+  // breaks through a Focus (CA §4.4, CU §4.4), `critical` sounds on silent
+  // too once Apple granted the entitlement (K15), `passive` is silent.
+  interruption: PushInterruption;
+}
+
+export type PushInterruption = 'passive' | 'active' | 'time-sensitive' | 'critical';
+
+// K15 (slice 2.46): whether Apple granted the captain app the Critical
+// Alerts entitlement, so an offer sounds on a silent iPhone. Off until the
+// owner sets APNS_CRITICAL_ALERTS=true with the build that carries it.
+export function criticalAlertsOn(environment: NodeJS.ProcessEnv = process.env): boolean {
+  return environment.APNS_CRITICAL_ALERTS?.trim() === 'true';
 }
 
 // sent; invalid: the token is no longer registered (the device forgets it);
@@ -113,7 +126,7 @@ export class FcmSender implements PushSender {
         {
           method: 'POST',
           headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-          body: JSON.stringify({ message: fcmMessage(message) }),
+          body: JSON.stringify({ message: fcmMessage(message, Date.now()) }),
           signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
         },
       );
@@ -171,11 +184,29 @@ export class FcmSender implements PushSender {
   }
 }
 
+// The sound an iPhone plays for each channel: the app's bundled sounds
+// (`packages/core_alerts`, copied into the iOS app, at most 30 s), else the
+// system's. A missing file plays the system's too.
+const APNS_SOUNDS: Record<string, string> = {
+  ring_offer: 'fd_offer.wav',
+  ring_order: 'fd_new_order.wav',
+  chime: 'fd_chime.wav',
+  cancellation: 'fd_cancellation.wav',
+};
+
 // FCM's message: a notification Android shows on the app's channel while the
-// app cannot (architecture §8.2), and the data the app reads on a tap. The
-// apps register their Firebase Installation ID (`firebase_messaging` 17), so
-// the target is `fid`; FCM deprecates registration tokens in its favour.
-export function fcmMessage(message: PushMessage) {
+// app cannot (architecture §8.2), the same for APNs on an iPhone (§8.1,
+// slice 2.46), and the data the app reads on a tap. The apps register their
+// Firebase Installation ID (`firebase_messaging` 17), so the target is
+// `fid`; FCM deprecates registration tokens in its favour.
+export function fcmMessage(message: PushMessage, now: number) {
+  const name = APNS_SOUNDS[message.channel] ?? 'default';
+  const sound =
+    message.interruption === 'passive'
+      ? {}
+      : message.interruption === 'critical'
+        ? { sound: { critical: 1, name, volume: 1 } }
+        : { sound: name };
   return {
     fid: message.token,
     notification: { title: message.title, body: message.body },
@@ -184,6 +215,14 @@ export function fcmMessage(message: PushMessage) {
       priority: message.priority === 'high' ? 'HIGH' : 'NORMAL',
       ttl: `${message.ttlSeconds}s`,
       notification: { channel_id: message.channel },
+    },
+    apns: {
+      headers: {
+        'apns-priority': message.priority === 'high' ? '10' : '5',
+        'apns-push-type': 'alert',
+        'apns-expiration': String(Math.floor(now / 1000) + message.ttlSeconds),
+      },
+      payload: { aps: { ...sound, 'interruption-level': message.interruption } },
     },
   };
 }

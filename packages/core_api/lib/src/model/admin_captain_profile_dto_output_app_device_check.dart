@@ -30,7 +30,7 @@ abstract class AdminCaptainProfileDtoOutputAppDeviceCheck
 
   @BuiltValueField(wireName: r'failed')
   BuiltList<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum> get failed;
-  // enum failedEnum {  notifications,  location,  battery,  autostart,  full_screen,  alarm_volume,  do_not_disturb,  test_offer,  connection,  gps_accuracy,  call,  };
+  // enum failedEnum {  notifications,  location,  battery,  autostart,  full_screen,  alarm_volume,  do_not_disturb,  test_offer,  connection,  gps_accuracy,  call,  background_refresh,  low_power_mode,  ring_switch,  };
 
   AdminCaptainProfileDtoOutputAppDeviceCheck._();
 
@@ -207,6 +207,17 @@ class AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'call')
   static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum call =
       _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_call;
+  @BuiltValueEnumConst(wireName: r'background_refresh')
+  static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+  backgroundRefresh =
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_backgroundRefresh;
+  @BuiltValueEnumConst(wireName: r'low_power_mode')
+  static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+  lowPowerMode =
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_lowPowerMode;
+  @BuiltValueEnumConst(wireName: r'ring_switch')
+  static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum ringSwitch =
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_ringSwitch;
 
   static Serializer<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>
   get serializer =>

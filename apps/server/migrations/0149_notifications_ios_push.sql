@@ -1,0 +1,2 @@
+ALTER TABLE "notifications"."push_devices" DROP CONSTRAINT "push_devices_platform";--> statement-breakpoint
+ALTER TABLE "notifications"."push_devices" ADD CONSTRAINT "push_devices_platform" CHECK ("notifications"."push_devices"."platform" IN ('android', 'ios'));

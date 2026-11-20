@@ -10,7 +10,7 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { PUSH_SENDER, type PushMessage, type PushResult } from './fcm-sender.js';
 import { PushDevices, type PushRecipient } from './push-devices.js';
 import { PushQueue, type QueuedPush } from './push-queue.js';
-import { channelOf, PushRelay, retryDelayMs } from './push-relay.js';
+import { channelOf, interruptionOf, PushRelay, retryDelayMs } from './push-relay.js';
 
 // Architecture §8.1: a queued push reaches every live device of its
 // recipient at least once, is tried again on a passing failure until it
@@ -116,6 +116,43 @@ describe('the channel of a push', () => {
   });
 });
 
+// Architecture §8.1, CA §4.4 (K15), CU §4.4, §14 #4–#5 (slice 2.46): on an
+// iPhone a captain's offer and the customer's arrival and door ping are
+// time-sensitive, the offer critical once Apple granted it.
+describe('the interruption level of a push', () => {
+  type Party = 'customer' | 'merchant' | 'captain';
+  const of = (row: { party: Party; level: string; templateKey: string }, critical = false) =>
+    interruptionOf(row, false, critical);
+  it('makes the offer, the arrival and the door ping time-sensitive', () => {
+    const offer = { party: 'captain' as const, level: 'offer', templateKey: 'captain.new_offer' };
+    expect(of(offer)).toBe('time-sensitive');
+    expect(of(offer, true)).toBe('critical');
+    for (const key of [
+      'customer.captain_arrived',
+      'customer.captain_arrived_recipient',
+      'customer.door_ping',
+      'customer.door_ping_recipient',
+    ]) {
+      expect(of({ party: 'customer', level: 'default', templateKey: key }, true)).toBe(
+        'time-sensitive',
+      );
+    }
+    expect(of({ party: 'customer', level: 'default', templateKey: 'customer.accepted' })).toBe(
+      'active',
+    );
+    expect(of({ party: 'captain', level: 'silent', templateKey: 'captain.pay_table_change' })).toBe(
+      'passive',
+    );
+    expect(
+      interruptionOf(
+        { party: 'merchant', level: 'ring', templateKey: 'merchant.new_order' },
+        true,
+        false,
+      ),
+    ).toBe('passive');
+  });
+});
+
 describe('the push relay (architecture §8.1)', () => {
   it("sends to each of the recipient's devices once, with the app's channel and what a tap opens", async () => {
     const accountId = randomUUID();
@@ -137,6 +174,7 @@ describe('the push relay (architecture §8.1)', () => {
       priority: 'high',
       data: { target: 'order', orderId: 'order-1', messageId: id },
       ttlSeconds: 600,
+      interruption: 'active',
     });
     expect(await relay.drain(now)).toBe(0);
   });

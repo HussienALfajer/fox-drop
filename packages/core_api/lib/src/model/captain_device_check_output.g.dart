@@ -39,6 +39,15 @@ _$captainDeviceCheckOutputFailedEnum_gpsAccuracy =
 const CaptainDeviceCheckOutputFailedEnum
 _$captainDeviceCheckOutputFailedEnum_call =
     const CaptainDeviceCheckOutputFailedEnum._('call');
+const CaptainDeviceCheckOutputFailedEnum
+_$captainDeviceCheckOutputFailedEnum_backgroundRefresh =
+    const CaptainDeviceCheckOutputFailedEnum._('backgroundRefresh');
+const CaptainDeviceCheckOutputFailedEnum
+_$captainDeviceCheckOutputFailedEnum_lowPowerMode =
+    const CaptainDeviceCheckOutputFailedEnum._('lowPowerMode');
+const CaptainDeviceCheckOutputFailedEnum
+_$captainDeviceCheckOutputFailedEnum_ringSwitch =
+    const CaptainDeviceCheckOutputFailedEnum._('ringSwitch');
 
 CaptainDeviceCheckOutputFailedEnum _$captainDeviceCheckOutputFailedEnumValueOf(
   String name,
@@ -66,6 +75,12 @@ CaptainDeviceCheckOutputFailedEnum _$captainDeviceCheckOutputFailedEnumValueOf(
       return _$captainDeviceCheckOutputFailedEnum_gpsAccuracy;
     case 'call':
       return _$captainDeviceCheckOutputFailedEnum_call;
+    case 'backgroundRefresh':
+      return _$captainDeviceCheckOutputFailedEnum_backgroundRefresh;
+    case 'lowPowerMode':
+      return _$captainDeviceCheckOutputFailedEnum_lowPowerMode;
+    case 'ringSwitch':
+      return _$captainDeviceCheckOutputFailedEnum_ringSwitch;
     default:
       throw ArgumentError(name);
   }
@@ -86,6 +101,9 @@ _$captainDeviceCheckOutputFailedEnumValues =
         _$captainDeviceCheckOutputFailedEnum_connection,
         _$captainDeviceCheckOutputFailedEnum_gpsAccuracy,
         _$captainDeviceCheckOutputFailedEnum_call,
+        _$captainDeviceCheckOutputFailedEnum_backgroundRefresh,
+        _$captainDeviceCheckOutputFailedEnum_lowPowerMode,
+        _$captainDeviceCheckOutputFailedEnum_ringSwitch,
       ],
     );
 
@@ -107,6 +125,9 @@ class _$CaptainDeviceCheckOutputFailedEnumSerializer
     'connection': 'connection',
     'gpsAccuracy': 'gps_accuracy',
     'call': 'call',
+    'backgroundRefresh': 'background_refresh',
+    'lowPowerMode': 'low_power_mode',
+    'ringSwitch': 'ring_switch',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'notifications': 'notifications',
@@ -120,6 +141,9 @@ class _$CaptainDeviceCheckOutputFailedEnumSerializer
     'connection': 'connection',
     'gps_accuracy': 'gpsAccuracy',
     'call': 'call',
+    'background_refresh': 'backgroundRefresh',
+    'low_power_mode': 'lowPowerMode',
+    'ring_switch': 'ringSwitch',
   };
 
   @override

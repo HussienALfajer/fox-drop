@@ -9,7 +9,13 @@ import { and, asc, eq, inArray, isNotNull, isNull, lte } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
-import { PUSH_SENDER, type PushResult, type PushSender } from './fcm-sender.js';
+import {
+  criticalAlertsOn,
+  PUSH_SENDER,
+  type PushInterruption,
+  type PushResult,
+  type PushSender,
+} from './fcm-sender.js';
 import { PushDevices, type PushRecipient } from './push-devices.js';
 import { pushMessages } from './schema.js';
 
@@ -43,6 +49,34 @@ export function channelOf(row: Pick<Row, 'level' | 'party'>, ringingOff: boolean
   if (row.level === 'offer' && row.party === 'captain') return 'ring_offer';
   if (row.level !== 'ring' || row.party !== 'merchant') return row.level;
   return ringingOff ? 'silent' : 'ring_order';
+}
+
+// CU §4.4, §14 #4–#5: the customer's pushes an iPhone shows as
+// time-sensitive.
+const CUSTOMER_TIME_SENSITIVE = new Set([
+  'customer.captain_arrived',
+  'customer.captain_arrived_recipient',
+  'customer.door_ping',
+  'customer.door_ping_recipient',
+]);
+
+// How an iPhone shows a push (slice 2.46): a captain's offer is
+// time-sensitive (CA §4.4, K15), critical once Apple granted the
+// entitlement; the customer's arrival and door ping time-sensitive (CU
+// §4.4); a silent push passive, as its Android channel.
+export function interruptionOf(
+  row: Pick<Row, 'level' | 'party' | 'templateKey'>,
+  ringingOff: boolean,
+  critical: boolean,
+): PushInterruption {
+  if (channelOf(row, ringingOff) === 'silent') return 'passive';
+  if (row.level === 'offer' && row.party === 'captain') {
+    return critical ? 'critical' : 'time-sensitive';
+  }
+  if (row.party === 'customer' && CUSTOMER_TIME_SENSITIVE.has(row.templateKey)) {
+    return 'time-sensitive';
+  }
+  return 'active';
 }
 
 function recipientOf(row: Row): PushRecipient {
@@ -141,6 +175,7 @@ export class PushRelay {
     const targets = await this.devices.targets(recipientOf(row));
     const results: PushResult[] = [];
     const invalid: string[] = [];
+    const critical = criticalAlertsOn();
     for (const target of targets) {
       const result = await this.sender.send({
         token: target.token,
@@ -150,6 +185,7 @@ export class PushRelay {
         priority: row.priority,
         data: { ...row.data, messageId: row.id },
         ttlSeconds: Math.max(1, Math.floor((row.expiresAt.getTime() - now.getTime()) / 1000)),
+        interruption: interruptionOf(row, target.ringingOff, critical),
       });
       results.push(result);
       if (result === 'invalid') invalid.push(target.token);

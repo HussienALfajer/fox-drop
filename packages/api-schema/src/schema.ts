@@ -11022,7 +11022,7 @@ export interface components {
             at: string;
             /** @description No failed item. */
             passed: boolean;
-            failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
+            failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call" | "background_refresh" | "low_power_mode" | "ring_switch")[];
         };
         CaptainThisDeviceCheckDto_Output: {
             /** @description This phone’s latest device check (CA §4.5); null before its first. */
@@ -11030,7 +11030,7 @@ export interface components {
         };
         CaptainDeviceCheckReportDto: {
             /** @description The checks of CA §4.5 that failed; empty when all passed. */
-            failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
+            failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call" | "background_refresh" | "low_power_mode" | "ring_switch")[];
         };
         CaptainPayMoney_Output: {
             amount: string;
@@ -13650,7 +13650,7 @@ export interface components {
             /** @description The app installation's Firebase Installation ID (FID), FCM's target for this device. */
             token: string;
             /** @enum {string} */
-            platform: "android";
+            platform: "android" | "ios";
         };
         PushTokenRegisteredDto_Output: {
             /** @constant */
@@ -22012,7 +22012,7 @@ export interface components {
                     /** Format: date-time */
                     at: string;
                     passed: boolean;
-                    failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
+                    failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call" | "background_refresh" | "low_power_mode" | "ring_switch")[];
                 } | null;
             };
         };

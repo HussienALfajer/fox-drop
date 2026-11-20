@@ -23,7 +23,7 @@ abstract class PushTokenDto
 
   @BuiltValueField(wireName: r'platform')
   PushTokenDtoPlatformEnum get platform;
-  // enum platformEnum {  android,  };
+  // enum platformEnum {  android,  ios,  };
 
   PushTokenDto._();
 
@@ -136,6 +136,8 @@ class PushTokenDtoPlatformEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'android')
   static const PushTokenDtoPlatformEnum android =
       _$pushTokenDtoPlatformEnum_android;
+  @BuiltValueEnumConst(wireName: r'ios')
+  static const PushTokenDtoPlatformEnum ios = _$pushTokenDtoPlatformEnum_ios;
 
   static Serializer<PushTokenDtoPlatformEnum> get serializer =>
       _$pushTokenDtoPlatformEnumSerializer;

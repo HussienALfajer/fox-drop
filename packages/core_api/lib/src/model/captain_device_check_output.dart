@@ -28,7 +28,7 @@ abstract class CaptainDeviceCheckOutput
 
   @BuiltValueField(wireName: r'failed')
   BuiltList<CaptainDeviceCheckOutputFailedEnum> get failed;
-  // enum failedEnum {  notifications,  location,  battery,  autostart,  full_screen,  alarm_volume,  do_not_disturb,  test_offer,  connection,  gps_accuracy,  call,  };
+  // enum failedEnum {  notifications,  location,  battery,  autostart,  full_screen,  alarm_volume,  do_not_disturb,  test_offer,  connection,  gps_accuracy,  call,  background_refresh,  low_power_mode,  ring_switch,  };
 
   CaptainDeviceCheckOutput._();
 
@@ -196,6 +196,15 @@ class CaptainDeviceCheckOutputFailedEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'call')
   static const CaptainDeviceCheckOutputFailedEnum call =
       _$captainDeviceCheckOutputFailedEnum_call;
+  @BuiltValueEnumConst(wireName: r'background_refresh')
+  static const CaptainDeviceCheckOutputFailedEnum backgroundRefresh =
+      _$captainDeviceCheckOutputFailedEnum_backgroundRefresh;
+  @BuiltValueEnumConst(wireName: r'low_power_mode')
+  static const CaptainDeviceCheckOutputFailedEnum lowPowerMode =
+      _$captainDeviceCheckOutputFailedEnum_lowPowerMode;
+  @BuiltValueEnumConst(wireName: r'ring_switch')
+  static const CaptainDeviceCheckOutputFailedEnum ringSwitch =
+      _$captainDeviceCheckOutputFailedEnum_ringSwitch;
 
   static Serializer<CaptainDeviceCheckOutputFailedEnum> get serializer =>
       _$captainDeviceCheckOutputFailedEnumSerializer;

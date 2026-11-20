@@ -35273,7 +35273,10 @@
                 "test_offer",
                 "connection",
                 "gps_accuracy",
-                "call"
+                "call",
+                "background_refresh",
+                "low_power_mode",
+                "ring_switch"
               ]
             }
           }
@@ -35309,7 +35312,7 @@
         "type": "object",
         "properties": {
           "failed": {
-            "maxItems": 11,
+            "maxItems": 14,
             "type": "array",
             "items": {
               "type": "string",
@@ -35324,7 +35327,10 @@
                 "test_offer",
                 "connection",
                 "gps_accuracy",
-                "call"
+                "call",
+                "background_refresh",
+                "low_power_mode",
+                "ring_switch"
               ]
             },
             "description": "The checks of CA §4.5 that failed; empty when all passed."
@@ -46872,7 +46878,8 @@
           "platform": {
             "type": "string",
             "enum": [
-              "android"
+              "android",
+              "ios"
             ]
           }
         },
@@ -83192,7 +83199,10 @@
                             "test_offer",
                             "connection",
                             "gps_accuracy",
-                            "call"
+                            "call",
+                            "background_refresh",
+                            "low_power_mode",
+                            "ring_switch"
                           ]
                         }
                       }

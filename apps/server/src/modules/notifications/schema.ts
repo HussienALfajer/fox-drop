@@ -113,7 +113,7 @@ export const alertOutbox = notifications.table(
 // Ended when Firebase answers the token is no longer registered, or when
 // another session registers the same token (a sign-in again on the device).
 export const pushDeviceEndReasons = ['token_invalid', 'token_moved'] as const;
-export const pushPlatforms = ['android'] as const;
+export const pushPlatforms = ['android', 'ios'] as const;
 
 export const pushDevices = notifications.table(
   'push_devices',
@@ -145,7 +145,7 @@ export const pushDevices = notifications.table(
       .on(table.captainId)
       .where(sql`${table.endedAt} IS NULL`),
     check('push_devices_party', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
-    check('push_devices_platform', sql`${table.platform} IN ('android')`),
+    check('push_devices_platform', sql`${table.platform} IN ('android', 'ios')`),
     check(
       'push_devices_merchant',
       sql`(${table.party} = 'merchant') = (${table.restaurantId} IS NOT NULL AND ${table.merchantRole} IS NOT NULL)`,

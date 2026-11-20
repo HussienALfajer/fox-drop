@@ -88,12 +88,13 @@ async function register(
   party: 'customer' | 'merchant' | 'captain',
   headers: Record<string, string>,
   token: string,
+  platform: 'android' | 'ios' = 'android',
 ) {
   const answer = await app.inject({
     method: 'PUT',
     url: `/v1/${party}/push-token`,
     headers,
-    payload: { token, platform: 'android' },
+    payload: { token, platform },
   });
   expect(answer.statusCode).toBe(200);
   expect(answer.json()).toEqual({ status: 'registered' });
@@ -117,6 +118,19 @@ describe('push tokens (architecture §8.1)', () => {
 
     await app.inject({ method: 'POST', url: '/v1/customer/auth/sign-out', headers: device });
     expect(await tokens({ party: 'customer', accountId })).toEqual([]);
+  });
+
+  // Slice 2.46: the customer and captain apps on an iPhone, through FCM.
+  it('registers an iPhone', async () => {
+    const device = await signIn('customer', phoneNumber());
+    await register('customer', device, 'token-iphone', 'ios');
+    expect(await tokens({ party: 'customer', accountId: await accountOf(device) })).toEqual([
+      'token-iphone',
+    ]);
+    const { rows } = await sql.query(
+      "SELECT platform FROM notifications.push_devices WHERE token = 'token-iphone'",
+    );
+    expect(rows).toEqual([{ platform: 'ios' }]);
   });
 
   it('moves a token to the session that registers it last', async () => {

@@ -1,7 +1,13 @@
 import { generateKeyPairSync } from 'node:crypto';
 import { decodeJwt } from 'jose';
 import { describe, expect, it } from 'vitest';
-import { FcmSender, type PushMessage, serviceAccountFromEnvironment } from './fcm-sender.js';
+import {
+  criticalAlertsOn,
+  FcmSender,
+  fcmMessage,
+  type PushMessage,
+  serviceAccountFromEnvironment,
+} from './fcm-sender.js';
 
 // Architecture §8.1: FCM's HTTP v1 API with a service account's token, and
 // what each of its answers means for the token and the message.
@@ -20,6 +26,7 @@ const message: PushMessage = {
   priority: 'high',
   data: { type: 'order', orderId: 'order-1' },
   ttlSeconds: 600,
+  interruption: 'active',
 };
 
 interface Call {
@@ -86,6 +93,14 @@ describe('FCM (architecture §8.1)', () => {
         notification: { title: 'FOX DROP', body: message.body },
         data: { type: 'order', orderId: 'order-1' },
         android: { priority: 'HIGH', ttl: '600s', notification: { channel_id: 'default' } },
+        apns: {
+          headers: {
+            'apns-priority': '10',
+            'apns-push-type': 'alert',
+            'apns-expiration': expect.stringMatching(/^\d+$/),
+          },
+          payload: { aps: { sound: 'default', 'interruption-level': 'active' } },
+        },
       },
     });
   });
@@ -127,6 +142,56 @@ describe('FCM (architecture §8.1)', () => {
       throw new TypeError('fetch failed');
     }) as typeof fetch;
     expect(await new FcmSender(account, fetcher).send(message)).toBe('retry');
+  });
+
+  // Architecture §8.1, §14.2, CA §4.4 (K15), CU §4.4 (slice 2.46): FCM
+  // hands the apns part to APNs for an iPhone.
+  it('gives APNs the priority, the expiry, the bundled sound and the interruption level', () => {
+    const now = Date.UTC(2026, 10, 20, 12, 0, 0);
+    const offer = fcmMessage(
+      { ...message, channel: 'ring_offer', interruption: 'time-sensitive', ttlSeconds: 45 },
+      now,
+    );
+    expect(offer.apns).toEqual({
+      headers: {
+        'apns-priority': '10',
+        'apns-push-type': 'alert',
+        'apns-expiration': String(now / 1000 + 45),
+      },
+      payload: { aps: { sound: 'fd_offer.wav', 'interruption-level': 'time-sensitive' } },
+    });
+    const critical = fcmMessage(
+      { ...message, channel: 'ring_offer', interruption: 'critical' },
+      now,
+    );
+    expect(critical.apns.payload.aps).toEqual({
+      sound: { critical: 1, name: 'fd_offer.wav', volume: 1 },
+      'interruption-level': 'critical',
+    });
+    const sounds = Object.fromEntries(
+      ['chime', 'cancellation', 'ring', 'default'].map((channel) => [
+        channel,
+        fcmMessage({ ...message, channel }, now).apns.payload.aps.sound,
+      ]),
+    );
+    expect(sounds).toEqual({
+      chime: 'fd_chime.wav',
+      cancellation: 'fd_cancellation.wav',
+      ring: 'default',
+      default: 'default',
+    });
+    const silent = fcmMessage(
+      { ...message, channel: 'silent', priority: 'normal', interruption: 'passive' },
+      now,
+    );
+    expect(silent.apns.headers['apns-priority']).toBe('5');
+    expect(silent.apns.payload.aps).toEqual({ 'interruption-level': 'passive' });
+  });
+
+  it('sends critical alerts only once the environment says Apple granted them', () => {
+    expect(criticalAlertsOn({})).toBe(false);
+    expect(criticalAlertsOn({ APNS_CRITICAL_ALERTS: 'false' })).toBe(false);
+    expect(criticalAlertsOn({ APNS_CRITICAL_ALERTS: 'true' })).toBe(true);
   });
 
   it('reads the service account from the environment, or none', () => {
