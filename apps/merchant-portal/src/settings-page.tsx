@@ -22,6 +22,9 @@ import {
   withoutPeriod,
 } from './settings.js';
 
+// Western digits (AP §4.7), up to two decimals: «3.5» km, «15.25»%.
+const decimal = new Intl.NumberFormat('ar-u-nu-latn', { maximumFractionDigits: 2 });
+
 const WEEKDAYS = [
   'sunday',
   'monday',
@@ -204,14 +207,16 @@ function SetByFoxDrop({ hours }: { hours: Hours }) {
         <dt>{t('settings.coverage')}</dt>
         <dd>
           {coverage.kind === 'radius'
-            ? t('settings.coverageRadius', { km: ((coverage.radiusMetres ?? 0) / 1000).toFixed(1) })
+            ? t('settings.coverageRadius', {
+                km: decimal.format((coverage.radiusMetres ?? 0) / 1000),
+              })
             : t('settings.coverageZones', { count: coverage.zoneCount ?? 0 })}
         </dd>
         <dt>{t('settings.commission')}</dt>
         <dd>
           {hours.commissionBp === null
             ? t('settings.none')
-            : t('settings.percent', { value: hours.commissionBp / 100 })}
+            : t('settings.percent', { value: decimal.format(hours.commissionBp / 100) })}
         </dd>
         <dt>{t('settings.settlementDay')}</dt>
         <dd>

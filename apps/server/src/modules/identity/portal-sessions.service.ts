@@ -3,6 +3,7 @@ import { and, desc, eq, gt, inArray, isNull } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
+import { MerchantsService } from '../merchants/index.js';
 import { type MerchantAccount, MerchantAccountsService } from './merchant-accounts.service.js';
 import { merchantAccounts, merchantPortalSessions } from './schema.js';
 import { newToken, tokenHash } from './secrets.js';
@@ -21,7 +22,7 @@ export interface OpenPortalSession {
 
 export class PortalSessionsRefusedError extends Error {
   constructor(
-    readonly refusal: 'unknown_session',
+    readonly refusal: 'unknown_session' | 'restaurant_terminated',
     message: string,
   ) {
     super(message);
@@ -47,6 +48,7 @@ export class PortalSessionsService {
     @Inject(DATABASE) private readonly database: Database,
     private readonly accounts: MerchantAccountsService,
     private readonly audit: AuditService,
+    private readonly merchants: MerchantsService,
   ) {}
 
   // Called by the sign-in in its transaction. The token is shown once, in
@@ -168,9 +170,11 @@ export class PortalSessionsService {
   }
 
   // An owner ends one of the restaurant's open portal sessions
-  // (`signed_out_by_owner`), audited `merchant_portal_session.sign_out`.
-  // 404 unknown_session for one not open or not the restaurant's, so a
-  // repeat changes nothing.
+  // (`signed_out_by_owner`), audited `merchant_portal_session.sign_out` with
+  // the session and its owner. 404 unknown_session for one not open or not
+  // the restaurant's, so a repeat changes nothing; refused once the
+  // restaurant is terminated, read under its row's share lock (RA §5.5), as
+  // a device's sign-out.
   async signOutByOwner(
     restaurant: { id: string; cityId: string },
     sessionId: string,
@@ -178,10 +182,19 @@ export class PortalSessionsService {
     now = new Date(),
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
+      if ((await this.merchants.lockedAccountStatus(tx, restaurant.id)) === 'terminated') {
+        throw new PortalSessionsRefusedError('restaurant_terminated', 'the contract has ended');
+      }
       const owners = tx
         .select({ id: merchantAccounts.id })
         .from(merchantAccounts)
-        .where(eq(merchantAccounts.restaurantId, restaurant.id));
+        .where(
+          and(
+            eq(merchantAccounts.restaurantId, restaurant.id),
+            eq(merchantAccounts.role, 'owner'),
+            isNull(merchantAccounts.removedAt),
+          ),
+        );
       const ended = await tx
         .update(merchantPortalSessions)
         .set({ endedAt: now, endReason: 'signed_out_by_owner' })
@@ -193,8 +206,9 @@ export class PortalSessionsService {
             inArray(merchantPortalSessions.accountId, owners),
           ),
         )
-        .returning({ id: merchantPortalSessions.id });
-      if (ended.length === 0) {
+        .returning({ accountId: merchantPortalSessions.accountId });
+      const [session] = ended;
+      if (!session) {
         throw new PortalSessionsRefusedError('unknown_session', 'no such open session');
       }
       await this.audit.recordWrite(
@@ -205,7 +219,7 @@ export class PortalSessionsService {
           action: 'merchant_portal_session.sign_out',
           target: { type: 'restaurant', id: restaurant.id },
           before: null,
-          after: { sessionId },
+          after: { sessionId, accountId: session.accountId },
           reason: null,
         },
         tx,

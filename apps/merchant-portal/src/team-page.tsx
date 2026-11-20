@@ -17,6 +17,9 @@ import {
   useTeamCommand,
 } from './team.js';
 
+// Every 30 s, as the board without its channel (RA §4.3).
+const DEVICES_POLL_MS = 30_000;
+
 function Answer({ answer }: { answer: TeamAnswer | null }) {
   const { t } = useTranslation();
   if (answer?.status !== 'refused') return null;
@@ -127,7 +130,9 @@ export function StaffPage() {
 export function DevicesPage() {
   const { t } = useTranslation();
   const timeZone = use(TimeZoneContext);
-  const devices = useQuery(devicesQuery);
+  // «متصل الآن» moves on its own (RA §4.3), so the list is read again
+  // while the page is open.
+  const devices = useQuery({ ...devicesQuery, refetchInterval: DEVICES_POLL_MS });
   const sessions = useQuery(portalSessionsQuery);
   const command = useTeamCommand();
   const [answer, setAnswer] = useState<TeamAnswer | null>(null);

@@ -318,13 +318,15 @@ export class MerchantStaffController {
 
   // RA §14.2 (slice 2.45c, owner decision 2026-11-20): the owner web
   // portal's open sessions, which «الأجهزة» in the portal lists so an owner
-  // signs out a lost laptop. The sign-out names its target, so it takes no
-  // key; its repeat is 404 unknown_session.
+  // signs out a lost laptop; the portal's only (an app's token is 403
+  // not_in_portal, after the owner checks). The sign-out names its target,
+  // so it takes no key; its repeat is 404 unknown_session.
   @Get('portal-sessions')
   @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantPortalSessionsDto })
   async listPortalSessions(@CurrentAppSession() session: AppSession) {
     const { restaurantId } = await this.ownerOf(session);
+    portalOnly(session);
     return this.portalSessionsAnswer(restaurantId, session);
   }
 
@@ -338,6 +340,7 @@ export class MerchantStaffController {
     @Req() request: FastifyRequest,
   ) {
     const owner = await this.ownerOf(session);
+    portalOnly(session);
     const restaurant = await this.merchants.cityAndStatus(owner.restaurantId);
     if (restaurant === null) throw new NotFoundException();
     try {
@@ -348,6 +351,9 @@ export class MerchantStaffController {
       );
     } catch (error) {
       if (error instanceof PortalSessionsRefusedError) {
+        if (error.refusal === 'restaurant_terminated') {
+          throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: error.refusal });
+        }
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
       }
       throw error;
@@ -416,6 +422,13 @@ export class MerchantStaffController {
         thisDevice: device.deviceId === session.deviceId,
       })),
     };
+  }
+}
+
+// The portal sessions' routes are the portal's (owner decision 2026-11-20).
+function portalOnly(session: AppSession): void {
+  if (!session.portal) {
+    throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'not_in_portal' });
   }
 }
 

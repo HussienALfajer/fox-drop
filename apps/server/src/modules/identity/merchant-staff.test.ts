@@ -287,7 +287,19 @@ describe('the owners’ devices (RA §14.2)', () => {
         payload: { name: 'جهاز' },
       },
       { method: 'POST' as const, url: `/v1/merchant/devices/${deviceId}/sign-out` },
+      { method: 'GET' as const, url: '/v1/merchant/portal-sessions' },
+      {
+        method: 'POST' as const,
+        url: `/v1/merchant/portal-sessions/${randomUUID()}/sign-out`,
+      },
     ];
+    // The portal sessions are the portal's: an owner's app token is refused.
+    const fromApp = await app.inject({
+      method: 'GET',
+      url: '/v1/merchant/portal-sessions',
+      headers: owner.headers,
+    });
+    expect([fromApp.statusCode, fromApp.json().error]).toEqual([403, 'not_in_portal']);
     for (const route of routes(cashier.deviceId)) {
       const response = await app.inject({ ...route, headers: cashier.headers });
       expect([route.url, response.statusCode, response.json().error]).toEqual([

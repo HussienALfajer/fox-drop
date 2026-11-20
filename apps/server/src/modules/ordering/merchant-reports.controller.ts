@@ -232,7 +232,10 @@ export class MerchantTicketsController {
       accountId: session.accountId,
       restaurantId: merchant.restaurantId,
       role: merchant.role,
-      context: requestContext(request),
+      // From the portal, the browser as its audited device (`portal:<id>`).
+      context: session.portal
+        ? { ipAddress: request.ip, device: session.deviceId }
+        : requestContext(request),
     };
   }
 }

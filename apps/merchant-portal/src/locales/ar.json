@@ -472,6 +472,7 @@
     "byRestaurant": "من مستخدم آخر",
     "byOperations": "من العمليات",
     "reply": "الرد: {{message}}",
-    "faq": "الأسئلة الشائعة"
+    "faq": "الأسئلة الشائعة",
+    "whatsappAboutOrder": "بخصوص الطلب #{{number}}"
   }
 }

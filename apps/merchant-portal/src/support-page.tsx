@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { type FormEvent, use, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { boardQuery } from './board.js';
+import { ContactLinks } from './contact-links.js';
 import { formatDateTime } from './format.js';
 import { TimeZoneContext } from './live.js';
 import { photoRefusal, usePhotoUpload } from './menu.js';
-import { callLink, contactQuery, whatsappLink } from './session.js';
 import {
   type DataChangeSubject,
   type ReportAnswer,
@@ -26,19 +26,13 @@ import {
 // form on a type, as «طلب تعديل» does from the settings.
 export function SupportPage({ report }: { report?: string | undefined }) {
   const { t } = useTranslation();
-  const contact = useQuery(contactQuery);
   const content = useQuery(contentQuery);
 
   return (
     <main>
       <h1>{t('support.title')}</h1>
       <p>
-        {contact.data?.phone && <a href={callLink(contact.data.phone)}>{t('support.call')}</a>}{' '}
-        {contact.data?.whatsapp && (
-          <a href={whatsappLink(contact.data.whatsapp)} target="_blank" rel="noreferrer">
-            {t('support.whatsapp')}
-          </a>
-        )}
+        <ContactLinks />
       </p>
       {content.isPending && <p>{t('app.loading')}</p>}
       {content.isError && <p role="alert">{t('support.typesFailed')}</p>}

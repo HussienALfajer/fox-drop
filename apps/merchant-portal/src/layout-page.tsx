@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, Outlet, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { ContactLinks } from './contact-links.js';
 import { LiveContext, TimeZoneContext, useMerchantChannel } from './live.js';
 import { type PortalSession, useSignOut } from './session.js';
 import { emergencyStopQuery, statusQuery } from './status.js';
@@ -33,6 +34,7 @@ export function LayoutPage({ session }: { session: PortalSession }) {
           <Link to="/support">{t('layout.support')}</Link>{' '}
           <Link to="/terms">{t('layout.terms')}</Link>
         </nav>
+        <ContactLinks />{' '}
         <button
           type="button"
           disabled={signOut.isPending}

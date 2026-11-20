@@ -45,6 +45,9 @@ const everything = [
   ['order'],
   ['restaurant-status'],
   ['restaurant-hours'],
+  ['pickup-currencies'],
+  ['devices'],
+  ['portal-sessions'],
   ['emergency-stop'],
   ...menuReads,
 ];
