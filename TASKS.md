@@ -12,9 +12,9 @@ Phase 1 of `docs/claude-code-workflow.md`: the context diet.
 ### Plan
 
 - [x] Write `docs/claude-code-workflow.md`; move the earlier handover notes to `docs/slice-notes.md`.
-- [ ] Move every folder `CLAUDE.md` over 4 KB unchanged to `docs/code/<folder path>.md`.
-- [ ] Write the short folder `CLAUDE.md` files (at most 4 KB, pointing to their `docs/code` file).
-- [ ] The size check in `pnpm verify`; the `build-slice`, `reviewer` and root `CLAUDE.md` rules; the `Explore` agent on Haiku.
+- [x] Move every folder `CLAUDE.md` over 4 KB unchanged to `docs/code/<folder path>.md`.
+- [x] Write the short folder `CLAUDE.md` files (at most 4 KB, pointing to their `docs/code` file).
+- [x] The size check in `pnpm verify`; the `build-slice`, `reviewer` and root `CLAUDE.md` rules; the `Explore` agent on Haiku.
 - [ ] Run the checker and the reviewer, open the pull request and merge it.
 
 ## Next

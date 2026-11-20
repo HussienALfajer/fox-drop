@@ -13,6 +13,9 @@ Start here. This page says where each kind of information lives. Each rule has e
 | [`domain/`](domain/README.md)                                       | Shared domain rules (AP §8): order statuses, timers, order money, custody and earnings, currencies, restaurant account, trust, outcomes |
 | [`architecture/`](architecture/README.md)                           | Technology stack and architecture                                                                                                       |
 | [`runbooks/`](runbooks/staging-cycle.md)                            | Run books for the owner's trials on staging, such as the whole order cycle on real phones                                               |
+| [`code/`](code/)                                                    | What the features of each code folder do and why, one file per folder (`code/<folder path>.md`); grep it, never read it whole           |
+| [`slice-notes.md`](slice-notes.md)                                  | What each built slice left: before deploying, to check on staging, decisions pending the owner, not yet                                 |
+| [`claude-code-workflow.md`](claude-code-workflow.md)                | How the project uses Claude Code: token and check-time baseline, and the planned changes                                                |
 | [`roadmap.md`](roadmap.md)                                          | Versions V1–V6 and the V1 build phases                                                                                                  |
 | [`open-questions.md`](open-questions.md)                            | Where every open item lives                                                                                                             |
 

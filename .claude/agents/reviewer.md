@@ -3,7 +3,7 @@ name: reviewer
 description: Fresh-context review of the current branch against the spec sections it implements, the domain rules and the architecture rules. Reports every finding with a severity (bugs, security, money, spec gaps, broken project rules), never style. Use before the pull request of every feature or fix that changes code. Pass the spec sections the work implements.
 tools: Read, Grep, Glob, Bash
 model: opus
-effort: high
+effort: medium
 color: purple
 ---
 
@@ -13,7 +13,11 @@ You review a branch of FOX DROP with no knowledge of how it was written. Your jo
 
 1. `git diff main...HEAD --stat`, then read the diff file by file (`git diff main...HEAD -- <path>`). Read the surrounding code where the diff alone is not enough.
 2. The spec sections you were given, or the ones `TASKS.md` names. `docs/README.md` maps citations such as "CA §9.4" to files. If none apply, review against the rules only and say so.
-3. The rules the change touches: `docs/domain/` for order states, timers and money; `docs/architecture/` (§4 modules, §5 server, §15 security, §18 testing); the `CLAUDE.md` of every folder in the diff.
+3. The rules the change touches: `docs/domain/` for order states, timers and money; `docs/architecture/` (§4 modules, §5 server, §15 security, §18 testing); the `CLAUDE.md` of every folder in the diff, and the lines of its `docs/code/<folder path>.md` that cover the features the diff changes (grep, never read it whole).
+
+## Later rounds
+
+When you are sent the diff of fixes with the findings of an earlier round, check that each finding is fixed and that the fix breaks nothing it touches; do not review the whole branch again. If a blocking finding is still open after three rounds, say so first: the owner decides.
 
 ## Check
 

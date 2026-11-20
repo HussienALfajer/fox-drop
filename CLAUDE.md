@@ -6,7 +6,9 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 
 - `docs/README.md`: the map of all documentation, the citation codes (AP, RA, CA, CU) and the decision ID prefixes. Start there, then read only the sections a task needs.
 - `docs/product/v1/<party>/`: the specs, one file per section. `docs/domain/`: the shared rules (AP §8). `docs/architecture/`: the stack and its rules.
-- `TASKS.md`: the current task, its branch, its plan, and where work stopped.
+- `TASKS.md`: the current task, its branch, its plan, and where work stopped. `docs/slice-notes.md`: what earlier slices left (before deploying, to check on staging, decisions pending the owner, not yet).
+- Folder `CLAUDE.md` files hold the rules for working in that folder and load by themselves; `docs/code/<folder path>.md` holds what each feature there does, what was decided and why. Grep it for the feature you touch; never read it whole.
+- `docs/claude-code-workflow.md`: how this project uses Claude Code, its token and check-time baseline, and the planned changes.
 - `apps/server/`: the server; its `CLAUDE.md` has the module, route, validation and logging rules.
 - `apps/admin/` and `apps/merchant-portal/`: the web apps; `apps/admin/CLAUDE.md` has their API, translation and test rules.
 - `apps/customer/`, `apps/captain/` and `apps/merchant/`: the Flutter apps; `apps/customer/CLAUDE.md` has their rules, `packages/core_l10n/CLAUDE.md` the strings' rules.
@@ -42,7 +44,8 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 - Read the spec sections the task cites and their definition of done, and build only what they say. No helpers, options or abstractions before their first real use.
 - For domain rules (order states, timers, money), write the failing test first.
 - Show evidence: the command and its result. A task is done when its checks pass, not when the code is written.
-- Fix root causes. Never silence a failing test, a type error or a lint rule.
+- Fix root causes. Never silence a failing test, a type error or a lint rule. A flaky test is fixed at its cause: no retries, sleeps or skips. After three failed attempts at the same check, stop and ask the owner.
+- Context is the cost: every turn resends it. Read with Read and Grep, a line range at a time; never `cat` a whole long file or a `CLAUDE.md` (already loaded). Send searches across many files to the `Explore` agent and keep only its answer.
 - Before a feature's pull request, run the `reviewer` subagent and fix what it finds.
 - Keep `TASKS.md` current: the plan as a checklist, and a "Stopped at" line when a session ends with work open. Commit and push after each finished step.
 - Stop and ask the owner about: scope, business rules, open items, a feature's split into pull requests, destructive or non-backward-compatible migrations, production deploys, and anything that touches real money or real users.
