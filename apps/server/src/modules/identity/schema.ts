@@ -653,7 +653,14 @@ export const windowsDevices = identity.table(
 
 // RA §5.3, S14 (slice 2.45a): why a portal session ended before its expiry.
 // new_sign_in: the same owner signed in again from the same browser.
-export const portalSessionEndReasons = ['sign_out', 'account_removed', 'new_sign_in'] as const;
+// `signed_out_by_owner`: an owner ended it from the portal's «الأجهزة»
+// (owner decision 2026-11-20, slice 2.45c).
+export const portalSessionEndReasons = [
+  'sign_out',
+  'account_removed',
+  'new_sign_in',
+  'signed_out_by_owner',
+] as const;
 
 // The owner web portal's sessions (RA §17, §5.3, S14; slice 2.45a): an owner
 // signed in from a browser, behind an HTTP-only cookie whose token is kept as
@@ -686,7 +693,7 @@ export const merchantPortalSessions = identity.table(
     index('merchant_portal_sessions_account').on(table.accountId),
     check(
       'merchant_portal_sessions_end_reason_values',
-      sql`${table.endReason} IN ('sign_out', 'account_removed', 'new_sign_in')`,
+      sql`${table.endReason} IN ('sign_out', 'account_removed', 'new_sign_in', 'signed_out_by_owner')`,
     ),
     check(
       'merchant_portal_sessions_ended',

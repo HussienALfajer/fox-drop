@@ -45,9 +45,10 @@ export async function reportPhoto(
   files: FilesService,
   body: CustomerNewUploadDto,
   accountId: string,
+  from: 'app' | 'portal' = 'app',
 ): Promise<CustomerUploadDto> {
   const upload = await files
-    .createUpload({ ...body, purpose: 'report_photo' }, accountId)
+    .createUpload({ ...body, purpose: 'report_photo' }, accountId, new Date(), from)
     .catch((error: unknown) => {
       if (error instanceof FilesRefusedError && error.refusal === 'too_many_uploads') {
         throw new HttpException(

@@ -5,16 +5,17 @@ import { defineConfig } from 'vitest/config';
 // 2026-11-05): in development Vite forwards /v1 to the local server, so the
 // __Host- session cookie works without CORS, and Centrifugo's WebSocket to the
 // local Centrifugo (compose.yaml allows these origins). The item photos come
-// from imgproxy under /media and go to the storage under /public-media, with
-// the Host unchanged, since the server signs them for this origin
-// (MERCHANT_PORTAL_URL, architecture §5.8). In production the edge does all
-// four.
+// from imgproxy under /media and go to the storage under /public-media, and
+// the report photos under /private-docs, with the Host unchanged, since the
+// server signs them for this origin (MERCHANT_PORTAL_URL, architecture §5.8).
+// In production the edge does all five.
 const api = {
   '/v1': 'http://localhost:3000',
   '/connection/websocket': { target: 'ws://localhost:8000', ws: true },
   '/media': 'http://localhost:8088',
   // Vite's short form would rewrite the Host, which the signature covers.
   '/public-media': { target: 'http://localhost:3900', changeOrigin: false },
+  '/private-docs': { target: 'http://localhost:3900', changeOrigin: false },
 };
 
 export default defineConfig({

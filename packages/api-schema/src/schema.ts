@@ -884,6 +884,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/portal-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantStaffListPortalSessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/portal-sessions/{sessionId}/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantStaffSignOutPortalSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -8458,6 +8490,22 @@ export interface components {
             code: string;
             /** Format: date-time */
             expiresAt: string;
+        };
+        MerchantPortalSessionsDto_Output: {
+            /** @description The restaurant's open portal sessions, the latest sign-in first: never devices (RA §4.6). */
+            sessions: {
+                /** Format: uuid */
+                sessionId: string;
+                ownerName: string;
+                /** @description The browser as it named itself at the sign-in; null when it did not. */
+                userAgent: string | null;
+                /** Format: date-time */
+                signedInAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+                /** @description The portal session making the request. */
+                thisSession: boolean;
+            }[];
         };
         SettingListDto_Output: {
             settings: {
@@ -24176,6 +24224,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantWindowsPairingDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffListPortalSessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPortalSessionsDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffSignOutPortalSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPortalSessionsDto_Output"];
                 };
             };
         };

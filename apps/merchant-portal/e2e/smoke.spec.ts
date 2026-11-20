@@ -200,3 +200,73 @@ test('changes an item price from the portal', async ({ page }) => {
   await expect(row).toContainText('125.00');
   await expect(page.getByLabel('السعر')).toHaveCount(0);
 });
+
+// RA §14.2, §4.3, §17 (slice 2.45c): the owner pairs a Windows PC from a
+// browser, and signs out a lost laptop's portal session.
+test('pairs a Windows PC and signs another browser out from the portal', async ({ page }) => {
+  await signedOutApi(page);
+  await page.route('**/v1/merchant/auth/portal/session', (route) =>
+    route.fulfill({ json: session }),
+  );
+  await page.route('**/v1/merchant/devices', (route) =>
+    route.fulfill({
+      json: {
+        withoutDevice: true,
+        devices: [
+          {
+            deviceId: 'tablet-1',
+            name: 'تابلت المطبخ',
+            platform: 'android',
+            appVersion: '1.0.0',
+            user: { name: 'كاشير 1', role: 'cashier' },
+            signedIn: false,
+            lastSeenAt: null,
+            ringing: true,
+            connected: false,
+            deviceCheck: null,
+            thisDevice: false,
+          },
+        ],
+      },
+    }),
+  );
+  const lostLaptop = {
+    sessionId: '0190f3a0-0000-7000-8000-000000000021',
+    ownerName: 'سامر',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36',
+    signedInAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+    thisSession: false,
+  };
+  const thisBrowser = {
+    ...lostLaptop,
+    sessionId: session.sessionId,
+    userAgent: null,
+    thisSession: true,
+  };
+  await page.route('**/v1/merchant/portal-sessions', (route) =>
+    route.fulfill({ json: { sessions: [lostLaptop, thisBrowser] } }),
+  );
+  await page.route('**/v1/merchant/portal-sessions/*/sign-out', (route) =>
+    route.fulfill({ json: { sessions: [thisBrowser] } }),
+  );
+  await page.route('**/v1/merchant/devices/windows-pairing', (route) =>
+    route.fulfill({
+      json: { code: '12345678', expiresAt: new Date(Date.now() + 600_000).toISOString() },
+    }),
+  );
+
+  await page.goto('/devices');
+  await expect(page.getByText('لا يوجد جهاز يستقبل الطلبات في مطعمك الآن')).toBeVisible();
+  await expect(page.getByText('تابلت المطبخ')).toBeVisible();
+  await page.getByRole('button', { name: 'ربط كمبيوتر بويندوز' }).click();
+  await expect(page.getByLabel('رمز الربط')).toHaveText('12345678');
+
+  await expect(page.getByText('Chrome على Windows')).toBeVisible();
+  page.once('dialog', (dialog) => void dialog.accept());
+  const sent = page.waitForRequest('**/v1/merchant/portal-sessions/*/sign-out');
+  await page.getByRole('button', { name: 'تسجيل خروج المتصفح' }).click();
+  expect((await sent).url()).toContain(lostLaptop.sessionId);
+  await expect(page.getByText('Chrome على Windows')).toHaveCount(0);
+  await expect(page.getByText('هذا المتصفح')).toBeVisible();
+});

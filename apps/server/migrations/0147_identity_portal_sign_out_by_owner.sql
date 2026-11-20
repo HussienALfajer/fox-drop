@@ -1,0 +1,2 @@
+ALTER TABLE "identity"."merchant_portal_sessions" DROP CONSTRAINT "merchant_portal_sessions_end_reason_values";--> statement-breakpoint
+ALTER TABLE "identity"."merchant_portal_sessions" ADD CONSTRAINT "merchant_portal_sessions_end_reason_values" CHECK ("identity"."merchant_portal_sessions"."end_reason" IN ('sign_out', 'account_removed', 'new_sign_in', 'signed_out_by_owner'));

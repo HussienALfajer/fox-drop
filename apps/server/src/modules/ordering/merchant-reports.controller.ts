@@ -100,9 +100,10 @@ export class MerchantTicketsController {
 
   // RA §15: the report's photo, a pre-signed PUT into the private bucket,
   // as the customer's (the DTOs are theirs, so the clients share the
-  // models). 403 restaurant_terminated; 429 too_many_uploads.
+  // models); from the owner web portal signed for its own origin (slice
+  // 2.45c), whose /private-docs/incoming/ nginx forwards for PUT. 403 restaurant_terminated; 429 too_many_uploads.
   @Post('uploads/report-photo')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(201)
   @ZodResponse({ status: 201, type: CustomerUploadDto })
   async uploadPhoto(
@@ -111,7 +112,7 @@ export class MerchantTicketsController {
     @Req() request: FastifyRequest,
   ) {
     const by = await this.reporter(session, request);
-    return reportPhoto(this.files, body, by.accountId);
+    return reportPhoto(this.files, body, by.accountId, session.portal ? 'portal' : 'app');
   }
 
   // 400 unknown_reason, too_many_photos, subject_required, invalid_subject
@@ -119,7 +120,7 @@ export class MerchantTicketsController {
   // upload_invalid; 404 unknown_order; 409 upload_used; 422
   // idempotency_key_reused.
   @Post('reports')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @Idempotent()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: MerchantReportTicketDto })
@@ -231,7 +232,10 @@ export class MerchantTicketsController {
       accountId: session.accountId,
       restaurantId: merchant.restaurantId,
       role: merchant.role,
-      context: requestContext(request),
+      // From the portal, the browser as its audited device (`portal:<id>`).
+      context: session.portal
+        ? { ipAddress: request.ip, device: session.deviceId }
+        : requestContext(request),
     };
   }
 }

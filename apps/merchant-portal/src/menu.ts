@@ -417,15 +417,19 @@ export function photoRefusal(file: { type: string; size: number }): 'type' | 'si
 // API client), and its request links it by the upload's id. Each chosen
 // file is uploaded once: a request refused and sent again reuses its upload,
 // as the app's ItemPhoto does, so retries never use up the hourly limit.
-export function usePhotoUpload() {
+// A report's photo (RA §15, slice 2.45c) goes the same way to
+// /private-docs/incoming/.
+export function usePhotoUpload(purpose: 'item' | 'report' = 'item') {
   const uploads = useRef(new WeakMap<File, string>());
   const upload = useMutation({
     mutationFn: async (file: File): Promise<string | null> => {
       const done = uploads.current.get(file);
       if (done !== undefined) return done;
-      const asked = await api.POST('/v1/merchant/uploads/item-photo', {
-        body: { contentType: file.type as (typeof IMAGE_TYPES)[number], sizeBytes: file.size },
-      });
+      const body = { contentType: file.type as (typeof IMAGE_TYPES)[number], sizeBytes: file.size };
+      const asked =
+        purpose === 'item'
+          ? await api.POST('/v1/merchant/uploads/item-photo', { body })
+          : await api.POST('/v1/merchant/uploads/report-photo', { body });
       if (!asked.data) return null;
       const put = await fetch(asked.data.url, {
         method: 'PUT',

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { use } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ContactLinks } from './contact-links.js';
 import { TimeZoneContext } from './live.js';
 import { type OrderDetail, orderQuery } from './board.js';
 import { formatMoney, formatTime } from './format.js';
@@ -36,6 +37,7 @@ function Detail({ detail }: { detail: OrderDetail }) {
   return (
     <>
       <h1>{t('order.title', { number: order.number })}</h1>
+      <ContactLinks orderNumber={order.number} />
       <p>{t(`order.status.${order.status}`)}</p>
       <p>
         {order.customer.firstName

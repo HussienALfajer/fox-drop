@@ -28,9 +28,11 @@ export function staleKeys(event: MerchantEvent): string[][] {
     return [['board'], ...(event.orderId ? [['order', event.orderId]] : [])];
   }
   if (event.type === 'restaurant.state_changed') {
+    // The hours and the prep time change on another device or by
+    // operations too (slice 2.45c).
     return event.kind !== undefined && MENU_KINDS.has(event.kind)
       ? [['restaurant-status'], ...menuReads]
-      : [['restaurant-status']];
+      : [['restaurant-status'], ['restaurant-hours']];
   }
   if (event.type === 'platform.emergency_stop') return [['emergency-stop']];
   return [];
@@ -38,7 +40,17 @@ export function staleKeys(event: MerchantEvent): string[][] {
 
 // After every (re)subscription everything is read again: what was missed
 // while away has no other way in (RA §4.3).
-const everything = [['board'], ['order'], ['restaurant-status'], ['emergency-stop'], ...menuReads];
+const everything = [
+  ['board'],
+  ['order'],
+  ['restaurant-status'],
+  ['restaurant-hours'],
+  ['pickup-currencies'],
+  ['devices'],
+  ['portal-sessions'],
+  ['emergency-stop'],
+  ...menuReads,
+];
 
 function refresh(queryClient: QueryClient, keys: string[][]) {
   for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey });

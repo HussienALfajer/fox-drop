@@ -16,7 +16,10 @@ import { BulkPricePage, PreviewPage, PriceLogPage, QuickEditPage } from './menu-
 import { OrderPage } from './order-page.js';
 import { sessionQuery } from './session.js';
 import { SignInPage } from './sign-in-page.js';
+import { SettingsPage } from './settings-page.js';
 import { StatusPage } from './status-page.js';
+import { SupportPage } from './support-page.js';
+import { DevicesPage, StaffPage } from './team-page.js';
 import { termsQuery } from './terms.js';
 import { TermsPage } from './terms-page.js';
 
@@ -119,6 +122,42 @@ const menuRoutes = (
   }),
 );
 
+// RA §10, §14, §15, §17 (slice 2.45c): the settings, staff, devices and
+// support.
+const settingsRoutes = (
+  [
+    ['/settings', SettingsPage],
+    ['/staff', StaffPage],
+    ['/devices', DevicesPage],
+  ] as const
+).map(([path, Page]) =>
+  createRoute({
+    getParentRoute: () => signedInRoute,
+    path,
+    component: () => (
+      <AfterTerms>
+        <Page />
+      </AfterTerms>
+    ),
+  }),
+);
+
+// `report` opens «إبلاغ عن مشكلة» on a type (the settings' «طلب تعديل»).
+const supportRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/support',
+  validateSearch: (search: Record<string, unknown>): { report?: string } =>
+    typeof search.report === 'string' ? { report: search.report } : {},
+  component: function Support() {
+    const { report } = supportRoute.useSearch();
+    return (
+      <AfterTerms>
+        <SupportPage report={report} />
+      </AfterTerms>
+    );
+  },
+});
+
 const termsRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/terms',
@@ -135,6 +174,8 @@ export function createPortalRouter(queryClient: QueryClient) {
         orderRoute,
         statusRoute,
         ...menuRoutes,
+        ...settingsRoutes,
+        supportRoute,
         termsRoute,
       ]),
     ]),

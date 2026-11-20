@@ -1179,6 +1179,8 @@ import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_in
 import 'package:core_api/src/model/merchant_portal_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_portal_code_sent_dto_output.dart';
 import 'package:core_api/src/model/merchant_portal_session_dto_output.dart';
+import 'package:core_api/src/model/merchant_portal_sessions_dto_output.dart';
+import 'package:core_api/src/model/merchant_portal_sessions_dto_output_sessions_inner.dart';
 import 'package:core_api/src/model/merchant_portal_sign_in_dto.dart';
 import 'package:core_api/src/model/merchant_portal_signed_in_dto_output.dart';
 import 'package:core_api/src/model/merchant_portal_signed_out_dto_output.dart';
@@ -2426,6 +2428,8 @@ part 'serializers.g.dart';
   MerchantPortalCodeRequestDto,
   MerchantPortalCodeSentDtoOutput,
   MerchantPortalSessionDtoOutput,
+  MerchantPortalSessionsDtoOutput,
+  MerchantPortalSessionsDtoOutputSessionsInner,
   MerchantPortalSignInDto,
   MerchantPortalSignedInDtoOutput,
   MerchantPortalSignedOutDtoOutput,
@@ -3663,6 +3667,12 @@ Serializers serializers =
               FullType(AdminCityDtoOutputCurrenciesInner),
             ]),
             () => ListBuilder<AdminCityDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantPortalSessionsDtoOutputSessionsInner),
+            ]),
+            () => ListBuilder<MerchantPortalSessionsDtoOutputSessionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
