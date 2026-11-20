@@ -464,7 +464,7 @@ jobs:
         run: |
           setting() { grep -E "^$1=" ../../infra/environments/staging.env | cut -d= -f2; }
           api_host=$(setting API_HOST)
-          firebase=()
+          defines=()
           if [ -n "$FIREBASE_APP_ID" ]; then
             project_id=$(setting FIREBASE_PROJECT_ID)
             project_number=$(setting FIREBASE_PROJECT_NUMBER)
@@ -472,7 +472,7 @@ jobs:
               echo "::error::FIREBASE_APP_ID is set but the Firebase project or API key is missing"
               exit 1
             fi
-            firebase=(
+            defines=(
               --dart-define="FIREBASE_APP_ID=$FIREBASE_APP_ID"
               --dart-define="FIREBASE_PROJECT_ID=$project_id"
               --dart-define="FIREBASE_PROJECT_NUMBER=$project_number"
@@ -481,13 +481,18 @@ jobs:
           else
             echo "::warning::No Firebase app ID for ${{ matrix.app }}: this APK sends no App Check token"
           fi
+          # Slice 2.43: with its licence the captain APK tracks through the
+          # background location library, else through geolocator.
+          if [ -n "$FOXDROP_BGGEO_LICENSE" ]; then
+            defines+=(--dart-define=BACKGROUND_LOCATION_LICENSED=true)
+          fi
           printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/release.jks"
           export FOXDROP_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
           flutter build apk --flavor staging --release \
             --build-number "$GITHUB_RUN_NUMBER" \
             --dart-define="API_BASE_URL=https://$api_host" \
             --dart-define="UPDATE_URL=$UPDATE_URL" \
-            "${firebase[@]}"
+            "${defines[@]}"
           rm "$RUNNER_TEMP/release.jks"
         env:
           KEYSTORE: ${{ secrets[format('STAGING_{0}_KEYSTORE', matrix.key)] }}
@@ -497,6 +502,10 @@ jobs:
           FIREBASE_API_KEY: ${{ secrets.STAGING_FIREBASE_API_KEY }}
           # Where the update screen's button leads (RA §4.2); empty hides it.
           UPDATE_URL: ${{ vars[format('STAGING_{0}_UPDATE_URL', matrix.key)] }}
+          # The captain app's background location licence (slice 2.43,
+          # architecture §22 item 8); empty until the owner buys it, and
+          # unused by the other apps.
+          FOXDROP_BGGEO_LICENSE: ${{ secrets.FOXDROP_BGGEO_LICENSE }}
 
       - uses: actions/upload-artifact@v5
         with:

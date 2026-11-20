@@ -24,6 +24,9 @@ dependencies:
   dio: 5.11.1
   flutter:
     sdk: flutter
+  # CA §4.3, architecture §14.1 (slice 2.43): the location in the background
+  # with its persistent queue; a paid Android licence for release builds.
+  flutter_background_geolocation: 5.9.2
   flutter_riverpod: 3.4.3
   geolocator: 14.0.2
   go_router: 18.1.3

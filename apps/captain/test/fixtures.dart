@@ -485,6 +485,10 @@ class FakeLocation implements LocationSource {
   int tracking = 0;
   int accessAsked = 0;
 
+  /// The points recorded while tracked and not sent yet, oldest first, as
+  /// the library's database keeps them.
+  final kept = <Fix>[];
+
   @override
   Future<LocationProblem?> ensureAccess() async {
     accessAsked++;
@@ -500,9 +504,23 @@ class FakeLocation implements LocationSource {
     return _tracked.stream;
   }
 
-  /// The phone moves to [point].
+  @override
+  Future<List<KeptFix>> pending(int limit) async => [
+    for (final (index, fix) in kept.take(limit).indexed)
+      (id: '$index', fix: fix),
+  ];
+
+  @override
+  Future<void> sent(List<KeptFix> points) async =>
+      kept.removeRange(0, points.length);
+
+  @override
+  Future<void> clear() async => kept.clear();
+
+  /// The phone moves to [point]; tracked, the point is kept until sent.
   void move(({double latitude, double longitude}) point) {
     fix = fixAt(point);
+    if (_tracked.hasListener) kept.add(fix!);
     _tracked.add(fix!);
   }
 }

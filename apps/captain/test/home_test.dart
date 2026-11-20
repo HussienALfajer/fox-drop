@@ -634,7 +634,7 @@ void main() {
     await app.settle(tester);
     expect(find.text('انضم ككابتن'), findsOneWidget);
     expect(tracker.tracking, isFalse);
-    expect(tracker.queued, 0);
+    expect(await tracker.queued, 0);
     await app.done(tester);
   });
 

@@ -8,6 +8,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
+    as bg;
 import 'package:geolocator/geolocator.dart';
 
 import '../api.dart';
@@ -65,12 +67,44 @@ abstract interface class LocationSource {
 
   /// A position about every 10 seconds while listened to. On Android it runs
   /// a foreground service with its permanent notification (CA §4.3), so the
-  /// app keeps tracking in the background.
+  /// app keeps tracking in the background. Each point is also kept until
+  /// [sent], across a restart of the app.
   Stream<Fix> track();
+
+  /// The points kept and not sent yet, oldest first, at most [limit], their
+  /// times on the device's clock.
+  Future<List<KeptFix>> pending(int limit);
+
+  /// Forgets the first points [pending] answered, once the server kept them
+  /// or will never keep them.
+  Future<void> sent(List<KeptFix> points);
+
+  /// Forgets every point kept (the session ended).
+  Future<void> clear();
 }
 
-class GeolocatorSource implements LocationSource {
-  const GeolocatorSource();
+/// A point the source keeps until it is sent, by the source's own id.
+typedef KeptFix = ({String id, Fix fix});
+
+/// CA §4.3, architecture §14.1 (slice 2.43): the permission and a one-off
+/// position through `geolocator`; tracking through
+/// `flutter_background_geolocation`, which runs its foreground service of
+/// type `location` with the permanent notification «أنت متصل — FOX DROP
+/// يتابع موقعك لتصلك العروض», keeps every point in its own database until
+/// the app sends it (so a point recorded without a signal, or while the
+/// system had stopped the app, is sent once it runs again), and goes on
+/// after the app is closed and after a reboot until [track]'s listener
+/// stops it. Its Android licence comes from the build
+/// (`FOXDROP_BGGEO_LICENSE`); a debug build works without one. A release
+/// build without it (staging until the owner buys it) tracks through
+/// `geolocator`'s foreground service as before, its points kept in memory.
+class PhoneLocationSource implements LocationSource {
+  PhoneLocationSource();
+
+  bool _ready = false;
+
+  // Without the library: the points tracked and not sent, oldest first.
+  final _memory = <Fix>[];
 
   @override
   Future<LocationProblem?> ensureAccess() async {
@@ -100,44 +134,182 @@ class GeolocatorSource implements LocationSource {
           timeLimit: Duration(seconds: 20),
         ),
       );
-      return _fix(position);
+      return Fix(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracyMetres: position.accuracy,
+        recordedAt: position.timestamp.toUtc(),
+        simulated: position.isMocked,
+      );
     } on Object {
       return null;
     }
   }
 
-  @override
-  Stream<Fix> track() {
+  // Once per run of the app, before any other call of the library.
+  Future<void> _readyOnce() async {
+    if (_ready) return;
     // The notification's text is the one string outside a widget: the
     // service shows it before any screen does.
     final l10n = lookupAppLocalizations(const Locale('ar'));
-    final settings = defaultTargetPlatform == TargetPlatform.android
-        ? AndroidSettings(
-            accuracy: LocationAccuracy.high,
-            intervalDuration: locationEvery,
-            foregroundNotificationConfig: ForegroundNotificationConfig(
-              notificationTitle: l10n.captainAppName,
-              notificationText: l10n.captainTrackingNotice,
-              setOngoing: true,
-              enableWakeLock: true,
-            ),
-          )
-        : const LocationSettings(accuracy: LocationAccuracy.high);
-    return Geolocator.getPositionStream(locationSettings: settings).map(_fix);
+    await bg.BackgroundGeolocation.ready(
+      bg.Config(
+        geolocation: bg.GeoConfig(
+          desiredAccuracy: bg.DesiredAccuracy.high,
+          // CA §4.3: every 10 seconds, moving or not (waiting at the
+          // restaurant included), never thinned by distance or a filter.
+          distanceFilter: 0,
+          locationUpdateInterval: locationEvery.inMilliseconds,
+          fastestLocationUpdateInterval: locationEvery.inMilliseconds,
+          allowIdenticalLocations: true,
+          disableElasticity: true,
+          filter: bg.LocationFilter(
+            policy: bg.LocationFilterPolicy.passThrough,
+          ),
+        ),
+        activity: const bg.ActivityConfig(disableStopDetection: true),
+        app: bg.AppConfig(
+          stopOnTerminate: false,
+          startOnBoot: true,
+          notification: bg.Notification(
+            title: l10n.captainAppName,
+            text: l10n.captainTrackingNotice,
+            sticky: true,
+          ),
+        ),
+        persistence: bg.PersistenceConfig(
+          persistMode: bg.PersistMode.location,
+          maxDaysToPersist: 1,
+          maxRecordsToPersist: _queueLimit,
+        ),
+        logger: const bg.LoggerConfig(logLevel: bg.LogLevel.error),
+      ),
+    );
+    _ready = true;
   }
 
-  Fix _fix(Position position) => Fix(
-    latitude: position.latitude,
-    longitude: position.longitude,
-    accuracyMetres: position.accuracy,
-    recordedAt: position.timestamp.toUtc(),
-    simulated: position.isMocked,
+  @override
+  Stream<Fix> track() {
+    if (!_background) {
+      return _foregroundTrack().map((fix) {
+        _memory.add(fix);
+        if (_memory.length > _queueLimit) _memory.removeAt(0);
+        return fix;
+      });
+    }
+    bg.Subscription? subscription;
+    late final StreamController<Fix> controller;
+    controller = StreamController<Fix>(
+      onListen: () async {
+        try {
+          await _readyOnce();
+          subscription = bg.BackgroundGeolocation.onLocation((location) {
+            if (!location.sample) controller.add(_fix(location));
+          }, (error) => controller.addError(error));
+          await bg.BackgroundGeolocation.start();
+          // Moving at once: no stationary state waits for motion.
+          await bg.BackgroundGeolocation.changePace(true);
+        } on Object catch (error) {
+          controller.addError(error);
+        }
+      },
+      onCancel: () async {
+        await subscription?.remove();
+        try {
+          await bg.BackgroundGeolocation.stop();
+        } on Object catch (error) {
+          debugPrint('Background location stop: $error');
+        }
+      },
+    );
+    return controller.stream;
+  }
+
+  // geolocator's position stream, with its foreground service of type
+  // location and the same notification, while the app's engine runs.
+  Stream<Fix> _foregroundTrack() {
+    final l10n = lookupAppLocalizations(const Locale('ar'));
+    final settings = AndroidSettings(
+      accuracy: LocationAccuracy.high,
+      intervalDuration: locationEvery,
+      foregroundNotificationConfig: ForegroundNotificationConfig(
+        notificationTitle: l10n.captainAppName,
+        notificationText: l10n.captainTrackingNotice,
+        setOngoing: true,
+        enableWakeLock: true,
+      ),
+    );
+    return Geolocator.getPositionStream(locationSettings: settings).map(
+      (position) => Fix(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracyMetres: position.accuracy,
+        recordedAt: position.timestamp.toUtc(),
+        simulated: position.isMocked,
+      ),
+    );
+  }
+
+  @override
+  Future<List<KeptFix>> pending(int limit) async {
+    if (!_background) {
+      return [
+        for (final (index, fix) in _memory.take(limit).indexed)
+          (id: '$index', fix: fix),
+      ];
+    }
+    await _readyOnce();
+    final rows = await bg.BackgroundGeolocation.getLocations(
+      bg.LocationQuery(limit: limit, order: bg.LocationQuery.ORDER_ASC),
+    );
+    return [
+      for (final row in rows)
+        if (bg.Location(row) case final location when location.uuid != '')
+          (id: location.uuid, fix: _fix(location)),
+    ];
+  }
+
+  @override
+  Future<void> sent(List<KeptFix> points) async {
+    if (!_background) {
+      _memory.removeRange(0, points.length.clamp(0, _memory.length));
+      return;
+    }
+    for (final point in points) {
+      await bg.BackgroundGeolocation.destroyLocation(point.id);
+    }
+  }
+
+  @override
+  Future<void> clear() async {
+    if (!_background) return _memory.clear();
+    await _readyOnce();
+    await bg.BackgroundGeolocation.destroyLocations();
+  }
+
+  Fix _fix(bg.Location location) => Fix(
+    latitude: location.coords.latitude,
+    longitude: location.coords.longitude,
+    accuracyMetres: location.coords.accuracy,
+    recordedAt:
+        DateTime.tryParse('${location.timestamp}')?.toUtc() ??
+        DateTime.now().toUtc(),
+    simulated: location.mock,
   );
 }
 
 final locationSourceProvider = Provider<LocationSource>(
-  (ref) => const GeolocatorSource(),
+  (ref) => PhoneLocationSource(),
 );
+
+/// Whether the build carries `flutter_background_geolocation`'s licence: CI
+/// passes `BACKGROUND_LOCATION_LICENSED` with the key (slice 2.43).
+const backgroundLocationLicensed = bool.fromEnvironment(
+  'BACKGROUND_LOCATION_LICENSED',
+);
+
+// The library works without its licence in a debug build only.
+bool get _background => kDebugMode || backgroundLocationLicensed;
 
 /// CA §4.3: every 10 seconds while online (fixed, AP §4.2).
 const locationEvery = Duration(seconds: 10);
@@ -150,8 +322,9 @@ const _queueLimit = 8640;
 
 /// Tracks the phone while the captain is online and sends the points every
 /// 10 seconds, oldest first; points the server could not receive wait for the
-/// next send, so the route stays complete (CA §4.3). The queue lives while the
-/// app runs; one that survives a restart comes with `core_commands`.
+/// next send, so the route stays complete (CA §4.3). The source keeps them
+/// (slice 2.43: the library's database on Android), so a restart loses none:
+/// the next start or stop sends what it kept.
 class LocationTracker {
   LocationTracker({
     required this.source,
@@ -165,7 +338,6 @@ class LocationTracker {
   /// Sends a batch; throws a [DioException] when the server does not keep it.
   final Future<void> Function(List<Fix> points) send;
 
-  final _queue = <Fix>[];
   StreamSubscription<Fix>? _tracking;
   // A start waiting for the location access; a stop or reset makes it stale.
   bool _starting = false;
@@ -178,7 +350,7 @@ class LocationTracker {
   Fix? get latest => _latest;
 
   /// The points waiting to be sent.
-  int get queued => _queue.length;
+  Future<int> get queued async => (await source.pending(_queueLimit)).length;
 
   bool get tracking => _tracking != null;
 
@@ -203,7 +375,7 @@ class LocationTracker {
   void start() {
     if (_tracking != null || _starting) return;
     _starting = true;
-    _timer ??= Timer.periodic(locationEvery, (_) => unawaited(flush()));
+    _sendKept();
     final generation = _generation;
     unawaited(() async {
       try {
@@ -229,7 +401,7 @@ class LocationTracker {
     _starting = false;
     unawaited(_tracking?.cancel());
     _tracking = null;
-    if (_queue.isEmpty) _stopTimer();
+    unawaited(flush());
   }
 
   /// A position taken for a command, kept as the latest.
@@ -248,34 +420,52 @@ class LocationTracker {
     _starting = false;
     unawaited(_tracking?.cancel());
     _tracking = null;
-    _queue.clear();
     _latest = null;
     _stopTimer();
+    unawaited(
+      source.clear().catchError(
+        (Object error) => debugPrint('Location points kept: $error'),
+      ),
+    );
   }
 
+  // The source keeps every point it tracked (`LocationSource.track`).
   void _record(Fix fix) {
     final point = onServerClock(fix);
     _latest = point;
     _changes.add(point);
-    _queue.add(point);
-    if (_queue.length > _queueLimit) _queue.removeAt(0);
+  }
+
+  // Sends what the source keeps every 10 seconds, until nothing is left
+  // while not tracking.
+  void _sendKept() {
+    _timer ??= Timer.periodic(locationEvery, (_) => unawaited(flush()));
   }
 
   Future<void> flush() async {
-    if (_sending || _queue.isEmpty) {
-      if (_tracking == null && _queue.isEmpty) _stopTimer();
-      return;
-    }
+    if (_sending) return;
     _sending = true;
-    final batch = _queue.take(_batchSize).toList();
     try {
-      await send(batch);
-      _queue.removeRange(0, batch.length);
-    } on DioException catch (error) {
-      final status = error.response?.statusCode;
-      // Offline (409 not_online) or a point refused (400): the server will
-      // never keep them, so they leave the queue.
-      if (status == 409 || status == 400) _queue.removeRange(0, batch.length);
+      final batch = await source.pending(_batchSize);
+      if (batch.isEmpty) {
+        if (_tracking == null && !_starting) _stopTimer();
+        return;
+      }
+      // Points kept while not tracking (stopped, or from before a restart)
+      // go every 10 seconds until none is left.
+      _sendKept();
+      try {
+        await send([for (final point in batch) onServerClock(point.fix)]);
+        await source.sent(batch);
+      } on DioException catch (error) {
+        final status = error.response?.statusCode;
+        // Offline (409 not_online) or a point refused (400): the server will
+        // never keep them, so they leave the queue.
+        if (status == 409 || status == 400) await source.sent(batch);
+      }
+    } on Object catch (error) {
+      // The source could not be read: the next round tries again.
+      if (error is! DioException) debugPrint('Location points: $error');
     } finally {
       _sending = false;
     }

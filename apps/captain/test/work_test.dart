@@ -555,7 +555,7 @@ void main() {
           restaurant.latitude,
           pin.latitude,
         ]);
-        expect(tracker.queued, 0);
+        expect(await tracker.queued, 0);
       },
     );
 
@@ -568,20 +568,36 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         answers.add(refused(0));
         await tracker.flush();
-        expect(tracker.queued, 1);
+        expect(await tracker.queued, 1);
         answers.add(refused(503));
         await tracker.flush();
-        expect(tracker.queued, 1);
+        expect(await tracker.queued, 1);
         answers.add(refused(409, {'error': 'not_online'}));
         await tracker.flush();
-        expect(tracker.queued, 0);
+        expect(await tracker.queued, 0);
       },
     );
 
-    test('a point seen offline is the latest but never sent', () {
+    test('a point seen offline is the latest but never sent', () async {
       tracker.see(fixAt(restaurant));
       expect(tracker.latest, isNotNull);
-      expect(tracker.queued, 0);
+      expect(await tracker.queued, 0);
+    });
+
+    // CA §4.3, architecture §14.1 (slice 2.43): the source keeps the points
+    // (the library's database on Android), so those recorded before the app
+    // stopped, or while it did not run, are sent once it runs again.
+    test('sends the points the source kept before a restart', () async {
+      source.kept.addAll([fixAt(restaurant), fixAt(pin)]);
+      // Back offline after the restart: the points still go.
+      tracker.stop();
+      await Future<void>.delayed(Duration.zero);
+      expect(sent.single.map((p) => p.latitude), [
+        restaurant.latitude,
+        pin.latitude,
+      ]);
+      expect(sent.single.first.recordedAt, now.add(const Duration(seconds: 5)));
+      expect(source.kept, isEmpty);
     });
 
     test('a session that ends stops everything and drops the points', () async {
@@ -591,7 +607,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       tracker.reset();
       expect(tracker.tracking, isFalse);
-      expect(tracker.queued, 0);
+      expect(await tracker.queued, 0);
       expect(tracker.latest, isNull);
     });
 

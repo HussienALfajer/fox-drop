@@ -3,8 +3,9 @@
     <!-- The app calls the FOX DROP API. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- CA §4.3: the location every 10 seconds while online, through
-         geolocator's foreground service of type location with its permanent
-         notification (owner decision 2026-11-07); never while offline. -->
+         flutter_background_geolocation's foreground service of type location
+         with its permanent notification (slice 2.43; the library adds the
+         background location permission); never while offline. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -52,6 +53,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- flutter_background_geolocation's licence, from the build
+             (app/build.gradle.kts). -->
+        <meta-data
+            android:name="com.transistorsoft.locationmanager.license"
+            android:value="${backgroundGeolocationLicence}"/>
         <service
             android:name="com.foxdrop.core_alerts.ReceivingService"
             tools:node="remove"/>

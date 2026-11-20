@@ -111,6 +111,8 @@ Every merge to `main` but one of docs only runs the `staging-apks` job of `.gith
 
 Each app has its own staging key (architecture §11.4): the secrets `STAGING_<APP>_KEYSTORE` (the PKCS12 key store in base64) and `STAGING_<APP>_KEYSTORE_PASSWORD` of the GitHub `staging` environment, alias `foxdrop`. The owner keeps a copy outside the repository. A new key cannot update an installed app: uninstall the staging app first. A build of the same flavor on a machine without the key is signed with the debug key; never hand it out.
 
+The captain APK's background location (`flutter_background_geolocation`, architecture §14.1, §22 item 8) needs its Android licence key in the secret `FOXDROP_BGGEO_LICENSE` of the `staging` environment (owner decision 2026-11-20: bought later). Until it is set the staging APK tracks through `geolocator` while the app runs, as before (its points kept in memory); once set, `staging-apks` passes `BACKGROUND_LOCATION_LICENSED=true` and the APK tracks through the library, its points kept across a restart. A debug build always uses the library, which needs no licence there.
+
 ## App Check
 
 The code requests carry a Firebase App Check token (architecture §8.3.3 item 1; `packages/core_auth/CLAUDE.md`). Owner decisions 2026-11-07: one Firebase project for staging now (production gets its own before launch, §11.4), Android only, the configuration as build values (no `google-services.json` or other Firebase file in the repository), the debug provider in debug builds only. The staging APKs are installed outside Google Play, so Play Integrity never gives them `PLAY_RECOGNIZED`: the project must not require it.
