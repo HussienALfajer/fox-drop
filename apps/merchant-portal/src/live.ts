@@ -2,6 +2,7 @@ import { type QueryClient, useQueryClient } from '@tanstack/react-query';
 import { Centrifuge, UnauthorizedError } from 'centrifuge';
 import { createContext, useEffect, useState } from 'react';
 import { api } from './api.js';
+import { MENU_KINDS } from './menu.js';
 
 // RA §17, §4.3, architecture §6.1–6.2: the live orders follow the
 // restaurant's channel, as every device does. The portal never counts as a
@@ -13,7 +14,12 @@ export const merchantChannel = (restaurantId: string): string => `merchant:${res
 export interface MerchantEvent {
   type: string;
   orderId?: string;
+  // A restaurant.state_changed's kind (RA §18).
+  kind?: string;
 }
+
+// The menu's reads, after a change of the menu (slice 2.45b).
+const menuReads = [['menu'], ['menu-price-log'], ['menu-preview']];
 
 // The reads a publication makes stale: the portal reads the server again,
 // which answers what the owner may see.
@@ -21,14 +27,18 @@ export function staleKeys(event: MerchantEvent): string[][] {
   if (event.type.startsWith('order.')) {
     return [['board'], ...(event.orderId ? [['order', event.orderId]] : [])];
   }
-  if (event.type === 'restaurant.state_changed') return [['restaurant-status']];
+  if (event.type === 'restaurant.state_changed') {
+    return event.kind !== undefined && MENU_KINDS.has(event.kind)
+      ? [['restaurant-status'], ...menuReads]
+      : [['restaurant-status']];
+  }
   if (event.type === 'platform.emergency_stop') return [['emergency-stop']];
   return [];
 }
 
 // After every (re)subscription everything is read again: what was missed
 // while away has no other way in (RA §4.3).
-const everything = [['board'], ['order'], ['restaurant-status'], ['emergency-stop']];
+const everything = [['board'], ['order'], ['restaurant-status'], ['emergency-stop'], ...menuReads];
 
 function refresh(queryClient: QueryClient, keys: string[][]) {
   for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey });

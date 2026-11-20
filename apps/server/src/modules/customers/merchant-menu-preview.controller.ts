@@ -42,7 +42,7 @@ export class MerchantMenuPreviewController {
   ) {}
 
   @Get('menu/customer-preview')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuPreviewDto })
   async preview(@CurrentAppSession() session: AppSession) {
     const account = session.merchant;

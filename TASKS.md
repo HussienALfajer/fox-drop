@@ -4,20 +4,28 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.45b, the menu in the owner web portal (`docs/roadmap.md`, Phase 2).
+Slice 2.45c, the settings, staff and devices in the owner web portal (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.45b The menu in the portal: availability, prices, items, photos, categories and options, the price log and the preview (RA §9). The owner changes a price from a browser.
-- **Specs:** RA §17, §9 (docs/product/v1/restaurant-app/09-menu.md), §5.4 (owners: menu prices, items, photos, categories and options; availability), §18; architecture §10.4.
+- **Roadmap line:** 2.45c The settings, staff and devices in the portal: hours, default prep time, maximum active orders, pickup currencies, «الموظفون», «الأجهزة» with Windows pairing codes, support (RA §10, §14, §15). The owner pairs a Windows PC from the portal.
+- **Specs:** RA §17, §10 (10-status-and-hours.md), §14 (14-staff-devices-and-settings.md), §15 (15-support.md), §5.4 (the portal's column), §18; architecture §10.4.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Already built (reuse):** the portal's session and the `@AppSignedIn({ portal: true })` opt-in (slice 2.45a, `apps/server/src/modules/identity/CLAUDE.md`); the owners' menu routes of the app (`merchants/merchant-menu.controller.ts`, slice 2.32a–b: availability, prices, hiding, windows, order, bulk price, change requests with photos), «سجل الأسعار» (`reporting/merchant-price-log.controller.ts`) and «معاينة كما يراها الزبون» (`customers/merchant-menu-preview.controller.ts`); the item photo upload (`POST /v1/merchant/uploads/item-photo`, signed for the apps' host: check it works from the portal's origin, which the panel's uploads do through `/public-media/`).
-- **Ask the owner first:** nothing new expected (the split, the sign-in and the design were decided on 2026-11-20); the design stop still holds (unstyled).
+- **Already built (reuse):** the portal's session, `portal: true` and the menu's pattern (slices 2.45a–b, `apps/merchant-portal/CLAUDE.md`); the owners' routes of the app: `GET`/`PUT /v1/merchant/restaurant/hours`, `PUT /v1/merchant/restaurant/order-settings`, `GET`/`PUT /v1/merchant/settings/pickup-currencies` (`merchants/merchant-status.controller.ts`), «الموظفون» and «الأجهزة» with `POST /v1/merchant/devices/windows-pairing` (`identity/merchant-staff.controller.ts`), support (`ordering/merchant-reports.controller.ts`, `GET /v1/merchant/content`, `GET /v1/merchant/contact`; a report's photo is `POST /v1/merchant/uploads/report-photo`, signed for the apps' host: sign it for the portal's origin as 2.45b did the item photo, with nginx's `/private-docs/incoming/` on the portal's host). The portal session's own «الأجهزة» row (end another browser's portal session, a lost laptop) is 2.45a's «Not yet».
+- **Ask the owner first:** whether «الأجهزة» in the portal lists the owner's portal browsers and lets them sign one out (2.45a left it for here); the design stop still holds (unstyled).
 
 ### Plan
 
-- [ ] Read RA §9 and the owners' menu routes; write this plan as one step per commit.
-- [ ] Server: open the owners' menu routes, the price log and the preview to the portal (`portal: true`), with `merchant-portal.test.ts`'s list; the photo upload from the portal's origin.
-- [ ] Portal: «القائمة» (availability, prices, hiding, windows, order, bulk price, change requests with photos), the price log and the preview; unit and smoke tests.
-- [ ] Review, then hand over to 2.45c.
+- [ ] Read RA §10, §14, §15 and the owners' routes; write this plan as one step per commit.
+- [ ] Server: open the owners' settings, staff, devices, pairing and support routes to the portal (`portal: true`, `merchant-portal.test.ts`'s list); the report photo from the portal's origin.
+- [ ] Portal: «الإعدادات» (hours, prep time, maximum active orders, pickup currencies), «الموظفون», «الأجهزة» with «ربط كمبيوتر بويندوز», «الدعم»; unit and smoke tests.
+- [ ] Review, then hand over to 2.45d.
+
+### Left from 2.45b (the cloud session's branch)
+
+- **Before deploying to staging:** no migration. No new route: the owners' menu routes, «سجل الأسعار» and «معاينة كما يراها الزبون» now take the portal's cookie (`portal: true`). The server reads a new variable, `MERCHANT_PORTAL_URL`, which `infra/compose.yaml` sets from `PORTAL_HOST` (the deploy's compose file carries it). Run `provision.sh` from this merge's commit on `main`, so nginx forwards `/public-media/incoming/` (PUT) on the portal's host to the storage: until then every photo from the portal fails.
+- **To check on staging (after the merge, the deploy and the provisioning):** 1. Sign in to `https://<portal host>/` as an owner and open «القائمة». 2. «تعديل السعر» on an item, type a new price, «حفظ»: the price shows, «سجل الأسعار» lists it with your name, and the restaurant app's menu shows the new price without reloading. 3. «إيقاف حتى الغد» on an item, then «تشغيل». 4. «إضافة صنف» with a price and a photo, «إرسال للمراجعة»: the item shows «جديد — لا يراه الزبائن قبل الموافقة»; the panel's «طلبات تعديل القائمة» shows it with its photo; approve it: it shows in «معاينة كما يراها الزبون». 5. «تعديل الاسم والوصف» on an item, then «سحب الطلب». 6. «تعديل جماعي للأسعار» by 10%, «معاينة قبل وبعد», «تأكيد التعديل». 7. «تعديل سريع»: search an item and switch it.
+- **Decided by us (to confirm with the owner):** the portal's menu is one page with one form open at a time and the tools on their own pages (until the design); switching off is two buttons («إيقاف حتى الغد» first, «إيقاف حتى أعيده») rather than a question; a window typed as 00:00 at its end is midnight; the photo goes through the portal's own origin (signed for `MERCHANT_PORTAL_URL`) with the app's hourly limit.
+- **Not yet:** the photo crop before review, drag to reorder and the photos' layout (the design); no command takes an `Idempotency-Key` but the bulk change (each sets a value, as in the app; RA §18 asks one of every command, to confirm with the owner as for the app).
+- **Not checked locally:** no Docker in the cloud container: the server's database tests (`merchant-portal.test.ts`, `change-request-photos.test.ts` and the rest) ran in CI only; the smoke test ran locally with the container's Chromium.
 
 ### Left from 2.45a (the cloud session's branch)
 

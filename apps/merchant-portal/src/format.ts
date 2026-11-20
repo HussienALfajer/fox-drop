@@ -17,6 +17,21 @@ export function decimalOf(minor: string, currency: string): `${number}` {
   return (negative ? `-${text}` : text) as `${number}`;
 }
 
+// An amount typed in major units («12.5») as integer minor units, with at
+// most the currency's digits (or `digits`); null when it cannot be one. As
+// the panel's minorOf.
+export function minorOf(
+  typed: string,
+  currency: string,
+  digits = digitsOf(currency),
+): string | null {
+  const match = /^(\d{1,12})(?:\.(\d+))?$/.exec(typed.trim());
+  if (!match) return null;
+  const fraction = match[2] ?? '';
+  if (fraction.length > digits) return null;
+  return `${match[1]}${fraction.padEnd(digits, '0')}`.replace(/^0+(?=\d)/, '');
+}
+
 export function formatMoney(amount: string, currency: string): string {
   const digits = digitsOf(currency);
   return new Intl.NumberFormat('ar-u-nu-latn', {

@@ -397,7 +397,8 @@ function menuBody(menu: OwnersMenu) {
 }
 
 // The restaurant app's restaurant and menu (RA §5.4, §5.5, §9.3), for owners
-// and cashiers alike. A terminated restaurant's owners keep only the money
+// and cashiers alike. The menu's routes serve the owner web portal too
+// (RA §17, §5.4; slice 2.45b), the restaurant's read does not. A terminated restaurant's owners keep only the money
 // section (RA §5.5), so these routes refuse it.
 @MerchantController()
 export class MerchantMenuController {
@@ -428,7 +429,7 @@ export class MerchantMenuController {
   }
 
   @Get('menu')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async menu(@CurrentAppSession() session: AppSession) {
     const { restaurantId } = await this.notTerminated(session);
@@ -437,7 +438,7 @@ export class MerchantMenuController {
 
   // RA §9.3: owners and cashiers switch a category, an item or an option.
   @Put('menu/availability')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantAvailabilitySavedDto })
   async setAvailability(
     @CurrentAppSession() session: AppSession,
@@ -481,7 +482,7 @@ export class MerchantMenuController {
   // restaurant_terminated; 404 unknown_menu_row; 409 not_in_base_currency,
   // price_reaches_zero, rounding_unit_missing; 422 idempotency_key_reused.
   @Put('menu/items/:itemId/price')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async itemPrice(
     @CurrentAppSession() session: AppSession,
@@ -502,7 +503,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/options/:optionId/price')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async optionPrice(
     @CurrentAppSession() session: AppSession,
@@ -523,7 +524,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/items/:itemId/hidden')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async itemHidden(
     @CurrentAppSession() session: AppSession,
@@ -544,7 +545,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/categories/:categoryId/hidden')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async categoryHidden(
     @CurrentAppSession() session: AppSession,
@@ -565,7 +566,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/categories/:categoryId/window')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async categoryWindow(
     @CurrentAppSession() session: AppSession,
@@ -586,7 +587,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/category-order')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async categoryOrder(
     @CurrentAppSession() session: AppSession,
@@ -605,7 +606,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/categories/:categoryId/item-order')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async itemOrder(
     @CurrentAppSession() session: AppSession,
@@ -627,7 +628,7 @@ export class MerchantMenuController {
 
   // The bulk change's before and after (AP §9.6.6); a read, so no key.
   @Post('menu/bulk-price/preview')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuBulkPreviewDto })
   async bulkPricePreview(
     @CurrentAppSession() session: AppSession,
@@ -650,7 +651,7 @@ export class MerchantMenuController {
 
   @Post('menu/bulk-price')
   @Idempotent()
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuBulkPriceResultDto })
   async bulkPrice(
     @CurrentAppSession() session: AppSession,
@@ -676,7 +677,7 @@ export class MerchantMenuController {
   // already_published, not_published, request_not_pending, upload_used,
   // upload_expired, upload_missing; 400 upload_invalid, upload_wrong_purpose.
   @Put('menu/requests/categories/:categoryId')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async requestCategory(
     @CurrentAppSession() session: AppSession,
@@ -697,7 +698,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/requests/items/:itemId')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async requestNewItem(
     @CurrentAppSession() session: AppSession,
@@ -724,7 +725,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/requests/items/:itemId/text')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async requestItemText(
     @CurrentAppSession() session: AppSession,
@@ -745,7 +746,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/requests/items/:itemId/photo')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async requestItemPhoto(
     @CurrentAppSession() session: AppSession,
@@ -766,7 +767,7 @@ export class MerchantMenuController {
   }
 
   @Put('menu/requests/option-groups/:groupId')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async requestOptionGroup(
     @CurrentAppSession() session: AppSession,
@@ -799,7 +800,7 @@ export class MerchantMenuController {
   // request_not_pending), so it takes no key.
   @Post('menu/requests/:requestId/withdraw')
   @HttpCode(200)
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async withdraw(
     @CurrentAppSession() session: AppSession,
@@ -814,12 +815,13 @@ export class MerchantMenuController {
   }
 
   // RA §9.2 (slice 2.32b): an owner's item photo, a pre-signed PUT into
-  // public-media's incoming/ on the apps' host. No key: the answer is a URL
+  // public-media's incoming/ on the apps' host, or on the portal's own
+  // origin for the owner web portal (slice 2.45b, RA §17). No key: the answer is a URL
   // to upload with, and only the photo a request links is used. 429
   // too_many_uploads past REPORT_UPLOADS_PER_HOUR.
   @Post('uploads/item-photo')
   @HttpCode(201)
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 201, type: MerchantUploadDto })
   async itemPhotoUpload(
     @CurrentAppSession() session: AppSession,
@@ -832,7 +834,7 @@ export class MerchantMenuController {
         { ...body, purpose: 'item_photo' },
         owner.id,
         new Date(),
-        'app',
+        session.portal ? 'portal' : 'app',
       );
       return { ...upload, expiresAt: upload.expiresAt.toISOString() };
     } catch (error) {

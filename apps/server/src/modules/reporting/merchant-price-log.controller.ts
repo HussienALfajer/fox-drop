@@ -49,7 +49,7 @@ export class MerchantPriceLogController {
   ) {}
 
   @Get('menu/price-log')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantPriceLogDto })
   async priceLog(@CurrentAppSession() session: AppSession) {
     const account = session.merchant;

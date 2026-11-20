@@ -138,3 +138,65 @@ test('tells a cashier the portal is for owners', async ({ page }) => {
   await page.getByRole('button', { name: 'إرسال الرمز' }).click();
   await expect(page.getByRole('alert')).toContainText('بوابة المطعم لمالكي المطاعم');
 });
+
+// RA §9.4, §17 (slice 2.45b): the owner changes a price from a browser.
+test('changes an item price from the portal', async ({ page }) => {
+  await signedOutApi(page);
+  await page.route('**/v1/merchant/auth/portal/session', (route) =>
+    route.fulfill({ json: session }),
+  );
+  const item = (price: string, id = '0190f3a0-0000-7000-8000-000000000011', name = 'شاورما') => ({
+    id,
+    code: id.slice(-4),
+    name,
+    description: null,
+    photoKey: null,
+    price: { amount: price, currency: 'TRY' },
+    available: true,
+    switchedOff: null,
+    hidden: false,
+    optionGroups: [],
+    pending: [],
+  });
+  const menu = (price: string) => ({
+    categories: [
+      {
+        id: '0190f3a0-0000-7000-8000-000000000012',
+        name: 'وجبات',
+        hidden: false,
+        available: true,
+        switchedOff: null,
+        window: null,
+        pending: [],
+        items: [item(price), item('8000', '0190f3a0-0000-7000-8000-000000000013', 'كباب')],
+      },
+    ],
+    optionGroups: [],
+  });
+  await page.route('**/v1/merchant/menu', (route) => route.fulfill({ json: menu('10000') }));
+  await page.route('**/v1/merchant/menu/items/*/price', (route) =>
+    route.fulfill({ json: menu('12500') }),
+  );
+
+  await page.goto('/menu');
+  await expect(page.getByRole('heading', { name: 'وجبات' })).toBeVisible();
+  const row = page.getByRole('listitem', { name: 'شاورما' });
+  // A second item's form starts from its own price, never the first's.
+  await page
+    .getByRole('listitem', { name: 'كباب' })
+    .getByRole('button', { name: 'تعديل السعر' })
+    .click();
+  await page.getByLabel('السعر').fill('99');
+  await row.getByRole('button', { name: 'تعديل السعر' }).click();
+  await expect(page.getByLabel('السعر')).toHaveValue('100.00');
+  await expect(page.getByText('تذكير: سعر التطبيق يجب ألا يزيد على سعر المحل')).toBeVisible();
+  await page.getByLabel('السعر').fill('125');
+  const sent = page.waitForRequest('**/v1/merchant/menu/items/*/price');
+  await page.getByRole('button', { name: 'حفظ' }).click();
+
+  const request = await sent;
+  expect(request.url()).toContain('0190f3a0-0000-7000-8000-000000000011');
+  expect(request.postDataJSON()).toEqual({ price: { amount: '12500', currency: 'TRY' } });
+  await expect(row).toContainText('125.00');
+  await expect(page.getByLabel('السعر')).toHaveCount(0);
+});

@@ -170,10 +170,15 @@ interface Storage {
   // Signs the apps' uploads for APP_UPLOAD_URL (the API's host, whose
   // /private-docs/incoming/ nginx forwards for PUT); built on first use.
   apps: () => S3Client;
+  // Signs the owner web portal's item photos for MERCHANT_PORTAL_URL (its
+  // own origin, whose /public-media/incoming/ nginx forwards for PUT, so the
+  // browser needs no CORS; slice 2.45b); built on first use.
+  portal: () => S3Client;
 }
 
 // The storage from STORAGE_URL, STORAGE_KEY_ID, STORAGE_SECRET,
-// ADMIN_PANEL_URL and, for the apps' uploads, APP_UPLOAD_URL. Built on first use, so a process or test that never
+// ADMIN_PANEL_URL and, for the apps' and the portal's uploads, APP_UPLOAD_URL
+// and MERCHANT_PORTAL_URL. Built on first use, so a process or test that never
 // uploads needs none of them.
 function storageFromEnvironment(env: NodeJS.ProcessEnv = process.env): Storage {
   const value = (name: string) => {
@@ -199,10 +204,12 @@ function storageFromEnvironment(env: NodeJS.ProcessEnv = process.env): Storage {
       requestHandler: { connectionTimeout: 2_000, requestTimeout: 10_000 },
     });
   let apps: S3Client | undefined;
+  let portal: S3Client | undefined;
   return {
     internal: client(value('STORAGE_URL')),
     uploads: client(new URL(value('ADMIN_PANEL_URL')).origin),
     apps: () => (apps ??= client(new URL(value('APP_UPLOAD_URL')).origin)),
+    portal: () => (portal ??= client(new URL(value('MERCHANT_PORTAL_URL')).origin)),
   };
 }
 
@@ -227,16 +234,17 @@ export class FilesService {
   // asking again makes another upload, of which only the linked one is used.
   // An app's upload (a report's photo, a restaurant owner's item photo,
   // slice 2.32b) is signed for the apps' origin and limited per account and
-  // hour; every other upload for the panel's. The bucket follows the purpose.
+  // hour, the owner web portal's item photo (slice 2.45b) the same for the
+  // portal's origin; every other upload for the panel's. The bucket follows
+  // the purpose.
   async createUpload(
     upload: NewUpload,
     accountId: string,
     now = new Date(),
-    from: 'panel' | 'app' = APP_PURPOSES.includes(upload.purpose) ? 'app' : 'panel',
+    from: 'panel' | 'app' | 'portal' = APP_PURPOSES.includes(upload.purpose) ? 'app' : 'panel',
   ) {
     const key = `${INCOMING}/${randomUUID()}.${extensions[upload.contentType]}`;
-    const fromApp = from === 'app';
-    if (fromApp) {
+    if (from !== 'panel') {
       const [{ asked }] = (await this.database.db
         .select({ asked: count() })
         .from(uploads)
@@ -252,7 +260,11 @@ export class FilesService {
       }
     }
     const url = await getSignedUrl(
-      fromApp ? this.store.apps() : this.store.uploads,
+      from === 'app'
+        ? this.store.apps()
+        : from === 'portal'
+          ? this.store.portal()
+          : this.store.uploads,
       new PutObjectCommand({
         Bucket: bucketOf(upload.purpose),
         Key: key,

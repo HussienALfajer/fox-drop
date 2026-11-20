@@ -11,6 +11,8 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BoardPage } from './board-page.js';
 import { LayoutPage } from './layout-page.js';
+import { MenuPage } from './menu-page.js';
+import { BulkPricePage, PreviewPage, PriceLogPage, QuickEditPage } from './menu-tools-page.js';
 import { OrderPage } from './order-page.js';
 import { sessionQuery } from './session.js';
 import { SignInPage } from './sign-in-page.js';
@@ -96,6 +98,27 @@ const statusRoute = createRoute({
   ),
 });
 
+// RA §9, §17 (slice 2.45b): the owner's menu and its tools.
+const menuRoutes = (
+  [
+    ['/menu', MenuPage],
+    ['/menu/quick-edit', QuickEditPage],
+    ['/menu/bulk-price', BulkPricePage],
+    ['/menu/price-log', PriceLogPage],
+    ['/menu/preview', PreviewPage],
+  ] as const
+).map(([path, Page]) =>
+  createRoute({
+    getParentRoute: () => signedInRoute,
+    path,
+    component: () => (
+      <AfterTerms>
+        <Page />
+      </AfterTerms>
+    ),
+  }),
+);
+
 const termsRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/terms',
@@ -106,7 +129,14 @@ export function createPortalRouter(queryClient: QueryClient) {
   return createRouter({
     routeTree: rootRoute.addChildren([
       signInRoute,
-      signedInRoute.addChildren([homeRoute, ordersRoute, orderRoute, statusRoute, termsRoute]),
+      signedInRoute.addChildren([
+        homeRoute,
+        ordersRoute,
+        orderRoute,
+        statusRoute,
+        ...menuRoutes,
+        termsRoute,
+      ]),
     ]),
     context: { queryClient },
   });

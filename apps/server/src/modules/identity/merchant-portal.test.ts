@@ -268,7 +268,8 @@ describe('the routes the portal reaches (RA §17)', () => {
     // RA §17 (slice 2.45a): the live orders read-only, the status and
     // holiday close, the terms, the emergency stop, real time and the
     // portal's own session (its sign-out is left out: it ends the session).
-    // The owner features join with 2.45b–d; receiving orders never does.
+    // The menu with its price log, preview and photos (slice 2.45b); the
+    // other owner features join with 2.45c–d; receiving orders never does.
     const allowed = [
       'GET /v1/merchant/auth/portal/session',
       'GET /v1/merchant/orders',
@@ -283,6 +284,26 @@ describe('the routes the portal reaches (RA §17)', () => {
       'POST /v1/merchant/terms/accept',
       'GET /v1/merchant/emergency-stop',
       'POST /v1/merchant/realtime/token',
+      'GET /v1/merchant/menu',
+      'PUT /v1/merchant/menu/availability',
+      'PUT /v1/merchant/menu/items/{itemId}/price',
+      'PUT /v1/merchant/menu/options/{optionId}/price',
+      'PUT /v1/merchant/menu/items/{itemId}/hidden',
+      'PUT /v1/merchant/menu/categories/{categoryId}/hidden',
+      'PUT /v1/merchant/menu/categories/{categoryId}/window',
+      'PUT /v1/merchant/menu/category-order',
+      'PUT /v1/merchant/menu/categories/{categoryId}/item-order',
+      'POST /v1/merchant/menu/bulk-price/preview',
+      'POST /v1/merchant/menu/bulk-price',
+      'PUT /v1/merchant/menu/requests/categories/{categoryId}',
+      'PUT /v1/merchant/menu/requests/items/{itemId}',
+      'PUT /v1/merchant/menu/requests/items/{itemId}/text',
+      'PUT /v1/merchant/menu/requests/items/{itemId}/photo',
+      'PUT /v1/merchant/menu/requests/option-groups/{groupId}',
+      'POST /v1/merchant/menu/requests/{requestId}/withdraw',
+      'POST /v1/merchant/uploads/item-photo',
+      'GET /v1/merchant/menu/price-log',
+      'GET /v1/merchant/menu/customer-preview',
     ];
     const document = createOpenApiDocument(app);
     const reached: string[] = [];
