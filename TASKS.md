@@ -8,13 +8,20 @@ Slice 2.46, iOS for the customer and captain apps (`docs/roadmap.md`, Phase 2), 
 
 - **Roadmap line:** 2.46 iOS for the customer and captain apps: flavors, APNs, time-sensitive offers, the Critical Alerts entitlement, background location (architecture §13–14, CA §18 item 2). An offer reaches an iPhone.
 - **Specs:** architecture §13 (13-customer-app.md), §14 (14-captain-app.md: §14.1 background location on iOS, §14.2 time-sensitive notifications and critical alerts, §14.3 `isSimulatedBySoftware`), §8 (pushes, APNs through FCM), §16; CA §4.3–4.5, §14, §18 item 2 (K15); CU §4.4, §14.
-- **Branch:** the cloud session's branch, from an up-to-date `main`.
+- **Branch:** `feat/ios-customer-captain`.
 - **Already built (reuse):** the Android flavors, FCM pushes and channels (slices 1.x, 2.3), the captain's background location with `flutter_background_geolocation` and its Android licence, the offer over the lock screen and the device check (slice 2.43), `core_alerts`' native layer (slice 2.42).
 - **Ask the owner first:** the Apple Developer account (organisation or individual) and who holds it; the bundle identifiers; the APNs key uploaded to Firebase; whether to apply for the Critical Alerts entitlement now (K15) and what the app does until Apple answers; `flutter_background_geolocation`'s iOS licence (architecture §22 item 8); how the iOS builds are made and signed without a Mac here (a macOS CI runner, TestFlight) and who tests on which iPhones; the split into pull requests if it is larger than one.
 
 ### Plan
 
-- [ ] Read architecture §13–14, CA §4.3–4.5, §14, §18 item 2 and the Android work of 2.42–2.43; write this plan as one step per commit after the owner's answers.
+**Owner decisions 2026-11-20:** no Apple Developer account yet: build everything that needs none now (the flavors, the entitlements, the Swift layer, the pushes' APNs part, background location), checked by an unsigned macOS build in CI; signing and TestFlight through a GitHub Actions macOS job once the account exists (its job written now, skipped until its secrets are set); apply for Critical Alerts now and build the fallback (time-sensitive offers with a 30 s sound and the ring switch confirmed); iOS bundle IDs as Android's (`com.foxdrop.customer`, `com.foxdrop.captain`, `.dev` and `.staging`); one pull request.
+
+- [x] Read architecture §13–14, CA §4.3–4.5, §14, §18 item 2 and the Android work of 2.42–2.43; write this plan.
+- [ ] Server: the APNs part of every push (priority, expiry, the bundled sound per channel, `time-sensitive` for a captain's offer and the customer's arrival and door ping, `critical` for the offer behind `APNS_CRITICAL_ALERTS`); the device check's iPhone codes (`background_refresh`, `low_power_mode`, `ring_switch`) and the panel's labels.
+- [ ] iOS projects: the three flavors (schemes and build configurations, the bundle IDs), Info.plist keys (location always, background modes), entitlements (push, time-sensitive, App Attest), the bundled sounds copied into the app; App Check and push on iOS (`core_auth`, `core_push`).
+- [ ] `core_alerts`' iOS layer (Swift): the ring in the foreground and a time-sensitive notification when the app leaves it, the chime, the readings (notifications and time-sensitive, Background App Refresh, Low Power Mode) and the settings page; the captain's device check on iPhone (CA §4.5's iPhone column) and the notification permission with critical alerts.
+- [ ] The captain's background location on iOS (`flutter_background_geolocation` with its licence in Info.plist, else `geolocator`'s background updates), one point every 10 seconds, «دائماً» asked on iOS.
+- [ ] CI: the unsigned iOS builds of both apps on macOS for pull requests; the signed TestFlight job, skipped until its secrets exist; the deploy skill and CLAUDE.md files.
 - [ ] Review, then hand over to the next slice of `docs/roadmap.md`.
 
 ### Left from 2.45d (the cloud session's branch)
