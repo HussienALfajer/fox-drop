@@ -6,6 +6,7 @@ import { formatDateTime, formatMoney } from './format.js';
 import { TimeZoneContext } from './live.js';
 import { AvailabilityControl, PriceForm } from './menu-forms.js';
 import {
+  type BulkBody,
   type BulkForm,
   type BulkPreview,
   bulkBody,
@@ -116,7 +117,9 @@ export function BulkPricePage() {
     direction: 'up',
     value: '',
   });
-  const [shown, setShown] = useState<BulkPreview | null>(null);
+  // The preview shown with the change it previews: confirming sends that
+  // change, never one typed since (RA §9.4: preview, then confirm).
+  const [shown, setShown] = useState<{ body: BulkBody; preview: BulkPreview } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   if (menu.isPending) return <p>{t('app.loading')}</p>;
@@ -137,10 +140,11 @@ export function BulkPricePage() {
       setMessage(t('menu.refusal.invalidPrice'));
       return;
     }
+    const asked = body;
     preview
-      .mutateAsync(body)
+      .mutateAsync(asked)
       .then((answer) => {
-        if (answer.status === 'done') setShown(answer.preview);
+        if (answer.status === 'done') setShown({ body: asked, preview: answer.preview });
         else
           setMessage(t(`menu.refusal.${refusalKey(answer.refusal)}` as 'menu.refusal.saveFailed'));
       })
@@ -148,9 +152,9 @@ export function BulkPricePage() {
   }
 
   function confirm() {
-    if (body === null) return;
+    if (shown === null || JSON.stringify(shown.body) !== JSON.stringify(body)) return;
     apply
-      .mutateAsync(body)
+      .mutateAsync(shown.body)
       .then((answer) => {
         setShown(null);
         setMessage(
@@ -231,40 +235,54 @@ export function BulkPricePage() {
         </button>
       </form>
       {message !== null && <p role="status">{message}</p>}
-      {shown && (
-        <section aria-label={t('menu.bulk.preview')}>
-          <p>
-            {t('menu.bulk.rounding', { unit: formatMoney(shown.roundingUnit, shown.currency) })}
-          </p>
-          {shown.refused > 0 && <p role="alert">{t('menu.refusal.bulkRefused')}</p>}
-          <table>
-            <thead>
-              <tr>
-                <th>{t('menu.bulk.item')}</th>
-                <th>{t('menu.bulk.before')}</th>
-                <th>{t('menu.bulk.after')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.rows.map((row) => (
-                <tr key={row.itemId}>
-                  <td>{row.name}</td>
-                  <td>{formatMoney(row.before, shown.currency)}</td>
-                  <td>
-                    {row.after === null
-                      ? t('menu.bulk.reachesZero')
-                      : formatMoney(row.after, shown.currency)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <button type="button" disabled={shown.refused > 0 || apply.isPending} onClick={confirm}>
-            {t('menu.bulk.confirm')}
-          </button>
-        </section>
+      {shown && JSON.stringify(shown.body) === JSON.stringify(body) && (
+        <BulkPreviewTable preview={shown.preview} applying={apply.isPending} onConfirm={confirm} />
       )}
     </main>
+  );
+}
+
+function BulkPreviewTable(props: {
+  preview: BulkPreview;
+  applying: boolean;
+  onConfirm: () => void;
+}) {
+  const { t } = useTranslation();
+  const shown = props.preview;
+  return (
+    <section aria-label={t('menu.bulk.preview')}>
+      <p>{t('menu.bulk.rounding', { unit: formatMoney(shown.roundingUnit, shown.currency) })}</p>
+      {shown.refused > 0 && <p role="alert">{t('menu.refusal.bulkRefused')}</p>}
+      <table>
+        <thead>
+          <tr>
+            <th>{t('menu.bulk.item')}</th>
+            <th>{t('menu.bulk.before')}</th>
+            <th>{t('menu.bulk.after')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {shown.rows.map((row) => (
+            <tr key={row.itemId}>
+              <td>{row.name}</td>
+              <td>{formatMoney(row.before, shown.currency)}</td>
+              <td>
+                {row.after === null
+                  ? t('menu.bulk.reachesZero')
+                  : formatMoney(row.after, shown.currency)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button
+        type="button"
+        disabled={shown.refused > 0 || props.applying}
+        onClick={props.onConfirm}
+      >
+        {t('menu.bulk.confirm')}
+      </button>
+    </section>
   );
 }
 
@@ -279,30 +297,32 @@ export function PriceLogPage() {
       <BackToMenu />
       {log.isPending && <p>{t('app.loading')}</p>}
       {log.isError && <p role="alert">{t('app.error')}</p>}
+      {log.data === 'terminated' && <p role="alert">{t('menu.refusal.terminated')}</p>}
       {log.data?.length === 0 && <p>{t('menu.priceLog.empty')}</p>}
       <table>
         <tbody>
-          {log.data?.map((entry) => (
-            <tr key={entry.id}>
-              <td>
-                {entry.groupName === null
-                  ? entry.name
-                  : t('menu.priceLog.option', { name: entry.name, group: entry.groupName })}
-              </td>
-              <td>
-                {t('menu.priceLog.change', {
-                  before: formatMoney(entry.oldPrice.amount, entry.oldPrice.currency),
-                  after: formatMoney(entry.newPrice.amount, entry.newPrice.currency),
-                })}
-              </td>
-              <td>
-                {entry.byType === 'merchant'
-                  ? (entry.byName ?? t('menu.priceLog.unknownUser'))
-                  : t('menu.priceLog.foxDrop')}
-              </td>
-              <td>{formatDateTime(entry.at, timeZone)}</td>
-            </tr>
-          ))}
+          {log.data !== 'terminated' &&
+            log.data?.map((entry) => (
+              <tr key={entry.id}>
+                <td>
+                  {entry.groupName === null
+                    ? entry.name
+                    : t('menu.priceLog.option', { name: entry.name, group: entry.groupName })}
+                </td>
+                <td>
+                  {t('menu.priceLog.change', {
+                    before: formatMoney(entry.oldPrice.amount, entry.oldPrice.currency),
+                    after: formatMoney(entry.newPrice.amount, entry.newPrice.currency),
+                  })}
+                </td>
+                <td>
+                  {entry.byType === 'merchant'
+                    ? (entry.byName ?? t('menu.priceLog.unknownUser'))
+                    : t('menu.priceLog.foxDrop')}
+                </td>
+                <td>{formatDateTime(entry.at, timeZone)}</td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </main>
@@ -319,56 +339,58 @@ export function PreviewPage() {
       <BackToMenu />
       {preview.isPending && <p>{t('app.loading')}</p>}
       {preview.isError && <p role="alert">{t('app.error')}</p>}
+      {preview.data === 'terminated' && <p role="alert">{t('menu.refusal.terminated')}</p>}
       {preview.data?.length === 0 && <p>{t('menu.empty')}</p>}
-      {preview.data?.map((category) => (
-        <section key={category.id} aria-label={category.name}>
-          <h2>{category.name}</h2>
-          <ul>
-            {category.items.map((item) => (
-              <li key={item.id} aria-disabled={!item.available}>
-                <strong>{item.name}</strong>{' '}
-                <span>
-                  {item.fromPrice === null
-                    ? formatMoney(item.price.amount, item.price.currency)
-                    : t('menu.preview.from', {
-                        price: formatMoney(item.fromPrice.amount, item.fromPrice.currency),
+      {preview.data !== 'terminated' &&
+        preview.data?.map((category) => (
+          <section key={category.id} aria-label={category.name}>
+            <h2>{category.name}</h2>
+            <ul>
+              {category.items.map((item) => (
+                <li key={item.id} aria-disabled={!item.available}>
+                  <strong>{item.name}</strong>{' '}
+                  <span>
+                    {item.fromPrice === null
+                      ? formatMoney(item.price.amount, item.price.currency)
+                      : t('menu.preview.from', {
+                          price: formatMoney(item.fromPrice.amount, item.fromPrice.currency),
+                        })}
+                  </span>
+                  {item.description !== null && <p>{item.description}</p>}
+                  {item.unavailableReason !== null && (
+                    <p>
+                      {item.unavailableReason === 'window' && category.window !== null
+                        ? t('menu.preview.window', { time: timeOfMinute(category.window.startsAt) })
+                        : item.unavailableReason === 'tomorrow'
+                          ? t('menu.preview.tomorrow')
+                          : t('menu.preview.unavailable')}
+                    </p>
+                  )}
+                  {item.optionGroups.map((group) => (
+                    <p key={group.id}>
+                      {t(group.minChoices > 0 ? 'menu.preview.required' : 'menu.preview.optional', {
+                        name: group.name,
+                        options: group.options
+                          .map((option) =>
+                            /^0+$/.test(option.priceDelta.amount)
+                              ? option.name
+                              : t('menu.preview.option', {
+                                  name: option.name,
+                                  delta: formatMoney(
+                                    option.priceDelta.amount,
+                                    option.priceDelta.currency,
+                                  ),
+                                }),
+                          )
+                          .join(t('menu.listSeparator')),
                       })}
-                </span>
-                {item.description !== null && <p>{item.description}</p>}
-                {item.unavailableReason !== null && (
-                  <p>
-                    {item.unavailableReason === 'window' && category.window !== null
-                      ? t('menu.preview.window', { time: timeOfMinute(category.window.startsAt) })
-                      : item.unavailableReason === 'tomorrow'
-                        ? t('menu.preview.tomorrow')
-                        : t('menu.preview.unavailable')}
-                  </p>
-                )}
-                {item.optionGroups.map((group) => (
-                  <p key={group.id}>
-                    {t(group.minChoices > 0 ? 'menu.preview.required' : 'menu.preview.optional', {
-                      name: group.name,
-                      options: group.options
-                        .map((option) =>
-                          /^0+$/.test(option.priceDelta.amount)
-                            ? option.name
-                            : t('menu.preview.option', {
-                                name: option.name,
-                                delta: formatMoney(
-                                  option.priceDelta.amount,
-                                  option.priceDelta.currency,
-                                ),
-                              }),
-                        )
-                        .join(t('menu.listSeparator')),
-                    })}
-                  </p>
-                ))}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+                    </p>
+                  ))}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
     </main>
   );
 }

@@ -16,7 +16,7 @@ export type MenuGroup = Menu['optionGroups'][number];
 export type Pending = MenuItem['pending'][number];
 export type SwitchedOff = MenuItem['switchedOff'];
 export type BulkPreview = components['schemas']['MerchantMenuBulkPreviewDto_Output'];
-type BulkBody = components['schemas']['MerchantMenuBulkPriceDto'];
+export type BulkBody = components['schemas']['MerchantMenuBulkPriceDto'];
 export type PriceLogEntry = components['schemas']['MerchantPriceLogDto_Output']['entries'][number];
 export type PreviewCategory =
   components['schemas']['MerchantMenuPreviewDto_Output']['menu'][number];
@@ -36,20 +36,22 @@ export const menuQuery = queryOptions({
 
 export const priceLogQuery = queryOptions({
   queryKey: ['menu-price-log'],
-  queryFn: async (): Promise<PriceLogEntry[]> => {
-    const { data, response } = await api.GET('/v1/merchant/menu/price-log');
-    if (!data) throw new Error(`The price log read failed (${response.status}).`);
-    return data.entries;
+  queryFn: async (): Promise<PriceLogEntry[] | 'terminated'> => {
+    const { data, error, response } = await api.GET('/v1/merchant/menu/price-log');
+    if (data) return data.entries;
+    if (refusalOf(error) === 'restaurant_terminated') return 'terminated';
+    throw new Error(`The price log read failed (${response.status}).`);
   },
 });
 
 // RA §9.7: read again each time it opens, so it follows the edits.
 export const previewQuery = queryOptions({
   queryKey: ['menu-preview'],
-  queryFn: async (): Promise<PreviewCategory[]> => {
-    const { data, response } = await api.GET('/v1/merchant/menu/customer-preview');
-    if (!data) throw new Error(`The preview read failed (${response.status}).`);
-    return data.menu;
+  queryFn: async (): Promise<PreviewCategory[] | 'terminated'> => {
+    const { data, error, response } = await api.GET('/v1/merchant/menu/customer-preview');
+    if (data) return data.menu;
+    if (refusalOf(error) === 'restaurant_terminated') return 'terminated';
+    throw new Error(`The preview read failed (${response.status}).`);
   },
   staleTime: 0,
 });
@@ -412,19 +414,35 @@ export function photoRefusal(file: { type: string; size: number }): 'type' | 'si
 
 // RA §9.2: the photo goes straight to the storage on the portal's own origin
 // (/public-media/incoming/, signed for it by the server, so not through the
-// API client), and its request links it by the upload's id; null when the
-// storage refused the file.
-export async function uploadPhoto(file: File): Promise<string | null> {
-  const asked = await api.POST('/v1/merchant/uploads/item-photo', {
-    body: { contentType: file.type as (typeof IMAGE_TYPES)[number], sizeBytes: file.size },
+// API client), and its request links it by the upload's id. Each chosen
+// file is uploaded once: a request refused and sent again reuses its upload,
+// as the app's ItemPhoto does, so retries never use up the hourly limit.
+export function usePhotoUpload() {
+  const uploads = useRef(new WeakMap<File, string>());
+  const upload = useMutation({
+    mutationFn: async (file: File): Promise<string | null> => {
+      const done = uploads.current.get(file);
+      if (done !== undefined) return done;
+      const asked = await api.POST('/v1/merchant/uploads/item-photo', {
+        body: { contentType: file.type as (typeof IMAGE_TYPES)[number], sizeBytes: file.size },
+      });
+      if (!asked.data) return null;
+      const put = await fetch(asked.data.url, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+      if (!put.ok) return null;
+      uploads.current.set(file, asked.data.uploadId);
+      return asked.data.uploadId;
+    },
   });
-  if (!asked.data) return null;
-  const put = await fetch(asked.data.url, {
-    method: 'PUT',
-    body: file,
-    headers: { 'Content-Type': file.type },
-  });
-  return put.ok ? asked.data.uploadId : null;
+  // A request refused for its upload (used, expired, missing) uploads the
+  // file again on the next send.
+  const refused = (file: File, refusal: string) => {
+    if (refusal.startsWith('upload_')) uploads.current.delete(file);
+  };
+  return { upload, refused };
 }
 
 // imgproxy's widths (infra/imgproxy/imgproxy.env), as the panel's media.ts.

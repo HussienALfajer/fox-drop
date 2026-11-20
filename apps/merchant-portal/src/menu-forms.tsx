@@ -17,7 +17,7 @@ import {
   priceOf,
   refusalKey,
   timeOfMinute,
-  uploadPhoto,
+  usePhotoUpload,
   useAvailability,
   useMenuCommand,
   windowOf,
@@ -31,7 +31,7 @@ type Run = (command: MenuCommand) => Promise<boolean>;
 
 // Sends a command; true once the server took it. The message of a refusal
 // (or a failure) shows under the form.
-export function useRun(request = false) {
+export function useRun(request = false, onRefused?: (refusal: string) => void) {
   const command = useMenuCommand();
   const [problem, setProblem] = useState<string | null>(null);
   const run: Run = async (next) => {
@@ -39,6 +39,7 @@ export function useRun(request = false) {
     try {
       const answer = await command.mutateAsync(next);
       if (answer.status === 'done') return true;
+      onRefused?.(answer.refusal);
       setProblem(refusalKey(answer.refusal, request));
     } catch {
       setProblem('saveFailed');
@@ -255,12 +256,14 @@ function PhotoInput(props: { onChange: (file: File | null) => void; refused: str
   );
 }
 
-// Uploads the chosen photo, if any: its upload id, null for none chosen, or
-// 'failed'.
-async function photoUpload(file: File | null): Promise<string | null | 'failed'> {
+// The chosen photo's upload id, null for none chosen, or 'failed'.
+async function uploadOf(
+  upload: (file: File) => Promise<string | null>,
+  file: File | null,
+): Promise<string | null | 'failed'> {
   if (file === null) return null;
   try {
-    return (await uploadPhoto(file)) ?? 'failed';
+    return (await upload(file)) ?? 'failed';
   } catch {
     return 'failed';
   }
@@ -276,7 +279,11 @@ export function NewItemForm(props: {
   onDone: () => void;
 }) {
   const { t } = useTranslation();
-  const { run, pending, problem } = useRun(true);
+  const photos = usePhotoUpload();
+  const [file, setFile] = useState<File | null>(null);
+  const { run, pending, problem } = useRun(true, (refusal) => {
+    if (file) photos.refused(file, refusal);
+  });
   const [id] = useState(() => props.item?.id ?? crypto.randomUUID());
   const [categoryId, setCategoryId] = useState(
     props.categoryId ?? props.menu.categories[0]?.id ?? '',
@@ -286,10 +293,8 @@ export function NewItemForm(props: {
   const [price, setPrice] = useState(
     props.item ? decimalOf(props.item.price.amount, props.item.price.currency) : '',
   );
-  const [file, setFile] = useState<File | null>(null);
   const [refused, setRefused] = useState<string | null>(null);
   const [invalidPrice, setInvalidPrice] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   function choose(chosen: File | null) {
     setRefused(chosen === null ? null : photoRefusal(chosen));
@@ -301,9 +306,7 @@ export function NewItemForm(props: {
     const amount = priceOf(price, props.currency, false);
     setInvalidPrice(amount === null);
     if (amount === null || categoryId === '') return;
-    setUploading(true);
-    const uploadId = await photoUpload(file);
-    setUploading(false);
+    const uploadId = await uploadOf(photos.upload.mutateAsync, file);
     if (uploadId === 'failed') {
       setRefused('failed');
       return;
@@ -356,7 +359,7 @@ export function NewItemForm(props: {
       {invalidPrice && <p role="alert">{t('menu.refusal.invalidPrice')}</p>}
       <PhotoInput onChange={choose} refused={refused} />
       <Problem problem={problem} />
-      <button type="submit" disabled={pending || uploading}>
+      <button type="submit" disabled={pending || photos.upload.isPending}>
         {t('menu.sendForReview')}
       </button>{' '}
       <button type="button" onClick={props.onDone}>
@@ -416,17 +419,18 @@ export function TextForm(props: { item: MenuItem; onDone: () => void }) {
 // RA §9.2: a new or replaced photo; the old one stays until approved.
 export function PhotoForm(props: { item: MenuItem; onDone: () => void }) {
   const { t } = useTranslation();
-  const { run, pending, problem } = useRun(true);
+  const photos = usePhotoUpload();
   const [file, setFile] = useState<File | null>(null);
+  const { run, pending, problem } = useRun(true, (refusal) => {
+    if (file) photos.refused(file, refusal);
+  });
   const [refused, setRefused] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const uploading = photos.upload.isPending;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (file === null) return;
-    setUploading(true);
-    const uploadId = await photoUpload(file);
-    setUploading(false);
+    const uploadId = await uploadOf(photos.upload.mutateAsync, file);
     if (uploadId === 'failed' || uploadId === null) {
       setRefused('failed');
       return;

@@ -37,7 +37,7 @@ import {
 // review (§9.2). Unstyled until the design.
 
 // What the page's one open form edits.
-type Editing =
+export type Editing =
   | { kind: 'add_category' }
   | { kind: 'rename_category'; category: MenuCategory }
   | { kind: 'window'; category: MenuCategory }
@@ -81,7 +81,15 @@ export function MenuPage() {
           </button>
         )}
       </p>
-      {editing && <EditingForm editing={editing} menu={data} currency={currency} onDone={close} />}
+      {editing && (
+        <EditingForm
+          key={editingKey(editing)}
+          editing={editing}
+          menu={data}
+          currency={currency}
+          onDone={close}
+        />
+      )}
       {data.categories.length === 0 && <p>{t('menu.empty')}</p>}
       {data.categories.map((category) => (
         <CategorySection key={category.id} menu={data} category={category} edit={setEditing} />
@@ -89,6 +97,30 @@ export function MenuPage() {
       <GroupsSection menu={data} edit={setEditing} />
     </main>
   );
+}
+
+// One form at a time, keyed by what it edits: opening another starts it
+// afresh, so a value typed for one row never reaches another.
+export function editingKey(editing: Editing): string {
+  switch (editing.kind) {
+    case 'add_category':
+    case 'add_group':
+      return editing.kind;
+    case 'add_item':
+      return `${editing.kind}:${editing.categoryId ?? ''}`;
+    case 'rename_category':
+    case 'window':
+      return `${editing.kind}:${editing.category.id}`;
+    case 'edit_new_item':
+    case 'text':
+    case 'photo':
+    case 'item_price':
+      return `${editing.kind}:${editing.item.id}`;
+    case 'option_price':
+      return `${editing.kind}:${editing.option.id}`;
+    case 'edit_group':
+      return `${editing.kind}:${editing.group.id}`;
+  }
 }
 
 function EditingForm(props: {
