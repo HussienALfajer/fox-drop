@@ -4,17 +4,21 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.45, the owner web portal (`docs/roadmap.md`, Phase 2).
+Slice 2.45a, the owner web portal's sign-in and live view (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.45 The owner web portal: sign-in (S14), every owner feature except receiving orders, live orders read-only, exports (RA §17), «التقييمات» with the custom range on `GET /v1/merchant/ratings` (moved from 2.26b, owner decision 2026-11-17). The owner opens the statement in a browser.
-- **Specs:** RA §17 (docs/product/v1/restaurant-app/17-owner-web-portal.md), S14, RA §4.1 (the portal's row), §4.10 (the terms in the portal), §11–§14 (the owner features), §13 with the ratings' custom range; architecture §10 (the panel and the portal), §15.
+- **Roadmap line:** 2.45a Sign-in and the live view: the portal's sign-in by phone and WhatsApp code for owners only, its 30-day cookie session (S14, RA §5.2–5.3), the terms (RA §4.10), pause, resume, busy mode and holiday close, the read-only live orders with timers and captain lines over `merchant:` and the banner «لاستقبال الطلبات استخدم تطبيق أندرويد أو ويندوز»; the portal is never a receiving device (RA §4.6). The owner signs in from a browser and watches an order move.
+- **Specs:** RA §17, §5.2–5.4, §4.6, §4.10, S14; architecture §8.3.3 item 1, §10.4, §15.1.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Ask the owner first:** the split into pull requests (the portal is large); the portal's sign-in (S14: the same WhatsApp code as the app, or another way); the design stop (`apps/merchant-portal` is unstyled until the design system is ready); and, from 2.44, whether the portal also gives Windows pairing codes, and how a restaurant whose only device is a Windows PC gets its first code (an operations-issued code is one option).
-- **Already built (reuse):** `apps/merchant-portal` (the shell), the merchant routes the app uses, the Excel exports of `reporting` (slice 2.41), the statement's and receipts' routes (slice 2.19e).
+- **Owner decisions 2026-11-20:** the portal in four pull requests (2.45a–d); the portal's code request carries no App Check, is sent to owners' numbers only and is held by the request limits; the portal stays unstyled until the design; the portal gives Windows pairing codes (2.45c), so a restaurant whose only device is a PC pairs it from the portal in that PC's browser.
+- **Decided by us (to confirm with the owner):** the portal's session is its own table and an HTTP-only cookie, so it is never a device; a route serves the portal only when it says so (`@AppSignedIn({ portal: true })`), any other answers the portal `403 not_in_portal`.
 
 ### Plan
 
-- [ ] Ask the owner the split, the sign-in and the design; write the plan.
+- [x] Ask the owner the split, the sign-in and the design; write the plan.
+- [ ] Server: portal sessions (migration, the code request without App Check for owners only, the sign-in that sets the cookie, the session, sign-out, expiry after `merchant.web_session_days`, ended with the account's removal), the guard's portal opt-in, nginx's sign-in limit.
+- [ ] Server: the portal's routes (the board and an order, the status, busy mode, holiday close, the terms, the emergency stop, the real-time token and proxy) and every other merchant route refused to the portal; the API regenerated.
+- [ ] Portal: sign-in, the session and sign-out, the terms, the status, the read-only board with the banner, live over `merchant:`; unit and smoke tests.
+- [ ] Review, then hand over to 2.45b.
 
 ### Left from 2.44 (the cloud session's branch)
 
