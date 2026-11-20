@@ -202,18 +202,20 @@ describe('the portal sign-in (RA §17, §5.2)', () => {
 
   it('ends the session at its expiry, at sign-out and at the owner’s removal', async () => {
     const id = await restaurant();
-    const first = await user(id, 'owner');
-    const second = await user(id, 'owner');
+    // One owner per case: a number waits otp.resend_after_sec between codes.
+    const expiringOwner = await user(id, 'owner');
+    const leavingOwner = await user(id, 'owner');
+    const removedOwner = await user(id, 'owner');
 
-    const expiring = await portalSignIn(first.phone);
+    const expiring = await portalSignIn(expiringOwner.phone);
     await sql.query(
       `UPDATE identity.merchant_portal_sessions SET expires_at = signed_in_at + interval '1 millisecond'
        WHERE account_id = $1`,
-      [first.accountId],
+      [expiringOwner.accountId],
     );
     expect((await session(expiring.cookies)).statusCode).toBe(401);
 
-    const signingOut = await portalSignIn(first.phone);
+    const signingOut = await portalSignIn(leavingOwner.phone);
     const out = await app.inject({
       method: 'POST',
       url: '/v1/merchant/auth/portal/sign-out',
@@ -223,13 +225,13 @@ describe('the portal sign-in (RA §17, §5.2)', () => {
     expect(out.cookies.find((c) => c.name === PORTAL_SESSION_COOKIE)?.value).toBe('');
     expect((await session(signingOut.cookies)).statusCode).toBe(401);
 
-    const removed = await portalSignIn(second.phone);
+    const removed = await portalSignIn(removedOwner.phone);
     expect((await session(removed.cookies)).statusCode).toBe(200);
-    await accounts.removeAccount(id, second.accountId, change);
+    await accounts.removeAccount(id, removedOwner.accountId, change);
     expect((await session(removed.cookies)).statusCode).toBe(401);
     const ended = await sql.query(
       'SELECT end_reason FROM identity.merchant_portal_sessions WHERE account_id = $1',
-      [second.accountId],
+      [removedOwner.accountId],
     );
     expect(ended.rows).toEqual([{ end_reason: 'account_removed' }]);
   });
