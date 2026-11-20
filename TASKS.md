@@ -6,8 +6,8 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 Slice 2.45b, the menu in the owner web portal (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.45b The menu in the portal: availability, prices, items, photos, categories and options, the price log and the preview (RA §12). The owner changes a price from a browser.
-- **Specs:** RA §17, §9 (docs/product/v1/restaurant-app/09-menu.md; the roadmap line's «RA §12» is the menu section's number in an older layout: check the cited sections against RA §9 before building), §5.4 (owners: menu prices, items, photos, categories and options; availability), §18; architecture §10.4.
+- **Roadmap line:** 2.45b The menu in the portal: availability, prices, items, photos, categories and options, the price log and the preview (RA §9). The owner changes a price from a browser.
+- **Specs:** RA §17, §9 (docs/product/v1/restaurant-app/09-menu.md), §5.4 (owners: menu prices, items, photos, categories and options; availability), §18; architecture §10.4.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
 - **Already built (reuse):** the portal's session and the `@AppSignedIn({ portal: true })` opt-in (slice 2.45a, `apps/server/src/modules/identity/CLAUDE.md`); the owners' menu routes of the app (`merchants/merchant-menu.controller.ts`, slice 2.32a–b: availability, prices, hiding, windows, order, bulk price, change requests with photos), «سجل الأسعار» (`reporting/merchant-price-log.controller.ts`) and «معاينة كما يراها الزبون» (`customers/merchant-menu-preview.controller.ts`); the item photo upload (`POST /v1/merchant/uploads/item-photo`, signed for the apps' host: check it works from the portal's origin, which the panel's uploads do through `/public-media/`).
 - **Ask the owner first:** nothing new expected (the split, the sign-in and the design were decided on 2026-11-20); the design stop still holds (unstyled).
