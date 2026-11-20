@@ -25,6 +25,7 @@ import {
 import { DAY_MS, HOUR_MS, type Limit, RequestLimits } from './request-limits.js';
 import { appSignInCodes, customerAccounts, merchantAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets, newSignInCode } from './secrets.js';
+import { type DeviceSignature, WindowsDevicesService } from './windows-devices.service.js';
 
 // A code request the server refuses (architecture §8.3.3 item 2, CU §5.2):
 // the resend wait, the hourly limit of a number, the daily limit of a number
@@ -79,8 +80,10 @@ export interface CodeRequest {
   // The X-Firebase-AppCheck header, when the app sent one.
   appCheckToken?: string | undefined;
   // The restaurant app says which platform it runs on: Windows has no App
-  // Check provider (owner decision 2026-11-07).
+  // Check provider (owner decision 2026-11-07), and signs with the key of its
+  // registration instead (slice 2.44).
   platform?: DevicePlatform | undefined;
+  deviceSignature?: DeviceSignature | undefined;
   // CA §5.1 «انضم ككابتن» (slice 2.34a; owner decision 2026-11-19): the
   // captain app's join sends the code to a number without an account too.
   join?: boolean | undefined;
@@ -114,6 +117,7 @@ export class AppSignInService {
     private readonly sessions: AppSessionsService,
     private readonly merchantAccounts: MerchantAccountsService,
     private readonly captainAccounts: CaptainAccountsService,
+    private readonly windowsDevices: WindowsDevicesService,
   ) {
     this.limits = new RequestLimits(valkey);
   }
@@ -163,11 +167,19 @@ export class AppSignInService {
     // anything else, once the apps send the token (owner decisions 2026-11-06,
     // 2026-11-07). The IP limit above counts them, so a script that sends no
     // token still runs into it. The restaurant app on Windows has no App
-    // Check provider and is exempt until its device registration exists; its
-    // other limits still apply.
-    const exempt = request.party === 'merchant' && request.platform === 'windows';
-    if (appCheckRequired && !exempt && !(await this.appCheck.verify(request.appCheckToken, now))) {
-      throw new CodeRequestRefusedError('app_check_failed');
+    // Check provider: a PC an owner registered signs the request with its
+    // key instead (slice 2.44; owner decision 2026-11-20).
+    if (appCheckRequired) {
+      const attested =
+        request.party === 'merchant' && request.platform === 'windows'
+          ? await this.windowsDevices.verify(
+              request.deviceId,
+              request.phone,
+              request.deviceSignature,
+              now,
+            )
+          : await this.appCheck.verify(request.appCheckToken, now);
+      if (!attested) throw new CodeRequestRefusedError('app_check_failed');
     }
 
     // RA §5.2 items 3–4: a restaurant user hears at once why no code comes,

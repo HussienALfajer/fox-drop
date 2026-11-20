@@ -248,9 +248,28 @@ class CustomerAuth extends AuthParty {
 /// The restaurant app (RA §5.2–5.3). [platform] lets the server exempt
 /// Windows from App Check (the identity module's `CLAUDE.md`).
 class MerchantAuth extends AuthParty {
-  MerchantAuth(super.api, {required this.platform});
+  MerchantAuth(
+    super.api, {
+    required this.platform,
+    this.deviceSignature,
+    this.onAttestationRefused,
+  });
 
   final MerchantCodeRequestDtoPlatformEnum platform;
+
+  /// Windows (slice 2.44): the registered PC's signature of the code request
+  /// for [deviceId] and [phone], in place of App Check; null where there is
+  /// none.
+  final Future<MerchantCodeRequestDtoDeviceSignature?> Function(
+    String deviceId,
+    String phone,
+  )?
+  deviceSignature;
+
+  /// Windows (slice 2.44): a signed code request refused with
+  /// `app_check_failed` (no registration, or one the server no longer
+  /// knows): the PC is paired again. The refusal still reaches the screen.
+  final Future<void> Function()? onAttestationRefused;
 
   MerchantApi get _routes => api.getMerchantApi();
 
@@ -261,17 +280,27 @@ class MerchantAuth extends AuthParty {
     String? appCheckToken,
     bool join = false,
   }) async {
-    final sent = await AuthParty.guard(
-      () => _routes.merchantAuthRequestCode(
-        xFirebaseAppCheck: appCheckToken,
-        merchantCodeRequestDto: MerchantCodeRequestDto(
-          (b) => b
-            ..phone = phone
-            ..deviceId = deviceId
-            ..platform = platform,
+    final signature = await deviceSignature?.call(deviceId, phone);
+    final Response<MerchantCodeSentDtoOutput> sent;
+    try {
+      sent = await AuthParty.guard(
+        () => _routes.merchantAuthRequestCode(
+          xFirebaseAppCheck: appCheckToken,
+          merchantCodeRequestDto: MerchantCodeRequestDto(
+            (b) => b
+              ..phone = phone
+              ..deviceId = deviceId
+              ..platform = platform
+              ..deviceSignature = signature?.toBuilder(),
+          ),
         ),
-      ),
-    );
+      );
+    } on AuthRefusal catch (refusal) {
+      if (refusal.error == 'app_check_failed' && deviceSignature != null) {
+        await onAttestationRefused?.call();
+      }
+      rethrow;
+    }
     return CodeSent(resendAfterSec: sent.data!.resendAfterSec);
   }
 

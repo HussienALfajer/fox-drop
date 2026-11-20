@@ -9818,12 +9818,6 @@ abstract class AppLocalizations {
   /// **'لم يجتز هذا الجهاز الفحص بعد: أكمل الخطوات الناقصة.'**
   String get merchantCheckNotPassed;
 
-  /// The Windows device check comes with the Windows slice (the wording ours).
-  ///
-  /// In ar, this message translates to:
-  /// **'فحص الجهاز على ويندوز يأتي مع تطبيق ويندوز.'**
-  String get merchantCheckWindowsLater;
-
   /// The device's last check (RA §14.2).
   ///
   /// In ar, this message translates to:
@@ -9889,6 +9883,168 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّرت قراءة إعدادات الجهاز، اضغط لإعادة المحاولة'**
   String get merchantCheckReadFailed;
+
+  /// Title of the Windows pairing screen before the first sign-in (slice 2.44, the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'ربط هذا الكمبيوتر'**
+  String get merchantPairThisPc;
+
+  /// How to get a pairing code (slice 2.44, the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل تسجيل الدخول على هذا الكمبيوتر، اطلب من مالك المطعم رمز الربط من تطبيق المطعم: الإعدادات ← الأجهزة ← ربط كمبيوتر بويندوز.'**
+  String get merchantPairThisPcIntro;
+
+  /// The pairing code field (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'رمز الربط'**
+  String get merchantPairingCode;
+
+  /// Sends the pairing code (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'ربط'**
+  String get merchantPair;
+
+  /// A wrong, expired or used pairing code (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزاً جديداً من المالك.'**
+  String get merchantPairingInvalid;
+
+  /// Too many pairing attempts from this address (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'محاولات كثيرة. حاول مرة أخرى بعد ساعة.'**
+  String get merchantPairingTooMany;
+
+  /// Pairing a PC of a terminated restaurant (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى حساب هذا المطعم.'**
+  String get merchantPairingTerminated;
+
+  /// Pairing failed for another reason (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الربط. تحقق من الاتصال وحاول مرة أخرى.'**
+  String get merchantPairingFailed;
+
+  /// An owner's button in «الأجهزة» that makes a pairing code (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'ربط كمبيوتر بويندوز'**
+  String get merchantPairWindows;
+
+  /// Under the pairing code shown to an owner (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب هذا الرمز في تطبيق FOX DROP على الكمبيوتر خلال 10 دقائق. يُستخدم مرة واحدة.'**
+  String get merchantPairWindowsHow;
+
+  /// The pairing code could not be made (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر إنشاء رمز الربط، حاول مرة أخرى.'**
+  String get merchantPairWindowsFailed;
+
+  /// The tray icon's tooltip on Windows (RA §4.3, slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'FOX DROP يستقبل طلباتك'**
+  String get merchantTrayTooltip;
+
+  /// The tray menu's item that shows the window (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح التطبيق'**
+  String get merchantTrayOpen;
+
+  /// The tray menu's item that quits after a confirmation (RA §4.3, slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق التطبيق'**
+  String get merchantTrayQuit;
+
+  /// RA §4.3: the confirmation before quitting on Windows.
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق التطبيق يوقف استقبال الطلبات على هذا الجهاز. هل أنت متأكد؟'**
+  String get merchantQuitConfirm;
+
+  /// RA §4.5 check 1 on Windows (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'إشعارات ويندوز مسموحة'**
+  String get merchantCheckWindowsNotifications;
+
+  /// How to pass check 1 on Windows (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'شغّل الإشعارات لتطبيق المطعم من إعدادات ويندوز.'**
+  String get merchantCheckWindowsNotificationsHow;
+
+  /// RA §4.5 check 3 on Windows: Start with Windows on (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'التشغيل مع ويندوز'**
+  String get merchantCheckStartup;
+
+  /// Why check 3 on Windows (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'يبدأ التطبيق مع تشغيل الكمبيوتر، فلا تفوتك الطلبات بعد إعادة التشغيل.'**
+  String get merchantCheckStartupHow;
+
+  /// Turns Start with Windows on (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'تفعيل التشغيل مع ويندوز'**
+  String get merchantCheckStartupTurnOn;
+
+  /// RA §4.5 check 5 on Windows: the output not muted (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'صوت الكمبيوتر غير مكتوم'**
+  String get merchantCheckOutput;
+
+  /// How to pass check 5 on Windows (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'ألغِ كتم الصوت وارفعه، وتأكد من توصيل السماعات.'**
+  String get merchantCheckOutputHow;
+
+  /// The output volume now (RA §4.5 check 5 on Windows).
+  ///
+  /// In ar, this message translates to:
+  /// **'مستوى الصوت الآن {percent}%'**
+  String merchantCheckOutputVolume(int percent);
+
+  /// RA §4.5 check 6 on Windows, a warning (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكمبيوتر لا ينام أثناء ساعات العمل'**
+  String get merchantCheckSleep;
+
+  /// How to pass check 6 on Windows (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'اجعل «السكون» عند التوصيل بالكهرباء «أبداً»، فالكمبيوتر النائم لا يرن.'**
+  String get merchantCheckSleepHow;
+
+  /// The sleep timeout on mains power (RA §4.5 check 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'ينام الكمبيوتر الآن بعد {minutes} د دون استخدام.'**
+  String merchantCheckSleepAfter(int minutes);
+
+  /// Pairing a PC already registered to another restaurant (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الكمبيوتر مربوط بمطعم آخر. تواصل مع FOX DROP.'**
+  String get merchantPairingOtherRestaurant;
 }
 
 class _AppLocalizationsDelegate

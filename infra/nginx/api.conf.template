@@ -3,8 +3,9 @@
 # and included in every server block of the site, so the panel and the portal
 # call /v1 on their own origin (architecture §17.2).
 
-# Sign-in, setup and code requests: the tight per-address limit.
-location ~ ^/v1/[a-z]+/auth/(sign-in|code|setup/) {
+# Sign-in, setup, code requests and a Windows PC's registration (slice
+# 2.44): the tight per-address limit.
+location ~ ^/v1/[a-z]+/auth/(sign-in|code|setup/|windows-registration) {
     limit_req zone=foxdrop_${FOXDROP_ENV}_signin burst=10 nodelay;
     limit_req_status 429;
     proxy_pass http://127.0.0.1:${API_PORT};
@@ -68,6 +69,19 @@ location /maps/ {
     proxy_set_header Connection "";
     proxy_set_header Cookie "";
     proxy_read_timeout 60s;
+}
+
+# The restaurant app's Windows installer and Velopack's update feed (slice
+# 2.44, architecture §12.3), the files foxdrop-windows-publish puts there.
+# Reads only; no add_header, so the server's security headers stay.
+location /downloads/windows/ {
+    limit_except GET { deny all; }
+    alias /var/www/foxdrop-${FOXDROP_ENV}-downloads/windows/;
+    types {
+        application/json json;
+        application/octet-stream exe nupkg zip;
+    }
+    default_type text/plain;
 }
 
 location /v1/ {

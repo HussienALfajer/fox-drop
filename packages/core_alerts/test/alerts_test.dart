@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:core_alerts/core_alerts.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -81,9 +83,9 @@ void main() {
     'reads the device check’s readings and opens a setting by name',
     () async {
       const alerts = AndroidAlerts();
-      final readings = await alerts.readings();
-      expect(readings?.batteryOptimizationOff, isFalse);
-      expect(readings?.alarmVolumePercent, 60);
+      final readings = (await alerts.readings())! as AndroidReadings;
+      expect(readings.batteryOptimizationOff, isFalse);
+      expect(readings.alarmVolumePercent, 60);
       await alerts.openSettings(DeviceSetting.fullScreen);
       expect(calls.last.arguments, {'setting': 'fullScreen'});
     },
@@ -91,5 +93,42 @@ void main() {
 
   test('has nothing to read where there is no native layer', () async {
     expect(await const NoAlerts().readings(), isNull);
+  });
+
+  test('reads a PC’s checks 1, 3, 5 and 6 (slice 2.44)', () {
+    final readings = WindowsReadings.fromMap({
+      'notificationsAllowed': true,
+      'startsWithWindows': false,
+      'outputMuted': false,
+      'outputVolumePercent': 35,
+      'sleepAfterSeconds': 1800,
+    });
+    expect(readings.notificationsAllowed, isTrue);
+    expect(readings.startsWithWindows, isFalse);
+    expect(readings.outputMuted, isFalse);
+    expect(readings.outputVolumePercent, 35);
+    expect(readings.sleepAfterSeconds, 1800);
+    // A reading that did not come counts as muted, never as fine.
+    expect(WindowsReadings.fromMap({}).outputMuted, isTrue);
+  });
+
+  test('plays a PC’s sounds from the bundled assets', () {
+    expect(
+      soundPath(RingSound.newOrder),
+      endsWith(
+        [
+          'data',
+          'flutter_assets',
+          'packages',
+          'core_alerts',
+          'android',
+          'src',
+          'main',
+          'res',
+          'raw',
+          'fd_new_order.wav',
+        ].join(Platform.pathSeparator),
+      ),
+    );
   });
 }

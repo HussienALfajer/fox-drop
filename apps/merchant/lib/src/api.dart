@@ -27,7 +27,15 @@ String apiBaseUrl() {
 
 /// The client of the sign-in routes, without the session's interceptor
 /// (`packages/core_auth/CLAUDE.md`).
-final authApiProvider = Provider<CoreApi>((ref) => apiClient(apiBaseUrl()));
+/// Its answers set the server's clock, which a Windows PC's code request
+/// signs with (slice 2.44).
+final authApiProvider = Provider<CoreApi>((ref) {
+  final api = apiClient(apiBaseUrl());
+  api.dio.interceptors.add(
+    ServerTimeInterceptor(ref.watch(serverClockProvider)),
+  );
+  return api;
+});
 
 /// The generated client (E6); the only way the app reaches the server. It
 /// sends the session's token and renews it.

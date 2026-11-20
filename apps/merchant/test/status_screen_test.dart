@@ -569,6 +569,12 @@ void main() {
           'devices': [device('تابلت المطبخ', signedIn: true)],
         }),
       ])
+      ..on('/v1/merchant/devices/windows-pairing', [
+        FakeAnswer(200, {
+          'code': '04718263',
+          'expiresAt': '2026-11-20T09:10:00.000Z',
+        }),
+      ])
       ..on('/v1/merchant/devices/kitchen/sign-out', [
         FakeAnswer(200, {
           // Its only device signed out: none receives (RA §14.2, §4.6).
@@ -623,6 +629,12 @@ void main() {
       find.text('لا يوجد جهاز يستقبل الطلبات في مطعمك الآن'),
       findsOneWidget,
     );
+
+    // Slice 2.44: a pairing code for a Windows PC, shown once.
+    await tester.tap(find.byKey(const Key('pair-windows')));
+    await tester.pumpAndSettle();
+    expect(find.text('04718263'), findsOneWidget);
+    expect(find.textContaining('خلال 10 دقائق'), findsOneWidget);
     await app.done(tester);
   });
 

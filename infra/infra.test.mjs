@@ -230,3 +230,25 @@ test('nginx serves /maps/ from public-maps only, for reads', () => {
   assert.match(development.configs['maps-nginx'].content, /proxy_set_header Host public-maps;/);
   assert.match(read('storage/garage.toml'), /^\[s3_web\]$/m);
 });
+
+test("nginx serves the Windows downloads for reads only, from the publish script's folder", () => {
+  const downloads = /^location \/downloads\/windows\/ \{$([\s\S]*?)^\}$/m.exec(
+    read('nginx/api.conf.template'),
+  )[1];
+  assert.match(downloads, /limit_except GET \{ deny all; \}/);
+  assert.match(downloads, /alias \/var\/www\/foxdrop-\$\{FOXDROP_ENV\}-downloads\/windows\/;/);
+  const publish = read('server/windows-publish.sh');
+  assert.match(publish, /^target=\/var\/www\/foxdrop-\$environment-downloads\/windows$/m);
+  // The deploy key reaches it with one exact request, through its own sudo rule.
+  const ssh = read('server/deploy-ssh.sh');
+  assert.match(ssh, /\^\(staging\)\\ windows\$/);
+  assert.match(
+    read('server/provision.sh'),
+    /NOPASSWD: \/usr\/local\/bin\/foxdrop-windows-publish staging" >>"\$sudoers"/,
+  );
+  // A PC's registration is limited like a code request.
+  assert.match(
+    read('nginx/api.conf.template'),
+    /auth\/\(sign-in\|code\|setup\/\|windows-registration\)/,
+  );
+});

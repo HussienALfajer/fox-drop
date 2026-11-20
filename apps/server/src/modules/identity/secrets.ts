@@ -23,6 +23,7 @@ export class IdentitySecrets {
   private readonly phoneKey: Buffer;
   private readonly backupCodeKey: Buffer;
   private readonly signInCodeKey: Buffer;
+  private readonly pairingCodeKey: Buffer;
 
   constructor(masterKey: Buffer) {
     if (masterKey.length !== KEY_BYTES) {
@@ -34,6 +35,7 @@ export class IdentitySecrets {
     this.phoneKey = derive('fox-drop identity phone hash');
     this.backupCodeKey = derive('fox-drop identity backup code hash');
     this.signInCodeKey = derive('fox-drop identity sign-in code hash');
+    this.pairingCodeKey = derive('fox-drop identity windows pairing code hash');
   }
 
   // AES-256-GCM, as v1.<iv>.<tag>.<ciphertext> in base64url.
@@ -72,6 +74,11 @@ export class IdentitySecrets {
   // so the stored hashes of a million possible codes cannot be reversed.
   signInCodeHash(phone: string, code: string): string {
     return createHmac('sha256', this.signInCodeKey).update(`${phone}:${code}`).digest('hex');
+  }
+
+  // A Windows pairing code (slice 2.44): keyed like the sign-in codes.
+  pairingCodeHash(code: string): string {
+    return createHmac('sha256', this.pairingCodeKey).update(code).digest('hex');
   }
 
   // Takes a code from normalizeBackupCode.

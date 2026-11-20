@@ -105,15 +105,16 @@ final phoneAccessReaderProvider = Provider<PhoneAccessReader>(
 class PhoneReadings {
   const PhoneReadings(this.device, this.access);
 
-  final DeviceReadings device;
+  final AndroidReadings device;
   final PhoneAccess access;
 }
 
 final phoneReadingsProvider = FutureProvider<PhoneReadings?>((ref) async {
   final listener = AppLifecycleListener(onResume: ref.invalidateSelf);
   ref.onDispose(listener.dispose);
+  // The captain app runs on phones only: a PC's readings never come.
   final device = await ref.watch(alertsProvider).readings();
-  if (device == null) return null;
+  if (device is! AndroidReadings) return null;
   return PhoneReadings(
     device,
     await ref.watch(phoneAccessReaderProvider).read(),

@@ -48,6 +48,44 @@ class DevicesScreen extends ConsumerWidget {
     if (!done && context.mounted) _failed(context);
   }
 
+  /// RA §4.3 (slice 2.44): a one-time code that registers a Windows PC,
+  /// shown once.
+  Future<void> _pairWindows(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final code = await pairingCode(ref);
+    if (!context.mounted) return;
+    if (code == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.merchantPairWindowsFailed)));
+      return;
+    }
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.merchantPairWindows),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SelectableText(
+              key: const Key('pairing-code'),
+              code,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(l10n.merchantPairWindowsHow),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.merchantClose),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _failed(BuildContext context) =>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -60,7 +98,16 @@ class DevicesScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final devices = ref.watch(devicesProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.merchantDevices)),
+      appBar: AppBar(
+        title: Text(l10n.merchantDevices),
+        actions: [
+          TextButton(
+            key: const Key('pair-windows'),
+            onPressed: () => _pairWindows(context, ref),
+            child: Text(l10n.merchantPairWindows),
+          ),
+        ],
+      ),
       body: switch (devices) {
         AsyncData(:final value) when value.isEmpty => Center(
           child: Text(l10n.merchantNoDevices),

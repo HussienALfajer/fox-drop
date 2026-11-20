@@ -1,5 +1,6 @@
 import 'package:core_alerts/core_alerts.dart';
 import 'package:core_auth/core_auth.dart';
+import 'package:core_l10n/core_l10n.dart';
 import 'package:core_push/core_push.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +8,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'src/api.dart';
 import 'src/app.dart';
 import 'src/auth.dart';
+import 'src/board/alerts.dart';
 import 'src/push.dart';
+import 'src/windows/registration.dart';
+import 'src/windows/shell.dart';
 
 Future<void> main() async {
   // A release build without API_BASE_URL stops here, before its first screen.
@@ -17,14 +21,23 @@ Future<void> main() async {
   final appCheck = await startAppCheck();
   // Push on the Firebase app App Check started (packages/core_push/CLAUDE.md).
   final push = startPush(background: wakeReceiving);
+  // Windows (architecture §12.3, slice 2.44): the tray, the window and the
+  // ring's native layer.
+  final windows = onWindows
+      ? WindowsAlerts(
+          appName: lookupAppLocalizations(const Locale('ar')).merchantAppName,
+        )
+      : null;
+  final container = ProviderContainer(
+    overrides: [
+      merchantAuth.appCheck.overrideWithValue(appCheck),
+      pushProvider.overrideWithValue(push),
+      if (windows != null) alertsProvider.overrideWithValue(windows),
+    ],
+  );
+  if (windows != null) await setUpWindows(windows, container);
   runApp(
-    ProviderScope(
-      overrides: [
-        merchantAuth.appCheck.overrideWithValue(appCheck),
-        pushProvider.overrideWithValue(push),
-      ],
-      child: const MerchantApp(),
-    ),
+    UncontrolledProviderScope(container: container, child: const MerchantApp()),
   );
 }
 

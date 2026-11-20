@@ -256,7 +256,7 @@ jobs:
   # of docs only, or of no Dart.
   verify:
     if: always()
-    needs: [changes, contract, format, typescript, server, dart, flutter]
+    needs: [changes, contract, format, typescript, server, dart, flutter, windows-release]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -408,6 +408,37 @@ jobs:
         working-directory: apps/${{ matrix.app }}
         run: flutter build apk --flavor staging --release
 
+  # Slice 2.44: the restaurant app's Windows release build on every pull
+  # request that touches a Flutter app, a Dart package or this workflow, so
+  # the Win32 plugins (core_alerts' own included, which has no unit tests)
+  # compile before the merge. No secret, never kept.
+  windows-release:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.flutter == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        shell: bash
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - run: dart pub get --enforce-lockfile
+
+      - name: Build the Windows release
+        working-directory: apps/merchant
+        run: flutter build windows --release
+
   staging-apks:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
     needs: [changes, verify]
@@ -513,3 +544,117 @@ jobs:
           path: apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-staging-release.apk
           if-no-files-found: error
           retention-days: 30
+
+  # Slice 2.44 (owner decisions 2026-11-20): every merge to main (but one of
+  # docs only) builds the restaurant app for Windows, packs it with Velopack
+  # (vpk) as its staging installer and full update package, and publishes
+  # them to /downloads/windows/ on the staging API's host through the deploy
+  # key (infra/server/windows-publish.sh). Unsigned until the owner sets up
+  # Azure Trusted Signing (architecture §12.3, §22 item 8): SmartScreen warns.
+  staging-windows:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    needs: [changes, verify]
+    runs-on: windows-latest
+    timeout-minutes: 40
+    environment: staging
+    # One build at a time, in the order of the merges, so an older build
+    # never publishes after a newer one.
+    concurrency:
+      group: staging-windows
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        shell: bash
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - run: dart pub get --enforce-lockfile
+
+      # The version Velopack orders: the app's, a staging pre-release per run.
+      - name: Build and pack the staging installer
+        shell: bash
+        run: |
+          setting() { grep -E "^$1=" infra/environments/staging.env | cut -d= -f2 | tr -d '\r'; }
+          api_host=$(setting API_HOST)
+          base=$(grep -E '^version:' apps/merchant/pubspec.yaml | sed -E 's/^version: *([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          version="$base-staging.$GITHUB_RUN_NUMBER"
+          feed="https://$api_host/downloads/windows/"
+          cd apps/merchant
+          flutter build windows --release \
+            --build-number "$GITHUB_RUN_NUMBER" \
+            --dart-define="API_BASE_URL=https://$api_host" \
+            --dart-define="WINDOWS_UPDATE_FEED=$feed" \
+            --dart-define="WINDOWS_FEED_PUBLIC_KEY=$FEED_PUBLIC_KEY" \
+            --dart-define="UPDATE_URL=${feed}FOXDROP.Merchant.Staging-win-Setup.exe"
+          dotnet tool install --global vpk --version 1.2.161
+          vpk pack --packId FOXDROP.Merchant.Staging --packVersion "$version" \
+            --packDir build/windows/x64/runner/Release --mainExe merchant.exe \
+            --packTitle "FOX DROP Merchant (staging)" --skipVeloAppCheck \
+            --outputDir "$RUNNER_TEMP/releases"
+          # The feed's signature, which the app checks before it updates
+          # (a key kept apart from the deploy key; the deploy skill). Without
+          # it the installed apps never update themselves.
+          if [ -n "$FEED_SIGNING_KEY" ] && [ -n "$FEED_PUBLIC_KEY" ]; then
+            printf '%s\n' "$FEED_SIGNING_KEY" > "$RUNNER_TEMP/feed.pem"
+            openssl pkeyutl -sign -rawin -inkey "$RUNNER_TEMP/feed.pem" \
+              -in "$RUNNER_TEMP/releases/releases.win.json" | base64 -w0 \
+              > "$RUNNER_TEMP/releases/releases.win.json.sig"
+            rm "$RUNNER_TEMP/feed.pem"
+          else
+            echo "::warning::No feed signing key: the staging PCs will not update themselves"
+          fi
+          ls -l "$RUNNER_TEMP/releases"
+        env:
+          # A PEM Ed25519 private key (a secret of the staging environment)
+          # and its raw public key in base64 (a variable).
+          FEED_SIGNING_KEY: ${{ secrets.STAGING_WINDOWS_FEED_KEY }}
+          FEED_PUBLIC_KEY: ${{ vars.STAGING_WINDOWS_FEED_PUBLIC_KEY }}
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: foxdrop-merchant-windows-staging-${{ github.run_number }}
+          path: ${{ runner.temp }}/releases
+          if-no-files-found: error
+          retention-days: 30
+
+  publish-windows:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    needs: [changes, staging-windows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging
+    concurrency:
+      group: publish-windows
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: foxdrop-merchant-windows-staging-${{ github.run_number }}
+          path: releases
+
+      - name: Publish to the staging server
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          tar -c -C releases . | ssh -i ~/.ssh/deploy -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "foxdrop-deploy@$SSH_HOST" "staging windows"
+        env:
+          SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          SSH_HOST: ${{ vars.STAGING_SSH_HOST }}
+          SSH_KNOWN_HOSTS: ${{ vars.STAGING_SSH_KNOWN_HOSTS }}

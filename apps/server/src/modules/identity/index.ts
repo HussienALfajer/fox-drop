@@ -14,6 +14,7 @@ import { AdminSignInService } from './admin-sign-in.service.js';
 import { AdminTeamController } from './admin-team.controller.js';
 import { AdminTeamService } from './admin-team.service.js';
 import { AppSessionsService } from './app-sessions.service.js';
+import { WindowsDevicesService } from './windows-devices.service.js';
 import { AppSignInService } from './app-sign-in.service.js';
 import { AppSigningKeys } from './app-signing-keys.js';
 import { ApplicantLookups } from './applicant-lookups.js';
@@ -77,6 +78,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     AppSigningKeys,
     AppSessionsService,
     AppSignInService,
+    WindowsDevicesService,
     MerchantAccountsService,
     RestaurantDevicesService,
     CaptainAccountsService,

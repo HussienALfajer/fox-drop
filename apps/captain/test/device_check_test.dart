@@ -11,7 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'fixtures.dart';
 
 // CA §4.5 (slice 2.43): «فحص الجهاز» on Android.
-const _good = DeviceReadings(
+const _good = AndroidReadings(
   notificationsAllowed: true,
   batteryOptimizationOff: true,
   fullScreenAllowed: true,
@@ -43,7 +43,7 @@ void main() {
   test('lists what fails in the spec’s order, the confirmed and measured '
       'checks until answered', () {
     const readings = PhoneReadings(
-      DeviceReadings(
+      AndroidReadings(
         notificationsAllowed: false,
         batteryOptimizationOff: true,
         fullScreenAllowed: false,
@@ -90,7 +90,7 @@ void main() {
   testWidgets('runs before the first «متصل» on this phone, rings the test '
       'offer and sends the result', (tester) async {
     final app = TestApp();
-    app.alerts.deviceReadings = const DeviceReadings(
+    app.alerts.deviceReadings = const AndroidReadings(
       notificationsAllowed: true,
       batteryOptimizationOff: false,
       fullScreenAllowed: true,

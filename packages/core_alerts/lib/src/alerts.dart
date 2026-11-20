@@ -6,9 +6,16 @@ import 'package:flutter/services.dart';
 /// Placeholders until the design's sounds (owner decision 2026-11-20).
 enum RingSound { newOrder, pickupRequest, cancellation, offer }
 
-/// What the device check reads of the phone (RA §4.5 checks 1–5).
-class DeviceReadings {
-  const DeviceReadings({
+/// What the device check reads of the device (RA §4.5): the phone's checks
+/// 1–5 ([AndroidReadings]) or the PC's checks 1, 3, 5 and 6
+/// ([WindowsReadings]).
+sealed class DeviceReadings {
+  const DeviceReadings();
+}
+
+/// A phone's readings (RA §4.5 checks 1–5).
+class AndroidReadings extends DeviceReadings {
+  const AndroidReadings({
     required this.notificationsAllowed,
     required this.batteryOptimizationOff,
     required this.fullScreenAllowed,
@@ -36,7 +43,7 @@ class DeviceReadings {
   /// cannot read, so the user confirms it; false on a brand without one.
   final bool autostartPage;
 
-  static DeviceReadings fromMap(Map<Object?, Object?> map) => DeviceReadings(
+  static AndroidReadings fromMap(Map<Object?, Object?> map) => AndroidReadings(
     notificationsAllowed: map['notificationsAllowed'] == true,
     batteryOptimizationOff: map['batteryOptimizationOff'] == true,
     fullScreenAllowed: map['fullScreenAllowed'] == true,
@@ -46,7 +53,44 @@ class DeviceReadings {
   );
 }
 
-/// A system settings page the device check opens (RA §4.5).
+/// A PC's readings (RA §4.5 checks 1, 3, 5 and 6; slice 2.44).
+class WindowsReadings extends DeviceReadings {
+  const WindowsReadings({
+    required this.notificationsAllowed,
+    required this.startsWithWindows,
+    required this.outputMuted,
+    required this.outputVolumePercent,
+    required this.sleepAfterSeconds,
+  });
+
+  /// Check 1: Windows' notifications on, for the user and the app.
+  final bool notificationsAllowed;
+
+  /// Check 3: «Start with Windows» on.
+  final bool startsWithWindows;
+
+  /// Check 5: the default output device is muted (or there is none).
+  final bool outputMuted;
+
+  /// Check 5: its volume, 0 to 100.
+  final int outputVolumePercent;
+
+  /// Check 6: how long the PC waits on mains power before it sleeps; 0 when
+  /// it never does.
+  final int sleepAfterSeconds;
+
+  static WindowsReadings fromMap(Map<Object?, Object?> map) => WindowsReadings(
+    notificationsAllowed: map['notificationsAllowed'] == true,
+    startsWithWindows: map['startsWithWindows'] == true,
+    outputMuted: map['outputMuted'] != false,
+    outputVolumePercent: (map['outputVolumePercent'] as int?) ?? 0,
+    sleepAfterSeconds: (map['sleepAfterSeconds'] as int?) ?? 0,
+  );
+}
+
+/// A system settings page the device check opens (RA §4.5). On Windows,
+/// [autostart] turns «Start with Windows» on itself, and [sleep] opens the
+/// power settings (check 6).
 enum DeviceSetting {
   notifications,
   battery,
@@ -54,6 +98,7 @@ enum DeviceSetting {
   fullScreen,
   alarmVolume,
   doNotDisturb,
+  sleep,
 }
 
 /// The native ringing layer (architecture §12.2): the foreground service
@@ -93,7 +138,8 @@ abstract interface class Alerts {
   Future<void> openSettings(DeviceSetting setting);
 }
 
-/// Where there is no native layer yet (Windows until its slice).
+/// Where there is no native layer (the tests' platform, and any but Android
+/// and Windows).
 class NoAlerts implements Alerts {
   const NoAlerts();
 
@@ -170,7 +216,7 @@ class AndroidAlerts implements Alerts {
   @override
   Future<DeviceReadings?> readings() async {
     final map = await _channel.invokeMethod<Map<Object?, Object?>>('readings');
-    return map == null ? null : DeviceReadings.fromMap(map);
+    return map == null ? null : AndroidReadings.fromMap(map);
   }
 
   @override
@@ -178,8 +224,8 @@ class AndroidAlerts implements Alerts {
       _channel.invokeMethod('openSettings', {'setting': setting.name});
 }
 
-/// The raw resource of each sound (`android/src/main/res/raw`).
-@visibleForTesting
+/// The raw resource of each sound (`android/src/main/res/raw`), which the
+/// Windows layer plays from the app's assets.
 String soundName(RingSound sound) => switch (sound) {
   RingSound.newOrder => 'fd_new_order',
   RingSound.pickupRequest => 'fd_pickup_request',
@@ -187,7 +233,10 @@ String soundName(RingSound sound) => switch (sound) {
   RingSound.offer => 'fd_offer',
 };
 
-/// The platform's layer: Android's, else none.
-Alerts platformAlerts() => defaultTargetPlatform == TargetPlatform.android
-    ? const AndroidAlerts()
-    : const NoAlerts();
+/// The platform's layer: Android's, Windows' ([windows], set up by the app's
+/// `main`), else none.
+Alerts platformAlerts({Alerts? windows}) => switch (defaultTargetPlatform) {
+  TargetPlatform.android => const AndroidAlerts(),
+  TargetPlatform.windows => windows ?? const NoAlerts(),
+  _ => const NoAlerts(),
+};

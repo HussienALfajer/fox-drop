@@ -6,8 +6,12 @@
 set -euo pipefail
 
 request=${SSH_ORIGINAL_COMMAND:-}
+# Slice 2.44: the restaurant app's Windows release, a tar on standard input.
+if [[ $request =~ ^(staging)\ windows$ ]]; then
+  exec sudo --non-interactive /usr/local/bin/foxdrop-windows-publish "${BASH_REMATCH[1]}"
+fi
 if [[ $request =~ ^(staging)\ ([0-9a-f]{40}|rollback)$ ]]; then
   exec sudo --non-interactive /usr/local/bin/foxdrop-deploy "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
 fi
-echo "usage: staging <commit> | staging rollback" >&2
+echo "usage: staging <commit> | staging rollback | staging windows" >&2
 exit 2

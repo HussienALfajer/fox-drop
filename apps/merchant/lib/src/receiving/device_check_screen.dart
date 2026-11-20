@@ -14,7 +14,7 @@ import 'receiving.dart';
 /// to fix it, read again on coming back; the test ring on the alarm stream
 /// with «سمعت الصوت»; the server connection's delay; then the result is
 /// sent, which the panel shows (AP §9.6.4) and the activation needs (AP
-/// §9.6.3). Unstyled until the design; the brands' screenshots come with it.
+/// §9.6.3). A PC's checks are Windows' own (slice 2.44). Unstyled until the design; the brands' screenshots come with it.
 class DeviceCheckScreen extends ConsumerStatefulWidget {
   const DeviceCheckScreen({super.key});
 
@@ -83,6 +83,12 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
     ref.invalidate(autostartConfirmedProvider);
   }
 
+  /// RA §4.3: Windows' check 3 is turned on here, then read again.
+  Future<void> _startWithWindows() async {
+    await ref.read(alertsProvider).openSettings(DeviceSetting.autostart);
+    ref.invalidate(deviceReadingsProvider);
+  }
+
   Future<void> _save(List<CheckItem> failed, AppLocalizations l10n) async {
     setState(() => _saving = true);
     final saved = await ref
@@ -108,9 +114,7 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.merchantDeviceCheck)),
       body: switch (readings) {
-        AsyncData(value: null) => Center(
-          child: Text(l10n.merchantCheckWindowsLater),
-        ),
+        AsyncData(value: null) => const SizedBox.shrink(),
         AsyncData(value: final DeviceReadings read) => () {
           final answers = CheckAnswers(
             autostartConfirmed: confirmed,
@@ -155,52 +159,106 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
             padding: const EdgeInsetsDirectional.all(16),
             children: [
               Text(l10n.merchantDeviceCheckIntro),
-              item(
-                CheckItem.notifications,
-                l10n.merchantCheckNotifications,
-                l10n.merchantCheckNotificationsHow,
-                setting: DeviceSetting.notifications,
-              ),
-              item(
-                CheckItem.battery,
-                l10n.merchantCheckBattery,
-                l10n.merchantCheckBatteryHow,
-                setting: DeviceSetting.battery,
-              ),
-              if (read.autostartPage)
-                item(
-                  CheckItem.autostart,
-                  l10n.merchantCheckAutostart,
-                  l10n.merchantCheckAutostartHow,
-                  setting: DeviceSetting.autostart,
-                  more: [
-                    if (!confirmed)
-                      TextButton(
-                        key: const Key('autostart-done'),
-                        onPressed: () => unawaited(_confirmAutostart()),
-                        child: Text(l10n.merchantCheckAutostartDone),
+              ...switch (read) {
+                AndroidReadings() => [
+                  item(
+                    CheckItem.notifications,
+                    l10n.merchantCheckNotifications,
+                    l10n.merchantCheckNotificationsHow,
+                    setting: DeviceSetting.notifications,
+                  ),
+                  item(
+                    CheckItem.battery,
+                    l10n.merchantCheckBattery,
+                    l10n.merchantCheckBatteryHow,
+                    setting: DeviceSetting.battery,
+                  ),
+                  if (read.autostartPage)
+                    item(
+                      CheckItem.autostart,
+                      l10n.merchantCheckAutostart,
+                      l10n.merchantCheckAutostartHow,
+                      setting: DeviceSetting.autostart,
+                      more: [
+                        if (!confirmed)
+                          TextButton(
+                            key: const Key('autostart-done'),
+                            onPressed: () => unawaited(_confirmAutostart()),
+                            child: Text(l10n.merchantCheckAutostartDone),
+                          ),
+                      ],
+                    ),
+                  item(
+                    CheckItem.fullScreen,
+                    l10n.merchantCheckFullScreen,
+                    l10n.merchantCheckFullScreenHow,
+                    setting: DeviceSetting.fullScreen,
+                  ),
+                  item(
+                    CheckItem.alarmVolume,
+                    l10n.merchantCheckAlarm,
+                    l10n.merchantCheckAlarmHow,
+                    setting: read.doNotDisturbBlocks
+                        ? DeviceSetting.doNotDisturb
+                        : DeviceSetting.alarmVolume,
+                    more: [
+                      Text(
+                        l10n.merchantCheckAlarmVolume(read.alarmVolumePercent),
                       ),
-                  ],
-                ),
-              item(
-                CheckItem.fullScreen,
-                l10n.merchantCheckFullScreen,
-                l10n.merchantCheckFullScreenHow,
-                setting: DeviceSetting.fullScreen,
-              ),
-              item(
-                CheckItem.alarmVolume,
-                l10n.merchantCheckAlarm,
-                l10n.merchantCheckAlarmHow,
-                setting: read.doNotDisturbBlocks
-                    ? DeviceSetting.doNotDisturb
-                    : DeviceSetting.alarmVolume,
-                more: [
-                  Text(l10n.merchantCheckAlarmVolume(read.alarmVolumePercent)),
-                  if (read.doNotDisturbBlocks)
-                    Text(l10n.merchantCheckDoNotDisturb),
+                      if (read.doNotDisturbBlocks)
+                        Text(l10n.merchantCheckDoNotDisturb),
+                    ],
+                  ),
                 ],
-              ),
+                WindowsReadings() => [
+                  item(
+                    CheckItem.notifications,
+                    l10n.merchantCheckWindowsNotifications,
+                    l10n.merchantCheckWindowsNotificationsHow,
+                    setting: DeviceSetting.notifications,
+                  ),
+                  item(
+                    CheckItem.autostart,
+                    l10n.merchantCheckStartup,
+                    l10n.merchantCheckStartupHow,
+                    more: [
+                      if (failed.contains(CheckItem.autostart))
+                        TextButton(
+                          key: const Key('startup-on'),
+                          onPressed: () => unawaited(_startWithWindows()),
+                          child: Text(l10n.merchantCheckStartupTurnOn),
+                        ),
+                    ],
+                  ),
+                  item(
+                    CheckItem.alarmVolume,
+                    l10n.merchantCheckOutput,
+                    l10n.merchantCheckOutputHow,
+                    setting: DeviceSetting.alarmVolume,
+                    more: [
+                      Text(
+                        l10n.merchantCheckOutputVolume(
+                          read.outputMuted ? 0 : read.outputVolumePercent,
+                        ),
+                      ),
+                    ],
+                  ),
+                  item(
+                    CheckItem.sleep,
+                    l10n.merchantCheckSleep,
+                    l10n.merchantCheckSleepHow,
+                    setting: DeviceSetting.sleep,
+                    more: [
+                      if (read.sleepAfterSeconds > 0)
+                        Text(
+                          l10n.merchantCheckSleepAfter(
+                            (read.sleepAfterSeconds / 60).ceil(),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              },
               item(
                 CheckItem.testRing,
                 l10n.merchantCheckTestRing,

@@ -1080,6 +1080,7 @@ import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_busy_mode_dto.dart';
 import 'package:core_api/src/model/merchant_category_request_dto.dart';
 import 'package:core_api/src/model/merchant_code_request_dto.dart';
+import 'package:core_api/src/model/merchant_code_request_dto_device_signature.dart';
 import 'package:core_api/src/model/merchant_code_sent_dto_output.dart';
 import 'package:core_api/src/model/merchant_content_dto_output.dart';
 import 'package:core_api/src/model/merchant_content_dto_output_faq_inner.dart';
@@ -1214,6 +1215,9 @@ import 'package:core_api/src/model/merchant_status_dto_output_holiday.dart';
 import 'package:core_api/src/model/merchant_this_device_dto_output.dart';
 import 'package:core_api/src/model/merchant_tokens_dto_output.dart';
 import 'package:core_api/src/model/merchant_upload_dto_output.dart';
+import 'package:core_api/src/model/merchant_windows_pairing_dto_output.dart';
+import 'package:core_api/src/model/merchant_windows_registered_dto_output.dart';
+import 'package:core_api/src/model/merchant_windows_registration_dto.dart';
 import 'package:core_api/src/model/platform_dto_output.dart';
 import 'package:core_api/src/model/push_token_dto.dart';
 import 'package:core_api/src/model/push_token_registered_dto_output.dart';
@@ -2317,6 +2321,7 @@ part 'serializers.g.dart';
   MerchantBusyModeDto,
   MerchantCategoryRequestDto,
   MerchantCodeRequestDto,
+  MerchantCodeRequestDtoDeviceSignature,
   MerchantCodeSentDtoOutput,
   MerchantContentDtoOutput,
   MerchantContentDtoOutputFaqInner,
@@ -2451,6 +2456,9 @@ part 'serializers.g.dart';
   MerchantThisDeviceDtoOutput,
   MerchantTokensDtoOutput,
   MerchantUploadDtoOutput,
+  MerchantWindowsPairingDtoOutput,
+  MerchantWindowsRegisteredDtoOutput,
+  MerchantWindowsRegistrationDto,
   PlatformDtoOutput,
   PushTokenDto,
   PushTokenRegisteredDtoOutput,
