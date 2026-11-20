@@ -339,7 +339,8 @@ class BoardCommands extends Notifier<Set<String>> {
         idempotencyKey: key,
         merchantPickupDisputeDto: MerchantPickupDisputeDto(
           (b) => b.receivedLines.addAll([
-            for (final line in (args['lines']! as List).cast<Map<String, Object?>>())
+            for (final line
+                in (args['lines']! as List).cast<Map<String, Object?>>())
               MerchantPickupDisputeDtoReceivedLinesInner(
                 (l) => l
                   ..amount = line['amount'] as String
