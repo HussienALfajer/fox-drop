@@ -17,7 +17,12 @@ import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { MerchantController } from '../../http/route-groups.js';
-import { devicePlatforms, MerchantsRefusedError, MerchantsService } from '../merchants/index.js';
+import {
+  devicePlatforms,
+  merchantDeviceCheckSchema,
+  MerchantsRefusedError,
+  MerchantsService,
+} from '../merchants/index.js';
 import { deviceId } from './app-auth.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
 import { type AppSession, AppSessionsService } from './app-sessions.service.js';
@@ -88,8 +93,17 @@ class MerchantDevicesDto extends createZodDto(
             .datetime()
             .nullable()
             .describe('Its session’s last refresh (every 15 minutes while open), or its end.'),
-          ringing: z.boolean().nullable().describe('Null until the devices report it (2.42).'),
-          deviceCheck: z.string().nullable().describe('Null until the device check (2.42).'),
+          ringing: z
+            .boolean()
+            .describe(
+              'Whether ring events ring on it: the owner’s setting, always for a cashier (RA §4.4).',
+            ),
+          connected: z
+            .boolean()
+            .describe('Signed in and on the restaurant’s channel within the last 60 s (RA §4.3).'),
+          deviceCheck: merchantDeviceCheckSchema
+            .nullable()
+            .describe('Its latest device check (RA §4.5), or null before any.'),
           thisDevice: z.boolean().describe('The device making the request.'),
         }),
       )
@@ -261,8 +275,7 @@ export class MerchantStaffController {
       devices: devices.map((device) => ({
         ...device,
         lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
-        ringing: null,
-        deviceCheck: null,
+        deviceCheck: device.check && { ...device.check, at: device.check.at.toISOString() },
         thisDevice: device.deviceId === session.deviceId,
       })),
     };

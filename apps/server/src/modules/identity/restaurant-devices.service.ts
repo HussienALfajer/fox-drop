@@ -3,7 +3,12 @@ import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
-import { type DevicePlatform, MerchantsService } from '../merchants/index.js';
+import {
+  connectedAt,
+  type DeviceCheck,
+  type DevicePlatform,
+  MerchantsService,
+} from '../merchants/index.js';
 import { appSessions, merchantAccounts } from './schema.js';
 
 export class RestaurantDevicesRefusedError extends Error {
@@ -25,14 +30,22 @@ export interface RestaurantDeviceView {
   user: { name: string; role: 'owner' | 'cashier' } | null;
   signedIn: boolean;
   // The latest moment the device was heard from: its session's last refresh
-  // (every 15 minutes while open), or its end.
+  // (every 15 minutes while open), or its end, or its last moment on the
+  // restaurant's channel, whichever is later.
   lastSeenAt: Date | null;
+  // RA §4.4: whether ring events ring on it: the owner's setting, always for
+  // a cashier signed in on it (slice 2.42).
+  ringing: boolean;
+  // RA §4.3: signed in and seen on the channel within the last 60 s.
+  connected: boolean;
+  // RA §4.5: its latest device check.
+  check: DeviceCheck | null;
 }
 
 // AP §9.6.4 (slice 2.30d): a restaurant's devices with who uses them, and
 // operations' force sign-out of one or every device (RA §14.2: signing a
-// cashier's device out never removes the cashier). Presence, the ring
-// setting and the device check join with 2.42.
+// cashier's device out never removes the cashier), with presence, the ring
+// setting and the device check (slice 2.42).
 @Injectable()
 export class RestaurantDevicesService {
   constructor(
@@ -41,7 +54,7 @@ export class RestaurantDevicesService {
     private readonly audit: AuditService,
   ) {}
 
-  async devices(restaurantId: string): Promise<RestaurantDeviceView[]> {
+  async devices(restaurantId: string, now = new Date()): Promise<RestaurantDeviceView[]> {
     const named = await this.merchants.devices(restaurantId);
     if (named.length === 0) return [];
     // The latest session of each device among the restaurant's users.
@@ -69,14 +82,19 @@ export class RestaurantDevicesService {
     const byDevice = new Map(sessions.map((session) => [session.deviceId, session]));
     return named.map((device) => {
       const session = byDevice.get(device.deviceId);
+      const signedIn = session !== undefined && session.endedAt === null;
+      const heard = session ? (session.endedAt ?? session.lastRefreshedAt) : null;
       return {
         deviceId: device.deviceId,
         name: device.name,
         platform: device.platform,
         appVersion: device.appVersion,
         user: session ? { name: session.name, role: session.role } : null,
-        signedIn: session !== undefined && session.endedAt === null,
-        lastSeenAt: session ? (session.endedAt ?? session.lastRefreshedAt) : null,
+        signedIn,
+        lastSeenAt: latest(heard, signedIn ? device.presentAt : null),
+        ringing: (signedIn && session.role === 'cashier') || device.ringing,
+        connected: signedIn && connectedAt(device.presentAt, now),
+        check: device.check,
       };
     });
   }
@@ -144,4 +162,10 @@ export class RestaurantDevicesService {
       return ended.map((row) => row.id);
     });
   }
+}
+
+function latest(a: Date | null, b: Date | null): Date | null {
+  if (a === null) return b;
+  if (b === null) return a;
+  return a > b ? a : b;
 }

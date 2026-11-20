@@ -1081,8 +1081,11 @@ import 'package:core_api/src/model/merchant_content_dto_output.dart';
 import 'package:core_api/src/model/merchant_content_dto_output_faq_inner.dart';
 import 'package:core_api/src/model/merchant_content_dto_output_reasons.dart';
 import 'package:core_api/src/model/merchant_content_dto_output_reasons_merchant_rejection_inner.dart';
+import 'package:core_api/src/model/merchant_device_check_dto.dart';
+import 'package:core_api/src/model/merchant_device_check_output.dart';
 import 'package:core_api/src/model/merchant_device_dto.dart';
 import 'package:core_api/src/model/merchant_device_name_dto.dart';
+import 'package:core_api/src/model/merchant_device_report_dto.dart';
 import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_devices_dto_output.dart';
 import 'package:core_api/src/model/merchant_devices_dto_output_devices_inner.dart';
@@ -1204,6 +1207,7 @@ import 'package:core_api/src/model/merchant_statement_list_dto_output_statements
 import 'package:core_api/src/model/merchant_status_dto_output.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_busy_mode.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_holiday.dart';
+import 'package:core_api/src/model/merchant_this_device_dto_output.dart';
 import 'package:core_api/src/model/merchant_tokens_dto_output.dart';
 import 'package:core_api/src/model/merchant_upload_dto_output.dart';
 import 'package:core_api/src/model/platform_dto_output.dart';
@@ -2310,8 +2314,11 @@ part 'serializers.g.dart';
   MerchantContentDtoOutputFaqInner,
   MerchantContentDtoOutputReasons,
   MerchantContentDtoOutputReasonsMerchantRejectionInner,
+  MerchantDeviceCheckDto,
+  MerchantDeviceCheckOutput,
   MerchantDeviceDto,
   MerchantDeviceNameDto,
+  MerchantDeviceReportDto,
   MerchantDeviceSavedDtoOutput,
   MerchantDevicesDtoOutput,
   MerchantDevicesDtoOutputDevicesInner,
@@ -2433,6 +2440,7 @@ part 'serializers.g.dart';
   MerchantStatusDtoOutput,
   MerchantStatusDtoOutputBusyMode,
   MerchantStatusDtoOutputHoliday,
+  MerchantThisDeviceDtoOutput,
   MerchantTokensDtoOutput,
   MerchantUploadDtoOutput,
   PlatformDtoOutput,

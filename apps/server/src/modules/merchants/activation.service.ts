@@ -3,6 +3,7 @@ import { and, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
+import { ReceivingDevicesService } from './receiving-devices.service.js';
 import { activationChecklist, type Checklist, MENU_IMAGES_PCT } from './activation-checklist.js';
 import {
   type Executor,
@@ -23,6 +24,13 @@ import {
   options,
   restaurants,
 } from './schema.js';
+
+// What the checklist counts outside the restaurant's tables.
+interface ChecklistCounts {
+  ownerAccounts: number;
+  deliveredTestOrders: number;
+  passedDeviceChecks: number;
+}
 
 // The checklist as the panel shows it (AP §9.6.3 step 8).
 export interface RestaurantChecklist extends Checklist {
@@ -46,6 +54,7 @@ export class ActivationService {
     @Inject(DATABASE) private readonly database: Database,
     private readonly merchants: MerchantsService,
     private readonly audit: AuditService,
+    private readonly devices: ReceivingDevicesService,
   ) {}
 
   // The checklist of a restaurant in any status, or null.
@@ -165,14 +174,13 @@ export class ActivationService {
   }
 
   // The owner accounts (identity) and delivered test orders (ordering).
-  private async counts(
-    restaurantId: string,
-  ): Promise<{ ownerAccounts: number; deliveredTestOrders: number }> {
-    const [ownerAccounts, deliveredTestOrders] = await Promise.all([
+  private async counts(restaurantId: string): Promise<ChecklistCounts> {
+    const [ownerAccounts, deliveredTestOrders, passedDeviceChecks] = await Promise.all([
       this.merchants.ownerAccountCount(restaurantId),
       this.merchants.deliveredTestOrderCount(restaurantId),
+      this.devices.passedChecks(restaurantId),
     ]);
-    return { ownerAccounts, deliveredTestOrders };
+    return { ownerAccounts, deliveredTestOrders, passedDeviceChecks };
   }
 
   private async read(
@@ -181,7 +189,7 @@ export class ActivationService {
     accountStatus: AccountStatus,
     record: boolean,
     now: Date,
-    { ownerAccounts, deliveredTestOrders }: { ownerAccounts: number; deliveredTestOrders: number },
+    { ownerAccounts, deliveredTestOrders, passedDeviceChecks }: ChecklistCounts,
   ): Promise<RestaurantChecklist> {
     const [waiver] = await executor
       .select({ at: restaurants.menuImagesWaivedAt, by: restaurants.menuImagesWaivedBy })
@@ -301,6 +309,7 @@ export class ActivationService {
       itemsWithPhoto: withPhoto,
       imagesWaived: waiver?.at != null,
       ownerAccounts,
+      passedDeviceChecks,
       deliveredTestOrders,
     });
     return {

@@ -245,7 +245,9 @@ describe('the profile’s «الحسابات» and devices (AP §9.6.4, RA §14)
         appVersion: '1.2.0',
         user: { name: 'كاشير', role: 'cashier' },
         signedIn: true,
-        ringing: null,
+        // A cashier's device always rings (RA §4.4); not on the channel yet.
+        ringing: true,
+        connected: false,
         deviceCheck: null,
       }),
     ]);

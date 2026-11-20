@@ -20,6 +20,8 @@ export interface ChecklistFacts {
   imagesWaived: boolean;
   // Owner accounts not removed (step 6).
   ownerAccounts: number;
+  // Devices whose latest device check passed (RA §4.5, slice 2.42).
+  passedDeviceChecks: number;
   // Test orders delivered.
   deliveredTestOrders: number;
 }
@@ -37,16 +39,17 @@ export const checklistCodes = [
 ] as const;
 export type ChecklistCode = (typeof checklistCodes)[number];
 
-// `waived` is the image rule under OWN's waiver; `not_available` the device
-// check until 2.42 makes it required (owner decision 2026-11-18): shown,
-// never blocking.
+// `waived` is the image rule under OWN's waiver. `not_available` was the
+// device check's until 2.42 made it required (owner decision 2026-11-18);
+// kept so an older panel still reads the answer.
 export const checklistStates = ['met', 'missing', 'waived', 'not_available'] as const;
 export type ChecklistState = (typeof checklistStates)[number];
 
 export interface Checklist {
   items: { code: ChecklistCode; state: ChecklistState }[];
   // «تشغيل الوضع التجريبي»: every item but the test order, which needs test
-  // mode (decided by us).
+  // mode, and the device check, which RA §4.5 asks before the activation
+  // only (decided by us: the devices sign in for the test order).
   canStartTest: boolean;
   // «تفعيل وإظهار للزبائن»: every item.
   canActivate: boolean;
@@ -66,14 +69,16 @@ export function activationChecklist(facts: ChecklistFacts): Checklist {
     menu: met(facts.categoriesWithAvailableItems > 0),
     menu_images: imagesMet ? 'met' : facts.items > 0 && facts.imagesWaived ? 'waived' : 'missing',
     owner_account: met(facts.ownerAccounts > 0),
-    device_check: 'not_available',
+    device_check: met(facts.passedDeviceChecks > 0),
     test_order: met(facts.deliveredTestOrders > 0),
   };
   const items = checklistCodes.map((code) => ({ code, state: states[code] }));
   const done = (code: ChecklistCode) => states[code] !== 'missing';
   return {
     items,
-    canStartTest: checklistCodes.every((code) => code === 'test_order' || done(code)),
+    canStartTest: checklistCodes.every(
+      (code) => code === 'test_order' || code === 'device_check' || done(code),
+    ),
     canActivate: checklistCodes.every(done),
   };
 }

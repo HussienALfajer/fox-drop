@@ -1220,6 +1220,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/device": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantDeviceReport"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/device/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantDeviceCheck"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/restaurant/status": {
         parameters: {
             query?: never;
@@ -8138,6 +8170,14 @@ export interface components {
             /** @description A Syrian or Turkish mobile in E.164, as at sign-in. */
             phone: string;
         };
+        MerchantDeviceCheck_Output: {
+            /** Format: date-time */
+            at: string;
+            /** @description No failed item but `sleep`, a warning only. */
+            passed: boolean;
+            failed: ("notifications" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "sleep" | "test_ring" | "connection")[];
+            delayMs: number | null;
+        };
         AdminRestaurantDevicesDto_Output: {
             /** @description Every device named on the restaurant, the latest named first. */
             devices: {
@@ -8155,10 +8195,12 @@ export interface components {
                 signedIn: boolean;
                 /** @description Its session’s last refresh (every 15 minutes while open), or its end. */
                 lastSeenAt: string | null;
-                /** @description Null until the devices report it (2.42). */
-                ringing: boolean | null;
-                /** @description Null until the device check (2.42). */
-                deviceCheck: string | null;
+                /** @description Whether ring events ring on it: the owner’s setting, always for a cashier (RA §4.4). */
+                ringing: boolean;
+                /** @description Signed in and on the restaurant’s channel within the last 60 s (RA §4.3). */
+                connected: boolean;
+                /** @description Its latest device check (RA §4.5), or null before any. */
+                deviceCheck: components["schemas"]["MerchantDeviceCheck_Output"] | null;
             }[];
         };
         AdminRestaurantDevicesSignOutDto: {
@@ -8204,10 +8246,12 @@ export interface components {
                 signedIn: boolean;
                 /** @description Its session’s last refresh (every 15 minutes while open), or its end. */
                 lastSeenAt: string | null;
-                /** @description Null until the devices report it (2.42). */
-                ringing: boolean | null;
-                /** @description Null until the device check (2.42). */
-                deviceCheck: string | null;
+                /** @description Whether ring events ring on it: the owner’s setting, always for a cashier (RA §4.4). */
+                ringing: boolean;
+                /** @description Signed in and on the restaurant’s channel within the last 60 s (RA §4.3). */
+                connected: boolean;
+                /** @description Its latest device check (RA §4.5), or null before any. */
+                deviceCheck: components["schemas"]["MerchantDeviceCheck_Output"] | null;
                 /** @description The device making the request. */
                 thisDevice: boolean;
             }[];
@@ -8680,6 +8724,23 @@ export interface components {
             url: string;
             /** Format: date-time */
             expiresAt: string;
+        };
+        MerchantDeviceReportDto: {
+            appVersion: string;
+            /** @description «الرنين على هذا الجهاز» (RA §4.4), an owner’s setting; ignored for a cashier, whose device always rings; null leaves it as it is. */
+            ringing: boolean | null;
+        };
+        MerchantThisDeviceDto_Output: {
+            /** @description Whether ring events ring on this device (a cashier’s always, RA §4.4). */
+            ringing: boolean;
+            /** @description The latest device check (RA §4.5). */
+            check: components["schemas"]["MerchantDeviceCheck_Output"] | null;
+        };
+        MerchantDeviceCheckDto: {
+            /** @description The checks of RA §4.5 that failed; empty when all passed. */
+            failed: ("notifications" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "sleep" | "test_ring" | "connection")[];
+            /** @description Check 8: the server connection’s delay, or null when it failed. */
+            delayMs: number | null;
         };
         MerchantStatusDto_Output: {
             /**
@@ -24427,6 +24488,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantUploadDto_Output"];
+                };
+            };
+        };
+    };
+    merchantDeviceReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantDeviceReportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantThisDeviceDto_Output"];
+                };
+            };
+        };
+    };
+    merchantDeviceCheck: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantDeviceCheckDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantThisDeviceDto_Output"];
                 };
             };
         };

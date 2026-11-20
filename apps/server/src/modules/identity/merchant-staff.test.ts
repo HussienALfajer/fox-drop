@@ -359,3 +359,106 @@ describe('the owners’ devices (RA §14.2)', () => {
     expect(session.statusCode).toBe(200);
   });
 });
+
+// RA §4.3–4.5 (slice 2.42): each device's report, ring setting and check,
+// in the owners' list.
+describe('this device (RA §4.4–4.5)', () => {
+  it('records the owner’s ring setting, the version and the device check', async () => {
+    const { owner } = await restaurant();
+    const { phone } = await addCashier(owner);
+    const cashier = await signIn(phone, 'كاشير 1');
+
+    const off = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/device',
+      headers: owner.headers,
+      payload: { appVersion: '1.2.0', ringing: false },
+    });
+    expect(off.statusCode).toBe(200);
+    expect(off.json()).toEqual({ ringing: false, check: null });
+    // A cashier's device always rings (fixed): the setting is ignored.
+    const cashierOff = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/device',
+      headers: cashier.headers,
+      payload: { appVersion: '1.2.0', ringing: false },
+    });
+    expect(cashierOff.json()).toEqual({ ringing: true, check: null });
+
+    const failed = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/device/check',
+      headers: cashier.headers,
+      payload: { failed: ['battery', 'test_ring'], delayMs: 120 },
+    });
+    expect(failed.statusCode).toBe(200);
+    expect(failed.json().check).toMatchObject({
+      passed: false,
+      failed: ['battery', 'test_ring'],
+      delayMs: 120,
+    });
+    // Windows' sleep check is a warning only.
+    const passed = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/device/check',
+      headers: owner.headers,
+      payload: { failed: ['sleep'], delayMs: 80 },
+    });
+    expect(passed.json().check).toMatchObject({ passed: true, failed: ['sleep'] });
+
+    const listed = await app.inject({ method: 'GET', url: '/v1/merchant/devices', ...owner });
+    expect(listed.json().devices).toMatchObject([
+      {
+        deviceId: cashier.deviceId,
+        appVersion: '1.2.0',
+        ringing: true,
+        connected: false,
+        deviceCheck: { passed: false },
+      },
+      {
+        deviceId: owner.deviceId,
+        appVersion: '1.2.0',
+        ringing: false,
+        connected: false,
+        deviceCheck: { passed: true },
+      },
+    ]);
+
+    const invalid = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/device/check',
+      headers: owner.headers,
+      payload: { failed: ['nothing'], delayMs: null },
+    });
+    expect(invalid.statusCode).toBe(400);
+  });
+
+  it('refuses a device not named yet', async () => {
+    const { id } = await restaurant();
+    const phone = newPhone();
+    await app
+      .get(MerchantAccountsService)
+      .addAccount(id, { role: 'cashier', name: 'ريم', phone }, change);
+    const deviceId = randomUUID();
+    await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/auth/code',
+      payload: { phone, deviceId },
+    });
+    const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+    const signedIn = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/auth/sign-in',
+      payload: { phone, deviceId, code },
+    });
+    const headers = { authorization: `Bearer ${signedIn.json().accessToken}` };
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/device',
+      headers,
+      payload: { appVersion: '1.0.0', ringing: null },
+    });
+    expect(response.statusCode).toBe(404);
+    expect(response.json().error).toBe('unknown_device');
+  });
+});
