@@ -87,6 +87,106 @@ void main() {
     );
   });
 
+  // CA §4.5's iPhone column (slice 2.46): checks 1 with time-sensitive
+  // notifications, 3 as Background App Refresh and Low Power Mode, 5 the
+  // ring switch the captain confirms; no 4 or 8.
+  test('lists an iPhone’s failed checks', () {
+    const readings = PhoneReadings(
+      IosReadings(
+        notificationsAllowed: true,
+        timeSensitiveAllowed: false,
+        criticalAlertsAllowed: false,
+        backgroundRefreshOn: false,
+        lowPowerMode: true,
+      ),
+      _allowed,
+    );
+    expect(failedReadings(readings, const CheckAnswers()), [
+      CheckItem.notifications,
+      CheckItem.backgroundRefresh,
+      CheckItem.lowPowerMode,
+      CheckItem.ringSwitch,
+    ]);
+    const good = PhoneReadings(
+      IosReadings(
+        notificationsAllowed: true,
+        timeSensitiveAllowed: true,
+        criticalAlertsAllowed: false,
+        backgroundRefreshOn: true,
+        lowPowerMode: false,
+      ),
+      PhoneAccess(
+        locationAlways: true,
+        locationPrecise: true,
+        callAllowed: true,
+      ),
+    );
+    expect(
+      failedItems(
+        good,
+        const CheckAnswers(
+          ringSwitchConfirmed: true,
+          heard: true,
+          delayMs: 120,
+          gpsMetres: 15,
+        ),
+      ),
+      isEmpty,
+    );
+    expect(failedReadings(good, const CheckAnswers()), [CheckItem.ringSwitch]);
+  });
+
+  testWidgets('shows an iPhone’s checks and sends the ring switch until '
+      'confirmed', (tester) async {
+    final app = TestApp();
+    app.alerts.deviceReadings = const IosReadings(
+      notificationsAllowed: true,
+      timeSensitiveAllowed: true,
+      criticalAlertsAllowed: false,
+      backgroundRefreshOn: true,
+      lowPowerMode: true,
+    );
+    app.server.on('/v1/captain/device/check', [
+      const FakeAnswer(200, {'check': null}),
+      FakeAnswer(200, checkJson(['low_power_mode'])),
+    ]);
+    app.server.on('/v1/captain/auth/current', [
+      const FakeAnswer(200, {
+        'accountId': accountId,
+        'captainId': captainId,
+        'sessionId': '00000000-0000-4000-8000-000000000003',
+      }),
+    ]);
+    app.work(availability: [availabilityJson()]);
+    await app.pump(tester);
+    await app.live(tester);
+
+    await tester.tap(find.byKey(const Key('online-switch')));
+    await app.settle(tester);
+    expect(find.text('وضع الطاقة المنخفضة متوقف'), findsOneWidget);
+    expect(find.text('إشعارات ملء الشاشة مسموحة'), findsNothing);
+    expect(find.text('إذن الاتصال لزر «طوارئ»'), findsNothing);
+    await tester.ensureVisible(find.byKey(const Key('ring-switch-done')));
+    await app.settle(tester);
+    await tester.tap(find.byKey(const Key('ring-switch-done')));
+    await app.settle(tester);
+
+    await tester.ensureVisible(find.byKey(const Key('test-offer')));
+    await app.settle(tester);
+    await tester.tap(find.byKey(const Key('test-offer')));
+    await app.settle(tester);
+    await tester.tap(find.byKey(const Key('test-offer-heard')));
+    await app.settle(tester);
+    await tester.ensureVisible(find.byKey(const Key('save-check')));
+    await app.settle(tester);
+    await tester.tap(find.byKey(const Key('save-check')));
+    await app.settle(tester);
+    expect(lastBody(app, '/v1/captain/device/check'), {
+      'failed': ['low_power_mode'],
+    });
+    await app.done(tester);
+  });
+
   testWidgets('runs before the first «متصل» on this phone, rings the test '
       'offer and sends the result', (tester) async {
     final app = TestApp();

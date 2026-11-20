@@ -20,15 +20,21 @@ final pushProvider = Provider<Push>((ref) => const NoPush());
 
 /// The phone's notification permission; tests give a fake.
 final notificationPermissionProvider = Provider<NotificationPermission>(
-  (ref) => const SystemNotificationPermission(),
+  // K15 (slice 2.46): an iPhone is asked for Critical Alerts too, which iOS
+  // offers once Apple granted the entitlement.
+  (ref) => const SystemNotificationPermission(criticalAlerts: true),
 );
 
 /// Asks for the notification permission at «متصل» while the phone does not
 /// allow it (owner decision 2026-11-08: check 1 of the device check, CA
 /// §4.5, until it exists). The answer never blocks going online, since the
-/// check only warns; Android itself stops asking after the second refusal.
+/// check only warns; Android itself stops asking after the second refusal,
+/// iOS after the first (slice 2.46).
 Future<void> askNotifications(Ref ref) async {
-  if (defaultTargetPlatform != TargetPlatform.android) return;
+  if (defaultTargetPlatform != TargetPlatform.android &&
+      defaultTargetPlatform != TargetPlatform.iOS) {
+    return;
+  }
   final permission = ref.read(notificationPermissionProvider);
   try {
     if (!await permission.granted()) await permission.request();

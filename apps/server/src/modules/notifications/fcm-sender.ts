@@ -188,7 +188,7 @@ export class FcmSender implements PushSender {
 // (`packages/core_alerts`, copied into the iOS app, at most 30 s), else the
 // system's. A missing file plays the system's too.
 const APNS_SOUNDS: Record<string, string> = {
-  ring_offer: 'fd_offer.wav',
+  ring_offer: 'fd_offer_30s.wav',
   ring_order: 'fd_new_order.wav',
   chime: 'fd_chime.wav',
   cancellation: 'fd_cancellation.wav',

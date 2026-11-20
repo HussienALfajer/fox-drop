@@ -192,6 +192,8 @@ List<CheckItem> failedReadings(DeviceReadings readings, CheckAnswers answers) =>
           CheckItem.alarmVolume,
         if (readings.sleepAfterSeconds > 0) CheckItem.sleep,
       ],
+      // The restaurant app has no iOS build (architecture §11).
+      IosReadings() => [],
     };
 
 /// Every item that fails: the readings, the test ring until heard, and the

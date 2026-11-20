@@ -19,6 +19,7 @@
 		6722021D52188D2B1AF76F98 /* fd_offer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 168F8FF08A113BE0453FA2C0 /* fd_offer.wav */; };
 		4DF3A606ED04C72371D49DF8 /* fd_chime.wav in Resources */ = {isa = PBXBuildFile; fileRef = 763AFC7A8BB33E555FF44630 /* fd_chime.wav */; };
 		13D45FCABB2F586BD3A8DAA2 /* fd_cancellation.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1188E227CA9AED444463C968 /* fd_cancellation.wav */; };
+		A2C163A510A7CAF530FE613E /* fd_offer_30s.wav in Resources */ = {isa = PBXBuildFile; fileRef = 9915313B60905ACDB39E2A0A /* fd_offer_30s.wav */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +76,7 @@
 		168F8FF08A113BE0453FA2C0 /* fd_offer.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = fd_offer.wav; path = ../../../packages/core_alerts/android/src/main/res/raw/fd_offer.wav; sourceTree = SOURCE_ROOT; };
 		763AFC7A8BB33E555FF44630 /* fd_chime.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = fd_chime.wav; path = ../../../packages/core_alerts/android/src/main/res/raw/fd_chime.wav; sourceTree = SOURCE_ROOT; };
 		1188E227CA9AED444463C968 /* fd_cancellation.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = fd_cancellation.wav; path = ../../../packages/core_alerts/android/src/main/res/raw/fd_cancellation.wav; sourceTree = SOURCE_ROOT; };
+		9915313B60905ACDB39E2A0A /* fd_offer_30s.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = fd_offer_30s.wav; path = ../../../packages/core_alerts/ios/sounds/fd_offer_30s.wav; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +150,7 @@
 				168F8FF08A113BE0453FA2C0 /* fd_offer.wav */,
 				763AFC7A8BB33E555FF44630 /* fd_chime.wav */,
 				1188E227CA9AED444463C968 /* fd_cancellation.wav */,
+				9915313B60905ACDB39E2A0A /* fd_offer_30s.wav */,
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
@@ -261,6 +264,7 @@
 				6722021D52188D2B1AF76F98 /* fd_offer.wav in Resources */,
 				4DF3A606ED04C72371D49DF8 /* fd_chime.wav in Resources */,
 				13D45FCABB2F586BD3A8DAA2 /* fd_cancellation.wav in Resources */,
+				A2C163A510A7CAF530FE613E /* fd_offer_30s.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

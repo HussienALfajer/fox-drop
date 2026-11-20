@@ -1,5 +1,5 @@
 name: core_alerts
-description: The native ringing layer of the restaurant app (architecture §11.2, §12.2).
+description: The native ringing layer of the restaurant and captain apps (architecture §11.2, §12.2, §14.2).
 publish_to: none
 
 environment:
@@ -34,6 +34,8 @@ flutter:
     platforms:
       android:
         package: com.foxdrop.core_alerts
+        pluginClass: CoreAlertsPlugin
+      ios:
         pluginClass: CoreAlertsPlugin
       windows:
         pluginClass: CoreAlertsPluginCApi

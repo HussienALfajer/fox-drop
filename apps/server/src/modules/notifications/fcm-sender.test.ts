@@ -158,14 +158,14 @@ describe('FCM (architecture §8.1)', () => {
         'apns-push-type': 'alert',
         'apns-expiration': String(now / 1000 + 45),
       },
-      payload: { aps: { sound: 'fd_offer.wav', 'interruption-level': 'time-sensitive' } },
+      payload: { aps: { sound: 'fd_offer_30s.wav', 'interruption-level': 'time-sensitive' } },
     });
     const critical = fcmMessage(
       { ...message, channel: 'ring_offer', interruption: 'critical' },
       now,
     );
     expect(critical.apns.payload.aps).toEqual({
-      sound: { critical: 1, name: 'fd_offer.wav', volume: 1 },
+      sound: { critical: 1, name: 'fd_offer_30s.wav', volume: 1 },
       'interruption-level': 'critical',
     });
     const sounds = Object.fromEntries(

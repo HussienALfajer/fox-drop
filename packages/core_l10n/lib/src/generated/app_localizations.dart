@@ -2548,6 +2548,48 @@ abstract class AppLocalizations {
   /// **'افتح الإعدادات واسمح بإشعارات التطبيق.'**
   String get captainCheckNotificationsHow;
 
+  /// Check 1 on an iPhone, time-sensitive notifications included (CA §4.5; slice 2.46).
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح الإعدادات واسمح بإشعارات التطبيق وبـ«الإشعارات الحساسة للوقت»، لتصلك العروض في وضع التركيز.'**
+  String get captainCheckNotificationsHowIos;
+
+  /// Check 3 on an iPhone, Background App Refresh (CA §4.5; slice 2.46).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث التطبيق في الخلفية مفعّل'**
+  String get captainCheckBackgroundRefresh;
+
+  /// Check 3 on an iPhone, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح الإعدادات وفعّل «تحديث التطبيق في الخلفية» لتطبيق الكابتن.'**
+  String get captainCheckBackgroundRefreshHow;
+
+  /// Check 3 on an iPhone, Low Power Mode off (CA §4.5; slice 2.46).
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع الطاقة المنخفضة متوقف'**
+  String get captainCheckLowPowerMode;
+
+  /// Check 3 on an iPhone, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقف «وضع الطاقة المنخفضة» من الإعدادات › البطارية، فهو يبطئ التطبيق والشاشة مقفلة.'**
+  String get captainCheckLowPowerModeHow;
+
+  /// Check 5 on an iPhone, confirmed by the captain (CA §4.5, K15; slice 2.46).
+  ///
+  /// In ar, this message translates to:
+  /// **'مفتاح الرنين على الصوت ووضع التركيز لا يمنع التطبيق'**
+  String get captainCheckRingSwitch;
+
+  /// Check 5 on an iPhone, what to do.
+  ///
+  /// In ar, this message translates to:
+  /// **'أبقِ مفتاح الرنين على جانب الصوت، واسمح لتطبيق الكابتن في وضع التركيز إن استعملته، ثم اضغط «فعّلته». لا يسمح الآيفون للتطبيق بقراءتهما.'**
+  String get captainCheckRingSwitchHow;
+
   /// Check 2 (CA §4.5).
   ///
   /// In ar, this message translates to:

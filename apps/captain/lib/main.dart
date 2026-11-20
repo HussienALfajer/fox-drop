@@ -2,6 +2,7 @@ import 'package:core_alerts/core_alerts.dart';
 import 'package:core_auth/core_auth.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:core_push/core_push.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -37,6 +38,9 @@ Future<void> main() async {
 /// and stops the ring once it is answered.
 @pragma('vm:entry-point')
 Future<void> ringOffer(RemoteMessage message) async {
+  // iOS shows the push itself, time-sensitive with the bundled offer sound
+  // (the server's apns part, slice 2.46).
+  if (defaultTargetPlatform != TargetPlatform.android) return;
   final stopAfter = offerRingTime(message.data, DateTime.now());
   if (stopAfter == null) return;
   final l10n = lookupAppLocalizations(const Locale('ar'));

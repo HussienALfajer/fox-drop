@@ -24,9 +24,9 @@ def silence(seconds):
     return [0.0] * int(RATE * seconds)
 
 
-def write(name, parts):
+def write(name, parts, out_dir=OUT):
     samples = [s for part in parts for s in part]
-    with wave.open(f'{OUT}/{name}.wav', 'wb') as out:
+    with wave.open(f'{out_dir}/{name}.wav', 'wb') as out:
         out.setnchannels(1)
         out.setsampwidth(2)
         out.setframerate(RATE)
@@ -42,4 +42,8 @@ write('fd_cancellation', [tone(587, 0.3), silence(0.05), tone(392, 0.4), silence
 # A chime: one soft note, played once.
 write('fd_chime', [tone(1047, 0.35, 0.5)])
 # The captain's offer (CA §4.4): three bright beeps, repeated.
-write('fd_offer', [tone(1175, 0.12), silence(0.06)] * 3 + [silence(0.4)])
+OFFER = [tone(1175, 0.12), silence(0.06)] * 3 + [silence(0.4)]
+write('fd_offer', OFFER)
+# The offer on an iPhone (CA §4.4, K15; slice 2.46): a push plays its file
+# once, at most 30 seconds, so the loop is written out for 29 seconds.
+write('fd_offer_30s', OFFER * 31, 'ios/sounds')

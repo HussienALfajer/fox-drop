@@ -53,6 +53,43 @@ class AndroidReadings extends DeviceReadings {
   );
 }
 
+/// An iPhone's readings (CA §4.5's iPhone column; slice 2.46). The ring
+/// switch and a Focus (check 5) cannot be read: the captain confirms them.
+class IosReadings extends DeviceReadings {
+  const IosReadings({
+    required this.notificationsAllowed,
+    required this.timeSensitiveAllowed,
+    required this.criticalAlertsAllowed,
+    required this.backgroundRefreshOn,
+    required this.lowPowerMode,
+  });
+
+  /// Check 1.
+  final bool notificationsAllowed;
+
+  /// Check 1: time-sensitive notifications allowed, so an offer breaks
+  /// through a Focus.
+  final bool timeSensitiveAllowed;
+
+  /// K15: Critical Alerts allowed (only once Apple granted the entitlement);
+  /// an offer then sounds on silent too. Never a failed check.
+  final bool criticalAlertsAllowed;
+
+  /// Check 3: Background App Refresh on.
+  final bool backgroundRefreshOn;
+
+  /// Check 3: Low Power Mode on, which slows the app in the background.
+  final bool lowPowerMode;
+
+  static IosReadings fromMap(Map<Object?, Object?> map) => IosReadings(
+    notificationsAllowed: map['notificationsAllowed'] == true,
+    timeSensitiveAllowed: map['timeSensitiveAllowed'] == true,
+    criticalAlertsAllowed: map['criticalAlertsAllowed'] == true,
+    backgroundRefreshOn: map['backgroundRefreshOn'] == true,
+    lowPowerMode: map['lowPowerMode'] == true,
+  );
+}
+
 /// A PC's readings (RA §4.5 checks 1, 3, 5 and 6; slice 2.44).
 class WindowsReadings extends DeviceReadings {
   const WindowsReadings({
@@ -138,8 +175,8 @@ abstract interface class Alerts {
   Future<void> openSettings(DeviceSetting setting);
 }
 
-/// Where there is no native layer (the tests' platform, and any but Android
-/// and Windows).
+/// Where there is no native layer (the tests' platform, and any but Android,
+/// iOS and Windows).
 class NoAlerts implements Alerts {
   const NoAlerts();
 
@@ -224,6 +261,56 @@ class AndroidAlerts implements Alerts {
       _channel.invokeMethod('openSettings', {'setting': setting.name});
 }
 
+/// The iOS layer (`ios/core_alerts/Sources/core_alerts/CoreAlertsPlugin.swift`,
+/// slice 2.46): the ring loops in the foreground and becomes a
+/// time-sensitive (or critical) notification when the app leaves it; no
+/// receiving service.
+class IosAlerts implements Alerts {
+  const IosAlerts();
+
+  static const _channel = MethodChannel('fox_drop/core_alerts');
+
+  @override
+  Future<void> startReceiving() async {}
+
+  @override
+  Future<void> stopReceiving() async {}
+
+  @override
+  Future<void> ring(
+    RingSound sound, {
+    required String title,
+    required String body,
+    bool vibrate = false,
+    Duration? stopAfter,
+  }) => _channel.invokeMethod('ring', {
+    'sound': soundName(sound),
+    'title': title,
+    'body': body,
+    'vibrate': vibrate,
+    'stopAfterMs': stopAfter?.inMilliseconds,
+  });
+
+  @override
+  Future<void> stopRing() => _channel.invokeMethod('stopRing');
+
+  @override
+  Future<void> chime({bool cancellation = false}) => _channel.invokeMethod(
+    'chime',
+    {'sound': cancellation ? 'fd_cancellation' : 'fd_chime'},
+  );
+
+  @override
+  Future<DeviceReadings?> readings() async {
+    final map = await _channel.invokeMethod<Map<Object?, Object?>>('readings');
+    return map == null ? null : IosReadings.fromMap(map);
+  }
+
+  @override
+  Future<void> openSettings(DeviceSetting setting) =>
+      _channel.invokeMethod('openSettings', {'setting': setting.name});
+}
+
 /// The raw resource of each sound (`android/src/main/res/raw`), which the
 /// Windows layer plays from the app's assets.
 String soundName(RingSound sound) => switch (sound) {
@@ -233,10 +320,11 @@ String soundName(RingSound sound) => switch (sound) {
   RingSound.offer => 'fd_offer',
 };
 
-/// The platform's layer: Android's, Windows' ([windows], set up by the app's
-/// `main`), else none.
+/// The platform's layer: Android's, iOS', Windows' ([windows], set up by the
+/// app's `main`), else none.
 Alerts platformAlerts({Alerts? windows}) => switch (defaultTargetPlatform) {
   TargetPlatform.android => const AndroidAlerts(),
+  TargetPlatform.iOS => const IosAlerts(),
   TargetPlatform.windows => windows ?? const NoAlerts(),
   _ => const NoAlerts(),
 };
