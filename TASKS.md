@@ -12,9 +12,24 @@ Slice 2.40, the dashboard and order histories (`docs/roadmap.md`, Phase 2).
 - **Ask the owner first:** the split into pull requests (likely three: the dashboard; the panel's order history; the restaurant's and the captain's histories in their apps), and that the charts stay tables until the design (the roadmap says so).
 - **Already built (reuse):** the alerts (`AlertsService`, `/alerts`), the platform status and dispatch mode in the top bar (`EmergencyStopBar`, `useDispatchMode`), the live map's captains and restaurants states (`LiveMap.read`, `CaptainsService.mapCaptains`), «التقرير اليومي»'s figures (`daily-figures.ts`, the same weekday's comparison), the approvals badge, `RestaurantFiguresService`, `CaptainFiguresService`, the side menu (`MODULES`: add `dashboard` first and `orderHistory` with their pages).
 
+### Owner decisions 2026-11-20
+
+- One pull request for the whole slice (the owner asked whether it could be one; each step is committed and pushed on its own).
+- The financial correction from «سجل الطلبات» is built now: a manual entry (2.20c) linked to the finished order, with a reason (AP §9.5, §6.2: OWN and FIN).
+- «سجل الطلبات»'s Excel export is built now, through the reporting module's exports.
+- The restaurant app's history: a cashier sees today and the 7 business days before (fixed), without money columns but the items value (S12); an owner picks any range of business days and sees the commission and net; the Excel export stays with the portal (2.45).
+- The charts stay tables until the design (roadmap, owner decision 2026-11-07).
+
 ### Plan
 
-- [ ] Ask the owner the split; write the plan per pull request.
+- [x] Ask the owner the split; write the plan.
+- [ ] The dashboard's server: `GET /v1/admin/dashboard?cityId=` (`dashboard.read`): the status strip's counts (captains online, available, busy, blocked for cash; restaurants open, busy, paused, closed by schedule, suspended, open without a receiving device), today's tiles against the same weekday last week (AP §9.1.2), the tasks filtered to the session's roles (AP §9.1.4) and the three lists of AP §9.1.5 as rows.
+- [ ] The dashboard's page: `/dashboard` (`dashboard.read`; first in `MODULES`, the panel's home for a session that holds it): the status strip (the emergency stop and dispatch mode reused), the tiles with last week's value and the change, the alerts list (the `/alerts` list reused), the tasks with their links, the charts as tables.
+- [ ] «سجل الطلبات»'s server: `GET /v1/admin/order-history` with AP §9.5's filters and columns, a page at a time; the customer's phone filter for the roles that see phones; the Excel export with Arabic headers; `POST /v1/admin/orders/{orderId}/financial-corrections` (`order_history.financial_correction`) on a finished order.
+- [ ] «سجل الطلبات»'s page: `/order-history` (`order_history.read`; second in `MODULES`): the filters in the search, the table, the order's detail and timeline (the board's detail reused), the export, the correction for OWN and FIN.
+- [ ] The restaurant's «السجل» (RA §8.18): `GET /v1/merchant/orders/history` (the cashier's fixed window and columns, the owner's range with commission and net) and its screen in the restaurant app with the order's detail and timeline.
+- [ ] The captain's «السجل» (CA §9.13): `GET /v1/captain/orders/history` (by business day, a date range, the pay and the custody effect, no customer name, phone or exact address, K8) and its screen in the captain app with the captain's own steps.
+- [ ] Review, then hand over to 2.41.
 
 ### Left from 2.39 (the cloud session's branch)
 
