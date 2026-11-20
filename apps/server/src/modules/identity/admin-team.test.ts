@@ -653,6 +653,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/restaurant-statements/exports': 'restaurants.statements',
   'GET /v1/admin/exports/{exportId}': { anyOf: ['restaurants.statements', 'finance.read'] },
   'GET /v1/admin/daily-report': 'finance.read',
+  'GET /v1/admin/dashboard': 'dashboard.read',
   'POST /v1/admin/daily-report/exports': 'finance.read',
   'GET /v1/admin/cost-report': 'finance.read',
   'GET /v1/admin/lost-demand': { anyOf: ['reports.operations', 'reports.all'] },

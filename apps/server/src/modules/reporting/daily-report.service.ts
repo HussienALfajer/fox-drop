@@ -135,13 +135,35 @@ export class DailyReportService {
     const bounds = [...days, dayAfter].map((each) =>
       cutoffOn(each, clock.cutoffMinutes, clock.timeZone),
     );
+    const figures = await this.periodsFigures(cityId, bounds, now);
+    return days.map((each, index) => ({
+      day: each,
+      from: bounds[index]!,
+      to: bounds[index + 1]!,
+      ...figures[index]!,
+    }));
+  }
+
+  // The figures of one period [from, to), which need not be whole business
+  // days (the dashboard's today so far, AP §9.1.2; slice 2.40). Throws
+  // FxRefusedError rate_missing as the report does.
+  async periodFigures(cityId: string, from: Date, to: Date, now: Date): Promise<DailyFigures> {
+    return (await this.periodsFigures(cityId, [from, to], now))[0]!;
+  }
+
+  // The figures of each period between consecutive bounds.
+  private async periodsFigures(
+    cityId: string,
+    bounds: readonly Date[],
+    now: Date,
+  ): Promise<DailyFigures[]> {
     const ends = bounds.slice(1);
     const [totals, orderPay, delivered, custody, restaurants] = await Promise.all([
-      this.ledger.cityTotals(cityId, bounds),
+      this.ledger.cityTotals(cityId, [...bounds]),
       // The pay booked to platform.captain_pay, as the figures count it.
-      this.ledger.sourceTotals(cityId, 'platform.captain_pay', 'earn.order_pay', bounds),
+      this.ledger.sourceTotals(cityId, 'platform.captain_pay', 'earn.order_pay', [...bounds]),
       Promise.all(
-        days.map((_, index) =>
+        ends.map((_, index) =>
           this.orders.deliveredTotals(cityId, bounds[index]!, bounds[index + 1]!),
         ),
       ),
@@ -151,9 +173,7 @@ export class DailyReportService {
     const paid = [...new Set(orderPay.flatMap((each) => [...each.keys()]))];
     const distances = await this.orders.distancePay(paid);
     return Promise.all(
-      days.map(async (each, index) => {
-        const from = bounds[index]!;
-        const to = bounds[index + 1]!;
+      ends.map(async (to, index) => {
         const dayTotals = totals.filter((row) => row.period === index);
         const versionIds = [
           ...new Set(
@@ -171,24 +191,19 @@ export class DailyReportService {
           distancePay += distance < amount ? distance : amount;
         }
         const inBase = delivered[index]!.filter((row) => row.currency === base);
-        return {
-          day: each,
-          from,
-          to,
-          ...dailyFigures({
-            base,
-            orders: {
-              count: inBase.reduce((total, row) => total + row.count, 0),
-              gmv: inBase.reduce((total, row) => total + row.gmv, 0n),
-              itemsValue: inBase.reduce((total, row) => total + row.itemsValue, 0n),
-            },
-            totals: dayTotals,
-            distancePay,
-            toBase,
-            custody: custody[index]!,
-            restaurants: restaurants[index]!,
-          }),
-        };
+        return dailyFigures({
+          base,
+          orders: {
+            count: inBase.reduce((total, row) => total + row.count, 0),
+            gmv: inBase.reduce((total, row) => total + row.gmv, 0n),
+            itemsValue: inBase.reduce((total, row) => total + row.itemsValue, 0n),
+          },
+          totals: dayTotals,
+          distancePay,
+          toBase,
+          custody: custody[index]!,
+          restaurants: restaurants[index]!,
+        });
       }),
     );
   }

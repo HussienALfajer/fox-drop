@@ -231,6 +231,17 @@ import 'package:core_api/src/model/admin_daily_report_dto_output_orders.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_previous_inner.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_restaurants.dart';
 import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_hours_inner.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_status.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_status_captains.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_status_restaurants.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_tasks_inner.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_today.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_today_money.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_today_orders.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_top_restaurants_inner.dart';
+import 'package:core_api/src/model/admin_dashboard_dto_output_troubled_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_delivery_fee_preview_dto_output.dart';
 import 'package:core_api/src/model/admin_delivery_fee_preview_dto_output_distance.dart';
 import 'package:core_api/src/model/admin_delivery_fees_dto_output.dart';
@@ -1421,6 +1432,17 @@ part 'serializers.g.dart';
   AdminDailyReportDtoOutputPreviousInner,
   AdminDailyReportDtoOutputRestaurants,
   AdminDailyReportExportDto,
+  AdminDashboardDtoOutput,
+  AdminDashboardDtoOutputHoursInner,
+  AdminDashboardDtoOutputStatus,
+  AdminDashboardDtoOutputStatusCaptains,
+  AdminDashboardDtoOutputStatusRestaurants,
+  AdminDashboardDtoOutputTasksInner,
+  AdminDashboardDtoOutputToday,
+  AdminDashboardDtoOutputTodayMoney,
+  AdminDashboardDtoOutputTodayOrders,
+  AdminDashboardDtoOutputTopRestaurantsInner,
+  AdminDashboardDtoOutputTroubledRestaurantsInner,
   AdminDeliveryFeePreviewDtoOutput,
   AdminDeliveryFeePreviewDtoOutputDistance,
   AdminDeliveryFeesDtoOutput,
@@ -2582,6 +2604,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminDashboardDtoOutputTasksInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputTasksInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCaptainApplicationsDtoOutputApplicationsInner),
             ]),
             () =>
@@ -2681,6 +2709,13 @@ Serializers serializers =
                 ListBuilder<
                   AdminOrderDtoOutputOrderReassignChoicesReasonsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDashboardDtoOutputTroubledRestaurantsInner),
+            ]),
+            () =>
+                ListBuilder<AdminDashboardDtoOutputTroubledRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3534,6 +3569,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminDashboardDtoOutputHoursInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCaptainApplicationKitDtoItemsInner),
             ]),
             () => ListBuilder<AdminCaptainApplicationKitDtoItemsInner>(),
@@ -3855,6 +3896,12 @@ Serializers serializers =
               FullType(MerchantPickupCurrenciesDtoOutputChoicesInner),
             ]),
             () => ListBuilder<MerchantPickupCurrenciesDtoOutputChoicesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDashboardDtoOutputTopRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminDashboardDtoOutputTopRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

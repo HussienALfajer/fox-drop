@@ -75,6 +75,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
   ],
   exports: [
     MerchantsService,
+    ChangeRequestsService,
     RestaurantStatusService,
     RestaurantDraftsService,
     RestaurantNotesService,
@@ -141,3 +142,4 @@ export {
   RestaurantNoteKeyReusedError,
   RestaurantNotesService,
 } from './restaurant-notes.service.js';
+export { ChangeRequestsService } from './change-requests.service.js';

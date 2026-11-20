@@ -25,6 +25,8 @@ import { CaptainListService } from './captain-list.service.js';
 import { AdminAuditLogController } from './admin-audit-log.controller.js';
 import { AdminCostReportController } from './admin-cost-report.controller.js';
 import { AdminDailyReportController } from './admin-daily-report.controller.js';
+import { AdminDashboardController } from './admin-dashboard.controller.js';
+import { DashboardService } from './dashboard.service.js';
 import { AdminExportsController } from './admin-exports.controller.js';
 import { AdminRestaurantListController } from './admin-restaurant-list.controller.js';
 import { AdminRestaurantProfileReadsController } from './admin-restaurant-profile.controller.js';
@@ -57,7 +59,7 @@ const imports = [
 // The reporting module (architecture §4.2): statements and exports. Slice
 // 2.19g: «كشوف المطاعم» (AP §9.10.5) and the Excel exports (§5.9); slice
 // 2.20d: «التقرير اليومي» (AP §9.10.1); slice 2.22d: «كلفة التعويضات
-// والخصومات» (AP §9.10.6).
+// والخصومات» (AP §9.10.6); slice 2.40: «لوحة التحكم» (AP §9.1).
 @Module({
   imports: [
     ...imports,
@@ -78,6 +80,7 @@ const imports = [
     AdminRestaurantProfileReadsController,
     AdminRestaurantStatementsController,
     AdminDailyReportController,
+    AdminDashboardController,
     AdminCostReportController,
     AdminExportsController,
     MerchantPriceLogController,
@@ -88,6 +91,7 @@ const imports = [
     CostReportService,
     RestaurantListService,
     CaptainListService,
+    DashboardService,
   ],
 })
 export class ReportingModule {}
