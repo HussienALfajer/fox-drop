@@ -17,12 +17,14 @@ Flutter is the only mature option that builds **Android and Windows from one cod
 
 ## 12.3 Windows native layer
 
+Built in slice 2.44 (`packages/core_alerts/CLAUDE.md`, `apps/merchant/CLAUDE.md` «Windows»):
+
 - `window_manager` and `tray_manager`: closing the window minimises to the tray; quitting asks for confirmation; a ring brings the window to the front or flashes the taskbar button (RA §4.3).
-- `launch_at_startup` for starting with Windows.
-- Native Windows toast notifications (`local_notifier` or a small Win32 plugin).
-- Sleep and power-plan check through a small Win32 plugin (RA §4.5 check 6).
-- **Installer and updates: Velopack.** A signed installer from the website, background download, install on the next restart, never while a ring, a pickup prompt or an active order is open (RA §4.2).
-- **Code signing:** an EV or OV code-signing certificate, or Azure Trusted Signing, so SmartScreen does not warn restaurants.
+- Starting with Windows through the user's `Run` entry, written by `core_alerts`' Win32 plugin (`launch_at_startup` needs an older `win32`).
+- Native Windows toast notifications (`flutter_local_notifications_windows`).
+- Sleep and power-plan check, the output's mute and the ring's sound through a small Win32 plugin in `core_alerts` (RA §4.5 checks 5–6).
+- **Installer and updates: Velopack.** A signed installer from the website, background download, install on the next restart, never while a ring, a pickup prompt or an active order is open (RA §4.2). Owner decision 2026-11-20: the installer and the feed are served by the Contabo server's nginx under `/downloads/windows/` on the API's host, published by CI (`publish-windows`); the app reads the feed itself and restarts through `Update.exe apply` when nothing is open.
+- **Code signing:** an EV or OV code-signing certificate, or Azure Trusted Signing, so SmartScreen does not warn restaurants. Owner decision 2026-11-20: Azure Trusted Signing, bought later; until then the staging installer is unsigned.
 
 ## 12.4 Printing (V2)
 
