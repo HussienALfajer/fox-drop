@@ -10,11 +10,16 @@ Slice 2.45d, money and reports in the owner web portal (`docs/roadmap.md`, Phase
 - **Specs:** RA §17, §11 (11-reports.md), §12 (12-money.md), §13 (13-ratings.md), §8.18 (the history), §5.5 (a terminated restaurant's owners keep the money section), §18; architecture §10.4.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
 - **Already built (reuse):** the portal's session, `portal: true`, the pages' pattern and `merchant-portal.test.ts`'s list (slices 2.45a–c, `apps/merchant-portal/CLAUDE.md`); the owners' routes of the app: `GET /v1/merchant/figures` (reports, slice 2.41), `GET /v1/merchant/orders/history` and `GET /v1/merchant/orders/{orderId}` (slice 2.40), `GET /v1/merchant/account` and `account/overdue` (cashdesk's `merchant-account.controller.ts`), `GET /v1/merchant/statements`, `statements/{id}`, `receipts`, `receipts/{id}` (`merchant-records.controller.ts`), `GET /v1/merchant/ratings` (slice 2.26b); the panel's Excel exports (reporting's `exports`, slice 2.19g, signed GETs under `/private-docs/exports/` on the panel's host only).
-- **Ask the owner first:** the custom range's limits in the reports and «التقييمات» (any range, as the history's 366 days?); whether the Excel and PDF are built on the server (a new export kind signed for the portal's origin, with nginx's `/private-docs/exports/` on the portal's host) or in the browser; the statement's PDF layout before the design; a terminated restaurant's money section in the portal (RA §5.5), which 2.45a left as one sentence; the split into pull requests if it is larger than one.
+- **Owner decisions 2026-11-20:** the custom range of the reports and «التقييمات» is any range of business days up to 366, not after today (as the history's); the Excel files are built on the server (new export kinds asked by the owner, signed for the portal's origin) and the statement's PDF is the browser's print of a plain statement page (the layout waits for the design); a terminated restaurant's owners get the money section read-only in the portal (RA §5.5: the account, statements and receipts); one pull request.
 
 ### Plan
 
-- [ ] Read RA §11–13, §8.18 and the owners' money and report routes; write this plan as one step per commit after the owner's answers.
+- [x] Read RA §11–13, §8.18 and the owners' money and report routes; write this plan after the owner's answers.
+- [ ] Server: the owners' reports, history, ratings, account, statements and receipts open to the portal (`portal: true`); `from` and `to` on `GET /v1/merchant/figures` and `GET /v1/merchant/ratings` (business days, at most 366, not after today; the previous period of the same length for the arrows).
+- [ ] Server: the portal's Excel exports: `merchant_report`, `merchant_order_history` and `merchant_statement` kinds (migration), `POST /v1/merchant/exports/...` and `GET /v1/merchant/exports/{exportId}` (the requester only, signed for the portal's origin), their workbooks, and nginx's `/private-docs/exports/` (GET) on the portal's host.
+- [ ] Portal: «التقارير» (the periods, the custom range, the arrows, each metric's definition, «تصدير Excel»).
+- [ ] Portal: «السجل» (range, status, number, pages, the order, «تصدير Excel») and «التقييمات» (summary, stars, periods with the custom range, pages).
+- [ ] Portal: «الحساب», «الكشوف» (each statement, «طباعة / حفظ PDF», «تصدير Excel») and «الإيصالات»; a terminated restaurant's owners see only these, read-only.
 - [ ] Review, then hand over to the next slice of `docs/roadmap.md`.
 
 ### Left from 2.45c (the cloud session's branch)
