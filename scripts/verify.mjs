@@ -165,6 +165,35 @@ function checkLocalizations() {
   fail('Flutter localizations');
 }
 
+// Claude Code loads a folder's CLAUDE.md whenever it reads a file there and
+// resends it every turn after (docs/claude-code-workflow.md): keep the
+// instruction files small. What a feature does goes in docs/code instead.
+const INSTRUCTION_LIMITS = [
+  { test: (file) => file === 'CLAUDE.md', bytes: 10_240 },
+  { test: (file) => file === 'TASKS.md', bytes: 8_192 },
+  { test: (file) => file.endsWith('/CLAUDE.md'), bytes: 4_096 },
+];
+
+function checkInstructionSizes() {
+  console.log('\n=== Instruction file sizes');
+  const files = read(
+    'git ls-files --cached --others --exclude-standard -- CLAUDE.md TASKS.md "*/CLAUDE.md"',
+  )
+    .split(/\r?\n/)
+    .filter((file) => file && existsSync(file));
+  const tooBig = files.flatMap((file) => {
+    const limit = INSTRUCTION_LIMITS.find((each) => each.test(file));
+    const bytes = readFileSync(file).length;
+    return limit && bytes > limit.bytes ? [`${file}: ${bytes} bytes, at most ${limit.bytes}`] : [];
+  });
+  if (tooBig.length > 0) {
+    console.error(
+      `\n${tooBig.join('\n')}\nKeep only the rules for working in the folder; move what features do to docs/code/<folder path>.md.`,
+    );
+    fail('Instruction file sizes');
+  }
+}
+
 const PARTS = ['contract', 'format', 'typescript', 'server', 'dart', 'flutter'];
 const args = process.argv.slice(2);
 const shard = args.find((arg) => arg.startsWith('--shard='))?.slice('--shard='.length);
@@ -185,7 +214,10 @@ if (shard !== undefined && !(parts.size === 1 && (parts.has('server') || parts.h
 }
 
 if (parts.has('contract')) checkApiContract();
-if (parts.has('format')) step('Prettier', 'pnpm exec prettier --check .');
+if (parts.has('format')) {
+  checkInstructionSizes();
+  step('Prettier', 'pnpm exec prettier --check .');
+}
 
 const turboTasks = 'lint:root lint typecheck build test:e2e';
 if (parts.has('typescript')) {
