@@ -186,6 +186,7 @@ export class PushRelay {
         data: { ...row.data, messageId: row.id },
         ttlSeconds: Math.max(1, Math.floor((row.expiresAt.getTime() - now.getTime()) / 1000)),
         interruption: interruptionOf(row, target.ringingOff, critical),
+        wake: row.campaignId !== null,
       });
       results.push(result);
       if (result === 'invalid') invalid.push(target.token);

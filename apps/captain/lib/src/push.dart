@@ -5,6 +5,7 @@ import 'package:core_auth/core_auth.dart';
 import 'package:core_push/core_push.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'api.dart';
 import 'auth.dart';
@@ -20,9 +21,7 @@ final pushProvider = Provider<Push>((ref) => const NoPush());
 
 /// The phone's notification permission; tests give a fake.
 final notificationPermissionProvider = Provider<NotificationPermission>(
-  // K15 (slice 2.46): an iPhone is asked for Critical Alerts too, which iOS
-  // offers once Apple granted the entitlement.
-  (ref) => const SystemNotificationPermission(criticalAlerts: true),
+  (ref) => const SystemNotificationPermission(),
 );
 
 /// Asks for the notification permission at «متصل» while the phone does not
@@ -38,10 +37,26 @@ Future<void> askNotifications(Ref ref) async {
   final permission = ref.read(notificationPermissionProvider);
   try {
     if (!await permission.granted()) await permission.request();
+    // K15: Critical Alerts, asked at every «متصل» whatever notifications
+    // answered, since Apple grants the entitlement after captains allowed
+    // them; iOS shows the question once, and only to a build carrying the
+    // entitlement.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      await ref.read(criticalAlertsAskProvider)();
+    }
   } on Object catch (error) {
     debugPrint('Notification permission: $error');
   }
 }
+
+/// Asks an iPhone for Critical Alerts (K15); tests give their own.
+final criticalAlertsAskProvider = Provider<Future<void> Function()>(
+  (ref) => () async {
+    if (!await Permission.criticalAlerts.isGranted) {
+      await Permission.criticalAlerts.request();
+    }
+  },
+);
 
 /// The token kept registered while the captain, or an applicant, is signed
 /// in (CA §14, §5.4: a push at every change of the application; architecture

@@ -11,6 +11,7 @@ import '../api.dart';
 import '../auth.dart';
 import '../profile/profile.dart';
 import '../work/alerts.dart';
+import '../work/location.dart';
 
 /// CA §4.5 (slice 2.43): the items of «فحص الجهاز» on Android, and on an
 /// iPhone (slice 2.46: Background App Refresh, Low Power Mode and the ring
@@ -89,18 +90,25 @@ class SystemPhoneAccess implements PhoneAccessReader {
 
   @override
   Future<void> openLocationSettings() async {
-    final permission = await Geolocator.checkPermission();
-    final ios = defaultTargetPlatform == TargetPlatform.iOS;
-    if (permission == LocationPermission.denied ||
-        (ios && permission == LocationPermission.whileInUse)) {
-      final answer = await Geolocator.requestPermission();
-      // iOS asks for «دائماً» once; after that only its settings can.
-      if (answer == LocationPermission.always ||
-          answer == LocationPermission.denied) {
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      // Android: the next tap opens the settings, where «السماح دائماً» is.
+      if (defaultTargetPlatform != TargetPlatform.iOS ||
+          permission == LocationPermission.denied) {
         return;
       }
     }
-    await Geolocator.openAppSettings();
+    // iOS asks once to change «أثناء الاستخدام» to «دائماً»; after that only
+    // its settings can.
+    if (defaultTargetPlatform == TargetPlatform.iOS &&
+        permission == LocationPermission.whileInUse &&
+        await askLocationAlways()) {
+      return;
+    }
+    if (permission != LocationPermission.always) {
+      await Geolocator.openAppSettings();
+    }
   }
 
   @override

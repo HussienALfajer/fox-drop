@@ -19,6 +19,12 @@ const CaptainDeviceCheckReportDtoFailedEnum
 _$captainDeviceCheckReportDtoFailedEnum_autostart =
     const CaptainDeviceCheckReportDtoFailedEnum._('autostart');
 const CaptainDeviceCheckReportDtoFailedEnum
+_$captainDeviceCheckReportDtoFailedEnum_backgroundRefresh =
+    const CaptainDeviceCheckReportDtoFailedEnum._('backgroundRefresh');
+const CaptainDeviceCheckReportDtoFailedEnum
+_$captainDeviceCheckReportDtoFailedEnum_lowPowerMode =
+    const CaptainDeviceCheckReportDtoFailedEnum._('lowPowerMode');
+const CaptainDeviceCheckReportDtoFailedEnum
 _$captainDeviceCheckReportDtoFailedEnum_fullScreen =
     const CaptainDeviceCheckReportDtoFailedEnum._('fullScreen');
 const CaptainDeviceCheckReportDtoFailedEnum
@@ -27,6 +33,9 @@ _$captainDeviceCheckReportDtoFailedEnum_alarmVolume =
 const CaptainDeviceCheckReportDtoFailedEnum
 _$captainDeviceCheckReportDtoFailedEnum_doNotDisturb =
     const CaptainDeviceCheckReportDtoFailedEnum._('doNotDisturb');
+const CaptainDeviceCheckReportDtoFailedEnum
+_$captainDeviceCheckReportDtoFailedEnum_ringSwitch =
+    const CaptainDeviceCheckReportDtoFailedEnum._('ringSwitch');
 const CaptainDeviceCheckReportDtoFailedEnum
 _$captainDeviceCheckReportDtoFailedEnum_testOffer =
     const CaptainDeviceCheckReportDtoFailedEnum._('testOffer');
@@ -39,15 +48,6 @@ _$captainDeviceCheckReportDtoFailedEnum_gpsAccuracy =
 const CaptainDeviceCheckReportDtoFailedEnum
 _$captainDeviceCheckReportDtoFailedEnum_call =
     const CaptainDeviceCheckReportDtoFailedEnum._('call');
-const CaptainDeviceCheckReportDtoFailedEnum
-_$captainDeviceCheckReportDtoFailedEnum_backgroundRefresh =
-    const CaptainDeviceCheckReportDtoFailedEnum._('backgroundRefresh');
-const CaptainDeviceCheckReportDtoFailedEnum
-_$captainDeviceCheckReportDtoFailedEnum_lowPowerMode =
-    const CaptainDeviceCheckReportDtoFailedEnum._('lowPowerMode');
-const CaptainDeviceCheckReportDtoFailedEnum
-_$captainDeviceCheckReportDtoFailedEnum_ringSwitch =
-    const CaptainDeviceCheckReportDtoFailedEnum._('ringSwitch');
 
 CaptainDeviceCheckReportDtoFailedEnum
 _$captainDeviceCheckReportDtoFailedEnumValueOf(String name) {
@@ -60,12 +60,18 @@ _$captainDeviceCheckReportDtoFailedEnumValueOf(String name) {
       return _$captainDeviceCheckReportDtoFailedEnum_battery;
     case 'autostart':
       return _$captainDeviceCheckReportDtoFailedEnum_autostart;
+    case 'backgroundRefresh':
+      return _$captainDeviceCheckReportDtoFailedEnum_backgroundRefresh;
+    case 'lowPowerMode':
+      return _$captainDeviceCheckReportDtoFailedEnum_lowPowerMode;
     case 'fullScreen':
       return _$captainDeviceCheckReportDtoFailedEnum_fullScreen;
     case 'alarmVolume':
       return _$captainDeviceCheckReportDtoFailedEnum_alarmVolume;
     case 'doNotDisturb':
       return _$captainDeviceCheckReportDtoFailedEnum_doNotDisturb;
+    case 'ringSwitch':
+      return _$captainDeviceCheckReportDtoFailedEnum_ringSwitch;
     case 'testOffer':
       return _$captainDeviceCheckReportDtoFailedEnum_testOffer;
     case 'connection':
@@ -74,12 +80,6 @@ _$captainDeviceCheckReportDtoFailedEnumValueOf(String name) {
       return _$captainDeviceCheckReportDtoFailedEnum_gpsAccuracy;
     case 'call':
       return _$captainDeviceCheckReportDtoFailedEnum_call;
-    case 'backgroundRefresh':
-      return _$captainDeviceCheckReportDtoFailedEnum_backgroundRefresh;
-    case 'lowPowerMode':
-      return _$captainDeviceCheckReportDtoFailedEnum_lowPowerMode;
-    case 'ringSwitch':
-      return _$captainDeviceCheckReportDtoFailedEnum_ringSwitch;
     default:
       throw ArgumentError(name);
   }
@@ -93,16 +93,16 @@ _$captainDeviceCheckReportDtoFailedEnumValues =
         _$captainDeviceCheckReportDtoFailedEnum_location,
         _$captainDeviceCheckReportDtoFailedEnum_battery,
         _$captainDeviceCheckReportDtoFailedEnum_autostart,
+        _$captainDeviceCheckReportDtoFailedEnum_backgroundRefresh,
+        _$captainDeviceCheckReportDtoFailedEnum_lowPowerMode,
         _$captainDeviceCheckReportDtoFailedEnum_fullScreen,
         _$captainDeviceCheckReportDtoFailedEnum_alarmVolume,
         _$captainDeviceCheckReportDtoFailedEnum_doNotDisturb,
+        _$captainDeviceCheckReportDtoFailedEnum_ringSwitch,
         _$captainDeviceCheckReportDtoFailedEnum_testOffer,
         _$captainDeviceCheckReportDtoFailedEnum_connection,
         _$captainDeviceCheckReportDtoFailedEnum_gpsAccuracy,
         _$captainDeviceCheckReportDtoFailedEnum_call,
-        _$captainDeviceCheckReportDtoFailedEnum_backgroundRefresh,
-        _$captainDeviceCheckReportDtoFailedEnum_lowPowerMode,
-        _$captainDeviceCheckReportDtoFailedEnum_ringSwitch,
       ],
     );
 
@@ -117,32 +117,32 @@ class _$CaptainDeviceCheckReportDtoFailedEnumSerializer
     'location': 'location',
     'battery': 'battery',
     'autostart': 'autostart',
+    'backgroundRefresh': 'background_refresh',
+    'lowPowerMode': 'low_power_mode',
     'fullScreen': 'full_screen',
     'alarmVolume': 'alarm_volume',
     'doNotDisturb': 'do_not_disturb',
+    'ringSwitch': 'ring_switch',
     'testOffer': 'test_offer',
     'connection': 'connection',
     'gpsAccuracy': 'gps_accuracy',
     'call': 'call',
-    'backgroundRefresh': 'background_refresh',
-    'lowPowerMode': 'low_power_mode',
-    'ringSwitch': 'ring_switch',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'notifications': 'notifications',
     'location': 'location',
     'battery': 'battery',
     'autostart': 'autostart',
+    'background_refresh': 'backgroundRefresh',
+    'low_power_mode': 'lowPowerMode',
     'full_screen': 'fullScreen',
     'alarm_volume': 'alarmVolume',
     'do_not_disturb': 'doNotDisturb',
+    'ring_switch': 'ringSwitch',
     'test_offer': 'testOffer',
     'connection': 'connection',
     'gps_accuracy': 'gpsAccuracy',
     'call': 'call',
-    'background_refresh': 'backgroundRefresh',
-    'low_power_mode': 'lowPowerMode',
-    'ring_switch': 'ringSwitch',
   };
 
   @override

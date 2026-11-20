@@ -35267,16 +35267,16 @@
                 "location",
                 "battery",
                 "autostart",
+                "background_refresh",
+                "low_power_mode",
                 "full_screen",
                 "alarm_volume",
                 "do_not_disturb",
+                "ring_switch",
                 "test_offer",
                 "connection",
                 "gps_accuracy",
-                "call",
-                "background_refresh",
-                "low_power_mode",
-                "ring_switch"
+                "call"
               ]
             }
           }
@@ -35321,16 +35321,16 @@
                 "location",
                 "battery",
                 "autostart",
+                "background_refresh",
+                "low_power_mode",
                 "full_screen",
                 "alarm_volume",
                 "do_not_disturb",
+                "ring_switch",
                 "test_offer",
                 "connection",
                 "gps_accuracy",
-                "call",
-                "background_refresh",
-                "low_power_mode",
-                "ring_switch"
+                "call"
               ]
             },
             "description": "The checks of CA §4.5 that failed; empty when all passed."
@@ -83193,16 +83193,16 @@
                             "location",
                             "battery",
                             "autostart",
+                            "background_refresh",
+                            "low_power_mode",
                             "full_screen",
                             "alarm_volume",
                             "do_not_disturb",
+                            "ring_switch",
                             "test_offer",
                             "connection",
                             "gps_accuracy",
-                            "call",
-                            "background_refresh",
-                            "low_power_mode",
-                            "ring_switch"
+                            "call"
                           ]
                         }
                       }

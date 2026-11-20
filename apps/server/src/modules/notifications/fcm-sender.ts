@@ -57,6 +57,9 @@ export interface PushMessage {
   // breaks through a Focus (CA §4.4, CU §4.4), `critical` sounds on silent
   // too once Apple granted the entitlement (K15), `passive` is silent.
   interruption: PushInterruption;
+  // AP §9.11.4 (slice 2.46): wakes the app's background handler on an
+  // iPhone too (`content-available`), so a mass push counts as «وصل».
+  wake?: boolean;
 }
 
 export type PushInterruption = 'passive' | 'active' | 'time-sensitive' | 'critical';
@@ -222,7 +225,13 @@ export function fcmMessage(message: PushMessage, now: number) {
         'apns-push-type': 'alert',
         'apns-expiration': String(Math.floor(now / 1000) + message.ttlSeconds),
       },
-      payload: { aps: { ...sound, 'interruption-level': message.interruption } },
+      payload: {
+        aps: {
+          ...sound,
+          'interruption-level': message.interruption,
+          ...(message.wake ? { 'content-available': 1 } : {}),
+        },
+      },
     },
   };
 }

@@ -175,6 +175,7 @@ describe('the push relay (architecture §8.1)', () => {
       data: { target: 'order', orderId: 'order-1', messageId: id },
       ttlSeconds: 600,
       interruption: 'active',
+      wake: false,
     });
     expect(await relay.drain(now)).toBe(0);
   });

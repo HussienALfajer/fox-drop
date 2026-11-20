@@ -11022,7 +11022,7 @@ export interface components {
             at: string;
             /** @description No failed item. */
             passed: boolean;
-            failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call" | "background_refresh" | "low_power_mode" | "ring_switch")[];
+            failed: ("notifications" | "location" | "battery" | "autostart" | "background_refresh" | "low_power_mode" | "full_screen" | "alarm_volume" | "do_not_disturb" | "ring_switch" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
         };
         CaptainThisDeviceCheckDto_Output: {
             /** @description This phone’s latest device check (CA §4.5); null before its first. */
@@ -11030,7 +11030,7 @@ export interface components {
         };
         CaptainDeviceCheckReportDto: {
             /** @description The checks of CA §4.5 that failed; empty when all passed. */
-            failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call" | "background_refresh" | "low_power_mode" | "ring_switch")[];
+            failed: ("notifications" | "location" | "battery" | "autostart" | "background_refresh" | "low_power_mode" | "full_screen" | "alarm_volume" | "do_not_disturb" | "ring_switch" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
         };
         CaptainPayMoney_Output: {
             amount: string;
@@ -22012,7 +22012,7 @@ export interface components {
                     /** Format: date-time */
                     at: string;
                     passed: boolean;
-                    failed: ("notifications" | "location" | "battery" | "autostart" | "full_screen" | "alarm_volume" | "do_not_disturb" | "test_offer" | "connection" | "gps_accuracy" | "call" | "background_refresh" | "low_power_mode" | "ring_switch")[];
+                    failed: ("notifications" | "location" | "battery" | "autostart" | "background_refresh" | "low_power_mode" | "full_screen" | "alarm_volume" | "do_not_disturb" | "ring_switch" | "test_offer" | "connection" | "gps_accuracy" | "call")[];
                 } | null;
             };
         };

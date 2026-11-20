@@ -11,16 +11,16 @@ export const captainDeviceCheckCodes = [
   'location',
   'battery',
   'autostart',
+  'background_refresh',
+  'low_power_mode',
   'full_screen',
   'alarm_volume',
   'do_not_disturb',
+  'ring_switch',
   'test_offer',
   'connection',
   'gps_accuracy',
   'call',
-  'background_refresh',
-  'low_power_mode',
-  'ring_switch',
 ] as const;
 export type CaptainDeviceCheckCode = (typeof captainDeviceCheckCodes)[number];
 

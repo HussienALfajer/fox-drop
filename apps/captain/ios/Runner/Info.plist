@@ -24,7 +24,7 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>اختر «دائماً» لتصلك العروض والهاتف مقفل. نتابع موقعك وأنت متصل فقط، ولا نجمع موقعك وأنت غير متصل.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>لا يستخدم التطبيق بيانات الحركة.</string>
+	<string>قد تستعين خدمة الموقع بحساسات الحركة لتوفير البطارية أثناء التوصيل.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

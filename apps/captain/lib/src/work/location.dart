@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../api.dart';
 import '../auth.dart';
@@ -120,6 +121,11 @@ class PhoneLocationSource implements LocationSource {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
+      // CA §4.3 on iOS (slice 2.46): geolocator asks for «أثناء الاستخدام»
+      // only, so «دائماً» is asked once after it; tracking works either way.
+      if (_ios && permission == LocationPermission.whileInUse) {
+        await askLocationAlways();
+      }
       return permission == LocationPermission.whileInUse ||
               permission == LocationPermission.always
           ? null
@@ -186,6 +192,9 @@ class PhoneLocationSource implements LocationSource {
           pausesLocationUpdatesAutomatically: false,
           showsBackgroundLocationIndicator: true,
           activityType: bg.ActivityType.otherNavigation,
+          // Its own English alert about «دائماً»: the device check and its
+          // banner say it in Arabic (AP §4.7).
+          disableLocationAuthorizationAlert: true,
         ),
         // No motion detection: no stop detection to feed, and no «النشاط
         // البدني» permission to ask for.
@@ -321,6 +330,9 @@ class PhoneLocationSource implements LocationSource {
           'accuracy': fix.accuracyMetres,
         },
         'mock': fix.simulated,
+        // The library documents `mock` as read from the phone only: the
+        // flag goes in the extras too, which it keeps as given (§14.3).
+        'extras': {'simulated': fix.simulated},
       });
     } on Object catch (error) {
       debugPrint('Location not kept: $error');
@@ -372,7 +384,7 @@ class PhoneLocationSource implements LocationSource {
     recordedAt:
         DateTime.tryParse('${location.timestamp}')?.toUtc() ??
         DateTime.now().toUtc(),
-    simulated: location.mock,
+    simulated: location.mock || location.extras?['simulated'] == true,
   );
 }
 
@@ -391,6 +403,11 @@ const backgroundLocationLicensed = bool.fromEnvironment(
 bool get _background => kDebugMode || backgroundLocationLicensed;
 
 bool get _ios => defaultTargetPlatform == TargetPlatform.iOS;
+
+/// iOS (CA §4.3): asks once to change «أثناء الاستخدام» to «دائماً»
+/// (permission_handler's `locationAlways`; iOS never asks again after it).
+Future<bool> askLocationAlways() async =>
+    (await Permission.locationAlways.request()).isGranted;
 
 /// CA §4.3 on iOS (slice 2.46), which has no update interval and gives a
 /// position about every second: keeps the first, then one at least

@@ -1,7 +1,7 @@
 # Slice 2.46: flutter_ringtone_player builds through CocoaPods only (every
 # other plugin through Swift Package Manager), so the customer app keeps
 # Flutter's Podfile with its flavors' configurations.
-platform :ios, '15.0'
+platform :ios, '15.5'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'

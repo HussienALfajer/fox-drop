@@ -188,6 +188,15 @@ describe('FCM (architecture §8.1)', () => {
     expect(silent.apns.payload.aps).toEqual({ 'interruption-level': 'passive' });
   });
 
+  it('wakes an iPhone app for a mass push, so its receipt is sent (AP §9.11.4)', () => {
+    const now = Date.UTC(2026, 10, 20, 12, 0, 0);
+    expect(fcmMessage({ ...message, wake: true }, now).apns.payload.aps).toEqual({
+      sound: 'default',
+      'interruption-level': 'active',
+      'content-available': 1,
+    });
+  });
+
   it('sends critical alerts only once the environment says Apple granted them', () => {
     expect(criticalAlertsOn({})).toBe(false);
     expect(criticalAlertsOn({ APNS_CRITICAL_ALERTS: 'false' })).toBe(false);

@@ -33,6 +33,9 @@ public class CoreAlertsPlugin: NSObject, FlutterPlugin {
   // Whether the notification of the current ring was posted, so a ring the
   // app sends again (every 5 s while an offer is open) alerts once.
   private var notified = false
+  // Counts each new ring and stop, so a notification whose ring was stopped
+  // or changed while it was being posted is not posted.
+  private var generation = 0
   private var player: AVAudioPlayer?
   private var chimePlayer: AVAudioPlayer?
   private var stopTimer: Timer?
@@ -86,7 +89,10 @@ public class CoreAlertsPlugin: NSObject, FlutterPlugin {
     let changed =
       ring?.sound != next.sound || ring?.title != next.title || ring?.body != next.body
     ring = next
-    if changed { notified = false }
+    if changed {
+      notified = false
+      generation += 1
+    }
     stopTimer?.invalidate()
     stopTimer = nil
     if let stopAfterMs {
@@ -101,15 +107,32 @@ public class CoreAlertsPlugin: NSObject, FlutterPlugin {
     }
   }
 
+  // Ends the ring, its notification, and any offer push left in the
+  // Notification Centre (its offer was answered or ended).
   private func stopRing() {
+    // Only a stop that ends a ring clears the offer pushes: the app stops a
+    // quiet state again every 5 s, which must not clear a new offer's push
+    // that came before the app read it.
+    let ended = ring != nil
     ring = nil
     notified = false
+    generation += 1
     stopTimer?.invalidate()
     stopTimer = nil
     quiet()
     let center = UNUserNotificationCenter.current()
     center.removePendingNotificationRequests(withIdentifiers: [Self.ringIdentifier])
     center.removeDeliveredNotifications(withIdentifiers: [Self.ringIdentifier])
+    guard ended else { return }
+    center.getDeliveredNotifications { delivered in
+      let offers = delivered.filter(Self.isOfferPush).map { $0.request.identifier }
+      if !offers.isEmpty { center.removeDeliveredNotifications(withIdentifiers: offers) }
+    }
+  }
+
+  // The server's offer push (its data's `target`, CA §14).
+  private static func isOfferPush(_ notification: UNNotification) -> Bool {
+    notification.request.content.userInfo["target"] as? String == "offer"
   }
 
   private func play() {
@@ -159,30 +182,44 @@ public class CoreAlertsPlugin: NSObject, FlutterPlugin {
       application.endBackgroundTask(task)
       task = .invalid
     }
+    let end = {
+      DispatchQueue.main.async {
+        if task != .invalid {
+          application.endBackgroundTask(task)
+          task = .invalid
+        }
+      }
+    }
+    let posting = generation
     let center = UNUserNotificationCenter.current()
     center.getNotificationSettings { settings in
-      let content = UNMutableNotificationContent()
-      content.title = ring.title
-      content.body = ring.body
-      // The offer's loop written out for 29 s (a notification plays its
-      // sound once).
-      let name = UNNotificationSoundName(
-        ring.sound == "fd_offer" ? "fd_offer_30s.wav" : "\(ring.sound).wav")
-      if settings.criticalAlertSetting == .enabled {
-        content.sound = UNNotificationSound.criticalSoundNamed(name, withAudioVolume: 1)
-        content.interruptionLevel = .critical
-      } else {
-        content.sound = UNNotificationSound(named: name)
-        content.interruptionLevel = .timeSensitive
-      }
-      let request = UNNotificationRequest(
-        identifier: Self.ringIdentifier, content: content, trigger: nil)
-      center.add(request) { _ in
+      center.getDeliveredNotifications { delivered in
         DispatchQueue.main.async {
-          if task != .invalid {
-            application.endBackgroundTask(task)
-            task = .invalid
+          // Stopped or changed meanwhile; or the offer's own push already
+          // shows and rings (one alert per offer).
+          guard self.generation == posting, self.ring != nil,
+            !(ring.sound == "fd_offer" && delivered.contains(where: Self.isOfferPush))
+          else {
+            end()
+            return
           }
+          let content = UNMutableNotificationContent()
+          content.title = ring.title
+          content.body = ring.body
+          // The offer's loop written out for 29 s (a notification plays its
+          // sound once).
+          let name = UNNotificationSoundName(
+            ring.sound == "fd_offer" ? "fd_offer_30s.wav" : "\(ring.sound).wav")
+          if settings.criticalAlertSetting == .enabled {
+            content.sound = UNNotificationSound.criticalSoundNamed(name, withAudioVolume: 1)
+            content.interruptionLevel = .critical
+          } else {
+            content.sound = UNNotificationSound(named: name)
+            content.interruptionLevel = .timeSensitive
+          }
+          let request = UNNotificationRequest(
+            identifier: Self.ringIdentifier, content: content, trigger: nil)
+          center.add(request) { _ in end() }
         }
       }
     }

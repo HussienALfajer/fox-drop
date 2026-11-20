@@ -17,7 +17,7 @@ const doorRingFor = Duration(seconds: 30);
 
 /// The door ping's sound while the app is open: the phone's ringtone,
 /// looping, until the design's bundled sounds (as the restaurant and captain
-/// apps). Android only for now; tests give a fake.
+/// apps). Android and iOS (slice 2.46); tests give a fake.
 abstract interface class DoorRinger {
   void ring();
   void stop();
@@ -27,7 +27,9 @@ class PhoneDoorRinger implements DoorRinger {
   final _player = FlutterRingtonePlayer();
   bool _ringing = false;
 
-  bool get _supported => defaultTargetPlatform == TargetPlatform.android;
+  bool get _supported =>
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
 
   @override
   void ring() {
