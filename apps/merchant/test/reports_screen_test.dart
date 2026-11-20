@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
@@ -248,7 +246,7 @@ void main() {
     tester,
   ) async {
     final app = _App(role: 'owner');
-    app.server..on('/v1/merchant/figures', [
+    app.server.on('/v1/merchant/figures', [
       FakeAnswer(200, _answer()),
       FakeAnswer(200, _answer()),
       FakeAnswer(200, _answer()),
