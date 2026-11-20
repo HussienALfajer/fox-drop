@@ -135,6 +135,17 @@ server {
         proxy_set_header Cookie "";
     }
 
+    # The owners' Excel files from the portal (RA §17; slice 2.45d): a GET
+    # signed by the API for this host, valid 5 minutes, as the panel's. Only
+    # GET (and HEAD), only exports/.
+    location /private-docs/exports/ {
+        limit_except GET { deny all; }
+        access_log off;
+        proxy_pass http://127.0.0.1:${STORAGE_PORT};
+        include snippets/foxdrop-proxy.conf;
+        proxy_set_header Cookie "";
+    }
+
     location / {
         proxy_pass http://127.0.0.1:${PORTAL_PORT};
         include snippets/foxdrop-proxy.conf;

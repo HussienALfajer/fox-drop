@@ -47,6 +47,7 @@ import { OrderTimers, OrderTimersWorker } from './order-timers.js';
 import { OperationsViews } from './operations-views.js';
 import { OrdersService } from './orders.service.js';
 export type { OrderView } from './order-views.js';
+export { orderStatuses } from './schema.js';
 import { OutboxPushes, OutboxPushesWorker } from './outbox-pushes.js';
 import { OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
 import { QuoteService } from './quote.service.js';
@@ -241,6 +242,7 @@ export {
   captainSteps,
   HISTORY_PAGE,
   HistoryRefusedError,
+  MERCHANT_HISTORY_EXPORT_MAX,
 } from './app-histories.js';
 export { type RestaurantFigures, RestaurantFiguresService } from './restaurant-figures.js';
 export {

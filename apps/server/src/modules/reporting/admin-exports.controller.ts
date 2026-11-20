@@ -31,7 +31,7 @@ import {
   ExportsService,
   type ExportView,
 } from './exports.service.js';
-import { exportKinds, exportStatuses } from './schema.js';
+import { adminExportKinds, exportStatuses } from './schema.js';
 
 class AdminRestaurantStatementExportDto extends createZodDto(restaurantPeriodQuery) {}
 
@@ -62,7 +62,7 @@ class AdminExportQueryDto extends createZodDto(
 export class AdminExportDto extends createZodDto(
   z.object({
     id: z.uuid(),
-    kind: z.enum(exportKinds),
+    kind: z.enum(adminExportKinds),
     status: z.enum(exportStatuses),
     fileName: z.string(),
     createdAt: z.iso.datetime(),
@@ -76,10 +76,11 @@ export class AdminExportDto extends createZodDto(
   }),
 ) {}
 
+// The panel's routes answer its own kinds only (`mayReadExport`).
 export function exportBody(view: ExportView) {
   return {
     id: view.id,
-    kind: view.kind,
+    kind: view.kind as (typeof adminExportKinds)[number],
     status: view.status,
     fileName: view.fileName,
     createdAt: view.createdAt.toISOString(),
@@ -97,7 +98,7 @@ function exportUser(session: AdminSession, request: FastifyRequest): ExportUser 
   };
 }
 
-async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
+export async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
   try {
     return await run();
   } catch (error) {
@@ -106,6 +107,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
     switch (error.refusal) {
       case 'unknown_restaurant':
       case 'unknown_export':
+      case 'unknown_statement':
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'invalid_period':
         throw costReportRefusal(error.refusal);

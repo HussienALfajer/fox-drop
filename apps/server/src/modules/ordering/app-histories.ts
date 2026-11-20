@@ -1,5 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gte, inArray, isNotNull, lt, notInArray, or, type SQL } from 'drizzle-orm';
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  lt,
+  notInArray,
+  or,
+  type SQL,
+} from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { CaptainsService } from '../captains/index.js';
@@ -21,6 +33,10 @@ export const HISTORY_PAGE = 20;
 export const CASHIER_DAYS = 7;
 // The longest range a history reads at once, as the statements' (a year).
 export const HISTORY_MAX_DAYS = 366;
+
+// The orders an owner's Excel export of «السجل» holds at most (RA §17,
+// slice 2.45d; decided by us: a busy restaurant's year in Azaz).
+export const MERCHANT_HISTORY_EXPORT_MAX = 20_000;
 
 const DAY_MS = 86_400_000;
 
@@ -167,6 +183,52 @@ export class AppHistories {
       dayOf: (order: OrderView) =>
         businessDayOf(order.placedAt, clock.cutoffMinutes, clock.timeZone),
     };
+  }
+
+  // RA §17 (slice 2.45d): every order of an owner's range, for the
+  // portal's Excel export of «السجل», newest first (`restaurantRange`'s
+  // refusals).
+  async restaurantAll(
+    restaurantId: string,
+    filter: { fromDay: string; toDay: string; status?: OrderStatus; number?: bigint },
+  ): Promise<
+    | 'invalid_period'
+    | 'too_many'
+    | { orders: OrderView[]; dayOf: (order: OrderView) => string; timeZone: string }
+  > {
+    const range = await this.restaurantRange(restaurantId, filter);
+    if (typeof range === 'string') return range;
+    const { clock, where } = range;
+    const read = await readOrders(this.database.db, where, { newestFirst: true });
+    return {
+      orders: read,
+      dayOf: (order) => businessDayOf(order.placedAt, clock.cutoffMinutes, clock.timeZone),
+      timeZone: clock.timeZone,
+    };
+  }
+
+  // The range's orders checked for an export: `invalid_period`, `too_many`
+  // past MERCHANT_HISTORY_EXPORT_MAX (a count, so nothing big is read), or
+  // the clock and the condition that reads them.
+  async restaurantRange(
+    restaurantId: string,
+    filter: { fromDay: string; toDay: string; status?: OrderStatus; number?: bigint },
+  ): Promise<'invalid_period' | 'too_many' | { clock: Clock; where: SQL | undefined }> {
+    if (!rangeFits(filter.fromDay, filter.toDay)) return 'invalid_period';
+    const restaurant = await this.merchants.restaurant(restaurantId);
+    if (!restaurant) throw new Error(`restaurant ${restaurantId} does not exist`);
+    const clock = await this.clock(restaurant.cityId);
+    const { from, to } = this.bounds(clock, filter.fromDay, filter.toDay);
+    const where = and(
+      eq(orders.restaurantId, restaurantId),
+      gte(orders.placedAt, from),
+      lt(orders.placedAt, to),
+      filter.status === undefined ? undefined : eq(orders.status, filter.status),
+      filter.number === undefined ? undefined : eq(orders.number, filter.number),
+    );
+    const [counted] = await this.database.db.select({ count: count() }).from(orders).where(where);
+    if ((counted?.count ?? 0) > MERCHANT_HISTORY_EXPORT_MAX) return 'too_many';
+    return { clock, where };
   }
 
   // RA §8.18 «التفاصيل»: one order of the restaurant; a cashier's only

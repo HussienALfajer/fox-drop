@@ -474,5 +474,133 @@
     "reply": "الرد: {{message}}",
     "faq": "الأسئلة الشائعة",
     "whatsappAboutOrder": "بخصوص الطلب #{{number}}"
+  },
+  "excel": {
+    "report": {
+      "sheet": "التقارير",
+      "title": "تقارير المطعم",
+      "period": "الفترة",
+      "currency": "العملة",
+      "excluded": "الطلبات التجريبية مستبعدة.",
+      "metric": "المقياس",
+      "current": "الفترة",
+      "previous": "الفترة السابقة",
+      "metrics": {
+        "received": "الطلبات المستلمة",
+        "acceptedByYou": "قبلتموها",
+        "acceptedByOperations": "قبلتها العمليات",
+        "rejected": "المرفوضة",
+        "unanswered": "بلا رد",
+        "acceptance": "نسبة القبول",
+        "delivered": "المسلّمة",
+        "sales": "المبيعات",
+        "averageOrder": "متوسط الطلب",
+        "commission": "العمولة",
+        "discounts": "خصومات على حسابكم",
+        "net": "الصافي",
+        "acceptTime": "متوسط وقت القبول (دقيقة)",
+        "prepTime": "متوسط التحضير الفعلي (دقيقة)",
+        "chosenTime": "متوسط الوقت المختار (دقيقة)",
+        "late": "نسبة التأخير",
+        "readyNotPressed": "لم يُضغط «جاهز»",
+        "captainWait": "متوسط انتظار الكابتن (دقيقة)",
+        "rating": "متوسط التقييم",
+        "ratings": "عدد التقييمات",
+        "pauseRestaurant": "دقائق إيقافكم",
+        "pauseOps": "دقائق إيقاف العمليات",
+        "pauseAuto": "دقائق الإيقاف التلقائي"
+      },
+      "rejections": "الرفض حسب السبب",
+      "reason": "السبب",
+      "byOperations": "من العمليات",
+      "count": "العدد",
+      "topByQuantity": "الأكثر طلباً بالكمية",
+      "topBySales": "الأكثر مبيعاً بالقيمة",
+      "item": "الصنف",
+      "quantity": "الكمية",
+      "sales": "المبيعات",
+      "hours": "الطلبات المسلّمة حسب الساعة",
+      "hour": "الساعة",
+      "yes": "نعم"
+    },
+    "history": {
+      "sheet": "السجل",
+      "title": "سجل الطلبات",
+      "period": "الفترة",
+      "test": "طلب تجريبي",
+      "redelivery": "إعادة توصيل مجانية",
+      "column": {
+        "number": "رقم الطلب",
+        "time": "الوقت",
+        "day": "يوم العمل",
+        "status": "الحالة",
+        "items": "عدد الأصناف",
+        "itemsValue": "قيمة الأصناف",
+        "commission": "العمولة",
+        "discountShare": "خصم يموّله المطعم",
+        "net": "الصافي",
+        "note": "ملاحظة"
+      },
+      "status": {
+        "placed": "جديد",
+        "accepted": "قيد التحضير",
+        "ready": "جاهز",
+        "picked_up": "مع الكابتن",
+        "arrived": "عند الزبون",
+        "delivered": "تم التسليم",
+        "failed": "لم يُسلَّم",
+        "rejected": "مرفوض",
+        "cancelled": "ملغى"
+      }
+    },
+    "statement": {
+      "sheet": "كشف الأسبوع",
+      "title": "كشف الأسبوع",
+      "restaurant": "المطعم",
+      "period": "الفترة",
+      "currency": "العملة",
+      "sign": "المبالغ من جهة المطعم: الموجب عليه، والسالب له.",
+      "status": "الحالة",
+      "statuses": {
+        "unpaid": "غير مسدّد",
+        "partly_paid": "مسدّد جزئياً",
+        "paid": "مسدّد"
+      },
+      "orders": "الطلبات",
+      "itemsValue": "قيمة الأصناف المقبوضة من الكباتن",
+      "commission": "العمولة",
+      "discountShare": "خصم يموّله المطعم",
+      "exceptions": "صافي الاستثناءات",
+      "weekTotal": "مستحق هذا الأسبوع",
+      "previousDue": "المستحق في الكشف السابق",
+      "paid": "المدفوع منذ الكشف السابق",
+      "earlierUnpaid": "الرصيد السابق غير المسدّد",
+      "totalDue": "المجموع المستحق",
+      "unpaid": "غير المسدّد منه",
+      "columns": {
+        "at": "الوقت",
+        "entry": "البند",
+        "order": "الطلب",
+        "itemsValue": "قيمة الأصناف",
+        "pickupLines": "المدفوع بالعملات",
+        "commission": "العمولة",
+        "discountShare": "خصم يموّله المطعم",
+        "amount": "المبلغ",
+        "reason": "السبب",
+        "decidedBy": "من قرّر"
+      },
+      "entries": {
+        "order": "طلب",
+        "payment": "دفعة مسدّدة",
+        "payout": "صُرف لك"
+      },
+      "deciders": {
+        "admin": "FOX DROP",
+        "merchant": "المطعم",
+        "captain": "الكابتن",
+        "customer": "الزبون",
+        "system": "النظام"
+      }
+    }
   }
 }

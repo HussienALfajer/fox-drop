@@ -340,6 +340,10 @@ describe('the routes the portal reaches (RA §17)', () => {
       'GET /v1/merchant/statements/{statementId}',
       'GET /v1/merchant/receipts',
       'GET /v1/merchant/receipts/{receiptId}',
+      'POST /v1/merchant/exports/report',
+      'POST /v1/merchant/exports/order-history',
+      'POST /v1/merchant/exports/statement',
+      'GET /v1/merchant/exports/{exportId}',
     ];
     const document = createOpenApiDocument(app);
     const reached: string[] = [];

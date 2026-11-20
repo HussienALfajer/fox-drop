@@ -1095,6 +1095,7 @@ import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_devices_dto_output.dart';
 import 'package:core_api/src/model/merchant_devices_dto_output_devices_inner.dart';
 import 'package:core_api/src/model/merchant_emergency_stop_dto_output.dart';
+import 'package:core_api/src/model/merchant_export_dto_output.dart';
 import 'package:core_api/src/model/merchant_figures_dto_output.dart';
 import 'package:core_api/src/model/merchant_figures_item_output.dart';
 import 'package:core_api/src/model/merchant_figures_output.dart';
@@ -1102,6 +1103,7 @@ import 'package:core_api/src/model/merchant_figures_output_hours_inner.dart';
 import 'package:core_api/src/model/merchant_figures_output_pause_minutes.dart';
 import 'package:core_api/src/model/merchant_figures_output_rating.dart';
 import 'package:core_api/src/model/merchant_figures_output_rejections_inner.dart';
+import 'package:core_api/src/model/merchant_history_export_dto.dart';
 import 'package:core_api/src/model/merchant_holiday_close_dto.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output_coverage.dart';
@@ -1197,6 +1199,7 @@ import 'package:core_api/src/model/merchant_refresh_dto.dart';
 import 'package:core_api/src/model/merchant_reject_dto.dart';
 import 'package:core_api/src/model/merchant_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/merchant_report_body_dto.dart';
+import 'package:core_api/src/model/merchant_report_export_dto.dart';
 import 'package:core_api/src/model/merchant_report_ticket_dto_output.dart';
 import 'package:core_api/src/model/merchant_report_ticket_dto_output_ticket.dart';
 import 'package:core_api/src/model/merchant_reports_dto_output.dart';
@@ -1215,6 +1218,7 @@ import 'package:core_api/src/model/merchant_staff_dto_output_staff_inner.dart';
 import 'package:core_api/src/model/merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/merchant_statement_dto_output_lines_inner_pickup_lines_inner.dart';
+import 'package:core_api/src/model/merchant_statement_export_dto.dart';
 import 'package:core_api/src/model/merchant_statement_list_dto_output.dart';
 import 'package:core_api/src/model/merchant_statement_list_dto_output_statements_inner.dart';
 import 'package:core_api/src/model/merchant_status_dto_output.dart';
@@ -2344,6 +2348,7 @@ part 'serializers.g.dart';
   MerchantDevicesDtoOutput,
   MerchantDevicesDtoOutputDevicesInner,
   MerchantEmergencyStopDtoOutput,
+  MerchantExportDtoOutput,
   MerchantFiguresDtoOutput,
   MerchantFiguresItemOutput,
   MerchantFiguresOutput,
@@ -2351,6 +2356,7 @@ part 'serializers.g.dart';
   MerchantFiguresOutputPauseMinutes,
   MerchantFiguresOutputRating,
   MerchantFiguresOutputRejectionsInner,
+  MerchantHistoryExportDto,
   MerchantHolidayCloseDto,
   MerchantHoursDtoOutput,
   MerchantHoursDtoOutputCoverage,
@@ -2446,6 +2452,7 @@ part 'serializers.g.dart';
   MerchantRejectDto,
   MerchantRejectDtoItemsInner,
   MerchantReportBodyDto,
+  MerchantReportExportDto,
   MerchantReportTicketDtoOutput,
   MerchantReportTicketDtoOutputTicket,
   MerchantReportsDtoOutput,
@@ -2464,6 +2471,7 @@ part 'serializers.g.dart';
   MerchantStatementDtoOutput,
   MerchantStatementDtoOutputLinesInner,
   MerchantStatementDtoOutputLinesInnerPickupLinesInner,
+  MerchantStatementExportDto,
   MerchantStatementListDtoOutput,
   MerchantStatementListDtoOutputStatementsInner,
   MerchantStatusDtoOutput,

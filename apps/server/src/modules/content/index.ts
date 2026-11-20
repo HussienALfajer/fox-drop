@@ -61,6 +61,7 @@ export { NotificationTexts, type RenderedNotification } from './notification-tex
 export {
   costReportLabels,
   dailyReportLabels,
+  merchantExportLabels,
   orderHistoryLabels,
   reportLabels,
   restaurantStatementLabels,

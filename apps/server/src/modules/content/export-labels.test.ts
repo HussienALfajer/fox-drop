@@ -5,6 +5,7 @@ import { operatingCostCauses } from '../ordering/index.js';
 import {
   costReportLabels,
   dailyReportLabels,
+  merchantExportLabels,
   orderHistoryLabels,
   reportLabels,
   restaurantStatementLabels,
@@ -84,5 +85,19 @@ describe('the reports export', () => {
       column: reportLabels.column,
       code: reportLabels.code,
     });
+  });
+});
+
+// The portal's Excel files name everything as the portal shows it (RA §17,
+// slice 2.45d), and every exception as the statement export does.
+describe('the owner web portal’s exports', () => {
+  it('uses the portal’s words', () => {
+    const portal = JSON.parse(
+      readFileSync(
+        new URL('../../../../merchant-portal/src/locales/ar.json', import.meta.url),
+        'utf8',
+      ),
+    ) as { excel: unknown };
+    expect(portal.excel).toEqual(merchantExportLabels);
   });
 });

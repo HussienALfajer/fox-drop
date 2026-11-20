@@ -15,8 +15,8 @@ Slice 2.45d, money and reports in the owner web portal (`docs/roadmap.md`, Phase
 ### Plan
 
 - [x] Read RA §11–13, §8.18 and the owners' money and report routes; write this plan after the owner's answers.
-- [ ] Server: the owners' reports, history, ratings, account, statements and receipts open to the portal (`portal: true`); `from` and `to` on `GET /v1/merchant/figures` and `GET /v1/merchant/ratings` (business days, at most 366, not after today; the previous period of the same length for the arrows).
-- [ ] Server: the portal's Excel exports: `merchant_report`, `merchant_order_history` and `merchant_statement` kinds (migration), `POST /v1/merchant/exports/...` and `GET /v1/merchant/exports/{exportId}` (the requester only, signed for the portal's origin), their workbooks, and nginx's `/private-docs/exports/` (GET) on the portal's host.
+- [x] Server: the owners' reports, history, ratings, account, statements and receipts open to the portal (`portal: true`); `from` and `to` on `GET /v1/merchant/figures` and `GET /v1/merchant/ratings` (business days, at most 366, not after today; the previous period of the same length for the arrows).
+- [x] Server: the portal's Excel exports: `merchant_report`, `merchant_order_history` and `merchant_statement` kinds (migration), `POST /v1/merchant/exports/...` and `GET /v1/merchant/exports/{exportId}` (the requester only, signed for the portal's origin), their workbooks, and nginx's `/private-docs/exports/` (GET) on the portal's host.
 - [ ] Portal: «التقارير» (the periods, the custom range, the arrows, each metric's definition, «تصدير Excel»).
 - [ ] Portal: «السجل» (range, status, number, pages, the order, «تصدير Excel») and «التقييمات» (summary, stars, periods with the custom range, pages).
 - [ ] Portal: «الحساب», «الكشوف» (each statement, «طباعة / حفظ PDF», «تصدير Excel») and «الإيصالات»; a terminated restaurant's owners see only these, read-only.
