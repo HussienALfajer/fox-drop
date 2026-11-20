@@ -12,6 +12,7 @@ import { canSeeCategories } from './categories.js';
 import { SETTINGS_MANAGE, SWITCH_DISPATCH_MODE } from './city-settings.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { CUSTOMERS_READ } from './customers.js';
+import { canSeeDashboard } from './dashboard.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { canSeeHomeSections } from './home-sections.js';
 import { canSeeLostDemand } from './lost-demand.js';
@@ -30,10 +31,10 @@ import { type AdminSession, can } from './session.js';
 import { ADMIN_TEAM } from './team.js';
 import { canReadTickets } from './tickets.js';
 
-// AP §7.1 the side menu's modules, in its order. Dashboard and the order
-// history have no page yet (slice 2.40), so they are not listed until they
-// do.
+// AP §7.1 the side menu's modules, in its order. The order history joins
+// with its page (slice 2.40).
 export const MODULES = [
+  'dashboard',
   'operations',
   'liveMap',
   'restaurants',
@@ -60,6 +61,7 @@ const holds =
 // Each page of the menu: its module, its path and who may open it (the
 // same check as its route's beforeLoad).
 export const MENU_LINKS = {
+  dashboard: { module: 'dashboard', path: '/dashboard', allowed: canSeeDashboard },
   orders: { module: 'operations', path: '/orders', allowed: holds(OPERATIONS_READ) },
   alerts: { module: 'operations', path: '/alerts', allowed: () => true },
   emergencyCode: {

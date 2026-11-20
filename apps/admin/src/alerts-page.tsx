@@ -49,13 +49,28 @@ export function AlertsPage() {
 
 function CityAlerts({ city }: { city: City }) {
   const { t } = useTranslation();
-  const open = useQuery(alertsQuery(city.id));
-  useOpsChannel(city.id);
   const [showHistory, setShowHistory] = useState(false);
-  const acknowledge = useAcknowledgeAlert(city.id);
   return (
     <main>
       <h1>{t('alerts.title')}</h1>
+      <OpenAlerts city={city} />
+      <button type="button" onClick={() => setShowHistory((shown) => !shown)}>
+        {t('alerts.history')}
+      </button>
+      {showHistory && <History city={city} />}
+    </main>
+  );
+}
+
+// The city's open alerts with their actions and «استلام»: this page's and
+// the dashboard's (AP §9.1.3, slice 2.40).
+export function OpenAlerts({ city }: { city: City }) {
+  const { t } = useTranslation();
+  const open = useQuery(alertsQuery(city.id));
+  useOpsChannel(city.id);
+  const acknowledge = useAcknowledgeAlert(city.id);
+  return (
+    <>
       {open.isError && <p role="alert">{t('alerts.failed')}</p>}
       {open.data?.length === 0 && <p>{t('alerts.empty')}</p>}
       <ul>
@@ -77,11 +92,7 @@ function CityAlerts({ city }: { city: City }) {
         ))}
       </ul>
       {acknowledge.isError && <p role="alert">{t('common.failed')}</p>}
-      <button type="button" onClick={() => setShowHistory((shown) => !shown)}>
-        {t('alerts.history')}
-      </button>
-      {showHistory && <History city={city} />}
-    </main>
+    </>
   );
 }
 

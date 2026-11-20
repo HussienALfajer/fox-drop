@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useServerStatus } from './status.js';
 
-// The panel's start page until the dashboard (slice 2.40): the server
-// status; the pages are in the side menu (AP §7.1).
+// The start page of a session that may not read the dashboard (slice 2.40
+// opens it for the others): the server status; the pages are in the side
+// menu (AP §7.1).
 export function HomePage() {
   const { t } = useTranslation();
   const status = useServerStatus();

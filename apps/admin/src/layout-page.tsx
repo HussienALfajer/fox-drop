@@ -25,6 +25,8 @@ import { ticketStatusKeys } from './tickets.js';
 function MenuLink({ id }: { id: MenuLinkId }) {
   const { t } = useTranslation();
   switch (id) {
+    case 'dashboard':
+      return <Link to="/dashboard">{t('dashboard.title')}</Link>;
     case 'orders':
       return <Link to="/orders">{t('board.title')}</Link>;
     case 'liveMap':

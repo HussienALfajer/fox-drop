@@ -30,6 +30,8 @@ import { CaptainBalancesPage } from './captain-balances-page.js';
 import { CostReportPage } from './cost-report-page.js';
 import { DailyReportPage } from './daily-report-page.js';
 import { ExchangeRatesPage } from './exchange-rates-page.js';
+import { canSeeDashboard } from './dashboard.js';
+import { DashboardPage } from './dashboard-page.js';
 import { CASH_DESK_RECORD, CUSTOMERS_READ } from './customers.js';
 import { CustomerProfilePage, CustomerReceiptPage, CustomersPage } from './customers-page.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
@@ -168,10 +170,26 @@ function SignedInLayout() {
   return receivesAlerts(session) ? <AlertsMonitor cityCode={city}>{page}</AlertsMonitor> : page;
 }
 
+// AP §9.1: the dashboard is the panel's start for a session that may read
+// it (slice 2.40); the others keep the start page.
 const homeRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/',
+  beforeLoad: ({ context }) => {
+    if (canSeeDashboard(context.session)) throw redirect({ to: '/dashboard' });
+  },
   component: HomePage,
+});
+
+// AP §9.1 «لوحة التحكم» (slice 2.40): OWN, OPS, SUP, FIN.
+const dashboardRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/dashboard',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeDashboard(context.session)) throw redirect({ to: '/' });
+  },
+  component: DashboardPage,
 });
 
 const emergencyCodeRoute = createRoute({
@@ -924,6 +942,7 @@ const routeTree = rootRoute.addChildren([
   signInRoute,
   signedInRoute.addChildren([
     homeRoute,
+    dashboardRoute,
     emergencyCodeRoute,
     emergencyStopRoute,
     contentRoute,
