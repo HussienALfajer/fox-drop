@@ -107,11 +107,7 @@ function StatusStrip({
         {restaurantKeys.map((key) => (
           <li key={key}>{t(`dashboard.restaurant.${key}`, { count: restaurants[key] })}</li>
         ))}
-        <li>
-          {withoutDevice === null
-            ? t('dashboard.withoutDeviceLater')
-            : t('dashboard.withoutDevice', { count: withoutDevice })}
-        </li>
+        <li>{t('dashboard.withoutDevice', { count: withoutDevice })}</li>
       </ul>
     </section>
   );

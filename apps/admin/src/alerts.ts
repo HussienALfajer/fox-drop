@@ -107,6 +107,14 @@ export function autoPausedRestaurantOf(alert: AdminAlert): string | null {
     : null;
 }
 
+// AP §9.1.3 «مطعم مفتوح بلا جهاز استقبال» (RA §4.6, slice 2.42): its
+// restaurant, for «حالة المطعم» (where «إيقاف» is) and «أجهزة المطعم».
+export function withoutDeviceRestaurantOf(alert: AdminAlert): string | null {
+  return alert.code === 'restaurant_without_device' && alert.subjectType === 'restaurant'
+    ? alert.subjectId
+    : null;
+}
+
 // AP §8.6 «سعر صرف قديم» (slice 2.20a): its currency, for «فتح أسعار الصرف».
 export function staleRateOf(alert: AdminAlert): string | null {
   return alert.code === 'rate_stale' && alert.subjectType === 'currency' ? alert.currency : null;

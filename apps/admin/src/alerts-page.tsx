@@ -12,6 +12,7 @@ import {
   orderOf,
   overdueRestaurantOf,
   priceChangeRestaurantOf,
+  withoutDeviceRestaurantOf,
   staleRateOf,
   useAcknowledgeAlert,
 } from './alerts.js';
@@ -185,6 +186,9 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
     alert.code === 'acceptance_review' && canSeeCaptains(session) ? alert.subjectId : null;
   // AP §9.1.3 «تغيير أسعار كبير» (slice 2.32a): «فتح سجل الأسعار».
   const priceLogOf = can(session, RESTAURANTS_READ) ? priceChangeRestaurantOf(alert) : null;
+  // AP §9.1.3 «مطعم مفتوح بلا جهاز استقبال» (slice 2.42): the restaurant's
+  // state, where «إيقاف» is, and its devices.
+  const withoutDevice = can(session, RESTAURANTS_READ) ? withoutDeviceRestaurantOf(alert) : null;
   return (
     <>
       <strong>{t(`alerts.severity.${alert.severity}`)}</strong>{' '}
@@ -221,6 +225,24 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
         <Link to="/compensations" search={{ city: city.code }}>
           {t('alerts.openApprovals')}
         </Link>
+      )}
+      {withoutDevice && (
+        <>
+          <Link
+            to="/restaurants/$restaurantId"
+            params={{ restaurantId: withoutDevice }}
+            search={{ city: city.code, tab: 'status' }}
+          >
+            {t('alerts.openRestaurant')}
+          </Link>{' '}
+          <Link
+            to="/restaurants/$restaurantId"
+            params={{ restaurantId: withoutDevice }}
+            search={{ city: city.code, tab: 'accounts' }}
+          >
+            {t('alerts.openDevices')}
+          </Link>
+        </>
       )}
       {priceLogOf && (
         <Link

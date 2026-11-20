@@ -250,3 +250,69 @@ test('refuses a logo that is not an image before uploading', async ({ page }) =>
   await expect(logo.getByRole('alert')).toHaveText('اختر صورة بصيغة JPEG أو PNG أو WebP.');
   expect(uploads).toBe(0);
 });
+
+// RA §4.3–4.5, AP §9.6.4 (slice 2.42): each device's ringing, connection and
+// last device check.
+test('lists each device with its ringing, connection and device check', async ({ page }) => {
+  await fakeSession(page, ['restaurants.read']);
+  await fakeRestaurant(page);
+  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}?*`, (route) =>
+    route.fulfill({ json: restaurant(600) }),
+  );
+  await page.route(`**/v1/admin/restaurants/${restaurantId}/accounts`, (route) =>
+    route.fulfill({ json: { accounts: [] } }),
+  );
+  const device = {
+    platform: 'android',
+    appVersion: '1.2.0',
+    user: { name: 'ريم', role: 'cashier' },
+    signedIn: true,
+    lastSeenAt: '2026-11-20T09:00:00.000Z',
+  };
+  await page.route(`**/v1/admin/restaurants/${restaurantId}/devices`, (route) =>
+    route.fulfill({
+      json: {
+        devices: [
+          {
+            ...device,
+            deviceId: 'd1',
+            name: 'كاشير 1',
+            ringing: true,
+            connected: true,
+            deviceCheck: {
+              at: '2026-11-20T08:00:00.000Z',
+              passed: true,
+              failed: [],
+              delayMs: 120,
+            },
+          },
+          {
+            ...device,
+            deviceId: 'd2',
+            name: 'هاتف المالك',
+            user: { name: 'سامر', role: 'owner' },
+            ringing: false,
+            connected: false,
+            deviceCheck: {
+              at: '2026-11-20T08:00:00.000Z',
+              passed: false,
+              failed: ['battery', 'test_ring'],
+              delayMs: null,
+            },
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto(`/restaurants/${restaurantId}?tab=accounts`);
+  const first = page.getByRole('listitem').filter({ hasText: 'كاشير 1' });
+  await expect(first).toContainText('الرنين: يرن');
+  await expect(first).toContainText('متصل الآن');
+  await expect(first).toContainText('فحص الجهاز: ناجح');
+  await expect(first).toContainText('تأخر الاتصال 120 ملي ثانية');
+  const second = page.getByRole('listitem').filter({ hasText: 'هاتف المالك' });
+  await expect(second).toContainText('الرنين: صامت');
+  await expect(second).toContainText('غير متصل');
+  await expect(second).toContainText('فحص الجهاز: لم ينجح في');
+  await expect(second).toContainText('(توفير البطارية مفعّل للتطبيق، لم يُسمع رنين التجربة)');
+});

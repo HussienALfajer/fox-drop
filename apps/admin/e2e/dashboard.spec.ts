@@ -39,7 +39,7 @@ const dashboard = {
   status: {
     captains: { online: 7, available: 4, busy: 3, cashBlocked: 1 },
     restaurants: { open: 12, busy: 1, paused: 2, closed: 5, holiday: 0, suspended: 1 },
-    withoutDevice: null,
+    withoutDevice: 2,
   },
   today: period('2026-11-20T01:00:00.000Z', 12, '150000', 9000),
   lastWeek: period('2026-11-13T01:00:00.000Z', 10, '120000', 9250),
@@ -84,7 +84,7 @@ test('opens the dashboard and compares today with last week', async ({ page }) =
 
   await expect(main.getByText('متصلون: 7')).toBeVisible();
   await expect(main.getByText('مشغولة (بلغت أقصى عدد طلبات): 1')).toBeVisible();
-  await expect(main.getByText('مفتوحة بلا جهاز استقبال متصل: غير متاح بعد')).toBeVisible();
+  await expect(main.getByText('مفتوحة بلا جهاز استقبال متصل: 2')).toBeVisible();
   await expect(main.getByRole('link', { name: 'تغيير طريقة التوزيع' })).toBeVisible();
 
   const orders = main.getByRole('row', { name: /^الطلبات/ });

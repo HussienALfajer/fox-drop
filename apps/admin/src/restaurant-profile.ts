@@ -11,6 +11,9 @@ export type RestaurantOrder =
   components['schemas']['AdminRestaurantOrdersDto_Output']['orders'][number];
 export type RestaurantDevice =
   components['schemas']['AdminRestaurantDevicesDto_Output']['devices'][number];
+
+// RA §4.5: a device's last check (slice 2.42).
+export type DeviceCheck = NonNullable<RestaurantDevice['deviceCheck']>;
 export type RestaurantNote =
   components['schemas']['AdminRestaurantNotesDto_Output']['notes'][number];
 export type ChangeLogEntry =
