@@ -23,6 +23,8 @@ import { AlertsMonitor } from './alerts-monitor.js';
 import { AlertsPage } from './alerts-page.js';
 import { HomePage } from './home-page.js';
 import { OrderDetailPage } from './order-detail-page.js';
+import { OrderHistoryPage } from './order-history-page.js';
+import { canSeeOrderHistory, historySearchOf } from './order-history.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
@@ -202,6 +204,21 @@ const ordersRoute = createRoute({
     if (!can(context.session, OPERATIONS_READ)) throw redirect({ to: '/' });
   },
   component: OrdersBoardPage,
+});
+
+// AP §9.5 «سجل الطلبات» (slice 2.40): OWN, OPS, SUP and FIN; the filters
+// in the search but the customer's phone, which stays in the page.
+const orderHistoryRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/order-history',
+  validateSearch: (search: Record<string, unknown>) => ({
+    ...citySearch(search),
+    ...historySearchOf(search),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeOrderHistory(context.session)) throw redirect({ to: '/' });
+  },
+  component: OrderHistoryPage,
 });
 
 // The detail opens beside the board (AP §9.2.1), and the picker inside it.
@@ -984,6 +1001,7 @@ const routeTree = rootRoute.addChildren([
     captainApplicationRoute,
     alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute, handoverRoute])]),
+    orderHistoryRoute,
   ]),
 ]);
 

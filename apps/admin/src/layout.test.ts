@@ -65,6 +65,7 @@ describe('the side menu (AP §7.1)', () => {
     expect(modules(OPS)).toEqual([
       'operations',
       'liveMap',
+      'orderHistory',
       'restaurants',
       'captains',
       'customers',
@@ -121,6 +122,7 @@ describe('the side menu (AP §7.1)', () => {
     expect(moduleOfPath('/cash-desk/sessions')).toBe('finance');
     expect(moduleOfPath('/orders/0190/assign')).toBe('operations');
     expect(moduleOfPath('/live-map')).toBe('liveMap');
+    expect(moduleOfPath('/order-history')).toBe('orderHistory');
     expect(moduleOfPath('/restaurants-x')).toBeNull();
   });
 });

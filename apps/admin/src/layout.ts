@@ -18,6 +18,7 @@ import { canSeeLostDemand } from './lost-demand.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { canSeeMassPushes } from './mass-pushes.js';
 import { canSeeLiveMap } from './live-map.js';
+import { canSeeOrderHistory } from './order-history.js';
 import { canReviewMenuChanges } from './menu-change-requests.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { ZONES_READ } from './peak-bonus.js';
@@ -30,12 +31,12 @@ import { type AdminSession, can } from './session.js';
 import { ADMIN_TEAM } from './team.js';
 import { canReadTickets } from './tickets.js';
 
-// AP §7.1 the side menu's modules, in its order. Dashboard and the order
-// history have no page yet (slice 2.40), so they are not listed until they
-// do.
+// AP §7.1 the side menu's modules, in its order. The dashboard joins with
+// its page (slice 2.40).
 export const MODULES = [
   'operations',
   'liveMap',
+  'orderHistory',
   'restaurants',
   'captains',
   'customers',
@@ -68,6 +69,7 @@ export const MENU_LINKS = {
     allowed: holds(EMERGENCY_CODE_PERMISSION),
   },
   liveMap: { module: 'liveMap', path: '/live-map', allowed: canSeeLiveMap },
+  orderHistory: { module: 'orderHistory', path: '/order-history', allowed: canSeeOrderHistory },
   restaurantList: { module: 'restaurants', path: '/restaurants', allowed: canSeeRestaurantList },
   drafts: { module: 'restaurants', path: '/restaurant-drafts', allowed: canSeeDrafts },
   menuChanges: {
