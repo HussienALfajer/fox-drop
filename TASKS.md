@@ -21,7 +21,7 @@ Slice 2.46, iOS for the customer and captain apps (`docs/roadmap.md`, Phase 2), 
 - [x] iOS projects: the three flavors (schemes and build configurations, the bundle IDs), Info.plist keys (location always, background modes), entitlements (push, time-sensitive, App Attest), the bundled sounds copied into the app; App Check and push on iOS (`core_auth`, `core_push`).
 - [x] `core_alerts`' iOS layer (Swift): the ring in the foreground and a time-sensitive notification when the app leaves it, the chime, the readings (notifications and time-sensitive, Background App Refresh, Low Power Mode) and the settings page; the captain's device check on iPhone (CA §4.5's iPhone column) and the notification permission with critical alerts.
 - [x] The captain's background location on iOS (`flutter_background_geolocation` with its licence in Info.plist, else `geolocator`'s background updates), one point every 10 seconds, «دائماً» asked on iOS.
-- [ ] CI: the unsigned iOS builds of both apps on macOS for pull requests; the signed TestFlight job, skipped until its secrets exist; the deploy skill and CLAUDE.md files.
+- [x] CI: the unsigned iOS builds of both apps on macOS for pull requests; the signed TestFlight job, skipped until its secrets exist; the deploy skill and CLAUDE.md files.
 - [ ] Review, then hand over to the next slice of `docs/roadmap.md`.
 
 ### Left from 2.45d (the cloud session's branch)
