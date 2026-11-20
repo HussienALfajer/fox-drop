@@ -9889,6 +9889,72 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّرت قراءة إعدادات الجهاز، اضغط لإعادة المحاولة'**
   String get merchantCheckReadFailed;
+
+  /// Title of the Windows pairing screen before the first sign-in (slice 2.44, the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'ربط هذا الكمبيوتر'**
+  String get merchantPairThisPc;
+
+  /// How to get a pairing code (slice 2.44, the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل تسجيل الدخول على هذا الكمبيوتر، اطلب من مالك المطعم رمز الربط من تطبيق المطعم: الإعدادات ← الأجهزة ← ربط كمبيوتر بويندوز.'**
+  String get merchantPairThisPcIntro;
+
+  /// The pairing code field (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'رمز الربط'**
+  String get merchantPairingCode;
+
+  /// Sends the pairing code (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'ربط'**
+  String get merchantPair;
+
+  /// A wrong, expired or used pairing code (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزاً جديداً من المالك.'**
+  String get merchantPairingInvalid;
+
+  /// Too many pairing attempts from this address (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'محاولات كثيرة. حاول مرة أخرى بعد ساعة.'**
+  String get merchantPairingTooMany;
+
+  /// Pairing a PC of a terminated restaurant (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى حساب هذا المطعم.'**
+  String get merchantPairingTerminated;
+
+  /// Pairing failed for another reason (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الربط. تحقق من الاتصال وحاول مرة أخرى.'**
+  String get merchantPairingFailed;
+
+  /// An owner's button in «الأجهزة» that makes a pairing code (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'ربط كمبيوتر بويندوز'**
+  String get merchantPairWindows;
+
+  /// Under the pairing code shown to an owner (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب هذا الرمز في تطبيق FOX DROP على الكمبيوتر خلال 10 دقائق. يُستخدم مرة واحدة.'**
+  String get merchantPairWindowsHow;
+
+  /// The pairing code could not be made (slice 2.44).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر إنشاء رمز الربط، حاول مرة أخرى.'**
+  String get merchantPairWindowsFailed;
 }
 
 class _AppLocalizationsDelegate

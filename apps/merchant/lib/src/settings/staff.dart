@@ -205,3 +205,17 @@ final devicesProvider =
     AsyncNotifierProvider.autoDispose<DevicesNotifier, List<RestaurantDevice>>(
       DevicesNotifier.new,
     );
+
+/// RA §4.3 (slice 2.44): an owner's one-time code that registers a Windows
+/// PC (`POST /v1/merchant/devices/windows-pairing`); null when it failed.
+Future<String?> pairingCode(WidgetRef ref) async {
+  try {
+    final answer = await ref
+        .read(coreApiProvider)
+        .getMerchantApi()
+        .merchantStaffPairWindows();
+    return answer.data!.code;
+  } catch (_) {
+    return null;
+  }
+}

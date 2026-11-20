@@ -32,6 +32,8 @@ import 'support/support_screen.dart';
 import 'receiving/device_check_screen.dart';
 import 'receiving/this_device_screen.dart';
 import 'terms.dart';
+import 'windows/pairing_screen.dart';
+import 'windows/registration.dart';
 
 /// Signed out, every route leads to sign-in; signed in on a device without a
 /// name, to «سمِّ هذا الجهاز» (RA §5.2 item 5); then home. Maintenance or
@@ -42,6 +44,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final changes = ValueNotifier(0);
   ref.listen(merchantAuth.session, (previous, next) => changes.value++);
   ref.listen(merchantSessionProvider, (previous, next) => changes.value++);
+  ref.listen(windowsRegisteredProvider, (previous, next) => changes.value++);
   final platform = ref.watch(platformCheckProvider);
   final terms = ref.watch(termsCheckProvider);
   final router = GoRouter(
@@ -53,18 +56,35 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!session.hasValue) return to('/starting');
       if (platform.status.blocks) return to('/blocked');
       if (at == '/blocked') return '/';
-      if (session.value is! SignedIn) return to('/sign-in');
+      if (session.value is! SignedIn) {
+        // Windows (slice 2.44): the owner's code registers the PC first.
+        if (onWindows) {
+          final registered = ref.read(windowsRegisteredProvider);
+          if (!registered.hasValue) return to('/starting');
+          if (registered.value == false) return to('/windows-pairing');
+        }
+        return to('/sign-in');
+      }
       final user = ref.read(merchantSessionProvider);
       // Until the session's details come, or when they fail, the board waits
       // for them.
       if (user.value?.deviceNamed == false) return to('/device-name');
-      if (const {'/sign-in', '/starting', '/device-name'}.contains(at)) {
+      if (const {
+        '/sign-in',
+        '/starting',
+        '/device-name',
+        '/windows-pairing',
+      }.contains(at)) {
         return '/';
       }
       return terms.pending && ownerScreenWaits(at) ? '/terms' : null;
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const BoardScreen()),
+      GoRoute(
+        path: '/windows-pairing',
+        builder: (context, state) => const WindowsPairingScreen(),
+      ),
       GoRoute(
         path: '/orders/:id',
         builder: (context, state) =>

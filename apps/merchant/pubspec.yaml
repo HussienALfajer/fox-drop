@@ -10,6 +10,7 @@ resolution: workspace
 
 dependencies:
   built_collection: 5.1.2
+  cryptography: 2.9.0
   core_alerts: any
   core_commands: any
   core_api: any

@@ -5927,4 +5927,42 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get merchantCheckReadFailed =>
       'تعذّرت قراءة إعدادات الجهاز، اضغط لإعادة المحاولة';
+
+  @override
+  String get merchantPairThisPc => 'ربط هذا الكمبيوتر';
+
+  @override
+  String get merchantPairThisPcIntro =>
+      'قبل تسجيل الدخول على هذا الكمبيوتر، اطلب من مالك المطعم رمز الربط من تطبيق المطعم: الإعدادات ← الأجهزة ← ربط كمبيوتر بويندوز.';
+
+  @override
+  String get merchantPairingCode => 'رمز الربط';
+
+  @override
+  String get merchantPair => 'ربط';
+
+  @override
+  String get merchantPairingInvalid =>
+      'الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزاً جديداً من المالك.';
+
+  @override
+  String get merchantPairingTooMany => 'محاولات كثيرة. حاول مرة أخرى بعد ساعة.';
+
+  @override
+  String get merchantPairingTerminated => 'انتهى حساب هذا المطعم.';
+
+  @override
+  String get merchantPairingFailed =>
+      'تعذّر الربط. تحقق من الاتصال وحاول مرة أخرى.';
+
+  @override
+  String get merchantPairWindows => 'ربط كمبيوتر بويندوز';
+
+  @override
+  String get merchantPairWindowsHow =>
+      'اكتب هذا الرمز في تطبيق FOX DROP على الكمبيوتر خلال 10 دقائق. يُستخدم مرة واحدة.';
+
+  @override
+  String get merchantPairWindowsFailed =>
+      'تعذّر إنشاء رمز الربط، حاول مرة أخرى.';
 }

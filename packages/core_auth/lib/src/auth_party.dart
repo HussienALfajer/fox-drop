@@ -248,9 +248,16 @@ class CustomerAuth extends AuthParty {
 /// The restaurant app (RA §5.2–5.3). [platform] lets the server exempt
 /// Windows from App Check (the identity module's `CLAUDE.md`).
 class MerchantAuth extends AuthParty {
-  MerchantAuth(super.api, {required this.platform});
+  MerchantAuth(super.api, {required this.platform, this.deviceSignature});
 
   final MerchantCodeRequestDtoPlatformEnum platform;
+
+  /// Windows (slice 2.44): the registered PC's signature of the code request
+  /// for [deviceId], in place of App Check; null where there is none.
+  final Future<MerchantCodeRequestDtoDeviceSignature?> Function(
+    String deviceId,
+  )?
+  deviceSignature;
 
   MerchantApi get _routes => api.getMerchantApi();
 
@@ -261,6 +268,7 @@ class MerchantAuth extends AuthParty {
     String? appCheckToken,
     bool join = false,
   }) async {
+    final signature = await deviceSignature?.call(deviceId);
     final sent = await AuthParty.guard(
       () => _routes.merchantAuthRequestCode(
         xFirebaseAppCheck: appCheckToken,
@@ -268,7 +276,8 @@ class MerchantAuth extends AuthParty {
           (b) => b
             ..phone = phone
             ..deviceId = deviceId
-            ..platform = platform,
+            ..platform = platform
+            ..deviceSignature = signature?.toBuilder(),
         ),
       ),
     );
