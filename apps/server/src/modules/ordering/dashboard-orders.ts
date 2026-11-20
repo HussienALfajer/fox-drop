@@ -11,6 +11,9 @@ export interface DashboardOrderRow {
   placedAt: Date;
   deliveredAt: Date | null;
   promisedAt: Date | null;
+  // When it ended: delivered, cancelled, rejected, or its first failed
+  // outcome; null while active.
+  endedAt: Date | null;
   rejected: boolean;
   // Ready after acceptance plus the prep time chosen (a time change
   // included), or still not ready past it at `now`; «لم يُضغط جاهز» counts
@@ -42,6 +45,9 @@ export class DashboardOrdersService {
         placedAt: orders.placedAt,
         deliveredAt: orders.deliveredAt,
         promisedAt: orders.promisedAt,
+        endedAt: sql<
+          Date | string | null
+        >`CASE ${orders.status} WHEN 'delivered' THEN ${orders.deliveredAt} WHEN 'cancelled' THEN ${orders.cancelledAt} WHEN 'rejected' THEN ${orders.rejectedAt} WHEN 'failed' THEN (SELECT min(outcome.set_at) FROM ordering.order_outcomes outcome WHERE outcome.order_id = ordering.orders.id AND outcome.status = 'failed') END`,
         late: sql<boolean>`coalesce(${orders.readyAt} > ${prepEnd} OR (${orders.readyAt} IS NULL AND ${orders.status} = 'accepted' AND ${prepEnd} < ${now.toISOString()}), false)`,
         // Written out: the outer row named in full, so the subquery's alias
         // never captures it.
@@ -59,6 +65,7 @@ export class DashboardOrdersService {
       );
     return rows.map((row) => ({
       ...row,
+      endedAt: row.endedAt === null ? null : new Date(row.endedAt),
       rejected: row.status === 'rejected',
       late: Boolean(row.late),
       firstOrder: Boolean(row.firstOrder),

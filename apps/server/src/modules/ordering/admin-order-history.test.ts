@@ -20,6 +20,7 @@ import {
 import { LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import { ADMIN_HISTORY_EXPORT_MAX, OrderHistoryService } from './order-history.js';
 
 // AP §9.5 «سجل الطلبات» (slice 2.40): every order of the city by the filters,
 // newest first; a finished order read-only but for OWN's and FIN's financial
@@ -318,6 +319,33 @@ describe('POST /v1/admin/order-history (AP §9.5)', () => {
     expect(await ids({ customerPhone: phone, code: 'NONE' })).toEqual([]);
     // A number of no account matches nothing.
     expect(await ids({ customerPhone: phoneNumber() })).toEqual([]);
+    // The page after a row: the cursor `next` would carry.
+    const after = async (row: HistoryRow) => {
+      const [placed] = (
+        await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [row.id])
+      ).rows;
+      const cursor = `${(placed.placed_at as Date).toISOString()}_${row.id}`;
+      return (await list(owner, { customerPhone: phone, cursor })).json().orders as HistoryRow[];
+    };
+    expect((await after(rows[0]!)).map((row) => row.id)).toEqual([a.id]);
+    expect(await after(rows[1]!)).toEqual([]);
+    // A closed account of the same number (AP §8.8): its orders are found too.
+    const [account] = (
+      await sql.query('SELECT customer_account_id FROM ordering.orders WHERE id = $1', [a.id])
+    ).rows;
+    const [closed] = (
+      await sql.query(
+        `INSERT INTO identity.customer_accounts (phone_encrypted, phone_hash, status, closed_at, created_at)
+         SELECT phone_encrypted, phone_hash, 'closed', now(), created_at - interval '1 day'
+         FROM identity.customer_accounts WHERE id = $1 RETURNING id`,
+        [account.customer_account_id],
+      )
+    ).rows;
+    await sql.query('UPDATE ordering.orders SET customer_account_id = $1 WHERE id = $2', [
+      closed.id,
+      a.id,
+    ]);
+    expect(await ids({ customerPhone: phone })).toEqual([b.id, a.id]);
 
     // FIN reads the history but not by a phone (customers.reveal_phone).
     expect((await list(finance, { number: a.number })).json().orders).toHaveLength(1);
@@ -420,6 +448,33 @@ describe('the financial correction (AP §9.5, §9.10.7)', () => {
     ).toBe('unknown_order');
     expect((await owner.post(url, { ...body, reason: ' ' })).statusCode).toBe(400);
   });
+
+  it('may reach every captain who held the order, never one only offered it', async () => {
+    const ordered = await restaurant('مطعم الكباتن');
+    const customer = await signIn('customer', phoneNumber());
+    const order = await place(ordered.id, ordered.item, customer);
+    await cancel(order.id, customer);
+    const [withdrawn, from, to, offered, declined] = [1, 2, 3, 4, 5].map(() => randomUUID());
+    const owner = await admin(['OWN']);
+    const facts = [order.id, azaz, owner.accountId];
+    await sql.query(
+      `INSERT INTO ordering.reassignments (order_id, order_placed_at, city_id, captain_id, reason, reason_label, captain_fault, note, admin_id, at)
+       SELECT id, placed_at, $2, $4, 'other', 'أخرى', false, 'test', $3, now() FROM ordering.orders WHERE id = $1`,
+      [...facts, withdrawn],
+    );
+    await sql.query(
+      `INSERT INTO ordering.handovers (order_id, order_placed_at, city_id, from_captain_id, to_captain_id, note, admin_id, opened_at, assigned_at, received_at)
+       SELECT id, placed_at, $2, $4, $5, 'test', $3, now(), now(), now() FROM ordering.orders WHERE id = $1`,
+      [...facts, from, to],
+    );
+    await sql.query(
+      `INSERT INTO ordering.handovers (order_id, order_placed_at, city_id, from_captain_id, to_captain_id, note, admin_id, opened_at, assigned_at, closed_at, close_reason)
+       SELECT id, placed_at, $2, $4, $5, 'test', $3, now(), now(), now(), 'declined' FROM ordering.orders WHERE id = $1`,
+      [...facts, offered, declined],
+    );
+    const target = await app.get(OrderHistoryService).correctionTarget(order.id);
+    expect(new Set(target?.captainIds)).toEqual(new Set([withdrawn, from, to]));
+  });
 });
 
 describe('POST /v1/admin/order-history/exports', () => {
@@ -441,5 +496,28 @@ describe('POST /v1/admin/order-history/exports', () => {
       ...noFilters,
     });
     expect(without.statusCode).toBe(400);
+    // FIN exports but not by a phone.
+    const byPhone = await (
+      await admin(['FIN'])
+    ).post('/v1/admin/order-history/exports', {
+      cityId: azaz,
+      ...noFilters,
+      ...period(),
+      customerPhone: phoneNumber(),
+    });
+    expect(byPhone.statusCode).toBe(403);
+    expect(byPhone.json().error).toBe('phone_not_allowed');
+    // More orders than one file holds: refused up front.
+    const count = vi
+      .spyOn(app.get(OrderHistoryService), 'count')
+      .mockResolvedValueOnce(ADMIN_HISTORY_EXPORT_MAX + 1);
+    const tooMany = await support.post('/v1/admin/order-history/exports', {
+      cityId: azaz,
+      ...noFilters,
+      ...period(),
+    });
+    count.mockRestore();
+    expect(tooMany.statusCode).toBe(409);
+    expect(tooMany.json().error).toBe('too_many_rows');
   });
 });

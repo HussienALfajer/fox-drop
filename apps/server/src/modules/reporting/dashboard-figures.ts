@@ -12,6 +12,9 @@ export interface DashboardOrder {
   placedAt: Date;
   deliveredAt: Date | null;
   promisedAt: Date | null;
+  // When it ended (delivered, cancelled, rejected or failed); null while
+  // active.
+  endedAt: Date | null;
   // Rejected by the restaurant (or on its behalf).
   rejected: boolean;
   // Ready after its prep time (acceptance plus the prep time chosen), or
@@ -23,7 +26,9 @@ export interface DashboardOrder {
 
 const ACTIVE = new Set(['placed', 'accepted', 'ready', 'picked_up', 'arrived']);
 
-// AP §9.1.2: the orders placed by `until`, counted by their status now.
+// AP §9.1.2: the orders placed by `until`, counted by their status at
+// `until`: one that ended after it was still in progress then, so last
+// week's same moment compares with today's.
 export interface OrderTiles {
   placed: number;
   delivered: number;
@@ -42,7 +47,13 @@ export interface OrderTiles {
 }
 
 export function orderTiles(rows: readonly DashboardOrder[], until: Date): OrderTiles {
-  const placed = rows.filter((row) => row.placedAt.getTime() < until.getTime());
+  const placed = rows
+    .filter((row) => row.placedAt.getTime() < until.getTime())
+    .map((row) =>
+      row.endedAt !== null && row.endedAt.getTime() >= until.getTime()
+        ? { ...row, status: 'accepted', deliveredAt: null, rejected: false }
+        : row,
+    );
   const count = (status: string) => placed.filter((row) => row.status === status).length;
   const delivered = placed.filter((row) => row.status === 'delivered' && row.deliveredAt !== null);
   const minutes = delivered.map(

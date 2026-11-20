@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gte, isNull, lt, or, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNotNull, isNull, lt, or, sql, type SQL } from 'drizzle-orm';
 import { z } from 'zod';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -13,6 +13,7 @@ import {
   orderOutcomeRows,
   orders,
   orderStatuses as orderStatusValues,
+  reassignments,
   responsibleParties as responsibleValues,
 } from './schema.js';
 
@@ -42,8 +43,9 @@ export type HistoryKind = (typeof historyKinds)[number];
 export interface AdminHistoryFilter {
   cityId: string;
   number: bigint | null;
-  // identity's customer account, found from the phone by the caller.
-  customerAccountId: string | null;
+  // identity's customer accounts of the phone (a closed account's line
+  // included, AP §8.8), found by the caller; empty matches nothing.
+  customerAccountIds: string[] | null;
   restaurantId: string | null;
   // The captain who held the order last.
   captainId: string | null;
@@ -128,8 +130,6 @@ export const orderHistoryFilterBody = z.object({
 });
 export type OrderHistoryFilterBody = z.infer<typeof orderHistoryFilterBody>;
 
-const NO_ACCOUNT = '00000000-0000-0000-0000-000000000000';
-
 export type HistoryFilterRefusal = 'invalid_period' | 'invalid_phone' | 'phone_not_allowed';
 
 // The day after a YYYY-MM-DD day.
@@ -153,18 +153,18 @@ export class OrderHistoryService {
     permissions: readonly string[],
   ): Promise<AdminHistoryFilter | HistoryFilterRefusal> {
     if (body.from !== null && body.to !== null && body.to < body.from) return 'invalid_period';
-    let customerAccountId: string | null = null;
+    let customerAccountIds: string[] | null = null;
     if (body.customerPhone !== null) {
       if (!permissions.includes('customers.reveal_phone')) return 'phone_not_allowed';
       const phone = phoneOf(body.customerPhone);
       if (phone === null) return 'invalid_phone';
-      // A phone of no account matches no order: an id no account has.
-      customerAccountId = (await this.customerAccounts.customerByPhone(phone)) ?? NO_ACCOUNT;
+      // Every account of the number; none matches no order.
+      customerAccountIds = await this.customerAccounts.customersByPhone(phone);
     }
     return {
       cityId: body.cityId,
       number: body.number === null ? null : BigInt(body.number.replace('#', '')),
-      customerAccountId,
+      customerAccountIds,
       restaurantId: body.restaurantId,
       captainId: body.captainId,
       from: body.from,
@@ -198,7 +198,7 @@ export class OrderHistoryService {
   }
 
   // Every row of the filter for the Excel export, newest first, up to
-  // ADMIN_HISTORY_EXPORT_MAX.
+  // ADMIN_HISTORY_EXPORT_MAX (a bigger export is refused when asked).
   all(filter: AdminHistoryFilter): Promise<AdminHistoryRow[]> {
     return this.read(filter, undefined, ADMIN_HISTORY_EXPORT_MAX);
   }
@@ -218,16 +218,34 @@ export class OrderHistoryService {
       .from(orders)
       .where(eq(orders.id, orderId));
     if (!order) return null;
-    const handed = await this.database.db
-      .select({ from: handovers.fromCaptainId, to: handovers.toCaptainId })
-      .from(handovers)
-      .where(and(eq(handovers.orderId, orderId), eq(handovers.orderPlacedAt, order.placedAt)));
+    // Every captain who held the order: the handovers received (both
+    // sides) and the captains withdrawn from it, whose pickup payment a
+    // «لا» left on their custody.
+    const [handed, withdrawn] = await Promise.all([
+      this.database.db
+        .select({ from: handovers.fromCaptainId, to: handovers.toCaptainId })
+        .from(handovers)
+        .where(
+          and(
+            eq(handovers.orderId, orderId),
+            eq(handovers.orderPlacedAt, order.placedAt),
+            isNotNull(handovers.receivedAt),
+          ),
+        ),
+      this.database.db
+        .select({ captainId: reassignments.captainId })
+        .from(reassignments)
+        .where(
+          and(eq(reassignments.orderId, orderId), eq(reassignments.orderPlacedAt, order.placedAt)),
+        ),
+    ]);
     const captainIds = new Set<string>();
     if (order.captainId) captainIds.add(order.captainId);
     for (const each of handed) {
       captainIds.add(each.from);
       captainIds.add(each.to);
     }
+    for (const each of withdrawn) captainIds.add(each.captainId);
     return {
       cityId: order.cityId,
       number: order.number,
@@ -239,11 +257,27 @@ export class OrderHistoryService {
     };
   }
 
-  private async read(
-    filter: AdminHistoryFilter,
-    cursor: SQL | undefined,
-    limit: number,
-  ): Promise<AdminHistoryRow[]> {
+  // How many orders the filter holds, for the export's limit.
+  async count(filter: AdminHistoryFilter): Promise<number> {
+    const { where } = await this.where(filter, undefined);
+    const [row] = await this.database.db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(orders)
+      .leftJoin(
+        orderOutcomeRows,
+        and(
+          eq(orderOutcomeRows.orderId, orders.id),
+          eq(orderOutcomeRows.orderPlacedAt, orders.placedAt),
+          isNull(orderOutcomeRows.replacedAt),
+        ),
+      )
+      .where(where);
+    return Number(row?.count ?? 0);
+  }
+
+  // The filter as one condition; `responsible` is the outcome's party in
+  // force, else the cancellation's (the outcome's row joined).
+  private async where(filter: AdminHistoryFilter, cursor: SQL | undefined) {
     const conditions = [eq(orders.cityId, filter.cityId), cursor];
     if (filter.from !== null || filter.to !== null) {
       const [timeZone, cutoff] = await Promise.all([
@@ -264,8 +298,12 @@ export class OrderHistoryService {
     }
     const responsible = sql<ResponsibleParty | null>`coalesce(${orderOutcomeRows.responsible}, ${orders.cancelResponsible})`;
     if (filter.number !== null) conditions.push(eq(orders.number, filter.number));
-    if (filter.customerAccountId !== null) {
-      conditions.push(eq(orders.customerAccountId, filter.customerAccountId));
+    if (filter.customerAccountIds !== null) {
+      conditions.push(
+        filter.customerAccountIds.length === 0
+          ? sql`false`
+          : inArray(orders.customerAccountId, filter.customerAccountIds),
+      );
     }
     if (filter.restaurantId !== null) conditions.push(eq(orders.restaurantId, filter.restaurantId));
     if (filter.captainId !== null) conditions.push(eq(orders.captainId, filter.captainId));
@@ -277,6 +315,15 @@ export class OrderHistoryService {
     }
     if (filter.zoneId !== null) conditions.push(eq(orders.zoneId, filter.zoneId));
     if (filter.kind !== 'all') conditions.push(eq(orders.testOrder, filter.kind === 'test'));
+    return { where: and(...conditions), responsible };
+  }
+
+  private async read(
+    filter: AdminHistoryFilter,
+    cursor: SQL | undefined,
+    limit: number,
+  ): Promise<AdminHistoryRow[]> {
+    const { where, responsible } = await this.where(filter, cursor);
     const rows = await this.database.db
       .select({
         id: orders.id,
@@ -304,7 +351,7 @@ export class OrderHistoryService {
           isNull(orderOutcomeRows.replacedAt),
         ),
       )
-      .where(and(...conditions))
+      .where(where)
       .orderBy(desc(orders.placedAt), desc(orders.id))
       .limit(limit);
     return rows.map(({ deliveredAt, redeliveryOfId, ...row }) => ({

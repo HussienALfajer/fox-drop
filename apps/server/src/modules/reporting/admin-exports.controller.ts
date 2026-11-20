@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   ForbiddenException,
   Get,
   HttpCode,
@@ -110,6 +111,8 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
         throw costReportRefusal(error.refusal);
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));
+      case 'too_many_rows':
+        throw new ConflictException(body(HttpStatus.CONFLICT));
       case 'invalid_day':
       case 'unknown_city':
       case 'no_base_currency':
@@ -131,7 +134,9 @@ export class AdminExportsController {
 
   // «تصدير Excel» of «سجل الطلبات» (AP §9.5, slice 2.40): the filters of
   // the list with a period. 202, as the statement's. 400 invalid_period,
-  // invalid_phone; 403 phone_not_allowed; 422 idempotency_key_reused.
+  // invalid_phone; 403 phone_not_allowed; 409 too_many_rows (more than
+  // ADMIN_HISTORY_EXPORT_MAX orders: a shorter period or more filters);
+  // 422 idempotency_key_reused.
   @Post('order-history/exports')
   @RequirePermission('order_history.read')
   @Idempotent()

@@ -37,6 +37,10 @@ describe("the dashboard's orders", () => {
     // Each customer is new.
     expect(rows.every((row) => row.firstOrder)).toBe(true);
     expect(rows.every((row) => !row.late && !row.rejected)).toBe(true);
+    // The delivered order ended at its delivery; the active one has not.
+    const delivered = rows.find((row) => row.status === 'delivered')!;
+    expect(delivered.endedAt).toEqual(delivered.deliveredAt);
+    expect(rows.find((row) => row.status === 'accepted')?.endedAt).toBeNull();
     // Past the prep time chosen (20 minutes) and still not ready: late.
     const later = new Date(now.getTime() + 25 * MINUTE);
     const late = await orders.placedBetween(azaz, from, later, later);
@@ -87,5 +91,13 @@ describe("the dashboard's orders", () => {
     expect(fin).toContain('settlementsDue');
     expect(fin).not.toContain('menuChanges');
     expect((await dashboardOf(['DATA'])).statusCode).toBe(403);
+  });
+
+  it('refuses an unknown city', async () => {
+    const answer = await (
+      await admin(['OWN'])
+    ).get('/v1/admin/dashboard?cityId=00000000-0000-4000-8000-000000000000');
+    expect(answer.statusCode).toBe(404);
+    expect(answer.json()).toMatchObject({ error: 'unknown_city' });
   });
 });

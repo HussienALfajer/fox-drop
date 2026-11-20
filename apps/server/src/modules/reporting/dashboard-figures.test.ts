@@ -20,6 +20,7 @@ function order(overrides: Partial<DashboardOrder> = {}): DashboardOrder {
     placedAt: at('2026-11-20T08:00:00Z'),
     deliveredAt: at('2026-11-20T08:40:00Z'),
     promisedAt: at('2026-11-20T08:45:00Z'),
+    endedAt: at('2026-11-20T08:40:00Z'),
     rejected: false,
     late: false,
     firstOrder: false,
@@ -72,6 +73,37 @@ describe('orderTiles (AP §9.1.2)', () => {
     expect(tiles.onTimeBp).toBe(5000);
     // 2 delivered of 4 placed.
     expect(tiles.successBp).toBe(5000);
+  });
+
+  it('counts an order that ended after the moment as in progress then', () => {
+    // Last week's comparison: the same moment of that day, so an order
+    // delivered, cancelled or rejected after it was still running.
+    const tiles = orderTiles(
+      [
+        order(),
+        order({ deliveredAt: at('2026-11-20T09:30:00Z'), endedAt: at('2026-11-20T09:30:00Z') }),
+        order({ status: 'cancelled', deliveredAt: null, endedAt: at('2026-11-20T09:10:00Z') }),
+        order({
+          status: 'rejected',
+          deliveredAt: null,
+          rejected: true,
+          endedAt: at('2026-11-20T09:05:00Z'),
+        }),
+        order({ status: 'failed', deliveredAt: null, endedAt: at('2026-11-20T10:00:00Z') }),
+      ],
+      at('2026-11-20T09:00:00Z'),
+    );
+    expect(tiles).toMatchObject({
+      placed: 5,
+      delivered: 1,
+      inProgress: 4,
+      cancelled: 0,
+      rejected: 0,
+      failed: 0,
+      deliveryMinutes: 40,
+      onTimeBp: 10_000,
+      successBp: 2000,
+    });
   });
 
   it('answers null rates without an order to count', () => {

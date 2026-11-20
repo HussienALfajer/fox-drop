@@ -12,7 +12,11 @@ import { GeoService } from '../geo/index.js';
 import { costReportLabels, dailyReportLabels, orderHistoryLabels } from '../content/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { CaptainsService } from '../captains/index.js';
-import { type AdminHistoryFilter, OrderHistoryService } from '../ordering/index.js';
+import {
+  ADMIN_HISTORY_EXPORT_MAX,
+  type AdminHistoryFilter,
+  OrderHistoryService,
+} from '../ordering/index.js';
 import { orderHistoryWorkbook } from './order-history-workbook.js';
 import { exports, type ExportKind, type ExportStatus } from './schema.js';
 import { costReportWorkbook } from './cost-report-workbook.js';
@@ -33,6 +37,7 @@ export type ExportsRefusal =
   | 'invalid_period'
   | 'idempotency_key_reused'
   | 'unknown_export'
+  | 'too_many_rows'
   | DailyReportRefusal
   | CostReportRefusal;
 
@@ -137,6 +142,10 @@ export class ExportsService {
     const repeat = await this.byKey(user.accountId, idempotencyKey);
     if (repeat) return this.answerRepeat(repeat, 'order_history', params, now);
     if (!periodFits(params.from, params.to)) throw new ExportsRefusedError('invalid_period');
+    const filter = { ...params, number: params.number === null ? null : BigInt(params.number) };
+    if ((await this.history.count(filter)) > ADMIN_HISTORY_EXPORT_MAX) {
+      throw new ExportsRefusedError('too_many_rows');
+    }
     const fileName = `${orderHistoryLabels.title} ${params.from} - ${params.to}.xlsx`;
     return this.record(user, 'order_history', params.cityId, params, fileName, idempotencyKey, now);
   }
