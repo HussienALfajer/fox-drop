@@ -261,6 +261,9 @@ services:
       # the pushes then wait in the queue and expire (production refuses to
       # start without it).
       FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}
+      # K15 (slice 2.46): true once Apple granted the captain app Critical
+      # Alerts and the iOS build carries the entitlement.
+      APNS_CRITICAL_ALERTS: ${APNS_CRITICAL_ALERTS:-false}
 
   dispatcher:
     <<: *server

@@ -8,11 +8,15 @@ part of 'push_token_dto.dart';
 
 const PushTokenDtoPlatformEnum _$pushTokenDtoPlatformEnum_android =
     const PushTokenDtoPlatformEnum._('android');
+const PushTokenDtoPlatformEnum _$pushTokenDtoPlatformEnum_ios =
+    const PushTokenDtoPlatformEnum._('ios');
 
 PushTokenDtoPlatformEnum _$pushTokenDtoPlatformEnumValueOf(String name) {
   switch (name) {
     case 'android':
       return _$pushTokenDtoPlatformEnum_android;
+    case 'ios':
+      return _$pushTokenDtoPlatformEnum_ios;
     default:
       throw ArgumentError(name);
   }
@@ -21,6 +25,7 @@ PushTokenDtoPlatformEnum _$pushTokenDtoPlatformEnumValueOf(String name) {
 final BuiltSet<PushTokenDtoPlatformEnum> _$pushTokenDtoPlatformEnumValues =
     BuiltSet<PushTokenDtoPlatformEnum>(const <PushTokenDtoPlatformEnum>[
       _$pushTokenDtoPlatformEnum_android,
+      _$pushTokenDtoPlatformEnum_ios,
     ]);
 
 Serializer<PushTokenDtoPlatformEnum> _$pushTokenDtoPlatformEnumSerializer =
@@ -30,9 +35,11 @@ class _$PushTokenDtoPlatformEnumSerializer
     implements PrimitiveSerializer<PushTokenDtoPlatformEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'android': 'android',
+    'ios': 'ios',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'android': 'android',
+    'ios': 'ios',
   };
 
   @override

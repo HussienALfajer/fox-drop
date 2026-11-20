@@ -21,6 +21,16 @@ const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_autostart =
     const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._('autostart');
 const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+_$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_backgroundRefresh =
+    const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._(
+      'backgroundRefresh',
+    );
+const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+_$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_lowPowerMode =
+    const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._(
+      'lowPowerMode',
+    );
+const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_fullScreen =
     const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._('fullScreen');
 const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
@@ -31,6 +41,9 @@ _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_doNotDisturb =
     const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._(
       'doNotDisturb',
     );
+const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+_$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_ringSwitch =
+    const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._('ringSwitch');
 const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_testOffer =
     const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum._('testOffer');
@@ -55,12 +68,18 @@ _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumValueOf(String name) {
       return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_battery;
     case 'autostart':
       return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_autostart;
+    case 'backgroundRefresh':
+      return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_backgroundRefresh;
+    case 'lowPowerMode':
+      return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_lowPowerMode;
     case 'fullScreen':
       return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_fullScreen;
     case 'alarmVolume':
       return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_alarmVolume;
     case 'doNotDisturb':
       return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_doNotDisturb;
+    case 'ringSwitch':
+      return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_ringSwitch;
     case 'testOffer':
       return _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_testOffer;
     case 'connection':
@@ -76,21 +95,24 @@ _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumValueOf(String name) {
 
 final BuiltSet<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumValues =
-    BuiltSet<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>(
-      const <AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>[
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_notifications,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_location,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_battery,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_autostart,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_fullScreen,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_alarmVolume,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_doNotDisturb,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_testOffer,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_connection,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_gpsAccuracy,
-        _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_call,
-      ],
-    );
+    BuiltSet<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>(const <
+      AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+    >[
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_notifications,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_location,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_battery,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_autostart,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_backgroundRefresh,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_lowPowerMode,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_fullScreen,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_alarmVolume,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_doNotDisturb,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_ringSwitch,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_testOffer,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_connection,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_gpsAccuracy,
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_call,
+    ]);
 
 Serializer<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum>
 _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnumSerializer =
@@ -106,9 +128,12 @@ class _$AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnumSerializer
     'location': 'location',
     'battery': 'battery',
     'autostart': 'autostart',
+    'backgroundRefresh': 'background_refresh',
+    'lowPowerMode': 'low_power_mode',
     'fullScreen': 'full_screen',
     'alarmVolume': 'alarm_volume',
     'doNotDisturb': 'do_not_disturb',
+    'ringSwitch': 'ring_switch',
     'testOffer': 'test_offer',
     'connection': 'connection',
     'gpsAccuracy': 'gps_accuracy',
@@ -119,9 +144,12 @@ class _$AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnumSerializer
     'location': 'location',
     'battery': 'battery',
     'autostart': 'autostart',
+    'background_refresh': 'backgroundRefresh',
+    'low_power_mode': 'lowPowerMode',
     'full_screen': 'fullScreen',
     'alarm_volume': 'alarmVolume',
     'do_not_disturb': 'doNotDisturb',
+    'ring_switch': 'ringSwitch',
     'test_offer': 'testOffer',
     'connection': 'connection',
     'gps_accuracy': 'gpsAccuracy',

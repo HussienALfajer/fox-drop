@@ -547,6 +547,23 @@ void main() {
     });
   });
 
+  // Slice 2.46: iOS gives a point about every second.
+  test('keeps one iPhone point every 10 seconds', () {
+    final every = LocationThinner();
+    final start = DateTime.utc(2026, 11, 20, 9);
+    final kept = [
+      for (var second = 0; second <= 31; second++)
+        if (every.keep(start.add(Duration(seconds: second)))) second,
+    ];
+    expect(kept, [0, 10, 20, 30]);
+    // Half a second early still counts; an older point is dropped.
+    expect(
+      every.keep(start.add(const Duration(seconds: 39, milliseconds: 600))),
+      isTrue,
+    );
+    expect(every.keep(start.add(const Duration(seconds: 5))), isFalse);
+  });
+
   group('the location (CA §4.3)', () {
     late FakeLocation source;
     late List<List<Fix>> sent;

@@ -28,6 +28,8 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
   bool? _heard;
   // The brand's auto-start, confirmed again on each run (CA §4.5).
   bool _autostartConfirmed = false;
+  // An iPhone's ring switch and Focus, confirmed again on each run.
+  bool _ringSwitchConfirmed = false;
   bool _playing = false;
   int? _delayMs;
   int? _gpsMetres;
@@ -116,6 +118,7 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
         AsyncData(value: final PhoneReadings read) => () {
           final answers = CheckAnswers(
             autostartConfirmed: confirmed,
+            ringSwitchConfirmed: _ringSwitchConfirmed,
             heard: _heard,
             delayMs: _delayMs,
             gpsMetres: _gpsMetres,
@@ -157,6 +160,7 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
           VoidCallback open(DeviceSetting setting) =>
               () => unawaited(_alerts.openSettings(setting));
           final device = read.device;
+          final ios = device is IosReadings;
           return ListView(
             padding: const EdgeInsetsDirectional.all(16),
             children: [
@@ -164,7 +168,9 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
               item(
                 [CheckItem.notifications],
                 l10n.captainCheckNotifications,
-                l10n.captainCheckNotificationsHow,
+                ios
+                    ? l10n.captainCheckNotificationsHowIos
+                    : l10n.captainCheckNotificationsHow,
                 fix: open(DeviceSetting.notifications),
               ),
               item(
@@ -173,49 +179,82 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
                 l10n.captainCheckLocationHow,
                 fix: () => unawaited(access.openLocationSettings()),
               ),
-              item(
-                [CheckItem.battery],
-                l10n.captainCheckBattery,
-                l10n.captainCheckBatteryHow,
-                fix: open(DeviceSetting.battery),
-              ),
-              if (device.autostartPage)
+              if (device is IosReadings) ...[
+                // CA §4.5's iPhone column (slice 2.46): iOS opens only the
+                // app's page of its settings.
                 item(
-                  [CheckItem.autostart],
-                  l10n.captainCheckAutostart,
-                  l10n.captainCheckAutostartHow,
-                  fix: open(DeviceSetting.autostart),
+                  [CheckItem.backgroundRefresh],
+                  l10n.captainCheckBackgroundRefresh,
+                  l10n.captainCheckBackgroundRefreshHow,
+                  fix: open(DeviceSetting.battery),
+                ),
+                item(
+                  [CheckItem.lowPowerMode],
+                  l10n.captainCheckLowPowerMode,
+                  l10n.captainCheckLowPowerModeHow,
+                ),
+                item(
+                  [CheckItem.ringSwitch],
+                  l10n.captainCheckRingSwitch,
+                  l10n.captainCheckRingSwitchHow,
                   more: [
-                    if (!confirmed)
+                    if (!_ringSwitchConfirmed)
                       TextButton(
-                        key: const Key('autostart-done'),
+                        key: const Key('ring-switch-done'),
                         onPressed: () =>
-                            setState(() => _autostartConfirmed = true),
+                            setState(() => _ringSwitchConfirmed = true),
                         child: Text(l10n.captainCheckAutostartDone),
                       ),
                   ],
                 ),
-              item(
-                [CheckItem.fullScreen],
-                l10n.captainCheckFullScreen,
-                l10n.captainCheckFullScreenHow,
-                fix: open(DeviceSetting.fullScreen),
-              ),
-              item(
-                [CheckItem.alarmVolume, CheckItem.doNotDisturb],
-                l10n.captainCheckAlarm,
-                l10n.captainCheckAlarmHow,
-                fix: open(
-                  device.doNotDisturbBlocks
-                      ? DeviceSetting.doNotDisturb
-                      : DeviceSetting.alarmVolume,
+              ],
+              if (device is AndroidReadings) ...[
+                item(
+                  [CheckItem.battery],
+                  l10n.captainCheckBattery,
+                  l10n.captainCheckBatteryHow,
+                  fix: open(DeviceSetting.battery),
                 ),
-                more: [
-                  Text(l10n.captainCheckAlarmVolume(device.alarmVolumePercent)),
-                  if (device.doNotDisturbBlocks)
-                    Text(l10n.captainCheckDoNotDisturb),
-                ],
-              ),
+                if (device.autostartPage)
+                  item(
+                    [CheckItem.autostart],
+                    l10n.captainCheckAutostart,
+                    l10n.captainCheckAutostartHow,
+                    fix: open(DeviceSetting.autostart),
+                    more: [
+                      if (!confirmed)
+                        TextButton(
+                          key: const Key('autostart-done'),
+                          onPressed: () =>
+                              setState(() => _autostartConfirmed = true),
+                          child: Text(l10n.captainCheckAutostartDone),
+                        ),
+                    ],
+                  ),
+                item(
+                  [CheckItem.fullScreen],
+                  l10n.captainCheckFullScreen,
+                  l10n.captainCheckFullScreenHow,
+                  fix: open(DeviceSetting.fullScreen),
+                ),
+                item(
+                  [CheckItem.alarmVolume, CheckItem.doNotDisturb],
+                  l10n.captainCheckAlarm,
+                  l10n.captainCheckAlarmHow,
+                  fix: open(
+                    device.doNotDisturbBlocks
+                        ? DeviceSetting.doNotDisturb
+                        : DeviceSetting.alarmVolume,
+                  ),
+                  more: [
+                    Text(
+                      l10n.captainCheckAlarmVolume(device.alarmVolumePercent),
+                    ),
+                    if (device.doNotDisturbBlocks)
+                      Text(l10n.captainCheckDoNotDisturb),
+                  ],
+                ),
+              ],
               item(
                 [CheckItem.testOffer],
                 l10n.captainCheckTestOffer,
@@ -252,17 +291,18 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
                     Text(l10n.captainCheckConnectionResult(ms, metres)),
                 ],
               ),
-              item(
-                [CheckItem.call],
-                l10n.captainCheckCall,
-                l10n.captainCheckCallHow,
-                fix: () => unawaited(
-                  access.requestCall().then(
-                    (_) => ref.invalidate(phoneReadingsProvider),
+              if (!ios)
+                item(
+                  [CheckItem.call],
+                  l10n.captainCheckCall,
+                  l10n.captainCheckCallHow,
+                  fix: () => unawaited(
+                    access.requestCall().then(
+                      (_) => ref.invalidate(phoneReadingsProvider),
+                    ),
                   ),
+                  fixLabel: l10n.captainCheckAllow,
                 ),
-                fixLabel: l10n.captainCheckAllow,
-              ),
               const SizedBox(height: 16),
               Text(
                 key: const Key('check-verdict'),

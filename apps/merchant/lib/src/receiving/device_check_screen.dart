@@ -258,6 +258,8 @@ class _DeviceCheckScreenState extends ConsumerState<DeviceCheckScreen> {
                     ],
                   ),
                 ],
+                // The restaurant app has no iOS build (architecture §11).
+                IosReadings() => [],
               },
               item(
                 CheckItem.testRing,

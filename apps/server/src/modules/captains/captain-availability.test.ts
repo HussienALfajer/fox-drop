@@ -395,4 +395,28 @@ describe('the device check routes (CA §4.5)', () => {
     });
     expect(unknown.statusCode).toBe(400);
   });
+
+  // Slice 2.46: CA §4.5's iPhone column, kept in the checks' order.
+  it('keeps an iPhone’s failed checks', async () => {
+    const { captainId, headers } = await signedIn();
+    const saved = await app.inject({
+      method: 'PUT',
+      url: '/v1/captain/device/check',
+      headers,
+      payload: { failed: ['ring_switch', 'low_power_mode', 'notifications', 'background_refresh'] },
+    });
+    expect(saved.statusCode).toBe(200);
+    expect(saved.json()).toMatchObject({
+      check: {
+        passed: false,
+        failed: ['notifications', 'background_refresh', 'low_power_mode', 'ring_switch'],
+      },
+    });
+    expect((await captains.deviceCheck(captainId))?.failed).toEqual([
+      'notifications',
+      'background_refresh',
+      'low_power_mode',
+      'ring_switch',
+    ]);
+  });
 });

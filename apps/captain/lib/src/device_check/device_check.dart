@@ -1,6 +1,7 @@
 import 'package:core_alerts/core_alerts.dart';
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/core_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,17 +11,22 @@ import '../api.dart';
 import '../auth.dart';
 import '../profile/profile.dart';
 import '../work/alerts.dart';
+import '../work/location.dart';
 
-/// CA §4.5 (slice 2.43): the items of «فحص الجهاز» on Android, in the
-/// spec's order, by the code the server keeps.
+/// CA §4.5 (slice 2.43): the items of «فحص الجهاز» on Android, and on an
+/// iPhone (slice 2.46: Background App Refresh, Low Power Mode and the ring
+/// switch), in the spec's order, by the code the server keeps.
 enum CheckItem {
   notifications(CaptainDeviceCheckReportDtoFailedEnum.notifications),
   location(CaptainDeviceCheckReportDtoFailedEnum.location),
   battery(CaptainDeviceCheckReportDtoFailedEnum.battery),
   autostart(CaptainDeviceCheckReportDtoFailedEnum.autostart),
+  backgroundRefresh(CaptainDeviceCheckReportDtoFailedEnum.backgroundRefresh),
+  lowPowerMode(CaptainDeviceCheckReportDtoFailedEnum.lowPowerMode),
   fullScreen(CaptainDeviceCheckReportDtoFailedEnum.fullScreen),
   alarmVolume(CaptainDeviceCheckReportDtoFailedEnum.alarmVolume),
   doNotDisturb(CaptainDeviceCheckReportDtoFailedEnum.doNotDisturb),
+  ringSwitch(CaptainDeviceCheckReportDtoFailedEnum.ringSwitch),
   testOffer(CaptainDeviceCheckReportDtoFailedEnum.testOffer),
   connection(CaptainDeviceCheckReportDtoFailedEnum.connection),
   gpsAccuracy(CaptainDeviceCheckReportDtoFailedEnum.gpsAccuracy),
@@ -75,15 +81,32 @@ class SystemPhoneAccess implements PhoneAccessReader {
     return PhoneAccess(
       locationAlways: permission == LocationPermission.always,
       locationPrecise: accuracy == LocationAccuracyStatus.precise,
-      callAllowed: await Permission.phone.isGranted,
+      // An iPhone has no call permission: it asks to confirm each call.
+      callAllowed:
+          defaultTargetPlatform == TargetPlatform.iOS ||
+          await Permission.phone.isGranted,
     );
   }
 
   @override
   Future<void> openLocationSettings() async {
-    if (await Geolocator.checkPermission() == LocationPermission.denied) {
-      await Geolocator.requestPermission();
-    } else {
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      // Android: the next tap opens the settings, where «السماح دائماً» is.
+      if (defaultTargetPlatform != TargetPlatform.iOS ||
+          permission == LocationPermission.denied) {
+        return;
+      }
+    }
+    // iOS asks once to change «أثناء الاستخدام» to «دائماً»; after that only
+    // its settings can.
+    if (defaultTargetPlatform == TargetPlatform.iOS &&
+        permission == LocationPermission.whileInUse &&
+        await askLocationAlways()) {
+      return;
+    }
+    if (permission != LocationPermission.always) {
       await Geolocator.openAppSettings();
     }
   }
@@ -101,11 +124,12 @@ final phoneAccessReaderProvider = Provider<PhoneAccessReader>(
 /// Everything the app reads of the phone (CA §4.5 checks 1–5 and 8), read
 /// again whenever the app resumes (the captain comes back from the system's
 /// settings), when it opens and at «متصل»; null where there is nothing to
-/// read (iOS until slice 2.46).
+/// read (the tests' platform). [device] is an [AndroidReadings] or an
+/// [IosReadings] (slice 2.46).
 class PhoneReadings {
   const PhoneReadings(this.device, this.access);
 
-  final AndroidReadings device;
+  final DeviceReadings device;
   final PhoneAccess access;
 }
 
@@ -114,45 +138,61 @@ final phoneReadingsProvider = FutureProvider<PhoneReadings?>((ref) async {
   ref.onDispose(listener.dispose);
   // The captain app runs on phones only: a PC's readings never come.
   final device = await ref.watch(alertsProvider).readings();
-  if (device is! AndroidReadings) return null;
+  if (device == null || device is WindowsReadings) return null;
   return PhoneReadings(
     device,
     await ref.watch(phoneAccessReaderProvider).read(),
   );
 });
 
-/// What the captain answered: the brand's auto-start confirmed, the test
-/// offer heard or not (null before it plays), and check 7's measures.
+/// What the captain answered: the brand's auto-start confirmed (Android),
+/// the ring switch and Focus confirmed (iPhone), the test offer heard or not
+/// (null before it plays), and check 7's measures.
 class CheckAnswers {
   const CheckAnswers({
     this.autostartConfirmed = false,
+    this.ringSwitchConfirmed = false,
     this.heard,
     this.delayMs,
     this.gpsMetres,
   });
 
   final bool autostartConfirmed;
+  final bool ringSwitchConfirmed;
   final bool? heard;
   final int? delayMs;
   final int? gpsMetres;
 }
 
 /// The checks the app reads (1–5, 8) that fail now. The brand's auto-start
-/// counts until the captain confirms it (no app can read it).
+/// and an iPhone's ring switch count until the captain confirms them (no app
+/// can read them).
 List<CheckItem> failedReadings(PhoneReadings readings, CheckAnswers answers) {
-  final device = readings.device;
   final access = readings.access;
-  return [
-    if (!device.notificationsAllowed) CheckItem.notifications,
-    if (!access.locationAlways || !access.locationPrecise) CheckItem.location,
-    if (!device.batteryOptimizationOff) CheckItem.battery,
-    if (device.autostartPage && !answers.autostartConfirmed)
-      CheckItem.autostart,
-    if (!device.fullScreenAllowed) CheckItem.fullScreen,
-    if (device.alarmVolumePercent < minimumAlarmVolume) CheckItem.alarmVolume,
-    if (device.doNotDisturbBlocks) CheckItem.doNotDisturb,
-    if (!access.callAllowed) CheckItem.call,
-  ];
+  final location = !access.locationAlways || !access.locationPrecise;
+  return switch (readings.device) {
+    final AndroidReadings device => [
+      if (!device.notificationsAllowed) CheckItem.notifications,
+      if (location) CheckItem.location,
+      if (!device.batteryOptimizationOff) CheckItem.battery,
+      if (device.autostartPage && !answers.autostartConfirmed)
+        CheckItem.autostart,
+      if (!device.fullScreenAllowed) CheckItem.fullScreen,
+      if (device.alarmVolumePercent < minimumAlarmVolume) CheckItem.alarmVolume,
+      if (device.doNotDisturbBlocks) CheckItem.doNotDisturb,
+      if (!access.callAllowed) CheckItem.call,
+    ],
+    // CA §4.5's iPhone column: no full screen (4) nor call permission (8).
+    final IosReadings device => [
+      if (!device.notificationsAllowed || !device.timeSensitiveAllowed)
+        CheckItem.notifications,
+      if (location) CheckItem.location,
+      if (!device.backgroundRefreshOn) CheckItem.backgroundRefresh,
+      if (device.lowPowerMode) CheckItem.lowPowerMode,
+      if (!answers.ringSwitchConfirmed) CheckItem.ringSwitch,
+    ],
+    _ => const [],
+  };
 }
 
 /// Every item that fails, in the spec's order: the readings, the test offer
@@ -225,14 +265,20 @@ final deviceCheckBannerProvider = Provider<bool>((ref) {
   final readings = ref.watch(phoneReadingsProvider).value;
   final last = ref.watch(thisDeviceCheckProvider).value;
   if (readings == null || last == null) return false;
-  // The auto-start counts as the last check found it: the captain confirms
-  // it again only on a new run (CA §4.5).
+  // The auto-start and the ring switch count as the last check found them:
+  // the captain confirms them again only on a new run (CA §4.5).
   final autostart = !last.failed.contains(
     CaptainDeviceCheckOutputFailedEnum.autostart,
   );
+  final ringSwitch = !last.failed.contains(
+    CaptainDeviceCheckOutputFailedEnum.ringSwitch,
+  );
   return failedReadings(
         readings,
-        CheckAnswers(autostartConfirmed: autostart),
+        CheckAnswers(
+          autostartConfirmed: autostart,
+          ringSwitchConfirmed: ringSwitch,
+        ),
       ).isNotEmpty ||
       last.failed.contains(CaptainDeviceCheckOutputFailedEnum.testOffer);
 });

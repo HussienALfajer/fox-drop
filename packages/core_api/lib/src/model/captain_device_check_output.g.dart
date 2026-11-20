@@ -19,6 +19,12 @@ const CaptainDeviceCheckOutputFailedEnum
 _$captainDeviceCheckOutputFailedEnum_autostart =
     const CaptainDeviceCheckOutputFailedEnum._('autostart');
 const CaptainDeviceCheckOutputFailedEnum
+_$captainDeviceCheckOutputFailedEnum_backgroundRefresh =
+    const CaptainDeviceCheckOutputFailedEnum._('backgroundRefresh');
+const CaptainDeviceCheckOutputFailedEnum
+_$captainDeviceCheckOutputFailedEnum_lowPowerMode =
+    const CaptainDeviceCheckOutputFailedEnum._('lowPowerMode');
+const CaptainDeviceCheckOutputFailedEnum
 _$captainDeviceCheckOutputFailedEnum_fullScreen =
     const CaptainDeviceCheckOutputFailedEnum._('fullScreen');
 const CaptainDeviceCheckOutputFailedEnum
@@ -27,6 +33,9 @@ _$captainDeviceCheckOutputFailedEnum_alarmVolume =
 const CaptainDeviceCheckOutputFailedEnum
 _$captainDeviceCheckOutputFailedEnum_doNotDisturb =
     const CaptainDeviceCheckOutputFailedEnum._('doNotDisturb');
+const CaptainDeviceCheckOutputFailedEnum
+_$captainDeviceCheckOutputFailedEnum_ringSwitch =
+    const CaptainDeviceCheckOutputFailedEnum._('ringSwitch');
 const CaptainDeviceCheckOutputFailedEnum
 _$captainDeviceCheckOutputFailedEnum_testOffer =
     const CaptainDeviceCheckOutputFailedEnum._('testOffer');
@@ -52,12 +61,18 @@ CaptainDeviceCheckOutputFailedEnum _$captainDeviceCheckOutputFailedEnumValueOf(
       return _$captainDeviceCheckOutputFailedEnum_battery;
     case 'autostart':
       return _$captainDeviceCheckOutputFailedEnum_autostart;
+    case 'backgroundRefresh':
+      return _$captainDeviceCheckOutputFailedEnum_backgroundRefresh;
+    case 'lowPowerMode':
+      return _$captainDeviceCheckOutputFailedEnum_lowPowerMode;
     case 'fullScreen':
       return _$captainDeviceCheckOutputFailedEnum_fullScreen;
     case 'alarmVolume':
       return _$captainDeviceCheckOutputFailedEnum_alarmVolume;
     case 'doNotDisturb':
       return _$captainDeviceCheckOutputFailedEnum_doNotDisturb;
+    case 'ringSwitch':
+      return _$captainDeviceCheckOutputFailedEnum_ringSwitch;
     case 'testOffer':
       return _$captainDeviceCheckOutputFailedEnum_testOffer;
     case 'connection':
@@ -79,9 +94,12 @@ _$captainDeviceCheckOutputFailedEnumValues =
         _$captainDeviceCheckOutputFailedEnum_location,
         _$captainDeviceCheckOutputFailedEnum_battery,
         _$captainDeviceCheckOutputFailedEnum_autostart,
+        _$captainDeviceCheckOutputFailedEnum_backgroundRefresh,
+        _$captainDeviceCheckOutputFailedEnum_lowPowerMode,
         _$captainDeviceCheckOutputFailedEnum_fullScreen,
         _$captainDeviceCheckOutputFailedEnum_alarmVolume,
         _$captainDeviceCheckOutputFailedEnum_doNotDisturb,
+        _$captainDeviceCheckOutputFailedEnum_ringSwitch,
         _$captainDeviceCheckOutputFailedEnum_testOffer,
         _$captainDeviceCheckOutputFailedEnum_connection,
         _$captainDeviceCheckOutputFailedEnum_gpsAccuracy,
@@ -100,9 +118,12 @@ class _$CaptainDeviceCheckOutputFailedEnumSerializer
     'location': 'location',
     'battery': 'battery',
     'autostart': 'autostart',
+    'backgroundRefresh': 'background_refresh',
+    'lowPowerMode': 'low_power_mode',
     'fullScreen': 'full_screen',
     'alarmVolume': 'alarm_volume',
     'doNotDisturb': 'do_not_disturb',
+    'ringSwitch': 'ring_switch',
     'testOffer': 'test_offer',
     'connection': 'connection',
     'gpsAccuracy': 'gps_accuracy',
@@ -113,9 +134,12 @@ class _$CaptainDeviceCheckOutputFailedEnumSerializer
     'location': 'location',
     'battery': 'battery',
     'autostart': 'autostart',
+    'background_refresh': 'backgroundRefresh',
+    'low_power_mode': 'lowPowerMode',
     'full_screen': 'fullScreen',
     'alarm_volume': 'alarmVolume',
     'do_not_disturb': 'doNotDisturb',
+    'ring_switch': 'ringSwitch',
     'test_offer': 'testOffer',
     'connection': 'connection',
     'gps_accuracy': 'gpsAccuracy',

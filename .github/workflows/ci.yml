@@ -256,7 +256,8 @@ jobs:
   # of docs only, or of no Dart.
   verify:
     if: always()
-    needs: [changes, contract, format, typescript, server, dart, flutter, windows-release]
+    needs:
+      [changes, contract, format, typescript, server, dart, flutter, windows-release, ios-release]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -438,6 +439,148 @@ jobs:
       - name: Build the Windows release
         working-directory: apps/merchant
         run: flutter build windows --release
+
+  # Slice 2.46 (owner decisions 2026-11-20): the customer and captain apps'
+  # iOS release builds on every pull request that touches a Flutter app, a
+  # Dart package or this workflow, unsigned (no Apple account is needed), so
+  # the Xcode projects, the Swift plugins (core_alerts' own included, which
+  # has no unit tests) and the Swift packages compile before the merge.
+  ios-release:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.flutter == 'true'
+    # Xcode 26: firebase-ios-sdk 13 needs Swift tools 6.2.
+    runs-on: macos-26
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [customer, captain]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - run: dart pub get --enforce-lockfile
+
+      - name: Build the staging release, unsigned
+        working-directory: apps/${{ matrix.app }}
+        run: flutter build ios --flavor staging --release --no-codesign
+
+  # Slice 2.46 (owner decisions 2026-11-20): every merge to main (but one of
+  # docs only) builds the customer and captain apps' staging flavor for iOS,
+  # signs it with automatic signing through an App Store Connect API key and
+  # uploads it to TestFlight (the deploy skill, «The staging iOS builds»).
+  # Skipped until the owner's Apple Developer account exists and the
+  # repository variable STAGING_IOS_TEAM_ID is set (a job's `if` reads no
+  # environment variable), with the key's secrets in the environment.
+  staging-ios:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true' && vars.STAGING_IOS_TEAM_ID != ''
+    needs: [changes, verify]
+    runs-on: macos-26
+    timeout-minutes: 60
+    environment: staging
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: customer
+            key: CUSTOMER
+          - app: captain
+            key: CAPTAIN
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - run: dart pub get --enforce-lockfile
+
+      # The values as staging-apks passes them, with the iOS app's Firebase
+      # ID and the iOS API key Firebase made (the deploy skill, «App Check»).
+      - name: Build, sign and upload to TestFlight
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          setting() { grep -E "^$1=" ../../infra/environments/staging.env | cut -d= -f2; }
+          api_host=$(setting API_HOST)
+          defines=(--dart-define="API_BASE_URL=https://$api_host" --dart-define="UPDATE_URL=$UPDATE_URL")
+          if [ -n "$FIREBASE_APP_ID" ]; then
+            project_id=$(setting FIREBASE_PROJECT_ID)
+            project_number=$(setting FIREBASE_PROJECT_NUMBER)
+            if [ -z "$project_id" ] || [ -z "$project_number" ] || [ -z "$FIREBASE_API_KEY" ]; then
+              echo "::error::FIREBASE_APP_ID is set but the Firebase project or the iOS API key is missing"
+              exit 1
+            fi
+            defines+=(
+              --dart-define="FIREBASE_APP_ID=$FIREBASE_APP_ID"
+              --dart-define="FIREBASE_PROJECT_ID=$project_id"
+              --dart-define="FIREBASE_PROJECT_NUMBER=$project_number"
+              --dart-define="FIREBASE_API_KEY=$FIREBASE_API_KEY"
+            )
+          else
+            echo "::warning::No iOS Firebase app ID for ${{ matrix.app }}: no push and no App Check token"
+          fi
+          # The captain app's background location licence goes into
+          # Info.plist (TSLocationManagerLicense) as a build setting.
+          if [ -n "$FOXDROP_BGGEO_LICENSE" ]; then
+            defines+=(--dart-define=BACKGROUND_LOCATION_LICENSED=true)
+          fi
+          key="$RUNNER_TEMP/app-store-connect.p8"
+          printf '%s' "$ASC_KEY" | base64 --decode > "$key"
+          auth=(-allowProvisioningUpdates
+            -authenticationKeyPath "$key"
+            -authenticationKeyID "$ASC_KEY_ID"
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID")
+          flutter build ios --flavor staging --release --config-only \
+            --build-number "$GITHUB_RUN_NUMBER" "${defines[@]}"
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme staging \
+            -configuration Release-staging -destination generic/platform=iOS \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic             FOXDROP_BGGEO_LICENSE="$FOXDROP_BGGEO_LICENSE" \
+            "${auth[@]}" archive
+          cat > "$RUNNER_TEMP/export.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/export.plist" \
+            -exportPath "$RUNNER_TEMP/export" "${auth[@]}"
+          rm "$key"
+        env:
+          TEAM_ID: ${{ vars.STAGING_IOS_TEAM_ID }}
+          ASC_KEY: ${{ secrets.STAGING_IOS_ASC_KEY }}
+          ASC_KEY_ID: ${{ vars.STAGING_IOS_ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ vars.STAGING_IOS_ASC_ISSUER_ID }}
+          FIREBASE_APP_ID: ${{ vars[format('STAGING_FIREBASE_{0}_IOS_APP_ID', matrix.key)] }}
+          FIREBASE_API_KEY: ${{ secrets.STAGING_FIREBASE_IOS_API_KEY }}
+          UPDATE_URL: ${{ vars[format('STAGING_{0}_IOS_UPDATE_URL', matrix.key)] }}
+          FOXDROP_BGGEO_LICENSE: ${{ secrets[format('STAGING_{0}_BGGEO_LICENSE', matrix.key)] }}
 
   staging-apks:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'

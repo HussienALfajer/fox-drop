@@ -21,6 +21,22 @@
 	<string>نستخدم صورك لترفق صورة بالبلاغ.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نتابع موقعك وأنت متصل فقط لتصلك العروض، ولا نجمع موقعك وأنت غير متصل.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>اختر «دائماً» لتصلك العروض والهاتف مقفل. نتابع موقعك وأنت متصل فقط، ولا نجمع موقعك وأنت غير متصل.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>قد تستعين خدمة الموقع بحساسات الحركة لتوفير البطارية أثناء التوصيل.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.transistorsoft.fetch</string>
+	</array>
+	<key>TSLocationManagerLicense</key>
+	<string>$(FOXDROP_BGGEO_LICENSE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>تطبيق الكابتن</string>
 	<key>CFBundleExecutable</key>

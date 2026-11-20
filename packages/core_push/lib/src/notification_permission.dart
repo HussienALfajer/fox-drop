@@ -1,7 +1,8 @@
 import 'package:permission_handler/permission_handler.dart';
 
 /// The phone's permission to show notifications: Android 13's runtime
-/// permission (`POST_NOTIFICATIONS`); granted at install on older Androids.
+/// permission (`POST_NOTIFICATIONS`), granted at install on older Androids;
+/// iOS' alert, sound and badge authorisation.
 abstract interface class NotificationPermission {
   Future<bool> granted();
 

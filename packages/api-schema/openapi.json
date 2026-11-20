@@ -35267,9 +35267,12 @@
                 "location",
                 "battery",
                 "autostart",
+                "background_refresh",
+                "low_power_mode",
                 "full_screen",
                 "alarm_volume",
                 "do_not_disturb",
+                "ring_switch",
                 "test_offer",
                 "connection",
                 "gps_accuracy",
@@ -35309,7 +35312,7 @@
         "type": "object",
         "properties": {
           "failed": {
-            "maxItems": 11,
+            "maxItems": 14,
             "type": "array",
             "items": {
               "type": "string",
@@ -35318,9 +35321,12 @@
                 "location",
                 "battery",
                 "autostart",
+                "background_refresh",
+                "low_power_mode",
                 "full_screen",
                 "alarm_volume",
                 "do_not_disturb",
+                "ring_switch",
                 "test_offer",
                 "connection",
                 "gps_accuracy",
@@ -46872,7 +46878,8 @@
           "platform": {
             "type": "string",
             "enum": [
-              "android"
+              "android",
+              "ios"
             ]
           }
         },
@@ -83186,9 +83193,12 @@
                             "location",
                             "battery",
                             "autostart",
+                            "background_refresh",
+                            "low_power_mode",
                             "full_screen",
                             "alarm_volume",
                             "do_not_disturb",
+                            "ring_switch",
                             "test_offer",
                             "connection",
                             "gps_accuracy",

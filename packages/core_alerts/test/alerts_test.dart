@@ -91,6 +91,57 @@ void main() {
     },
   );
 
+  // CA §4.5's iPhone column (slice 2.46).
+  test('rings and reads an iPhone on the same channel', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (call.method == 'readings') {
+            return {
+              'notificationsAllowed': true,
+              'timeSensitiveAllowed': false,
+              'criticalAlertsAllowed': false,
+              'backgroundRefreshOn': true,
+              'lowPowerMode': true,
+            };
+          }
+          return null;
+        });
+    const alerts = IosAlerts();
+    await alerts.startReceiving();
+    await alerts.ring(
+      RingSound.offer,
+      title: 'تطبيق الكابتن',
+      body: 'عرض جديد',
+      vibrate: true,
+      stopAfter: const Duration(seconds: 40),
+    );
+    await alerts.chime(cancellation: true);
+    final readings = await alerts.readings();
+    await alerts.openSettings(DeviceSetting.notifications);
+    expect(calls.map((call) => call.method), [
+      'ring',
+      'chime',
+      'readings',
+      'openSettings',
+    ]);
+    expect(calls.first.arguments, {
+      'sound': 'fd_offer',
+      'title': 'تطبيق الكابتن',
+      'body': 'عرض جديد',
+      'vibrate': true,
+      'stopAfterMs': 40000,
+    });
+    expect(calls[1].arguments, {'sound': 'fd_cancellation'});
+    expect(readings, isA<IosReadings>());
+    readings as IosReadings;
+    expect(readings.notificationsAllowed, isTrue);
+    expect(readings.timeSensitiveAllowed, isFalse);
+    expect(readings.backgroundRefreshOn, isTrue);
+    expect(readings.lowPowerMode, isTrue);
+    expect(calls.last.arguments, {'setting': 'notifications'});
+  });
+
   test('has nothing to read where there is no native layer', () async {
     expect(await const NoAlerts().readings(), isNull);
   });

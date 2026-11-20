@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 typedef AppCheckToken = Future<String?> Function();
 
 /// No App Check: builds without a Firebase project, and platforms App Check
-/// does not cover here (the restaurant app on Windows, iOS until its slice).
+/// does not cover here (the restaurant app on Windows).
 Future<String?> noAppCheckToken() async => null;
 
 /// How long a code request waits for its token before it goes without one,
@@ -20,16 +20,18 @@ const appCheckTokenTimeout = Duration(seconds: 10);
 /// `FIREBASE_API_KEY` and the app's `FIREBASE_APP_ID`. None of them is a
 /// secret; every `--dart-define` ships inside the app.
 ///
-/// Android only (owner decision 2026-11-07). A release build attests with
-/// Play Integrity; a debug build uses App Check's debug provider, whose
-/// token the owner registers in Firebase for one device, so it never passes
-/// in production. Without `FIREBASE_APP_ID`, or when Firebase fails to
+/// Android (owner decision 2026-11-07) and iOS (slice 2.46, where
+/// `FIREBASE_APP_ID` is the iOS app's). A release build attests with Play
+/// Integrity or App Attest (DeviceCheck on a phone without it); a debug build
+/// uses App Check's debug provider, whose token the owner registers in
+/// Firebase for one device, so it never passes in production. Without `FIREBASE_APP_ID`, or when Firebase fails to
 /// start, code requests carry no token.
 Future<AppCheckToken> startAppCheck() async {
   const appId = String.fromEnvironment('FIREBASE_APP_ID');
   if (appId.isEmpty ||
       kIsWeb ||
-      defaultTargetPlatform != TargetPlatform.android) {
+      (defaultTargetPlatform != TargetPlatform.android &&
+          defaultTargetPlatform != TargetPlatform.iOS)) {
     return noAppCheckToken;
   }
   try {
@@ -45,6 +47,9 @@ Future<AppCheckToken> startAppCheck() async {
       providerAndroid: kDebugMode
           ? const AndroidDebugProvider()
           : const AndroidPlayIntegrityProvider(),
+      providerApple: kDebugMode
+          ? const AppleDebugProvider()
+          : const AppleAppAttestWithDeviceCheckFallbackProvider(),
     );
   } on Object catch (error) {
     debugPrint('App Check did not start: $error');

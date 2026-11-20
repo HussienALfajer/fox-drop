@@ -1532,6 +1532,32 @@ class AppLocalizationsAr extends AppLocalizations {
       'افتح الإعدادات واسمح بإشعارات التطبيق.';
 
   @override
+  String get captainCheckNotificationsHowIos =>
+      'افتح الإعدادات واسمح بإشعارات التطبيق وبـ«الإشعارات الحساسة للوقت»، لتصلك العروض في وضع التركيز.';
+
+  @override
+  String get captainCheckBackgroundRefresh => 'تحديث التطبيق في الخلفية مفعّل';
+
+  @override
+  String get captainCheckBackgroundRefreshHow =>
+      'افتح الإعدادات وفعّل «تحديث التطبيق في الخلفية» لتطبيق الكابتن.';
+
+  @override
+  String get captainCheckLowPowerMode => 'وضع الطاقة المنخفضة متوقف';
+
+  @override
+  String get captainCheckLowPowerModeHow =>
+      'أوقف «وضع الطاقة المنخفضة» من الإعدادات › البطارية، فهو يبطئ التطبيق والشاشة مقفلة.';
+
+  @override
+  String get captainCheckRingSwitch =>
+      'مفتاح الرنين على الصوت ووضع التركيز لا يمنع التطبيق';
+
+  @override
+  String get captainCheckRingSwitchHow =>
+      'أبقِ مفتاح الرنين على جانب الصوت، واسمح لتطبيق الكابتن في وضع التركيز إن استعملته، ثم اضغط «فعّلته». لا يسمح الآيفون للتطبيق بقراءتهما.';
+
+  @override
   String get captainCheckLocation => 'الموقع مسموح «دائماً» وبدقة';
 
   @override

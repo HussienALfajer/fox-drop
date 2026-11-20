@@ -5,6 +5,7 @@ import 'package:core_auth/core_auth.dart';
 import 'package:core_push/core_push.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'api.dart';
 import 'auth.dart';
@@ -26,16 +27,36 @@ final notificationPermissionProvider = Provider<NotificationPermission>(
 /// Asks for the notification permission at «متصل» while the phone does not
 /// allow it (owner decision 2026-11-08: check 1 of the device check, CA
 /// §4.5, until it exists). The answer never blocks going online, since the
-/// check only warns; Android itself stops asking after the second refusal.
+/// check only warns; Android itself stops asking after the second refusal,
+/// iOS after the first (slice 2.46).
 Future<void> askNotifications(Ref ref) async {
-  if (defaultTargetPlatform != TargetPlatform.android) return;
+  if (defaultTargetPlatform != TargetPlatform.android &&
+      defaultTargetPlatform != TargetPlatform.iOS) {
+    return;
+  }
   final permission = ref.read(notificationPermissionProvider);
   try {
     if (!await permission.granted()) await permission.request();
+    // K15: Critical Alerts, asked at every «متصل» whatever notifications
+    // answered, since Apple grants the entitlement after captains allowed
+    // them; iOS shows the question once, and only to a build carrying the
+    // entitlement.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      await ref.read(criticalAlertsAskProvider)();
+    }
   } on Object catch (error) {
     debugPrint('Notification permission: $error');
   }
 }
+
+/// Asks an iPhone for Critical Alerts (K15); tests give their own.
+final criticalAlertsAskProvider = Provider<Future<void> Function()>(
+  (ref) => () async {
+    if (!await Permission.criticalAlerts.isGranted) {
+      await Permission.criticalAlerts.request();
+    }
+  },
+);
 
 /// The token kept registered while the captain, or an applicant, is signed
 /// in (CA §14, §5.4: a push at every change of the application; architecture
@@ -49,7 +70,9 @@ final pushTokensProvider = Provider<PushTokens>((ref) {
           pushTokenDto: PushTokenDto(
             (b) => b
               ..token = token
-              ..platform = PushTokenDtoPlatformEnum.android,
+              ..platform = defaultTargetPlatform == TargetPlatform.iOS
+                  ? PushTokenDtoPlatformEnum.ios
+                  : PushTokenDtoPlatformEnum.android,
           ),
         );
   });

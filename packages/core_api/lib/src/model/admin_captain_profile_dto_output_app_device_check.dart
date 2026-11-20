@@ -30,7 +30,7 @@ abstract class AdminCaptainProfileDtoOutputAppDeviceCheck
 
   @BuiltValueField(wireName: r'failed')
   BuiltList<AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum> get failed;
-  // enum failedEnum {  notifications,  location,  battery,  autostart,  full_screen,  alarm_volume,  do_not_disturb,  test_offer,  connection,  gps_accuracy,  call,  };
+  // enum failedEnum {  notifications,  location,  battery,  autostart,  background_refresh,  low_power_mode,  full_screen,  alarm_volume,  do_not_disturb,  ring_switch,  test_offer,  connection,  gps_accuracy,  call,  };
 
   AdminCaptainProfileDtoOutputAppDeviceCheck._();
 
@@ -183,6 +183,14 @@ class AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'autostart')
   static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum autostart =
       _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_autostart;
+  @BuiltValueEnumConst(wireName: r'background_refresh')
+  static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+  backgroundRefresh =
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_backgroundRefresh;
+  @BuiltValueEnumConst(wireName: r'low_power_mode')
+  static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
+  lowPowerMode =
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_lowPowerMode;
   @BuiltValueEnumConst(wireName: r'full_screen')
   static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum fullScreen =
       _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_fullScreen;
@@ -194,6 +202,9 @@ class AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum extends EnumClass {
   static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum
   doNotDisturb =
       _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_doNotDisturb;
+  @BuiltValueEnumConst(wireName: r'ring_switch')
+  static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum ringSwitch =
+      _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_ringSwitch;
   @BuiltValueEnumConst(wireName: r'test_offer')
   static const AdminCaptainProfileDtoOutputAppDeviceCheckFailedEnum testOffer =
       _$adminCaptainProfileDtoOutputAppDeviceCheckFailedEnum_testOffer;

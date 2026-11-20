@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../api.dart';
 import '../auth.dart';
@@ -120,6 +121,11 @@ class PhoneLocationSource implements LocationSource {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
+      // CA §4.3 on iOS (slice 2.46): geolocator asks for «أثناء الاستخدام»
+      // only, so «دائماً» is asked once after it; tracking works either way.
+      if (_ios && permission == LocationPermission.whileInUse) {
+        await askLocationAlways();
+      }
       return permission == LocationPermission.whileInUse ||
               permission == LocationPermission.always
           ? null
@@ -181,6 +187,14 @@ class PhoneLocationSource implements LocationSource {
           filter: bg.LocationFilter(
             policy: bg.LocationFilterPolicy.passThrough,
           ),
+          // iOS (slice 2.46): never paused by the system, with its blue
+          // indicator while tracking in the background (CA §4.3).
+          pausesLocationUpdatesAutomatically: false,
+          showsBackgroundLocationIndicator: true,
+          activityType: bg.ActivityType.otherNavigation,
+          // Its own English alert about «دائماً»: the device check and its
+          // banner say it in Arabic (AP §4.7).
+          disableLocationAuthorizationAlert: true,
         ),
         // No motion detection: no stop detection to feed, and no «النشاط
         // البدني» permission to ask for.
@@ -198,7 +212,9 @@ class PhoneLocationSource implements LocationSource {
           ),
         ),
         persistence: bg.PersistenceConfig(
-          persistMode: bg.PersistMode.location,
+          // iOS has no interval and gives a point about every second: the
+          // app keeps one every 10 seconds itself (`insertLocation`).
+          persistMode: _ios ? bg.PersistMode.none : bg.PersistMode.location,
           maxDaysToPersist: 1,
           maxRecordsToPersist: _queueLimit,
         ),
@@ -229,6 +245,7 @@ class PhoneLocationSource implements LocationSource {
     }
     bg.Subscription? subscription;
     var cancelled = false;
+    final every = LocationThinner();
     late final StreamController<Fix> controller;
     controller = StreamController<Fix>(
       onListen: () async {
@@ -237,7 +254,13 @@ class PhoneLocationSource implements LocationSource {
           await _readyOnce();
           if (cancelled) return;
           subscription = bg.BackgroundGeolocation.onLocation((location) {
-            if (!location.sample) controller.add(_fix(location));
+            if (location.sample) return;
+            final fix = _fix(location);
+            if (_ios) {
+              if (!every.keep(fix.recordedAt)) return;
+              unawaited(_keep(fix));
+            }
+            controller.add(fix);
           }, (error) => controller.addError(error));
           await bg.BackgroundGeolocation.start();
           // Moving at once: no stationary state waits for motion.
@@ -260,27 +283,60 @@ class PhoneLocationSource implements LocationSource {
 
   // geolocator's position stream, with its foreground service of type
   // location and the same notification, while the app's engine runs.
+  // On iOS (slice 2.46) its background updates with «دائماً», thinned to one
+  // point every 10 seconds, as iOS has no interval.
   Stream<Fix> _foregroundTrack() {
     final l10n = lookupAppLocalizations(const Locale('ar'));
-    final settings = AndroidSettings(
-      accuracy: LocationAccuracy.high,
-      intervalDuration: locationEvery,
-      foregroundNotificationConfig: ForegroundNotificationConfig(
-        notificationTitle: l10n.captainAppName,
-        notificationText: l10n.captainTrackingNotice,
-        setOngoing: true,
-        enableWakeLock: true,
-      ),
-    );
-    return Geolocator.getPositionStream(locationSettings: settings).map(
-      (position) => Fix(
-        latitude: position.latitude,
-        longitude: position.longitude,
-        accuracyMetres: position.accuracy,
-        recordedAt: position.timestamp.toUtc(),
-        simulated: position.isMocked,
-      ),
-    );
+    final LocationSettings settings = _ios
+        ? AppleSettings(
+            accuracy: LocationAccuracy.high,
+            activityType: ActivityType.otherNavigation,
+            pauseLocationUpdatesAutomatically: false,
+            showBackgroundLocationIndicator: true,
+            allowBackgroundLocationUpdates: true,
+          )
+        : AndroidSettings(
+            accuracy: LocationAccuracy.high,
+            intervalDuration: locationEvery,
+            foregroundNotificationConfig: ForegroundNotificationConfig(
+              notificationTitle: l10n.captainAppName,
+              notificationText: l10n.captainTrackingNotice,
+              setOngoing: true,
+              enableWakeLock: true,
+            ),
+          );
+    final every = LocationThinner();
+    return Geolocator.getPositionStream(locationSettings: settings)
+        .map(
+          (position) => Fix(
+            latitude: position.latitude,
+            longitude: position.longitude,
+            accuracyMetres: position.accuracy,
+            recordedAt: position.timestamp.toUtc(),
+            simulated: position.isMocked,
+          ),
+        )
+        .where((fix) => !_ios || every.keep(fix.recordedAt));
+  }
+
+  // iOS: the library keeps the points the app chose (`PersistMode.none`).
+  Future<void> _keep(Fix fix) async {
+    try {
+      await bg.BackgroundGeolocation.insertLocation({
+        'timestamp': fix.recordedAt.toIso8601String(),
+        'coords': {
+          'latitude': fix.latitude,
+          'longitude': fix.longitude,
+          'accuracy': fix.accuracyMetres,
+        },
+        'mock': fix.simulated,
+        // The library documents `mock` as read from the phone only: the
+        // flag goes in the extras too, which it keeps as given (§14.3).
+        'extras': {'simulated': fix.simulated},
+      });
+    } on Object catch (error) {
+      debugPrint('Location not kept: $error');
+    }
   }
 
   @override
@@ -328,7 +384,7 @@ class PhoneLocationSource implements LocationSource {
     recordedAt:
         DateTime.tryParse('${location.timestamp}')?.toUtc() ??
         DateTime.now().toUtc(),
-    simulated: location.mock,
+    simulated: location.mock || location.extras?['simulated'] == true,
   );
 }
 
@@ -342,8 +398,36 @@ const backgroundLocationLicensed = bool.fromEnvironment(
   'BACKGROUND_LOCATION_LICENSED',
 );
 
-// The library works without its licence in a debug build only.
+// The library works without its licence in a debug build only, on Android
+// and iOS alike (its 5.x needs one on both; slice 2.46).
 bool get _background => kDebugMode || backgroundLocationLicensed;
+
+bool get _ios => defaultTargetPlatform == TargetPlatform.iOS;
+
+/// iOS (CA §4.3): asks once to change «أثناء الاستخدام» to «دائماً»
+/// (permission_handler's `locationAlways`; iOS never asks again after it).
+Future<bool> askLocationAlways() async =>
+    (await Permission.locationAlways.request()).isGranted;
+
+/// CA §4.3 on iOS (slice 2.46), which has no update interval and gives a
+/// position about every second: keeps the first, then one at least
+/// [locationEvery] after the last kept (half a second early still counts, so
+/// a point a little early is not skipped for the next 10 seconds). A point
+/// older than the last kept is dropped.
+class LocationThinner {
+  static const _early = Duration(milliseconds: 500);
+
+  DateTime? _last;
+
+  bool keep(DateTime at) {
+    final last = _last;
+    if (last != null && at.difference(last) < locationEvery - _early) {
+      return false;
+    }
+    _last = at;
+    return true;
+  }
+}
 
 /// CA §4.3: every 10 seconds while online (fixed, AP §4.2).
 const locationEvery = Duration(seconds: 10);

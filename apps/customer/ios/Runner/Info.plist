@@ -6,6 +6,10 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نستخدم موقعك لنعرف أين نوصل طلبك.</string>
 	<!-- A photo of a problem or of the shop's prices for a report (CU §12.2, §9.5). -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>نستخدم الكاميرا لتصوير المشكلة في بلاغك.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
