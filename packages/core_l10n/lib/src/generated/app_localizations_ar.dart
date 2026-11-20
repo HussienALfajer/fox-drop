@@ -5888,10 +5888,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'لم يجتز هذا الجهاز الفحص بعد: أكمل الخطوات الناقصة.';
 
   @override
-  String get merchantCheckWindowsLater =>
-      'فحص الجهاز على ويندوز يأتي مع تطبيق ويندوز.';
-
-  @override
   String merchantCheckLast(String time) {
     return 'آخر فحص: $time';
   }
@@ -5965,4 +5961,58 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get merchantPairWindowsFailed =>
       'تعذّر إنشاء رمز الربط، حاول مرة أخرى.';
+
+  @override
+  String get merchantTrayTooltip => 'FOX DROP يستقبل طلباتك';
+
+  @override
+  String get merchantTrayOpen => 'فتح التطبيق';
+
+  @override
+  String get merchantTrayQuit => 'إغلاق التطبيق';
+
+  @override
+  String get merchantQuitConfirm =>
+      'إغلاق التطبيق يوقف استقبال الطلبات على هذا الجهاز. هل أنت متأكد؟';
+
+  @override
+  String get merchantCheckWindowsNotifications => 'إشعارات ويندوز مسموحة';
+
+  @override
+  String get merchantCheckWindowsNotificationsHow =>
+      'شغّل الإشعارات لتطبيق المطعم من إعدادات ويندوز.';
+
+  @override
+  String get merchantCheckStartup => 'التشغيل مع ويندوز';
+
+  @override
+  String get merchantCheckStartupHow =>
+      'يبدأ التطبيق مع تشغيل الكمبيوتر، فلا تفوتك الطلبات بعد إعادة التشغيل.';
+
+  @override
+  String get merchantCheckStartupTurnOn => 'تفعيل التشغيل مع ويندوز';
+
+  @override
+  String get merchantCheckOutput => 'صوت الكمبيوتر غير مكتوم';
+
+  @override
+  String get merchantCheckOutputHow =>
+      'ألغِ كتم الصوت وارفعه، وتأكد من توصيل السماعات.';
+
+  @override
+  String merchantCheckOutputVolume(int percent) {
+    return 'مستوى الصوت الآن $percent%';
+  }
+
+  @override
+  String get merchantCheckSleep => 'الكمبيوتر لا ينام أثناء ساعات العمل';
+
+  @override
+  String get merchantCheckSleepHow =>
+      'اجعل «السكون» عند التوصيل بالكهرباء «أبداً»، فالكمبيوتر النائم لا يرن.';
+
+  @override
+  String merchantCheckSleepAfter(int minutes) {
+    return 'ينام الكمبيوتر الآن بعد $minutes د دون استخدام.';
+  }
 }

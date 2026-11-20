@@ -113,20 +113,37 @@ final receivingProvider = Provider<void>((ref) {
     final session = next.value;
     if (session is SignedIn) {
       unawaited(alerts.startReceiving());
+      if (alerts is WindowsAlerts) {
+        unawaited(_startWithWindowsOnce(ref, alerts));
+      }
     } else if (next.hasValue) {
       unawaited(alerts.stopReceiving());
     }
   }, fireImmediately: true);
 });
 
-/// RA §4.5: the items the app checks on Android, in the spec's order;
-/// `sleep` is Windows'.
+/// RA §4.3: the app starts with Windows by default: turned on at the first
+/// sign-in of the installation; the device check covers it after that.
+Future<void> _startWithWindowsOnce(Ref ref, WindowsAlerts alerts) async {
+  final store = ref.read(deviceStoreProvider);
+  if (await store.read(startupSetKey) == 'true') return;
+  await alerts.startWithWindows();
+  await store.write(startupSetKey, 'true');
+}
+
+/// The device store's key: «Start with Windows» was turned on once.
+const startupSetKey = 'windows_startup_set';
+
+/// RA §4.5: the items the app checks, in the spec's order; on Windows
+/// `autostart` is «Start with Windows», `alarmVolume` the output not muted,
+/// and `sleep` the power plan (a warning the server never fails).
 enum CheckItem {
   notifications(MerchantDeviceCheckDtoFailedEnum.notifications),
   battery(MerchantDeviceCheckDtoFailedEnum.battery),
   autostart(MerchantDeviceCheckDtoFailedEnum.autostart),
   fullScreen(MerchantDeviceCheckDtoFailedEnum.fullScreen),
   alarmVolume(MerchantDeviceCheckDtoFailedEnum.alarmVolume),
+  sleep(MerchantDeviceCheckDtoFailedEnum.sleep),
   testRing(MerchantDeviceCheckDtoFailedEnum.testRing),
   connection(MerchantDeviceCheckDtoFailedEnum.connection);
 
@@ -153,20 +170,29 @@ class CheckAnswers {
   final bool connectionFailed;
 }
 
-/// RA §4.5 checks 1–5, read from the phone: those that fail now. The
-/// auto-start of a brand with its own page counts until the user confirms
-/// it (no app can read it).
+/// RA §4.5 checks 1–6, read from the device: those that fail now. A phone's
+/// brand auto-start counts until the user confirms it (no app can read it);
+/// a PC's sleep is check 6's warning.
 List<CheckItem> failedReadings(DeviceReadings readings, CheckAnswers answers) =>
-    [
-      if (!readings.notificationsAllowed) CheckItem.notifications,
-      if (!readings.batteryOptimizationOff) CheckItem.battery,
-      if (readings.autostartPage && !answers.autostartConfirmed)
-        CheckItem.autostart,
-      if (!readings.fullScreenAllowed) CheckItem.fullScreen,
-      if (readings.alarmVolumePercent < minimumAlarmVolume ||
-          readings.doNotDisturbBlocks)
-        CheckItem.alarmVolume,
-    ];
+    switch (readings) {
+      AndroidReadings() => [
+        if (!readings.notificationsAllowed) CheckItem.notifications,
+        if (!readings.batteryOptimizationOff) CheckItem.battery,
+        if (readings.autostartPage && !answers.autostartConfirmed)
+          CheckItem.autostart,
+        if (!readings.fullScreenAllowed) CheckItem.fullScreen,
+        if (readings.alarmVolumePercent < minimumAlarmVolume ||
+            readings.doNotDisturbBlocks)
+          CheckItem.alarmVolume,
+      ],
+      WindowsReadings() => [
+        if (!readings.notificationsAllowed) CheckItem.notifications,
+        if (!readings.startsWithWindows) CheckItem.autostart,
+        if (readings.outputMuted || readings.outputVolumePercent == 0)
+          CheckItem.alarmVolume,
+        if (readings.sleepAfterSeconds > 0) CheckItem.sleep,
+      ],
+    };
 
 /// Every item that fails: the readings, the test ring until heard, and the
 /// connection until measured.

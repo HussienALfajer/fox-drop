@@ -96,6 +96,11 @@ void main() {
     expect(l10n.merchantAutoConfirmIn(60), 'يُؤكَّد تلقائياً خلال 60 ث');
     // RA §4.5 (slice 2.42): the device check's alarm volume and delay.
     expect(l10n.merchantCheckAlarmVolume(70), 'صوت المنبّه الآن 70%');
+    expect(l10n.merchantCheckOutputVolume(45), 'مستوى الصوت الآن 45%');
+    expect(
+      l10n.merchantCheckSleepAfter(30),
+      'ينام الكمبيوتر الآن بعد 30 د دون استخدام.',
+    );
     expect(l10n.captainCheckAlarmVolume(70), 'صوت المنبّه الآن 70%');
     expect(
       l10n.captainCheckConnectionResult(120, 15),

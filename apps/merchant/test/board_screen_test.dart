@@ -1730,7 +1730,7 @@ void main() {
     'the device check runs at the first sign-in and sends its result',
     (tester) async {
       final app = _Board();
-      app.alerts.deviceReadings = const DeviceReadings(
+      app.alerts.deviceReadings = const AndroidReadings(
         notificationsAllowed: true,
         batteryOptimizationOff: false,
         fullScreenAllowed: true,

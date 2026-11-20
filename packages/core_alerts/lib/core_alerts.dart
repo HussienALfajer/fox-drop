@@ -3,3 +3,4 @@
 library;
 
 export 'src/alerts.dart';
+export 'src/windows_alerts.dart';
