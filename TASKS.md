@@ -12,9 +12,18 @@ Slice 2.41, reports (`docs/roadmap.md`, Phase 2).
 - **Ask the owner first:** the split into pull requests (likely: the panel's reports and their exports; the restaurant's reports and daily summary in the app), and that the daily summary's image and any charts stay plain tables until the design (roadmap, owner decision 2026-11-07).
 - **Already built (reuse):** the exports' worker and workbooks (`reporting/exports.service.ts`, `exports.worker.ts`, `*-workbook.ts`, `content/export-labels.ts` for the Arabic headers), the daily report's figures (`daily-figures.ts`, `DailyReportService.periodFigures`), the dashboard's orders (`DashboardOrdersService.placedBetween`, `dashboard-figures.ts`), the order history's filters (`OrderHistoryService`), the cost report (codes' costs), the lost-demand log (2.28a, its Excel export waits for this slice), `RestaurantFiguresService`, `CaptainFiguresService`, `periodBounds`.
 
+- **Owner decisions 2026-11-20:** one pull request; the restaurant's daily summary a plain table shared as an image (as the statements' «مشاركة كصورة», 2.19e), styled with the design; every chart a table, the comparison an arrow ↑ or ↓ with the change as text.
+
 ### Plan
 
-- [ ] Ask the owner the split; write the plan.
+- [x] Ask the owner the split; write the plan.
+- [ ] Server: ordering's report facts (one row per order of a city or a restaurant in a period, test orders and free re-deliveries left out) and reporting's pure tables for the orders, timings and restaurants reports (AP §9.17), with tests; `GET /v1/admin/reports/{report}`.
+- [ ] Server: the captains, customers, lost demand, codes and finance reports' tables from their modules' reads.
+- [ ] Server: every report's Excel export (`report` export kind, Arabic headers from `export-labels.ts`), phone numbers only with `exports.phone_numbers` (AP §5.4), audited.
+- [ ] Panel: «التقارير», a report and a period, its tables, «تصدير Excel».
+- [ ] Server: the restaurant owner's reports (RA §11: periods, the previous period, every metric) and the daily summary, `GET /v1/merchant/reports` and `GET /v1/merchant/reports/daily-summary`.
+- [ ] Restaurant app: «التقارير» with the periods, arrows and the info of each metric; «الملخص اليومي» shared as an image.
+- [ ] Review, the folders' `CLAUDE.md`, hand over to 2.42.
 
 ### Left from 2.40 (the cloud session's branch)
 
