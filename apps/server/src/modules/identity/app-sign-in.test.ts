@@ -466,18 +466,20 @@ describe('App Check on the code request (architecture §8.3.3 item 1)', () => {
     });
   });
 
-  it('exempts the restaurant app on Windows only (owner decision 2026-11-07)', async () => {
+  it('takes no App Check token from the restaurant app on Windows, which signs instead (slice 2.44)', async () => {
     await withAppCheck(async (verify) => {
-      // A number of no restaurant: past App Check, the restaurant refusal.
+      // An unregistered PC is refused like a missing token; a registered
+      // one's signature is proved in windows-devices.test.ts.
       const windows = await codeRoute('merchant', {}, { platform: 'windows' });
       expect(windows.statusCode).toBe(403);
-      expect(windows.json()).toMatchObject({ error: 'not_registered' });
+      expect(windows.json()).toMatchObject({ error: 'app_check_failed' });
       expect(verify).not.toHaveBeenCalled();
       const android = await codeRoute('merchant', {}, { platform: 'android' });
       expect(android.json()).toMatchObject({ error: 'app_check_failed' });
-      // The customer and captain bodies take no platform, so none is exempt.
+      // The customer and captain bodies take no platform.
       const customer = await codeRoute('customer', {}, { platform: 'windows' });
       expect(customer.json()).toMatchObject({ error: 'app_check_failed' });
+      expect(verify).toHaveBeenCalledTimes(2);
     });
   });
 

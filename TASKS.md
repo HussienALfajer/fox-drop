@@ -14,7 +14,16 @@ Slice 2.44, the restaurant app on Windows (`docs/roadmap.md`, Phase 2).
 
 ### Plan
 
-- [ ] Ask the owner the split, the certificate, the update feed and the registration; write the plan.
+- [x] Ask the owner the split, the certificate, the update feed and the registration; write the plan.
+- [ ] The server: the Windows device registration (owner's pairing code, the device's Ed25519 key, the signed code request that ends the App Check exemption).
+- [ ] The restaurant app: «ربط هذا الكمبيوتر» on Windows before sign-in, the code request's signature, and the owner's pairing code in «الأجهزة».
+- [ ] `core_alerts` on Windows: the Win32 plugin (the looping sound, the readings, the taskbar flash), the tray, the window, start with Windows, the toasts.
+- [ ] The restaurant app on Windows: the quit confirmation, the window to the front on a ring, the device check's Windows checks (check 6 `sleep`).
+- [ ] Self-update through Velopack: the feed, the background download, the restart only outside a ring, a pickup prompt and active orders.
+- [ ] CI and staging: the Windows build on every pull request, the staging installer packed with `vpk` and published to `/downloads/windows/` on the API host.
+- [ ] The docs, the review, the handover.
+
+**Owner decisions 2026-11-20:** one pull request; Azure Trusted Signing later, the staging installer unsigned until then (SmartScreen warns); the installer and its updates on the Contabo server through nginx; a pairing code from an owner registers a Windows PC.
 
 ### Left from 2.43 (the cloud session's branch)
 

@@ -600,3 +600,40 @@ export const otpWhatsAppNumbers = identity.table('otp_whatsapp_numbers', {
   phoneHash: text('phone_hash').primaryKey(),
   checkedAt: timestamp('checked_at', { withTimezone: true }).notNull(),
 });
+
+// RA §4.3, architecture §8.3.3 item 1 (slice 2.44; owner decision
+// 2026-11-20): an owner's one-time code that registers a Windows PC, which
+// App Check does not cover. Only its keyed hash is kept; valid
+// PAIRING_CODE_MINUTES, used once. The restaurant and city are plain columns.
+export const windowsPairings = identity.table(
+  'windows_pairings',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    restaurantId: uuid('restaurant_id').notNull(),
+    createdBy: uuid('created_by')
+      .notNull()
+      .references(() => merchantAccounts.id),
+    codeHash: text('code_hash').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+  },
+  (table) => [index('windows_pairings_code').on(table.codeHash)],
+);
+
+// A registered Windows PC: the public half of the Ed25519 key it made when
+// it was paired, which signs its code requests in place of an App Check
+// token. Pairing the same installation again replaces its key.
+export const windowsDevices = identity.table('windows_devices', {
+  deviceId: uuid('device_id').primaryKey(),
+  restaurantId: uuid('restaurant_id').notNull(),
+  // The raw 32-byte Ed25519 public key in base64.
+  publicKey: text('public_key').notNull(),
+  pairingId: uuid('pairing_id')
+    .notNull()
+    .references(() => windowsPairings.id),
+  registeredAt: timestamp('registered_at', { withTimezone: true }).notNull(),
+});

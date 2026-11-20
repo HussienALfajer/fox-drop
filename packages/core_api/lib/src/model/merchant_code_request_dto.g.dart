@@ -87,6 +87,8 @@ class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
   final String deviceId;
   @override
   final MerchantCodeRequestDtoPlatformEnum? platform;
+  @override
+  final MerchantCodeRequestDtoDeviceSignature? deviceSignature;
 
   factory _$MerchantCodeRequestDto([
     void Function(MerchantCodeRequestDtoBuilder)? updates,
@@ -96,6 +98,7 @@ class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
     required this.phone,
     required this.deviceId,
     this.platform,
+    this.deviceSignature,
   }) : super._();
   @override
   MerchantCodeRequestDto rebuild(
@@ -112,7 +115,8 @@ class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
     return other is MerchantCodeRequestDto &&
         phone == other.phone &&
         deviceId == other.deviceId &&
-        platform == other.platform;
+        platform == other.platform &&
+        deviceSignature == other.deviceSignature;
   }
 
   @override
@@ -121,6 +125,7 @@ class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
     _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jc(_$hash, deviceId.hashCode);
     _$hash = $jc(_$hash, platform.hashCode);
+    _$hash = $jc(_$hash, deviceSignature.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -130,7 +135,8 @@ class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
     return (newBuiltValueToStringHelper(r'MerchantCodeRequestDto')
           ..add('phone', phone)
           ..add('deviceId', deviceId)
-          ..add('platform', platform))
+          ..add('platform', platform)
+          ..add('deviceSignature', deviceSignature))
         .toString();
   }
 }
@@ -152,6 +158,14 @@ class MerchantCodeRequestDtoBuilder
   set platform(MerchantCodeRequestDtoPlatformEnum? platform) =>
       _$this._platform = platform;
 
+  MerchantCodeRequestDtoDeviceSignatureBuilder? _deviceSignature;
+  MerchantCodeRequestDtoDeviceSignatureBuilder get deviceSignature =>
+      _$this._deviceSignature ??=
+          MerchantCodeRequestDtoDeviceSignatureBuilder();
+  set deviceSignature(
+    MerchantCodeRequestDtoDeviceSignatureBuilder? deviceSignature,
+  ) => _$this._deviceSignature = deviceSignature;
+
   MerchantCodeRequestDtoBuilder() {
     MerchantCodeRequestDto._defaults(this);
   }
@@ -162,6 +176,7 @@ class MerchantCodeRequestDtoBuilder
       _phone = $v.phone;
       _deviceId = $v.deviceId;
       _platform = $v.platform;
+      _deviceSignature = $v.deviceSignature?.toBuilder();
       _$v = null;
     }
     return this;
@@ -181,21 +196,38 @@ class MerchantCodeRequestDtoBuilder
   MerchantCodeRequestDto build() => _build();
 
   _$MerchantCodeRequestDto _build() {
-    final _$result =
-        _$v ??
-        _$MerchantCodeRequestDto._(
-          phone: BuiltValueNullFieldError.checkNotNull(
-            phone,
-            r'MerchantCodeRequestDto',
-            'phone',
-          ),
-          deviceId: BuiltValueNullFieldError.checkNotNull(
-            deviceId,
-            r'MerchantCodeRequestDto',
-            'deviceId',
-          ),
-          platform: platform,
+    _$MerchantCodeRequestDto _$result;
+    try {
+      _$result =
+          _$v ??
+          _$MerchantCodeRequestDto._(
+            phone: BuiltValueNullFieldError.checkNotNull(
+              phone,
+              r'MerchantCodeRequestDto',
+              'phone',
+            ),
+            deviceId: BuiltValueNullFieldError.checkNotNull(
+              deviceId,
+              r'MerchantCodeRequestDto',
+              'deviceId',
+            ),
+            platform: platform,
+            deviceSignature: _deviceSignature?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'deviceSignature';
+        _deviceSignature?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'MerchantCodeRequestDto',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

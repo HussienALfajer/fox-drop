@@ -1016,6 +1016,13 @@
       "when": 1795158688279,
       "tag": "0144_captains_device_check",
       "breakpoints": true
+    },
+    {
+      "idx": 145,
+      "version": "7",
+      "when": 1795163187475,
+      "tag": "0145_identity_windows_devices",
+      "breakpoints": true
     }
   ]
 }

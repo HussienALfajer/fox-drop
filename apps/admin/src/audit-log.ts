@@ -123,6 +123,7 @@ export const auditActions = [
   'merchant_account.remove',
   'merchant_accounts.view',
   'merchant_device.rename',
+  'merchant_device.windows_pairing',
   'merchant_devices.sign_out',
   'menu.bulk_price',
   'menu.category.create',

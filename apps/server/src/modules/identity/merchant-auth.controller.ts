@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Post,
   Put,
@@ -42,6 +43,7 @@ import {
 } from './merchant-accounts.service.js';
 import { devicePlatforms, MerchantsRefusedError, MerchantsService } from '../merchants/index.js';
 import { merchantRoles } from './schema.js';
+import { WindowsDevicesService, WindowsPairingRefusedError } from './windows-devices.service.js';
 
 class MerchantCodeRequestDto extends createZodDto(
   z.object({
@@ -51,7 +53,29 @@ class MerchantCodeRequestDto extends createZodDto(
       .enum(devicePlatforms)
       .optional()
       .describe('Windows sends no App Check token (owner decision 2026-11-07).'),
+    deviceSignature: z
+      .object({
+        signedAt: z.iso.datetime({ offset: true }),
+        signature: z.base64().max(128),
+      })
+      .optional()
+      .describe(
+        "Windows only (slice 2.44): the registered PC's Ed25519 signature of " +
+          '`fox-drop/merchant-code-request\\n{deviceId}\\n{signedAt}`, in place of App Check.',
+      ),
   }),
+) {}
+
+class MerchantWindowsRegistrationDto extends createZodDto(
+  z.object({
+    code: z.string().regex(/^\d{8}$/).describe('The owner’s pairing code.'),
+    deviceId,
+    publicKey: z.base64().max(64).describe('The raw 32-byte Ed25519 public key, in base64.'),
+  }),
+) {}
+
+class MerchantWindowsRegisteredDto extends createZodDto(
+  z.object({ status: z.literal('registered') }),
 ) {}
 
 class MerchantCodeSentDto extends createZodDto(codeSent) {}
@@ -99,6 +123,7 @@ export class MerchantAuthController {
     private readonly sessions: AppSessionsService,
     private readonly accounts: MerchantAccountsService,
     private readonly merchants: MerchantsService,
+    private readonly windowsDevices: WindowsDevicesService,
   ) {}
 
   @Post('code')
@@ -120,6 +145,7 @@ export class MerchantAuthController {
           deviceId: body.deviceId,
           appCheckToken,
           platform: body.platform,
+          deviceSignature: body.deviceSignature,
         },
         requestContext(request),
       );
@@ -153,6 +179,42 @@ export class MerchantAuthController {
       }
       if (error instanceof MerchantSignInRefusedError) throw signInRefused(error);
       throw error;
+    }
+  }
+
+  // RA §4.3, architecture §8.3.3 item 1 (slice 2.44): a Windows PC
+  // registers with an owner's pairing code before its first sign-in; its
+  // code requests then carry its signature. 400 invalid_code (wrong, expired
+  // or used: one answer), invalid_key; 403 restaurant_terminated; 429
+  // too_many with Retry-After after PAIRING_ATTEMPTS_PER_HOUR from one IP
+  // address. No key: a repeat finds its code used.
+  @Post('windows-registration')
+  @Public()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantWindowsRegisteredDto })
+  async registerWindows(
+    @Body() body: MerchantWindowsRegistrationDto,
+    @Req() request: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
+    try {
+      await this.windowsDevices.register(body, requestContext(request));
+      return { status: 'registered' as const };
+    } catch (error) {
+      if (!(error instanceof WindowsPairingRefusedError)) throw error;
+      const answer = { error: error.refusal };
+      switch (error.refusal) {
+        case 'too_many':
+          void reply.header('Retry-After', String(error.retryAfterSec));
+          throw new HttpException(
+            { statusCode: HttpStatus.TOO_MANY_REQUESTS, ...answer },
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        case 'restaurant_terminated':
+          throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, ...answer });
+        default:
+          throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...answer });
+      }
     }
   }
 

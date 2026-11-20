@@ -404,6 +404,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/auth/windows-registration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantAuthRegisterWindows"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/auth/refresh": {
         parameters: {
             query?: never;
@@ -782,6 +798,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["merchantStaffSignOutDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/devices/windows-pairing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantStaffPairWindows"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7916,6 +7948,13 @@ export interface components {
              * @enum {string}
              */
             platform?: "android" | "ios" | "windows";
+            /** @description Windows only (slice 2.44): the registered PC's Ed25519 signature of `fox-drop/merchant-code-request\n{deviceId}\n{signedAt}`, in place of App Check. */
+            deviceSignature?: {
+                /** Format: date-time */
+                signedAt: string;
+                /** Format: base64 */
+                signature: string;
+            };
         };
         MerchantCodeSentDto_Output: {
             /**
@@ -7957,6 +7996,24 @@ export interface components {
             accessTokenExpiresAt: string;
             /** @description Used once at /refresh for a new pair; using it twice signs the device out. */
             refreshToken: string;
+        };
+        MerchantWindowsRegistrationDto: {
+            /** @description The owner’s pairing code. */
+            code: string;
+            /**
+             * Format: uuid
+             * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
+             */
+            deviceId: string;
+            /**
+             * Format: base64
+             * @description The raw 32-byte Ed25519 public key, in base64.
+             */
+            publicKey: string;
+        };
+        MerchantWindowsRegisteredDto_Output: {
+            /** @constant */
+            status: "registered";
         };
         MerchantRefreshDto: {
             refreshToken: string;
@@ -8276,6 +8333,12 @@ export interface components {
         };
         MerchantDeviceNameDto: {
             name: string;
+        };
+        MerchantWindowsPairingDto_Output: {
+            /** @description 8 digits, typed on the PC within 10 minutes; used once. */
+            code: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
         SettingListDto_Output: {
             settings: {
@@ -23268,6 +23331,30 @@ export interface operations {
             };
         };
     };
+    merchantAuthRegisterWindows: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantWindowsRegistrationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantWindowsRegisteredDto_Output"];
+                };
+            };
+        };
+    };
     merchantAuthRefresh: {
         parameters: {
             query?: never;
@@ -23862,6 +23949,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantDevicesDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStaffPairWindows: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantWindowsPairingDto_Output"];
                 };
             };
         };

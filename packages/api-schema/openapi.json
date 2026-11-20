@@ -861,6 +861,42 @@
         ]
       }
     },
+    "/v1/merchant/auth/windows-registration": {
+      "post": {
+        "operationId": "merchantAuthRegisterWindows",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantWindowsRegistrationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantWindowsRegisteredDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/merchant/auth/refresh": {
       "post": {
         "operationId": "merchantAuthRefresh",
@@ -1792,6 +1828,32 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MerchantDevicesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/devices/windows-pairing": {
+      "post": {
+        "operationId": "merchantStaffPairWindows",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantWindowsPairingDto_Output"
                 }
               }
             },
@@ -22767,6 +22829,28 @@
               "ios",
               "windows"
             ]
+          },
+          "deviceSignature": {
+            "description": "Windows only (slice 2.44): the registered PC's Ed25519 signature of `fox-drop/merchant-code-request\\n{deviceId}\\n{signedAt}`, in place of App Check.",
+            "type": "object",
+            "properties": {
+              "signedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "signature": {
+                "type": "string",
+                "maxLength": 128,
+                "format": "base64",
+                "contentEncoding": "base64",
+                "pattern": "^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$"
+              }
+            },
+            "required": [
+              "signedAt",
+              "signature"
+            ]
           }
         },
         "required": [
@@ -22877,6 +22961,48 @@
           "accessToken",
           "accessTokenExpiresAt",
           "refreshToken"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantWindowsRegistrationDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{8}$",
+            "description": "The owner’s pairing code."
+          },
+          "deviceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed."
+          },
+          "publicKey": {
+            "type": "string",
+            "maxLength": 64,
+            "format": "base64",
+            "contentEncoding": "base64",
+            "pattern": "^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$",
+            "description": "The raw 32-byte Ed25519 public key, in base64."
+          }
+        },
+        "required": [
+          "code",
+          "deviceId",
+          "publicKey"
+        ]
+      },
+      "MerchantWindowsRegisteredDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "registered"
+          }
+        },
+        "required": [
+          "status"
         ],
         "additionalProperties": false
       },
@@ -24037,6 +24163,25 @@
         "required": [
           "name"
         ]
+      },
+      "MerchantWindowsPairingDto_Output": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "8 digits, typed on the PC within 10 minutes; used once."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "code",
+          "expiresAt"
+        ],
+        "additionalProperties": false
       },
       "SettingListDto_Output": {
         "type": "object",

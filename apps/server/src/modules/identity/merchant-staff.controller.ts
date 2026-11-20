@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -37,6 +38,7 @@ import {
   RestaurantDevicesService,
 } from './restaurant-devices.service.js';
 import { merchantRoles } from './schema.js';
+import { WindowsDevicesService } from './windows-devices.service.js';
 
 class MerchantStaffDto extends createZodDto(
   z.object({
@@ -117,6 +119,13 @@ class MerchantDevicesDto extends createZodDto(
   }),
 ) {}
 
+class MerchantWindowsPairingDto extends createZodDto(
+  z.object({
+    code: z.string().describe('8 digits, typed on the PC within 10 minutes; used once.'),
+    expiresAt: z.iso.datetime(),
+  }),
+) {}
+
 // RA §14.1–14.2, §18 (slice 2.33): the owners' «الموظفون» and «الأجهزة» in
 // the restaurant app. Owners add and remove cashiers (S5: owners themselves
 // only through FOX DROP, so removing one is 409 not_a_cashier); a removed
@@ -134,6 +143,7 @@ export class MerchantStaffController {
     private readonly merchants: MerchantsService,
     private readonly sessions: AppSessionsService,
     private readonly receiving: ReceivingDevicesService,
+    private readonly windowsDevices: WindowsDevicesService,
   ) {}
 
   @Get('staff')
@@ -243,6 +253,23 @@ export class MerchantStaffController {
       refusalAsHttp(error);
     }
     return this.devicesAnswer(owner.restaurantId, session);
+  }
+
+  // RA §4.3 (slice 2.44; owner decision 2026-11-20): «ربط كمبيوتر» gives a
+  // one-time code that registers a Windows PC, shown once (no key: a repeat
+  // makes a new code; the answer is not stored).
+  @Post('devices/windows-pairing')
+  @AppSignedIn()
+  @HttpCode(200)
+  @Header('Cache-Control', 'no-store')
+  @ZodResponse({ status: 200, type: MerchantWindowsPairingDto })
+  async pairWindows(@CurrentAppSession() session: AppSession, @Req() request: FastifyRequest) {
+    const owner = await this.ownerOf(session);
+    const pairing = await this.windowsDevices.pair(
+      owner,
+      changeOf(owner, session, request).context,
+    );
+    return { code: pairing.code, expiresAt: pairing.expiresAt.toISOString() };
   }
 
   // RA §5.4: staff and devices are the owners'; RA §5.5: a terminated
