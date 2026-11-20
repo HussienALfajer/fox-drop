@@ -5,7 +5,7 @@
 
 # Sign-in, setup, code requests and a Windows PC's registration (slice
 # 2.44): the tight per-address limit.
-location ~ ^/v1/[a-z]+/auth/(sign-in|code|setup/|windows-registration) {
+location ~ ^/v1/[a-z]+/auth/(sign-in|code|setup/|windows-registration|portal/(sign-in|code)) {
     limit_req zone=foxdrop_${FOXDROP_ENV}_signin burst=10 nodelay;
     limit_req_status 429;
     proxy_pass http://127.0.0.1:${API_PORT};

@@ -16,13 +16,18 @@ import { AdminSessionsService } from './admin-sessions.service.js';
 import {
   type AppParty,
   AppSessionsService,
+  portalAppSession,
   SignedInElsewhereError,
 } from './app-sessions.service.js';
+import { PortalSessionsService } from './portal-sessions.service.js';
 
 // Architecture §10.3: an HTTP-only, secure, same-site cookie. The __Host-
 // prefix makes the browser refuse it unless it is secure, has no domain and
 // covers the whole site.
 export const ADMIN_SESSION_COOKIE = '__Host-fox_drop_admin';
+
+// RA §17, S14 (slice 2.45a): the owner web portal's session, as the panel's.
+export const PORTAL_SESSION_COOKIE = '__Host-fox_drop_portal';
 
 // Architecture §15.2, deny by default: every route of every group passes here.
 // A route that declares nothing is refused; an admin route checks the session
@@ -35,6 +40,7 @@ export class RouteAccessGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly sessions: AdminSessionsService,
     private readonly appSessions: AppSessionsService,
+    private readonly portalSessions: PortalSessionsService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -51,6 +57,21 @@ export class RouteAccessGuard implements CanActivate {
     }
     const group = this.reflector.get<RouteGroup | undefined>(ROUTE_GROUP, context.getClass());
     const request = context.switchToHttp().getRequest<FastifyRequest>();
+    // RA §17 (slice 2.45a): the owner web portal calls with its cookie and
+    // no token, and only the restaurant routes that take it.
+    const portalToken =
+      group === 'merchant' && !request.headers.authorization
+        ? request.cookies[PORTAL_SESSION_COOKIE]
+        : undefined;
+    if (portalToken && (access.kind === 'app_session' || access.kind === 'optional_app_session')) {
+      if (!access.portal) {
+        throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'not_in_portal' });
+      }
+      const portal = await this.portalSessions.authenticate(portalToken);
+      if (!portal) throw new UnauthorizedException();
+      request.appSession = portalAppSession(portal);
+      return true;
+    }
     // A guest's call has no token; a token that fails is 401 as on any app
     // route, so the app refreshes it.
     if (access.kind === 'optional_app_session' && !request.headers.authorization) return true;

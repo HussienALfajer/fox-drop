@@ -236,7 +236,7 @@ export class MerchantStatusController {
   ) {}
 
   @Get('restaurant/status')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantStatusDto })
   async read(@CurrentAppSession() session: AppSession) {
     const { restaurantId } = await this.notTerminated(merchantOf(session));
@@ -244,7 +244,7 @@ export class MerchantStatusController {
   }
 
   @Post('restaurant/status/pause')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(200)
   @ZodResponse({ status: 200, type: MerchantStatusDto })
   async pause(
@@ -258,7 +258,7 @@ export class MerchantStatusController {
   }
 
   @Post('restaurant/status/resume')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @HttpCode(200)
   @ZodResponse({ status: 200, type: MerchantStatusDto })
   async resume(@CurrentAppSession() session: AppSession, @Req() request: FastifyRequest) {
@@ -268,7 +268,7 @@ export class MerchantStatusController {
   }
 
   @Put('restaurant/status/busy-mode')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantStatusDto })
   async busyMode(
     @CurrentAppSession() session: AppSession,
@@ -322,7 +322,7 @@ export class MerchantStatusController {
   }
 
   @Put('restaurant/holiday-close')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantStatusDto })
   async setHolidayClose(
     @CurrentAppSession() session: AppSession,
@@ -345,7 +345,7 @@ export class MerchantStatusController {
   }
 
   @Delete('restaurant/holiday-close')
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantStatusDto })
   async endHolidayClose(@CurrentAppSession() session: AppSession, @Req() request: FastifyRequest) {
     const { restaurantId } = ownerOf(session);

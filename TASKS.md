@@ -15,8 +15,8 @@ Slice 2.45a, the owner web portal's sign-in and live view (`docs/roadmap.md`, Ph
 ### Plan
 
 - [x] Ask the owner the split, the sign-in and the design; write the plan.
-- [ ] Server: portal sessions (migration, the code request without App Check for owners only, the sign-in that sets the cookie, the session, sign-out, expiry after `merchant.web_session_days`, ended with the account's removal), the guard's portal opt-in, nginx's sign-in limit.
-- [ ] Server: the portal's routes (the board and an order, the status, busy mode, holiday close, the terms, the emergency stop, the real-time token and proxy) and every other merchant route refused to the portal; the API regenerated.
+- [x] Server: portal sessions (migration, the code request without App Check for owners only, the sign-in that sets the cookie, the session, sign-out, expiry after `merchant.web_session_days`, ended with the account's removal), the guard's portal opt-in, nginx's sign-in limit.
+- [x] Server: the portal's routes (the board and an order, the status, busy mode, holiday close, the terms, the emergency stop, the real-time token and proxy) and every other merchant route refused to the portal; the API regenerated.
 - [ ] Portal: sign-in, the session and sign-out, the terms, the status, the read-only board with the banner, live over `merchant:`; unit and smoke tests.
 - [ ] Review, then hand over to 2.45b.
 

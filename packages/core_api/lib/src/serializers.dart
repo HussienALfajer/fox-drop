@@ -1176,6 +1176,12 @@ import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_base_cu
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_choices_inner.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
+import 'package:core_api/src/model/merchant_portal_code_request_dto.dart';
+import 'package:core_api/src/model/merchant_portal_code_sent_dto_output.dart';
+import 'package:core_api/src/model/merchant_portal_session_dto_output.dart';
+import 'package:core_api/src/model/merchant_portal_sign_in_dto.dart';
+import 'package:core_api/src/model/merchant_portal_signed_in_dto_output.dart';
+import 'package:core_api/src/model/merchant_portal_signed_out_dto_output.dart';
 import 'package:core_api/src/model/merchant_price_log_dto_output.dart';
 import 'package:core_api/src/model/merchant_price_log_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/merchant_ratings_dto_output.dart';
@@ -2417,6 +2423,12 @@ part 'serializers.g.dart';
   MerchantPickupCurrenciesDtoOutputChoicesInner,
   MerchantPickupDisputeDto,
   MerchantPickupDisputeDtoReceivedLinesInner,
+  MerchantPortalCodeRequestDto,
+  MerchantPortalCodeSentDtoOutput,
+  MerchantPortalSessionDtoOutput,
+  MerchantPortalSignInDto,
+  MerchantPortalSignedInDtoOutput,
+  MerchantPortalSignedOutDtoOutput,
   MerchantPriceLogDtoOutput,
   MerchantPriceLogDtoOutputEntriesInner,
   MerchantRatingsDtoOutput,

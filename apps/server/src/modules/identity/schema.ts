@@ -645,3 +645,49 @@ export const windowsDevices = identity.table(
   },
   (table) => [index('windows_devices_pairing').on(table.pairingId)],
 );
+
+// RA §5.3, S14 (slice 2.45a): why a portal session ended before its expiry.
+export const portalSessionEndReasons = ['sign_out', 'account_removed'] as const;
+
+// The owner web portal's sessions (RA §17, §5.3, S14; slice 2.45a): an owner
+// signed in from a browser, behind an HTTP-only cookie whose token is kept as
+// SHA-256. A table of its own, apart from the app sessions, so the portal is
+// never a device of the restaurant (RA §4.6): never listed with «الأجهزة»,
+// never pushed to, never counted as receiving. It lasts
+// `merchant.web_session_days` from the sign-in (read then) and ends on
+// sign-out or the owner's removal.
+export const merchantPortalSessions = identity.table(
+  'merchant_portal_sessions',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => merchantAccounts.id),
+    // The browser's own id, which its code request named.
+    browserId: uuid('browser_id').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    userAgent: text('user_agent'),
+    ipAddress: inet('ip_address'),
+    signedInAt: timestamp('signed_in_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    endReason: text('end_reason', { enum: portalSessionEndReasons }),
+  },
+  (table) => [
+    uniqueIndex('merchant_portal_sessions_token').on(table.tokenHash),
+    index('merchant_portal_sessions_open_account')
+      .on(table.accountId)
+      .where(sql`${table.endedAt} IS NULL`),
+    check(
+      'merchant_portal_sessions_end_reason_values',
+      sql`${table.endReason} IN ('sign_out', 'account_removed')`,
+    ),
+    check(
+      'merchant_portal_sessions_ended',
+      sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL)`,
+    ),
+    check('merchant_portal_sessions_expiry', sql`${table.expiresAt} > ${table.signedInAt}`),
+  ],
+);

@@ -22,6 +22,7 @@ import {
   MerchantAccountsService,
   MerchantSignInRefusedError,
 } from './merchant-accounts.service.js';
+import { PortalSessionsService } from './portal-sessions.service.js';
 import { DAY_MS, HOUR_MS, type Limit, RequestLimits } from './request-limits.js';
 import { appSignInCodes, customerAccounts, merchantAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets, newSignInCode } from './secrets.js';
@@ -87,6 +88,10 @@ export interface CodeRequest {
   // CA §5.1 «انضم ككابتن» (slice 2.34a; owner decision 2026-11-19): the
   // captain app's join sends the code to a number without an account too.
   join?: boolean | undefined;
+  // RA §17 (slice 2.45a; owner decision 2026-11-20): the owner web portal's
+  // code request, for an owner's number only, with no App Check (a browser
+  // has none); the request limits still hold.
+  portal?: boolean | undefined;
 }
 
 export interface AppSignIn extends AppTokens {
@@ -118,6 +123,7 @@ export class AppSignInService {
     private readonly merchantAccounts: MerchantAccountsService,
     private readonly captainAccounts: CaptainAccountsService,
     private readonly windowsDevices: WindowsDevicesService,
+    private readonly portalSessions: PortalSessionsService,
   ) {
     this.limits = new RequestLimits(valkey);
   }
@@ -169,7 +175,7 @@ export class AppSignInService {
     // token still runs into it. The restaurant app on Windows has no App
     // Check provider: a PC an owner registered signs the request with its
     // key instead (slice 2.44; owner decision 2026-11-20).
-    if (appCheckRequired) {
+    if (appCheckRequired && !(request.party === 'merchant' && request.portal === true)) {
       const attested =
         request.party === 'merchant' && request.platform === 'windows'
           ? await this.windowsDevices.verify(
@@ -188,6 +194,9 @@ export class AppSignInService {
     if (request.party === 'merchant') {
       const merchant = await this.merchantAccounts.signInAccount(phoneHash);
       if (typeof merchant === 'string') throw new MerchantSignInRefusedError(merchant);
+      if (request.portal === true && merchant.role !== 'owner') {
+        throw new MerchantSignInRefusedError('owner_only');
+      }
     }
     // A captain is never created by sign-in, and the answer never tells
     // whether a number belongs to a captain (architecture §8.3.2; owner
@@ -363,6 +372,55 @@ export class AppSignInService {
       result instanceof MerchantSignInRefusedError ||
       result instanceof CaptainSignInRefusedError
     ) {
+      throw result;
+    }
+    return result;
+  }
+
+  // RA §17, §5.2–5.3, S14 (slice 2.45a): the owner web portal's sign-in with
+  // the code its browser asked for (or an emergency code, W4). Only an
+  // owner's number signs in (owner_only, the code used up); the session is a
+  // portal session for `merchant.web_session_days`, never an app session.
+  async signInToPortal(
+    request: { phone: string; browserId: string; code: string },
+    context: AuditRequestContext,
+    now = new Date(),
+  ): Promise<{ merchant: MerchantAccount; sessionId: string; token: string; expiresAt: Date }> {
+    const phoneHash = this.secrets.phoneHash(request.phone);
+    const maxAttempts = await this.settings.get('otp.max_attempts');
+    const sessionDays = await this.settings.get('merchant.web_session_days');
+    // Before the transaction: the status is read on a connection of its own.
+    const merchant = await this.merchantAccounts.signInAccount(phoneHash);
+    const codeRequest = {
+      party: 'merchant' as const,
+      phone: request.phone,
+      deviceId: request.browserId,
+      code: request.code,
+    };
+    const result = await this.database.db.transaction(async (tx) => {
+      const refused = await this.useCodeIn(tx, codeRequest, phoneHash, maxAttempts, now);
+      if (refused !== null) return refused;
+      if (typeof merchant === 'string') return new MerchantSignInRefusedError(merchant);
+      if (merchant.role !== 'owner') return new MerchantSignInRefusedError('owner_only');
+      if ((await this.stillNotRemoved(tx, merchant)) === null) {
+        return new MerchantSignInRefusedError('not_registered');
+      }
+      const session = await this.portalSessions.start(
+        tx,
+        merchant.id,
+        request.browserId,
+        context,
+        sessionDays,
+        now,
+      );
+      return {
+        merchant,
+        sessionId: session.id,
+        token: session.token,
+        expiresAt: session.expiresAt,
+      };
+    });
+    if (result instanceof SignInCodeRefusedError || result instanceof MerchantSignInRefusedError) {
       throw result;
     }
     return result;

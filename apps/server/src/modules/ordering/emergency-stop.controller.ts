@@ -256,7 +256,7 @@ export class MerchantEmergencyStopController {
   ) {}
 
   @Get()
-  @AppSignedIn()
+  @AppSignedIn({ portal: true })
   @ZodResponse({ status: 200, type: MerchantEmergencyStopDto })
   async read(@CurrentAppSession() session: AppSession) {
     const restaurantId = session.merchant?.restaurantId;
