@@ -91,10 +91,6 @@ export const tileLines: [TileKey, (period: DashboardPeriod) => TileValue][] = [
   ['firstOrders', (p) => count(p.orders.firstOrders)],
 ];
 
-// Last week's in-progress count reads as of now (its orders have ended), so
-// it is not compared (decided by us).
-export const NOT_COMPARED: readonly TileKey[] = ['inProgress'];
-
 // Today against last week: the difference in the tile's own kind, a
 // percentage's in points; null when either side has nothing or the money's
 // currencies differ.

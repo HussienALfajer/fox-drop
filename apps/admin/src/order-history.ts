@@ -160,6 +160,10 @@ export function useOrderHistory(body: Omit<HistoryBody, 'cursor'> | null) {
   });
 }
 
+// More orders than one file holds (the server's 409 too_many_rows): a
+// shorter period or more filters.
+export class ExportTooBigError extends Error {}
+
 // «تصدير Excel» of the filters and their period: one key per body until an
 // answer, as the statement's.
 export function useExportOrderHistory() {
@@ -172,10 +176,14 @@ export function useExportOrderHistory() {
         key = crypto.randomUUID();
         keys.current.set(choice, key);
       }
-      const { data, response } = await api.POST('/v1/admin/order-history/exports', {
+      const { data, error, response } = await api.POST('/v1/admin/order-history/exports', {
         params: { header: { 'Idempotency-Key': key } },
         body: { ...body, from: body.from!, to: body.to! },
       });
+      if ((error as { error?: unknown } | undefined)?.error === 'too_many_rows') {
+        keys.current.delete(choice);
+        throw new ExportTooBigError('too_many_rows');
+      }
       if (!data) throw new Error(`The export failed with ${response.status}.`);
       keys.current.delete(choice);
       return data;

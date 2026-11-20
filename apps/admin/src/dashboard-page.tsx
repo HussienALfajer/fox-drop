@@ -8,7 +8,6 @@ import {
   changeOf,
   type Dashboard,
   dashboardQuery,
-  NOT_COMPARED,
   taskPaths,
   type TileValue,
   tileLines,
@@ -142,8 +141,7 @@ function Tiles({ dashboard }: { dashboard: Dashboard }) {
         <tbody>
           {tileLines.map(([key, value]) => {
             const today = value(dashboard.today);
-            const compared = !NOT_COMPARED.includes(key);
-            const lastWeek = compared ? value(dashboard.lastWeek) : null;
+            const lastWeek = value(dashboard.lastWeek);
             return (
               <tr key={key}>
                 <th scope="row">{t(`dashboard.tiles.${key}`)}</th>
@@ -156,6 +154,7 @@ function Tiles({ dashboard }: { dashboard: Dashboard }) {
         </tbody>
       </table>
       {dashboard.today.money === null && <p role="alert">{t('dashboard.moneyMissing')}</p>}
+      <p>{t('dashboard.countsNote')}</p>
       <p>{t('dashboard.newCustomersNote')}</p>
     </section>
   );

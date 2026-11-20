@@ -17,6 +17,7 @@ import {
   OUTCOMES,
   RESPONSIBLES,
   STATUSES,
+  ExportTooBigError,
   useExportOrderHistory,
   useOrderHistory,
 } from './order-history.js';
@@ -214,7 +215,7 @@ function History({ city }: { city: City }) {
             request={{
               data: requested.data,
               isPending: requested.isPending,
-              isError: requested.isError,
+              isError: requested.isError && !(requested.error instanceof ExportTooBigError),
               ask: () => requested.mutate(body),
             }}
           />
@@ -222,6 +223,9 @@ function History({ city }: { city: City }) {
           t('orderHistory.exportNeedsPeriod')
         )}
       </p>
+      {requested.error instanceof ExportTooBigError ? (
+        <p role="alert">{t('orderHistory.refused.tooManyRows')}</p>
+      ) : null}
       {refusal ? (
         <p role="alert">{t(refusalKeys[refusal])}</p>
       ) : history.isError ? (
