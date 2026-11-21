@@ -21,7 +21,7 @@ L.1c Offline browsing (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Not b
 ## Waiting for the owner
 
 - Phase 3 of `docs/claude-code-workflow.md`: the phase 4 session started at 75.7K tokens with one MCP delta (goal: under 45K, none). Left: the `marketing` and `social-media-skills` plugins, off only in the app's settings.
-- Phase 6 item 1 (`autoCompactWindow: 200000`, kept by the owner 2026-11-21): watch L.1b and L.1c the same way (compactions, what was re-read or redone after each); any real loss moves it to 300K. Then the owner decides phase 6 item 2 (a large slice in three sessions): kept, or the compaction alone.
+- Phase 6 items 1 and 2 (owner decision 2026-11-21): `autoCompactWindow: 350000` and every slice in two sessions, planning then build (`build-slice`). Measure L.1c's two sessions with `scripts/claude-audit.mjs` (compactions, cost, context a request, what was re-read or redone) against L.1a and L.1b in `docs/claude-code-workflow.md`.
 
 ## After that
 
