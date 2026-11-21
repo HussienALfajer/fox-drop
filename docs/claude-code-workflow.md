@@ -73,7 +73,9 @@ Status (2026-11-21, with the owner): items 1 to 4 applied on the owner's machine
 
 Left to the owner in the app's settings: the `marketing` plugin (13 connectors) and the `social-media-skills` plugin, which no settings file controls.
 
-Found: the Bash guard refuses an inline script that writes files outside the repository (here `~/.claude.json`), a false positive. The fix is to flag only scripts that name a path inside the repository.
+Found: the Bash guard refuses an inline script that writes files outside the repository (here `~/.claude.json`), a false positive. Fixed with phase 4: it flags an inline script that writes only when it names a tracked file or a file in a tracked folder.
+
+Measured (2026-11-21, the first request of the phase 4 session in the desktop app, from its transcript, since an agent cannot run `/context`): 75.7K tokens at the start, and one MCP instruction delta (3 KB) when the `marketing` plugin's connectors announced they need authorization. Not done: the goal is under 45K. What is left is the desktop app's own tool schemas and the `marketing` and `social-media-skills` plugins (their skill listing and connectors), which only the app's settings turn off; `/context` in a terminal `claude` session would show the split.
 
 ## Phase 4: fast checks (`chore/fast-verify`)
 
@@ -84,6 +86,19 @@ Found: the Bash guard refuses an inline script that writes files outside the rep
 5. Measure a Markdown-only change, a one-module server change and a Flutter change, before and after.
 
 Done when: the fast check of a one-module server change takes under a minute.
+
+Status (2026-11-21): done. `scripts/classify-changes.mjs` classifies the paths for both CI's `changes` job (the same rules as before; phase 5 changes them) and `node scripts/verify.mjs --changed` (`--changed=<ref>` for a branch stacked on another), with `scripts/classify-changes.test.mjs`. `.claude/hooks/stop-verify.mjs` is the `Stop` hook: once for each new set of uncommitted code changes, it hands Claude the failing step only, cut by `test-summary.mjs`, and lets the turn end the next time. Turborepo caches `lint` and `typecheck`, which depend on `^transit` so a change in a package they import misses the cache. Two changes from the plan, after measuring:
+
+- The server's tests: Vitest's `--changed` ran 162 of the 242 files for a change to one module (170 s), since every test that starts the app imports every module. A change inside `src/modules/<name>/` runs that module's tests and `test/` (the boundary tests); any other server change runs `--changed`, with the migrations, the fixtures, `src/database` and the spec files tests read as `forceRerunTriggers`. A module's change that breaks another module's test is caught by CI.
+- Dart: Melos's `--diff` sees commits only, so the changed packages come from the paths (`--scope` with `--include-dependents`). The analyzer runs over the workspace (one run is as fast as a few packages); a change to what every package shares (the workspace pubspec, the lock file, `.fvmrc`, the root analysis options) checks them all. `ci.yml` and `verify.mjs` set CI's Dart jobs but not the local Dart checks.
+
+Measured on the owner's machine (before: the `checker` ran the full `pnpm verify` for every change, median 3.7 min, p90 9.5 min; the server's tests alone 223 s):
+
+| Change                                         | `--changed`                                                                  |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| Markdown only (`docs/roadmap.md`)              | 1.2 s                                                                        |
+| One server module (`content/terms.service.ts`) | 43 s (turbo lint, type check and build 21 s, 9 test files 15 s); 39 s cached |
+| Flutter (`apps/customer/lib/main.dart`)        | 1 min 47 s (analyze, format and the customer app's 188 tests, 23 s of them)  |
 
 ## Phase 5: CI (`chore/ci-filters`, may ride with phase 4: they share the classifier)
 

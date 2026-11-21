@@ -4,10 +4,14 @@
 // `pnpm verify` runs every part. CI runs each part as its own job, in
 // parallel: `node scripts/verify.mjs <part>...`, and `--shard=<i>/<n>` splits
 // the server's tests (Vitest's shards) or the Flutter packages across jobs.
+// `node scripts/verify.mjs --changed` runs only what the change since
+// origin/main can break: the checker's default.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+
+import { changedFiles, classify } from './classify-changes.mjs';
 
 // `fvm install` links the Flutter pinned in .fvmrc at .fvm/flutter_sdk; use it
 // before any Flutter on PATH. CI puts the pinned Flutter on PATH instead.
@@ -194,8 +198,125 @@ function checkInstructionSizes() {
   }
 }
 
+const turboTasks = 'lint:root lint typecheck build test:e2e';
+// The web apps' smoke tests run in Chromium; this downloads it once. One app
+// at a time: two installs at once race on the shared browser cache.
+const PLAYWRIGHT_INSTALL =
+  'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium';
+
+// The Node tests of the Claude Code hooks and of the scripts here: a second each.
+function scriptTests() {
+  step(
+    'Claude Code hooks and scripts',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs',
+  );
+}
+
+// `--changed` (docs/claude-code-workflow.md, phase 4): only what the change
+// since origin/main can break, committed or not; `--changed=<ref>` compares
+// with another commit (a branch stacked on another). CI runs everything and
+// stays the gate.
+function verifyChanged(since) {
+  const base = read(`git merge-base ${since} HEAD`).trim();
+  const files = changedFiles(base);
+  console.log(`\n=== ${files.length} files changed since ${since} (${base.slice(0, 9)})`);
+  if (files.length === 0) return;
+  const touched = classify(files);
+  console.log(
+    Object.keys(touched)
+      .filter((key) => touched[key])
+      .join(', ') || 'Markdown only',
+  );
+
+  checkInstructionSizes();
+  scriptTests();
+  const present = files.filter((file) => existsSync(file)).map((file) => `"${file}"`);
+  const prettierConfig = files.some((file) => /^\.prettier|^package\.json$/.test(file));
+  // cmd.exe takes 8,191 characters at most: a longer list checks everything.
+  if (prettierConfig || present.join(' ').length > 7_000)
+    step('Prettier', 'pnpm exec prettier --check .');
+  else if (present.length > 0)
+    step(
+      'Prettier, changed files',
+      `pnpm exec prettier --check --ignore-unknown ${present.join(' ')}`,
+    );
+
+  if (touched.contract) checkApiContract();
+  if (touched.typescript) {
+    // The changed packages and every package that depends on one, committed or not.
+    const affected = `--filter="...[${base}]"`;
+    step('Playwright browser', PLAYWRIGHT_INSTALL);
+    step(
+      'Lint, type check, build and smoke test, affected packages (Turborepo)',
+      `pnpm exec turbo run ${turboTasks} ${affected}`,
+    );
+    step(
+      "Tests other than the server's, affected packages (Turborepo)",
+      `pnpm exec turbo run test ${affected} --filter="!@fox-drop/server"`,
+    );
+  }
+  if (touched.server) {
+    // Every test that starts the app imports every module, so Vitest's
+    // `--changed` runs two thirds of the files for a change to one module
+    // (162 of 242, 170 s). A change inside modules runs those modules' tests;
+    // anything else in the server, `--changed` with forceRerunTriggers.
+    const server = files.filter((file) => file.startsWith('apps/server/'));
+    const modules = new Set(
+      server.map((file) => /^apps\/server\/(src\/modules\/[\w-]+)\//.exec(file)?.[1]),
+    );
+    const scope =
+      server.length > 0 && !modules.has(undefined)
+        ? [...modules, 'test/'].join(' ')
+        : `--changed ${base}`;
+    step(
+      `Server tests: ${scope}`,
+      `pnpm --filter @fox-drop/server exec vitest run ${scope} --passWithNoTests`,
+    );
+  }
+
+  if (!touched.dartScope) return;
+  checkFlutterVersion();
+  checkDartWorkspace();
+  if (files.some((file) => file.startsWith('packages/core_l10n/'))) checkLocalizations();
+  // The changed Dart packages and the packages that depend on them, or all.
+  // Melos's own --diff sees commits only, not the working tree.
+  const changedPackages = new Set(
+    files.flatMap((file) => {
+      const dir = /^(apps|packages)\/[\w-]+/.exec(file)?.[0];
+      const pubspec = dir && path.join(dir, 'pubspec.yaml');
+      if (!pubspec || !existsSync(pubspec)) return [];
+      return [/^name:\s*(\S+)/m.exec(readFileSync(pubspec, 'utf8'))[1]];
+    }),
+  );
+  const which =
+    touched.dartScope === 'all'
+      ? ''
+      : `${[...changedPackages].map((name) => `--scope=${name}`).join(' ')} --include-dependents`;
+  const label = touched.dartScope === 'all' ? 'all packages' : 'changed packages';
+  // One analyzer over the workspace takes no longer than over a few packages.
+  step('Dart analyze', 'dart run melos run analyze --no-select');
+  // Melos fails a script whose filters match no package: list them first.
+  const melos = (name, script, filters) => {
+    if (read(`dart run melos list --parsable ${which} ${filters}`).trim())
+      step(`${name}, ${label}`, `dart run melos run ${script} --no-select ${which}`);
+  };
+  melos('Dart format', 'format:check', '');
+  melos('Dart tests', 'test:dart', '--dir-exists=test --no-flutter');
+  melos('Flutter tests', 'test:flutter', '--dir-exists=test --flutter');
+}
+
 const PARTS = ['contract', 'format', 'typescript', 'server', 'dart', 'flutter'];
 const args = process.argv.slice(2);
+const changed = args.find((arg) => /^--changed(=[\w./^~-]+)?$/.test(arg));
+if (changed) {
+  if (args.length > 1) {
+    console.error('verify: --changed takes no part or shard: it picks them from the change.');
+    process.exit(1);
+  }
+  verifyChanged(changed.split('=')[1] ?? 'origin/main');
+  console.log('\nverify: the checks of the change passed');
+  process.exit(0);
+}
 const shard = args.find((arg) => arg.startsWith('--shard='))?.slice('--shard='.length);
 const named = args.filter((arg) => arg !== `--shard=${shard}`);
 const unknown = named.filter((arg) => !PARTS.includes(arg));
@@ -216,19 +337,11 @@ if (shard !== undefined && !(parts.size === 1 && (parts.has('server') || parts.h
 if (parts.has('contract')) checkApiContract();
 if (parts.has('format')) {
   checkInstructionSizes();
-  step('Claude Code hooks', 'node --test .claude/hooks/hooks.test.mjs');
+  scriptTests();
   step('Prettier', 'pnpm exec prettier --check .');
 }
 
-const turboTasks = 'lint:root lint typecheck build test:e2e';
-if (parts.has('typescript')) {
-  // The web apps' smoke tests run in Chromium; this downloads it once.
-  step(
-    'Playwright browser',
-    // One app at a time: two installs at once race on the shared browser cache.
-    'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium',
-  );
-}
+if (parts.has('typescript')) step('Playwright browser', PLAYWRIGHT_INSTALL);
 if (parts.has('typescript') && parts.has('server') && shard === undefined) {
   // One Turborepo run, so the server's tests overlap the rest.
   step(
