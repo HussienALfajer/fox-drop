@@ -12,14 +12,43 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { changedFiles, classify } from './classify-changes.mjs';
+import { gitDir, pinnedFlutterBin, releaseLock, takeLock } from './verify-support.mjs';
 
-// `fvm install` links the Flutter pinned in .fvmrc at .fvm/flutter_sdk; use it
-// before any Flutter on PATH. CI puts the pinned Flutter on PATH instead.
-const fvmFlutter = path.resolve('.fvm', 'flutter_sdk', 'bin');
-if (existsSync(fvmFlutter)) process.env.PATH = `${fvmFlutter}${path.delimiter}${process.env.PATH}`;
+// One check at a time in a folder (docs/claude-code-workflow.md, phase 6): two
+// at once share the Playwright ports and write packages/core_api together.
+// The Stop hook, the checker and a manual run all come through here. Exit 3
+// says another check is running.
+const BUSY = 3;
+const lockDir = gitDir();
+if (!lockDir) {
+  console.error('verify: run it inside the repository, with git 2.31 or later.');
+  process.exit(1);
+}
+const lockFile = path.join(lockDir, 'verify.lock');
+const lock = takeLock(lockFile, { command: process.argv.slice(2).join(' ') });
+if (!lock.taken) {
+  const { pid, command, started } = lock.holder ?? {};
+  console.error(
+    `verify: another check is running in this folder (process ${pid ?? '?'}, ` +
+      `\`verify.mjs ${command ?? ''}\`, started ${started ?? '?'}). Wait for it to end, then run this one again.` +
+      ` If no check is running, delete ${lockFile.replaceAll('\\', '/')}.`,
+  );
+  process.exit(BUSY);
+}
+process.on('exit', () => releaseLock(lockFile));
+// Ctrl+C and a closed terminal release the lock too; a hard kill leaves it
+// stale, and the next check takes it over (verify-support.mjs).
+process.on('SIGINT', () => process.exit(130));
+process.on('SIGHUP', () => process.exit(129));
 
-function run(command, cwd = '.') {
-  const result = spawnSync(command, { shell: true, stdio: 'inherit', cwd });
+// `fvm install` links the Flutter pinned in .fvmrc at .fvm/flutter_sdk; use it,
+// or the main checkout's in a worktree, before any Flutter on PATH. CI puts the
+// pinned Flutter on PATH instead.
+const fvmFlutter = pinnedFlutterBin(path.resolve('.'));
+if (fvmFlutter) process.env.PATH = `${fvmFlutter}${path.delimiter}${process.env.PATH}`;
+
+function run(command, cwd = '.', env = process.env) {
+  const result = spawnSync(command, { shell: true, stdio: 'inherit', cwd, env });
   return result.status ?? 1;
 }
 
@@ -37,9 +66,9 @@ function fail(step) {
   process.exit(1);
 }
 
-function step(name, command, cwd = '.') {
+function step(name, command, cwd = '.', env = process.env) {
   console.log(`\n=== ${name}`);
-  if (run(command, cwd) !== 0) fail(name);
+  if (run(command, cwd, env) !== 0) fail(name);
 }
 
 // Dart packages that have a test folder, split by whether they need Flutter.
@@ -67,13 +96,19 @@ const UNLISTED_SECONDS = 30;
 // The Flutter packages with tests of shard `<index>/<count>`: the slowest
 // first, each to the shard with the least so far. Every package lands in
 // exactly one shard.
-function flutterShard(spec) {
-  const [index, count] = spec.split('/').map(Number);
-  if (index < 1 || index > count) fail(`--shard=${spec}`);
-  const names = read('dart run melos list --dir-exists=test --flutter')
+// The names of the packages Melos lists for these filters (it prints names
+// for people, paths with --parsable).
+function packageNames(filters) {
+  return read(`dart run melos list ${filters}`)
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => /^[a-z][a-z0-9_]*$/.test(line));
+}
+
+function flutterShard(spec) {
+  const [index, count] = spec.split('/').map(Number);
+  if (index < 1 || index > count) fail(`--shard=${spec}`);
+  const names = packageNames('--dir-exists=test --flutter');
   // Melos prints the names for people; the paths are its parsable list. A
   // shard never tests nothing silently because a name was not read.
   const paths = dartPackagesWithTests('--flutter').split(/\r?\n/).filter(Boolean);
@@ -96,7 +131,11 @@ function checkFlutterVersion() {
   const pinned = JSON.parse(readFileSync('.fvmrc', 'utf8')).flutter;
   const installed = JSON.parse(read('flutter --version --machine')).frameworkVersion;
   if (installed === pinned) return;
-  const message = `Flutter ${installed} is installed, .fvmrc pins ${pinned}.`;
+  const message =
+    `Flutter ${installed} is installed, .fvmrc pins ${pinned}.` +
+    (fvmFlutter
+      ? ''
+      : ' Run `fvm install` in the main checkout; a worktree uses its .fvm/flutter_sdk.');
   if (process.env.CI) {
     console.error(`\n${message}`);
     fail('Flutter version');
@@ -208,7 +247,7 @@ const PLAYWRIGHT_INSTALL =
 function scriptTests() {
   step(
     'Claude Code hooks and scripts',
-    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs',
   );
 }
 
@@ -295,10 +334,20 @@ function verifyChanged(since) {
   const label = touched.dartScope === 'all' ? 'all packages' : 'changed packages';
   // One analyzer over the workspace takes no longer than over a few packages.
   step('Dart analyze', 'dart run melos run analyze --no-select');
-  // Melos fails a script whose filters match no package: list them first.
+  // Filters on `melos run` replace the script's own packageFilters, and
+  // --include-dependents adds the dependents after the other filters, Flutter
+  // apps under --no-flutter too: a scoped test:dart ran `dart test` in them.
+  // So take the changed packages and their dependents that also pass the
+  // script's filters, and name them in MELOS_PACKAGES, as the Flutter shards
+  // do. Melos fails a script whose filters match no package: skip it then.
+  const scoped = new Set(packageNames(which));
   const melos = (name, script, filters) => {
-    if (read(`dart run melos list --parsable ${which} ${filters}`).trim())
-      step(`${name}, ${label}`, `dart run melos run ${script} --no-select ${which}`);
+    const names = packageNames(filters).filter((each) => scoped.has(each));
+    if (names.length === 0) return;
+    step(`${name}, ${label}`, `dart run melos run ${script} --no-select`, '.', {
+      ...process.env,
+      MELOS_PACKAGES: names.join(','),
+    });
   };
   melos('Dart format', 'format:check', '');
   melos('Dart tests', 'test:dart', '--dir-exists=test --no-flutter');

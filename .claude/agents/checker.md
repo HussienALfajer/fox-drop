@@ -15,4 +15,4 @@ You run the FOX DROP check command and report the result. You never edit files a
    - every error in that step: `path:line`, the rule or test name, and the message, copied exactly;
    - any `verify: warning:` lines.
 
-Do not guess causes, suggest fixes or rerun with other options. If `pnpm` or `dart` is not found, or `pnpm install` has not been run, say that and stop.
+If it exits with `verify: another check is running in this folder`, report that line and stop: only one check runs at a time in a folder. Do not guess causes, suggest fixes or rerun with other options. If `pnpm` or `dart` is not found, or `pnpm install` has not been run, say that and stop.

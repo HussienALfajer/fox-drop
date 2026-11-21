@@ -4,16 +4,21 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { pinnedFlutterBin } from '../../scripts/verify-support.mjs';
+import { recordEdit } from './stop-verify.mjs';
+
 const input = JSON.parse(readFileSync(0, 'utf8'));
 const file = input.tool_input?.file_path;
 const root = process.env.CLAUDE_PROJECT_DIR ?? input.cwd;
 if (!file || !existsSync(file)) process.exit(0);
 const relative = path.relative(root, path.resolve(file));
 if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) process.exit(0);
+// The Stop hook checks only a session that edited files itself.
+recordEdit(input.session_id, relative);
 
-// The same Dart as `pnpm verify`: the FVM-pinned Flutter when it is installed.
-const fvmFlutter = path.join(root, '.fvm', 'flutter_sdk', 'bin');
-if (existsSync(fvmFlutter)) process.env.PATH = `${fvmFlutter}${path.delimiter}${process.env.PATH}`;
+// The same Dart as `pnpm verify`: the FVM-pinned Flutter, the main checkout's in a worktree.
+const fvmFlutter = pinnedFlutterBin(root);
+if (fvmFlutter) process.env.PATH = `${fvmFlutter}${path.delimiter}${process.env.PATH}`;
 
 const prettier = path.join(root, 'node_modules', 'prettier', 'bin', 'prettier.cjs');
 const options = { cwd: root, encoding: 'utf8' };

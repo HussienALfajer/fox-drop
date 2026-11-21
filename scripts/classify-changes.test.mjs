@@ -102,6 +102,7 @@ describe('the change classifier', () => {
   it('keeps what CI sets for its own workflow and verify.mjs, without local Dart checks', () => {
     assert.equal(flags(['.github/workflows/ci.yml']), 'code dart native build typescript');
     assert.equal(flags(['scripts/verify.mjs']), 'code dart build typescript');
+    assert.equal(flags(['scripts/verify-support.mjs']), 'code dart build typescript');
   });
 
   it('lists every spec file a test reads', () => {
