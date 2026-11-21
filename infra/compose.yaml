@@ -84,7 +84,7 @@ services:
       retries: 20
 
   valkey:
-    image: valkey/valkey:9.1.3-alpine
+    image: valkey/valkey:9.2.0-alpine
     restart: unless-stopped
     # Holds nothing that cannot be rebuilt (E2), so nothing is saved to disk.
     # At the limit writes fail instead of the container being killed.
@@ -197,7 +197,7 @@ services:
   # read with the reader key, behind nginx's cached /media/ on every host.
   imgproxy:
     # The same image as the development compose.yaml (infra.test.mjs).
-    image: darthsim/imgproxy:v4.0.22
+    image: darthsim/imgproxy:v4.0.24
     restart: unless-stopped
     read_only: true
     tmpfs: [/tmp]
@@ -294,7 +294,7 @@ services:
   # channels' history, so a restart loses it and the apps fetch the full state.
   centrifugo:
     # The same image as the development compose.yaml (infra.test.mjs).
-    image: centrifugo/centrifugo:v6.10.2
+    image: centrifugo/centrifugo:v6.10.3
     restart: unless-stopped
     read_only: true
     cap_drop: [ALL]
