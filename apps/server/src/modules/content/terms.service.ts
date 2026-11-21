@@ -7,6 +7,8 @@ import { ContentRefusedError, type ContentEdit } from './content.service.js';
 import { TERMS_MAX, type TermsAudience } from './lists.js';
 import { termsAcceptances, termsVersions } from './schema.js';
 
+// CI timing probe for phase 5 of docs/claude-code-workflow.md; this pull request is closed unmerged.
+
 export interface TermsVersion {
   audience: TermsAudience;
   version: number;
