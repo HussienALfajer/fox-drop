@@ -4,20 +4,16 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 5 of `docs/claude-code-workflow.md`: CI filters. Built on `chore/ci-filters` (status in «Phase 5»); left: the measurements after the merge.
+Phase 6 item 3 of `docs/claude-code-workflow.md`: subagents on Sonnet (status under «Phase 6»).
 
-- **Branch:** `chore/ci-filters`.
-- **Docs:** `docs/claude-code-workflow.md`, «Phase 5»; `scripts/classify-changes.mjs` and its test; `.github/workflows/ci.yml`; `renovate.json`.
+- **Branch:** `chore/subagents-sonnet`.
+- **Files:** `.claude/settings.json` (`env`), `.claude/agents/builder.md`.
 
 ### Plan
 
-- [x] Markdown never sets a code, Dart or Flutter job; only `SPEC_FILES_READ_BY_TESTS` count as code, with a test that fails when a test reads a spec file not in the list.
-- [x] Native release builds on a pull request only for a native project, a pubspec or lock file, a package with native code, `.fvmrc` or the workflow, or the `native-builds` label.
-- [x] `verify` requires `android-release`.
-- [x] Cache CocoaPods and the Swift packages in the iOS jobs.
-- [x] A merge of specs or docs alone builds and deploys nothing.
-- [x] Renovate groups GitHub Actions updates weekly.
-- [ ] Measure a docs-only and a server-only pull request (done when under 2 and 5 minutes).
+- [x] `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` in the project settings.
+- [x] A `builder` agent on Sonnet for the work `general-purpose` did on Opus.
+- [ ] Next session: confirm a `general-purpose` or `builder` run shows Sonnet in its transcript.
 
 ## Waiting for the owner
 

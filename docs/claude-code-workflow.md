@@ -129,6 +129,8 @@ Measured on GitHub Actions (2026-11-21), from the run's start to its last job (b
 5. Split the `deploy` skill (30 KB) into a short file and reference files read when needed.
 6. Sonnet 5.5 for docs-only, Renovate and small fixes; Opus 5.5 at medium for slices. Never switch models mid-session (it rewrites the prompt cache).
 
+Status of item 3 (2026-11-21): built on `chore/subagents-sonnet`. `.claude/settings.json` sets `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` under `env`, without `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`: the docs' order is the call's `model` parameter, then the agent's `model` field, then this variable, then the main session's model. So `general-purpose` and any agent without a `model` field now run on Sonnet, while `checker` and `Explore` keep Haiku, `reviewer` keeps Opus until item 4 picks its model, and the built-in `Plan` still inherits the main session's model. The 41 `general-purpose` runs so far were spec writing and condensing, research, the short `CLAUDE.md` rewrite and pieces of slices (2.9's admin panel and Flutter apps, a review's fixes); research has `claude-code-guide` and `web-fetch`, and the rest goes to a new `builder` agent on Sonnet at medium effort, which edits only the files it is given, never commits, and reports in 250 words.
+
 ## Phase 7: verification that catches more
 
 From the verification post:
