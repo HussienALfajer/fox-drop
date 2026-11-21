@@ -415,3 +415,386 @@ test('opens the statement, prints it and exports it to Excel', async ({ page }) 
   await page.getByRole('button', { name: /تنزيل/ }).click();
   expect((await download).url()).toContain(`/private-docs/exports/${exportId}.xlsx`);
 });
+
+// RA R11 (RA-23): the delivery fee and the customer total are in the stubs'
+// answers on purpose, so a page that rendered them would show them.
+const FEE = '3500';
+const CUSTOMER_TOTAL = '23500';
+
+async function expectNoFeeOrCustomerTotal(page: Page) {
+  const text = await page.getByRole('main').innerText();
+  expect(text).not.toMatch(/رسوم التوصيل|أجرة التوصيل|إجمالي|الإجمالي|المجموع/);
+  expect(text).not.toContain('35.00');
+  expect(text).not.toContain('235.00');
+}
+
+// RA §17 (RA-29): every owner feature but receiving opens from a browser.
+test('opens every owner page of the portal and shows its key content', async ({ page }) => {
+  await signedOutApi(page);
+  await page.route('**/v1/merchant/auth/portal/session', (route) =>
+    route.fulfill({ json: session }),
+  );
+  const orderId = '0190f3a0-0000-7000-8000-000000000010';
+  const owner = {
+    testOrder: false,
+    commissionBp: 1500,
+    commission: '3000',
+    discountShare: '0',
+    discountOnDelivery: false,
+    merchantNet: '17000',
+  };
+  const now = new Date().toISOString();
+  await page.route('**/v1/merchant/orders', (route) =>
+    route.fulfill({
+      json: {
+        orders: [{ ...boardOrder(2), deliveryFee: FEE, total: CUSTOMER_TOTAL }],
+        prepTime: {},
+      },
+    }),
+  );
+  await page.route(`**/v1/merchant/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: { ...boardOrder(2), owner, deliveryFee: FEE, total: CUSTOMER_TOTAL },
+        timeline: [{ step: 'placed', at: now }],
+      },
+    }),
+  );
+  await page.route('**/v1/merchant/orders/history*', (route) =>
+    route.fulfill({
+      json: {
+        owner: true,
+        fromDay: '2026-11-14',
+        toDay: '2026-11-21',
+        orders: [
+          {
+            id: orderId,
+            number: '10001',
+            placedAt: now,
+            day: '2026-11-21',
+            status: 'delivered',
+            testOrder: false,
+            redelivery: false,
+            itemCount: 2,
+            currency: 'TRY',
+            itemsValue: '20000',
+            owner,
+            deliveryFee: FEE,
+            total: CUSTOMER_TOTAL,
+          },
+        ],
+        next: null,
+      },
+    }),
+  );
+  const figures = (received: number) => ({
+    received,
+    acceptedByYou: received,
+    acceptedByOperations: 0,
+    rejected: 0,
+    rejections: [],
+    unanswered: 0,
+    acceptanceBp: 10000,
+    delivered: received,
+    sales: '20000',
+    averageOrder: '20000',
+    commission: '3000',
+    discounts: '0',
+    net: '17000',
+    acceptMinutes: 2,
+    prepActualMinutes: 12,
+    prepChosenMinutes: 15,
+    lateBp: 0,
+    readyNotPressed: 0,
+    captainWaitMinutes: 3,
+    rating: { count: 1, average: 4 },
+    topByQuantity: [
+      {
+        itemId: '0190f3a0-0000-7000-8000-000000000011',
+        name: 'شاورما',
+        quantity: 2,
+        sales: '20000',
+      },
+    ],
+    topBySales: [],
+    hours: [{ hour: 13, delivered: received }],
+    pauseMinutes: { restaurant: 0, ops: 0, auto: 0 },
+    deliveryFee: FEE,
+    total: CUSTOMER_TOTAL,
+  });
+  await page.route('**/v1/merchant/figures*', (route) =>
+    route.fulfill({
+      json: { from: now, to: now, currency: 'TRY', current: figures(7), previous: figures(5) },
+    }),
+  );
+  await page.route('**/v1/merchant/ratings*', (route) =>
+    route.fulfill({
+      json: {
+        asOf: now,
+        count: 1,
+        average: 4,
+        distribution: [5, 4, 3, 2, 1].map((stars) => ({ stars, count: stars === 4 ? 1 : 0 })),
+        ratings: [
+          {
+            stars: 4,
+            reasons: [{ code: 'taste', label: 'الطعم' }],
+            comment: 'وجبة ممتازة',
+            day: '2026-11-20',
+            customerName: 'خالد المحمد',
+            orderNumber: '10001',
+          },
+        ],
+        more: false,
+      },
+    }),
+  );
+  await page.route('**/v1/merchant/contact', (route) =>
+    route.fulfill({ json: { phone: '+905550001122', whatsapp: '+905550001122' } }),
+  );
+  await page.route('**/v1/merchant/content', (route) =>
+    route.fulfill({
+      json: {
+        reasons: {
+          merchant_ticket_type: [{ code: 'other', label: 'مشكلة أخرى', note: 'optional' }],
+        },
+        faq: [{ question: 'كيف أغيّر سعراً؟', answer: 'من القائمة.' }],
+      },
+    }),
+  );
+  await page.route('**/v1/merchant/reports', (route) => route.fulfill({ json: { tickets: [] } }));
+  const menu = {
+    categories: [
+      {
+        id: '0190f3a0-0000-7000-8000-000000000012',
+        name: 'وجبات',
+        hidden: false,
+        available: true,
+        switchedOff: null,
+        window: null,
+        pending: [],
+        items: [
+          {
+            id: '0190f3a0-0000-7000-8000-000000000011',
+            code: '0011',
+            name: 'شاورما',
+            description: null,
+            photoKey: null,
+            price: { amount: '10000', currency: 'TRY' },
+            available: true,
+            switchedOff: null,
+            hidden: false,
+            optionGroups: [],
+            pending: [],
+          },
+        ],
+      },
+    ],
+    optionGroups: [],
+  };
+  await page.route('**/v1/merchant/menu', (route) => route.fulfill({ json: menu }));
+  await page.route('**/v1/merchant/menu/price-log', (route) =>
+    route.fulfill({ json: { entries: [] } }),
+  );
+  await page.route('**/v1/merchant/menu/customer-preview', (route) =>
+    route.fulfill({ json: { menu: [] } }),
+  );
+  await page.route('**/v1/merchant/account', (route) =>
+    route.fulfill({
+      json: {
+        currency: 'TRY',
+        balance: '4600',
+        settlementDate: '2026-11-21',
+        commissionBp: 1500,
+        nextCommission: null,
+        todayFrom: now,
+        pickups: [],
+        weekFrom: null,
+        weekLines: [],
+      },
+    }),
+  );
+  await page.route('**/v1/merchant/statements', (route) =>
+    route.fulfill({
+      json: {
+        statements: [
+          {
+            id: '0190f3a0-0000-7000-8000-000000000031',
+            cutoff: now,
+            periodFrom: now,
+            currency: 'TRY',
+            weekTotal: '4600',
+            totalDue: '4600',
+            status: 'unpaid',
+            unpaid: '4600',
+          },
+        ],
+      },
+    }),
+  );
+  await page.route('**/v1/merchant/receipts', (route) => route.fulfill({ json: { receipts: [] } }));
+  await page.route('**/v1/merchant/staff', (route) =>
+    route.fulfill({
+      json: {
+        staff: [
+          {
+            accountId: session.accountId,
+            role: 'owner',
+            name: 'سامر',
+            phone: '+963912345678',
+            devices: 1,
+            lastActiveAt: null,
+          },
+        ],
+      },
+    }),
+  );
+  await page.route('**/v1/merchant/devices', (route) =>
+    route.fulfill({ json: { withoutDevice: false, devices: [] } }),
+  );
+  await page.route('**/v1/merchant/portal-sessions', (route) =>
+    route.fulfill({ json: { sessions: [] } }),
+  );
+  await page.route('**/v1/merchant/restaurant/hours', (route) =>
+    route.fulfill({
+      json: {
+        periods: [{ weekday: 1, opensAt: 540, closesAt: 1380 }],
+        holiday: null,
+        defaultPrepMin: 20,
+        prepFloorMin: 5,
+        prepCeilingMin: 90,
+        maxActiveOrders: null,
+        minimumOrder: { amount: '5000', currency: 'TRY' },
+        coverage: { kind: 'radius', radiusMetres: 5000, zoneCount: null },
+        commissionBp: 1500,
+        settlementWeekday: 'saturday',
+      },
+    }),
+  );
+  await page.route('**/v1/merchant/settings/pickup-currencies', (route) =>
+    route.fulfill({
+      json: {
+        baseCurrency: { currency: 'TRY', name: 'الليرة التركية' },
+        accepted: [],
+        choices: [],
+      },
+    }),
+  );
+  const main = page.getByRole('main');
+
+  await test.step('board, read only', async () => {
+    await page.goto('/orders');
+    await expect(page.getByRole('heading', { name: 'جديدة (1)' })).toBeVisible();
+    await expect(page.getByRole('link', { name: '#10001' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /قبول|رفض|جاهز/ })).toHaveCount(0);
+    await expectNoFeeOrCustomerTotal(page);
+  });
+
+  await test.step('order', async () => {
+    await page.goto(`/orders/${orderId}`);
+    await expect(main.getByRole('heading', { name: 'الطلب #10001' })).toBeVisible();
+    await expect(main.getByText(/قيمة الأصناف.*200\.00/)).toBeVisible();
+    await expect(main.getByText('صافيك من الطلب', { exact: false })).toBeVisible();
+    await expect(main.getByText('وصل الطلب', { exact: false })).toBeVisible();
+    await expectNoFeeOrCustomerTotal(page);
+  });
+
+  await test.step('history', async () => {
+    await page.goto('/history');
+    await expect(main.getByRole('heading', { name: 'السجل' })).toBeVisible();
+    await expect(main.getByRole('link', { name: '#10001' })).toBeVisible();
+    await expect(main.getByText('200.00', { exact: false }).first()).toBeVisible();
+    await expectNoFeeOrCustomerTotal(page);
+  });
+
+  await test.step('reports', async () => {
+    await page.goto('/reports');
+    await expect(main.getByRole('heading', { name: 'التقارير' })).toBeVisible();
+    await expect(main.getByText('الطلبات المستلمة', { exact: true })).toBeVisible();
+    await expect(main.getByText('الأكثر طلباً بالكمية')).toBeVisible();
+    await expectNoFeeOrCustomerTotal(page);
+  });
+
+  // RA-24 (RA §13, R16): no customer, no order, no reply.
+  await test.step('ratings, without a customer name or a reply', async () => {
+    await page.goto('/ratings');
+    await expect(main.getByRole('heading', { name: 'التقييمات' })).toBeVisible();
+    await expect(main.getByText('وجبة ممتازة')).toBeVisible();
+    await expect(main.getByText('الطعم')).toBeVisible();
+    await expect(main.getByText('خالد المحمد')).toHaveCount(0);
+    await expect(main.getByText('10001')).toHaveCount(0);
+    await expect(main.getByRole('button', { name: /رد|reply/i })).toHaveCount(0);
+    // The period's date fields are textboxes; a reply would be a text area.
+    await expect(main.locator('textarea')).toHaveCount(0);
+  });
+
+  await test.step('status', async () => {
+    await page.goto('/status');
+    await expect(main.getByRole('heading', { name: 'الحالة' })).toBeVisible();
+    await expect(main.getByText('إيقاف مؤقت', { exact: true })).toBeVisible();
+  });
+
+  await test.step('menu', async () => {
+    await page.goto('/menu');
+    await expect(main.getByRole('heading', { name: 'وجبات' })).toBeVisible();
+  });
+
+  await test.step('menu tools', async () => {
+    await page.goto('/menu/quick-edit');
+    await expect(main.getByRole('heading', { name: 'تعديل سريع' })).toBeVisible();
+    await page.goto('/menu/bulk-price');
+    await expect(main.getByRole('heading', { name: 'تعديل جماعي للأسعار' })).toBeVisible();
+    await page.goto('/menu/price-log');
+    await expect(main.getByRole('heading', { name: 'سجل الأسعار' })).toBeVisible();
+    await expect(main.getByText('لا تغييرات في الأسعار بعد.')).toBeVisible();
+    await page.goto('/menu/preview');
+    await expect(main.getByRole('heading', { name: 'معاينة كما يراها الزبون' })).toBeVisible();
+  });
+
+  await test.step('money: account, statements and receipts', async () => {
+    await page.goto('/account');
+    await expect(main.getByRole('heading', { name: 'الحساب' })).toBeVisible();
+    await expect(main.getByText(/المستحق عليك حتى الآن.*46\.00/)).toBeVisible();
+    await page.goto('/statements');
+    await expect(main.getByRole('heading', { name: 'الكشوف' })).toBeVisible();
+    await expect(main.getByRole('link', { name: /46\.00/ })).toBeVisible();
+    await page.goto('/receipts');
+    await expect(main.getByRole('heading', { name: 'الإيصالات' })).toBeVisible();
+  });
+
+  await test.step('team: staff and devices', async () => {
+    await page.goto('/staff');
+    await expect(main.getByRole('heading', { name: 'الموظفون' })).toBeVisible();
+    await expect(main.getByText('سامر')).toBeVisible();
+    await page.goto('/devices');
+    await expect(main.getByRole('heading', { name: 'الأجهزة' })).toBeVisible();
+    await expect(main.getByRole('button', { name: 'ربط كمبيوتر بويندوز' })).toBeVisible();
+  });
+
+  await test.step('settings', async () => {
+    await page.goto('/settings');
+    await expect(main.getByRole('heading', { name: 'الأوقات والإعدادات' })).toBeVisible();
+    await expect(main.getByText('جدول الأسبوع')).toBeVisible();
+    await expect(main.getByText('حتى 5 كم من المطعم')).toBeVisible();
+  });
+
+  // RA-26 (RA §15): the team's call and WhatsApp.
+  await test.step('support, with the call and WhatsApp links to the team', async () => {
+    await page.goto('/support');
+    await expect(main.getByRole('heading', { name: 'الدعم' })).toBeVisible();
+    await expect(main.getByRole('link', { name: 'اتصال بالعمليات' })).toHaveAttribute(
+      'href',
+      'tel:+905550001122',
+    );
+    await expect(main.getByRole('link', { name: 'واتساب العمليات' })).toHaveAttribute(
+      'href',
+      'https://wa.me/905550001122',
+    );
+    await expect(main.getByText('كيف أغيّر سعراً؟')).toBeVisible();
+  });
+
+  await test.step('terms', async () => {
+    await page.goto('/terms');
+    await expect(main.getByRole('heading', { name: 'الشروط والخصوصية' })).toBeVisible();
+    await expect(main.getByText('الشروط', { exact: true })).toBeVisible();
+  });
+});

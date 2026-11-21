@@ -5,6 +5,14 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from L.1a (`test/dod-test-gaps`)
+
+- **Bugs the tests found, fixed here:** the customer's item sheet was a lazy `ListView`, so «أضف» could not scroll to a missing required group far above it (CU-10; now a `SingleChildScrollView` with a `Column`). The restaurant app's support WhatsApp link ended in a stray `?` without an order number (RA-26).
+- **Two definitions of «نسبة القبول»:** the restaurant's figures count orders the restaurant accepted itself over orders received less the cancelled-first ones (`reporting/restaurant-report.ts`); the panel's ranking counts every accepted order, operations' too, over accepted, rejected and unanswered (`reporting/report-tables.ts`). They agree only when the restaurant answered every order itself; `ordering/merchant-reads.test.ts` asserts that case. Whether RA §11 means them to differ is for the owner.
+- **Not yet:** RA-28's tray and window-to-front logic still has no test (a demo-only row).
+- **To check on staging:** nothing new; no migration, route or setting changed.
+- **Also:** this slice ran the phase 6 item 1 trial of `docs/claude-code-workflow.md` (`autoCompactWindow: 200000`); the session compacted once.
+
 ## Left from L.1 (`docs/dod-checklist`)
 
 - **Owner decision 2026-11-21:** the three gap slices proposed in `docs/launch/dod-checklist.md` («Gap slices») are approved as proposed and are in `docs/roadmap.md` under L.1: L.1a the 12 missing tests, L.1b the calls and notices not built (RA-10, CU-17, CA-13, CA-10, CU-19), L.1c cached browsing offline with the address commands' `Idempotency-Key` (CU-28), all before L.10.

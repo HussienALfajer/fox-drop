@@ -4,6 +4,7 @@ import 'package:core_auth/testing.dart';
 import 'package:core_api/core_api.dart';
 import 'package:customer/src/cart/cart.dart';
 import 'package:customer/src/cart/item_choice.dart';
+import 'package:customer/src/cart/item_sheet.dart';
 import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,6 +59,83 @@ void main() {
 
     expect(find.text('اختر 1 على الأقل'), findsOneWidget);
     expect(find.byKey(const Key('open-cart')), findsNothing);
+  });
+
+  // CU §9.x, CU-10: «أضف» with a required group missing scrolls to the first
+  // such group, even when it is far above the button.
+  testWidgets('adding with a required group missing scrolls to that group', (
+    tester,
+  ) async {
+    final page = shamPage();
+    final items = ((page['menu']! as List).first as Map)['items'] as List;
+    (items.first as Map)['optionGroups'] = [
+      {
+        'id': sizeGroupId,
+        'name': 'الحجم',
+        'minChoices': 1,
+        'maxChoices': 1,
+        'options': [
+          {
+            'id': normalId,
+            'name': 'عادي',
+            'priceDelta': try_(0),
+            'available': true,
+          },
+        ],
+      },
+      {
+        'id': extrasGroupId,
+        'name': 'إضافات كثيرة',
+        'minChoices': 0,
+        'maxChoices': 2,
+        'options': [
+          for (var i = 0; i < 20; i += 1)
+            {
+              'id':
+                  '00000000-0000-4000-8000-00000000e0${i.toString().padLeft(2, '0')}',
+              'name': 'إضافة $i',
+              'priceDelta': try_(0),
+              'available': true,
+            },
+        ],
+      },
+    ];
+    await browsingApp(tester, page: page);
+    // A short screen, so the sheet scrolls.
+    tester.view.physicalSize = const Size(800, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpAndSettle();
+    await openSham(tester);
+    await tester.tap(find.text('شاورما دجاج'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('item-add')),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byType(ItemSheet),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    final height =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    final group = find.text('الحجم');
+    expect(
+      group.evaluate().isEmpty ||
+          tester.getTopLeft(group).dy < 0 ||
+          tester.getTopLeft(group).dy > height,
+      isTrue,
+      reason: 'the group starts off screen',
+    );
+
+    await tester.tap(find.byKey(const Key('item-add')));
+    await tester.pumpAndSettle();
+    expect(find.text('اختر 1 على الأقل'), findsOneWidget);
+    final top = tester.getTopLeft(find.text('الحجم')).dy;
+    expect(top, inInclusiveRange(0, height));
   });
 
   testWidgets('adds a line with its live price and keeps the cart', (

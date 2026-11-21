@@ -150,102 +150,107 @@ class _ItemSheetState extends ConsumerState<ItemSheet> {
         padding: EdgeInsetsDirectional.only(
           bottom: MediaQuery.viewInsetsOf(context).bottom,
         ),
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            if (item.photoKey case final photo?)
-              MediaImage(
-                imageKey: photo,
-                width: MediaQuery.sizeOf(context).width,
-                height: 200,
-                label: item.name,
-              ),
-            ListTile(
-              title: Text(item.name),
-              subtitle: Text(
-                [
-                  ?item.description,
-                  l10n.formatMoney(item.price!.amount, currency),
-                ].join('\n'),
-              ),
-            ),
-            for (final group in item.optionGroups) ...[
+        // A Column, not a lazy ListView: every group is built, so «أضف» can
+        // scroll to a missing required group far above the button (CU-10).
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (item.photoKey case final photo?)
+                MediaImage(
+                  imageKey: photo,
+                  width: MediaQuery.sizeOf(context).width,
+                  height: 200,
+                  label: item.name,
+                ),
               ListTile(
-                key: _groupKeys.putIfAbsent(group.id, GlobalKey.new),
-                title: Text(group.name),
+                title: Text(item.name),
                 subtitle: Text(
-                  _highlighted.contains(group.id) &&
-                          _choice.chosen[group.id]!.length < group.minChoices
-                      ? l10n.customerChooseAtLeast(group.minChoices)
-                      : _rule(l10n, group),
+                  [
+                    ?item.description,
+                    l10n.formatMoney(item.price!.amount, currency),
+                  ].join('\n'),
                 ),
               ),
-              for (final option in group.options)
-                CheckboxListTile(
-                  key: Key('option-${option.id}'),
-                  value: _choice.chosen[group.id]!.contains(option.id),
-                  onChanged: option.available
-                      ? (_) => setState(() => _choice.toggle(group, option.id))
-                      : null,
-                  title: Text(option.name),
+              for (final group in item.optionGroups) ...[
+                ListTile(
+                  key: _groupKeys.putIfAbsent(group.id, GlobalKey.new),
+                  title: Text(group.name),
                   subtitle: Text(
-                    [
-                      if (BigInt.parse(option.priceDelta!.amount) !=
-                          BigInt.zero)
-                        '+${l10n.formatMoney(option.priceDelta!.amount, option.priceDelta!.currency)}',
-                      if (!option.available) l10n.customerUnavailable,
-                    ].join(' · '),
+                    _highlighted.contains(group.id) &&
+                            _choice.chosen[group.id]!.length < group.minChoices
+                        ? l10n.customerChooseAtLeast(group.minChoices)
+                        : _rule(l10n, group),
                   ),
                 ),
-            ],
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  key: const Key('item-less'),
-                  onPressed: _choice.quantity > 1
-                      ? () => setState(() => _choice.quantity--)
-                      : null,
-                  icon: const Icon(Icons.remove),
-                ),
-                Text('${_choice.quantity}'),
-                IconButton(
-                  key: const Key('item-more'),
-                  onPressed: _choice.quantity < maxQuantity
-                      ? () => setState(() => _choice.quantity++)
-                      : null,
-                  icon: const Icon(Icons.add),
-                ),
+                for (final option in group.options)
+                  CheckboxListTile(
+                    key: Key('option-${option.id}'),
+                    value: _choice.chosen[group.id]!.contains(option.id),
+                    onChanged: option.available
+                        ? (_) =>
+                              setState(() => _choice.toggle(group, option.id))
+                        : null,
+                    title: Text(option.name),
+                    subtitle: Text(
+                      [
+                        if (BigInt.parse(option.priceDelta!.amount) !=
+                            BigInt.zero)
+                          '+${l10n.formatMoney(option.priceDelta!.amount, option.priceDelta!.currency)}',
+                        if (!option.available) l10n.customerUnavailable,
+                      ].join(' · '),
+                    ),
+                  ),
               ],
-            ),
-            Padding(
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
-              child: TextField(
-                key: const Key('item-note'),
-                controller: _note,
-                maxLength: maxItemNote,
-                decoration: InputDecoration(
-                  hintText: l10n.customerItemNoteHint,
-                  errorText: noteError,
-                ),
-                onChanged: (value) => setState(() => _choice.note = value),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    key: const Key('item-less'),
+                    onPressed: _choice.quantity > 1
+                        ? () => setState(() => _choice.quantity--)
+                        : null,
+                    icon: const Icon(Icons.remove),
+                  ),
+                  Text('${_choice.quantity}'),
+                  IconButton(
+                    key: const Key('item-more'),
+                    onPressed: _choice.quantity < maxQuantity
+                        ? () => setState(() => _choice.quantity++)
+                        : null,
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
               ),
-            ),
-            if (widget.blocked case final message?)
-              ListTile(title: Text(message)),
-            Padding(
-              padding: const EdgeInsetsDirectional.all(16),
-              child: FilledButton(
-                key: const Key('item-add'),
-                onPressed: widget.blocked == null ? _add : null,
-                child: Text(
-                  l10n.customerAddFor(
-                    l10n.formatMoney(_choice.linePrice, currency),
+              Padding(
+                padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
+                child: TextField(
+                  key: const Key('item-note'),
+                  controller: _note,
+                  maxLength: maxItemNote,
+                  decoration: InputDecoration(
+                    hintText: l10n.customerItemNoteHint,
+                    errorText: noteError,
+                  ),
+                  onChanged: (value) => setState(() => _choice.note = value),
+                ),
+              ),
+              if (widget.blocked case final message?)
+                ListTile(title: Text(message)),
+              Padding(
+                padding: const EdgeInsetsDirectional.all(16),
+                child: FilledButton(
+                  key: const Key('item-add'),
+                  onPressed: widget.blocked == null ? _add : null,
+                  child: Text(
+                    l10n.customerAddFor(
+                      l10n.formatMoney(_choice.linePrice, currency),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

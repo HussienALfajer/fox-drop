@@ -4,25 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-L.1a The test gaps (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Built, test missing»): the 12 rows built without a test (AP-33b, RA-5, RA-9, RA-21, RA-23, RA-24, RA-26, RA-27, RA-29, CU-3, CU-5, CU-10), tests only; a test that finds a bug fixes it in the same slice. Then mark the rows covered in the checklist.
+L.1b Calls and notices (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Not built»): «اتصال بالكابتن» in the restaurant app during an active order, recorded (RA §22 item 10, RA-10), and in the customer app from pickup to the end (CU §19 item 17, CU-17); the captain's call and WhatsApp taps recorded and allowed only during the order (CA §19 item 13, CA-13); the waiting-pay line «بدأ احتساب أجر الانتظار» (CA §19 item 10, CA-10); the late apology at 20 minutes past the promised time (CU §19 item 19, CU-19). The owner calls the captain from a test order on the restaurant and customer apps.
 
-- **Branch:** `test/dod-test-gaps`.
-- **Experiment riding on it:** phase 6 item 1 of `docs/claude-code-workflow.md`. `.claude/settings.json` sets `autoCompactWindow: 200000` (since `chore/auto-compact-window`), so this session compacts near 200K. Work as usual; keep `TASKS.md` current so a compaction loses nothing. After the merge, the session that set the experiment measures this one with `scripts/claude-audit.mjs` and decides whether the setting stays.
+- **Branch:** `feat/dod-calls-and-notices`.
+- **Read first:** the rows' notes in `docs/launch/dod-checklist.md`; `docs/code/apps/captain.md` and `docs/code/apps/customer.md` («Not yet»); the spec sections the rows cite. CU-17 also carries a test gap: the map leaves at the end.
 
 ### Plan
 
-- [ ] Plan the 12 tests (which file each goes in).
-- [ ] Server tests (CU-3, CU-5, RA-21 and the rest that are server-side).
-- [ ] Web tests (AP-33b, RA-24's portal, RA-29).
-- [ ] Flutter tests (RA-5, RA-9, RA-23, RA-24's app, RA-26, RA-27, CU-10).
-- [ ] Mark the rows covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`.
+- [ ] Read the cited sections and write the plan here, one step per commit (server first: what records a call or WhatsApp tap, and who may read the captain's number when).
+- [ ] Mark RA-10, CU-17, CA-13, CA-10 and CU-19 covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`.
 
 ## Waiting for the owner
 
 - Phase 3 of `docs/claude-code-workflow.md`: the phase 4 session started at 75.7K tokens with one MCP delta (goal: under 45K, none). Left: the `marketing` and `social-media-skills` plugins, off only in the app's settings.
+- Phase 6 item 1 (`autoCompactWindow: 200000`): the session that set the trial measures L.1a's transcript with `scripts/claude-audit.mjs` and decides whether the setting stays.
 
 ## After that
 
-Launch readiness from L.2 (`docs/roadmap.md`); the gap slices L.1a `test/dod-test-gaps`, L.1b `feat/dod-calls-and-notices` and L.1c `feat/dod-offline-browsing` (owner approval 2026-11-21) come before L.10.
+L.1c `feat/dod-offline-browsing` (CU-28), then launch readiness from L.2 (`docs/roadmap.md`); the gap slices come before L.10.
 
 Branches of the later slices: L.2 `test/permission-matrix`, L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.

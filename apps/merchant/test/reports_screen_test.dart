@@ -244,6 +244,28 @@ void main() {
     await app.done(tester);
   });
 
+  // RA-23: the delivery fee and the customer total are in no report. The
+  // guarantee is the server's read
+  // (apps/server/src/modules/ordering/merchant-reads.test.ts); this checks
+  // that the screen has no such line.
+  testWidgets('the reports show no delivery fee and no customer total', (
+    tester,
+  ) async {
+    final app = _App(role: 'owner');
+    app.server.on('/v1/merchant/figures', [FakeAnswer(200, _answer())]);
+    await app.pump(tester, [FakeAnswer(200, _status())]);
+    await tester.tap(find.byKey(const Key('open-reports')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('metric-value-received')), findsOneWidget);
+    for (var scroll = 0; scroll < 6; scroll += 1) {
+      expect(find.textContaining('رسوم التوصيل'), findsNothing);
+      expect(find.textContaining('الإجمالي'), findsNothing);
+      await tester.drag(find.byType(ListView), const Offset(0, -400));
+      await tester.pumpAndSettle();
+    }
+    await app.done(tester);
+  });
+
   testWidgets('the daily summary shows a day and shares it as an image', (
     tester,
   ) async {

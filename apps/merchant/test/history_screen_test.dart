@@ -239,6 +239,45 @@ void main() {
     await app.done(tester);
   });
 
+  // RA-23: the customer's delivery fee and total never reach the history or
+  // an order's detail there. The guarantee is the server's read
+  // (apps/server/src/modules/ordering/merchant-reads.test.ts); this checks
+  // that the screen has no such line.
+  testWidgets('the history and an order there show no delivery fee and no '
+      'customer total', (tester) async {
+    final app = _App(role: 'owner');
+    app.server
+      ..on('/v1/merchant/orders/history', [
+        FakeAnswer(200, _page([_row(owner: _ownerMoney)], owner: true)),
+      ])
+      ..on('/v1/merchant/orders/$_orderId', [
+        FakeAnswer(200, {
+          'order': orderJson(
+            id: _orderId,
+            number: '10423',
+            status: 'delivered',
+          ),
+          'timeline': [
+            {'step': 'placed', 'at': '2026-11-07T12:00:00.000Z'},
+          ],
+        }),
+      ]);
+    await app.pump(tester, [FakeAnswer(200, _status())]);
+    await _open(tester);
+    void expectNone() {
+      expect(find.textContaining('التوصيل'), findsNothing);
+      expect(find.textContaining('الإجمالي'), findsNothing);
+    }
+
+    expect(find.textContaining('360 ₺'), findsOneWidget);
+    expectNone();
+    await tester.tap(find.byKey(const Key('history-order-$_orderId')));
+    await tester.pumpAndSettle();
+    expect(find.text('#10423'), findsOneWidget);
+    expectNone();
+    await app.done(tester);
+  });
+
   testWidgets('reads the next page after the cursor', (tester) async {
     final app = _App(role: 'owner');
     app.server.on('/v1/merchant/orders/history', [
