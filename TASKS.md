@@ -4,15 +4,18 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 6 item 5 of `docs/claude-code-workflow.md`: split the `deploy` skill into a short file and reference files (status under «Phase 6»).
+L.1a The test gaps (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Built, test missing»): the 12 rows built without a test (AP-33b, RA-5, RA-9, RA-21, RA-23, RA-24, RA-26, RA-27, RA-29, CU-3, CU-5, CU-10), tests only; a test that finds a bug fixes it in the same slice. Then mark the rows covered in the checklist.
 
-- **Branch:** `chore/deploy-skill-split`.
-- **Files:** `.claude/skills/deploy/SKILL.md`, `.claude/skills/deploy/references/*.md`, `docs/claude-code-workflow.md`.
+- **Branch:** `test/dod-test-gaps`.
+- **Experiment riding on it:** phase 6 item 1 of `docs/claude-code-workflow.md`. `.claude/settings.json` sets `autoCompactWindow: 200000` (since `chore/auto-compact-window`), so this session compacts near 200K. Work as usual; keep `TASKS.md` current so a compaction loses nothing. After the merge, the session that set the experiment measures this one with `scripts/claude-audit.mjs` and decides whether the setting stays.
 
 ### Plan
 
-- [x] Move each long section into a reference file; leave a table in `SKILL.md`.
-- [x] Status in the workflow doc.
+- [ ] Plan the 12 tests (which file each goes in).
+- [ ] Server tests (CU-3, CU-5, RA-21 and the rest that are server-side).
+- [ ] Web tests (AP-33b, RA-24's portal, RA-29).
+- [ ] Flutter tests (RA-5, RA-9, RA-23, RA-24's app, RA-26, RA-27, CU-10).
+- [ ] Mark the rows covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`.
 
 ## Waiting for the owner
 
