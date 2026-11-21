@@ -4,16 +4,15 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 6 item 4 of `docs/claude-code-workflow.md`: test the reviewer on past pull requests with a known bug (status under «Phase 6»).
+Phase 6 item 5 of `docs/claude-code-workflow.md`: split the `deploy` skill into a short file and reference files (status under «Phase 6»).
 
-- **Branch:** `chore/reviewer-test`.
-- **Files:** `docs/claude-code-workflow.md`, `.claude/agents/general-purpose.md`, `.claude/agents/reviewer.md`.
+- **Branch:** `chore/deploy-skill-split`.
+- **Files:** `.claude/skills/deploy/SKILL.md`, `.claude/skills/deploy/references/*.md`, `docs/claude-code-workflow.md`.
 
 ### Plan
 
-- [x] Check that a subagent without a `model` runs on Sonnet: it did not (the app does not pass `env`); `general-purpose.md` replaces the built-in on Sonnet.
-- [x] Eight past slices with a known bug and two controls, reviewed blind by Sonnet medium, Opus medium and Opus high.
-- [x] Results and the decision (Opus 5.5 medium stays) in the workflow doc.
+- [x] Move each long section into a reference file; leave a table in `SKILL.md`.
+- [x] Status in the workflow doc.
 
 ## Waiting for the owner
 
