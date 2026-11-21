@@ -41,7 +41,7 @@ services:
       retries: 10
 
   valkey:
-    image: valkey/valkey:9.1.3-alpine
+    image: valkey/valkey:9.2.0-alpine
     command: [valkey-server, --requirepass, '${VALKEY_PASSWORD:?copy .env.example to .env}']
     ports:
       - 127.0.0.1:${VALKEY_PORT:-6379}:6379
@@ -49,7 +49,7 @@ services:
   # Real time (architecture §6): the channels are infra/centrifugo/config.yaml;
   # the subscription proxies call the API running on this machine on port 3000.
   centrifugo:
-    image: centrifugo/centrifugo:v6.10.2
+    image: centrifugo/centrifugo:v6.10.3
     command: [centrifugo, --config, /centrifugo/config.yaml]
     environment:
       CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY: ${CENTRIFUGO_TOKEN_SECRET:?copy .env.example to .env}
@@ -120,7 +120,7 @@ services:
   # the reader key and serves /media/... on 8088, which the panel reaches
   # through Vite's /media proxy and the Android emulator at 10.0.2.2:8088.
   imgproxy:
-    image: darthsim/imgproxy:v4.0.22
+    image: darthsim/imgproxy:v4.0.24
     env_file: infra/imgproxy/imgproxy.env
     environment:
       IMGPROXY_S3_ENDPOINT: http://storage:3900
