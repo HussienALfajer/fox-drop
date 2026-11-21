@@ -11,8 +11,8 @@ L.1a The test gaps (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Built, t
 
 ### Plan
 
-- [ ] Plan the 12 tests (which file each goes in).
-- [ ] Server tests (CU-3, CU-5, RA-21 and the rest that are server-side).
+- [x] Plan the 12 tests (which file each goes in). Server rows (CU-3, CU-5, RA-21, RA-23 server side) in this session; a builder subagent does the Flutter rows in apps/merchant and apps/customer, another the web rows in apps/admin and apps/merchant-portal (none commits).
+- [x] Server tests (CU-3, CU-5, RA-21 and the rest that are server-side).
 - [ ] Web tests (AP-33b, RA-24's portal, RA-29).
 - [ ] Flutter tests (RA-5, RA-9, RA-23, RA-24's app, RA-26, RA-27, CU-10).
 - [ ] Mark the rows covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`.

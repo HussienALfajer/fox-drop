@@ -332,6 +332,31 @@ describe('the saved addresses (CU §7.3)', () => {
     expect(outside.json()).toMatchObject({ error: 'outside_zones' });
   });
 
+  it('refuse an address without its «بالقرب من», on adding and on editing', async () => {
+    const headers = await signedIn();
+    for (const fields of [
+      { ...home, landmark: undefined },
+      { ...home, landmark: '' },
+      { ...home, landmark: '  ' },
+    ]) {
+      const added = await call(headers, 'POST', '/v1/customer/addresses', {
+        ...fields,
+        isDefault: false,
+      });
+      expect(added.statusCode).toBe(400);
+    }
+    const saved = (
+      await call(headers, 'POST', '/v1/customer/addresses', { ...home, isDefault: false })
+    ).json();
+    const edited = await call(headers, 'PUT', `/v1/customer/addresses/${saved.id}`, {
+      ...home,
+      landmark: '',
+    });
+    expect(edited.statusCode).toBe(400);
+    const list = (await call(headers, 'GET', '/v1/customer/addresses')).json().addresses;
+    expect(list).toEqual([expect.objectContaining({ id: saved.id, landmark: home.landmark })]);
+  });
+
   it('edit every field, move the default, and pass it on when the default is deleted', async () => {
     const headers = await signedIn();
     const a = (
