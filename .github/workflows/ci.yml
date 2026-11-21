@@ -96,8 +96,15 @@ jobs:
   format:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      # Empty on a pull request from a fork: the fonts step below then skips.
+      FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
     steps:
+      # The whole history: the fonts guard scans every commit of a pull request
+      # for a font file (scripts/fonts.test.mjs), not only the tip.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
@@ -109,6 +116,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: node scripts/verify.mjs format
+
+      # Proves the fonts secret and the manifest agree. Skipped where the secret
+      # is absent (a pull request from a fork). The builds that bundle the fonts
+      # run this same command first (D.6 and D.7).
+      - name: Fetch the licensed fonts
+        if: env.FONTS_DEPLOY_KEY != ''
+        run: pnpm fonts:fetch
 
   typescript:
     needs: changes

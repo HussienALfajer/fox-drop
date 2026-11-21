@@ -33,6 +33,9 @@ build/
 google-services.json
 GoogleService-Info.plist
 
+# The licensed fonts, fetched by `pnpm fonts:fetch` (architecture §9.3); never committed
+.fonts/
+
 # Tests
 .verify/
 coverage/

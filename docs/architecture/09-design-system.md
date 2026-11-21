@@ -35,7 +35,7 @@ Tokens are W3C Design Tokens (JSON) in `packages/design-tokens`, compiled by **S
 ## 9.3 Typography
 
 - **CoFo Sans Pro Arabic** is the UI typeface (text, headings, buttons). **YR-Speed** is for display and promotional use and **Emad-Diana** is secondary. The brand guidelines name HTQaysSansPro, which is not in the pack; Emad-Diana is.
-- The fonts are licensed, not open: CoFo is "All rights reserved" (embedding flag `fsType` 4). **The font files stay outside this public repository** (fetched at build time into the apps and web bundles from a private location decided in D.1); the repository holds only their names, weights and metrics. Fonts are bundled in the apps and self-hosted on the web, never loaded from a third-party font CDN.
+- The fonts are licensed, not open: CoFo is "All rights reserved" (embedding flag `fsType` 4). **The font files stay outside this public repository** (they live in the private repository `HussienALfajer/fox-drop-fonts`; `docs/brand/fonts-manifest.json` pins its commit and every file's SHA-256, and `pnpm fonts:fetch` puts them in the ignored `.fonts/` before the apps and web bundles are built; a test refuses a font file in any commit of a pull request, by extension or by signature); the repository holds only their names, weights and metrics. Fonts are bundled in the apps and self-hosted on the web, never loaded from a third-party font CDN.
 - **Western digits everywhere** (AP §4.7), with tabular figures for money, timers and tables.
 
 ## 9.4 Icons
@@ -104,4 +104,4 @@ Flutter 3.47 moved Material and Cupertino out of the framework into `material_ui
 
 ## 9.11 Open until D.2 and D.3
 
-The darker orange's value, the three design directions, the font delivery location (D.1) and the icon grid details are decided in their slices, each with the owner's approval.
+The darker orange's value, the three design directions, and the icon grid details are decided in their slices, each with the owner's approval.
