@@ -38,7 +38,10 @@ class _PriceReportScreenState extends ConsumerState<PriceReportScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final page = ref.watch(restaurantPageProvider(widget.restaurantId)).value;
+    final page = ref
+        .watch(restaurantPageProvider(widget.restaurantId))
+        .value
+        ?.body;
     final items = [...?page?.menu.expand((category) => category.items)];
     // The menu's prices are in the city's base currency, as the shop price.
     final currency = items

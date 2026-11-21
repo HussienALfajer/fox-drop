@@ -2828,6 +2828,7 @@ class CustomerApi {
   ///
   ///
   /// Parameters:
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
   /// * [customerNewAddressDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -2839,6 +2840,7 @@ class CustomerApi {
   /// Returns a [Future] containing a [Response] with a [CustomerAddressDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<CustomerAddressDtoOutput>> customerProfileAddAddress({
+    required String idempotencyKey,
     required CustomerNewAddressDto customerNewAddressDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2850,7 +2852,10 @@ class CustomerApi {
     final _path = r'/v1/customer/addresses';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
       extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,

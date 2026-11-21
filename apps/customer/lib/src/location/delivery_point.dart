@@ -78,6 +78,9 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
   /// started is dropped, so the point is always the last one asked for.
   int _request = 0;
 
+  /// The last point request, which [retry] repeats.
+  Future<void> Function()? _last;
+
   @override
   DeliveryPointState build() => const PointUnset();
 
@@ -85,6 +88,7 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
 
   /// «استخدم موقعي الحالي».
   Future<void> useCurrentLocation() async {
+    _last = useCurrentLocation;
     final request = ++_request;
     state = const PointLocating();
     final result = await ref
@@ -102,6 +106,7 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
   /// A point the customer set on the map (CU §7.1, §7.4): exact, so no
   /// accuracy to ask about.
   Future<void> usePin(GeoPoint point) async {
+    _last = () => usePin(point);
     final request = ++_request;
     state = const PointLocating();
     await _check(request, point);
@@ -110,9 +115,19 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
   /// A saved address's pin (CU §10.3 item 1: changing the address at
   /// checkout changes the point used for browsing).
   Future<void> useAddress(String addressId, GeoPoint point) async {
+    _last = () => useAddress(addressId, point);
     final request = ++_request;
     state = const PointLocating();
     await _check(request, point, addressId: addressId);
+  }
+
+  /// The zone check failed (no connection, CU §4.5): pull to refresh and
+  /// the app's return to the foreground ask the last request again.
+  Future<void> retry() async {
+    final last = _last;
+    if (state case PointUnavailable(failure: null) when last != null) {
+      await last();
+    }
   }
 
   /// «احفظ هذا العنوان» saved the point as [addressId]: the point is now
@@ -120,6 +135,8 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
   void adoptAddress(String addressId) {
     final checked = state;
     if (checked is! PointChecked) return;
+    final point = checked.point;
+    _last = () => useAddress(addressId, point);
     state = PointChecked(
       point: checked.point,
       accuracyMetres: checked.accuracyMetres,

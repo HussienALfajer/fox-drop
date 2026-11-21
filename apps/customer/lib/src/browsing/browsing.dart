@@ -7,7 +7,10 @@ import '../api.dart';
 import '../auth.dart';
 import '../location/delivery_point.dart';
 import '../location/position.dart';
+import 'browse_cache.dart';
 import 'favourites.dart';
+
+export 'browse_cache.dart' show Browsed;
 
 /// The browsing point, or null before the zone check found one. The list
 /// and the page also follow the account, since an admin test account sees
@@ -45,11 +48,20 @@ class HomeView {
     required this.restaurants,
     required this.sections,
     this.banners = const [],
+    this.offline = false,
+    this.pending = false,
   });
 
   final List<RestaurantCard> restaurants;
   final List<HomeSection> sections;
   final List<HomeBanner> banners;
+
+  /// Shown from the last kept read while the server cannot be reached (CU
+  /// §4.5): «لا يوجد اتصال بالإنترنت» over it.
+  final bool offline;
+
+  /// The kept read, shown while the live read runs.
+  final bool pending;
 
   static const empty = HomeView(restaurants: [], sections: []);
 
@@ -84,26 +96,49 @@ String bannerPath(HomeBanner banner) => switch (banner.target) {
 };
 
 /// CU §8.1: the home's cards and sections for the point. Pull to refresh
-/// reads it again.
-final homeProvider = FutureProvider.autoDispose<HomeView>((ref) async {
-  final point = browsingPoint(ref);
-  if (point == null) return HomeView.empty;
-  final since = DateTime.now();
-  final response = await ref
-      .watch(coreApiProvider)
-      .getCustomerApi()
-      .customerBrowsingList(
-        latitude: '${point.latitude}',
-        longitude: '${point.longitude}',
-        home: 'true',
-      );
-  final data = response.data!;
-  heartsRead(ref, data.restaurants.map((card) => card.id), since);
-  return HomeView(
-    restaurants: data.restaurants.toList(),
-    sections: data.sections?.toList() ?? const [],
-    banners: data.banners?.toList() ?? const [],
+/// reads it again. CU §4.5: the last good read is kept and shown first, and
+/// offline (`browse_cache.dart`).
+final homeProvider = StreamProvider.autoDispose<HomeView>((ref) async* {
+  final account = browsingAccount(ref);
+  final api = ref.watch(coreApiProvider).getCustomerApi();
+  final place = await browsingPlace(ref);
+  if (place == null) {
+    yield HomeView.empty;
+    return;
+  }
+  final point = place.point;
+  final answers = browse<CustomerRestaurantListDtoOutput>(
+    ref,
+    key: browseHomeKey,
+    accountId: account,
+    point: point,
+    offline: place.offline,
+    read: () async => (await api.customerBrowsingList(
+      latitude: '${point.latitude}',
+      longitude: '${point.longitude}',
+      home: 'true',
+    )).data!,
+    encode: (body) => standardSerializers.serializeWith(
+      CustomerRestaurantListDtoOutput.serializer,
+      body,
+    ),
+    decode: (json) => standardSerializers.deserializeWith(
+      CustomerRestaurantListDtoOutput.serializer,
+      json,
+    )!,
+    seen: (body, since) =>
+        heartsRead(ref, body.restaurants.map((card) => card.id), since),
   );
+  await for (final answer in answers) {
+    final data = answer.body;
+    yield HomeView(
+      restaurants: data.restaurants.toList(),
+      sections: data.sections?.toList() ?? const [],
+      banners: data.banners?.toList() ?? const [],
+      offline: answer.offline,
+      pending: answer.pending,
+    );
+  }
 });
 
 /// A category's page (CU §8.2, slice 2.27a): that category's restaurants
@@ -131,22 +166,41 @@ final categoryRestaurantsProvider = FutureProvider.autoDispose
 String? categoriesText(AppLocalizations l10n, Iterable<String> names) =>
     names.isEmpty ? null : names.join(l10n.listSeparator);
 
-/// A restaurant's page and menu for the point (CU §9.1–9.3).
-final restaurantPageProvider = FutureProvider.autoDispose
-    .family<CustomerRestaurantPageDtoOutput?, String>((ref, id) async {
-      final point = browsingPoint(ref);
-      if (point == null) return null;
-      final since = DateTime.now();
-      final response = await ref
-          .watch(coreApiProvider)
-          .getCustomerApi()
-          .customerBrowsingPage(
-            restaurantId: id,
-            latitude: '${point.latitude}',
-            longitude: '${point.longitude}',
-          );
-      if (response.data case final page?) heartsRead(ref, [page.id], since);
-      return response.data;
+typedef RestaurantPage = CustomerRestaurantPageDtoOutput;
+
+/// A restaurant's page and menu for the point (CU §9.1–9.3), or null with
+/// no point. CU §4.5: the last [browseCachePages] pages read are kept and
+/// shown first, and offline (`browse_cache.dart`).
+final restaurantPageProvider = StreamProvider.autoDispose
+    .family<Browsed<RestaurantPage>?, String>((ref, id) async* {
+      final account = browsingAccount(ref);
+      final api = ref.watch(coreApiProvider).getCustomerApi();
+      final place = await browsingPlace(ref);
+      if (place == null) {
+        yield null;
+        return;
+      }
+      final point = place.point;
+      yield* browse<RestaurantPage>(
+        ref,
+        key: browsePageKey(id),
+        accountId: account,
+        point: point,
+        offline: place.offline,
+        read: () async => (await api.customerBrowsingPage(
+          restaurantId: id,
+          latitude: '${point.latitude}',
+          longitude: '${point.longitude}',
+        )).data!,
+        encode: (body) =>
+            standardSerializers.serializeWith(RestaurantPage.serializer, body),
+        decode: (json) => standardSerializers.deserializeWith(
+          RestaurantPage.serializer,
+          json,
+        )!,
+        seen: (body, since) => heartsRead(ref, [body.id], since),
+        save: (cache, entry) => cache.writePage(id, entry),
+      );
     });
 
 /// The restaurant's state as the list and the page give it.

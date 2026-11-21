@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { randomBytes, randomInt, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -93,12 +93,23 @@ async function signedIn() {
 }
 
 type Headers = Record<string, string>;
+// A save of an address takes an Idempotency-Key (CU §19 item 28): a fresh
+// one unless the test names its own.
 const call = (
   headers: Headers,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   url: string,
   payload?: object,
-) => app.inject({ method, url, headers, ...(payload ? { payload } : {}) });
+) =>
+  app.inject({
+    method,
+    url,
+    headers:
+      method === 'POST' && url === '/v1/customer/addresses'
+        ? { 'idempotency-key': randomUUID(), ...headers }
+        : headers,
+    ...(payload ? { payload } : {}),
+  });
 
 const at = ({ latitude, longitude }: Point) =>
   app.inject({
@@ -448,5 +459,116 @@ describe('the saved addresses (CU §7.3)', () => {
     expect((await call(other, 'PUT', `/v1/customer/addresses/${id}`, home)).statusCode).toBe(404);
     expect((await call(other, 'PUT', `/v1/customer/addresses/${id}/default`)).statusCode).toBe(404);
     expect((await call(other, 'GET', '/v1/customer/addresses')).json()).toEqual({ addresses: [] });
+  });
+});
+
+describe('a save of an address retried (CU §19 item 28)', () => {
+  const body = {
+    location: centre,
+    label: 'home',
+    customLabel: null,
+    street: 'شارع الجامع، بناء 4',
+    floor: null,
+    landmark: 'قرب جامع النور',
+    contactPhone: null,
+    recipientName: null,
+    directions: null,
+    isDefault: false,
+  };
+  const count = async (headers: Headers) =>
+    (await call(headers, 'GET', '/v1/customer/addresses')).json().addresses.length;
+
+  it('answers the first save to a repeat of its key, and saves once', async () => {
+    const headers = await signedIn();
+    const key = { ...headers, 'idempotency-key': randomUUID() };
+    const first = await call(key, 'POST', '/v1/customer/addresses', body);
+    const again = await call(key, 'POST', '/v1/customer/addresses', body);
+    expect(first.statusCode).toBe(201);
+    expect(again.statusCode).toBe(201);
+    expect(again.json()).toEqual(first.json());
+    expect(await count(headers)).toBe(1);
+    // Another account's key of the same value is its own.
+    const other = await signedIn();
+    const theirs = await call(
+      { ...other, 'idempotency-key': key['idempotency-key'] },
+      'POST',
+      '/v1/customer/addresses',
+      body,
+    );
+    expect(theirs.statusCode).toBe(201);
+    expect(theirs.json().id).not.toBe(first.json().id);
+  });
+
+  it('refuses another body with the key, and a save with no key', async () => {
+    const headers = await signedIn();
+    const key = { ...headers, 'idempotency-key': randomUUID() };
+    await call(key, 'POST', '/v1/customer/addresses', body);
+    const other = await call(key, 'POST', '/v1/customer/addresses', {
+      ...body,
+      street: 'شارع آخر',
+    });
+    expect(other.statusCode).toBe(422);
+    expect(other.json()).toMatchObject({ error: 'idempotency_key_reused' });
+    const none = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/addresses',
+      headers,
+      payload: body,
+    });
+    expect(none.statusCode).toBe(400);
+    expect(none.json()).toMatchObject({ error: 'idempotency_key_required' });
+    expect(await count(headers)).toBe(1);
+  });
+
+  it('saves once when the same save arrives twice at the same moment', async () => {
+    const headers = await signedIn();
+    const key = { ...headers, 'idempotency-key': randomUUID() };
+    const [a, b] = await Promise.all([
+      call(key, 'POST', '/v1/customer/addresses', body),
+      call(key, 'POST', '/v1/customer/addresses', body),
+    ]);
+    expect([a.statusCode, b.statusCode]).toEqual([201, 201]);
+    expect(a.json().id).toBe(b.json().id);
+    expect(await count(headers)).toBe(1);
+  });
+
+  it('keeps the other contact number out of the hash, and compares it on a repeat', async () => {
+    const headers = await signedIn();
+    const key = { ...headers, 'idempotency-key': randomUUID() };
+    const withPhone = { ...body, contactPhone: '+905321234567', recipientName: 'محمد' };
+    const first = await call(key, 'POST', '/v1/customer/addresses', withPhone);
+    expect(first.statusCode).toBe(201);
+    const { rows } = await sql.query<{ request_hash: string }>(
+      'SELECT request_hash FROM customers.addresses WHERE id = $1',
+      [first.json().id],
+    );
+    const hash = (value: object) =>
+      createHash('sha256').update(JSON.stringify(value)).digest('hex');
+    const rest = Object.fromEntries(
+      Object.entries(withPhone).filter(([name]) => name !== 'contactPhone'),
+    );
+    expect(rows[0]!.request_hash).not.toBe(hash(withPhone));
+    expect(rows[0]!.request_hash).toBe(hash(rest));
+    const again = await call(key, 'POST', '/v1/customer/addresses', withPhone);
+    expect(again.json().id).toBe(first.json().id);
+    const otherPhone = await call(key, 'POST', '/v1/customer/addresses', {
+      ...withPhone,
+      contactPhone: '+905321234568',
+    });
+    expect(otherPhone.statusCode).toBe(422);
+  });
+
+  it('answers the first save at the limit, and 404 once it is deleted', async () => {
+    const headers = await signedIn();
+    const key = { ...headers, 'idempotency-key': randomUUID() };
+    const first = (await call(key, 'POST', '/v1/customer/addresses', body)).json();
+    for (let n = 1; n < 10; n += 1) await call(headers, 'POST', '/v1/customer/addresses', body);
+    const again = await call(key, 'POST', '/v1/customer/addresses', body);
+    expect(again.statusCode).toBe(201);
+    expect(again.json().id).toBe(first.id);
+    await call(headers, 'DELETE', `/v1/customer/addresses/${first.id}`);
+    const gone = await call(key, 'POST', '/v1/customer/addresses', body);
+    expect(gone.statusCode).toBe(404);
+    expect(gone.json()).toMatchObject({ error: 'unknown_address' });
   });
 });

@@ -29181,7 +29181,10 @@ export interface operations {
     customerProfileAddAddress: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
             path?: never;
             cookie?: never;
         };

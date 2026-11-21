@@ -168,6 +168,8 @@
   "@customerLocationFailed": {"description": "No position came in time; the spec gives no wording."},
   "customerTryAgain": "حاول مجدداً",
   "@customerTryAgain": {"description": "Repeats what failed."},
+  "customerOffline": "لا يوجد اتصال بالإنترنت",
+  "@customerOffline": {"description": "The bar over home or a restaurant's page shown from the last saved read while the server cannot be reached (CU §4.5)."},
   "customerHomeNearest": "الأقرب إليك",
   "@customerHomeNearest": {"description": "The home section of the 10 nearest restaurants (CU §8.1)."},
   "customerHomeMostOrdered": "الأكثر طلباً",

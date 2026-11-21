@@ -11,10 +11,12 @@ import {
   Post,
   Put,
   Query,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession, Public } from '../../http/access.js';
+import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { CustomerController } from '../../http/route-groups.js';
 import { GeoRefusedError, GeoService } from '../geo/index.js';
 import { type AppSession, CustomerAccountsService, deviceId } from '../identity/index.js';
@@ -180,13 +182,19 @@ export class CustomerProfileController {
   }
 
   // CU §7.3: 409 outside_zones for a pin outside every active zone, 409
-  // address_limit past 10.
+  // address_limit past 10. CU §19 item 28: a retry with the key answers the
+  // first save; another body with it is 422 idempotency_key_reused.
   @Post('addresses')
   @AppSignedIn()
+  @Idempotent()
   @ZodResponse({ status: 201, type: CustomerAddressDto })
-  async addAddress(@CurrentAppSession() session: AppSession, @Body() body: CustomerNewAddressDto) {
+  async addAddress(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: CustomerNewAddressDto,
+    @IdempotencyKey() idempotencyKey: string,
+  ) {
     return refusalsAsHttp(() =>
-      this.customers.addAddress(session.accountId, fieldsOf(body), new Date()),
+      this.customers.addAddress(session.accountId, fieldsOf(body), idempotencyKey, new Date()),
     );
   }
 
@@ -248,6 +256,11 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
       case 'terms_required':
       case 'invalid_birthday':
         throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
+      case 'idempotency_key_reused':
+        throw new UnprocessableEntityException({
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          ...body,
+        });
     }
   }
 }

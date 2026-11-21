@@ -74,9 +74,21 @@ export const addresses = customers.table(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    // The save's Idempotency-Key and request hash (CU §19 item 28, slice
+    // L.1c), so a retry after a lost answer saves once; null on rows saved
+    // before it.
+    idempotencyKey: text('idempotency_key'),
+    requestHash: text('request_hash'),
   },
   (table) => [
     index('addresses_account').on(table.accountId),
+    uniqueIndex('addresses_key')
+      .on(table.accountId, table.idempotencyKey)
+      .where(sql`${table.idempotencyKey} IS NOT NULL`),
+    check(
+      'addresses_key_hash',
+      sql`(${table.idempotencyKey} IS NULL) = (${table.requestHash} IS NULL)`,
+    ),
     uniqueIndex('addresses_one_default')
       .on(table.accountId)
       .where(sql`${table.isDefault} AND ${table.deletedAt} IS NULL`),

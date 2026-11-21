@@ -22,6 +22,9 @@ The late-cancellation strikes and review stop (docs/domain/08), the blocks and t
   the city comes from `GeoService.locate`.
   «الحي» is not stored: each read names the active zone at the pin, and null is «خارج منطقة التوصيل حالياً» (Q6).
   Changes of one customer's addresses take turns on an advisory lock.
+- **A save retried (CU §19 item 28, slice L.1c):** `POST /v1/customer/addresses` needs `Idempotency-Key`; the key and a SHA-256 of the body without the other contact number (an unkeyed hash of it would undo its encryption; a repeat compares it with the row's, decrypted) sit on the address row (`idempotency_key`, `request_hash`, null on older rows; unique per account where set).
+  The key is looked up before the zone check and again under the address lock, before the limit: a repeat answers the first save (`201`, even at 10 addresses), `404 unknown_address` once it was deleted, and another body is `422 idempotency_key_reused`.
+  `PUT` and `DELETE` take no key (they set a value, or name their target and a repeat is refused).
 - **Contact number (U5, Q5):** null is the account's own number (the app sends null when the customer keeps it);
   another Syrian or Turkish mobile is kept encrypted with identity's key (`PhoneCipher`, architecture §15.3) and needs «اسم المستلم» (a `CHECK` and the route's schema).
 - **Browsing (CU §8.2, §9; owner decision 2026-11-06: one plain list in Phase 1):** `BrowsingService` and `customer-browsing.controller.ts`, open to guests (CU §5.1; `@AppSignedInOrGuest()` since slice 2.25b, so an admin test account's session also lists the restaurants in test mode, each card's `testMode` giving «تجريبي», and opens their page; a guest and any other account never see them).
@@ -147,8 +150,6 @@ The late-cancellation strikes and review stop (docs/domain/08), the blocks and t
 
 ## Not yet
 
-- Idempotency keys on the address commands (CU §15, §4.5): take the header with `@Idempotent()` and `@IdempotencyKey()` from `src/http/idempotency.ts` and keep the key with the address in its transaction, as `ordering.idempotency_keys` does;
-  until then a lost answer retried adds a second address.
 - A request limit on the public routes: the deploy slice's per-IP limits in nginx (architecture §15.5) must cover `/v1/customer/zone-votes`, `/v1/customer/restaurants`, whose cards each read the database and OSRM, `/v1/customer/search` (every covering restaurant's card and menu, and a row per miss) and `/v1/customer/restaurant-suggestions` (a row per key).
 - Recognising the account's own number typed as another contact number (it then asks for a recipient).
 - The home measures every covering restaurant's trip for «الأقرب إليك», as the list does;

@@ -83,7 +83,10 @@ class _LineTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final controller = ref.read(cartProvider.notifier);
-    final page = ref.watch(restaurantPageProvider(cart.restaurantId)).value;
+    final page = ref
+        .watch(restaurantPageProvider(cart.restaurantId))
+        .value
+        ?.body;
     final item = page?.menu
         .expand((category) => category.items)
         .where((item) => item.id == line.itemId)

@@ -5,6 +5,15 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from L.1c (`feat/dod-offline-browsing`)
+
+- **Before deploying to staging:** migration 0151 (expand only: two nullable columns, a partial unique index and a check on `customers.addresses`).
+  `POST /v1/customer/addresses` now requires `Idempotency-Key`: a customer app build older than this slice gets `400 idempotency_key_required` when it saves an address, so the staging app is rebuilt with it.
+- **To check on staging:** the owner browses home and opens a restaurant, then turns on airplane mode: home and that restaurant show from the device under «لا يوجد اتصال بالإنترنت», an item goes in the cart, and «تأكيد الطلب» fails as before. Closing and reopening the app offline shows the last home. Turning airplane mode off and pulling home down brings live browsing back. On a weak connection, saving an address twice saves it once.
+- **Decided by us (to confirm with the owner):** a kept read fits within 1 km of the browsing point (`browseCacheRadiusMetres`); the kept categories fit every account and point; a page answering `404` is dropped from the device; the address save's hash leaves out the other contact number, compared with the row's on a repeat.
+- **Not yet:** the restaurant page has no pull to refresh (it reads again when the app returns to the foreground while offline, and when the point changes); the return to the foreground has no widget test; category pages, search, favourites and «طلباتي» are not kept (CU §4.5 names home, pages and menus).
+- **Also:** phase 6 items 1 and 2 trial (`autoCompactWindow: 350000`, planning and build in two sessions): the build session ran without a compaction and started from `TASKS.md` alone. Two checks overlapped once in this worktree (the first `checker` was still running when the second started), and the second's output was lost to a crash of the `test-summary.mjs` hook (segmentation fault); the Dart and server tests were run directly.
+
 ## Left from L.1b (`feat/dod-calls-and-notices`)
 
 - **Before deploying to staging:** migration 0150 (expand only: the new append-only `ordering.order_contacts`).

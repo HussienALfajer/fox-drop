@@ -176,7 +176,7 @@ describe("the profile's orders, addresses and notes (AP §9.8)", () => {
     const saved = await app.inject({
       method: 'POST',
       url: '/v1/customer/addresses',
-      headers: buyer.headers,
+      headers: { ...buyer.headers, 'idempotency-key': randomUUID() },
       payload: {
         location: home,
         label: 'home',

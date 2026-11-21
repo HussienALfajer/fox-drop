@@ -598,6 +598,12 @@ abstract class AppLocalizations {
   /// **'حاول مجدداً'**
   String get customerTryAgain;
 
+  /// The bar over home or a restaurant's page shown from the last saved read while the server cannot be reached (CU §4.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد اتصال بالإنترنت'**
+  String get customerOffline;
+
   /// The home section of the 10 nearest restaurants (CU §8.1).
   ///
   /// In ar, this message translates to:

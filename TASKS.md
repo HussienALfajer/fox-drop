@@ -4,27 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-L.1c Offline browsing (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Not built»): the customer app's cached browsing without a connection, and an `Idempotency-Key` on the address commands (CU §19 item 28). The owner browses a restaurant in airplane mode.
+L.2 The permission matrix (`docs/roadmap.md`): one test calling every route with every admin role and every restaurant role, the forbidden calls refused (architecture §18.1, AP §14 item 2, RA §22 item 2).
 
-- **Branch:** `feat/dod-offline-browsing`.
-- **Read first:** the CU-28 row and its note in `docs/launch/dod-checklist.md`; CU §19 item 28 and the browsing and addresses sections it rests on; `docs/code/apps/customer.md` (browsing, addresses); `apps/server/CLAUDE.md` (Idempotency) and the address routes in the `customers` module.
+- **Branch:** `test/permission-matrix`.
+- **Read first:** architecture §18.1; AP §6 (roles and permissions) and §14 item 2; RA §22 item 2 and the restaurant roles it rests on; the AP-2 and RA-2 rows of `docs/launch/dod-checklist.md` (routes sampled, not every route); `apps/server/CLAUDE.md` «Deny by default» and the route table in `apps/server/src/modules/identity/admin-team.test.ts`.
+
+### Design
+
+(Written by the planning session.)
 
 ### Plan
 
-- [ ] Read the cited sections and write the design here (what is cached, where, for how long, what a screen shows offline; which address commands take a key).
-- [ ] Server: `Idempotency-Key` on the address commands (stored in the module's schema, in the command's transaction); tests (a replay answers the first result, another body is refused); `pnpm generate:api`.
-- [ ] Customer app: the address commands send one key per body (resent on a lost answer); tests.
-- [ ] Customer app: cached browsing offline (home, a restaurant and its menu from the last good read, marked as not live); tests.
-- [ ] Review (`reviewer`), fixes.
-- [ ] Mark CU-28 covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`; `docs/code/` notes; hand over.
+- [ ] Read the cited sections and write the design here (which routes and roles, where the matrix comes from, how a test calls each route, what "refused" means per group).
 
 ## Waiting for the owner
 
 - Phase 3 of `docs/claude-code-workflow.md`: the phase 4 session started at 75.7K tokens with one MCP delta (goal: under 45K, none). Left: the `marketing` and `social-media-skills` plugins, off only in the app's settings.
-- Phase 6 items 1 and 2 (owner decision 2026-11-21): `autoCompactWindow: 350000` and every slice in two sessions, planning then build (`build-slice`). Measure L.1c's two sessions with `scripts/claude-audit.mjs` (compactions, cost, context a request, what was re-read or redone) against L.1a and L.1b in `docs/claude-code-workflow.md`.
+- Phase 6 items 1 and 2 (owner decision 2026-11-21): `autoCompactWindow: 350000` and every slice in two sessions, planning then build (`build-slice`). L.1c was the first trial; record its measurement (`scripts/claude-audit.mjs`, against L.1a and L.1b) in `docs/claude-code-workflow.md`.
+- L.1c's choices to confirm (`docs/slice-notes.md` «Left from L.1c»): the 1 km fit of a kept read, and the rest under «Decided by us».
 
 ## After that
 
-Launch readiness from L.2 (`docs/roadmap.md`); the gap slices come before L.10.
+The rest of launch readiness from L.3 (`docs/roadmap.md`).
 
-Branches of the later slices: L.2 `test/permission-matrix`, L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.
+Branches of the later slices: L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.
