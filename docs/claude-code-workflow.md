@@ -113,6 +113,13 @@ Done when: a docs-only pull request passes in under 2 minutes and a server-only 
 
 Status (2026-11-21): built. `scripts/classify-changes.mjs` prints four flags for CI: `code` (the checks: any path outside Markdown and `docs/`, or a spec file in `SPEC_FILES_READ_BY_TESTS`), `dart`, `native` (an app's `android/`, `ios/`, `windows/`, a pubspec or `pubspec.lock`, a package in `NATIVE_PACKAGES`, `.fvmrc`, `ci.yml`) and `build` (the images, the staging builds and the deploy: any path outside Markdown and `docs/`). Its test fails when a test file quotes a spec path missing from `SPEC_FILES_READ_BY_TESTS`, or when a package with a native folder is missing from `NATIVE_PACKAGES`. The `native-builds` label runs the native release builds on a pull request (`labeled` is one of its triggers). `verify` needs `android-release`. `ios-release` and `staging-ios` share a cache of CocoaPods' downloads and the Swift packages, keyed on `pubspec.lock`, the app's `Podfile` and its Xcode project; while `staging-ios` is skipped (no Apple account), main writes no cache, so a pull request reuses only its own earlier runs. Renovate groups every GitHub Actions update, majors included, into one weekly pull request.
 
+Measured on GitHub Actions (2026-11-21), from the run's start to its last job (both targets met):
+
+| Pull request                                                | CI        | Longest job                                                                                                                               |
+| ----------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Docs only (#225, `docs/claude-code-workflow.md`)            | 55 s      | `format` 47 s; every code, Dart, Flutter, native, image and deploy job skipped                                                            |
+| Server only (#224, a comment in `content/terms.service.ts`) | 4 min 9 s | `server` shard 1 3 min 48 s (shards 2 and 3 3 min 10 s); `contract` 2 min 21 s, `typescript` 2 min 16 s; Dart, Flutter and native skipped |
+
 ## Phase 6: session shape and subagents
 
 1. Try an auto-compact window of about 200K (`autoCompactWindow`) on one slice and compare its cost and its result with the baseline; keep it only if the slice loses nothing.
