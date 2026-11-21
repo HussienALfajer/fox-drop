@@ -4,32 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-L.1b Calls and notices (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Not built»): «اتصال بالكابتن» in the restaurant app during an active order, recorded (RA §22 item 10, RA-10), and in the customer app from pickup to the end (CU §19 item 17, CU-17); the captain's call and WhatsApp taps recorded and allowed only during the order (CA §19 item 13, CA-13); the waiting-pay line «بدأ احتساب أجر الانتظار» (CA §19 item 10, CA-10); the late apology at 20 minutes past the promised time (CU §19 item 19, CU-19). The owner calls the captain from a test order on the restaurant and customer apps.
+L.1c Offline browsing (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Not built»): the customer app's cached browsing without a connection, and an `Idempotency-Key` on the address commands (CU §19 item 28). The owner browses a restaurant in airplane mode.
 
-- **Branch:** `feat/dod-calls-and-notices`.
-- **Read first:** the rows' notes in `docs/launch/dod-checklist.md`; `docs/code/apps/captain.md` and `docs/code/apps/customer.md` («Not yet»); the spec sections the rows cite. CU-17 also carries a test gap: the map leaves at the end.
+- **Branch:** `feat/dod-offline-browsing`.
+- **Read first:** the CU-28 row and its note in `docs/launch/dod-checklist.md`; CU §19 item 28 and the browsing and addresses sections it rests on; `docs/code/apps/customer.md` (browsing, addresses); `apps/server/CLAUDE.md` (Idempotency) and the address routes in the `customers` module.
 
 ### Plan
 
-Design (decided in this session, from RA §8.9 / §18, CU §11.3 / §15, CA §9.5 / §15, which all say "the number revealed; the tap recorded"):
-
-- Each tap is a reveal command that records the tap and answers `{ phone }`; the app dials (or opens WhatsApp) with the answer. The numbers leave the reads: the customer's `captain.phone` and the captain's `customer.phone`.
-  `POST /v1/merchant/orders/{id}/captain-call` (MO, MC; from assignment until the order ends), `POST /v1/customer/orders/{id}/captain-call` (own order, `picked_up` or `arrived`), `POST /v1/captain/orders/{id}/customer-contact` with `channel` call or whatsapp (own active order). Outside the window: `409 order_state_changed`.
-- The taps go in a new append-only `ordering.order_contacts` table, never in `order_events`: an event bumps the order version, which would refuse operations' preview-and-confirm dialogs (edit, outcome) after any call. The admin timeline merges them in by time (types `order.captain_called`, `order.customer_called`, `order.customer_whatsapp`).
-- No `Idempotency-Key`: a tap dials at once or not at all (never queued and resent later), and each tap is its own record.
-- CA-10: the captain's active order carries `waitingPayFrom` (the later of the arrival and the prep due time, plus the threshold kept at the arrival; null when the vehicle's rate pays no waiting), and the app shows «بدأ احتساب أجر الانتظار» from it on the server clock.
-- CU-19: a `lateApology` timer sent beside the late code's, at the promised time + `order.delivery_late_alert_min`; it pushes `customer.late_apology` if the order is not delivered and the promised time unchanged. The customer's order carries `lateApologyAt` (null once ended) and the app shows the banner from it.
-
-- [x] Read the cited sections and write the plan here.
-- [x] Server: `order_contacts` migration, the three reveal routes, the numbers out of the reads, the admin timeline; tests (window, recorded, other party 404); `pnpm generate:api`.
-- [x] Server: `waitingPayFrom` on the captain's active order; the late apology timer and `lateApologyAt`; tests. (Admin timeline labels and key done with it.)
-- [x] Customer app: «اتصال بالكابتن» on the order screen from pickup through the reveal (the door ring too), the late apology banner; tests (button and map leave at the end).
-- [x] Restaurant app: «اتصال بالكابتن» on the order detail from assignment to the end (dialer on Android, a dialog with the number on Windows); tests.
-- [x] Captain app: call and WhatsApp through the reveal, «بدأ احتساب أجر الانتظار»; tests. Admin: the three timeline labels.
+- [ ] Read the cited sections and write the design here (what is cached, where, for how long, what a screen shows offline; which address commands take a key).
+- [ ] Server: `Idempotency-Key` on the address commands (stored in the module's schema, in the command's transaction); tests (a replay answers the first result, another body is refused); `pnpm generate:api`.
+- [ ] Customer app: the address commands send one key per body (resent on a lost answer); tests.
+- [ ] Customer app: cached browsing offline (home, a restaurant and its menu from the last good read, marked as not live); tests.
 - [ ] Review (`reviewer`), fixes.
-- [ ] Mark RA-10, CU-17, CA-13, CA-10 and CU-19 covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`; `docs/code/` notes; hand over.
-
-Stopped at: the three apps committed; the docs of the last step drafted, uncommitted (dod rows, roadmap `[x]`, `docs/code/` notes); review, slice notes and the L.1c hand-over left.
+- [ ] Mark CU-28 covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`; `docs/code/` notes; hand over.
 
 ## Waiting for the owner
 
@@ -38,6 +25,6 @@ Stopped at: the three apps committed; the docs of the last step drafted, uncommi
 
 ## After that
 
-L.1c `feat/dod-offline-browsing` (CU-28), then launch readiness from L.2 (`docs/roadmap.md`); the gap slices come before L.10.
+Launch readiness from L.2 (`docs/roadmap.md`); the gap slices come before L.10.
 
 Branches of the later slices: L.2 `test/permission-matrix`, L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.
