@@ -11,6 +11,8 @@ D.0 Design system spec and decision (`docs/roadmap.md`, Phase D): docs only.
 - **Inputs outside the repository:** the brand pack `C:\Users\OMEN\Desktop\حزمة الهوية البصرية (2).zip` (its `ارشادات اساسية.txt` and the boards `Logo Guidline-01..03.jpg`); Figma file key `lkeZAwDmzNcJDqzScXtDtp` (pages Colors, Typography, Components; a mood board without variables, screens imported as flat vectors). Do not commit links to private artifacts.
 - **Findings of the analysis (2026-11-21):** contrast on ivory: orange 2.68, white on orange 2.79 (both fail), blue 9.27; the Figma screens use Arabic-Indic digits in one sample (AP §4.7 says Western); CoFo is "All rights reserved" with fsType 4; the guidelines name HTQaysSansPro, which is not in the pack (Emad-Diana is).
 
+**Stopped at:** §9, T10, T11, `CLAUDE.md` and the roadmap are written on the branch, uncommitted; the owner approved the spec on 2026-11-21 with Flutter's own widgets only (no `naked_ui`); next: commit, push and the pull request.
+
 ### Plan
 
 - [ ] Rewrite architecture §9: the method (code is the source, the Claude design project mirrors it, design before code with the owner's approval), the token layers (primitive, semantic, component; brand colours and the accessible orange; a dark mode slot), typography (CoFo for the UI, YR-Speed for display, Emad-Diana secondary; Western tabular digits), the own hand-drawn line icon set (grid, stroke, corners), the parts of the design project (Fox Drop Design System, Fox Drop Guide, component proposals, screens per app), the component and screen cycles, what a drawing does not decide (behaviour is proven by tests; Flutter drawings are a visual reference checked by golden tests), and the fonts kept outside the repository.
