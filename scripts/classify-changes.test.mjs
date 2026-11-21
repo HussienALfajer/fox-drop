@@ -1,8 +1,19 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
-import { classify, READ_BY_SERVER_TESTS, SPEC_FILES_READ_BY_TESTS } from './classify-changes.mjs';
+import {
+  classify,
+  NATIVE_PACKAGES,
+  READ_BY_SERVER_TESTS,
+  SPEC_FILES_READ_BY_TESTS,
+} from './classify-changes.mjs';
+
+const tracked = () =>
+  spawnSync('git', ['-c', 'core.quotePath=false', 'ls-files'], { encoding: 'utf8' })
+    .stdout.split(/\r?\n/)
+    .filter(Boolean);
 
 const plain = () => '';
 const flags = (files, read = plain) => {
@@ -19,23 +30,24 @@ describe('the change classifier', () => {
     assert.equal(flags(['TASKS.md', 'apps/server/CLAUDE.md']), '');
   });
 
-  it('counts the specs as code for CI, and only those a test reads for local tests', () => {
-    assert.equal(flags(['docs/product/v1/customer-app/01-intro.md']), 'code');
+  it('counts as code only the spec files a test reads, and builds nothing for them', () => {
+    assert.equal(flags(['docs/product/v1/customer-app/01-intro.md']), '');
+    assert.equal(flags(['docs/domain/03-timers.md']), '');
     assert.equal(flags([SPEC_FILES_READ_BY_TESTS[0]]), 'code typescript server');
   });
 
   it('sets the server tests and not Dart for a server change', () => {
     assert.equal(
       flags(['apps/server/src/modules/ledger/ledger.service.ts']),
-      'code typescript server',
+      'code build typescript server',
     );
-    assert.equal(flags(['apps/admin/src/App.tsx']), 'code typescript');
+    assert.equal(flags(['apps/admin/src/App.tsx']), 'code build typescript');
   });
 
   it('sets the server tests for the files outside the server they read', () => {
-    assert.equal(flags(['apps/admin/src/locales/ar.json']), 'code typescript server');
-    assert.equal(flags(['compose.yaml']), 'code typescript server');
-    assert.equal(flags(['infra/centrifugo/config.yaml']), 'code typescript server');
+    assert.equal(flags(['apps/admin/src/locales/ar.json']), 'code build typescript server');
+    assert.equal(flags(['compose.yaml']), 'code build typescript server');
+    assert.equal(flags(['infra/centrifugo/config.yaml']), 'code build typescript server');
   });
 
   it('regenerates the contract only after a route or schema change', () => {
@@ -57,22 +69,64 @@ describe('the change classifier', () => {
     );
   });
 
-  it('sets Dart and Flutter for a Flutter change, and no TypeScript', () => {
-    assert.equal(flags(['apps/customer/lib/main.dart']), 'code dart flutter dartScope:changed');
+  it('sets Dart for a Flutter change, and no TypeScript or native builds', () => {
+    assert.equal(flags(['apps/customer/lib/main.dart']), 'code dart build dartScope:changed');
     assert.equal(
       flags(['packages/core_l10n/lib/l10n/app_ar.arb']),
-      'code dart flutter dartScope:changed',
-    );
-    assert.equal(flags(['.fvmrc']), 'code dart flutter dartScope:all');
-    assert.equal(
-      flags(['pubspec.lock', 'apps/customer/lib/main.dart']),
-      'code dart flutter dartScope:all',
+      'code dart build dartScope:changed',
     );
   });
 
+  it('sets the native builds for what can break them', () => {
+    assert.equal(flags(['.fvmrc']), 'code dart native build dartScope:all');
+    assert.equal(
+      flags(['pubspec.lock', 'apps/customer/lib/main.dart']),
+      'code dart native build dartScope:all',
+    );
+    assert.equal(flags(['apps/customer/pubspec.yaml']), 'code dart native build dartScope:changed');
+    assert.equal(
+      flags(['apps/captain/ios/Runner/Info.plist']),
+      'code dart native build dartScope:changed',
+    );
+    assert.equal(
+      flags(['apps/merchant/windows/runner/main.cpp']),
+      'code dart native build dartScope:changed',
+    );
+    assert.equal(
+      flags(['packages/core_alerts/lib/core_alerts.dart']),
+      'code dart native build dartScope:changed',
+    );
+    assert.equal(flags(['apps/customer/android/README.md']), '');
+  });
+
   it('keeps what CI sets for its own workflow and verify.mjs, without local Dart checks', () => {
-    assert.equal(flags(['.github/workflows/ci.yml']), 'code dart flutter typescript');
-    assert.equal(flags(['scripts/verify.mjs']), 'code dart typescript');
+    assert.equal(flags(['.github/workflows/ci.yml']), 'code dart native build typescript');
+    assert.equal(flags(['scripts/verify.mjs']), 'code dart build typescript');
+  });
+
+  it('lists every spec file a test reads', () => {
+    // A test, its helpers and fixtures: a path to a spec file in a string.
+    const testFile =
+      /(\.(test|spec)\.[cm]?[jt]sx?$|_test\.dart$|(^|\/)(test|e2e|integration_test)\/.*\.([cm]?[jt]sx?|dart)$)/;
+    const quotedSpec = /['"`][^'"`\n]*?(docs\/(product|domain)\/[^'"`\n]+\.md)['"`]/g;
+    const joinedPath = /['"`]docs['"`]\s*,\s*['"`](product|domain)['"`]/;
+    const read = new Set();
+    for (const file of tracked()) {
+      if (!testFile.test(file) || file === 'scripts/classify-changes.test.mjs') continue;
+      const text = readFileSync(file, 'utf8');
+      assert.doesNotMatch(text, joinedPath, `${file}: write a spec file's path whole`);
+      for (const match of text.matchAll(quotedSpec)) read.add(match[1]);
+    }
+    assert.deepEqual([...read].sort(), [...SPEC_FILES_READ_BY_TESTS].sort());
+  });
+
+  it('lists every Dart package with native code', () => {
+    const native = new Set();
+    for (const file of tracked()) {
+      const match = /^(packages\/[^/]+)\/(android|ios|windows|macos|linux)\//.exec(file);
+      if (match) native.add(match[1]);
+    }
+    assert.deepEqual([...native].sort(), [...NATIVE_PACKAGES].sort());
   });
 
   it('is in step with the server tests that read files outside the server', () => {

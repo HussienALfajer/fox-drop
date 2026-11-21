@@ -2,6 +2,8 @@ name: CI
 
 on:
   pull_request:
+    # `labeled`: the native-builds label runs the native release builds.
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches: [main]
 
@@ -14,21 +16,24 @@ concurrency:
 
 jobs:
   # What a change touches (scripts/classify-changes.mjs). Markdown and docs/
-  # only: Prettier alone checks them. The specs (docs/product, docs/domain)
-  # count as code, since tests check the code against them (catalogue.test.ts
-  # reads AP Appendix A). The
-  # Dart checks and tests run only for a change to Dart code, a pubspec, the
-  # analysis or localization files, the pinned Flutter, this workflow or
-  # verify.mjs (a server route changes packages/core_api, the committed
-  # client, and the contract job fails one left stale). The Android builds
-  # run only for a change to a Flutter app, a Dart package or this workflow.
+  # only: Prettier alone checks them, but for the spec files a test reads
+  # (SPEC_FILES_READ_BY_TESTS), which set the checks (`code`) and still build
+  # and deploy nothing (`build`). The Dart checks and tests run only for a
+  # change to Dart code, a pubspec, the analysis or localization files, the
+  # pinned Flutter, this workflow or verify.mjs (a server route changes
+  # packages/core_api, the committed client, and the contract job fails one
+  # left stale). The native release builds of a pull request run only for a
+  # native project, a pubspec or the lock file, a package with native code,
+  # the pinned Flutter or this workflow (`native`), or with the native-builds
+  # label; the staging builds on main catch the rest.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       code: ${{ steps.paths.outputs.code }}
       dart: ${{ steps.paths.outputs.dart }}
-      flutter: ${{ steps.paths.outputs.flutter }}
+      native: ${{ steps.paths.outputs.native }}
+      build: ${{ steps.paths.outputs.build }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -231,11 +236,22 @@ jobs:
       - run: node scripts/verify.mjs flutter --shard=${{ matrix.shard }}/3
 
   # The check main requires: every part passed, or was skipped for a change
-  # of docs only, or of no Dart.
+  # of docs only, of no Dart or of nothing native.
   verify:
     if: always()
     needs:
-      [changes, contract, format, typescript, server, dart, flutter, windows-release, ios-release]
+      [
+        changes,
+        contract,
+        format,
+        typescript,
+        server,
+        dart,
+        flutter,
+        android-release,
+        windows-release,
+        ios-release,
+      ]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -254,7 +270,7 @@ jobs:
   # Architecture §4.4: one image runs the four server roles.
   server-image:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -271,7 +287,7 @@ jobs:
   # The panel and the portal in one image (infra/web), checked as it runs on the server.
   web-image:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -285,14 +301,14 @@ jobs:
 
       - run: node infra/web/smoke-image.mjs fox-drop-web:ci
 
-  # Architecture §17.3: every merge to main (but one of docs only) builds the
-  # images, pushes them to the GitHub container registry and deploys staging
-  # over SSH. The key can
+  # Architecture §17.3: every merge to main (but one of docs or specs only)
+  # builds the images, pushes them to the GitHub container registry and
+  # deploys staging over SSH. The key can
   # only run infra/server/deploy-ssh.sh on the server (the deploy skill); it
   # is a secret of the staging environment, which only main may use.
   deploy-staging:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [verify, server-image, web-image]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.build == 'true'
+    needs: [changes, verify, server-image, web-image]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -340,13 +356,13 @@ jobs:
   # key, as artifacts of the run (the deploy skill). The keys are secrets of
   # the staging environment, which only main may use.
   # The release build of each Android app on every pull request that touches
-  # a Flutter app, a Dart package or this workflow (the changes job), so a
+  # something native (the changes job) or has the native-builds label, so a
   # plugin that breaks it (a compileSdk, an AAR metadata check, R8) fails
   # before the merge and not in staging-apks. No secret: signed with the debug key and
   # never kept (the deploy skill, «The staging APKs»).
   android-release:
     needs: changes
-    if: github.event_name == 'pull_request' && needs.changes.outputs.flutter == 'true'
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.native == 'true' || contains(github.event.pull_request.labels.*.name, 'native-builds'))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -388,12 +404,12 @@ jobs:
         run: flutter build apk --flavor staging --release
 
   # Slice 2.44: the restaurant app's Windows release build on every pull
-  # request that touches a Flutter app, a Dart package or this workflow, so
+  # request that touches something native or has the native-builds label, so
   # the Win32 plugins (core_alerts' own included, which has no unit tests)
   # compile before the merge. No secret, never kept.
   windows-release:
     needs: changes
-    if: github.event_name == 'pull_request' && needs.changes.outputs.flutter == 'true'
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.native == 'true' || contains(github.event.pull_request.labels.*.name, 'native-builds'))
     runs-on: windows-latest
     timeout-minutes: 40
     steps:
@@ -419,13 +435,13 @@ jobs:
         run: flutter build windows --release
 
   # Slice 2.46 (owner decisions 2026-11-20): the customer and captain apps'
-  # iOS release builds on every pull request that touches a Flutter app, a
-  # Dart package or this workflow, unsigned (no Apple account is needed), so
+  # iOS release builds on every pull request that touches something native or
+  # has the native-builds label, unsigned (no Apple account is needed), so
   # the Xcode projects, the Swift plugins (core_alerts' own included, which
   # has no unit tests) and the Swift packages compile before the merge.
   ios-release:
     needs: changes
-    if: github.event_name == 'pull_request' && needs.changes.outputs.flutter == 'true'
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.native == 'true' || contains(github.event.pull_request.labels.*.name, 'native-builds'))
     # Xcode 26: firebase-ios-sdk 13 needs Swift tools 6.2.
     runs-on: macos-26
     timeout-minutes: 45
@@ -450,6 +466,19 @@ jobs:
 
       - run: dart pub get --enforce-lockfile
 
+      # CocoaPods' downloads and the Swift packages Xcode resolves, so a build
+      # does not fetch them each run. Shared with staging-ios, which writes
+      # the cache on main; a pull request reads it.
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData/*/SourcePackages/checkouts
+            ~/Library/Developer/Xcode/DerivedData/*/SourcePackages/repositories
+          key: ios-dependencies-${{ matrix.app }}-${{ hashFiles('pubspec.lock', format('apps/{0}/ios/Podfile', matrix.app), format('apps/{0}/ios/Runner.xcodeproj/project.pbxproj', matrix.app)) }}
+          restore-keys: ios-dependencies-${{ matrix.app }}-
+
       - name: Build the staging release, unsigned
         working-directory: apps/${{ matrix.app }}
         run: flutter build ios --flavor staging --release --no-codesign
@@ -462,7 +491,7 @@ jobs:
   # repository variable STAGING_IOS_TEAM_ID is set (a job's `if` reads no
   # environment variable), with the key's secrets in the environment.
   staging-ios:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true' && vars.STAGING_IOS_TEAM_ID != ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.build == 'true' && vars.STAGING_IOS_TEAM_ID != ''
     needs: [changes, verify]
     runs-on: macos-26
     timeout-minutes: 60
@@ -491,6 +520,17 @@ jobs:
           cache: true
 
       - run: dart pub get --enforce-lockfile
+
+      # The same cache as ios-release's.
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData/*/SourcePackages/checkouts
+            ~/Library/Developer/Xcode/DerivedData/*/SourcePackages/repositories
+          key: ios-dependencies-${{ matrix.app }}-${{ hashFiles('pubspec.lock', format('apps/{0}/ios/Podfile', matrix.app), format('apps/{0}/ios/Runner.xcodeproj/project.pbxproj', matrix.app)) }}
+          restore-keys: ios-dependencies-${{ matrix.app }}-
 
       # The values as staging-apks passes them, with the iOS app's Firebase
       # ID and the iOS API key Firebase made (the deploy skill, «App Check»).
@@ -561,7 +601,7 @@ jobs:
           FOXDROP_BGGEO_LICENSE: ${{ secrets[format('STAGING_{0}_BGGEO_LICENSE', matrix.key)] }}
 
   staging-apks:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.build == 'true'
     needs: [changes, verify]
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -673,7 +713,7 @@ jobs:
   # key (infra/server/windows-publish.sh). Unsigned until the owner sets up
   # Azure Trusted Signing (architecture §12.3, §22 item 8): SmartScreen warns.
   staging-windows:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.build == 'true'
     needs: [changes, verify]
     runs-on: windows-latest
     timeout-minutes: 40
@@ -753,7 +793,7 @@ jobs:
           retention-days: 30
 
   publish-windows:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.build == 'true'
     needs: [changes, staging-windows]
     runs-on: ubuntu-latest
     timeout-minutes: 10
