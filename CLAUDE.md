@@ -49,7 +49,7 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 - Fix root causes. Never silence a failing test, a type error or a lint rule. A flaky test is fixed at its cause: no retries, sleeps or skips. After three failed attempts at the same check, stop and ask the owner.
 - Context is the cost: every turn resends it. Read with Read and Grep, a line range at a time; never `cat` a whole long file or a `CLAUDE.md` already loaded (a folder's and its parents' load by themselves; Read once one that a loaded one says to read first). Send searches across many files to the `Explore` agent and keep only its answer.
 - Requests are the other cost: each tool call in its own message resends the whole context. Send independent calls (reads, greps, `git status` and `git log`) together in one message. Read files with Read, search them with Grep and edit them with Edit, never with `cat`, `sed -n`, `head`, `sed -i` or an inline script (a hook logs these, `.claude/hooks/bash.mjs`). Look at `git diff --stat` first, then the diff of one path at a time when needed. A test command's output comes back cut to its failures and summary, with the path of the whole output.
-- Before a feature's pull request, run the `reviewer` subagent and fix what it finds.
+- Before a feature's pull request, run the `reviewer` subagent and fix what it finds; it applies `REVIEW.md` from `main`. A bug found after a merge becomes a `REVIEW.md` item or a test in its fix's pull request.
 - Keep `TASKS.md` current: the plan as a checklist, and a "Stopped at" line when a session ends with work open. Commit and push after each finished step.
 - Stop and ask the owner about: scope, business rules, open items, a feature's split into pull requests, destructive or non-backward-compatible migrations, production deploys, and anything that touches real money or real users.
 
@@ -57,7 +57,7 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 
 - Branch from `main` as `feat/`, `fix/`, `docs/`, `chore/`, `refactor/` or `test/` plus a topic.
 - Conventional Commits; the body says what changed and why.
-- Every change reaches `main` through a pull request with a merge commit (no squash or rebase). The body has `## Summary` and `## Test plan`. Open it and merge it once its checks pass, without asking.
+- Every change reaches `main` through a pull request with a merge commit (no squash or rebase). The body has `## Summary` and `## Test plan`, and `## Checks changed` when the change touches `ci.yml`, `scripts/verify.mjs` or `REVIEW.md`. Open it and merge it once its checks pass, without asking.
 
 ## Language
 

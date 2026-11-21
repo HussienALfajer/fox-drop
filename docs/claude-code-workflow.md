@@ -186,6 +186,13 @@ From the verification post:
 3. A diff-triggered checklist in `REVIEW.md`, read from `main`, never from the branch under review; a change to `ci.yml`, `verify.mjs` or `REVIEW.md` is named in the pull request.
 4. Every bug found after a merge becomes a `REVIEW.md` item or a test; prune both on a routine.
 
+Status of items 3 and 4 (2026-11-21, `docs/review-checklist`): built.
+
+- **Item 3:** `REVIEW.md` at the root holds 12 items, each with a trigger (what the diff touches), the question and the sign of the bug. It starts with what all three reviewers missed in the phase 6 reviewer test (concurrent requests with one idempotency key; a derived value that ignores the outcome), then the other bugs of the eight cases, then items by area (ledger, order state, routes, migrations, lists, clients). `reviewer.md` reads it with `git show main:REVIEW.md`, so a branch cannot change the list that judges it, and reports each triggered item as found or clean. A pull request that changes `ci.yml`, `scripts/verify.mjs` or `REVIEW.md` names it under `## Checks changed` (root `CLAUDE.md`, Git), and the reviewer checks that; a check made weaker is blocking until the owner has seen it.
+- **Item 4:** a bug found after a merge becomes a `REVIEW.md` item or a test in its fix's pull request, with the pull request number as its source (root `CLAUDE.md`, How to work).
+- **Pruning (routine, every 20 merged pull requests or with each phase review):** drop an item whose bug class a test or lint rule now catches (the rule belongs there, not in prose), whose trigger no code can reach any more, or that no review has hit in that time and no test of a past bug backs; merge items that ask the same question. Prune tests only by the existing rule: a test that guards a rule stays. Each pruning is a docs pull request that lists what it dropped and why.
+- **Not yet measured:** whether the checklist makes the reviewer find the three-way misses (#38, #137). Replay those two cases with `REVIEW.md` on Opus medium before counting it a gain.
+
 ## Not now
 
 - Code Mode (experimental) would batch tool calls, which is this project's largest cost, but it needs a terminal session (not the desktop app), the native build v2.1.323 or later (2.1.295 is installed) and no gateway or API key helper. Try it on a mechanical multi-file task once phase 3 has removed the proxy.
