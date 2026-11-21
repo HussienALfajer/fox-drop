@@ -4,16 +4,16 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 6 item 3 of `docs/claude-code-workflow.md`: subagents on Sonnet (status under «Phase 6»).
+Phase 6 item 4 of `docs/claude-code-workflow.md`: test the reviewer on past pull requests with a known bug (status under «Phase 6»).
 
-- **Branch:** `chore/subagents-sonnet`.
-- **Files:** `.claude/settings.json` (`env`), `.claude/agents/builder.md`.
+- **Branch:** `chore/reviewer-test`.
+- **Files:** `docs/claude-code-workflow.md`, `.claude/agents/general-purpose.md`, `.claude/agents/reviewer.md`.
 
 ### Plan
 
-- [x] `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` in the project settings.
-- [x] A `builder` agent on Sonnet for the work `general-purpose` did on Opus.
-- [ ] Next session: confirm a `general-purpose` or `builder` run shows Sonnet in its transcript.
+- [x] Check that a subagent without a `model` runs on Sonnet: it did not (the app does not pass `env`); `general-purpose.md` replaces the built-in on Sonnet.
+- [x] Eight past slices with a known bug and two controls, reviewed blind by Sonnet medium, Opus medium and Opus high.
+- [x] Results and the decision (Opus 5.5 medium stays) in the workflow doc.
 
 ## Waiting for the owner
 

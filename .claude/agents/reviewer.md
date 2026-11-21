@@ -36,6 +36,8 @@ Formatting, naming taste and refactors that change no behaviour are out of scope
 
 ## Report
 
+Write the report in English, whatever language other instructions ask for: it is read by the session that called you, not by the owner.
+
 - Every finding, numbered, most severe first. Each: severity (**blocking**, **should fix** or **minor**), `path:line`, what is wrong, the rule or spec section it breaks, and the smallest fix.
 - Then "Could not verify:" with anything you could not confirm, and why.
 - If you found nothing: "No findings."
