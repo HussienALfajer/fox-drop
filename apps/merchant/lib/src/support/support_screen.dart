@@ -84,10 +84,13 @@ List<Widget> contactTiles(
         key: const Key('whatsapp-operations'),
         title: Text(l10n.merchantWhatsappOperations),
         onTap: () => launch(
-          Uri.https('wa.me', '/${whatsapp.substring(1)}', {
-            if (orderNumber != null)
-              'text': l10n.merchantWhatsappOrderMessage(orderNumber),
-          }),
+          Uri.https(
+            'wa.me',
+            '/${whatsapp.substring(1)}',
+            orderNumber == null
+                ? null
+                : {'text': l10n.merchantWhatsappOrderMessage(orderNumber)},
+          ),
         ),
       ),
   ];

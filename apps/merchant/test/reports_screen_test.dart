@@ -244,6 +244,34 @@ void main() {
     await app.done(tester);
   });
 
+  // RA-23: the delivery fee and the customer total are in no report, even
+  // when an answer carries them.
+  testWidgets('the reports show no delivery fee and no customer total', (
+    tester,
+  ) async {
+    final app = _App(role: 'owner');
+    final answer = _answer();
+    for (final key in ['current', 'previous']) {
+      (answer[key]! as Map<String, Object?>)
+        ..['deliveryFees'] = '7700'
+        ..['customerTotal'] = '43700';
+    }
+    app.server.on('/v1/merchant/figures', [FakeAnswer(200, answer)]);
+    await app.pump(tester, [FakeAnswer(200, _status())]);
+    await tester.tap(find.byKey(const Key('open-reports')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('metric-value-received')), findsOneWidget);
+    for (var scroll = 0; scroll < 6; scroll += 1) {
+      expect(find.textContaining('77 ₺'), findsNothing);
+      expect(find.textContaining('437 ₺'), findsNothing);
+      expect(find.textContaining('رسوم التوصيل'), findsNothing);
+      expect(find.textContaining('الإجمالي'), findsNothing);
+      await tester.drag(find.byType(ListView), const Offset(0, -400));
+      await tester.pumpAndSettle();
+    }
+    await app.done(tester);
+  });
+
   testWidgets('the daily summary shows a day and shares it as an image', (
     tester,
   ) async {

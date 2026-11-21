@@ -127,6 +127,7 @@ class _Board {
     WidgetTester tester,
     List<FakeAnswer> boards, {
     List<Override> overrides = const [],
+    ServerClock? clock,
   }) async {
     server.on('/v1/merchant/auth/session', [
       FakeAnswer(200, {
@@ -191,9 +192,10 @@ class _Board {
         deviceStoreProvider.overrideWithValue(MemoryDeviceStore()),
         // A minute after the fixtures' order was placed.
         serverClockProvider.overrideWithValue(
-          ServerClock(
-            deviceNow: () => placedAt.add(const Duration(minutes: 1)),
-          ),
+          clock ??
+              ServerClock(
+                deviceNow: () => placedAt.add(const Duration(minutes: 1)),
+              ),
         ),
         ...overrides,
       ],
@@ -1787,6 +1789,255 @@ void main() {
       await app.done(tester);
     },
   );
+
+  // RA §4.5: each other Android condition fails on its own, shows «لم يكتمل»
+  // with its settings page, and the result sent names it.
+  final failingChecks = <(String, String, AndroidReadings, DeviceSetting)>[
+    (
+      'notifications',
+      'notifications',
+      const AndroidReadings(
+        notificationsAllowed: false,
+        batteryOptimizationOff: true,
+        fullScreenAllowed: true,
+        alarmVolumePercent: 80,
+        doNotDisturbBlocks: false,
+        autostartPage: false,
+      ),
+      DeviceSetting.notifications,
+    ),
+    (
+      'autostart',
+      'autostart',
+      const AndroidReadings(
+        notificationsAllowed: true,
+        batteryOptimizationOff: true,
+        fullScreenAllowed: true,
+        alarmVolumePercent: 80,
+        doNotDisturbBlocks: false,
+        autostartPage: true,
+      ),
+      DeviceSetting.autostart,
+    ),
+    (
+      'fullScreen',
+      'full_screen',
+      const AndroidReadings(
+        notificationsAllowed: true,
+        batteryOptimizationOff: true,
+        fullScreenAllowed: false,
+        alarmVolumePercent: 80,
+        doNotDisturbBlocks: false,
+        autostartPage: false,
+      ),
+      DeviceSetting.fullScreen,
+    ),
+    (
+      'alarmVolume',
+      'alarm_volume',
+      const AndroidReadings(
+        notificationsAllowed: true,
+        batteryOptimizationOff: true,
+        fullScreenAllowed: true,
+        alarmVolumePercent: 40,
+        doNotDisturbBlocks: false,
+        autostartPage: false,
+      ),
+      DeviceSetting.alarmVolume,
+    ),
+    (
+      'alarmVolume',
+      'alarm_volume',
+      const AndroidReadings(
+        notificationsAllowed: true,
+        batteryOptimizationOff: true,
+        fullScreenAllowed: true,
+        alarmVolumePercent: 80,
+        doNotDisturbBlocks: true,
+        autostartPage: false,
+      ),
+      DeviceSetting.doNotDisturb,
+    ),
+  ];
+  for (final (key, wire, readings, setting) in failingChecks) {
+    testWidgets(
+      'the device check fails and sends $key when ${setting.name} is not right',
+      (tester) async {
+        final app = _Board();
+        app.alerts.deviceReadings = readings;
+        app.server
+          ..on('/v1/merchant/device', [
+            const FakeAnswer(200, {'ringing': true, 'check': null}),
+          ])
+          ..on('/v1/merchant/device/check', [
+            FakeAnswer(200, {
+              'ringing': true,
+              'check': {
+                'at': '2026-11-20T09:00:00.000Z',
+                'passed': false,
+                'failed': [wire],
+                'delayMs': 0,
+              },
+            }),
+          ]);
+        await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+        final card = find.byKey(Key('check-$key'));
+        expect(
+          find.descendant(of: card, matching: find.text('لم يكتمل')),
+          findsOneWidget,
+        );
+        await tester.ensureVisible(find.byKey(Key('open-$key')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(Key('open-$key')));
+        expect(app.alerts.opened, [setting]);
+
+        await tester.ensureVisible(find.byKey(const Key('test-ring')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('test-ring')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('test-ring-heard')));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byKey(const Key('save-check')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('save-check')));
+        await tester.pumpAndSettle();
+        final sent = app.server.to('/v1/merchant/device/check').single;
+        expect((sent.data as Map)['failed'], [wire]);
+        await app.done(tester);
+      },
+    );
+  }
+
+  // RA §8.7, R7 and §8.5: the prep countdown runs down to «متأخر», and an
+  // accepted order offers no prep-time change, only the call to operations.
+  testWidgets('an accepted order counts its prep down, then shows it late, '
+      'and offers no prep-time change', (tester) async {
+    final app = _Board();
+    var deviceNow = placedAt.add(const Duration(minutes: 1));
+    await app.pump(tester, [
+      FakeAnswer(
+        200,
+        boardJson([
+          orderJson(
+            status: 'accepted',
+            acceptedAfter: const Duration(minutes: 1),
+          ),
+        ]),
+      ),
+    ], clock: ServerClock(deviceNow: () => deviceNow));
+    app.container.read(routerProvider).push('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    expect(find.text('متبقٍ 20:00'), findsOneWidget);
+    deviceNow = placedAt.add(const Duration(minutes: 6));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('متبقٍ 15:00'), findsOneWidget);
+    deviceNow = placedAt.add(const Duration(minutes: 24));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('متأخر 3 د'), findsOneWidget);
+    expect(find.byKey(const Key('prep-plus')), findsNothing);
+    expect(find.byKey(const Key('prep-minus')), findsNothing);
+    expect(find.byKey(const Key('accept')), findsNothing);
+    expect(find.text('تحتاج وقتاً أطول؟ اتصل بالعمليات'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  // RA §4.7: the countdowns run on the server's clock, so a device clock hours
+  // ahead or days behind changes nothing.
+  for (final wrong in [const Duration(hours: 5), const Duration(days: -2)]) {
+    testWidgets('the auto-cancel and prep countdowns ignore a device clock '
+        '${wrong.inHours} hours off', (tester) async {
+      final app = _Board();
+      final deviceNow = placedAt.add(wrong);
+      final clock = ServerClock(deviceNow: () => deviceNow)
+        ..observe(
+          placedAt
+              .add(const Duration(minutes: 1))
+              .millisecondsSinceEpoch
+              .toString(),
+        );
+      await app.pump(tester, [
+        FakeAnswer(
+          200,
+          boardJson([
+            orderJson(),
+            orderJson(
+              id: '00000000-0000-4000-8000-0000000000a2',
+              number: '10002',
+              status: 'accepted',
+              acceptedAfter: const Duration(minutes: 1),
+            ),
+          ]),
+        ),
+      ], clock: clock);
+      expect(find.text('يُلغى تلقائياً خلال 6:00'), findsWidgets);
+      app.container
+          .read(routerProvider)
+          .push('/orders/00000000-0000-4000-8000-0000000000a2');
+      await tester.pumpAndSettle();
+      expect(find.text('متبقٍ 20:00'), findsOneWidget);
+      await app.done(tester);
+    });
+  }
+
+  // RA §8.4, RA-23: the customer's delivery fee and total never reach the
+  // order detail, even when an answer carries them.
+  testWidgets('the order detail shows no delivery fee and no customer total', (
+    tester,
+  ) async {
+    final app = _Board(role: 'owner');
+    await app.pump(tester, [
+      FakeAnswer(
+        200,
+        boardJson([
+          {...orderJson(), 'deliveryFee': '7700', 'customerTotal': '31700'},
+        ]),
+      ),
+    ]);
+    app.container.read(routerProvider).push('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    expect(find.text('#10001'), findsWidgets);
+    expect(find.textContaining('77 ₺'), findsNothing);
+    expect(find.textContaining('317 ₺'), findsNothing);
+    expect(find.textContaining('التوصيل'), findsNothing);
+    expect(find.textContaining('الإجمالي'), findsNothing);
+    await app.done(tester);
+  });
+
+  // RA §15, RA-26: the support screen's two tiles open the team's phone and
+  // WhatsApp.
+  testWidgets('the support call and WhatsApp tiles open the team’s phone and '
+      'WhatsApp links', (tester) async {
+    final app = _Board();
+    final launched = <Uri>[];
+    app.server.on('/v1/merchant/contact', [
+      const FakeAnswer(200, {
+        'phone': '+963944000000',
+        'whatsapp': '+963955000000',
+      }),
+    ]);
+    await app.pump(
+      tester,
+      [FakeAnswer(200, boardJson([]))],
+      overrides: [
+        merchantAuth.launch.overrideWithValue((uri) async {
+          launched.add(uri);
+          return true;
+        }),
+      ],
+    );
+    await app.up(tester);
+    await tester.tap(find.byKey(const Key('open-support')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('call-operations')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('whatsapp-operations')));
+    await tester.pump();
+    expect(launched.map((u) => u.toString()), [
+      'tel:+963944000000',
+      'https://wa.me/963955000000',
+    ]);
+    await app.done(tester);
+  });
 
   // RA §4.7, architecture §11.2 (slice 2.42): a command a restart
   // interrupted is sent again with its key, shows «جارٍ الإرسال…» meanwhile,
