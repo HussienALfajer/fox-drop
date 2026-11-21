@@ -4,17 +4,13 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-D.1 Brand assets and private fonts (`docs/roadmap.md`, Phase D; architecture §9.3).
+Plan the D.1b slice, brand expression (owner decision 2026-11-21, after the D.0 review found the spec strong on governance and thin on character): add it to `docs/roadmap.md` before D.2 and its scope to architecture §9.12.
 
-- **Branch:** `chore/brand-assets-and-fonts`.
-- **Done on the branch:** `docs/brand/` (logo mark, lockups, app icons, the three boards, README of the brand rules); the private repository `HussienALfajer/fox-drop-fonts` (created by the owner, commit `634b087`); `docs/brand/fonts-manifest.json`; `pnpm fonts:fetch` (`scripts/fonts-fetch.mjs`, run end to end once locally: 9 files); `scripts/fonts.test.mjs` (a font file tracked by git fails it; `.fonts/` is ignored), in the `format` part of `pnpm verify`; a CI step in the `format` job that fetches the fonts when `FONTS_REPO_TOKEN` exists.
-- **Stopped at:** about to run the checker and the `reviewer`, then open the pull request (it has `## Checks changed`: `ci.yml` and `scripts/verify.mjs`).
+- **Branch:** `docs/brand-expression-plan`.
 
 ### Plan
 
-- [x] Brand files under professional names, README.
-- [x] Guard test first, then manifest, fetch script, ignore rule, CI step.
-- [ ] `node scripts/verify.mjs --changed`, then the `reviewer`.
+- [x] D.1b in the roadmap; §9.12 lists what it decides; D.3 scores its directions against the D.1b principles.
 - [ ] Pull request; merge when its checks pass.
 
 ## Waiting for the owner
@@ -26,6 +22,6 @@ D.1 Brand assets and private fonts (`docs/roadmap.md`, Phase D; architecture §9
 
 ## After that
 
-Phase D from D.2 (`feat/design-tokens`), then L.2 The permission matrix (branch `test/permission-matrix`; read first: architecture §18.1, AP §6 and §14 item 2, RA §22 item 2, the AP-2 and RA-2 rows of `docs/launch/dod-checklist.md`, `apps/server/CLAUDE.md` «Deny by default», the route table in `apps/server/src/modules/identity/admin-team.test.ts`), then the rest of launch readiness from L.3 (`docs/roadmap.md`).
+Phase D from D.1b (`docs/brand-expression`: each §9.12 item discussed with the owner in chat, then `docs/brand/expression.md`), then D.2 (`feat/design-tokens`), then L.2 The permission matrix (branch `test/permission-matrix`; read first: architecture §18.1, AP §6 and §14 item 2, RA §22 item 2, the AP-2 and RA-2 rows of `docs/launch/dod-checklist.md`, `apps/server/CLAUDE.md` «Deny by default», the route table in `apps/server/src/modules/identity/admin-team.test.ts`), then the rest of launch readiness from L.3 (`docs/roadmap.md`).
 
 Branches of Phase D: D.2 `feat/design-tokens`, D.3 `feat/design-directions`, D.4 `feat/design-system-project`, D.5 `feat/icon-set`, D.6 `feat/ui-web`, D.7 `feat/core-ui`. Branches of the later slices: L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.

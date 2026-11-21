@@ -105,3 +105,20 @@ Flutter 3.47 moved Material and Cupertino out of the framework into `material_ui
 ## 9.11 Open until D.2 and D.3
 
 The darker orange's value, the three design directions, and the icon grid details are decided in their slices, each with the owner's approval.
+
+## 9.12 Brand expression (D.1b)
+
+Sections §9.1 to §9.10 govern the system; this one gives it its character. Slice D.1b decides each item below with the owner (discussed in chat, written once decided) in `docs/brand/expression.md`, before D.2 and D.3 use it. Nothing here is decided yet.
+
+| Item                       | Decides                                                                                                                                                       | Feeds      |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Principles and personality | Three to five design principles and the brand's personality, the yardstick every design decision and every D.3 direction is judged against                    | D.3 on     |
+| Signature shape            | Whether the logo's drop becomes a shape language (cards, badges, the map pin, loading), and where it stops                                                    | D.2, D.3   |
+| Motion language            | What motion means for FOX DROP: the order-confirmed moment, the courier moving on the map, transitions, haptics; the reduced-motion fallback                  | D.2, D.6/7 |
+| Map style                  | Base map colours, restaurant, customer and captain pins, the route line, the captain's sunlight view                                                          | D.3        |
+| Illustration and photos    | The illustration style for empty, error and offline states and missing photos; a food-photo guide for restaurants                                             | D.3, R6/R7 |
+| Full palette               | Tonal scales of the three brand colours, status colours that fit them, a chart palette for the panel, and whether the captain app targets 7:1 for sunlight    | D.2        |
+| Arabic typography          | The Arabic type scale and line heights, the Latin companion of CoFo, mixed-script alignment, a check that CoFo has tabular Western digits, how many typefaces | D.2        |
+| Voice and tone             | Modern Standard Arabic or Syrian dialect, per surface; the tone of errors, waits and apologies                                                                | R5         |
+| Device budgets             | Font subsetting and size limits, image weights, behaviour on low-end Android phones and weak networks                                                         | D.2, D.6/7 |
+| First icon set             | The size of the first hand-drawn set (about 40 core icons) and what waits                                                                                     | D.5        |
