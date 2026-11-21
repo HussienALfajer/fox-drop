@@ -17,5 +17,26 @@ export default defineConfig({
     // as 16 or 31 (223 s, 224 s, 238 s, each file then with its own PostGIS);
     // more only load Docker. CI's 4 vCPUs stay at 3.
     maxWorkers: Math.max(1, Math.min(availableParallelism() - 1, 12)),
+    // `vitest run --changed` (node scripts/verify.mjs --changed, for a change
+    // outside src/modules) runs the tests that import a changed file; a
+    // change to one of these runs them all: every database test migrates, the
+    // fixtures are read from disk, and so are the files in
+    // READ_BY_SERVER_TESTS (scripts/classify-changes.mjs, whose test checks
+    // they are here). The first three are Vitest's defaults.
+    forceRerunTriggers: [
+      '**/package.json/**',
+      '**/vitest.config.*/**',
+      '**/vite.config.*/**',
+      '**/pnpm-lock.yaml',
+      '**/tsconfig*.json',
+      '**/apps/server/migrations/**',
+      '**/apps/server/test/fixtures/**',
+      '**/apps/server/src/database/**',
+      '**/docs/product/v1/admin-panel/appendix-a-settings-catalogue.md',
+      '**/compose.yaml',
+      '**/infra/**',
+      '**/apps/admin/src/locales/**',
+      '**/apps/merchant-portal/src/locales/**',
+    ],
   },
 });

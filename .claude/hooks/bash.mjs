@@ -1,7 +1,8 @@
 // PreToolUse hook on Bash (docs/claude-code-workflow.md, phase 2). Every Bash
 // call is a request that resends the whole context, so:
 // - reading a tracked file with cat, head, tail or sed -n, or editing one with
-//   sed -i, perl -i or an inline script, is refused with the tool to use
+//   sed -i, perl -i or an inline script that names a path in the repository,
+//   is refused with the tool to use
 //   (in observe mode it is only logged to .claude/bash-guard.log instead);
 // - a test command's output is cut to its failures and its summary.
 import { spawnSync } from 'node:child_process';
@@ -139,6 +140,23 @@ function nativePath(file) {
   return file;
 }
 
+// A quoted string that looks like a path: a slash, or a name with an extension.
+const PATH_LITERAL = /(['"`])([\w~.:\\/*-]*(?:[\\/][\w.*-]|\w\.\w)[\w~.:\\/*-]*)\1/g;
+
+/**
+ * Whether an inline script names a path inside the repository: a tracked file,
+ * or a file in a tracked folder. A script that writes only outside it (the
+ * owner's ~/.claude.json, say) is not an edit the Edit tool should make.
+ */
+function namesRepositoryPath(body, cwd, isTracked) {
+  for (const [, , literal] of body.matchAll(PATH_LITERAL)) {
+    const file = nativePath(literal);
+    const folder = path.dirname(file);
+    if (isTracked(file, cwd) || (folder !== '.' && isTracked(folder, cwd))) return true;
+  }
+  return false;
+}
+
 /**
  * What the guard would refuse in a command: [{ rule, file?, reason }].
  * isTracked(file, cwd) says whether git tracks that file.
@@ -176,7 +194,7 @@ export function check(command, cwd, isTracked) {
             : args.length === 0 || args[0] === '-'
               ? stage.heredoc
               : '';
-        if (WRITES.test(body) && !SCRATCH.test(body))
+        if (WRITES.test(body) && !SCRATCH.test(body) && namesRepositoryPath(body, cwd, isTracked))
           findings.push({
             rule: 'edit',
             reason: `Edit files with the Edit tool, not an inline \`${name}\` script; a script that must run goes in the scratchpad.`,
