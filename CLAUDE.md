@@ -42,6 +42,7 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 ## How to work
 
 - One task per session: a slice, a fix or a docs change. Use plan mode for work that spans several packages, and `/clear` between tasks.
+- Model, chosen when the session starts and never switched in it (that rewrites the prompt cache): Sonnet 5.5 for docs only, Renovate and small fixes; Opus 5.5 for the rest (`docs/claude-code-workflow.md`, phase 6 item 6).
 - Read the spec sections the task cites and their definition of done, and build only what they say. No helpers, options or abstractions before their first real use.
 - For domain rules (order states, timers, money), write the failing test first.
 - Show evidence: the command and its result. A task is done when its checks pass, not when the code is written.
@@ -70,4 +71,4 @@ End every substantial task with these sections, in Arabic, in this order:
 2. «ما تغيّر»: what was built or changed, with the pull request link.
 3. «التحقق»: the checks run and their results.
 4. «ما وجدته»: issues, risks and follow-ups noticed.
-5. «الخطوة التالية»: always last. The next task (from `docs/roadmap.md` or what this task uncovered), why it comes next and what it needs from the owner first; whether it needs a new session (`/clear`); the model and effort if they differ from `.claude/settings.json`; and the exact first message to send, in its own code block.
+5. «الخطوة التالية»: always last. The next task (from `docs/roadmap.md` or what this task uncovered), why it comes next and what it needs from the owner first; whether it needs a new session (`/clear`); the model by that rule and the effort if it differs from `.claude/settings.json`; and the exact first message to send, in its own code block.
