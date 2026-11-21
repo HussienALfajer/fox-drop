@@ -17,7 +17,7 @@ L.1b Calls and notices (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Not 
 ## Waiting for the owner
 
 - Phase 3 of `docs/claude-code-workflow.md`: the phase 4 session started at 75.7K tokens with one MCP delta (goal: under 45K, none). Left: the `marketing` and `social-media-skills` plugins, off only in the app's settings.
-- Phase 6 item 1 (`autoCompactWindow: 200000`): the session that set the trial measures L.1a's transcript with `scripts/claude-audit.mjs` and decides whether the setting stays.
+- Phase 6 item 1 (`autoCompactWindow: 200000`, kept by the owner 2026-11-21): watch L.1b and L.1c the same way (compactions, what was re-read or redone after each); any real loss moves it to 300K.
 
 ## After that
 
