@@ -1,0 +1,42 @@
+{
+  "repository": "HussienALfajer/fox-drop-fonts",
+  "ref": "634b0870cfa7817139805617c149db1b63937702",
+  "files": [
+    {
+      "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Black.ttf",
+      "sha256": "f4cdacb6f0777ec2f1d63e358c5f8a87fb41e5e088f29aa72d0f51968da207ca"
+    },
+    {
+      "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Bold.ttf",
+      "sha256": "8afdf4d1eebe139eac64963f44351407f0f773e1295d0f296fc4ae5f8cbe215d"
+    },
+    {
+      "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Book.ttf",
+      "sha256": "d0a4b50920fa1d2a4ff17ed5abcf301d193a2cbc80dbcb1a86fe493ac293f23d"
+    },
+    {
+      "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Hairline.ttf",
+      "sha256": "c771297b1c47dce1b4e5bfa3b2fc27491cafeaf0fd5d243c15f740a80ab4d33a"
+    },
+    {
+      "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Light.ttf",
+      "sha256": "a6132c06c1737a7c2735380e1dc1f2a8548c285760b7d0c33048a10d23652566"
+    },
+    {
+      "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Medium.ttf",
+      "sha256": "b90d2b4c201a73746de776e6be7facb905befcea71b65694dc6f3ae751d7618f"
+    },
+    {
+      "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Regular.ttf",
+      "sha256": "7b366d1dffe5fcfd262cbc8642b0a4c5aac78f6e070863b1fcaff3ebab18a86b"
+    },
+    {
+      "path": "emad-diana/EmadDiana-Light.otf",
+      "sha256": "83b21d71761132dc5f1044628de7ef9c05c33341803c49796f891a1d461a0bd1"
+    },
+    {
+      "path": "yr-speed/YRSpeed-Arabic.otf",
+      "sha256": "638bbd9479043b7c2280cb9f86d08d5e9943d865c31e124f3f95042f6e101a93"
+    }
+  ]
+}
