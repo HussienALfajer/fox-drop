@@ -265,6 +265,8 @@ class _$CaptainActiveOrderDtoOutputOrder
   @override
   final CaptainActiveOrderDtoOutputOrderArrival? arrival;
   @override
+  final DateTime? waitingPayFrom;
+  @override
   final bool itemReportOpen;
   @override
   final bool editUnacknowledged;
@@ -309,6 +311,7 @@ class _$CaptainActiveOrderDtoOutputOrder
     required this.restaurant,
     required this.preparation,
     this.arrival,
+    this.waitingPayFrom,
     required this.itemReportOpen,
     required this.editUnacknowledged,
     this.outcomeToCollect,
@@ -347,6 +350,7 @@ class _$CaptainActiveOrderDtoOutputOrder
         restaurant == other.restaurant &&
         preparation == other.preparation &&
         arrival == other.arrival &&
+        waitingPayFrom == other.waitingPayFrom &&
         itemReportOpen == other.itemReportOpen &&
         editUnacknowledged == other.editUnacknowledged &&
         outcomeToCollect == other.outcomeToCollect &&
@@ -376,6 +380,7 @@ class _$CaptainActiveOrderDtoOutputOrder
     _$hash = $jc(_$hash, restaurant.hashCode);
     _$hash = $jc(_$hash, preparation.hashCode);
     _$hash = $jc(_$hash, arrival.hashCode);
+    _$hash = $jc(_$hash, waitingPayFrom.hashCode);
     _$hash = $jc(_$hash, itemReportOpen.hashCode);
     _$hash = $jc(_$hash, editUnacknowledged.hashCode);
     _$hash = $jc(_$hash, outcomeToCollect.hashCode);
@@ -407,6 +412,7 @@ class _$CaptainActiveOrderDtoOutputOrder
           ..add('restaurant', restaurant)
           ..add('preparation', preparation)
           ..add('arrival', arrival)
+          ..add('waitingPayFrom', waitingPayFrom)
           ..add('itemReportOpen', itemReportOpen)
           ..add('editUnacknowledged', editUnacknowledged)
           ..add('outcomeToCollect', outcomeToCollect)
@@ -489,6 +495,11 @@ class CaptainActiveOrderDtoOutputOrderBuilder
       _$this._arrival ??= CaptainActiveOrderDtoOutputOrderArrivalBuilder();
   set arrival(CaptainActiveOrderDtoOutputOrderArrivalBuilder? arrival) =>
       _$this._arrival = arrival;
+
+  DateTime? _waitingPayFrom;
+  DateTime? get waitingPayFrom => _$this._waitingPayFrom;
+  set waitingPayFrom(DateTime? waitingPayFrom) =>
+      _$this._waitingPayFrom = waitingPayFrom;
 
   bool? _itemReportOpen;
   bool? get itemReportOpen => _$this._itemReportOpen;
@@ -597,6 +608,7 @@ class CaptainActiveOrderDtoOutputOrderBuilder
       _restaurant = $v.restaurant.toBuilder();
       _preparation = $v.preparation.toBuilder();
       _arrival = $v.arrival?.toBuilder();
+      _waitingPayFrom = $v.waitingPayFrom;
       _itemReportOpen = $v.itemReportOpen;
       _editUnacknowledged = $v.editUnacknowledged;
       _outcomeToCollect = $v.outcomeToCollect?.toBuilder();
@@ -665,6 +677,7 @@ class CaptainActiveOrderDtoOutputOrderBuilder
             restaurant: restaurant.build(),
             preparation: preparation.build(),
             arrival: _arrival?.build(),
+            waitingPayFrom: waitingPayFrom,
             itemReportOpen: BuiltValueNullFieldError.checkNotNull(
               itemReportOpen,
               r'CaptainActiveOrderDtoOutputOrder',

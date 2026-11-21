@@ -1834,6 +1834,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainWhatsAppCustomer => 'واتساب الزبون';
 
   @override
+  String get captainWaitingPayStarted => 'بدأ احتساب أجر الانتظار';
+
+  @override
+  String get merchantCallCaptain => 'اتصال بالكابتن';
+
+  @override
+  String merchantCaptainNumber(String phone) {
+    return 'رقم الكابتن: $phone';
+  }
+
+  @override
+  String get customerLateApology => 'نعتذر، طلبك متأخر قليلاً. نتابعه الآن.';
+
+  @override
   String get captainArrivedAtCustomer => 'وصلت';
 
   @override

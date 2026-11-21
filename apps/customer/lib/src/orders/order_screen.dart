@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ import 'cancel_order.dart';
 import 'cancel_order_sheet.dart';
 import 'captain_map.dart';
 import 'door_ring.dart';
+import 'late_apology_banner.dart';
 import 'my_orders.dart';
 import 'order_again_section.dart';
 import 'order_help_sheet.dart';
@@ -181,6 +184,8 @@ class OrderScreen extends ConsumerWidget {
                   key: const Key('order-edited-banner'),
                   title: Text(l10n.customerOrderEditedBanner(total())),
                 ),
+              // CU §11.6: the apology once the order is late.
+              LateApologyBanner(order: order),
               // CU §4.4: notifications refused at the first order.
               if (!ended) const NotificationsOffBanner(),
               if (step != null)
@@ -226,6 +231,15 @@ class OrderScreen extends ConsumerWidget {
                   key: const Key('captain-card'),
                   title: Text(captain.firstName),
                   subtitle: Text(l10n.vehicleName(captain.vehicle.name)),
+                  // CU §11.3: the number comes on the tap (U12).
+                  trailing: captain.canCall
+                      ? TextButton(
+                          key: const Key('order-call-captain'),
+                          onPressed: () =>
+                              unawaited(callCaptain(ref, context, order.id)),
+                          child: Text(l10n.customerCallCaptain),
+                        )
+                      : null,
                 ),
               // CU §11.3 (slice 2.29b): from the pickup until the order ends.
               if (followedStatuses.contains(order.status.name))

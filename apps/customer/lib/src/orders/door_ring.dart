@@ -59,6 +59,39 @@ DateTime? ringingPing(CustomerOrder order, DateTime now, Set<DateTime> done) {
   return age.isNegative || age >= doorRingFor ? null : ping.at;
 }
 
+/// «اتصال بالكابتن» (CU §11.3, §11.7, U12): the server reveals the number on
+/// the tap, never in the order; the app dials it. A refusal (the order moved
+/// on) or a lost connection dials nothing and says so.
+Future<void> callCaptain(
+  WidgetRef ref,
+  BuildContext context,
+  String orderId,
+) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final failure = AppLocalizations.of(context).statusError;
+  final launch = ref.read(customerAuth.launch);
+  // Read before the request: the screen may be gone by its answer.
+  final feed = ref.read(orderFeedProvider(orderId));
+  try {
+    final response = await ref
+        .read(coreApiProvider)
+        .getCustomerApi()
+        .customerOrderContactsCallCaptain(orderId: orderId);
+    final phone = response.data?.phone;
+    if (phone == null) {
+      messenger.showSnackBar(SnackBar(content: Text(failure)));
+      return;
+    }
+    await launch(Uri(scheme: 'tel', path: phone));
+  } on DioException catch (error) {
+    messenger.showSnackBar(SnackBar(content: Text(failure)));
+    // A refusal means the order moved on: show it as it is now.
+    if (error.response?.statusCode == 409) {
+      feed.refresh();
+    }
+  }
+}
+
 /// «أنا قادم» or «سأتصل بالمستلم» (CU §11.7): one key per ping until an
 /// answer, so a retry after a lost answer replays; any answer refreshes the
 /// order, and a refusal (answered on another device) changes nothing.
@@ -147,7 +180,7 @@ class _DoorRingGateState extends ConsumerState<DoorRingGate> {
     if (ping == null) return widget.child;
     final l10n = AppLocalizations.of(context);
     final recipient = order.address.recipientName;
-    final phone = order.captain?.phone;
+    final canCall = order.captain?.canCall == true;
     return Scaffold(
       key: const Key('door-ring'),
       body: SafeArea(
@@ -177,16 +210,12 @@ class _DoorRingGateState extends ConsumerState<DoorRingGate> {
                       : l10n.customerCallingRecipient,
                 ),
               ),
-              if (phone != null)
+              if (canCall)
                 OutlinedButton(
                   key: const Key('door-ring-call'),
                   onPressed: () {
                     _putAway(ping);
-                    unawaited(
-                      ref.read(customerAuth.launch)(
-                        Uri(scheme: 'tel', path: phone),
-                      ),
-                    );
+                    unawaited(callCaptain(ref, context, order.id));
                   },
                   child: Text(l10n.customerCallCaptain),
                 ),

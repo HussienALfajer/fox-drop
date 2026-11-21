@@ -195,6 +195,43 @@ class CommandFailed extends CommandNotice {
   const CommandFailed();
 }
 
+/// Whether «اتصال بالكابتن» shows: the order has a captain and has not ended
+/// (RA §8.9, RA-10).
+bool canCallCaptain(BoardOrder order) =>
+    order.captain != null &&
+    switch (order.status) {
+      OrderStatus.accepted ||
+      OrderStatus.ready ||
+      OrderStatus.pickedUp ||
+      OrderStatus.arrived => true,
+      _ => false,
+    };
+
+/// Asks the server for the captain's number (RA §8.9): the number, or the
+/// notice to show when the server refused (`409 order_state_changed`) or the
+/// call failed. The server records every reveal.
+Future<({String? phone, CommandNotice? notice})> revealCaptainPhone(
+  CoreApi api,
+  String orderId,
+) async {
+  try {
+    final answer = await api.getMerchantApi().merchantOrderContactsCallCaptain(
+      orderId: orderId,
+    );
+    final phone = answer.data?.phone;
+    return phone == null
+        ? (phone: null, notice: const CommandFailed())
+        : (phone: phone, notice: null);
+  } on DioException catch (error) {
+    return (
+      phone: null,
+      notice: error.response?.statusCode == 409
+          ? const StateChanged()
+          : const CommandFailed(),
+    );
+  }
+}
+
 /// The orders with a command in flight, which show «جارٍ الإرسال…» and
 /// cannot be pressed again (RA §4.7). Every command waits in the device's
 /// queue (`core_commands`) until the server answers, so one sent before a

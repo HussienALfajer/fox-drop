@@ -1412,3 +1412,46 @@ export const ratings = ordering.table(
     ),
   ],
 );
+
+// RA §8.9, CU §11.3, CA §9.5 (slice L.1b): every tap that revealed a number to
+// the dialer or to WhatsApp: «اتصال بالكابتن» of the restaurant or the
+// customer, «اتصال بالزبون» or «واتساب الزبون» of the captain. Append-only,
+// and apart from order_events: a tap changes no state, and an event would
+// bump the order version that operations' dialogs check. The status and the
+// version are the order's at the tap, for the timeline.
+export const contactActors = ['restaurant', 'customer', 'captain'] as const;
+export const contactChannels = ['call', 'whatsapp'] as const;
+
+export const orderContacts = ordering.table(
+  'order_contacts',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    actorType: text('actor_type', { enum: contactActors }).notNull(),
+    actorId: uuid('actor_id').notNull(),
+    // RA §18: the app installation of a restaurant user; null for the others.
+    actorDevice: text('actor_device'),
+    channel: text('channel', { enum: contactChannels }).notNull(),
+    status: text('status', { enum: orderStatuses }).notNull(),
+    version: integer('version').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    index('order_contacts_order').on(table.orderId, table.orderPlacedAt, table.at),
+    check(
+      'order_contacts_values',
+      sql`${table.actorType} IN ('restaurant', 'customer', 'captain')
+        AND ${table.channel} IN ('call', 'whatsapp')
+        AND (${table.channel} = 'call' OR ${table.actorType} = 'captain')
+        AND (${table.actorDevice} IS NULL OR ${table.actorType} = 'restaurant')`,
+    ),
+  ],
+);

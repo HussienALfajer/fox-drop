@@ -277,6 +277,7 @@ Map<String, Object?> orderJson({
   List<Map<String, Object?>>? proposedLines,
   List<Map<String, Object?>>? pickupCurrencies,
   Map<String, Object?>? redeliveryOf,
+  DateTime? waitingPayFrom,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -304,6 +305,7 @@ Map<String, Object?> orderJson({
     'arrival': atRestaurant
         ? {'at': now.subtract(const Duration(minutes: 3)).toIso8601String()}
         : null,
+    'waitingPayFrom': waitingPayFrom?.toIso8601String(),
     'itemCount': 2,
     'lines': [
       {
@@ -328,7 +330,6 @@ Map<String, Object?> orderJson({
     },
     'customer': {
       'name': 'أحمد',
-      'phone': '+963944222222',
       'location': {'latitude': pin.latitude, 'longitude': pin.longitude},
       'address': {
         'neighbourhood': 'حي الشهداء',

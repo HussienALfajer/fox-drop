@@ -525,7 +525,7 @@ describe('«تنبيه الزبون» (CA §9.9, CU §11.7)', () => {
     const seen = await customerOrder(order.customer, order.id);
     expect(seen.doorPing).toEqual({ at: expect.any(String), answer: null, answeredAt: null });
     // «اتصال بالكابتن» of the ring (CU §11.3, §11.7).
-    expect(seen.captain.phone).toMatch(/^\+963/);
+    expect(seen.captain.canCall).toBe(true);
 
     const key = randomUUID();
     const answered = await answer(order.customer, order.id, key);
@@ -716,22 +716,5 @@ describe('«الزبون لا يستجيب» across a handover and out of scope 
     const other = await onlineCaptain(home);
     expect((await ping(other, order.id)).statusCode).toBe(404);
     expect((await report(other, order.id)).statusCode).toBe(404);
-  });
-
-  it("gives the customer the captain's number from the pickup until the order ends only", async () => {
-    const { order, captain } = await captainAtRestaurant();
-    expect((await customerOrder(order.customer, order.id)).captain.phone).toBeNull();
-    expect((await captain.requestPickup(order.id)).statusCode).toBe(200);
-    await app.inject({
-      method: 'POST',
-      url: `/v1/merchant/orders/${order.id}/pickup/confirm`,
-      headers: { ...order.cashier, 'idempotency-key': randomUUID() },
-    });
-    expect((await customerOrder(order.customer, order.id)).captain.phone).toMatch(/^\+963/);
-    await sql.query(
-      "UPDATE ordering.orders SET status = 'delivered', captain_track = 'done', delivered_at = now(), outcome = 'normal' WHERE id = $1",
-      [order.id],
-    );
-    expect((await customerOrder(order.customer, order.id)).captain.phone).toBeNull();
   });
 });

@@ -110,7 +110,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
   @override
   final bool atRestaurant;
   @override
-  final String? phone;
+  final bool canCall;
 
   factory _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain([
     void Function(CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder)?
@@ -124,7 +124,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
     required this.firstName,
     required this.vehicle,
     required this.atRestaurant,
-    this.phone,
+    required this.canCall,
   }) : super._();
   @override
   CustomerActiveOrdersDtoOutputOrdersInnerCaptain rebuild(
@@ -143,7 +143,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
         firstName == other.firstName &&
         vehicle == other.vehicle &&
         atRestaurant == other.atRestaurant &&
-        phone == other.phone;
+        canCall == other.canCall;
   }
 
   @override
@@ -152,7 +152,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
     _$hash = $jc(_$hash, firstName.hashCode);
     _$hash = $jc(_$hash, vehicle.hashCode);
     _$hash = $jc(_$hash, atRestaurant.hashCode);
-    _$hash = $jc(_$hash, phone.hashCode);
+    _$hash = $jc(_$hash, canCall.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -165,7 +165,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
           ..add('firstName', firstName)
           ..add('vehicle', vehicle)
           ..add('atRestaurant', atRestaurant)
-          ..add('phone', phone))
+          ..add('canCall', canCall))
         .toString();
   }
 }
@@ -193,9 +193,9 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder
   bool? get atRestaurant => _$this._atRestaurant;
   set atRestaurant(bool? atRestaurant) => _$this._atRestaurant = atRestaurant;
 
-  String? _phone;
-  String? get phone => _$this._phone;
-  set phone(String? phone) => _$this._phone = phone;
+  bool? _canCall;
+  bool? get canCall => _$this._canCall;
+  set canCall(bool? canCall) => _$this._canCall = canCall;
 
   CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder() {
     CustomerActiveOrdersDtoOutputOrdersInnerCaptain._defaults(this);
@@ -207,7 +207,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder
       _firstName = $v.firstName;
       _vehicle = $v.vehicle;
       _atRestaurant = $v.atRestaurant;
-      _phone = $v.phone;
+      _canCall = $v.canCall;
       _$v = null;
     }
     return this;
@@ -248,7 +248,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder
             r'CustomerActiveOrdersDtoOutputOrdersInnerCaptain',
             'atRestaurant',
           ),
-          phone: phone,
+          canCall: BuiltValueNullFieldError.checkNotNull(
+            canCall,
+            r'CustomerActiveOrdersDtoOutputOrdersInnerCaptain',
+            'canCall',
+          ),
         );
     replace(_$result);
     return _$result;

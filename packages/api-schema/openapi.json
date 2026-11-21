@@ -17752,6 +17752,127 @@
         ]
       }
     },
+    "/v1/merchant/orders/{orderId}/captain-call": {
+      "post": {
+        "operationId": "merchantOrderContactsCallCaptain",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/customer/orders/{orderId}/captain-call": {
+      "post": {
+        "operationId": "customerOrderContactsCallCaptain",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/captain/orders/{orderId}/customer-contact": {
+      "post": {
+        "operationId": "captainOrderContactsContactCustomer",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainCustomerContactDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/admin/tickets": {
       "get": {
         "operationId": "adminTicketsList",
@@ -48288,6 +48409,19 @@
                   ],
                   "description": "«يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows."
                 },
+                "lateApologyAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "CU §11.6, §14 #14 (slice L.1b): the moment of «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.», the promised time + order.delivery_late_alert_min; the banner shows from it (by the server clock) while the order is not delivered. Null before acceptance, once the order ended, and in the list of active orders."
+                },
                 "doorPing": {
                   "anyOf": [
                     {
@@ -48772,19 +48906,16 @@
                           "type": "boolean",
                           "description": "Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2)."
                         },
-                        "phone": {
-                          "description": "«اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after.",
-                          "type": [
-                            "string",
-                            "null"
-                          ]
+                        "canCall": {
+                          "type": "boolean",
+                          "description": "«اتصال بالكابتن» (CU §11.3, §11.7, U12): shown from the pickup until the order ends; a tap asks POST …/captain-call for the number, which the app dials and never prints."
                         }
                       },
                       "required": [
                         "firstName",
                         "vehicle",
                         "atRestaurant",
-                        "phone"
+                        "canCall"
                       ],
                       "additionalProperties": false
                     },
@@ -49151,6 +49282,7 @@
                 "rating",
                 "lateCode",
                 "promisedAt",
+                "lateApologyAt",
                 "doorPing",
                 "itemReport",
                 "cancellation",
@@ -49733,6 +49865,19 @@
                 ],
                 "description": "«يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows."
               },
+              "lateApologyAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "CU §11.6, §14 #14 (slice L.1b): the moment of «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.», the promised time + order.delivery_late_alert_min; the banner shows from it (by the server clock) while the order is not delivered. Null before acceptance, once the order ended, and in the list of active orders."
+              },
               "doorPing": {
                 "anyOf": [
                   {
@@ -50217,19 +50362,16 @@
                         "type": "boolean",
                         "description": "Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2)."
                       },
-                      "phone": {
-                        "description": "«اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after.",
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      "canCall": {
+                        "type": "boolean",
+                        "description": "«اتصال بالكابتن» (CU §11.3, §11.7, U12): shown from the pickup until the order ends; a tap asks POST …/captain-call for the number, which the app dials and never prints."
                       }
                     },
                     "required": [
                       "firstName",
                       "vehicle",
                       "atRestaurant",
-                      "phone"
+                      "canCall"
                     ],
                     "additionalProperties": false
                   },
@@ -50596,6 +50738,7 @@
               "rating",
               "lateCode",
               "promisedAt",
+              "lateApologyAt",
               "doorPing",
               "itemReport",
               "cancellation",
@@ -60985,7 +61128,7 @@
                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                     },
                     "type": {
-                      "description": "Such as order.accepted or order.offered.",
+                      "description": "Such as order.accepted or order.offered; a contact tap (slice L.1b) is order.captain_called, order.customer_called or order.customer_whatsapp, with from = to and the version of the moment, so the version is not unique.",
                       "type": [
                         "string",
                         "null"
@@ -62777,6 +62920,19 @@
                     ],
                     "description": "Null until «وصلت إلى المطعم»."
                   },
+                  "waitingPayFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "From it the screen shows «بدأ احتساب أجر الانتظار» (CA §9.3): the later of the arrival and the prep due time at acceptance, plus captain.waiting_threshold_min. Null away from the restaurant, or when the pay table pays no waiting."
+                  },
                   "itemReportOpen": {
                     "type": "boolean",
                     "description": "The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2)."
@@ -63228,13 +63384,6 @@
                           "null"
                         ]
                       },
-                      "phone": {
-                        "description": "«اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else.",
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
                       "location": {
                         "type": "object",
                         "properties": {
@@ -63358,7 +63507,6 @@
                     },
                     "required": [
                       "name",
-                      "phone",
                       "location",
                       "address",
                       "payIn",
@@ -63674,6 +63822,7 @@
                   "restaurant",
                   "preparation",
                   "arrival",
+                  "waitingPayFrom",
                   "itemReportOpen",
                   "editUnacknowledged",
                   "outcomeToCollect",
@@ -64230,6 +64379,19 @@
                 ],
                 "description": "Null until «وصلت إلى المطعم»."
               },
+              "waitingPayFrom": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "From it the screen shows «بدأ احتساب أجر الانتظار» (CA §9.3): the later of the arrival and the prep due time at acceptance, plus captain.waiting_threshold_min. Null away from the restaurant, or when the pay table pays no waiting."
+              },
               "itemReportOpen": {
                 "type": "boolean",
                 "description": "The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2)."
@@ -64681,13 +64843,6 @@
                       "null"
                     ]
                   },
-                  "phone": {
-                    "description": "«اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else.",
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
                   "location": {
                     "type": "object",
                     "properties": {
@@ -64811,7 +64966,6 @@
                 },
                 "required": [
                   "name",
-                  "phone",
                   "location",
                   "address",
                   "payIn",
@@ -65127,6 +65281,7 @@
               "restaurant",
               "preparation",
               "arrival",
+              "waitingPayFrom",
               "itemReportOpen",
               "editUnacknowledged",
               "outcomeToCollect",
@@ -69219,6 +69374,35 @@
           "route"
         ],
         "additionalProperties": false
+      },
+      "OrderContactDto_Output": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "E.164, for the dialer or WhatsApp only: the app never prints it (RA §8.9, CU §11.3, CA §9.5)."
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainCustomerContactDto": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "enum": [
+              "call",
+              "whatsapp"
+            ],
+            "description": "«اتصال بالزبون» (`call`) or «واتساب الزبون» (`whatsapp`)."
+          }
+        },
+        "required": [
+          "channel"
+        ]
       },
       "AdminTicketsDto_Output": {
         "type": "object",

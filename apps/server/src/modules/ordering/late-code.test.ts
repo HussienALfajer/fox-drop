@@ -457,3 +457,108 @@ describe('the late code', () => {
     );
   });
 });
+
+// CU §11.6, §14 #14, docs/domain/03 (slice L.1b): an order still not
+// delivered at the promised time + order.delivery_late_alert_min gets one
+// apology, a push and a banner; the timer moves with the promised time.
+describe('the late apology', () => {
+  const APOLOGY = 'نعتذر، طلبك متأخر قليلاً. نتابعه الآن';
+
+  async function apologyJobs(orderId: string) {
+    const { rows } = await sql.query(
+      "SELECT data, start_after FROM pgboss.job WHERE name = 'ordering-late-apology' AND data->>'orderId' = $1 ORDER BY created_on",
+      [orderId],
+    );
+    return rows as { data: LateCodeJob; start_after: Date }[];
+  }
+
+  async function apologies(accountId: string) {
+    return (
+      await sql.query(
+        "SELECT body, data FROM notifications.push_messages WHERE account_id = $1 AND template_key = 'customer.late_apology'",
+        [accountId],
+      )
+    ).rows;
+  }
+
+  async function lateApologyAt(order: Awaited<ReturnType<typeof acceptedOrder>>) {
+    const read = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders/${order.id}`,
+      headers: order.customer,
+    });
+    expect(read.statusCode).toBe(200);
+    return read.json().order.lateApologyAt;
+  }
+
+  it('pushes one apology to an order still not delivered 20 minutes past its promised time', async () => {
+    const order = await acceptedOrder();
+    const at = new Date(order.promisedAt.getTime() + 20 * MINUTE_MS);
+    const [job] = await apologyJobs(order.id);
+    expect(job!.data.promisedAt).toBe(order.promisedAt.toISOString());
+    expect(job!.start_after).toEqual(at);
+    // The banner's moment is on the order from the acceptance.
+    expect(await lateApologyAt(order)).toBe(at.toISOString());
+
+    const timers = app.get(OrderTimers);
+    expect(await timers.lateApology(job!.data, at)).toBe(true);
+    // Once per order: a repeated job pushes nothing more.
+    expect(await timers.lateApology(job!.data, at)).toBe(true);
+    expect(await apologies(order.accountId)).toEqual([
+      { body: APOLOGY, data: { target: 'order', orderId: order.id } },
+    ]);
+  });
+
+  it('pushes one apology when two runs of the job race', async () => {
+    const order = await acceptedOrder();
+    const at = new Date(order.promisedAt.getTime() + 20 * MINUTE_MS);
+    const [job] = await apologyJobs(order.id);
+    const timers = app.get(OrderTimers);
+    await Promise.all([timers.lateApology(job!.data, at), timers.lateApology(job!.data, at)]);
+    expect(await apologies(order.accountId)).toHaveLength(1);
+  });
+
+  it('moves with «تعديل الوقت»: the job of the earlier time pushes nothing', async () => {
+    const order = await acceptedOrder();
+    const ops = await operations();
+    const moved = await ops.post(`/v1/admin/orders/${order.id}/change-time`, {
+      addMin: 10,
+      reason: null,
+    });
+    expect(moved.statusCode).toBe(200);
+    const [first, second] = await apologyJobs(order.id);
+    const newPromised = new Date(order.promisedAt.getTime() + 10 * MINUTE_MS);
+    const newAt = new Date(newPromised.getTime() + 20 * MINUTE_MS);
+    expect(second!.start_after).toEqual(newAt);
+    expect(await lateApologyAt(order)).toBe(newAt.toISOString());
+    const timers = app.get(OrderTimers);
+    expect(
+      await timers.lateApology(first!.data, new Date(order.promisedAt.getTime() + 20 * MINUTE_MS)),
+    ).toBe(false);
+    expect(await apologies(order.accountId)).toEqual([]);
+    expect(await timers.lateApology(second!.data, newAt)).toBe(true);
+    expect(await apologies(order.accountId)).toHaveLength(1);
+  });
+
+  it('gives an order that ended before the moment none, and no banner', async () => {
+    const order = await acceptedOrder();
+    const ops = await operations();
+    const cancelled = await ops.post(`/v1/admin/orders/${order.id}/cancel`, {
+      cancellation: 'emergency',
+      responsible: 'platform',
+      foodPrepared: false,
+      compensateCaptain: false,
+      cash: null,
+      reason: 'اختبار',
+    });
+    expect(cancelled.statusCode).toBe(200);
+    const [job] = await apologyJobs(order.id);
+    expect(
+      await app
+        .get(OrderTimers)
+        .lateApology(job!.data, new Date(order.promisedAt.getTime() + 20 * MINUTE_MS)),
+    ).toBe(false);
+    expect(await apologies(order.accountId)).toEqual([]);
+    expect(await lateApologyAt(order)).toBeNull();
+  });
+});

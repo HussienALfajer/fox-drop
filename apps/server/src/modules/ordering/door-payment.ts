@@ -83,18 +83,26 @@ export function checkDoorPayment(
 // the threshold, counted from the later of the arrival and the prep due
 // time, until the pickup. The threshold is the one in force at the arrival
 // (the waiting alert's moment kept with it).
-export function waitingMinutes(order: {
+export function waitingMinutes(order: WaitingOrder & { pickedUpAt: Date }): number {
+  const from = waitingPayFrom(order);
+  if (from === null) return 0;
+  return Math.max(0, Math.floor((order.pickedUpAt.getTime() - from.getTime()) / 60_000));
+}
+
+interface WaitingOrder {
   arrivedAtMerchantAt: Date | null;
   captainWaitingAlertAt: Date | null;
   acceptedAt: Date;
   prepMin: number;
-  pickedUpAt: Date;
-}): number {
-  if (order.arrivedAtMerchantAt === null || order.captainWaitingAlertAt === null) return 0;
+}
+
+// CA §9.3, AP §8.4: the moment paid waiting starts («بدأ احتساب أجر
+// الانتظار»), or null before the arrival.
+export function waitingPayFrom(order: WaitingOrder): Date | null {
+  if (order.arrivedAtMerchantAt === null || order.captainWaitingAlertAt === null) return null;
   const threshold = order.captainWaitingAlertAt.getTime() - order.arrivedAtMerchantAt.getTime();
   const due = order.acceptedAt.getTime() + order.prepMin * 60_000;
-  const from = Math.max(order.arrivedAtMerchantAt.getTime(), due) + threshold;
-  return Math.max(0, Math.floor((order.pickedUpAt.getTime() - from) / 60_000));
+  return new Date(Math.max(order.arrivedAtMerchantAt.getTime(), due) + threshold);
 }
 
 // AP §8.4: commission_pct × (items value − restaurant-funded item discount),

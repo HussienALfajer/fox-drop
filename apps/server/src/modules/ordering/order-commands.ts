@@ -83,7 +83,7 @@ import { OrderAssignments } from './order-assignments.js';
 import { canHandOver } from './handover.js';
 import { leaveCaptain } from './cannot-complete.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
-import type { LateCodeJob, SearchStartJob } from './order-timers.js';
+import type { LateApologyJob, LateCodeJob, SearchStartJob } from './order-timers.js';
 import type { AfterCommit } from './delivery-booking.js';
 import {
   AFTER_PICKUP,
@@ -2988,12 +2988,14 @@ export class OrderCommands {
     // AP §8.3 (slice 2.22c): every new promised time sets the late code's
     // timer; the one set for an earlier time finds it moved.
     const promisedAt = prepared.set.promisedAt instanceof Date ? prepared.set.promisedAt : null;
-    const lateCodeMin =
+    const [lateCodeMin, lateAlertMin] =
       promisedAt === null
-        ? 0
-        : await this.settings.get('order.delivery_late_compensation_min', {
-            cityId: order.cityId,
-          });
+        ? [0, 0]
+        : await Promise.all([
+            this.settings.get('order.delivery_late_compensation_min', { cityId: order.cityId }),
+            // CU §11.6 (slice L.1b): and the late apology's.
+            this.settings.get('order.delivery_late_alert_min', { cityId: order.cityId }),
+          ]);
     const publicReason = prepared.publicReason ?? null;
 
     // pg-boss connects before the lock is taken, never while it is held.
@@ -3059,6 +3061,10 @@ export class OrderCommands {
         };
         await this.jobs.send(QUEUES.lateCode, job, {
           startAfter: new Date(promisedAt.getTime() + lateCodeMin * MINUTE_MS),
+          db: inTransaction(tx),
+        });
+        await this.jobs.send(QUEUES.lateApology, job satisfies LateApologyJob, {
+          startAfter: new Date(promisedAt.getTime() + lateAlertMin * MINUTE_MS),
           db: inTransaction(tx),
         });
       }

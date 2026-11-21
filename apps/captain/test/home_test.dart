@@ -294,10 +294,6 @@ void main() {
     expect(find.text('الزبون سيدفع بـ \$'), findsOneWidget);
     // C10: the number goes to the dialer only.
     expect(find.textContaining('944222222'), findsNothing);
-    await app.tapVisible(tester, find.text('اتصال بالزبون'));
-    expect(app.launched.last.toString(), 'tel:+963944222222');
-    await tester.tap(find.text('واتساب الزبون'));
-    expect(app.launched.last.toString(), 'https://wa.me/963944222222');
 
     // Away from the pin «وصلت» asks for a reason first (K4).
     final atCustomer = orderJson(

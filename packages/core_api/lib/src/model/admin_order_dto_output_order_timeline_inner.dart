@@ -17,7 +17,7 @@ part 'admin_order_dto_output_order_timeline_inner.g.dart';
 /// Properties:
 /// * [version]
 /// * [at]
-/// * [type] - Such as order.accepted or order.offered.
+/// * [type] - Such as order.accepted or order.offered; a contact tap (slice L.1b) is order.captain_called, order.customer_called or order.customer_whatsapp, with from = to and the version of the moment, so the version is not unique.
 /// * [from]
 /// * [to]
 /// * [actor]
@@ -38,7 +38,7 @@ abstract class AdminOrderDtoOutputOrderTimelineInner
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
-  /// Such as order.accepted or order.offered.
+  /// Such as order.accepted or order.offered; a contact tap (slice L.1b) is order.captain_called, order.customer_called or order.customer_whatsapp, with from = to and the version of the moment, so the version is not unique.
   @BuiltValueField(wireName: r'type')
   String? get type;
 

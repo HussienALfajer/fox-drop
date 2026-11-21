@@ -6308,6 +6308,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/{orderId}/captain-call": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrderContactsCallCaptain"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/orders/{orderId}/captain-call": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerOrderContactsCallCaptain"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/customer-contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrderContactsContactCustomer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/tickets": {
         parameters: {
             query?: never;
@@ -13963,6 +14011,8 @@ export interface components {
                 } | null;
                 /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
                 promisedAt: string | null;
+                /** @description CU §11.6, §14 #14 (slice L.1b): the moment of «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.», the promised time + order.delivery_late_alert_min; the banner shows from it (by the server clock) while the order is not delivered. Null before acceptance, once the order ended, and in the list of active orders. */
+                lateApologyAt: string | null;
                 /** @description CU §11.7 (slice 2.13d): the captain's latest «تنبيه الزبون» while at the door. Unanswered and under 30 seconds old, the open app rings full screen «الكابتن عند الباب ويحاول الوصول إليك» (or «… إلى {المستلم}») with «أنا قادم» (or «سأتصل بالمستلم») and «اتصال بالكابتن». Null without one. */
                 doorPing: {
                     /** Format: date-time */
@@ -14085,8 +14135,8 @@ export interface components {
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                     /** @description Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2). */
                     atRestaurant: boolean;
-                    /** @description «اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after. */
-                    phone: string | null;
+                    /** @description «اتصال بالكابتن» (CU §11.3, §11.7, U12): shown from the pickup until the order ends; a tap asks POST …/captain-call for the number, which the app dials and never prints. */
+                    canCall: boolean;
                 } | null;
                 currency: string;
                 money: {
@@ -14298,6 +14348,8 @@ export interface components {
                 } | null;
                 /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
                 promisedAt: string | null;
+                /** @description CU §11.6, §14 #14 (slice L.1b): the moment of «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.», the promised time + order.delivery_late_alert_min; the banner shows from it (by the server clock) while the order is not delivered. Null before acceptance, once the order ended, and in the list of active orders. */
+                lateApologyAt: string | null;
                 /** @description CU §11.7 (slice 2.13d): the captain's latest «تنبيه الزبون» while at the door. Unanswered and under 30 seconds old, the open app rings full screen «الكابتن عند الباب ويحاول الوصول إليك» (or «… إلى {المستلم}») with «أنا قادم» (or «سأتصل بالمستلم») and «اتصال بالكابتن». Null without one. */
                 doorPing: {
                     /** Format: date-time */
@@ -14420,8 +14472,8 @@ export interface components {
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                     /** @description Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2). */
                     atRestaurant: boolean;
-                    /** @description «اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after. */
-                    phone: string | null;
+                    /** @description «اتصال بالكابتن» (CU §11.3, §11.7, U12): shown from the pickup until the order ends; a tap asks POST …/captain-call for the number, which the app dials and never prints. */
+                    canCall: boolean;
                 } | null;
                 currency: string;
                 money: {
@@ -16967,7 +17019,7 @@ export interface components {
                     version: number;
                     /** Format: date-time */
                     at: string;
-                    /** @description Such as order.accepted or order.offered. */
+                    /** @description Such as order.accepted or order.offered; a contact tap (slice L.1b) is order.captain_called, order.customer_called or order.customer_whatsapp, with from = to and the version of the moment, so the version is not unique. */
                     type: string | null;
                     from: ("placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed") | null;
                     /** @enum {string} */
@@ -17326,6 +17378,8 @@ export interface components {
                      */
                     at: string;
                 } | null;
+                /** @description From it the screen shows «بدأ احتساب أجر الانتظار» (CA §9.3): the later of the arrival and the prep due time at acceptance, plus captain.waiting_threshold_min. Null away from the restaurant, or when the pay table pays no waiting. */
+                waitingPayFrom: string | null;
                 /** @description The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2). */
                 itemReportOpen: boolean;
                 /** @description Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2). */
@@ -17430,8 +17484,6 @@ export interface components {
                 customer: {
                     /** @description The recipient's name when the order is for someone else, else the customer's. */
                     name: string | null;
-                    /** @description «اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else. */
-                    phone: string | null;
                     /** @description The exact pin, with the route and «ابدأ الملاحة». */
                     location: {
                         latitude: number;
@@ -17673,6 +17725,8 @@ export interface components {
                      */
                     at: string;
                 } | null;
+                /** @description From it the screen shows «بدأ احتساب أجر الانتظار» (CA §9.3): the later of the arrival and the prep due time at acceptance, plus captain.waiting_threshold_min. Null away from the restaurant, or when the pay table pays no waiting. */
+                waitingPayFrom: string | null;
                 /** @description The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2). */
                 itemReportOpen: boolean;
                 /** @description Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2). */
@@ -17777,8 +17831,6 @@ export interface components {
                 customer: {
                     /** @description The recipient's name when the order is for someone else, else the customer's. */
                     name: string | null;
-                    /** @description «اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else. */
-                    phone: string | null;
                     /** @description The exact pin, with the route and «ابدأ الملاحة». */
                     location: {
                         latitude: number;
@@ -18790,6 +18842,17 @@ export interface components {
                     longitude: number;
                 }[] | null;
             } | null;
+        };
+        OrderContactDto_Output: {
+            /** @description E.164, for the dialer or WhatsApp only: the app never prints it (RA §8.9, CU §11.3, CA §9.5). */
+            phone: string;
+        };
+        CaptainCustomerContactDto: {
+            /**
+             * @description «اتصال بالزبون» (`call`) or «واتساب الزبون» (`whatsapp`).
+             * @enum {string}
+             */
+            channel: "call" | "whatsapp";
         };
         AdminTicketsDto_Output: {
             /** @description Newest first, the latest 200. */
@@ -33333,6 +33396,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerOrderRouteDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrderContactsCallCaptain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderContactDto_Output"];
+                };
+            };
+        };
+    };
+    customerOrderContactsCallCaptain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderContactDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrderContactsContactCustomer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainCustomerContactDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderContactDto_Output"];
                 };
             };
         };

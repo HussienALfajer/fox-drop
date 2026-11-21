@@ -11,7 +11,7 @@ import { CustomersService } from '../customers/index.js';
 import { equivalent, FxService } from '../fx/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { type Point, straightLineMetres } from '../geo/index.js';
-import { CaptainAccountsService, CustomerAccountsService, PhoneCipher } from '../identity/index.js';
+import { CaptainAccountsService } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import {
@@ -98,7 +98,8 @@ import {
   lockForDelivery,
   type OutcomeCollection,
 } from './delivery-booking.js';
-import { checkDoorPayment } from './door-payment.js';
+import { checkDoorPayment, waitingPayFrom } from './door-payment.js';
+import { acceptedPrepMin } from './time-changes.js';
 import { captainPay } from './captain-pay.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
@@ -265,7 +266,7 @@ export interface CaptainHandover {
 export interface CaptainActiveOrder {
   order: OrderView;
   // CA §9.5: who to deliver to and the number the call button dials.
-  customer: { name: string | null; phone: string | null };
+  customer: { name: string | null };
   // CA §9.4: the latest pickup request and the restaurant's dispute after
   // the pickup, if any.
   pickupRequest: PickupRequestView | null;
@@ -291,6 +292,9 @@ export interface CaptainActiveOrder {
   // time, the customer's latest answer, when «الزبون لا يستجيب» appears and
   // the latest report with operations' «انتظر»; null elsewhere.
   noAnswer: NoAnswerState | null;
+  // CA §9.3 (slice L.1b): at the restaurant, when paid waiting starts
+  // («بدأ احتساب أجر الانتظار»); null when the pay table pays no waiting.
+  waitingPayFrom: Date | null;
 }
 
 // The captain's side of an order (CA §9, §15) and operations' commands on the
@@ -308,10 +312,8 @@ export class CaptainOrders {
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
     private readonly customers: CustomersService,
-    private readonly customerAccounts: CustomerAccountsService,
     private readonly captainAccounts: CaptainAccountsService,
     private readonly assignments: OrderAssignments,
-    private readonly phones: PhoneCipher,
     private readonly booking: DeliveryBooking,
     private readonly ledger: LedgerService,
     private readonly fx: FxService,
@@ -1930,16 +1932,18 @@ export class CaptainOrders {
       problem,
       emergency,
       noAnswer,
+      waitingFrom,
     ] = await Promise.all([
       pickupRequestsOf(this.database.db, [order]),
       pickupDisputesOf(this.database.db, [order]),
-      this.customerOf(order, captainId),
+      this.customerOf(order),
       this.settings.get('captain.merchant_arrival_radius_m', { cityId: order.cityId }),
       this.settings.get('captain.customer_radius_m', { cityId: order.cityId }),
       this.handoverOf(order, captainId, now),
       openCannotComplete(this.database.db, order),
       openEmergency(this.database.db, order),
       this.noAnswerOf(order, captainId),
+      this.waitingPayFromOf(order, captain?.vehicle ?? null),
     ]);
     return {
       order,
@@ -1978,7 +1982,38 @@ export class CaptainOrders {
           ? { at: emergency.at, location: emergency.location }
           : null,
       noAnswer,
+      waitingPayFrom: waitingFrom,
     };
+  }
+
+  // CA §9.3, AP §8.4: while the captain waits at the restaurant, the moment
+  // paid waiting starts, from the prep time chosen at acceptance (as the pay
+  // counts it, captain-pay.ts); null when the order's pay table pays no
+  // waiting for the captain's vehicle.
+  private async waitingPayFromOf(
+    order: OrderView,
+    vehicle: Parameters<CaptainsService['payParts']>[1] | null,
+  ): Promise<Date | null> {
+    const arrival = order.captainArrival;
+    // A pickup request leaves the captain waiting at the counter (CA §9.3).
+    const waiting = order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending';
+    if (!waiting || arrival === null || order.acceptance === null) {
+      return null;
+    }
+    if (vehicle === null) return null;
+    const [row] = await this.database.db
+      .select({ payTableId: orders.payTableId })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    if (!row?.payTableId) return null;
+    const perMinute = await this.captains.payParts(row.payTableId, vehicle, 0, 1);
+    if (!perMinute || perMinute.waiting === 0n) return null;
+    return waitingPayFrom({
+      arrivedAtMerchantAt: arrival.at,
+      captainWaitingAlertAt: arrival.waitingAlertAt,
+      acceptedAt: order.acceptance.at,
+      prepMin: (await acceptedPrepMin(this.database.db, order)) ?? order.acceptance.prepMin,
+    });
   }
 
   // CA §9.9: the door's state, for the order's captain at the customer.
@@ -2028,31 +2063,16 @@ export class CaptainOrders {
   }
 
   // CA §9.5 (C2, C10): the recipient's name when the order is for someone
-  // else, else the customer's first name; the address's contact number, else
-  // the account's own, for «اتصال بالزبون» and «واتساب الزبون».
-  // C10: the buttons work only while the order is active, so a command
-  // replayed once the order ended or left the captain answers no number.
-  private async customerOf(
-    order: OrderView,
-    captainId: string,
-  ): Promise<CaptainActiveOrder['customer']> {
-    const [row] = await this.database.db
-      .select({ contactPhoneEncrypted: orders.contactPhoneEncrypted })
-      .from(orders)
-      .where(orderKey(order.id, order.placedAt));
-    const [names, phone] = await Promise.all([
+  // else, else the customer's first name. The number is in no read:
+  // «اتصال بالزبون» and «واتساب الزبون» reveal it per tap (CA §9.5, §15,
+  // slice L.1b, `order-contacts.ts`).
+  private async customerOf(order: OrderView): Promise<CaptainActiveOrder['customer']> {
+    const names =
       order.address.recipientName === null
-        ? this.customers.firstNames([order.customerAccountId])
-        : null,
-      order.captainId !== captainId || !CAPTAIN_ACTIVE.includes(order.status)
-        ? null
-        : row?.contactPhoneEncrypted
-          ? this.phones.decrypt(row.contactPhoneEncrypted)
-          : this.customerAccounts.phone(order.customerAccountId),
-    ]);
+        ? await this.customers.firstNames([order.customerAccountId])
+        : null;
     return {
       name: order.address.recipientName ?? names?.get(order.customerAccountId) ?? null,
-      phone,
     };
   }
 

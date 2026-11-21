@@ -6,6 +6,7 @@ import '../account/account.dart';
 import '../api.dart';
 import '../auth.dart';
 import '../content.dart';
+import '../windows/registration.dart' show onWindows;
 import 'board.dart';
 import 'board_screen.dart';
 import 'commands.dart';
@@ -174,6 +175,38 @@ class OrderScreen extends ConsumerWidget {
                 subtitle: captain == null
                     ? null
                     : Text(l10n.vehicleName(captain.vehicle.name)),
+              ),
+            // RA §8.9, RA-10: the number is revealed by the server per tap.
+            if (canCallCaptain(order))
+              OutlinedButton(
+                key: const Key('order-call-captain'),
+                onPressed: () async {
+                  final launch = ref.read(merchantAuth.launch);
+                  final result = await revealCaptainPhone(
+                    ref.read(coreApiProvider),
+                    order.id,
+                  );
+                  final phone = result.phone;
+                  if (phone == null) return show(result.notice);
+                  if (onWindows) {
+                    if (!context.mounted) return;
+                    await showDialog<void>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        content: Text(l10n.merchantCaptainNumber(phone)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(l10n.merchantClose),
+                          ),
+                        ],
+                      ),
+                    );
+                    return;
+                  }
+                  await launch(Uri(scheme: 'tel', path: phone));
+                },
+                child: Text(l10n.merchantCallCaptain),
               ),
             if (pickup.pickedUpAt != null)
               ListTile(

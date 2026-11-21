@@ -198,6 +198,8 @@ async function admin(roles: string[]) {
       post(`/v1/admin/orders/${orderId}/assign`, { captainId }),
     recordArrival: (orderId: string, reason: string, key?: string) =>
       post(`/v1/admin/orders/${orderId}/record-arrival`, { reason }, key),
+    changeTime: (orderId: string, addMin: number) =>
+      post(`/v1/admin/orders/${orderId}/change-time`, { addMin, reason: null }),
   };
 }
 
@@ -370,7 +372,7 @@ describe("the captain on the customer's order screen (CU §11.2–11.3)", () => 
       vehicle: 'motorbike',
       atRestaurant: false,
       // «اتصال بالكابتن» from the pickup only (CU §11.3, U12).
-      phone: null,
+      canCall: false,
     });
     // The captain track itself is never shown to the customer (CU §11.2).
     expect(assigned).not.toHaveProperty('captainTrack');
@@ -430,6 +432,72 @@ describe('POST /v1/captain/orders/{orderId}/arrive (CA §9.2, C6)', () => {
       error: 'order_state_changed',
       order: { captainTrack: 'at_merchant' },
     });
+  });
+
+  it('shows when waiting pay starts only when the pay table pays waiting (CA §9.3, AP §8.4)', async () => {
+    // The table of beforeAll pays no waiting: no «بدأ احتساب أجر الانتظار».
+    const unpaid = await assignedOrder();
+    expect((await unpaid.captain.arrive(unpaid.order.id)).statusCode).toBe(200);
+    expect((await unpaid.captain.active()).json().order).toMatchObject({ waitingPayFrom: null });
+
+    const captains = app.get(CaptainsService);
+    const paying = {
+      basePay: 2500n,
+      includedMetres: 3000,
+      perExtraKm: 500n,
+      waitingPerMinute: 100n,
+      minimumPay: 2500n,
+    };
+    const rates = { walking: paying, bicycle: paying, motorbike: paying, car: paying };
+    // A later version starts 7 days after it is published (AP §9.12.5), so
+    // the order is given it as the table it keeps.
+    const payingTable = await captains.setPayTable(azaz, { currency: 'TRY', rates }, change);
+    {
+      const { order, captain, ops } = await assignedOrder();
+      await sql.query('UPDATE ordering.orders SET pay_table_id = $1 WHERE id = $2', [
+        payingTable,
+        order.id,
+      ]);
+      expect((await captain.active()).json().order).toMatchObject({ waitingPayFrom: null });
+      expect((await captain.arrive(order.id)).statusCode).toBe(200);
+      const row = await orderRow(order.id);
+      const accepted = (
+        await sql.query('SELECT accepted_at FROM ordering.orders WHERE id = $1', [order.id])
+      ).rows[0].accepted_at as Date;
+      // The later of the arrival and the prep due time (accepted + 20 min),
+      // plus captain.waiting_threshold_min (10).
+      const due = accepted.getTime() + 20 * MINUTE;
+      const arrived = new Date(row.arrived_at_merchant_at).getTime();
+      const from = Math.max(arrived, due) + 10 * MINUTE;
+      expect((await captain.active()).json().order.waitingPayFrom).toBe(
+        new Date(from).toISOString(),
+      );
+      // «تعديل الوقت» never moves it: it counts from the prep time at acceptance.
+      expect((await ops.changeTime(order.id, 10)).statusCode).toBe(200);
+      expect((await captain.active()).json().order.waitingPayFrom).toBe(
+        new Date(from).toISOString(),
+      );
+      // The captain still waits at the counter once the pickup is requested.
+      const requested = await app.inject({
+        method: 'POST',
+        url: `/v1/captain/orders/${order.id}/pickup-request`,
+        headers: { ...captain.headers, 'idempotency-key': randomUUID() },
+        payload: {
+          lines: [{ currency: 'TRY', amount: '24000' }],
+          location: {
+            ...atDoor,
+            accuracyMetres: 10,
+            recordedAt: new Date().toISOString(),
+            simulated: false,
+          },
+        },
+      });
+      expect(requested.statusCode).toBe(200);
+      expect((await captain.active()).json().order).toMatchObject({
+        captainTrack: 'pickup_pending',
+        waitingPayFrom: new Date(from).toISOString(),
+      });
+    }
   });
 
   it('refuses a fix beyond the radius, a weak one and a simulated one', async () => {

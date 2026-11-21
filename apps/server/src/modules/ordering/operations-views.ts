@@ -18,7 +18,14 @@ import {
   pickupRequestsOf,
 } from './pickup-views.js';
 import type { ItemReportNote, ItemReportUntil, ReportedItem } from './item-reports.js';
-import { collections, itemReports, orderEvents, orders, timeChanges } from './schema.js';
+import {
+  collections,
+  itemReports,
+  orderContacts,
+  orderEvents,
+  orders,
+  timeChanges,
+} from './schema.js';
 import { shortfallOpen } from './shortfall.js';
 
 // AP §9.1.3: the alerts the board shows on a card, the same conditions as
@@ -164,7 +171,7 @@ export class OperationsViews {
   async timeline(order: OrderView): Promise<TimelineEvent[]> {
     const ofOrder = (table: typeof timeChanges | typeof itemReports) =>
       and(eq(table.orderId, order.id), eq(table.orderPlacedAt, order.placedAt));
-    const [rows, changes, reports] = await Promise.all([
+    const [rows, changes, reports, contacts] = await Promise.all([
       this.database.db
         .select()
         .from(orderEvents)
@@ -174,10 +181,17 @@ export class OperationsViews {
         .orderBy(asc(orderEvents.version)),
       this.database.db.select().from(timeChanges).where(ofOrder(timeChanges)),
       this.database.db.select().from(itemReports).where(ofOrder(itemReports)),
+      this.database.db
+        .select()
+        .from(orderContacts)
+        .where(
+          and(eq(orderContacts.orderId, order.id), eq(orderContacts.orderPlacedAt, order.placedAt)),
+        )
+        .orderBy(asc(orderContacts.at), asc(orderContacts.id)),
     ]);
     // Each row was written in its event's transaction, at its moment.
     const same = (a: Date, b: Date) => a.getTime() === b.getTime();
-    return rows.map((row) => {
+    const events: TimelineEvent[] = rows.map((row) => {
       const change =
         row.type === 'order.time_changed'
           ? changes.find((each) => same(each.at, row.at))
@@ -204,6 +218,32 @@ export class OperationsViews {
           : null,
       };
     });
+    // RA §8.9, §18, CU §11.3, CA §9.5 (slice L.1b): every tap on a contact
+    // button, at the order's status and version of the moment; it changed
+    // neither, so it sits between the events by its time.
+    const taps: TimelineEvent[] = contacts.map((tap) => ({
+      version: tap.version,
+      at: tap.at,
+      type:
+        tap.actorType !== 'captain'
+          ? 'order.captain_called'
+          : tap.channel === 'whatsapp'
+            ? 'order.customer_whatsapp'
+            : 'order.customer_called',
+      from: tap.status,
+      to: tap.status,
+      actor: { type: tap.actorType, id: tap.actorId },
+      captainId: null,
+      reason: null,
+      timeChange: null,
+      itemReport: null,
+    }));
+    // By the order's version, then the time: a tap sits after the event that
+    // set its version, even when the clock of its request read earlier. A
+    // stable sort keeps an event before a tap of the same version and moment.
+    return [...events, ...taps].sort(
+      (a, b) => a.version - b.version || a.at.getTime() - b.at.getTime(),
+    );
   }
 
   private event(row: typeof orderEvents.$inferSelect) {

@@ -18,6 +18,9 @@ export const QUEUES = {
   // AP §8.3, docs/domain/03 (slice 2.22c): the late code at the promised time
   // + order.delivery_late_compensation_min.
   lateCode: 'ordering-late-code',
+  // CU §11.6, §14 #14 (slice L.1b): the late apology at the promised time +
+  // order.delivery_late_alert_min.
+  lateApology: 'ordering-late-apology',
   // Architecture §5.5: a run of the outbox relay, sent with each transition.
   outboxRelay: 'ordering-outbox-relay',
   // AP §8.3: an offer the captain did not answer in dispatch.offer_timeout_sec.
