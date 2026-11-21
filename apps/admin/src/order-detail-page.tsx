@@ -675,9 +675,10 @@ export function OrderDetailPage() {
           // AP §9.3.1 «cancellation (reason and party)»: the reason as chosen
           // and the responsible party, beside operations' note.
           const cancelled = event.type === 'order.cancelled' && cancellation;
+          // A contact tap shares the version of its moment (slice L.1b).
+          const rowKey = [event.version, event.type, index].join(':');
           return (
-            // A contact tap shares the version of its moment (slice L.1b).
-            <li key={`${event.version}-${event.type ?? ''}-${index}`}>
+            <li key={rowKey}>
               <time dateTime={event.at}>{time(event.at)}</time>{' '}
               {key ? t(key) : t(statusKeys[event.to])}{' '}
               {t('order.by', { actor: t(actorKey(event.actor.type)) })}
