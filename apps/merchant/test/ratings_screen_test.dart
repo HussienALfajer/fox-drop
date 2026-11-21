@@ -228,31 +228,20 @@ void main() {
     await app.done(tester);
   });
 
-  // RA §13, RA-24: no customer name, no reply, even if an answer carried a
-  // name.
+  // RA §13, RA-24: no customer name, no reply. The guarantee is the server's
+  // read (apps/server/src/modules/ordering/restaurant-ratings.test.ts); this
+  // checks that the screen has no such line or widget.
   testWidgets('a rating shows no customer name and has no reply action', (
     tester,
   ) async {
     final app = _App(role: 'owner');
     app.server.on('/v1/merchant/ratings', [
-      FakeAnswer(
-        200,
-        _page([
-          {
-            ..._rating(2, comment: 'بارد'),
-            'customerName': 'أحمد الفاضل',
-            'customerFirstName': 'أحمد',
-            'orderNumber': '10001',
-          },
-        ], count: 1),
-      ),
+      FakeAnswer(200, _page([_rating(2, comment: 'بارد')], count: 1)),
     ]);
     await app.pump(tester, [FakeAnswer(200, _status())]);
     await _open(tester);
     final tile = find.byKey(const Key('rating-0'));
     expect(tile, findsOneWidget);
-    expect(find.textContaining('أحمد'), findsNothing);
-    expect(find.textContaining('10001'), findsNothing);
     expect(find.textContaining('الرد'), findsNothing);
     expect(find.textContaining('رد على'), findsNothing);
     expect(find.textContaining('ردّ'), findsNothing);

@@ -160,6 +160,8 @@ afterAll(async () => {
 
 export const phoneNumber = () => `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
 
+type SignedIn = Awaited<ReturnType<typeof appSignIn>>;
+
 export async function appSignIn(party: 'customer' | 'merchant' | 'captain', phone: string) {
   const deviceId = randomUUID();
   await app.inject({ method: 'POST', url: `/v1/${party}/auth/code`, payload: { phone, deviceId } });
@@ -225,13 +227,16 @@ export interface Dish {
   unitPrice: string;
 }
 
-export async function acceptedOrder(
+// A placed order waiting for the restaurant, with a cashier on a device.
+export async function placedOrder(
   recipient: { recipientName: string; contactPhone: string } | null = null,
   dish: Dish = { itemId: item, unitPrice: '12000' },
   // CU §10.4: a code typed at checkout (slice 2.21b).
   code: string | null = null,
+  // A customer signed in beforehand, to set up their profile first.
+  signedIn?: SignedIn,
 ) {
-  const customer = await appSignIn('customer', phoneNumber());
+  const customer = signedIn ?? (await appSignIn('customer', phoneNumber()));
   const lines = [
     {
       itemId: dish.itemId,
@@ -290,14 +295,24 @@ export async function acceptedOrder(
     headers: cashier,
     payload: { name: 'كاشير', platform: 'android', appVersion: '1.0.0' },
   });
+  return { id: order.id as string, cashier, customer };
+}
+
+export async function acceptedOrder(
+  recipient: { recipientName: string; contactPhone: string } | null = null,
+  dish: Dish = { itemId: item, unitPrice: '12000' },
+  code: string | null = null,
+  signedIn?: SignedIn,
+) {
+  const order = await placedOrder(recipient, dish, code, signedIn);
   const accepted = await app.inject({
     method: 'POST',
     url: `/v1/merchant/orders/${order.id}/accept`,
-    headers: { ...cashier, 'idempotency-key': randomUUID() },
+    headers: { ...order.cashier, 'idempotency-key': randomUUID() },
     payload: { prepMin: 20 },
   });
   expect(accepted.statusCode).toBe(200);
-  return { id: order.id as string, cashier, customer };
+  return order;
 }
 
 // An activated motorbike captain, signed in and online at the point.
@@ -349,8 +364,9 @@ export async function assignedOrder(
   recipient: { recipientName: string; contactPhone: string } | null = null,
   dish?: Dish,
   code: string | null = null,
+  customer?: SignedIn,
 ) {
-  const order = await acceptedOrder(recipient, dish, code);
+  const order = await acceptedOrder(recipient, dish, code, customer);
   const captain = await onlineCaptain();
   const ops = await admin(['OPS']);
   expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
@@ -361,8 +377,12 @@ export const SECOND = 1000;
 export const TRY = (amount: string) => [{ currency: 'TRY', amount }];
 
 // An order whose captain is at the restaurant.
-export async function captainAtRestaurant(dish?: Dish, code: string | null = null) {
-  const assigned = await assignedOrder(null, dish, code);
+export async function captainAtRestaurant(
+  dish?: Dish,
+  code: string | null = null,
+  customer?: SignedIn,
+) {
+  const assigned = await assignedOrder(null, dish, code, customer);
   expect((await assigned.captain.arrive(assigned.order.id)).statusCode).toBe(200);
   const itemsValue = (BigInt(dish?.unitPrice ?? '12000') * 2n).toString();
   const requestPickup = (lines = TRY(itemsValue), key: string = randomUUID()) =>
@@ -415,8 +435,8 @@ export const farFromCustomer = { latitude: 36.595, longitude: 37.046 };
 
 // An order the captain picked up, with the commands of the way to the
 // customer.
-export async function pickedUpOrder(dish?: Dish, code: string | null = null) {
-  const at = await captainAtRestaurant(dish, code);
+export async function pickedUpOrder(dish?: Dish, code: string | null = null, customer?: SignedIn) {
+  const at = await captainAtRestaurant(dish, code, customer);
   expect((await at.requestPickup()).statusCode).toBe(200);
   expect((await at.restaurant('confirm')).statusCode).toBe(200);
   const arriveAtCustomer = (
@@ -498,9 +518,15 @@ export function delta(before: Record<string, bigint>, after: Record<string, bigi
 
 // An order at the customer's door, with the delivery command.
 export async function orderAtDoor(
-  options: { away?: object | null; dish?: Dish; tripMetres?: number; code?: string | null } = {},
+  options: {
+    away?: object | null;
+    dish?: Dish;
+    tripMetres?: number;
+    code?: string | null;
+    customer?: SignedIn;
+  } = {},
 ) {
-  const picked = await pickedUpOrder(options.dish, options.code ?? null);
+  const picked = await pickedUpOrder(options.dish, options.code ?? null, options.customer);
   if (options.tripMetres !== undefined) {
     // The trip kept at placing, as the pay of AP §8.4's example needs it.
     await sql.query('UPDATE ordering.orders SET trip_metres = $2 WHERE id = $1', [

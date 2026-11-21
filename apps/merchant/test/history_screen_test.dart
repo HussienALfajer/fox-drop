@@ -240,26 +240,23 @@ void main() {
   });
 
   // RA-23: the customer's delivery fee and total never reach the history or
-  // an order's detail there, even when an answer carries them.
+  // an order's detail there. The guarantee is the server's read
+  // (apps/server/src/modules/ordering/merchant-reads.test.ts); this checks
+  // that the screen has no such line.
   testWidgets('the history and an order there show no delivery fee and no '
       'customer total', (tester) async {
     final app = _App(role: 'owner');
-    const extra = {'deliveryFee': '7700', 'customerTotal': '43700'};
     app.server
       ..on('/v1/merchant/orders/history', [
-        FakeAnswer(
-          200,
-          _page([
-            {..._row(owner: _ownerMoney), ...extra},
-          ], owner: true),
-        ),
+        FakeAnswer(200, _page([_row(owner: _ownerMoney)], owner: true)),
       ])
       ..on('/v1/merchant/orders/$_orderId', [
         FakeAnswer(200, {
-          'order': {
-            ...orderJson(id: _orderId, number: '10423', status: 'delivered'),
-            ...extra,
-          },
+          'order': orderJson(
+            id: _orderId,
+            number: '10423',
+            status: 'delivered',
+          ),
           'timeline': [
             {'step': 'placed', 'at': '2026-11-07T12:00:00.000Z'},
           ],
@@ -268,8 +265,6 @@ void main() {
     await app.pump(tester, [FakeAnswer(200, _status())]);
     await _open(tester);
     void expectNone() {
-      expect(find.textContaining('77 ₺'), findsNothing);
-      expect(find.textContaining('437 ₺'), findsNothing);
       expect(find.textContaining('التوصيل'), findsNothing);
       expect(find.textContaining('الإجمالي'), findsNothing);
     }

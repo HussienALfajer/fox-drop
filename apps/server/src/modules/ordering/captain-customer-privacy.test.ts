@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { describe, expect, it } from 'vitest';
-import { app, orderAtDoor, sql } from './delivery.fixture.js';
+import { app, appSignIn, orderAtDoor, phoneNumber, sql } from './delivery.fixture.js';
 
 // CU §5.3 (L.1a, DoD CU-3): the customer's gender and birthday are the
 // customer's and the panel's only; no captain read or order event carries
@@ -18,11 +18,13 @@ function expectNoProfileDetails(payload: unknown) {
 
 describe("the captain never sees the customer's gender or birthday (CU §5.3)", () => {
   it('leaves them out of the active order, the history, the ratings and the order events', async () => {
-    const door = await orderAtDoor();
+    // The profile is saved before the order is placed, so every order event
+    // could have carried it.
+    const customer = await appSignIn('customer', phoneNumber());
     const saved = await app.inject({
       method: 'PUT',
       url: '/v1/customer/profile',
-      headers: door.order.customer,
+      headers: customer,
       payload: {
         firstName: 'ريم',
         lastName: 'الحلبي',
@@ -33,6 +35,7 @@ describe("the captain never sees the customer's gender or birthday (CU §5.3)", 
     });
     expect(saved.statusCode).toBe(200);
     expect(saved.json()).toMatchObject({ profile: { gender: 'female', birthday } });
+    const door = await orderAtDoor({ customer });
 
     const active = await door.captain.active();
     expect(active.statusCode).toBe(200);
@@ -45,6 +48,7 @@ describe("the captain never sees the customer's gender or birthday (CU §5.3)", 
     for (const url of ['/v1/captain/orders/history', '/v1/captain/ratings']) {
       const answer = await app.inject({ method: 'GET', url, headers: door.captain.headers });
       expect(answer.statusCode).toBe(200);
+      if (url.endsWith('history')) expect(JSON.stringify(answer.json())).toContain(door.order.id);
       expectNoProfileDetails(answer.json());
     }
 

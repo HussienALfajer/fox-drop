@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { MerchantAccountsService } from '../identity/index.js';
 import {
@@ -9,6 +10,7 @@ import {
   change,
   orderAtDoor,
   phoneNumber,
+  placedOrder,
   restaurant,
 } from './delivery.fixture.js';
 
@@ -27,12 +29,31 @@ async function owner() {
 const get = (headers: Record<string, string>, url: string) =>
   app.inject({ method: 'GET', url, headers });
 
-// Two delivered orders: the items value 24000 each, the delivery fee 4000,
-// the customer's total 28000.
+// Two delivered orders, the first rated: the items value 24000 each, the
+// delivery fee 4000, the customer's total 28000.
 async function twoDelivered() {
   const doors = [await orderAtDoor(), await orderAtDoor()];
   for (const door of doors) expect((await door.deliver()).statusCode).toBe(200);
+  const rated = await app.inject({
+    method: 'POST',
+    url: `/v1/customer/orders/${doors[0]!.order.id}/rating`,
+    headers: doors[0]!.order.customer,
+    payload: { restaurant: { stars: 4, reasons: [], comment: null }, captain: null },
+  });
+  expect(rated.statusCode, rated.body).toBe(200);
   return doors;
+}
+
+// A placed order the restaurant rejects as too busy, which pauses nothing.
+async function rejectedOrder() {
+  const order = await placedOrder();
+  const answer = await app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${order.id}/reject`,
+    headers: { ...order.cashier, 'idempotency-key': randomUUID() },
+    payload: { reason: 'too_busy', items: [], busyExtraMin: null, pauseMin: null },
+  });
+  expect(answer.statusCode, answer.body).toBe(200);
 }
 
 let delivered: Awaited<ReturnType<typeof twoDelivered>> | undefined;
@@ -41,6 +62,7 @@ const deliveredOrders = async () => (delivered ??= await twoDelivered());
 describe("the restaurant's reports match the panel's (RA §11)", () => {
   it('gives the same orders, sales, acceptance, rejections, late rate, rating and pauses for a day', async () => {
     await deliveredOrders();
+    await rejectedOrder();
     const own = await admin(['OWN']);
     const day = (await own.get(`/v1/admin/dashboard?cityId=${azaz}`)).json().day as string;
 
@@ -62,7 +84,17 @@ describe("the restaurant's reports match the panel's (RA §11)", () => {
     const cell = (key: string) => row.cells[ranking.columns.findIndex((each) => each.key === key)];
     const bp = (value: number | null) => (value === null ? null : String(value));
 
-    expect(figures).toMatchObject({ received: 2, delivered: 2, sales: '48000' });
+    // Non-zero orders, sales, acceptance, rejections and ratings, so the
+    // comparisons below compare something. The unanswered count and the
+    // pauses stay zero: either would close the restaurant this file orders from.
+    expect(figures).toMatchObject({
+      received: 3,
+      delivered: 2,
+      sales: '48000',
+      rejected: 1,
+      rating: { count: 1 },
+    });
+    expect(figures.acceptanceBp).toBeGreaterThan(0);
     expect(cell('orders')).toBe(String(figures.received));
     expect(cell('sales')).toBe(figures.sales);
     // Every order was accepted by the restaurant itself, so «نسبة القبول»
@@ -108,6 +140,9 @@ describe("the restaurant never sees the delivery fee or the customer's total (RA
         // The fee (4000) and the total (28000) under any other name.
         expect(text, url).not.toContain('"4000"');
         expect(text, url).not.toContain('"28000"');
+        // Nor the sums of the two delivered orders' fees (8000) and totals (56000).
+        expect(text, url).not.toContain('"8000"');
+        expect(text, url).not.toContain('"56000"');
       }
     }
     expect((await live.deliver()).statusCode).toBe(200);

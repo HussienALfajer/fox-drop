@@ -1934,9 +1934,31 @@ void main() {
     deviceNow = placedAt.add(const Duration(minutes: 24));
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('متأخر 3 د'), findsOneWidget);
-    expect(find.byKey(const Key('prep-plus')), findsNothing);
-    expect(find.byKey(const Key('prep-minus')), findsNothing);
     expect(find.byKey(const Key('accept')), findsNothing);
+    expect(find.byIcon(Icons.add), findsNothing);
+    expect(find.byIcon(Icons.remove), findsNothing);
+    final labels = tester
+        .widgetList<ButtonStyleButton>(
+          find.byWidgetPredicate((w) => w is ButtonStyleButton),
+        )
+        .expand(
+          (b) => tester
+              .widgetList<Text>(
+                find.descendant(
+                  of: find.byWidget(b),
+                  matching: find.byType(Text),
+                ),
+              )
+              .map((text) => text.data)
+              .take(1),
+        )
+        .toList();
+    expect(labels, [
+      'الطلب جاهز',
+      'تحتاج وقتاً أطول؟ اتصل بالعمليات',
+      'صنف غير متوفر — اتصلوا بالزبون',
+      'مشكلة في الطلب',
+    ]);
     expect(find.text('تحتاج وقتاً أطول؟ اتصل بالعمليات'), findsOneWidget);
     await app.done(tester);
   });
@@ -1980,24 +2002,19 @@ void main() {
   }
 
   // RA §8.4, RA-23: the customer's delivery fee and total never reach the
-  // order detail, even when an answer carries them.
+  // order detail. The guarantee is the server's read
+  // (apps/server/src/modules/ordering/merchant-reads.test.ts); this checks
+  // that the screen has no such line.
   testWidgets('the order detail shows no delivery fee and no customer total', (
     tester,
   ) async {
     final app = _Board(role: 'owner');
     await app.pump(tester, [
-      FakeAnswer(
-        200,
-        boardJson([
-          {...orderJson(), 'deliveryFee': '7700', 'customerTotal': '31700'},
-        ]),
-      ),
+      FakeAnswer(200, boardJson([orderJson()])),
     ]);
     app.container.read(routerProvider).push('/orders/$_orderId');
     await tester.pumpAndSettle();
     expect(find.text('#10001'), findsWidgets);
-    expect(find.textContaining('77 ₺'), findsNothing);
-    expect(find.textContaining('317 ₺'), findsNothing);
     expect(find.textContaining('التوصيل'), findsNothing);
     expect(find.textContaining('الإجمالي'), findsNothing);
     await app.done(tester);
@@ -2036,6 +2053,52 @@ void main() {
       'tel:+963944000000',
       'https://wa.me/963955000000',
     ]);
+    await app.done(tester);
+  });
+
+  // RA §15, RA-26: on an order the WhatsApp text names the order.
+  testWidgets('the order problem sheet’s WhatsApp tile names the order', (
+    tester,
+  ) async {
+    final app = _Board();
+    final launched = <Uri>[];
+    app.server.on('/v1/merchant/contact', [
+      const FakeAnswer(200, {'whatsapp': '+963955000000'}),
+    ]);
+    await app.pump(
+      tester,
+      [
+        FakeAnswer(
+          200,
+          boardJson([
+            orderJson(
+              status: 'accepted',
+              version: 2,
+              acceptedAfter: Duration.zero,
+            ),
+          ]),
+        ),
+      ],
+      overrides: [
+        merchantAuth.launch.overrideWithValue((uri) async {
+          launched.add(uri);
+          return true;
+        }),
+      ],
+    );
+    await app.up(tester);
+    app.container.read(routerProvider).push('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    final button = find.byKey(const Key('order-problem'));
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('whatsapp-operations')));
+    await tester.pump();
+    expect(
+      launched.single.toString(),
+      'https://wa.me/963955000000?text=${Uri.encodeQueryComponent('بخصوص الطلب #10001')}',
+    );
     await app.done(tester);
   });
 
