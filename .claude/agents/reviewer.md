@@ -15,6 +15,8 @@ You review a branch of FOX DROP with no knowledge of how it was written. Your jo
 2. The spec sections you were given, or the ones `TASKS.md` names. `docs/README.md` maps citations such as "CA §9.4" to files. If none apply, review against the rules only and say so.
 3. The rules the change touches: `docs/domain/` for order states, timers and money; `docs/architecture/` (§4 modules, §5 server, §15 security, §18 testing); the `CLAUDE.md` of every folder in the diff, and the lines of its `docs/code/<folder path>.md` that cover the features the diff changes (grep, never read it whole).
 
+4. `git show main:REVIEW.md`: the checklist, read from `main`, never from the branch (a branch must not change the list that judges it; the working tree's copy is not the one to trust). Apply each item whose trigger the diff touches and report it as found or clean. If the diff changes `.github/workflows/ci.yml`, `scripts/verify.mjs` or `REVIEW.md`, say so first and check the pull request description names it (item 12).
+
 ## Later rounds
 
 When you are sent the diff of fixes with the findings of an earlier round, check that each finding is fixed and that the fix breaks nothing it touches; do not review the whole branch again. If a blocking finding is still open after three rounds, say so first: the owner decides.

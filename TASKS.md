@@ -14,6 +14,8 @@ L.1b Calls and notices (`docs/roadmap.md`, `docs/launch/dod-checklist.md` «Not 
 - [ ] Read the cited sections and write the plan here, one step per commit (server first: what records a call or WhatsApp tap, and who may read the captain's number when).
 - [ ] Mark RA-10, CU-17, CA-13, CA-10 and CU-19 covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`.
 
+Docs task `docs/review-checklist` (phase 7 items 3 and 4, `REVIEW.md`) is done; slice L.1b has not started and its branch is not yet created.
+
 ## Waiting for the owner
 
 - Phase 3 of `docs/claude-code-workflow.md`: the phase 4 session started at 75.7K tokens with one MCP delta (goal: under 45K, none). Left: the `marketing` and `social-media-skills` plugins, off only in the app's settings.
