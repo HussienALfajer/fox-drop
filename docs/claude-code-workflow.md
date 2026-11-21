@@ -113,6 +113,8 @@ Done when: a docs-only pull request passes in under 2 minutes and a server-only 
 
 Status (2026-11-21): built. `scripts/classify-changes.mjs` prints four flags for CI: `code` (the checks: any path outside Markdown and `docs/`, or a spec file in `SPEC_FILES_READ_BY_TESTS`), `dart`, `native` (an app's `android/`, `ios/`, `windows/`, a pubspec or `pubspec.lock`, a package in `NATIVE_PACKAGES`, `.fvmrc`, `ci.yml`) and `build` (the images, the staging builds and the deploy: any path outside Markdown and `docs/`). Its test fails when a test file quotes a spec path missing from `SPEC_FILES_READ_BY_TESTS`, or when a package with a native folder is missing from `NATIVE_PACKAGES`. The `native-builds` label runs the native release builds on a pull request (`labeled` is one of its triggers). `verify` needs `android-release`. `ios-release` and `staging-ios` share a cache of CocoaPods' downloads and the Swift packages, keyed on `pubspec.lock`, the app's `Podfile` and its Xcode project; while `staging-ios` is skipped (no Apple account), main writes no cache, so a pull request reuses only its own earlier runs. Renovate groups every GitHub Actions update, majors included, into one weekly pull request.
 
+Measured on GitHub Actions (2026-11-21), from the push to the last check of the pull request: pending.
+
 ## Phase 6: session shape and subagents
 
 1. Try an auto-compact window of about 200K (`autoCompactWindow`) on one slice and compare its cost and its result with the baseline; keep it only if the slice loses nothing.
