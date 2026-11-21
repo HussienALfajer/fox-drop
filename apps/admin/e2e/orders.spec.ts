@@ -434,6 +434,20 @@ test('shows the board without «تعيين كابتن» to a role that only read
   await expect(page).toHaveURL(/\/$/);
 });
 
+// AP §9.3.1 (AP-33b): the order's detail shows the currency the customer pays in.
+test('shows the pay-in currency of the order in its detail', async ({ page }) => {
+  await fakeSession(page, ['operations.read']);
+  await fakeOperations(page);
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: { order: { ...detail, customer: { ...detail.customer, payIn: 'USD' } } },
+    }),
+  );
+  await page.goto(`/orders/${orderId}`);
+  const panel = page.getByRole('complementary', { name: 'تفاصيل الطلب' });
+  await expect(panel.getByText('سأدفع بـ: USD')).toBeVisible();
+});
+
 test('is hidden and closed without operations', async ({ page }) => {
   await fakeSession(page, []);
   await page.goto('/');
