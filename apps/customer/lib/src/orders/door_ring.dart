@@ -70,6 +70,8 @@ Future<void> callCaptain(
   final messenger = ScaffoldMessenger.of(context);
   final failure = AppLocalizations.of(context).statusError;
   final launch = ref.read(customerAuth.launch);
+  // Read before the request: the screen may be gone by its answer.
+  final feed = ref.read(orderFeedProvider(orderId));
   try {
     final response = await ref
         .read(coreApiProvider)
@@ -85,7 +87,7 @@ Future<void> callCaptain(
     messenger.showSnackBar(SnackBar(content: Text(failure)));
     // A refusal means the order moved on: show it as it is now.
     if (error.response?.statusCode == 409) {
-      ref.read(orderFeedProvider(orderId)).refresh();
+      feed.refresh();
     }
   }
 }

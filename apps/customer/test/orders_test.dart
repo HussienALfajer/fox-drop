@@ -1296,16 +1296,23 @@ void main() {
         tester,
         [
           FakeAnswer(200, {'order': onTheWay()}),
+          FakeAnswer(200, {'order': onTheWay()}),
         ],
         before: (app) => app.server.on(_callPath, [
           const FakeAnswer(409, {'code': 'order_state_changed'}),
         ]),
       );
+      final reads = app.server.to('/v1/customer/orders/$_orderId').length;
       await tester.tap(find.byKey(callKey));
       await tester.pumpAndSettle();
       expect(app.server.to(_callPath), hasLength(1));
       expect(app.launched, isEmpty);
       expect(find.byType(SnackBar), findsOneWidget);
+      // The refusal means the order moved on: it is read again.
+      expect(
+        app.server.to('/v1/customer/orders/$_orderId'),
+        hasLength(reads + 1),
+      );
       await app.done(tester);
     });
 
