@@ -21,8 +21,8 @@ Design (decided in this session, from RA §8.9 / §18, CU §11.3 / §15, CA §9.
 - CU-19: a `lateApology` timer sent beside the late code's, at the promised time + `order.delivery_late_alert_min`; it pushes `customer.late_apology` if the order is not delivered and the promised time unchanged. The customer's order carries `lateApologyAt` (null once ended) and the app shows the banner from it.
 
 - [x] Read the cited sections and write the plan here.
-- [ ] Server: `order_contacts` migration, the three reveal routes, the numbers out of the reads, the admin timeline; tests (window, recorded, other party 404); `pnpm generate:api`.
-- [ ] Server: `waitingPayFrom` on the captain's active order; the late apology timer and `lateApologyAt`; tests.
+- [x] Server: `order_contacts` migration, the three reveal routes, the numbers out of the reads, the admin timeline; tests (window, recorded, other party 404); `pnpm generate:api`.
+- [x] Server: `waitingPayFrom` on the captain's active order; the late apology timer and `lateApologyAt`; tests. (Admin timeline labels and key done with it.)
 - [ ] Customer app: «اتصال بالكابتن» on the order screen from pickup through the reveal (the door ring too), the late apology banner; tests (button and map leave at the end).
 - [ ] Restaurant app: «اتصال بالكابتن» on the order detail from assignment to the end (dialer on Android, a dialog with the number on Windows); tests.
 - [ ] Captain app: call and WhatsApp through the reveal, «بدأ احتساب أجر الانتظار»; tests. Admin: the three timeline labels.

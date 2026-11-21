@@ -1,9 +1,10 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
-import { ContentService } from '../content/index.js';
+import { ContentService, NotificationTexts } from '../content/index.js';
 import { GeoService } from '../geo/index.js';
 import { LateCodesService, PromoCodeUsesService } from '../marketing/index.js';
 import { RestaurantStatusService } from '../merchants/index.js';
+import { PushQueue } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -50,6 +51,11 @@ export interface LateCodeJob {
   promisedAt: string;
 }
 
+// The late apology's timer (CU §11.6, §14 #14, docs/domain/03; slice L.1b),
+// sent with every new promised time for order.delivery_late_alert_min after
+// it, with the late code's shape.
+export type LateApologyJob = LateCodeJob;
+
 // The order is still on its way: it gets the late code (owner decision
 // 2026-11-17: an order that ended before the moment gets none).
 const NOT_DELIVERED = ['accepted', 'ready', 'picked_up', 'arrived'];
@@ -75,7 +81,48 @@ export class OrderTimers {
     private readonly status: RestaurantStatusService,
     private readonly promoCodes: PromoCodeUsesService,
     private readonly lateCodes: LateCodesService,
+    private readonly pushes: PushQueue,
+    private readonly texts: NotificationTexts,
   ) {}
+
+  // CU §11.6, §14 #14 (slice L.1b): the order is still not delivered at its
+  // promised time + order.delivery_late_alert_min, so the customer gets
+  // «نعتذر، طلبك متأخر قليلاً», once per order (the push's source). A
+  // promised time moved since, or an order ended, gets none. Whether it was
+  // queued.
+  async lateApology(job: LateApologyJob, now: Date): Promise<boolean> {
+    const placedAt = new Date(job.placedAt);
+    // The text is read before the lock (a content read takes a connection).
+    const rendered = await this.texts.render('customer.late_apology', {});
+    return this.database.db.transaction(async (tx) => {
+      const order = await lockOrder(tx, job.orderId, placedAt);
+      if (!order || !NOT_DELIVERED.includes(order.status)) return false;
+      const [row] = await tx
+        .select({ promisedAt: orders.promisedAt })
+        .from(orders)
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, placedAt)));
+      if (!row?.promisedAt || row.promisedAt.getTime() !== new Date(job.promisedAt).getTime()) {
+        return false;
+      }
+      await this.pushes.enqueue(
+        tx,
+        [
+          {
+            source: `customer:customer.late_apology:${order.id}`,
+            recipient: { party: 'customer', accountId: order.customerAccountId },
+            templateKey: 'customer.late_apology',
+            body: rendered.body,
+            level: rendered.level,
+            priority: rendered.priority,
+            data: { target: 'order', orderId: order.id },
+            at: now,
+          },
+        ],
+        now,
+      );
+      return true;
+    });
+  }
 
   // AP §8.3, §6.4 (slice 2.22c): the order is still not delivered at its
   // promised time + order.delivery_late_compensation_min, so the customer
@@ -256,6 +303,20 @@ export class OrderTimersWorker implements OnModuleInit {
         } catch (error) {
           // pg-boss tries it again (QUEUE_OPTIONS); each failure is reported.
           this.logger.error({ err: error, orderId: job.data.orderId }, 'late code failed');
+          reportError(error);
+          throw error;
+        }
+      }
+    });
+    await this.jobs.work<LateApologyJob>(QUEUES.lateApology, async (batch) => {
+      for (const job of batch) {
+        try {
+          if (await this.timers.lateApology(job.data, new Date())) {
+            this.logger.log({ orderId: job.data.orderId }, 'late apology queued');
+          }
+        } catch (error) {
+          // pg-boss tries it again (QUEUE_OPTIONS); each failure is reported.
+          this.logger.error({ err: error, orderId: job.data.orderId }, 'late apology failed');
           reportError(error);
           throw error;
         }

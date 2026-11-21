@@ -837,6 +837,7 @@ import 'package:core_api/src/model/captain_custody_dto_output_receipts_inner_con
 import 'package:core_api/src/model/captain_custody_dto_output_receipts_inner_lines_inner.dart';
 import 'package:core_api/src/model/captain_custody_dto_output_total.dart';
 import 'package:core_api/src/model/captain_custody_dto_output_usage.dart';
+import 'package:core_api/src/model/captain_customer_contact_dto.dart';
 import 'package:core_api/src/model/captain_deliver_dto.dart';
 import 'package:core_api/src/model/captain_deliver_dto_away.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output.dart';
@@ -1230,6 +1231,7 @@ import 'package:core_api/src/model/merchant_upload_dto_output.dart';
 import 'package:core_api/src/model/merchant_windows_pairing_dto_output.dart';
 import 'package:core_api/src/model/merchant_windows_registered_dto_output.dart';
 import 'package:core_api/src/model/merchant_windows_registration_dto.dart';
+import 'package:core_api/src/model/order_contact_dto_output.dart';
 import 'package:core_api/src/model/platform_dto_output.dart';
 import 'package:core_api/src/model/push_token_dto.dart';
 import 'package:core_api/src/model/push_token_registered_dto_output.dart';
@@ -2090,6 +2092,7 @@ part 'serializers.g.dart';
   CaptainCustodyDtoOutputReceiptsInnerLinesInner,
   CaptainCustodyDtoOutputTotal,
   CaptainCustodyDtoOutputUsage,
+  CaptainCustomerContactDto,
   CaptainDeliverDto,
   CaptainDeliverDtoAway,
   CaptainDeliverySummaryDtoOutput,
@@ -2483,6 +2486,7 @@ part 'serializers.g.dart';
   MerchantWindowsPairingDtoOutput,
   MerchantWindowsRegisteredDtoOutput,
   MerchantWindowsRegistrationDto,
+  OrderContactDtoOutput,
   PlatformDtoOutput,
   PushTokenDto,
   PushTokenRegisteredDtoOutput,

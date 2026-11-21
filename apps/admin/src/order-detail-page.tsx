@@ -669,14 +669,15 @@ export function OrderDetailPage() {
 
       <h3>{t('order.timeline')}</h3>
       <ol>
-        {detail.timeline.map((event) => {
+        {detail.timeline.map((event, index) => {
           const key = eventKey(event.type);
           const reason = eventReason(event);
           // AP §9.3.1 «cancellation (reason and party)»: the reason as chosen
           // and the responsible party, beside operations' note.
           const cancelled = event.type === 'order.cancelled' && cancellation;
           return (
-            <li key={event.version}>
+            // A contact tap shares the version of its moment (slice L.1b).
+            <li key={`${event.version}-${event.type ?? ''}-${index}`}>
               <time dateTime={event.at}>{time(event.at)}</time>{' '}
               {key ? t(key) : t(statusKeys[event.to])}{' '}
               {t('order.by', { actor: t(actorKey(event.actor.type)) })}

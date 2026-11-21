@@ -44,6 +44,7 @@ part 'customer_active_orders_dto_output_orders_inner.g.dart';
 /// * [rating]
 /// * [lateCode]
 /// * [promisedAt] - «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
+/// * [lateApologyAt] - CU §11.6, §14 #14 (slice L.1b): the moment of «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.», the promised time + order.delivery_late_alert_min; the banner shows from it (by the server clock) while the order is not delivered. Null before acceptance, once the order ended, and in the list of active orders.
 /// * [doorPing]
 /// * [itemReport]
 /// * [cancellation]
@@ -115,6 +116,10 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInner
   /// «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
+
+  /// CU §11.6, §14 #14 (slice L.1b): the moment of «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.», the promised time + order.delivery_late_alert_min; the banner shows from it (by the server clock) while the order is not delivered. Null before acceptance, once the order ended, and in the list of active orders.
+  @BuiltValueField(wireName: r'lateApologyAt')
+  DateTime? get lateApologyAt;
 
   @BuiltValueField(wireName: r'doorPing')
   CustomerActiveOrdersDtoOutputOrdersInnerDoorPing? get doorPing;
@@ -301,6 +306,13 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
         ? null
         : serializers.serialize(
             object.promisedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'lateApologyAt';
+    yield object.lateApologyAt == null
+        ? null
+        : serializers.serialize(
+            object.lateApologyAt,
             specifiedType: const FullType.nullable(DateTime),
           );
     yield r'doorPing';
@@ -611,6 +623,16 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
                   as DateTime?;
           if (valueDes == null) continue;
           result.promisedAt = valueDes;
+          break;
+        case r'lateApologyAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.lateApologyAt = valueDes;
           break;
         case r'doorPing':
           final valueDes =

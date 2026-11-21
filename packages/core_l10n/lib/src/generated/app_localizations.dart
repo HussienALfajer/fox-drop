@@ -3040,6 +3040,30 @@ abstract class AppLocalizations {
   /// **'واتساب الزبون'**
   String get captainWhatsAppCustomer;
 
+  /// At the restaurant, from the moment paid waiting starts (CA §9.3, AP §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'بدأ احتساب أجر الانتظار'**
+  String get captainWaitingPayStarted;
+
+  /// Calls the order's captain from the order detail, from assignment until the order ends (RA §8.9, RA-10).
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالكابتن'**
+  String get merchantCallCaptain;
+
+  /// The captain's number, shown where the device cannot dial (Windows) (RA §8.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الكابتن: {phone}'**
+  String merchantCaptainNumber(String phone);
+
+  /// The banner 20 minutes past the promised time (CU §11 «Late», AP §8.3, CU-19).
+  ///
+  /// In ar, this message translates to:
+  /// **'نعتذر، طلبك متأخر قليلاً. نتابعه الآن.'**
+  String get customerLateApology;
+
   /// Step 3 main button (CA §9.6).
   ///
   /// In ar, this message translates to:

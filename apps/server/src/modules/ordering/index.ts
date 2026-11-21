@@ -40,6 +40,12 @@ import {
   CustomerOrderRouteController,
 } from './order-routes.controller.js';
 import { OrderRoutes } from './order-routes.js';
+import {
+  CaptainOrderContactsController,
+  CustomerOrderContactsController,
+  MerchantOrderContactsController,
+} from './order-contacts.controller.js';
+import { OrderContacts } from './order-contacts.js';
 import { OrderAssignmentsModule } from './order-assignments.js';
 import { OrderCommands } from './order-commands.js';
 import { OrderPartitions } from './order-partitions.js';
@@ -125,6 +131,9 @@ import {
     AdminOrderHistoryController,
     CaptainOrderRouteController,
     CustomerOrderRouteController,
+    MerchantOrderContactsController,
+    CustomerOrderContactsController,
+    CaptainOrderContactsController,
   ],
   providers: [
     ActiveOrders,
@@ -145,6 +154,7 @@ import {
     RatingsService,
     RatingPagesService,
     OrderRoutes,
+    OrderContacts,
     RestaurantFiguresService,
     CaptainFiguresService,
     DashboardOrdersService,

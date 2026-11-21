@@ -868,6 +868,7 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     );
     expect(rows).toEqual([
       { name: 'ordering-emergency-resume' },
+      { name: 'ordering-late-apology' },
       { name: 'ordering-late-code' },
       { name: 'ordering-merchant-auto-cancel' },
       { name: 'ordering-order-alerts' },

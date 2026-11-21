@@ -66,6 +66,11 @@ export const eventKeys = {
   'order.ping_answered': 'order.event.pingAnswered',
   'order.customer_not_answering': 'order.event.customerNotAnswering',
   'order.no_answer_waited': 'order.event.noAnswerWaited',
+  // A tap on a call or WhatsApp button (RA-10, CU-17, CA-13; slice L.1b),
+  // shown with the party that tapped.
+  'order.captain_called': 'order.event.captainCalled',
+  'order.customer_called': 'order.event.customerCalled',
+  'order.customer_whatsapp': 'order.event.customerWhatsapp',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {

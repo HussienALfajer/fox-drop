@@ -1268,7 +1268,12 @@ class AdminOrderDto extends createZodDto(
         z.object({
           version: z.int(),
           at: z.iso.datetime(),
-          type: z.string().nullable().describe('Such as order.accepted or order.offered.'),
+          type: z
+            .string()
+            .nullable()
+            .describe(
+              'Such as order.accepted or order.offered; a contact tap (slice L.1b) is order.captain_called, order.customer_called or order.customer_whatsapp, with from = to and the version of the moment, so the version is not unique.',
+            ),
           from: z.enum(orderStatuses).nullable(),
           to: z.enum(orderStatuses),
           actor: z.object({ type: z.string(), id: z.uuid().nullable() }),

@@ -838,6 +838,7 @@ export 'package:core_api/src/model/captain_custody_dto_output_receipts_inner_con
 export 'package:core_api/src/model/captain_custody_dto_output_receipts_inner_lines_inner.dart';
 export 'package:core_api/src/model/captain_custody_dto_output_total.dart';
 export 'package:core_api/src/model/captain_custody_dto_output_usage.dart';
+export 'package:core_api/src/model/captain_customer_contact_dto.dart';
 export 'package:core_api/src/model/captain_deliver_dto.dart';
 export 'package:core_api/src/model/captain_deliver_dto_away.dart';
 export 'package:core_api/src/model/captain_delivery_summary_dto_output.dart';
@@ -1231,6 +1232,7 @@ export 'package:core_api/src/model/merchant_upload_dto_output.dart';
 export 'package:core_api/src/model/merchant_windows_pairing_dto_output.dart';
 export 'package:core_api/src/model/merchant_windows_registered_dto_output.dart';
 export 'package:core_api/src/model/merchant_windows_registration_dto.dart';
+export 'package:core_api/src/model/order_contact_dto_output.dart';
 export 'package:core_api/src/model/platform_dto_output.dart';
 export 'package:core_api/src/model/push_token_dto.dart';
 export 'package:core_api/src/model/push_token_registered_dto_output.dart';

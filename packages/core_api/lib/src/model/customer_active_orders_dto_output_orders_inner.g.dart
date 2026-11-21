@@ -160,6 +160,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
   @override
   final DateTime? promisedAt;
   @override
+  final DateTime? lateApologyAt;
+  @override
   final CustomerActiveOrdersDtoOutputOrdersInnerDoorPing? doorPing;
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerItemReport? itemReport;
@@ -222,6 +224,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
     this.rating,
     this.lateCode,
     this.promisedAt,
+    this.lateApologyAt,
     this.doorPing,
     this.itemReport,
     this.cancellation,
@@ -269,6 +272,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
         rating == other.rating &&
         lateCode == other.lateCode &&
         promisedAt == other.promisedAt &&
+        lateApologyAt == other.lateApologyAt &&
         doorPing == other.doorPing &&
         itemReport == other.itemReport &&
         cancellation == other.cancellation &&
@@ -307,6 +311,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, rating.hashCode);
     _$hash = $jc(_$hash, lateCode.hashCode);
     _$hash = $jc(_$hash, promisedAt.hashCode);
+    _$hash = $jc(_$hash, lateApologyAt.hashCode);
     _$hash = $jc(_$hash, doorPing.hashCode);
     _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
@@ -349,6 +354,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
           ..add('rating', rating)
           ..add('lateCode', lateCode)
           ..add('promisedAt', promisedAt)
+          ..add('lateApologyAt', lateApologyAt)
           ..add('doorPing', doorPing)
           ..add('itemReport', itemReport)
           ..add('cancellation', cancellation)
@@ -451,6 +457,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
   DateTime? _promisedAt;
   DateTime? get promisedAt => _$this._promisedAt;
   set promisedAt(DateTime? promisedAt) => _$this._promisedAt = promisedAt;
+
+  DateTime? _lateApologyAt;
+  DateTime? get lateApologyAt => _$this._lateApologyAt;
+  set lateApologyAt(DateTime? lateApologyAt) =>
+      _$this._lateApologyAt = lateApologyAt;
 
   CustomerActiveOrdersDtoOutputOrdersInnerDoorPingBuilder? _doorPing;
   CustomerActiveOrdersDtoOutputOrdersInnerDoorPingBuilder get doorPing =>
@@ -615,6 +626,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
       _rating = $v.rating?.toBuilder();
       _lateCode = $v.lateCode?.toBuilder();
       _promisedAt = $v.promisedAt;
+      _lateApologyAt = $v.lateApologyAt;
       _doorPing = $v.doorPing?.toBuilder();
       _itemReport = $v.itemReport?.toBuilder();
       _cancellation = $v.cancellation?.toBuilder();
@@ -694,6 +706,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
             rating: _rating?.build(),
             lateCode: _lateCode?.build(),
             promisedAt: promisedAt,
+            lateApologyAt: lateApologyAt,
             doorPing: _doorPing?.build(),
             itemReport: _itemReport?.build(),
             cancellation: _cancellation?.build(),

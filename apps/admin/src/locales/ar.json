@@ -338,7 +338,10 @@
       "customerPinged": "نبّه الكابتن الزبون",
       "pingAnswered": "ردّ الزبون على التنبيه",
       "customerNotAnswering": "أبلغ الكابتن «الزبون لا يستجيب»",
-      "noAnswerWaited": "طلبت العمليات من الكابتن الانتظار"
+      "noAnswerWaited": "طلبت العمليات من الكابتن الانتظار",
+      "captainCalled": "ضغط «اتصال بالكابتن»",
+      "customerCalled": "ضغط الكابتن «اتصال بالزبون»",
+      "customerWhatsapp": "ضغط الكابتن «واتساب الزبون»"
     },
     "actor": {
       "system": "النظام",

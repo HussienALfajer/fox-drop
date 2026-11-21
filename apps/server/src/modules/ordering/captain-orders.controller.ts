@@ -132,6 +132,12 @@ const activeOrder = z
       })
       .nullable()
       .describe('Null until «وصلت إلى المطعم».'),
+    waitingPayFrom: z.iso
+      .datetime()
+      .nullable()
+      .describe(
+        'From it the screen shows «بدأ احتساب أجر الانتظار» (CA §9.3): the later of the arrival and the prep due time at acceptance, plus captain.waiting_threshold_min. Null away from the restaurant, or when the pay table pays no waiting.',
+      ),
     itemReportOpen: z
       .boolean()
       .describe(
@@ -197,12 +203,6 @@ const activeOrder = z
           .nullable()
           .describe(
             "The recipient's name when the order is for someone else, else the customer's.",
-          ),
-        phone: z
-          .string()
-          .nullable()
-          .describe(
-            '«اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else.',
           ),
         location: point.describe('The exact pin, with the route and «ابدأ الملاحة».'),
         address: z.object({
@@ -716,6 +716,7 @@ function activeOrderBody({
   cannotComplete,
   emergency,
   noAnswer,
+  waitingPayFrom,
 }: CaptainActiveOrder) {
   if (order.captainTrack === null) throw new Error(`order ${order.id} has no captain track`);
   if (order.acceptance === null) throw new Error(`order ${order.id} was never accepted`);
@@ -742,6 +743,7 @@ function activeOrderBody({
       ).toISOString(),
     },
     arrival: order.captainArrival && { at: order.captainArrival.at.toISOString() },
+    waitingPayFrom: waitingPayFrom?.toISOString() ?? null,
     itemReportOpen: order.itemReport !== null,
     editUnacknowledged: order.pendingEdits.some((edit) => edit.addsItems),
     outcomeToCollect: order.outcome?.awaitingCollection
@@ -776,7 +778,6 @@ function activeOrderBody({
     },
     customer: {
       name: customer.name,
-      phone: customer.phone,
       location: order.address.location,
       address: {
         neighbourhood: order.address.neighbourhood,

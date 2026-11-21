@@ -36,6 +36,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// * [restaurant]
 /// * [preparation]
 /// * [arrival]
+/// * [waitingPayFrom] - From it the screen shows «بدأ احتساب أجر الانتظار» (CA §9.3): the later of the arrival and the prep due time at acceptance, plus captain.waiting_threshold_min. Null away from the restaurant, or when the pay table pays no waiting.
 /// * [itemReportOpen] - The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2).
 /// * [editUnacknowledged] - Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2).
 /// * [outcomeToCollect]
@@ -86,6 +87,10 @@ abstract class CaptainOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'arrival')
   CaptainActiveOrderDtoOutputOrderArrival? get arrival;
+
+  /// From it the screen shows «بدأ احتساب أجر الانتظار» (CA §9.3): the later of the arrival and the prep due time at acceptance, plus captain.waiting_threshold_min. Null away from the restaurant, or when the pay table pays no waiting.
+  @BuiltValueField(wireName: r'waitingPayFrom')
+  DateTime? get waitingPayFrom;
 
   /// The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2).
   @BuiltValueField(wireName: r'itemReportOpen')
@@ -220,6 +225,13 @@ class _$CaptainOrderDtoOutputOrderSerializer
             specifiedType: const FullType.nullable(
               CaptainActiveOrderDtoOutputOrderArrival,
             ),
+          );
+    yield r'waitingPayFrom';
+    yield object.waitingPayFrom == null
+        ? null
+        : serializers.serialize(
+            object.waitingPayFrom,
+            specifiedType: const FullType.nullable(DateTime),
           );
     yield r'itemReportOpen';
     yield serializers.serialize(
@@ -440,6 +452,16 @@ class _$CaptainOrderDtoOutputOrderSerializer
                   as CaptainActiveOrderDtoOutputOrderArrival?;
           if (valueDes == null) continue;
           result.arrival.replace(valueDes);
+          break;
+        case r'waitingPayFrom':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.waitingPayFrom = valueDes;
           break;
         case r'itemReportOpen':
           final valueDes =

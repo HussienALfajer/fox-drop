@@ -34,7 +34,7 @@ import {
 } from './delivery.fixture.js';
 
 describe('the captain on the way to the customer (CA §9.5)', () => {
-  it('shows the customer block from assignment, with the number to call', async () => {
+  it('shows the customer block from assignment, without the number (slice L.1b)', async () => {
     const assigned = await assignedOrder();
     const { order } = (await assigned.captain.active()).json();
     expect(order.customer).toMatchObject({
@@ -51,15 +51,16 @@ describe('the captain on the way to the customer (CA §9.5)', () => {
       collectEquivalents: [],
       arrival: null,
     });
-    expect(order.customer.phone).toMatch(/^\+9639\d{8}$/);
+    expect(order.customer).not.toHaveProperty('phone');
     expect(new Date(order.customer.promisedAt).getTime()).toBeGreaterThan(Date.now());
   });
 
-  it("gives the recipient's name and number for an order for someone else (CU Q5)", async () => {
+  it("gives the recipient's name for an order for someone else (CU Q5)", async () => {
     const contactPhone = phoneNumber();
     const assigned = await assignedOrder({ recipientName: 'أبو أحمد', contactPhone });
     const { order } = (await assigned.captain.active()).json();
-    expect(order.customer).toMatchObject({ name: 'أبو أحمد', phone: contactPhone });
+    expect(order.customer).toEqual(expect.objectContaining({ name: 'أبو أحمد' }));
+    expect(order.customer).not.toHaveProperty('phone');
   });
 });
 
@@ -238,21 +239,6 @@ describe('POST /v1/captain/orders/{orderId}/arrive-at-customer (CA §9.6, K4)', 
     expect(again.json().order.status).toBe('arrived');
     const events = await eventTypes(picked.order.id);
     expect(events.filter((event) => event.type === 'order.arrived_at_customer')).toHaveLength(1);
-  });
-
-  it('answers no number to a command replayed once the order ended (C10)', async () => {
-    const picked = await pickedUpOrder();
-    const key = randomUUID();
-    const first = await picked.arriveAtCustomer(atCustomer, { key });
-    expect(first.json().order.customer.phone).toMatch(/^\+9639\d{8}$/);
-    // The order ends (its delivery comes with the next pull request).
-    await sql.query(
-      "UPDATE ordering.orders SET status = 'cancelled', cancelled_at = now(), cancel_reason = 'test', food_prepared = false WHERE id = $1",
-      [picked.order.id],
-    );
-    const replayed = await picked.arriveAtCustomer(atCustomer, { key });
-    expect(replayed.statusCode).toBe(200);
-    expect(replayed.json().order.customer.phone).toBeNull();
   });
 
   it('refuses a key reused with another reason', async () => {

@@ -17,7 +17,6 @@ part 'captain_active_order_dto_output_order_customer.g.dart';
 ///
 /// Properties:
 /// * [name] - The recipient's name when the order is for someone else, else the customer's.
-/// * [phone] - «اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else.
 /// * [location]
 /// * [address]
 /// * [payIn] - «الزبون سيدفع بـ {العملة}», an indication only (CU U10).
@@ -34,10 +33,6 @@ abstract class CaptainActiveOrderDtoOutputOrderCustomer
   /// The recipient's name when the order is for someone else, else the customer's.
   @BuiltValueField(wireName: r'name')
   String? get name;
-
-  /// «اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else.
-  @BuiltValueField(wireName: r'phone')
-  String? get phone;
 
   @BuiltValueField(wireName: r'location')
   CaptainActiveOrderDtoOutputOrderCustomerLocation get location;
@@ -95,13 +90,6 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerSerializer
         ? null
         : serializers.serialize(
             object.name,
-            specifiedType: const FullType.nullable(String),
-          );
-    yield r'phone';
-    yield object.phone == null
-        ? null
-        : serializers.serialize(
-            object.phone,
             specifiedType: const FullType.nullable(String),
           );
     yield r'location';
@@ -182,16 +170,6 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerSerializer
                   as String?;
           if (valueDes == null) continue;
           result.name = valueDes;
-          break;
-        case r'phone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
-          if (valueDes == null) continue;
-          result.phone = valueDes;
           break;
         case r'location':
           final valueDes =

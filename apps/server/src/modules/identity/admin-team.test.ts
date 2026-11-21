@@ -705,6 +705,7 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/customer/orders/{orderId}': 'app_session',
   'GET /v1/customer/orders/{orderId}/route': 'app_session',
   'POST /v1/customer/orders/{orderId}/answer-ping': 'app_session',
+  'POST /v1/customer/orders/{orderId}/captain-call': 'app_session',
   'POST /v1/customer/orders/{orderId}/cancel': 'app_session',
   'POST /v1/customer/orders/{orderId}/report': 'app_session',
   'POST /v1/customer/orders/{orderId}/rating': 'app_session',
@@ -865,6 +866,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/orders/{orderId}/cannot-complete': 'app_session',
   'POST /v1/captain/orders/{orderId}/cannot-complete/withdraw': 'app_session',
   'POST /v1/captain/orders/{orderId}/ping-customer': 'app_session',
+  'POST /v1/captain/orders/{orderId}/customer-contact': 'app_session',
   'POST /v1/captain/orders/{orderId}/customer-not-answering': 'app_session',
   'POST /v1/captain/orders/{orderId}/emergency': 'app_session',
   'POST /v1/merchant/orders/{orderId}/reject': 'app_session',
@@ -885,6 +887,7 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/captain/orders/{orderId}/route': 'app_session',
   'POST /v1/captain/orders/{orderId}/problem': 'app_session',
   'POST /v1/merchant/orders/{orderId}/item-report/withdraw': 'app_session',
+  'POST /v1/merchant/orders/{orderId}/captain-call': 'app_session',
   'POST /v1/admin/orders/{orderId}/resend-notification': {
     anyOf: ['operations.manage', 'operations.compensate'],
   },

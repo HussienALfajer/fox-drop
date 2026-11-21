@@ -35,8 +35,9 @@ import { UNTIL_ENDED } from './active-orders.js';
 import { lockOrder } from './order-events.js';
 import { type Captain, CaptainsService } from '../captains/index.js';
 import { CustomersService, unsavedAddressFields, withRecipient } from '../customers/index.js';
-import { type AppSession, CaptainAccountsService } from '../identity/index.js';
+import type { AppSession } from '../identity/index.js';
 import { MerchantsService, seenByCustomer } from '../merchants/index.js';
+import { SettingsService } from '../settings/index.js';
 import {
   appVersion,
   cartLines,
@@ -231,6 +232,12 @@ const customerOrder = z.object({
     .describe(
       '«يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.',
     ),
+  lateApologyAt: z.iso
+    .datetime()
+    .nullable()
+    .describe(
+      'CU §11.6, §14 #14 (slice L.1b): the moment of «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.», the promised time + order.delivery_late_alert_min; the banner shows from it (by the server clock) while the order is not delivered. Null before acceptance, once the order ended, and in the list of active orders.',
+    ),
   doorPing: z
     .object({
       at: z.iso.datetime(),
@@ -363,11 +370,10 @@ const customerOrder = z.object({
         .describe(
           'Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2).',
         ),
-      phone: z
-        .string()
-        .nullable()
+      canCall: z
+        .boolean()
         .describe(
-          '«اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after.',
+          '«اتصال بالكابتن» (CU §11.3, §11.7, U12): shown from the pickup until the order ends; a tap asks POST …/captain-call for the number, which the app dials and never prints.',
         ),
     })
     .nullable()
@@ -545,12 +551,12 @@ export class CustomerOrdersController {
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
     private readonly commands: OrderCommands,
-    private readonly captainAccounts: CaptainAccountsService,
     private readonly compensations: CompensationsService,
     private readonly lateCodes: LateCodesService,
     private readonly support: SupportService,
     private readonly ratings: RatingsService,
     private readonly customers: CustomersService,
+    private readonly settings: SettingsService,
     @Inject(DATABASE) private readonly database: Database,
   ) {}
 
@@ -930,7 +936,18 @@ export class CustomerOrdersController {
         captain: ratings.find((each) => each.party === 'captain') ?? null,
       },
       orderAgain,
+      lateApologyAt: await this.lateApologyAt(order, ended),
     });
+  }
+
+  // CU §11.6, docs/domain/03: the promised time + order.delivery_late_alert_min,
+  // while the order is not delivered.
+  private async lateApologyAt(order: OrderView, ended: boolean): Promise<Date | null> {
+    if (ended || order.acceptance === null) return null;
+    const lateMin = await this.settings.get('order.delivery_late_alert_min', {
+      cityId: order.cityId,
+    });
+    return new Date(order.acceptance.promisedAt.getTime() + lateMin * MINUTE_MS);
   }
 
   // CU §12.3: «اطلب مرة أخرى» on a delivered, rejected or cancelled order,
@@ -945,28 +962,17 @@ export class CustomerOrdersController {
     return restaurant !== null && seenByCustomer(restaurant, testAccount);
   }
 
-  // The captains of these orders; with their number once one of their orders
-  // is picked up (CU §11.3, U12: «اتصال بالكابتن» until the order ends).
-  private async captainsOf(orders: OrderView[]): Promise<Map<string, CardCaptain>> {
+  // The captains of these orders, without their number: «اتصال بالكابتن»
+  // reveals it per tap (CU §11.3, §15).
+  private async captainsOf(orders: OrderView[]): Promise<Map<string, Captain>> {
     const ids = [...new Set(orders.flatMap((order) => order.captainId ?? []))];
-    const calling = new Set(
-      orders.flatMap((order) =>
-        order.captainId !== null && CALL_CAPTAIN.includes(order.status) ? [order.captainId] : [],
-      ),
-    );
     const now = new Date();
-    const found = await Promise.all(
-      ids.map(async (id) => {
-        const [captain, phone] = await Promise.all([
-          this.captains.captain(id, now),
-          calling.has(id) ? this.captainAccounts.phone(id) : null,
-        ]);
-        return captain && { ...captain, phone };
-      }),
-    );
+    const found = await Promise.all(ids.map((id) => this.captains.captain(id, now)));
     return new Map(found.flatMap((captain) => (captain ? [[captain.id, captain] as const] : [])));
   }
 }
+
+const MINUTE_MS = 60_000;
 
 // CU §12.3: the orders «اطلب مرة أخرى» follows.
 const ORDER_AGAIN: readonly OrderView['status'][] = ['delivered', 'rejected', 'cancelled'];
@@ -974,14 +980,12 @@ const ORDER_AGAIN: readonly OrderView['status'][] = ['delivered', 'rejected', 'c
 // CU §11.3, U12: «اتصال بالكابتن» from the pickup until the order ends.
 const CALL_CAPTAIN: readonly OrderView['status'][] = ['picked_up', 'arrived'];
 
-type CardCaptain = Captain & { phone: string | null };
-
 // What the customer sees of the order: never the commission or the
 // captain's pay (CU §11.1).
 function orderBody(
   order: OrderView,
   names: Map<string, { nameAr: string; nameEn: string | null }>,
-  captains: Map<string, CardCaptain>,
+  captains: Map<string, Captain>,
   // CU §11.9: the compensation code on a cancelled order (slice 2.22b).
   compensation: Compensation | null = null,
   // CU §11.6: the order's late code (slice 2.22c).
@@ -1001,7 +1005,16 @@ function orderBody(
     } | null;
     // CU §12.3 (slice 2.28b): «اطلب مرة أخرى» is offered.
     orderAgain: boolean;
-  } = { report: null, reportUntil: null, redeliveries: [], rating: null, orderAgain: false },
+    // CU §11.6 (slice L.1b): the late apology's moment.
+    lateApologyAt: Date | null;
+  } = {
+    report: null,
+    reportUntil: null,
+    redeliveries: [],
+    rating: null,
+    orderAgain: false,
+    lateApologyAt: null,
+  },
 ) {
   const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
@@ -1036,6 +1049,7 @@ function orderBody(
       number: text(each.number),
     })),
     promisedAt: order.acceptance?.promisedAt.toISOString() ?? null,
+    lateApologyAt: after.lateApologyAt?.toISOString() ?? null,
     lateCode: lateCode && {
       ...personalCodeBody(lateCode),
       issuedAt: lateCode.issuedAt.toISOString(),
@@ -1097,7 +1111,7 @@ function orderBody(
           vehicle: captain.vehicle,
           atRestaurant:
             order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending',
-          phone: CALL_CAPTAIN.includes(order.status) ? captain.phone : null,
+          canCall: CALL_CAPTAIN.includes(order.status),
         }
       : null,
     currency: order.currency,

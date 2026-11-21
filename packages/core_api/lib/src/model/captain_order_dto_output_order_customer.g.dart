@@ -11,8 +11,6 @@ class _$CaptainOrderDtoOutputOrderCustomer
   @override
   final String? name;
   @override
-  final String? phone;
-  @override
   final CaptainActiveOrderDtoOutputOrderCustomerLocation location;
   @override
   final CaptainActiveOrderDtoOutputOrderCustomerAddress address;
@@ -31,7 +29,6 @@ class _$CaptainOrderDtoOutputOrderCustomer
 
   _$CaptainOrderDtoOutputOrderCustomer._({
     this.name,
-    this.phone,
     required this.location,
     required this.address,
     this.payIn,
@@ -53,7 +50,6 @@ class _$CaptainOrderDtoOutputOrderCustomer
     if (identical(other, this)) return true;
     return other is CaptainOrderDtoOutputOrderCustomer &&
         name == other.name &&
-        phone == other.phone &&
         location == other.location &&
         address == other.address &&
         payIn == other.payIn &&
@@ -66,7 +62,6 @@ class _$CaptainOrderDtoOutputOrderCustomer
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, name.hashCode);
-    _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, payIn.hashCode);
@@ -81,7 +76,6 @@ class _$CaptainOrderDtoOutputOrderCustomer
   String toString() {
     return (newBuiltValueToStringHelper(r'CaptainOrderDtoOutputOrderCustomer')
           ..add('name', name)
-          ..add('phone', phone)
           ..add('location', location)
           ..add('address', address)
           ..add('payIn', payIn)
@@ -103,10 +97,6 @@ class CaptainOrderDtoOutputOrderCustomerBuilder
   String? _name;
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
-
-  String? _phone;
-  String? get phone => _$this._phone;
-  set phone(String? phone) => _$this._phone = phone;
 
   CaptainActiveOrderDtoOutputOrderCustomerLocationBuilder? _location;
   CaptainActiveOrderDtoOutputOrderCustomerLocationBuilder get location =>
@@ -156,7 +146,6 @@ class CaptainOrderDtoOutputOrderCustomerBuilder
     final $v = _$v;
     if ($v != null) {
       _name = $v.name;
-      _phone = $v.phone;
       _location = $v.location.toBuilder();
       _address = $v.address.toBuilder();
       _payIn = $v.payIn;
@@ -190,7 +179,6 @@ class CaptainOrderDtoOutputOrderCustomerBuilder
           _$v ??
           _$CaptainOrderDtoOutputOrderCustomer._(
             name: name,
-            phone: phone,
             location: location.build(),
             address: address.build(),
             payIn: payIn,
