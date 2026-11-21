@@ -16,8 +16,8 @@ Every item of the four V1 definitions of done (AP §14, RA §22, CA §19, CU §1
 | AP    | 56   | 54      | 2         | 0           | 0          |
 | RA    | 36   | 34      | 2         | 0           | 0          |
 | CA    | 32   | 30      | 2         | 0           | 0          |
-| CU    | 28   | 25      | 2         | 1           | 0          |
-| Total | 152  | 143     | 8         | 1           | 0          |
+| CU    | 28   | 26      | 2         | 0           | 0          |
+| Total | 152  | 144     | 8         | 0           | 0          |
 
 A row is an item, or one bullet of an item that has bullets (AP-31 to AP-33, RA-11, CA-18).
 
@@ -25,9 +25,7 @@ A row is an item, or one bullet of an item that has bullets (AP-31 to AP-33, RA-
 
 ### Not built (build)
 
-| Row   | What is missing                                                                                                                                                                 |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CU-28 | Cached browsing offline (no code found), and the address commands send no `Idempotency-Key` (`docs/code/apps/customer.md`), so a retried address command can take effect twice. |
+None since L.1c (`feat/dod-offline-browsing`), which built CU-28's cached browsing offline and the address save's `Idempotency-Key`.
 
 ### Built, test missing (test)
 
@@ -39,7 +37,7 @@ To build before the staging rehearsal (L.10); they are in `docs/roadmap.md` unde
 
 - **L.1a Test gaps** (`test/dod-test-gaps`, done): the 12 test-gap rows, tests only; a test that finds a bug fixes it in the same slice.
 - **L.1b Calls and notices** (`feat/dod-calls-and-notices`, done): «اتصال بالكابتن» in the restaurant app (RA-10) and the customer app (CU-17), the captain's recorded call and WhatsApp taps (CA-13), the waiting-pay line (CA-10) and the late apology (CU-19).
-- **L.1c Offline browsing** (`feat/dod-offline-browsing`): cached browsing offline and the address commands' `Idempotency-Key` (CU-28).
+- **L.1c Offline browsing** (`feat/dod-offline-browsing`, done): cached browsing offline and the address commands' `Idempotency-Key` (CU-28).
 
 ## Admin panel (AP §14)
 
@@ -209,4 +207,4 @@ Shown on the Android phone and the iPhone.
 - **CU-25** (covered): Reorder at current prices listing skipped items; favourites sync. `customer/test/orders_test.dart` › "«اطلب مرة أخرى» rebuilds the cart at current prices" (asserts «لم نضف: فول لأنها غير متوفرة»); `server/customers/favourites.test.ts` › "keeps the hearts with the account, on every device, …".
 - **CU-26** (covered): Account states, dues office, closure with a fresh code, sign out everywhere. `customer/test/account_state_test.dart` › "a blocked customer sees the banner with call and WhatsApp"; `customer/test/my_account_test.dart` › "deletes the account with a fresh code"; `server/ordering/customer-closure.test.ts` › "is refused with an active order, before any code is sent".
 - **CU-27** (covered): Forced update, maintenance, terms, platform hours, emergency stop; active order kept. `customer/test/platform_test.dart` › "sends the app version and blocks below the minimum"; `server/ordering/quote-route.test.ts` › "shows maintenance, …"; `customer/test/terms_test.dart` › "opens a pending version, which the customer may close".
-- **CU-28** (gap): Weak internet: no double effects, cached browsing offline, wrong device clock. `packages/core_commands/test/command_queue_test.dart` › "keeps the commands across a restart until each is answered"; `packages/core_time/test/server_clock_test.dart` › "moves the device clock by the offset of Server-Time". build: cached browsing offline, and an `Idempotency-Key` on the address commands.
+- **CU-28** (covered): Weak internet: no double effects, cached browsing offline, wrong device clock. `packages/core_commands/test/command_queue_test.dart` › "keeps the commands across a restart until each is answered"; `packages/core_time/test/server_clock_test.dart` › "moves the device clock by the offset of Server-Time"; `server/customers/customers.test.ts` › "answers the first save to a repeat of its key, and saves once", › "saves once when the same save arrives twice at the same moment"; `customer/test/addresses_test.dart` › "a save keeps its key after a lost answer and only then …"; `customer/test/offline_browsing_test.dart` › "offline, home and a page read before show from the device, marked, …", › "a cold start offline shows the last kept home and its pages; …". Airplane mode shown on the owner's phone.
