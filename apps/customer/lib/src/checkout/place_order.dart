@@ -179,12 +179,11 @@ class PlaceOrderController extends Notifier<PlaceState> {
     if (state is! PlaceSending) state = const PlaceIdle();
   }
 
-  Future<String> _saveAddress(PlaceCommand command) async {
-    final response = await _api.customerProfileAddAddress(
-      customerNewAddressDto: newAddressDto(command.point, command.form),
-    );
-    return response.data!.id;
-  }
+  /// Through [AddressBook.create], so a save retried after a lost answer
+  /// sends the same key and saves once (CU §19 item 28).
+  Future<String> _saveAddress(PlaceCommand command) => ref
+      .read(addressBookProvider)
+      .create(newAddressDto(command.point, command.form));
 
   CustomerPlaceOrderDto _body(PlaceCommand command, String? addressId) {
     final form = command.form;

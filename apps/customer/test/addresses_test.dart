@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:core_auth/testing.dart';
 import 'package:core_maps/core_maps.dart';
 import 'package:customer/src/account/addresses.dart';
+import 'package:customer/src/checkout/checkout.dart';
 import 'package:customer/src/location/delivery_point.dart';
 import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
@@ -349,6 +350,54 @@ void main() {
     await tester.pumpAndSettle();
     final after = app.container.read(deliveryPointProvider) as PointChecked;
     expect(after.addressId, isNull);
+  });
+
+  testWidgets('a save keeps its key after a lost answer and only then '
+      '(CU §19 item 28)', (tester) async {
+    final app = await _addresses(
+      tester,
+      lists: [_list],
+      before: (app) => app.server.on('/v1/customer/addresses', [
+        FakeAnswer(200, {'addresses': _list}),
+        const FakeAnswer.none(),
+        FakeAnswer(201, _address(_homeId)),
+        FakeAnswer(200, {'addresses': _list}),
+        const FakeAnswer.none(),
+        const FakeAnswer(409, {'error': 'address_limit'}),
+        FakeAnswer(201, _address(_homeId)),
+        FakeAnswer(200, {'addresses': _list}),
+      ]),
+    );
+    final book = app.container.read(addressBookProvider);
+    const form = CheckoutForm(
+      street: 'شارع القلعة، بناء 4',
+      landmark: 'قرب جامع النور',
+      save: true,
+    );
+    final other = form.copyWith(street: 'شارع آخر، بناء 9');
+    Future<AddressOutcome> add(CheckoutForm form) async {
+      final outcome = book.add(_street, form);
+      await tester.pumpAndSettle();
+      return outcome;
+    }
+
+    expect(await add(form), AddressOutcome.failed);
+    expect(await add(form), AddressOutcome.done);
+    // Answered: the same body again is another save.
+    expect(await add(form), AddressOutcome.failed);
+    // Another body after a lost answer takes its own key; a refusal ends it.
+    expect(await add(other), AddressOutcome.limit);
+    expect(await add(other), AddressOutcome.done);
+
+    final keys = [
+      for (final r in app.server.to('/v1/customer/addresses'))
+        if (r.method == 'POST') r.headers['Idempotency-Key'],
+    ];
+    expect(keys, hasLength(5));
+    expect(keys[1], keys[0]);
+    expect(keys.toSet(), hasLength(4));
+    expect(keys[3], isNot(keys[2]));
+    expect(keys[4], isNot(keys[3]));
   });
 
   testWidgets('the form of an address no longer listed closes', (tester) async {

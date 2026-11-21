@@ -111,18 +111,46 @@ enum AddressOutcome {
 /// reads the list again and keeps the delivery point in step: a deleted
 /// address (here or, `404`, on another phone) stops naming the point, an
 /// edited one moves it to its new pin.
+///
+/// A save's `Idempotency-Key` (CU §19 item 28) belongs to its body: a lost
+/// answer keeps it, so the same address saved again after it is saved once;
+/// an answer or a refusal ends it, and another body takes a new one.
 class AddressBook {
   AddressBook(this._ref);
 
   final Ref _ref;
+  String? _key;
+  String? _keyFor;
 
   CustomerApi get _api => _ref.read(coreApiProvider).getCustomerApi();
 
-  Future<AddressOutcome> add(GeoPoint pin, CheckoutForm form) => _run(
-    () => _api.customerProfileAddAddress(
-      customerNewAddressDto: newAddressDto(pin, form),
-    ),
-  );
+  Future<AddressOutcome> add(GeoPoint pin, CheckoutForm form) =>
+      _run(() => create(newAddressDto(pin, form)));
+
+  /// Saves [body] and answers the new address's id; throws as the API does.
+  /// Checkout's «احفظ هذا العنوان» calls it too.
+  Future<String> create(CustomerNewAddressDto body) async {
+    final fingerprint = body.toString();
+    if (_keyFor != fingerprint) {
+      _key = uuidV4();
+      _keyFor = fingerprint;
+    }
+    try {
+      final response = await _api.customerProfileAddAddress(
+        idempotencyKey: _key!,
+        customerNewAddressDto: body,
+      );
+      _key = null;
+      _keyFor = null;
+      return response.data!.id;
+    } on DioException catch (error) {
+      if (error.response != null) {
+        _key = null;
+        _keyFor = null;
+      }
+      rethrow;
+    }
+  }
 
   Future<AddressOutcome> update(
     String id,

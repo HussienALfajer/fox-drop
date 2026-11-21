@@ -672,6 +672,56 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('«احفظ هذا العنوان» retried after a lost answer sends the same '
+      'key, so the server saves it once (CU §19 item 28)', (tester) async {
+    final app = await _checkout(
+      tester,
+      before: (app) {
+        app.server.on('/v1/customer/addresses', [
+          const FakeAnswer(200, {'addresses': <Object>[]}),
+        ]);
+        app.server.on('/v1/customer/orders', [FakeAnswer(201, _order())]);
+      },
+    );
+    app.server.on('/v1/customer/addresses', [
+      const FakeAnswer.none(),
+      FakeAnswer(201, {
+        'location': {'latitude': azaz.latitude, 'longitude': azaz.longitude},
+        'label': 'home',
+        'customLabel': null,
+        'street': 'شارع القلعة، بناء 4',
+        'floor': null,
+        'landmark': 'قرب جامع النور',
+        'contactPhone': null,
+        'recipientName': null,
+        'directions': null,
+        'id': _addressId,
+        'isDefault': false,
+        'neighbourhood': 'الحي الشمالي',
+      }),
+      const FakeAnswer(200, {'addresses': <Object>[]}),
+    ]);
+    await _fillAddress(tester);
+    await tester.ensureVisible(find.byKey(const Key('address-save')));
+    await tester.tap(find.byKey(const Key('address-save')));
+    await tester.pumpAndSettle();
+    await _confirm(tester);
+    expect(app.server.to('/v1/customer/orders'), isEmpty);
+    await _confirm(tester);
+
+    final saves = app.server
+        .to('/v1/customer/addresses')
+        .where((r) => r.method == 'POST')
+        .toList();
+    expect(saves, hasLength(2));
+    final key = saves[0].headers['Idempotency-Key'];
+    expect(key, isA<String>());
+    expect(saves[1].headers['Idempotency-Key'], key);
+    expect(app.bodyOf('/v1/customer/orders')['addressId'], _addressId);
+    expect(find.text('أرسلنا طلبك إلى مطعم الشام'), findsOneWidget);
+    await app.done(tester);
+  });
+
   // CU §4.7, Appendix C «Terms pending»: a version published while the app
   // stayed open is shown with «أوافق», then checkout quotes again.
   testWidgets('a pending version of the terms opens from checkout', (
