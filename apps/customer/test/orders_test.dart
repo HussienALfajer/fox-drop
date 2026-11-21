@@ -2,6 +2,7 @@ import 'package:core_api/core_api.dart';
 import 'package:core_auth/testing.dart';
 import 'package:core_maps/core_maps.dart';
 import 'package:core_realtime/core_realtime.dart';
+import 'package:customer/src/api.dart';
 import 'package:customer/src/cart/cart.dart';
 import 'package:customer/src/orders/captain_map.dart';
 import 'package:customer/src/orders/door_ring.dart';
@@ -37,7 +38,9 @@ Map<String, Object?> _order({
   String rounding = '0',
   String? payIn,
   bool orderAgain = false,
+  String? lateApologyAt,
 }) => {
+  'lateApologyAt': lateApologyAt,
   'id': _orderId,
   'number': '10423',
   'redeliveryOf': redeliveryOf,
@@ -104,8 +107,10 @@ const _captain = {
   'firstName': 'سامر',
   'vehicle': 'motorbike',
   'atRestaurant': false,
-  'phone': null,
+  'canCall': false,
 };
+
+const _callPath = '/v1/customer/orders/$_orderId/captain-call';
 
 String _status(WidgetTester tester) {
   final tile = tester.widget<ListTile>(find.byKey(const Key('order-status')));
@@ -1152,7 +1157,7 @@ void main() {
     }) => _order(
       status: 'arrived',
       version: version,
-      captain: {..._captain, 'phone': '+963944333333'},
+      captain: {..._captain, 'canCall': true},
       doorPing: doorPing,
       recipient: recipient,
     );
@@ -1221,13 +1226,19 @@ void main() {
     final ringing = _order(
       status: 'arrived',
       version: 6,
-      captain: {..._captain, 'phone': '+963944333333'},
+      captain: {..._captain, 'canCall': true},
       doorPing: {'at': pingAt, 'answer': null, 'answeredAt': null},
       recipient: 'سارة',
     );
-    final app = await open(tester, [
-      FakeAnswer(200, {'order': ringing}),
-    ]);
+    final app = await open(
+      tester,
+      [
+        FakeAnswer(200, {'order': ringing}),
+      ],
+      before: (app) => app.server.on(_callPath, [
+        const FakeAnswer(200, {'phone': '+963944333333'}),
+      ]),
+    );
     expect(
       find.text('الكابتن عند الباب ويحاول الوصول إلى سارة'),
       findsOneWidget,
@@ -1238,6 +1249,158 @@ void main() {
     expect(app.launched, [Uri(scheme: 'tel', path: '+963944333333')]);
     expect(find.byKey(const Key('door-ring')), findsNothing);
     await app.done(tester);
+  });
+
+  group('«اتصال بالكابتن» and the late apology (CU §11.3, §11.6)', () {
+    const route = '/v1/customer/orders/$_orderId/route';
+    const callKey = Key('order-call-captain');
+    Map<String, Object?> onTheWay({bool canCall = true, String? apology}) =>
+        _order(
+          status: 'picked_up',
+          version: 6,
+          captain: {..._captain, 'canCall': canCall},
+          lateApologyAt: apology,
+        );
+
+    testWidgets('the button shows only with canCall, and a tap reveals the '
+        'number and dials it', (tester) async {
+      final app = await open(
+        tester,
+        [
+          FakeAnswer(200, {'order': onTheWay(canCall: false)}),
+          FakeAnswer(200, {'order': onTheWay()}),
+        ],
+        before: (app) => app.server.on(_callPath, [
+          const FakeAnswer(200, {'phone': '+963944333333'}),
+        ]),
+      );
+      expect(find.byKey(const Key('captain-card')), findsOneWidget);
+      expect(find.byKey(callKey), findsNothing);
+
+      app.transport.send(
+        'order:$_orderId',
+        const RealtimePublication({'orderId': _orderId, 'version': 7}),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(callKey), findsOneWidget);
+      expect(app.server.to(_callPath), isEmpty);
+      await tester.tap(find.byKey(callKey));
+      await tester.pumpAndSettle();
+      expect(app.server.to(_callPath), hasLength(1));
+      expect(app.launched, [Uri(scheme: 'tel', path: '+963944333333')]);
+      await app.done(tester);
+    });
+
+    testWidgets('a refusal dials nothing and says so', (tester) async {
+      final app = await open(
+        tester,
+        [
+          FakeAnswer(200, {'order': onTheWay()}),
+        ],
+        before: (app) => app.server.on(_callPath, [
+          const FakeAnswer(409, {'code': 'order_state_changed'}),
+        ]),
+      );
+      await tester.tap(find.byKey(callKey));
+      await tester.pumpAndSettle();
+      expect(app.server.to(_callPath), hasLength(1));
+      expect(app.launched, isEmpty);
+      expect(find.byType(SnackBar), findsOneWidget);
+      await app.done(tester);
+    });
+
+    testWidgets('the call button and the map leave when the order ends '
+        '(CU-17)', (tester) async {
+      final app = await open(
+        tester,
+        [
+          FakeAnswer(200, {'order': onTheWay()}),
+          FakeAnswer(200, {
+            'order': _order(
+              status: 'delivered',
+              version: 9,
+              captain: {..._captain, 'canCall': true},
+            ),
+          }),
+        ],
+        before: (app) => app.server
+          ..on('/v1/customer/contact', [
+            const FakeAnswer(200, {'phone': '+963944000000'}),
+          ])
+          ..on(route, [
+            const FakeAnswer(200, {
+              'captain': {
+                'latitude': 36.587,
+                'longitude': 37.046,
+                'recordedAt': '2026-11-07T12:30:00.000Z',
+              },
+              'destination': {'latitude': 36.59, 'longitude': 37.046},
+              'route': {
+                'metres': 400,
+                'seconds': 80,
+                'method': 'straight_x1.3',
+                'line': null,
+              },
+            }),
+          ]),
+      );
+      expect(find.byKey(callKey), findsOneWidget);
+      expect(find.byKey(const Key('captain-map')), findsOneWidget);
+
+      app.transport.send(
+        'order:$_orderId',
+        const RealtimePublication({'orderId': _orderId, 'version': 9}),
+      );
+      await tester.pumpAndSettle();
+      expect(_status(tester), startsWith('تم التسليم'));
+      expect(find.byKey(callKey), findsNothing);
+      expect(find.byKey(const Key('captain-map')), findsNothing);
+      // The ended order reads the support contact.
+      await tester.pump(const Duration(seconds: 1));
+      await app.done(tester);
+    });
+
+    testWidgets('the apology shows past lateApologyAt, also when the time '
+        'passes with the screen open, and not once the order ended', (
+      tester,
+    ) async {
+      const banner = Key('late-apology-banner');
+      final soon = DateTime.now().add(const Duration(seconds: 5));
+      final app = await open(
+        tester,
+        [
+          FakeAnswer(200, {'order': onTheWay(apology: soon.toIso8601String())}),
+          FakeAnswer(200, {
+            'order': _order(
+              status: 'delivered',
+              version: 9,
+              lateApologyAt: soon.toIso8601String(),
+            ),
+          }),
+        ],
+        before: (app) => app.server.on('/v1/customer/contact', [
+          const FakeAnswer(200, {'phone': '+963944000000'}),
+        ]),
+      );
+      expect(find.byKey(banner), findsNothing);
+      // The server's clock runs ahead: the timer fires and the banner shows.
+      app.container.read(serverClockProvider).offset = const Duration(
+        minutes: 1,
+      );
+      await tester.pump(const Duration(seconds: 6));
+      expect(find.byKey(banner), findsOneWidget);
+      expect(find.text('نعتذر، طلبك متأخر قليلاً. نتابعه الآن.'), findsOne);
+
+      app.transport.send(
+        'order:$_orderId',
+        const RealtimePublication({'orderId': _orderId, 'version': 9}),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(banner), findsNothing);
+      // The ended order reads the support contact.
+      await tester.pump(const Duration(seconds: 1));
+      await app.done(tester);
+    });
   });
 
   // CU §12.3 (slice 2.28b): the detail of a past order and «اطلب مرة أخرى».

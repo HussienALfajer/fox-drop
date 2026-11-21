@@ -520,6 +520,32 @@ class Commands extends Notifier<Set<String>> {
     (_) => _api.captainOrdersAcknowledgeOutcome(orderId: orderId),
   )).$2;
 
+  /// «اتصال بالزبون» and «واتساب الزبون» (CA §9.5, §15): the server reveals
+  /// the number and records the tap. A reveal is read-only, so a refusal or
+  /// a lost answer is not sent again: the captain taps again.
+  Future<(String?, Notice?)> revealCustomerPhone(
+    String orderId,
+    CaptainCustomerContactDtoChannelEnum channel,
+  ) async {
+    try {
+      final answer = await _api.captainOrderContactsContactCustomer(
+        orderId: orderId,
+        captainCustomerContactDto: CaptainCustomerContactDto(
+          (b) => b..channel = channel,
+        ),
+      );
+      final phone = answer.data?.phone;
+      return phone == null ? (null, const CommandFailed()) : (phone, null);
+    } on DioException catch (error) {
+      final body = error.response?.data;
+      final notice = refusal(body);
+      if (notice is StateChanged) refreshWork(ref);
+      return (null, notice);
+    } on Object {
+      return (null, const CommandFailed());
+    }
+  }
+
   static AdminRecordDeliveryDtoReceivedInner _line(Money line) =>
       AdminRecordDeliveryDtoReceivedInner(
         (l) => l

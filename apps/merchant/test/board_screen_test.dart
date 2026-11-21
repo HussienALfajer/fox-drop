@@ -8,6 +8,8 @@ import 'package:core_push/testing.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:core_time/core_time.dart';
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
@@ -2100,6 +2102,112 @@ void main() {
       'https://wa.me/963955000000?text=${Uri.encodeQueryComponent('بخصوص الطلب #10001')}',
     );
     await app.done(tester);
+  });
+
+  // RA §8.9, RA-10: «اتصال بالكابتن» reveals the number per tap and dials it.
+  group('call the captain', () {
+    final path = '/v1/merchant/orders/$_orderId/captain-call';
+
+    Future<(_Board, List<Uri>)> open(
+      WidgetTester tester, {
+      String? captainName = 'خالد',
+      String status = 'accepted',
+      List<FakeAnswer>? answers,
+    }) async {
+      final app = _Board();
+      final launched = <Uri>[];
+      app.server.on(
+        path,
+        answers ??
+            [
+              const FakeAnswer(200, {'phone': '+963944111222'}),
+            ],
+      );
+      await app.pump(
+        tester,
+        [
+          FakeAnswer(
+            200,
+            boardJson([
+              orderJson(
+                status: status,
+                version: 2,
+                acceptedAfter: Duration.zero,
+                captainTrack: captainName == null ? null : 'assigned',
+                captainName: captainName,
+              ),
+            ]),
+          ),
+        ],
+        overrides: [
+          merchantAuth.launch.overrideWithValue((uri) async {
+            launched.add(uri);
+            return true;
+          }),
+        ],
+      );
+      await app.up(tester);
+      app.container.read(routerProvider).push('/orders/$_orderId');
+      await tester.pumpAndSettle();
+      return (app, launched);
+    }
+
+    testWidgets('shows only while the order has a captain', (tester) async {
+      final (withCaptain, _) = await open(tester);
+      expect(find.byKey(const Key('order-call-captain')), findsOneWidget);
+      await withCaptain.done(tester);
+    });
+
+    testWidgets('is hidden without a captain', (tester) async {
+      final (app, _) = await open(tester, captainName: null);
+      expect(find.byKey(const Key('order-call-captain')), findsNothing);
+      await app.done(tester);
+    });
+
+    testWidgets('reveals the number and dials it', (tester) async {
+      final (app, launched) = await open(tester);
+      final button = find.byKey(const Key('order-call-captain'));
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(app.server.to(path), hasLength(1));
+      expect(launched.map((u) => u.toString()), ['tel:+963944111222']);
+      await app.done(tester);
+    });
+
+    testWidgets('on Windows shows the number and dials nothing', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+      try {
+        final (app, launched) = await open(tester);
+        final button = find.byKey(const Key('order-call-captain'));
+        await tester.ensureVisible(button);
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+        expect(find.textContaining('+963944111222'), findsOneWidget);
+        expect(launched, isEmpty);
+        await app.done(tester);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
+
+    testWidgets('a refusal dials nothing and says why', (tester) async {
+      final (app, launched) = await open(
+        tester,
+        answers: [
+          const FakeAnswer(409, {'code': 'order_state_changed'}),
+        ],
+      );
+      final button = find.byKey(const Key('order-call-captain'));
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(launched, isEmpty);
+      expect(find.byType(SnackBar), findsOneWidget);
+      await app.done(tester);
+    });
   });
 
   // RA §4.7, architecture §11.2 (slice 2.42): a command a restart

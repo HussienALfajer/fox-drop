@@ -1,3 +1,4 @@
+import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -318,6 +319,13 @@ class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
               l10n.durationMinutes(clock.since(arrival.at).inMinutes),
             ),
           ),
+        // CA §9.3: from the moment the server says paid waiting starts.
+        if (order.waitingPayFrom case final from?)
+          if (!clock.now().isBefore(from))
+            Text(
+              l10n.captainWaitingPayStarted,
+              key: const Key('waiting-pay-started'),
+            ),
         if (order.preparation.ready) Text(l10n.captainOrderReadyNow),
         if (open != null) ...[
           Text(l10n.captainAwaitingRestaurant),
@@ -418,7 +426,6 @@ class _CustomerBlock extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final customer = order.customer;
     final address = customer.address;
-    final phone = customer.phone;
     final collect = order.collect;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -451,21 +458,45 @@ class _CustomerBlock extends ConsumerWidget {
           ),
           child: Text(l10n.captainStartNavigation),
         ),
-        if (phone != null) ...[
-          OutlinedButton(
-            onPressed: () => _open(ref, Uri(scheme: 'tel', path: phone)),
-            child: Text(l10n.captainCallCustomer),
+        OutlinedButton(
+          onPressed: () => _reveal(
+            context,
+            ref,
+            CaptainCustomerContactDtoChannelEnum.call,
+            (phone) => Uri(scheme: 'tel', path: phone),
           ),
-          OutlinedButton(
-            onPressed: () => _open(
-              ref,
-              Uri.https('wa.me', '/${phone.replaceAll(RegExp(r'\D'), '')}'),
-            ),
-            child: Text(l10n.captainWhatsAppCustomer),
+          child: Text(l10n.captainCallCustomer),
+        ),
+        OutlinedButton(
+          onPressed: () => _reveal(
+            context,
+            ref,
+            CaptainCustomerContactDtoChannelEnum.whatsapp,
+            (phone) =>
+                Uri.https('wa.me', '/${phone.replaceAll(RegExp(r'\D'), '')}'),
           ),
-        ],
+          child: Text(l10n.captainWhatsAppCustomer),
+        ),
       ],
     );
+  }
+
+  /// The number comes from the server per tap (the tap is recorded); a
+  /// refusal or a lost answer opens nothing and shows its notice.
+  Future<void> _reveal(
+    BuildContext context,
+    WidgetRef ref,
+    CaptainCustomerContactDtoChannelEnum channel,
+    Uri Function(String phone) uri,
+  ) async {
+    final (phone, notice) = await ref
+        .read(commandsProvider.notifier)
+        .revealCustomerPhone(order.id, channel);
+    if (phone != null) {
+      await _open(ref, uri(phone));
+    } else if (context.mounted) {
+      showNotice(context, notice);
+    }
   }
 }
 

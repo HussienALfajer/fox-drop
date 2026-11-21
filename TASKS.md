@@ -23,11 +23,13 @@ Design (decided in this session, from RA §8.9 / §18, CU §11.3 / §15, CA §9.
 - [x] Read the cited sections and write the plan here.
 - [x] Server: `order_contacts` migration, the three reveal routes, the numbers out of the reads, the admin timeline; tests (window, recorded, other party 404); `pnpm generate:api`.
 - [x] Server: `waitingPayFrom` on the captain's active order; the late apology timer and `lateApologyAt`; tests. (Admin timeline labels and key done with it.)
-- [ ] Customer app: «اتصال بالكابتن» on the order screen from pickup through the reveal (the door ring too), the late apology banner; tests (button and map leave at the end).
-- [ ] Restaurant app: «اتصال بالكابتن» on the order detail from assignment to the end (dialer on Android, a dialog with the number on Windows); tests.
-- [ ] Captain app: call and WhatsApp through the reveal, «بدأ احتساب أجر الانتظار»; tests. Admin: the three timeline labels.
+- [x] Customer app: «اتصال بالكابتن» on the order screen from pickup through the reveal (the door ring too), the late apology banner; tests (button and map leave at the end).
+- [x] Restaurant app: «اتصال بالكابتن» on the order detail from assignment to the end (dialer on Android, a dialog with the number on Windows); tests.
+- [x] Captain app: call and WhatsApp through the reveal, «بدأ احتساب أجر الانتظار»; tests. Admin: the three timeline labels.
 - [ ] Review (`reviewer`), fixes.
 - [ ] Mark RA-10, CU-17, CA-13, CA-10 and CU-19 covered in `docs/launch/dod-checklist.md`; notes in `docs/slice-notes.md`; `docs/code/` notes; hand over.
+
+Stopped at: the three apps committed; the docs of the last step drafted, uncommitted (dod rows, roadmap `[x]`, `docs/code/` notes); review, slice notes and the L.1c hand-over left.
 
 ## Waiting for the owner
 
