@@ -5,6 +5,17 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from L.1b (`feat/dod-calls-and-notices`)
+
+- **Before deploying to staging:** migration 0150 (expand only: the new append-only `ordering.order_contacts`).
+  Three new routes: `POST /v1/merchant/orders/{id}/captain-call`, `POST /v1/customer/orders/{id}/captain-call`, `POST /v1/captain/orders/{id}/customer-contact`.
+  The customer's order no longer carries `captain.phone` (it carries `captain.canCall`), nor the captain's order `customer.phone`: an app build older than this slice can no longer call, so the staging apps are rebuilt with it.
+  A new pg-boss queue, `ordering-late-apology`, and the push template `customer.late_apology`.
+- **To check on staging:** the owner calls the captain from a test order on the restaurant app (Android dials; Windows shows the number) and on the customer app once it is picked up; the captain calls and opens WhatsApp to the customer; each tap shows in the panel's order timeline. An order 20 minutes past its promised time pushes the apology once and shows its banner. A captain waiting at a restaurant past the threshold sees «بدأ احتساب أجر الانتظار» when the city's pay table pays waiting.
+- **Decided by us (to confirm with the owner):** the taps are kept apart from `order_events`, so a call never bumps the order version and refuses an operator's open edit or outcome dialog; the timeline merges them by time. No `Idempotency-Key` on a reveal: a tap dials at once or never, and each tap is its own record. The timeline's wording «ضغط «اتصال بالكابتن»» and its two captain counterparts.
+- **Found, not fixed (out of the slice):** `scripts/verify.mjs --changed` runs `melos run test:dart` with `--scope` and without the script's own filters, and Melos then drops the script's `flutter: false`; when the change reaches a Flutter app and `core_api`, `dart test` runs inside the Flutter apps and fails on `dart:ui`. CI runs the parts without a scope and is not affected. The fix is to pass the filters to `melos run` too (line 301). Here the Dart and Flutter tests were run directly instead.
+- **Also:** phase 6 item 1 trial (`autoCompactWindow: 200000`): this slice's session compacted six times or more (during the design, mid server step 1, after its `generate:api`, at the start of CA-10, while waiting for tests, while the app builders ran); each time `TASKS.md` and the files in hand were read again, and nothing was lost or redone. Two checks running at once on the shared checkout (this session's and another session's Stop hook) clashed twice: Playwright's `test-results` folder and the `core_api` generation, which left the build_runner cache broken until `dart run build_runner clean`.
+
 ## Left from L.1a (`test/dod-test-gaps`)
 
 - **Bugs the tests found, fixed here:** the customer's item sheet was a lazy `ListView`, so «أضف» could not scroll to a missing required group far above it (CU-10; now a `SingleChildScrollView` with a `Column`). The restaurant app's support WhatsApp link ended in a stray `?` without an order number (RA-26).

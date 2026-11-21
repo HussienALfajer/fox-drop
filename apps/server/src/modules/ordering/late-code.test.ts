@@ -509,6 +509,15 @@ describe('the late apology', () => {
     ]);
   });
 
+  it('pushes one apology when two runs of the job race', async () => {
+    const order = await acceptedOrder();
+    const at = new Date(order.promisedAt.getTime() + 20 * MINUTE_MS);
+    const [job] = await apologyJobs(order.id);
+    const timers = app.get(OrderTimers);
+    await Promise.all([timers.lateApology(job!.data, at), timers.lateApology(job!.data, at)]);
+    expect(await apologies(order.accountId)).toHaveLength(1);
+  });
+
   it('moves with «تعديل الوقت»: the job of the earlier time pushes nothing', async () => {
     const order = await acceptedOrder();
     const ops = await operations();

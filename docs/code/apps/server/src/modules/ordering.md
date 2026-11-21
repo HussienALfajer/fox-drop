@@ -738,6 +738,12 @@ So far the versioned quote of a cart (CU §10.1–10.6; AP §8.4, §8.6), placin
   It reads every partition, by `orders_city_status` and the filters (fine for Azaz).
   `all` gives the export up to `ADMIN_HISTORY_EXPORT_MAX` (50,000) rows, and `count` how many a filter holds (a bigger export is refused when asked).
   `correctionTarget(orderId)` (exported, cashdesk's financial correction) gives the order's city, number, status, whether finished (`FINISHED_STATUSES`: delivered, failed, rejected, cancelled), restaurant, customer and every captain who held it (its captain, both sides of each handover received, and each captain withdrawn from it by «سحب وإعادة تعيين», whose pickup payment a «لا» left on their custody; a handover never received adds no one).
+- **Calls and WhatsApp, the number revealed per tap (RA §8.9, CU §11.3, CA §9.5; slice L.1b; `order-contacts.ts`, `order-contacts.controller.ts`):** no read carries the other party's number (the customer's captain card has `canCall` instead of `phone`; the captain's customer has the name only).
+  `POST /v1/merchant/orders/{id}/captain-call` (from the assignment until the order ends), `POST /v1/customer/orders/{id}/captain-call` (own order, `picked_up` or `arrived`) and `POST /v1/captain/orders/{id}/customer-contact` (`channel` call or whatsapp; own active order) record the tap in `ordering.order_contacts` (append-only, keyed by the order and `placed_at`) and answer `{ phone }`; outside the window `409 order_state_changed`, another party's order `404`.
+  No `Idempotency-Key`: each tap is its own record and dials at once or not at all.
+  The taps stay out of `order_events`, since an event bumps the version and would refuse operations' preview-and-confirm dialogs after any call; the admin timeline merges them by time as `order.captain_called`, `order.customer_called` and `order.customer_whatsapp`, with `from` = `to` and the version of the moment (so the version is not unique).
+- **The late apology (CU §11 «Late», AP §8.3; slice L.1b):** `QUEUES.lateApology` is sent beside the late code's timer at the promised time + `order.delivery_late_alert_min`; `OrderTimers.lateApology` pushes `customer.late_apology` once (source `customer:customer.late_apology:<orderId>`) if the order is not delivered and its promised time is the job's. The customer's order carries `lateApologyAt` (null once ended) for the banner; it reads the setting as it is now, so a change of it moves the banner but not a timer already sent. A reveal resolves the number after recording the tap: every account has one, so a missing number is a server error, not a refusal. The admin timeline orders the taps by version, then time.
+- **The waiting-pay start (CA §9.3, AP §8.4; slice L.1b):** the captain's active order carries `waitingPayFrom` (`waitingPayFrom` in `door-payment.ts`, the same moment `waitingMinutes` counts from: the later of the arrival and the prep due time at acceptance, plus the threshold kept at the arrival), only at the restaurant and when the order's pay table pays waiting for the captain's vehicle; «تعديل الوقت» never moves it.
 
 ## Not yet
 
@@ -749,8 +755,7 @@ So far the versioned quote of a cart (CU §10.1–10.6; AP §8.4, §8.6), placin
   bound it with the time in the UUIDv7 id if that grows slow.
 - The pickup: `pickup_disputes.status` stays `open` (the ticket holds the resolution);
   push and the ring on every receiving device (the relay publishes `order.pickup_requested` to the restaurant's channel).
-- The captain's active order: the moment waiting pay starts («بدأ احتساب أجر الانتظار», CA §9.3: the later of the arrival and the prep due time, plus `captain.waiting_threshold_min`, when the pay table pays waiting; with waiting pay in slice 1.13), the record of each call or WhatsApp tap in the timeline (CA §9.5; to confirm with the owner).
-  A `CHECK` added to the partitioned `orders` scans every partition under an exclusive lock;
+- A `CHECK` added to the partitioned `orders` scans every partition under an exclusive lock;
   after launch add such checks partition by partition.
 - The note's preset chips (Content, AP §9.13), the capacity check's lost-demand log, account states: their slices.
 - D23 counts the delivered orders with outcome `normal` (`ActiveOrders.customer`).

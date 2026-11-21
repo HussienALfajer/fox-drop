@@ -324,8 +324,16 @@ The restaurant app «تطبيق المطعم» (Android, Windows; architecture �
   Excel stays with the portal (2.45).
   Tests: `history_screen_test.dart`.
 
+## «اتصال بالكابتن» (slice L.1b; RA §8.9, §22 item 10)
+
+- The order screen shows the button while the order has a captain and is accepted, ready, picked up or arrived (`canCallCaptain` in `board/commands.dart`).
+  A tap reveals the number through `merchantOrderContactsCallCaptain`, which records the tap on the server; the board never carries the captain's phone.
+  Android dials `tel:`; Windows shows «رقم الكابتن: …» in a dialog, since a desktop cannot dial.
+- The reveal is a direct call, not a queued board command: no idempotency key and no retry, so each tap is one record. A refusal (`409`, the order moved on) dials nothing and shows the board's notice.
+- Tests: the "call the captain" group of `board_screen_test.dart`.
+
 ## Not yet (slice 1.14e)
 
 - The banner «طلبات دون رد اليوم: {العدد} من {الحد}…» (RA §8.3: the board does not give the day's count yet);
   the cards' «تحتاج وقتاً أطول؟ اتصل بالعمليات» and the «مع الكابتن» card's «المبلغ غير صحيح» and call button (RA §8.7, §8.11) are on the detail only until the design places them.
-  The badges and the timeline of the detail (RA §8.4), the captain's photo, ETA and «اتصال بالكابتن» (RA §8.9), the other cancellations' wordings (RA §8.14), with their server fields and slices.
+  The badges and the timeline of the detail (RA §8.4), the captain's photo and ETA (RA §8.9), the other cancellations' wordings (RA §8.14), with their server fields and slices.

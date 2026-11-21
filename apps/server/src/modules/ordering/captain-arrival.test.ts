@@ -477,6 +477,26 @@ describe('POST /v1/captain/orders/{orderId}/arrive (CA §9.2, C6)', () => {
       expect((await captain.active()).json().order.waitingPayFrom).toBe(
         new Date(from).toISOString(),
       );
+      // The captain still waits at the counter once the pickup is requested.
+      const requested = await app.inject({
+        method: 'POST',
+        url: `/v1/captain/orders/${order.id}/pickup-request`,
+        headers: { ...captain.headers, 'idempotency-key': randomUUID() },
+        payload: {
+          lines: [{ currency: 'TRY', amount: '24000' }],
+          location: {
+            ...atDoor,
+            accuracyMetres: 10,
+            recordedAt: new Date().toISOString(),
+            simulated: false,
+          },
+        },
+      });
+      expect(requested.statusCode).toBe(200);
+      expect((await captain.active()).json().order).toMatchObject({
+        captainTrack: 'pickup_pending',
+        waitingPayFrom: new Date(from).toISOString(),
+      });
     }
   });
 

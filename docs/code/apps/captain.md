@@ -358,11 +358,16 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
   The library's own English alert about «دائماً» is off (`disableLocationAuthorizationAlert`): the device check says it.
 - **Not yet:** proved on a real iPhone (the owner, through TestFlight); Google Maps or Apple Maps as the captain prefers for «ابدأ الملاحة» (CA §4.6); the device check's screenshots (the design).
 
+## Calls and the waiting pay (slice L.1b; CA §9.3, §9.5, §19 items 10 and 13)
+
+- The order never carries the customer's phone. «اتصال بالزبون» and «واتساب» reveal it through `Commands.revealCustomerPhone` (`captainOrderContactsContactCustomer` with the channel), which records the tap and is refused outside the order; then `tel:` or `https://wa.me/<digits>`. A refusal opens nothing and shows the notice; a reveal is never retried.
+- At the restaurant, «بدأ احتساب أجر الانتظار» shows once the server clock passes the order's `waitingPayFrom` (`_AtRestaurant` in `order_view.dart`, on the step's tick).
+- Tests: `customer_contact_test.dart`.
+
 ## Not yet (slice 1.14g)
 
 - The suggestion of «وصلت» when entering the customer's radius (CA §9.6).
-- «بدأ احتساب أجر الانتظار», the record of each call or WhatsApp tap (CA §9.2–9.5, with their server fields);
-  «الرسائل» (CA §13).
+- «الرسائل» (CA §13).
   The screens pushed above the tabs («الإعدادات», «قواعد العمل», «الأسئلة الشائعة», `/profile`, `/peak-bonus`, `/terms`, the statements `/earnings/statements…`) show neither the bar «الطلب الجاري» nor an offer, which still rings under them.
 - The `cancellation` and `chime` push channels still play the phone's notification sound (renaming them for the bundled sounds needs the server's channels too).
   The library's points recorded while the app was closed by a server that took the captain offline are refused (`409`) and dropped.

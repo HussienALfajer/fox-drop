@@ -81,8 +81,12 @@ Future<void> callCaptain(
       return;
     }
     await launch(Uri(scheme: 'tel', path: phone));
-  } on DioException {
+  } on DioException catch (error) {
     messenger.showSnackBar(SnackBar(content: Text(failure)));
+    // A refusal means the order moved on: show it as it is now.
+    if (error.response?.statusCode == 409) {
+      ref.read(orderFeedProvider(orderId)).refresh();
+    }
   }
 }
 

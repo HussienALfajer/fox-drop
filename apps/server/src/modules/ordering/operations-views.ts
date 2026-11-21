@@ -238,8 +238,12 @@ export class OperationsViews {
       timeChange: null,
       itemReport: null,
     }));
-    // A stable sort: an event comes before a tap of the same moment.
-    return [...events, ...taps].sort((a, b) => a.at.getTime() - b.at.getTime());
+    // By the order's version, then the time: a tap sits after the event that
+    // set its version, even when the clock of its request read earlier. A
+    // stable sort keeps an event before a tap of the same version and moment.
+    return [...events, ...taps].sort(
+      (a, b) => a.version - b.version || a.at.getTime() - b.at.getTime(),
+    );
   }
 
   private event(row: typeof orderEvents.$inferSelect) {

@@ -1995,7 +1995,9 @@ export class CaptainOrders {
     vehicle: Parameters<CaptainsService['payParts']>[1] | null,
   ): Promise<Date | null> {
     const arrival = order.captainArrival;
-    if (order.captainTrack !== 'at_merchant' || arrival === null || order.acceptance === null) {
+    // A pickup request leaves the captain waiting at the counter (CA §9.3).
+    const waiting = order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending';
+    if (!waiting || arrival === null || order.acceptance === null) {
       return null;
     }
     if (vehicle === null) return null;

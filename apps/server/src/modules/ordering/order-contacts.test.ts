@@ -1,11 +1,15 @@
 import 'reflect-metadata';
 import { describe, expect, it } from 'vitest';
-import { CustomerAccountsService } from '../identity/index.js';
+import { CustomerAccountsService, MerchantAccountsService } from '../identity/index.js';
+import { MerchantsService } from '../merchants/index.js';
 import {
   app,
   appSignIn,
   assignedOrder,
+  azaz,
   captainAtRestaurant,
+  centre,
+  change,
   onlineCaptain,
   phoneNumber,
   placedOrder,
@@ -83,6 +87,46 @@ describe("the restaurant's «اتصال بالكابتن» (RA §8.9, R17)", () 
     expect(after.statusCode).toBe(409);
     expect(after.json()).toEqual({ statusCode: 409, error: 'order_state_changed' });
     expect(await contacts(order.id)).toHaveLength(2);
+  });
+
+  it('answers another restaurant 404 and a terminated one 403, recording nothing', async () => {
+    const { order } = await assignedOrder();
+    const merchants = app.get(MerchantsService);
+    const other = await merchants.createRestaurant(
+      azaz,
+      {
+        nameAr: 'مطعم آخر',
+        location: centre,
+        coverage: { kind: 'radius', radiusMetres: 1000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1500,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    await merchants.setAccountStatus(other, 'active', change);
+    // The owner, on a device: a termination signs the cashiers out (RA §5.5),
+    // and keeps the owner's session for the 403.
+    const phone = phoneNumber();
+    await app
+      .get(MerchantAccountsService)
+      .addAccount(other, { role: 'owner', name: 'owner', phone }, change);
+    const owner = await appSignIn('merchant', phone);
+    await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/auth/device',
+      headers: owner,
+      payload: { name: 'مالك', platform: 'android', appVersion: '1.0.0' },
+    });
+    const stranger = await restaurantCall(order.id, owner);
+    expect(stranger.statusCode).toBe(404);
+    expect(stranger.json().error).toBe('unknown_order');
+
+    await merchants.setAccountStatus(other, 'terminated', change);
+    const terminated = await restaurantCall(order.id, owner);
+    expect(terminated.statusCode).toBe(403);
+    expect(terminated.json().error).toBe('restaurant_terminated');
+    expect(await contacts(order.id)).toEqual([]);
   });
 });
 
