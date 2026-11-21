@@ -39,7 +39,7 @@ export const NATIVE_PACKAGES = ['packages/core_alerts'];
 
 const DOCS = /(\.md$|^docs\/)/;
 const DART =
-  /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml)$|^(apps\/(customer|captain|merchant)|packages\/core_[a-z0-9_]+)\/|^\.fvmrc$|^\.github\/workflows\/ci\.yml$|^scripts\/verify\.mjs$)/;
+  /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml)$|^(apps\/(customer|captain|merchant)|packages\/core_[a-z0-9_]+)\/|^\.fvmrc$|^\.github\/workflows\/ci\.yml$|^scripts\/verify(-support)?\.mjs$)/;
 // What can break a native release build that the Dart tests cannot see: a
 // native project, a dependency (a pubspec or the lock file), a package with
 // native code, the pinned Flutter, the workflow. The staging builds on main

@@ -1,12 +1,97 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { check, parse, summarized } from './bash.mjs';
-import { failingStep, statusPaths } from './stop-verify.mjs';
+import {
+  clearEdits,
+  editsFile,
+  failingStep,
+  recordEdit,
+  shouldCheck,
+  statusPaths,
+} from './stop-verify.mjs';
 import { cut } from './test-summary.mjs';
 
+const scratch = mkdtempSync(path.join(os.tmpdir(), 'hooks-test-'));
+after(() => rmSync(scratch, { recursive: true, force: true }));
+
 describe('the fast check at the end of a turn', () => {
+  it('checks only a session that edited files since its last pass', () => {
+    const dir = path.join(scratch, 'edits');
+    assert.equal(shouldCheck({ session_id: 'watcher' }, dir), false);
+    recordEdit('builder', 'apps/server/src/app.ts', dir);
+    assert.equal(shouldCheck({ session_id: 'builder' }, dir), true);
+    assert.equal(shouldCheck({ session_id: 'watcher' }, dir), false);
+    assert.equal(shouldCheck({ session_id: 'builder', stop_hook_active: true }, dir), false);
+  });
+
+  // Runs the hook in a new repository with one uncommitted code file, where a
+  // stand-in scripts/verify.mjs exits with `status`; the hook's temp folder is
+  // under the scratch folder.
+  const runHook = (name, status, { edited = true } = {}) => {
+    const repo = path.join(scratch, name);
+    const tmp = path.join(repo, 'tmp');
+    mkdirSync(path.join(repo, 'scripts'), { recursive: true });
+    spawnSync('git', ['init', '--quiet'], { cwd: repo });
+    writeFileSync(path.join(repo, '.gitignore'), 'tmp/\n');
+    writeFileSync(
+      path.join(repo, 'scripts', 'verify.mjs'),
+      `console.log('=== Step');\nconsole.log('the output');\nprocess.exitCode = ${status};`,
+    );
+    const dir = path.join(tmp, 'claude-stop-verify');
+    if (edited) recordEdit(name, 'scripts/verify.mjs', dir);
+    const hook = path.join(path.dirname(fileURLToPath(import.meta.url)), 'stop-verify.mjs');
+    const result = spawnSync(process.execPath, [hook], {
+      input: JSON.stringify({ session_id: name, cwd: repo }),
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_PROJECT_DIR: repo, TMP: tmp, TEMP: tmp, TMPDIR: tmp },
+    });
+    return { ...result, edits: editsFile(name, dir) };
+  };
+
+  it('runs the check after an edit, and forgets the edits once it passes', () => {
+    const result = runHook('passes', 0);
+    assert.equal(result.status, 0);
+    assert.equal(result.stdout + result.stderr, '');
+    assert.ok(!existsSync(result.edits));
+  });
+
+  it('hands a failure back to Claude and keeps the edits', () => {
+    const result = runHook('fails', 1);
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /fast check of the uncommitted changes failed[\s\S]*=== Step/);
+    assert.ok(existsSync(result.edits));
+  });
+
+  it('lets the turn end with a notice while another check runs, and keeps the edits', () => {
+    const result = runHook('busy', 3);
+    assert.equal(result.status, 0);
+    assert.match(JSON.parse(result.stdout).systemMessage, /fast check was skipped/);
+    assert.ok(existsSync(result.edits));
+  });
+
+  it('does not check a session that edited nothing', () => {
+    const result = runHook('watcher', 1, { edited: false });
+    assert.equal(result.status, 0);
+    assert.equal(result.stdout + result.stderr, '');
+  });
+
+  it('keeps edits recorded while the check ran for the next turn', () => {
+    const dir = path.join(scratch, 'clear');
+    recordEdit('s', 'a.ts', dir);
+    const seen = readFileSync(editsFile('s', dir), 'utf8');
+    recordEdit('s', 'b.ts', dir);
+    clearEdits('s', seen, dir);
+    assert.equal(shouldCheck({ session_id: 's' }, dir), true);
+    clearEdits('s', readFileSync(editsFile('s', dir), 'utf8'), dir);
+    assert.equal(shouldCheck({ session_id: 's' }, dir), false);
+  });
+
   it('reads the uncommitted paths, renames by their new name', () => {
     const porcelain = ' M apps/server/src/app.ts\0R  docs/new.md\0docs/old.md\0?? scripts/x.mjs\0';
     assert.deepEqual(statusPaths(porcelain), [
@@ -111,14 +196,36 @@ describe('the Bash guard', () => {
   });
 });
 
+// The bash that Claude Code's Bash tool runs: Git for Windows' on Windows
+// (`bash` there may be WSL's), else the one on PATH.
+function findBash() {
+  if (process.platform !== 'win32') return 'bash';
+  const exec = spawnSync('git', ['--exec-path'], { encoding: 'utf8' }).stdout.trim();
+  const gitBash = path.resolve(exec, '..', '..', '..', 'bin', 'bash.exe');
+  assert.ok(existsSync(gitBash), 'no bash on PATH and none next to git');
+  return gitBash;
+}
+
 describe('the test output filter', () => {
   const rewrite = (command) =>
-    summarized(command, 'C:\\hooks\\test-summary.mjs', 'C:\\node\\node.exe');
+    summarized(command, 'C:\\hooks\\test-summary.mjs', 'C:\\node\\node.exe', 'C:\\out\\x.log');
+  const filter = path.join(path.dirname(fileURLToPath(import.meta.url)), 'test-summary.mjs');
+  // Runs, through the rewritten command, a stand-in scripts/verify.mjs with this body.
+  const runRewritten = (name, body, filterPath, savedTo) => {
+    const project = path.join(scratch, name);
+    mkdirSync(path.join(project, 'scripts'), { recursive: true });
+    writeFileSync(path.join(project, 'scripts', 'verify.mjs'), body);
+    const command = `cd "${project.replaceAll('\\', '/')}" && node scripts/verify.mjs`;
+    const rewritten = summarized(command, filterPath, process.execPath, savedTo);
+    assert.ok(rewritten);
+    return spawnSync(findBash(), ['-c', rewritten], { encoding: 'utf8' });
+  };
 
-  it('wraps test commands and keeps their exit status', () => {
+  it('wraps test commands: the shell saves the whole output, the filter reads the file', () => {
     assert.equal(
       rewrite('pnpm --filter @fox-drop/server test'),
-      '{ pnpm --filter @fox-drop/server test\n} 2>&1 | "C:/node/node.exe" "C:/hooks/test-summary.mjs"; (exit ${PIPESTATUS[0]})',
+      '{ pnpm --filter @fox-drop/server test\n} > "C:/out/x.log" 2>&1; __status=$?; "C:/node/node.exe" "C:/hooks/test-summary.mjs" "C:/out/x.log" ||' +
+        ' { echo "[The output filter failed; the last 60 lines follow, the whole output is in C:/out/x.log]"; tail -n 60 "C:/out/x.log"; }; (exit $__status)',
     );
     assert.ok(rewrite('cd /d/fox-drop && pnpm verify'));
     assert.ok(rewrite('node scripts/verify.mjs format'));
@@ -161,5 +268,46 @@ describe('the test output filter', () => {
     assert.ok(!out.includes('ok test 300'));
     assert.match(out.at(-1), /cut from 1000 lines; the whole output is in saved\.log/);
     assert.ok(out.length < 120);
+  });
+
+  it("does not take the Playwright web server's log for failures", () => {
+    const proxy =
+      '@fox-drop/admin:test:e2e: [WebServer] 10:01:02 [vite] http proxy error: /api/v1/me\n' +
+      '@fox-drop/admin:test:e2e: [WebServer] AggregateError [ECONNREFUSED]: connect error';
+    const lines = [...Array(961).fill(proxy), ...Array(200).fill('ok')];
+    lines[1000] =
+      'apps/admin/src/main.ts:12:3  error  Unexpected any  @typescript-eslint/no-explicit-any';
+    lines.push('Tasks: 1 failed');
+    const out = cut(lines.join('\n'), 'saved.log');
+    assert.ok(out.includes('@typescript-eslint/no-explicit-any'));
+    assert.ok(!out.includes('over the limit'));
+    assert.ok(out.split('\n').length < 120);
+  });
+
+  it('keeps the exit status and the whole output of a long run', () => {
+    const savedTo = path.join(scratch, 'long.log');
+    const result = runRewritten(
+      'long',
+      "for (let i = 0; i < 200000; i++) console.log('line ' + i);\nprocess.exitCode = 3;",
+      filter,
+      savedTo,
+    );
+    assert.equal(result.status, 3);
+    assert.match(result.stdout, /cut from 200001 lines; the whole output is in/);
+    assert.equal(readFileSync(savedTo, 'utf8').split('\n').length, 200001);
+  });
+
+  it('prints the last lines and the path when the filter itself fails', () => {
+    const savedTo = path.join(scratch, 'fallback.log');
+    const result = runRewritten(
+      'fallback',
+      "console.log('first');\nconsole.error('the real error');\nprocess.exitCode = 1;",
+      path.join(scratch, 'missing-filter.mjs'),
+      savedTo,
+    );
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /The output filter failed;.*whole output is in/);
+    assert.match(result.stdout, /the real error/);
+    assert.match(readFileSync(savedTo, 'utf8'), /first\n.*the real error/s);
   });
 });

@@ -6,7 +6,8 @@
 //   (in observe mode it is only logged to .claude/bash-guard.log instead);
 // - a test command's output is cut to its failures and its summary.
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -217,8 +218,12 @@ const HARMLESS = /^(cd|export|echo|printf|true)\b|^node\s+(-v|--version)$/;
  * not only test commands (and `cd`, `export`, `echo`), or already filters or
  * redirects its output. The hook allows the rewritten command, so a command
  * substitution, which could run anything, is never rewritten.
+ *
+ * The shell writes the whole output to `savedTo` first and the filter reads
+ * that file, so nothing is lost if the filter fails: then the last lines are
+ * printed with the path instead. No pipe, so the command's exit status is $?.
  */
-export function summarized(command, filterPath, nodePath) {
+export function summarized(command, filterPath, nodePath, savedTo) {
   if (/(^|[^2])>|\|/.test(command.replace(/2>&1/g, '')) || /<<|\$\(|`/.test(command)) return null;
   let hasTest = false;
   for (const stages of parse(command)) {
@@ -229,9 +234,22 @@ export function summarized(command, filterPath, nodePath) {
     hasTest = true;
   }
   if (!hasTest) return null;
-  const node = nodePath.replaceAll('\\', '/');
-  const filter = filterPath.replaceAll('\\', '/');
-  return `{ ${command.trim()}\n} 2>&1 | "${node}" "${filter}"; (exit \${PIPESTATUS[0]})`;
+  const [node, filter, file] = [nodePath, filterPath, savedTo].map((each) =>
+    each.replaceAll('\\', '/'),
+  );
+  return (
+    `{ ${command.trim()}\n} > "${file}" 2>&1; __status=$?; "${node}" "${filter}" "${file}" ||` +
+    ` { echo "[The output filter failed; the last ${FALLBACK_LINES} lines follow, the whole output is in ${file}]";` +
+    ` tail -n ${FALLBACK_LINES} "${file}"; }; (exit $__status)`
+  );
+}
+
+const FALLBACK_LINES = 60;
+
+/** A new file name for a test command's whole output. */
+function outputFile() {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  return path.join(os.tmpdir(), 'claude-test-output', `${stamp}-${process.pid}.log`);
 }
 
 function isTrackedByGit(file, cwd) {
@@ -271,7 +289,9 @@ function main() {
     appendFileSync(path.join(root, '.claude', 'bash-guard.log'), `${JSON.stringify(line)}\n`);
   }
   const filter = path.join(path.dirname(fileURLToPath(import.meta.url)), 'test-summary.mjs');
-  const rewritten = summarized(command, filter, process.execPath);
+  const savedTo = outputFile();
+  const rewritten = summarized(command, filter, process.execPath, savedTo);
+  if (rewritten) mkdirSync(path.dirname(savedTo), { recursive: true });
   if (rewritten)
     process.stdout.write(
       JSON.stringify({
