@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import 'account/account_banners.dart';
 import 'auth.dart';
+import 'browsing/browsing.dart';
 import 'browsing/home_sections.dart';
 import 'cart/cart.dart';
 import 'emergency_stop.dart';
@@ -136,16 +137,18 @@ class HomeScreen extends ConsumerWidget {
       onMap: chooseOnMap,
     ),
     PointLocating() => const Center(child: CircularProgressIndicator()),
-    PointUnavailable(:final failure) => _Message(
-      text: switch (failure) {
-        PositionFailure.serviceOff => l10n.customerLocationServiceOff,
-        PositionFailure.denied => l10n.customerLocationDenied,
-        PositionFailure.failed => l10n.customerLocationFailed,
-        null => l10n.statusError,
-      },
-      action: l10n.customerTryAgain,
-      onAction: locate,
-      onMap: chooseOnMap,
+    // CU §4.5: the zone check failed, so no connection: the last kept home
+    // at its point, offline (owner decision 2026-11-21).
+    PointUnavailable(failure: null) => switch (ref.watch(homeProvider)) {
+      AsyncLoading() => const Center(child: CircularProgressIndicator()),
+      AsyncData(value: HomeView(offline: true)) => const HomeSections(),
+      _ => _message(l10n, null, locate, chooseOnMap),
+    },
+    PointUnavailable(:final failure) => _message(
+      l10n,
+      failure,
+      locate,
+      chooseOnMap,
     ),
     // CU §8.1: the sections in the panel's order (slice 2.27b).
     PointChecked(coverage: PointCoverage.served) => const HomeSections(),
@@ -165,6 +168,23 @@ class HomeScreen extends ConsumerWidget {
         onMap: chooseOnMap,
       ),
   };
+
+  Widget _message(
+    AppLocalizations l10n,
+    PositionFailure? failure,
+    VoidCallback locate,
+    VoidCallback chooseOnMap,
+  ) => _Message(
+    text: switch (failure) {
+      PositionFailure.serviceOff => l10n.customerLocationServiceOff,
+      PositionFailure.denied => l10n.customerLocationDenied,
+      PositionFailure.failed => l10n.customerLocationFailed,
+      null => l10n.statusError,
+    },
+    action: l10n.customerTryAgain,
+    onAction: locate,
+    onMap: chooseOnMap,
+  );
 }
 
 /// CU §6: «طلبك من {المطعم}: {الحالة}», or the count with a list when

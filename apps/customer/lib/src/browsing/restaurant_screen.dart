@@ -28,10 +28,33 @@ class RestaurantScreen extends ConsumerStatefulWidget {
 class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
   String _search = '';
 
+  // CU §4.5: a page shown offline is read again when the app returns.
+  late final _lifecycle = AppLifecycleListener(
+    onResume: () {
+      final page = ref.read(restaurantPageProvider(widget.restaurantId));
+      if (page.value?.offline ?? false) {
+        ref.invalidate(restaurantPageProvider(widget.restaurantId));
+      }
+    },
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle;
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final page = ref.watch(restaurantPageProvider(widget.restaurantId));
+    final browsed = ref.watch(restaurantPageProvider(widget.restaurantId));
+    final page = browsed.whenData((value) => value?.body);
     final cart = ref.watch(cartProvider).value?.cart;
     return Scaffold(
       appBar: AppBar(
@@ -51,8 +74,12 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
             ),
         ],
       ),
-      body: switch (page) {
-        AsyncData(value: final restaurant?) => _page(context, restaurant),
+      body: switch (browsed) {
+        AsyncData(value: final restaurant?) => _page(
+          context,
+          restaurant.body,
+          offline: restaurant.offline,
+        ),
         AsyncData() => Center(child: Text(l10n.notFound)),
         AsyncError() => Center(
           child: TextButton(
@@ -66,7 +93,11 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
     );
   }
 
-  Widget _page(BuildContext context, CustomerRestaurantPageDtoOutput r) {
+  Widget _page(
+    BuildContext context,
+    CustomerRestaurantPageDtoOutput r, {
+    required bool offline,
+  }) {
     final l10n = AppLocalizations.of(context);
     final now = ref.watch(clockProvider)();
     final state = RestaurantState(
@@ -89,6 +120,12 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
     final search = _search.trim();
     return ListView(
       children: [
+        // CU §4.5: shown from the last kept read.
+        if (offline)
+          ListTile(
+            key: const Key('offline'),
+            title: Text(l10n.customerOffline),
+          ),
         if (r.coverKey case final cover?)
           MediaImage(
             imageKey: cover,

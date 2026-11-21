@@ -294,6 +294,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerTryAgain => 'حاول مجدداً';
 
   @override
+  String get customerOffline => 'لا يوجد اتصال بالإنترنت';
+
+  @override
   String get customerHomeNearest => 'الأقرب إليك';
 
   @override
