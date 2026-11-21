@@ -4,19 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 5 of `docs/claude-code-workflow.md`: CI filters. Planned, not started. Phase 4 (fast checks, `chore/fast-verify`) is done: `scripts/classify-changes.mjs` is the classifier CI and `node scripts/verify.mjs --changed` share, so phase 5 changes its rules and its test, then `ci.yml`.
+Phase 5 of `docs/claude-code-workflow.md`: CI filters. Built on `chore/ci-filters` (status in «Phase 5»); left: the measurements after the merge.
 
 - **Branch:** `chore/ci-filters`.
 - **Docs:** `docs/claude-code-workflow.md`, «Phase 5»; `scripts/classify-changes.mjs` and its test; `.github/workflows/ci.yml`; `renovate.json`.
 
 ### Plan
 
-- [ ] Markdown never sets a code, Dart or Flutter job; only `SPEC_FILES_READ_BY_TESTS` count as code, with a test that fails when a test reads a spec file not in the list.
-- [ ] Native release builds on a pull request only for a native project, a pubspec or lock file, a package with native code, `.fvmrc` or the workflow, or a label.
-- [ ] `verify` requires `android-release`.
-- [ ] Cache CocoaPods and the Swift packages in the iOS jobs.
-- [ ] A merge of specs or docs alone builds and deploys nothing.
-- [ ] Renovate groups GitHub Actions updates weekly.
+- [x] Markdown never sets a code, Dart or Flutter job; only `SPEC_FILES_READ_BY_TESTS` count as code, with a test that fails when a test reads a spec file not in the list.
+- [x] Native release builds on a pull request only for a native project, a pubspec or lock file, a package with native code, `.fvmrc` or the workflow, or the `native-builds` label.
+- [x] `verify` requires `android-release`.
+- [x] Cache CocoaPods and the Swift packages in the iOS jobs.
+- [x] A merge of specs or docs alone builds and deploys nothing.
+- [x] Renovate groups GitHub Actions updates weekly.
 - [ ] Measure a docs-only and a server-only pull request (done when under 2 and 5 minutes).
 
 ## Waiting for the owner

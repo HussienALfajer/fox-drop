@@ -2,16 +2,17 @@
 // phases 4 and 5). CI's `changes` job and `node scripts/verify.mjs --changed`
 // both use it, so the two never disagree about what a path sets.
 //
-//   node scripts/classify-changes.mjs <base>   prints code=…, dart=…, flutter=…
-//                                              for $GITHUB_OUTPUT
+//   node scripts/classify-changes.mjs <base>   prints code=…, dart=…, native=…,
+//                                              build=… for $GITHUB_OUTPUT
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// The spec files a test reads. A change to one of them runs that test, which a
-// module graph cannot see; apps/server/vitest.config.ts lists them as
-// forceRerunTriggers (checked by classify-changes.test.mjs).
+// The spec files a test reads: the only Markdown that counts as code. A change
+// to one of them runs that test, which a module graph cannot see;
+// apps/server/vitest.config.ts lists them as forceRerunTriggers. A test that
+// reads a spec file missing here fails classify-changes.test.mjs.
 export const SPEC_FILES_READ_BY_TESTS = [
   'docs/product/v1/admin-panel/appendix-a-settings-catalogue.md',
 ];
@@ -32,12 +33,20 @@ const readByServerTests = (file) =>
     each.endsWith('/**') ? file.startsWith(each.slice(0, -2)) : file === each,
   );
 
+// The Dart packages with native code of their own (a plugin's android/, ios/
+// or windows/ folder), checked by classify-changes.test.mjs.
+export const NATIVE_PACKAGES = ['packages/core_alerts'];
+
 const DOCS = /(\.md$|^docs\/)/;
-const SPECS = /^docs\/(product|domain)\//;
 const DART =
   /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml)$|^(apps\/(customer|captain|merchant)|packages\/core_[a-z0-9_]+)\/|^\.fvmrc$|^\.github\/workflows\/ci\.yml$|^scripts\/verify\.mjs$)/;
-const FLUTTER =
-  /^(apps\/(customer|captain|merchant)\/|packages\/core_|pubspec\.(yaml|lock)$|\.fvmrc$|analysis_options\.yaml$|\.github\/workflows\/ci\.yml$)/;
+// What can break a native release build that the Dart tests cannot see: a
+// native project, a dependency (a pubspec or the lock file), a package with
+// native code, the pinned Flutter, the workflow. The staging builds on main
+// catch the rest.
+const NATIVE =
+  /(^apps\/(customer|captain|merchant)\/(android|ios|windows|macos|linux)\/|(^|\/)pubspec\.(yaml|lock)$|^\.fvmrc$|^\.github\/workflows\/ci\.yml$)/;
+const nativePackage = (file) => NATIVE_PACKAGES.some((each) => file.startsWith(`${each}/`));
 // Only Dart and Flutter look at these; everything else counts for TypeScript.
 const DART_ONLY =
   /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml)$|^(apps\/(customer|captain|merchant)|packages\/core_[a-z0-9_]+)\/|^\.fvmrc$)/;
@@ -50,15 +59,20 @@ const SERVER_SOURCE = /^apps\/server\/src\/.*\.ts$/;
 /**
  * What the changed `files` (repository-relative, forward slashes) set.
  * `read(file)` returns a file's text, or null when it was deleted.
- * - code, dart, flutter: CI's jobs (docs/claude-code-workflow.md, phase 5).
+ * - code, dart, native, build: CI's jobs (docs/claude-code-workflow.md,
+ *   phase 5): the checks, the Dart checks, the native release builds of a
+ *   pull request, the images and the staging builds and deploy.
  * - typescript: Turborepo's affected packages; server: the server's tests;
  *   contract: regenerate the API contract; dartScope: null, 'changed' or 'all'.
  */
 export function classify(files, read = readText) {
-  const code = files.some((file) => !DOCS.test(file) || SPECS.test(file));
-  const dart = code && files.some((file) => DART.test(file));
-  const flutter = code && files.some((file) => FLUTTER.test(file));
   const specRead = files.some((file) => SPEC_FILES_READ_BY_TESTS.includes(file));
+  const build = files.some((file) => !DOCS.test(file));
+  const code = build || specRead;
+  const dart = files.some((file) => !DOCS.test(file) && DART.test(file));
+  const native = files.some(
+    (file) => !DOCS.test(file) && (NATIVE.test(file) || nativePackage(file)),
+  );
   const typescript = specRead || files.some((file) => !DOCS.test(file) && !DART_ONLY.test(file));
   const server = files.some(
     (file) =>
@@ -71,7 +85,16 @@ export function classify(files, read = readText) {
       CONTRACT.test(file) ||
       (SERVER_SOURCE.test(file) && !file.endsWith('.test.ts') && declaresSchema(read(file))),
   );
-  return { code, dart, flutter, typescript, server, contract, dartScope: dartScope(files) };
+  return {
+    code,
+    dart,
+    native,
+    build,
+    typescript,
+    server,
+    contract,
+    dartScope: dartScope(files),
+  };
 }
 
 // Which Dart packages the fast check covers: none, the changed ones and their
@@ -118,7 +141,7 @@ export function changedFiles(base, { workingTree = true } = {}) {
 
 function main() {
   const base = process.argv[2];
-  const all = { code: true, dart: true, flutter: true };
+  const all = { code: true, dart: true, native: true, build: true };
   let flags = all;
   if (base && spawnSync('git', ['cat-file', '-e', `${base}^{commit}`]).status === 0) {
     const files = changedFiles(base, { workingTree: false });
