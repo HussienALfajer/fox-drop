@@ -290,7 +290,7 @@ describe('POST /v1/customer/orders (CU §10.7)', () => {
     const saved = await app.inject({
       method: 'POST',
       url: '/v1/customer/addresses',
-      headers,
+      headers: { ...headers, 'idempotency-key': randomUUID() },
       payload: { ...unsaved, label: 'home', customLabel: null, isDefault: true },
     });
     const addressId = saved.json().id;
@@ -563,7 +563,7 @@ describe('placing, at the edges (CU §10.7, architecture §5.3)', () => {
     const saved = await app.inject({
       method: 'POST',
       url: '/v1/customer/addresses',
-      headers: owner,
+      headers: { ...owner, 'idempotency-key': randomUUID() },
       payload: { ...unsaved, label: 'home', customLabel: null, isDefault: true },
     });
     const answer = await place(await signedIn(), {

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, count, desc, eq, gte, inArray, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -26,7 +27,12 @@ import {
 import { strikesSince, type TrustMark } from './trust.js';
 
 export type CustomersRefusal =
-  'terms_required' | 'invalid_birthday' | 'outside_zones' | 'address_limit' | 'unknown_address';
+  | 'terms_required'
+  | 'invalid_birthday'
+  | 'outside_zones'
+  | 'address_limit'
+  | 'unknown_address'
+  | 'idempotency_key_reused';
 
 // A change the customers module refuses, with the reason its routes answer.
 export class CustomersRefusedError extends Error {
@@ -891,15 +897,41 @@ export class CustomersService {
   }
 
   // CU §7.3: a new address, its pin inside an active zone. The first is the
-  // default; isDefault makes a later one the default.
+  // default; isDefault makes a later one the default. CU §19 item 28: the
+  // key is kept on the row, so a retry answers the first save (even at the
+  // limit, or 404 if it was deleted since) and another body with the key is
+  // idempotency_key_reused.
   async addAddress(
     accountId: string,
     fields: AddressFields & { isDefault: boolean },
+    idempotencyKey: string,
     now: Date,
   ): Promise<Address> {
+    const requestHash = createHash('sha256').update(JSON.stringify(fields)).digest('hex');
+    const earlier = async (executor: Pick<Database['db'], 'select'>) => {
+      const [row] = await executor
+        .select({ id: addresses.id, requestHash: addresses.requestHash })
+        .from(addresses)
+        .where(
+          and(eq(addresses.accountId, accountId), eq(addresses.idempotencyKey, idempotencyKey)),
+        );
+      if (row && row.requestHash !== requestHash) {
+        throw new CustomersRefusedError('idempotency_key_reused', 'the key named another address');
+      }
+      return row?.id;
+    };
+    const saved = async (id: string) => {
+      const address = await this.address(accountId, id);
+      if (address === null) throw unknownAddress();
+      return address;
+    };
+    const before = await earlier(this.database.db);
+    if (before !== undefined) return saved(before);
     const cityId = await this.zoneCity(fields.location);
     const id = await this.database.db.transaction(async (tx) => {
       await lockAddresses(tx, accountId);
+      const first = await earlier(tx);
+      if (first !== undefined) return first;
       const [{ count }] = (await tx
         .select({ count: sql<number>`count(*)::int` })
         .from(addresses)
@@ -920,11 +952,13 @@ export class CustomersService {
           isDefault,
           createdAt: now,
           updatedAt: now,
+          idempotencyKey,
+          requestHash,
         })
         .returning({ id: addresses.id })) as [{ id: string }];
       return row.id;
     });
-    return (await this.address(accountId, id))!;
+    return saved(id);
   }
 
   // CU §7.3 (U5): every field may change, the pin only inside active zones.
