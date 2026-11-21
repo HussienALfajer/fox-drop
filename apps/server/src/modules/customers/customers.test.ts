@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { randomBytes, randomInt, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -518,6 +518,44 @@ describe('a save of an address retried (CU §19 item 28)', () => {
     expect(none.statusCode).toBe(400);
     expect(none.json()).toMatchObject({ error: 'idempotency_key_required' });
     expect(await count(headers)).toBe(1);
+  });
+
+  it('saves once when the same save arrives twice at the same moment', async () => {
+    const headers = await signedIn();
+    const key = { ...headers, 'idempotency-key': randomUUID() };
+    const [a, b] = await Promise.all([
+      call(key, 'POST', '/v1/customer/addresses', body),
+      call(key, 'POST', '/v1/customer/addresses', body),
+    ]);
+    expect([a.statusCode, b.statusCode]).toEqual([201, 201]);
+    expect(a.json().id).toBe(b.json().id);
+    expect(await count(headers)).toBe(1);
+  });
+
+  it('keeps the other contact number out of the hash, and compares it on a repeat', async () => {
+    const headers = await signedIn();
+    const key = { ...headers, 'idempotency-key': randomUUID() };
+    const withPhone = { ...body, contactPhone: '+905321234567', recipientName: 'محمد' };
+    const first = await call(key, 'POST', '/v1/customer/addresses', withPhone);
+    expect(first.statusCode).toBe(201);
+    const { rows } = await sql.query<{ request_hash: string }>(
+      'SELECT request_hash FROM customers.addresses WHERE id = $1',
+      [first.json().id],
+    );
+    const hash = (value: object) =>
+      createHash('sha256').update(JSON.stringify(value)).digest('hex');
+    const rest = Object.fromEntries(
+      Object.entries(withPhone).filter(([name]) => name !== 'contactPhone'),
+    );
+    expect(rows[0]!.request_hash).not.toBe(hash(withPhone));
+    expect(rows[0]!.request_hash).toBe(hash(rest));
+    const again = await call(key, 'POST', '/v1/customer/addresses', withPhone);
+    expect(again.json().id).toBe(first.json().id);
+    const otherPhone = await call(key, 'POST', '/v1/customer/addresses', {
+      ...withPhone,
+      contactPhone: '+905321234568',
+    });
+    expect(otherPhone.statusCode).toBe(422);
   });
 
   it('answers the first save at the limit, and 404 once it is deleted', async () => {

@@ -907,15 +907,25 @@ export class CustomersService {
     idempotencyKey: string,
     now: Date,
   ): Promise<Address> {
-    const requestHash = createHash('sha256').update(JSON.stringify(fields)).digest('hex');
+    // The other contact number stays out of the hash, which is not keyed: it
+    // would undo its encryption (architecture §15.3). A repeat compares it
+    // with the row's, decrypted.
+    const { contactPhone, ...hashed } = fields;
+    const requestHash = createHash('sha256').update(JSON.stringify(hashed)).digest('hex');
     const earlier = async (executor: Pick<Database['db'], 'select'>) => {
       const [row] = await executor
-        .select({ id: addresses.id, requestHash: addresses.requestHash })
+        .select({
+          id: addresses.id,
+          requestHash: addresses.requestHash,
+          contactPhoneEncrypted: addresses.contactPhoneEncrypted,
+        })
         .from(addresses)
         .where(
           and(eq(addresses.accountId, accountId), eq(addresses.idempotencyKey, idempotencyKey)),
         );
-      if (row && row.requestHash !== requestHash) {
+      const phone =
+        row?.contactPhoneEncrypted == null ? null : this.phones.decrypt(row.contactPhoneEncrypted);
+      if (row && (row.requestHash !== requestHash || phone !== contactPhone)) {
         throw new CustomersRefusedError('idempotency_key_reused', 'the key named another address');
       }
       return row?.id;
