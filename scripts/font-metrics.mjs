@@ -4,7 +4,8 @@
 // are committed, keyed by each file's SHA-256 from the fonts manifest.
 //
 //   node scripts/font-metrics.mjs   reads .fonts/ (pnpm fonts:fetch first) and
-//                                   writes packages/design-tokens/font-metrics.json
+//                                   writes packages/design-tokens/font-metrics.json;
+//                                   then `pnpm format` it before committing
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
