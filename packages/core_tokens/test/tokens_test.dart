@@ -13,7 +13,7 @@ void main() {
 
   int argb(String hex) => int.parse('FF${hex.substring(1)}', radix: 16);
 
-  test('the ivory and the accessible orange', () {
+  test('the Figma ground and the brand orange', () {
     final color =
         (source('primitive/color.json')['primitive']
                 as Map<String, dynamic>)['color']
@@ -22,8 +22,8 @@ void main() {
         ((color[scale] as Map<String, dynamic>)[step]
                 as Map<String, dynamic>)['\$value']
             as String;
-    expect(FoxColors.light.surface, argb(value('neutral', '50')));
-    expect(FoxColors.light.primary, argb(value('orange', '600')));
+    expect(FoxColors.light.surface, argb(value('neutral', '75')));
+    expect(FoxColors.light.primary, argb(value('orange', '400')));
   });
 
   test('the dark slot copies light until dark mode is designed', () {

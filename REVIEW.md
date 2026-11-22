@@ -24,6 +24,7 @@ An item is a bug class with its source (the pull request that first had it, or t
 10. **A list or a report:** scope is applied in the service; the business day uses the city's zone; an empty result and a page boundary are tested.
 11. **A client, a string or a layout:** generated clients not edited by hand; every string in translation files; start and end, never left and right; Western digits.
 12. **A change to `.github/workflows/ci.yml`, `scripts/verify.mjs` or `REVIEW.md`:** the pull request description names it under `## Checks changed`, with what it now lets through or stops. Any check that gets weaker, skipped or removed is blocking until the owner has seen it.
+13. **A screen, a component or a semantic colour** (D.3, the owner's brand-orange exception). Ask: does orange (`primary`, `primary-pressed`, `heading`, `brand`) appear only on buttons, bars, the active item and headings? Bug: body text, a link, a price, an amount, a timer or a small label in orange, or a new pair given an `exception` in `src/contrast.ts`. Wanted: text and numbers in `on-surface` or `on-surface-muted`.
 
 ## After a merge
 

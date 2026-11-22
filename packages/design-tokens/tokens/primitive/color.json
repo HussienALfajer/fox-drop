@@ -11,12 +11,16 @@
         "300": { "$value": "#FFA06B" },
         "400": {
           "$value": "#FF6E31",
-          "$description": "The brand orange: logo, app icon, large decorative areas only."
+          "$description": "The brand orange: buttons, headings, accents, the logo (owner, 2026-11-23)."
+        },
+        "450": {
+          "$value": "#FD6425",
+          "$description": "The Figma file's offset shadow under orange shapes."
         },
         "500": { "$value": "#EA580C" },
         "600": {
           "$value": "#C2410C",
-          "$description": "The accessible orange: text and filled controls."
+          "$description": "The former accessible orange; no semantic token uses it since 2026-11-23."
         },
         "700": { "$value": "#9A3412" },
         "800": { "$value": "#7C2D12" },
@@ -34,9 +38,17 @@
         "800": { "$value": "#02234B" },
         "900": { "$value": "#021A38" }
       },
+      "blue-on-ivory": {
+        "$description": "The brand blue at a share of opacity over the Figma ground #FBF2E7, flattened so contrast can be checked.",
+        "16": { "$value": "#D3D6D9" },
+        "60": { "$value": "#6688B2" },
+        "75": { "$value": "#416EA4" }
+      },
       "neutral": {
         "$description": "Warm greys derived from the ivory, leaning slightly beige.",
+        "25": { "$value": "#FEFEFE", "$description": "The Figma file's raised white." },
         "50": { "$value": "#FFFAED", "$description": "The brand ivory." },
+        "75": { "$value": "#FBF2E7", "$description": "The Figma file's screen ground." },
         "100": { "$value": "#F5EFE2" },
         "200": { "$value": "#E8E1D2" },
         "300": { "$value": "#D4CBBA" },
@@ -48,7 +60,7 @@
         "900": { "$value": "#1F1C18" }
       },
       "red": {
-        "600": { "$value": "#B91C3C" },
+        "600": { "$value": "#BF2929", "$description": "The Figma file's error red." },
         "800": { "$value": "#8C1530" }
       },
       "amber": {

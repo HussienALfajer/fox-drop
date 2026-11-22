@@ -2,7 +2,7 @@
 
 The character of the design system (architecture §9.12), decided item by item by the owner in chat on 2026-11-22 (slice D.1b). Architecture §9.1 to §9.10 govern the system; this brief says what it should feel like. D.2 turns the values into tokens, D.3 draws the design directions and scores each against the principles below, D.5 draws the icons, D.6 and D.7 build the components.
 
-Values given as candidates are settled by the contrast test in D.2. A machine-checkable rule here becomes a test or a lint rule in the slice named beside it; until then this text is the rule.
+On 2026-11-23 (slice D.3) the owner adopted the Figma file "Fox Drop" as the design direction; §2, §3, §5, §6 and §10 say what it changed, and `directions.md` holds its measurements. Values given as candidates are settled by the contrast test in D.2. A machine-checkable rule here becomes a test or a lint rule in the slice named beside it; until then this text is the rule.
 
 ## 1. Personality and principles
 
@@ -31,7 +31,15 @@ The logo's drop (a map pin: round head, pointed tip) appears **where it means "a
 
 It never appears on cards, buttons, inputs or anything pressed or typed in, and never crops a restaurant's logo or a food photo. In the panel it appears only as map pins.
 
-The "drop corner" on cards (three large radii and one smaller one at the bottom start) may be tried in one D.3 direction and added later if the owner likes it.
+**The Figma file's shape language** (D.3) sits beside the drop and does not replace it:
+
+- the **pill** for buttons, tags and the total bar's action, and the **circle** for icon buttons and the floating bar's items;
+- the **S-curve tab**: a soft bump rising from the top edge of the home banner and of the dish sheet, holding its title;
+- the **offset shadow**: a flat orange shadow 7 px straight down, no blur (`elevation.offset`), under the main button and the active item;
+- the **cut-out dish**: a dish photo without its background, overlapping its card's edge (§5);
+- radii of 8 (small cards), 10 (inputs), 15 (cards and totals), 30 (banner) and full (§6 tokens).
+
+The "drop corner" of D.1b is not used: the file has no such corner.
 
 ## 3. Motion
 
@@ -45,6 +53,7 @@ The "drop corner" on cards (three large radii and one smaller one at the bottom 
 | moment      | ≤ 1.2 s  | A signature moment, never more |
 
 - Calm easing, no bounce. Transitions follow RTL: the next screen enters from the end side.
+- **The press:** a control with the offset shadow drops onto its shadow (moves 7 px down while the shadow shrinks to 0) in `fast`; the others darken to their pressed colour.
 - **Signature moments, two only:**
   1. **Order confirmed:** the fox leaps out of the drop and the screen goes straight to tracking. It never blocks or delays the user and a tap skips it.
   2. **Delivered:** the drop settles at the door, then the rating screen.
@@ -72,7 +81,7 @@ The base is Protomaps' style on our own tiles (architecture §7.2), recoloured a
 | Restaurant | Filled blue                 | Plate                                               | Medium  |
 | Customer   | Ivory with a blue edge      | House                                               | Medium  |
 
-**Route line:** dashed from the captain to the restaurant before pickup; after pickup solid accessible orange, width 5 with a white casing, restaurant to customer. The part already travelled disappears.
+**Route line:** dashed from the captain to the restaurant before pickup; after pickup solid brand orange, width 5 with a white casing, restaurant to customer. The part already travelled disappears.
 
 **Captain's sunlight style:** the captain app always uses a high-contrast style (darker road edges, larger names, fewer points of interest, route width 8). No automatic switching: light sensors are unreliable on cheap phones.
 
@@ -103,30 +112,38 @@ The base is Protomaps' style on our own tiles (architecture §7.2), recoloured a
 
 **Who photographs (V1):** each restaurant photographs its own dishes with its phone, following the guide with one good and one bad example. No platform photography in V1.
 
+**Cut-out dishes** (the Figma file's dish without its background, §2) are used only in images the platform prepares: the home banner and promotional slots. A restaurant's own photos keep their background and their fixed ratio, since cutting out every phone photo cannot be done well by hand or honestly by machine (principle 2).
+
 ## 6. Palette
 
-Ten steps, 50 to 900, for each colour on one shared scale. D.2's contrast test settled the values below (`packages/design-tokens/tokens/`, report in `packages/design-tokens/generated/contrast-report.md`).
+Ten steps, 50 to 900, for each colour on one shared scale, plus the in-between steps the Figma file needs (neutral 25 and 75, orange 450, and the blue over the ground at 16, 60 and 75%). D.2's contrast test settled the values below (`packages/design-tokens/tokens/`, report in `packages/design-tokens/generated/contrast-report.md`).
 
-| Scale        | Anchor                                                                                     |
-| ------------ | ------------------------------------------------------------------------------------------ |
-| Orange       | Brand `#FF6E31` at 400; accessible orange at 600                                           |
-| Blue         | Brand `#03428E` at 500                                                                     |
-| Warm neutral | Ivory `#FFFAED` at 50; greys derived from the ivory, leaning slightly beige, not cold grey |
+| Scale        | Anchor                                                                                                                                               |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Orange       | Brand `#FF6E31` at 400; the offset shadow `#FD6425` at 450                                                                                           |
+| Blue         | Brand `#03428E` at 500; the blue over the ground at 16, 60 and 75%                                                                                   |
+| Warm neutral | Ivory `#FFFAED` at 50, the Figma ground `#FBF2E7` at 75, raised `#FEFEFE` at 25; greys derived from the ivory, leaning slightly beige, not cold grey |
 
-- **Accessible orange (settled in D.2):** `#C2410C`, 4.97:1 on ivory and 5.18:1 under white text; the closest to the brand hue that reaches 4.5:1. It carries text and filled controls; `#FF6E31` stays for the logo, the app icon and large decorative areas (architecture §9.2).
+- **The Figma file's colours (D.3, owner 2026-11-23):**
+  - Ground `#FBF2E7`, raised cards `#FEFEFE`.
+  - All text, prices and numbers in the brand blue `#03428E` (8.72:1). Muted text is the blue at 75% over the ground, `#416EA4` (4.59:1), because the file's lighter blues fail 4.5:1.
+  - Headings, buttons, bars and the active item in the brand orange `#FF6E31`, with ivory labels.
+  - Borders in the blue at 16% (decorative) and 60% (control boundary, 3.20:1; the file's 40% fails 3:1).
+  - The offset shadow `#FD6425` (§2).
+- **The brand-orange exception (owner 2026-11-23, every app, the captain's included):** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory text, below 4.5:1. The owner accepts this for the orange tokens only (`brand`, `primary`, `primary-pressed`, `heading`); the contrast report marks those pairs «owner exception» and a test keeps the exception from spreading (architecture §9.5 R4). Orange is never used for body text, prices or numbers. The accessible orange `#C2410C` of D.2 is retired.
 - **Status colours, kept apart from the brand orange and always with an icon (R4):**
 
-| Status  | Settled   | On ivory | Note                                                        |
-| ------- | --------- | -------- | ----------------------------------------------------------- |
-| Danger  | `#B91C3C` | 6.12:1   | A crimson leaning pink, so it never reads as a brand button |
-| Warning | `#8A5A00` | 5.69:1   | A brown amber, not orange                                   |
-| Success | `#067647` | 5.46:1   |                                                             |
-| Info    | `#03428E` | 9.27:1   | The brand blue                                              |
+| Status  | Settled   | On the ground `#FBF2E7` | Note                                                  |
+| ------- | --------- | ----------------------- | ----------------------------------------------------- |
+| Danger  | `#BF2929` | 5.32:1                  | The Figma file's error red (D.3); always with an icon |
+| Warning | `#8A5A00` | 5.35:1                  | A brown amber, not orange                             |
+| Success | `#067647` | 5.14:1                  |                                                       |
+| Info    | `#03428E` | 8.72:1                  | The brand blue                                        |
 
 - **Status in the captain app:** success, warning and danger text darken to `#055A37`, `#6B4500` and `#8C1530` to reach 7:1. **Alerts** (restaurant, panel): `#8C1530`, 8.90:1 on ivory.
 - **Charts (panel):** six categorical colours, blue `#03428E` first, then orange `#EA580C`, teal `#0F766E`, violet `#7C3AED`, olive green `#4D5A12` and pink `#BE185D`, each at 3:1 or more on the surfaces and at CIEDE2000 11 or more from each other (the closest pair, orange and olive under protanopia, is 11.97) under protan, deutan and tritan simulation (D.2). Sequential charts (heat maps, the vote map) use the blue scale only.
 - **Contrast targets:** WCAG 2.2 AA (4.5:1) everywhere (R4), and more on two surfaces:
-  - **Captain app:** text and numbers (amount, address, time) at **7:1** or more, in near-black or blue; buttons at 4.5:1 with large bold labels. No orange text in the captain app: the accessible orange reaches 7:1 only as brown (`#9A3412`).
+  - **Captain app:** text and numbers (amount, address, time) at **7:1** or more, in near-black or blue; buttons in the brand orange with large bold labels, under the exception above. Orange only on buttons and headings, never on numbers.
   - **Restaurant app:** alerts at 7:1, because they are read from across the kitchen.
 
 ## 7. Arabic typography
@@ -135,7 +152,8 @@ Ten steps, 50 to 900, for each colour on one shared scale. D.2's contrast test s
 
 - **CoFo Sans Pro Arabic alone** in the apps, the restaurant portal and the panel, with its own Latin glyphs (no second Latin typeface).
 - **YR-Speed** for marketing only: store screenshots, social posts, at most one headline on the welcome screen.
-- **Emad-Diana** is not used: one light weight and 323 glyphs.
+- **Emad-Diana** is not used: one light weight and 323 glyphs. The Figma file sets its button label in it; the apps use CoFo 700 instead (owner, 2026-11-23). Headings are CoFo 700 in the brand orange.
+- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana: the money component of D.6 and D.7 must give it a fallback font. Prices keep the «450 ₺» format.
 
 **Weights:** 400, 500 and 700 only. No hairline or light weights for text: thin Arabic strokes vanish in the sun and on cheap screens.
 
@@ -232,7 +250,7 @@ On a weak connection only thumbnails load. While an image loads, its dominant co
 
 ## 10. First icon set
 
-FOX DROP's own line icons (architecture §9.4), drawn in D.5. The first batch is **44 icons**:
+FOX DROP's own line icons (architecture §9.4), drawn in D.5 in the Figma file's style: rounded line icons, a stroke of about 2 at 24, round caps and joins, blue by default and ivory inside an orange circle when active. The first batch is **44 icons**:
 
 | Group                  | Icons                                                                                     |
 | ---------------------- | ----------------------------------------------------------------------------------------- |

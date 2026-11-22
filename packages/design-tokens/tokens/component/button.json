@@ -2,7 +2,7 @@
   "button": {
     "height": {
       "$type": "dimension",
-      "$value": "{size.touch-target}"
+      "$value": "{size.control}"
     },
     "padding-inline": {
       "$type": "dimension",
@@ -14,7 +14,7 @@
     },
     "radius": {
       "$type": "dimension",
-      "$value": "{radius.md}"
+      "$value": "{radius.full}"
     },
     "focus-ring": {
       "$type": "color",

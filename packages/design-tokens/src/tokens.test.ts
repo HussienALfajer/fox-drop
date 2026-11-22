@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFICIENCIES, contrast, deltaE2000, distance } from './color.ts';
-import { check, PAIRS } from './contrast.ts';
+import { BACKGROUNDS, check, failing, ORANGE, PAIRS } from './contrast.ts';
 import { OUTPUTS, render } from './generate.ts';
 import { colour, PACKAGE_DIR, resolveAll } from './resolve.ts';
 
@@ -62,13 +62,36 @@ describe('contrast (R4, brand expression §6)', () => {
   const results = check(themes);
 
   it('passes every required pair', () => {
-    const failing = results
-      .filter((each) => !each.pass)
+    const failed = results
+      .filter(failing)
       .map(
         (r) =>
           `${r.surface}/${r.theme} ${r.foreground} on ${r.background}: ${r.ratio.toFixed(2)} < ${r.target}`,
       );
-    expect(failing).toEqual([]);
+    expect(failed).toEqual([]);
+  });
+
+  it("keeps the owner's exception to the brand orange (R4, 2026-11-23)", () => {
+    const excepted = Object.values(PAIRS)
+      .flat()
+      .filter((p) => p.exception);
+    // Each excepted pair has a floor, and its non-orange side is the ivory label.
+    for (const p of excepted) {
+      expect(p.floor, `${p.foreground} on ${p.background}`).toBeGreaterThan(0);
+      if (!ORANGE.has(p.foreground)) expect(p.foreground).toBe('on-primary');
+      if (!ORANGE.has(p.background)) expect(BACKGROUNDS).toContain(p.background);
+    }
+    const orange = {
+      brand: '#FF6E31',
+      primary: '#FF6E31',
+      heading: '#FF6E31',
+      'primary-pressed': '#EA580C',
+      'on-primary': '#FFFAED',
+    };
+    for (const theme of Object.keys(themes) as (keyof typeof themes)[])
+      for (const [name, value] of Object.entries(orange))
+        expect(colour(themes[theme], `color.${name}`), `${theme} ${name}`).toBe(value);
+    expect(Object.keys(orange)).toEqual(expect.arrayContaining([...ORANGE]));
   });
 
   it('checks the stricter surfaces: captain text at 7:1, alerts at 7:1', () => {

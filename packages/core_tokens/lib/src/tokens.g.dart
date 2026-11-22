@@ -13,6 +13,7 @@ final class ColorTokens {
     required this.primary,
     required this.primaryPressed,
     required this.onPrimary,
+    required this.heading,
     required this.accent,
     required this.onAccent,
     required this.border,
@@ -47,6 +48,7 @@ final class ColorTokens {
   final int primary;
   final int primaryPressed;
   final int onPrimary;
+  final int heading;
   final int accent;
   final int onAccent;
   final int border;
@@ -75,25 +77,26 @@ final class ColorTokens {
 /// The semantic colours per theme. Dark holds a copy of light for now.
 abstract final class FoxColors {
   static const ColorTokens light = ColorTokens(
-    surface: 0xFFFFFAED,
-    surfaceRaised: 0xFFFFFFFF,
+    surface: 0xFFFBF2E7,
+    surfaceRaised: 0xFFFEFEFE,
     surfacePressed: 0xFFF5EFE2,
-    onSurface: 0xFF1F1C18,
-    onSurfaceMuted: 0xFF665F52,
+    onSurface: 0xFF03428E,
+    onSurfaceMuted: 0xFF416EA4,
     brand: 0xFFFF6E31,
-    primary: 0xFFC2410C,
-    primaryPressed: 0xFF9A3412,
-    onPrimary: 0xFFFFFFFF,
+    primary: 0xFFFF6E31,
+    primaryPressed: 0xFFEA580C,
+    onPrimary: 0xFFFFFAED,
+    heading: 0xFFFF6E31,
     accent: 0xFF03428E,
     onAccent: 0xFFFFFFFF,
-    border: 0xFFE8E1D2,
-    borderStrong: 0xFF857D6E,
+    border: 0xFFD3D6D9,
+    borderStrong: 0xFF6688B2,
     focusRing: 0xFF03428E,
     success: 0xFF067647,
     onSuccess: 0xFFFFFFFF,
     warning: 0xFF8A5A00,
     onWarning: 0xFFFFFFFF,
-    danger: 0xFFB91C3C,
+    danger: 0xFFBF2929,
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
@@ -110,25 +113,26 @@ abstract final class FoxColors {
   );
 
   static const ColorTokens dark = ColorTokens(
-    surface: 0xFFFFFAED,
-    surfaceRaised: 0xFFFFFFFF,
+    surface: 0xFFFBF2E7,
+    surfaceRaised: 0xFFFEFEFE,
     surfacePressed: 0xFFF5EFE2,
-    onSurface: 0xFF1F1C18,
-    onSurfaceMuted: 0xFF665F52,
+    onSurface: 0xFF03428E,
+    onSurfaceMuted: 0xFF416EA4,
     brand: 0xFFFF6E31,
-    primary: 0xFFC2410C,
-    primaryPressed: 0xFF9A3412,
-    onPrimary: 0xFFFFFFFF,
+    primary: 0xFFFF6E31,
+    primaryPressed: 0xFFEA580C,
+    onPrimary: 0xFFFFFAED,
+    heading: 0xFFFF6E31,
     accent: 0xFF03428E,
     onAccent: 0xFFFFFFFF,
-    border: 0xFFE8E1D2,
-    borderStrong: 0xFF857D6E,
+    border: 0xFFD3D6D9,
+    borderStrong: 0xFF6688B2,
     focusRing: 0xFF03428E,
     success: 0xFF067647,
     onSuccess: 0xFFFFFFFF,
     warning: 0xFF8A5A00,
     onWarning: 0xFFFFFFFF,
-    danger: 0xFFB91C3C,
+    danger: 0xFFBF2929,
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
@@ -145,19 +149,20 @@ abstract final class FoxColors {
   );
 
   static const ColorTokens captainLight = ColorTokens(
-    surface: 0xFFFFFAED,
-    surfaceRaised: 0xFFFFFFFF,
+    surface: 0xFFFBF2E7,
+    surfaceRaised: 0xFFFEFEFE,
     surfacePressed: 0xFFF5EFE2,
-    onSurface: 0xFF1F1C18,
+    onSurface: 0xFF03428E,
     onSurfaceMuted: 0xFF4D473D,
     brand: 0xFFFF6E31,
-    primary: 0xFFC2410C,
-    primaryPressed: 0xFF9A3412,
-    onPrimary: 0xFFFFFFFF,
+    primary: 0xFFFF6E31,
+    primaryPressed: 0xFFEA580C,
+    onPrimary: 0xFFFFFAED,
+    heading: 0xFFFF6E31,
     accent: 0xFF03428E,
     onAccent: 0xFFFFFFFF,
-    border: 0xFFE8E1D2,
-    borderStrong: 0xFF857D6E,
+    border: 0xFFD3D6D9,
+    borderStrong: 0xFF6688B2,
     focusRing: 0xFF03428E,
     success: 0xFF055A37,
     onSuccess: 0xFFFFFFFF,
@@ -180,19 +185,20 @@ abstract final class FoxColors {
   );
 
   static const ColorTokens captainDark = ColorTokens(
-    surface: 0xFFFFFAED,
-    surfaceRaised: 0xFFFFFFFF,
+    surface: 0xFFFBF2E7,
+    surfaceRaised: 0xFFFEFEFE,
     surfacePressed: 0xFFF5EFE2,
-    onSurface: 0xFF1F1C18,
+    onSurface: 0xFF03428E,
     onSurfaceMuted: 0xFF4D473D,
     brand: 0xFFFF6E31,
-    primary: 0xFFC2410C,
-    primaryPressed: 0xFF9A3412,
-    onPrimary: 0xFFFFFFFF,
+    primary: 0xFFFF6E31,
+    primaryPressed: 0xFFEA580C,
+    onPrimary: 0xFFFFFAED,
+    heading: 0xFFFF6E31,
     accent: 0xFF03428E,
     onAccent: 0xFFFFFFFF,
-    border: 0xFFE8E1D2,
-    borderStrong: 0xFF857D6E,
+    border: 0xFFD3D6D9,
+    borderStrong: 0xFF6688B2,
     focusRing: 0xFF03428E,
     success: 0xFF055A37,
     onSuccess: 0xFFFFFFFF,
@@ -253,69 +259,69 @@ final class ButtonTokens {
 /// The Button tokens per theme.
 abstract final class FoxButton {
   static const ButtonTokens light = ButtonTokens(
-    height: 48.0,
+    height: 50.0,
     paddingInline: 16.0,
     gap: 8.0,
-    radius: 12.0,
+    radius: 9999.0,
     focusRing: 0xFF03428E,
-    primaryBackground: 0xFFC2410C,
-    primaryBackgroundPressed: 0xFF9A3412,
-    primaryLabel: 0xFFFFFFFF,
-    secondaryBackground: 0xFFFFFFFF,
+    primaryBackground: 0xFFFF6E31,
+    primaryBackgroundPressed: 0xFFEA580C,
+    primaryLabel: 0xFFFFFAED,
+    secondaryBackground: 0xFFFEFEFE,
     secondaryBackgroundPressed: 0xFFF5EFE2,
-    secondaryBorder: 0xFF857D6E,
-    secondaryLabel: 0xFF1F1C18,
+    secondaryBorder: 0xFF6688B2,
+    secondaryLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
   );
 
   static const ButtonTokens dark = ButtonTokens(
-    height: 48.0,
+    height: 50.0,
     paddingInline: 16.0,
     gap: 8.0,
-    radius: 12.0,
+    radius: 9999.0,
     focusRing: 0xFF03428E,
-    primaryBackground: 0xFFC2410C,
-    primaryBackgroundPressed: 0xFF9A3412,
-    primaryLabel: 0xFFFFFFFF,
-    secondaryBackground: 0xFFFFFFFF,
+    primaryBackground: 0xFFFF6E31,
+    primaryBackgroundPressed: 0xFFEA580C,
+    primaryLabel: 0xFFFFFAED,
+    secondaryBackground: 0xFFFEFEFE,
     secondaryBackgroundPressed: 0xFFF5EFE2,
-    secondaryBorder: 0xFF857D6E,
-    secondaryLabel: 0xFF1F1C18,
+    secondaryBorder: 0xFF6688B2,
+    secondaryLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
   );
 
   static const ButtonTokens captainLight = ButtonTokens(
-    height: 48.0,
+    height: 50.0,
     paddingInline: 16.0,
     gap: 8.0,
-    radius: 12.0,
+    radius: 9999.0,
     focusRing: 0xFF03428E,
-    primaryBackground: 0xFFC2410C,
-    primaryBackgroundPressed: 0xFF9A3412,
-    primaryLabel: 0xFFFFFFFF,
-    secondaryBackground: 0xFFFFFFFF,
+    primaryBackground: 0xFFFF6E31,
+    primaryBackgroundPressed: 0xFFEA580C,
+    primaryLabel: 0xFFFFFAED,
+    secondaryBackground: 0xFFFEFEFE,
     secondaryBackgroundPressed: 0xFFF5EFE2,
-    secondaryBorder: 0xFF857D6E,
-    secondaryLabel: 0xFF1F1C18,
+    secondaryBorder: 0xFF6688B2,
+    secondaryLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
   );
 
   static const ButtonTokens captainDark = ButtonTokens(
-    height: 48.0,
+    height: 50.0,
     paddingInline: 16.0,
     gap: 8.0,
-    radius: 12.0,
+    radius: 9999.0,
     focusRing: 0xFF03428E,
-    primaryBackground: 0xFFC2410C,
-    primaryBackgroundPressed: 0xFF9A3412,
-    primaryLabel: 0xFFFFFFFF,
-    secondaryBackground: 0xFFFFFFFF,
+    primaryBackground: 0xFFFF6E31,
+    primaryBackgroundPressed: 0xFFEA580C,
+    primaryLabel: 0xFFFFFAED,
+    secondaryBackground: 0xFFFEFEFE,
     secondaryBackgroundPressed: 0xFFF5EFE2,
-    secondaryBorder: 0xFF857D6E,
-    secondaryLabel: 0xFF1F1C18,
+    secondaryBorder: 0xFF6688B2,
+    secondaryLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
   );
@@ -338,8 +344,9 @@ abstract final class FoxSpace {
 abstract final class FoxRadius {
   static const double xs = 4.0;
   static const double sm = 8.0;
-  static const double md = 12.0;
-  static const double lg = 16.0;
+  static const double md = 10.0;
+  static const double lg = 15.0;
+  static const double xl = 30.0;
   static const double full = 9999.0;
 }
 
@@ -396,6 +403,14 @@ abstract final class FoxElevation {
     offsetX: 0.0,
     offsetY: 12.0,
     blur: 24.0,
+    spread: 0.0,
+  );
+
+  static const ShadowToken offset = ShadowToken(
+    color: 0xFFFD6425,
+    offsetX: 0.0,
+    offsetY: 7.0,
+    blur: 0.0,
     spread: 0.0,
   );
 }

@@ -2,33 +2,40 @@
   "color": {
     "$type": "color",
     "surface": {
-      "$value": "{primitive.color.neutral.50}"
+      "$value": "{primitive.color.neutral.75}",
+      "$description": "The screen ground of the Figma file."
     },
     "surface-raised": {
-      "$value": "{primitive.color.white}"
+      "$value": "{primitive.color.neutral.25}"
     },
     "surface-pressed": {
       "$value": "{primitive.color.neutral.100}"
     },
     "on-surface": {
-      "$value": "{primitive.color.neutral.900}"
+      "$value": "{primitive.color.blue.500}",
+      "$description": "Text and numbers are blue, as in the Figma file."
     },
     "on-surface-muted": {
-      "$value": "{primitive.color.neutral.600}"
+      "$value": "{primitive.color.blue-on-ivory.75}"
     },
     "brand": {
       "$value": "{primitive.color.orange.400}",
-      "$description": "Decorative only: logo, app icon, large areas. Never text or a control."
+      "$description": "The logo, the app icon and decorative areas."
     },
     "primary": {
-      "$value": "{primitive.color.orange.600}",
-      "$description": "The accessible orange: text and filled controls."
+      "$value": "{primitive.color.orange.400}",
+      "$description": "The brand orange on filled controls, bars and orange text; under the owner's contrast exception (architecture §9.5 R4)."
     },
     "primary-pressed": {
-      "$value": "{primitive.color.orange.700}"
+      "$value": "{primitive.color.orange.500}"
     },
     "on-primary": {
-      "$value": "{primitive.color.white}"
+      "$value": "{primitive.color.neutral.50}",
+      "$description": "Ivory labels on orange, as in the Figma file."
+    },
+    "heading": {
+      "$value": "{primitive.color.orange.400}",
+      "$description": "Titles and section headings, in bold; under the owner's contrast exception."
     },
     "accent": {
       "$value": "{primitive.color.blue.500}"
@@ -37,11 +44,11 @@
       "$value": "{primitive.color.white}"
     },
     "border": {
-      "$value": "{primitive.color.neutral.200}",
-      "$description": "Decorative dividers only; a control boundary uses border-strong."
+      "$value": "{primitive.color.blue-on-ivory.16}",
+      "$description": "Decorative dividers and card outlines only; a control boundary uses border-strong."
     },
     "border-strong": {
-      "$value": "{primitive.color.neutral.500}"
+      "$value": "{primitive.color.blue-on-ivory.60}"
     },
     "focus-ring": {
       "$value": "{primitive.color.blue.500}"
