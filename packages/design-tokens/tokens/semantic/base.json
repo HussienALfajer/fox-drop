@@ -32,20 +32,30 @@
   },
   "radius": {
     "$type": "dimension",
+    "$description": "The Figma file's radii (owner, 2026-11-23).",
     "xs": {
-      "$value": "{primitive.radius.4}"
+      "$value": "{primitive.radius.4}",
+      "$deprecated": "radius.sm: the Figma file has no 4 px corner"
     },
     "sm": {
-      "$value": "{primitive.radius.8}"
+      "$value": "{primitive.radius.8}",
+      "$description": "Small cards and image slots."
     },
     "md": {
-      "$value": "{primitive.radius.12}"
+      "$value": "{primitive.radius.10}",
+      "$description": "Inputs, badges, product cards."
     },
     "lg": {
-      "$value": "{primitive.radius.16}"
+      "$value": "{primitive.radius.15}",
+      "$description": "Cart items, totals, bars."
+    },
+    "xl": {
+      "$value": "{primitive.radius.30}",
+      "$description": "Banners and sheets."
     },
     "full": {
-      "$value": "{primitive.radius.full}"
+      "$value": "{primitive.radius.full}",
+      "$description": "Pills and circles: buttons, search, tags, icon buttons."
     }
   },
   "elevation": {
@@ -58,6 +68,10 @@
     },
     "high": {
       "$value": "{primitive.shadow.3}"
+    },
+    "offset": {
+      "$value": "{primitive.shadow.offset}",
+      "$description": "The flat orange shadow under orange banners and buttons; the soft ones are for overlays."
     }
   },
   "duration": {
@@ -427,6 +441,10 @@
     "touch-target": {
       "$value": "48px",
       "$description": "The minimum touch target (R4)."
+    },
+    "control": {
+      "$value": "50px",
+      "$description": "The Figma file's button height and icon-button diameter."
     }
   }
 }

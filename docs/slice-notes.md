@@ -5,6 +5,13 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from D.3 (`feat/design-directions`)
+
+- **Owner decisions (2026-11-23):** the Figma file "Fox Drop" is adopted as the design direction (T12, `docs/brand/directions.md`) instead of a pick among the four drawn directions; the brand orange `#FF6E31` stays on buttons, bars and headings in every app under a named contrast exception (architecture §9.5 R4), replacing the accessible orange `#C2410C` approved in D.2; the exact Figma radii 8, 10, 15, 30 and full; Emad-Diana not used in the UI; money keeps «450 ₺». Home: category labels blue, tags ivory pills with blue text, «اطلب الآن». Dish page unchanged. Cart unchanged except a minus sign on the discount.
+- **Decided by us (to confirm with the owner):** muted text is the blue at 75% over the ground (`#416EA4`) and the control border the blue at 60% (`#6688B2`), the lightest that pass 4.5:1 and 3:1 (the file's lighter alphas fail); the focus ring stays blue; `primary-pressed` is orange 500; danger is the file's `#BF2929`, so the D.2 crimson `#B91C3C` is no longer used; the captain's 7:1 text rule stays.
+- **Not yet:** category discs (80), tags (32), the floating bottom bar and the S-curve tab are not tokens: D.6 and D.7 add them with their components; the ₺ glyph is missing from CoFo and Emad-Diana, so the money component needs a fallback font; `radius.xs` is deprecated and goes in the next token release; the design-system sync of the new tokens is D.4.
+- **Also:** the Figma file was read through the REST API with the owner's personal access token, kept outside the repository; the owner may revoke it in Figma's settings now that D.3 is done.
+
 ## Left from D.2 (`feat/design-tokens`)
 
 - **Owner decision (2026-11-22):** the owner read the private contrast Artifact (from `packages/design-tokens/generated/contrast-report.md`, 232 pairs, none failing) and approved the palette: the accessible orange `#C2410C`, the status colours, the captain's darker status text, the alert `#8C1530` and the six chart colours.

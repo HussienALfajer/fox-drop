@@ -10,7 +10,7 @@ The visual identity pack (V1.1, 2026-11-21) under professional names, and the br
 | Coral orange | `#FF6E31` | 30%   | The brand, the app icon, accents |
 | Royal blue   | `#03428E` | 10%   | Headings, supporting elements    |
 
-`#FF6E31` fails contrast on ivory (2.68:1) and under white text (2.79:1). It is the brand colour, not the text or button colour: a darker accessible orange is chosen in D.2 (architecture §9.2). Blue on ivory is 9.27:1.
+In the apps the owner adopted the Figma file's use of these colours (2026-11-23, `directions.md`): the ground is a warmer ivory `#FBF2E7` with raised cards `#FEFEFE`; all text, prices and numbers are blue (8.72:1); the orange carries buttons, bars and headings in every app. `#FF6E31` misses 4.5:1 (2.52:1 on the ground, 2.68:1 under ivory text): the owner accepts this as a named exception to the contrast rule (architecture §9.5 R4), limited to the orange tokens by a test. The accessible orange `#C2410C` of D.2 is retired.
 
 ## Logo rules (boards 01 to 03)
 
@@ -37,7 +37,7 @@ The visual identity pack (V1.1, 2026-11-21) under professional names, and the br
 
 The typefaces are licensed, so the font files are **not in this repository**, and a test fails if one is committed (`scripts/fonts.test.mjs`; `.fonts/` is ignored).
 
-- CoFo Sans Pro Arabic (UI, seven weights), YR-Speed (display), Emad-Diana (secondary). The guidelines name HTQaysSansPro, which the pack does not contain.
+- CoFo Sans Pro Arabic (UI, seven weights), YR-Speed (display, outside the apps), Emad-Diana (in the pack, not used in the UI: owner, 2026-11-23). Neither CoFo nor Emad-Diana has the ₺ glyph. The guidelines name HTQaysSansPro, which the pack does not contain.
 - The files live in the private repository `HussienALfajer/fox-drop-fonts`. `fonts-manifest.json` pins its commit and the SHA-256 of every file.
 - `pnpm fonts:fetch` copies them into `.fonts/` and checks them against the manifest. Locally it uses your git sign-in (`gh auth setup-git`); in CI, the `FONTS_DEPLOY_KEY` secret: the private half of a read-only deploy key of that repository (never expires, opens that one repository only; set up once, see below). The builds that bundle the fonts (D.6 web, D.7 Flutter) run it first.
 - One-time CI setup (PowerShell): `ssh-keygen -t ed25519 -N '""' -C fox-drop-fonts-ci -f $env:TEMP\fd_key`; `gh repo deploy-key add $env:TEMP\fd_key.pub --repo HussienALfajer/fox-drop-fonts --title fox-drop-ci` (read-only by default); `Get-Content -Raw $env:TEMP\fd_key | gh secret set FONTS_DEPLOY_KEY --repo HussienALfajer/fox-drop`; then delete both key files. To revoke, remove the deploy key from the private repository's settings.

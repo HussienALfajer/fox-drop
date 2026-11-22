@@ -23,6 +23,12 @@
 | T10 | Design method  | Code is the source of truth and one private Claude design project mirrors it; every component batch and screen is drawn and approved by the owner before it is coded. Tokens in three layers with a dark slot (dark mode later), a darker accessible orange for text and fills, CoFo Sans Pro Arabic for the UI with YR-Speed and Emad-Diana secondary (fonts kept out of the repository), FOX DROP's own line icon set, and the enforced rules of §9.5. Phase D builds it (§9). |
 | T11 | Headless bases | Web: UI SDK (`@ui-sdk/react`, React 19, beta) pinned exactly, imported only by `packages/ui-web`, agent bridge forbidden, Arabic RTL gate first, Base UI as the per-component fallback, upgrades as their own pull request. Flutter: Flutter's own widgets layer only, no third-party UI package, behind the `core_ui` API with the RTL gate; no styled kit (§9.10). Amends T2.                                                                                                  |
 
+## 2.1b Owner decisions (2026-11-23)
+
+| ID  | Topic            | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| --- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T12 | Design direction | The Figma file "Fox Drop" is adopted as the design direction (D.3), its values measured into the tokens: ground `#FBF2E7`, blue text, the brand orange `#FF6E31` for buttons, bars and headings in every app under a named exception to the contrast rule (§9.5 R4), the radii 8, 10, 15, 30 and full, the offset shadow. The accessible orange of T10 is retired and Emad-Diana is not used in the UI. Amends T10 (§9.2, §9.3, §9.11). |
+
 ## 2.2 Rules set by this document (the owner may change them)
 
 | ID  | Rule                                                                                              |

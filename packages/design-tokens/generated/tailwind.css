@@ -19,10 +19,12 @@
   --radius-sm: var(--fd-radius-sm);
   --radius-md: var(--fd-radius-md);
   --radius-lg: var(--fd-radius-lg);
+  --radius-xl: var(--fd-radius-xl);
   --radius-full: var(--fd-radius-full);
   --shadow-low: var(--fd-elevation-low);
   --shadow-medium: var(--fd-elevation-medium);
   --shadow-high: var(--fd-elevation-high);
+  --shadow-offset: var(--fd-elevation-offset);
   --ease-standard: var(--fd-easing-standard);
   --font-sans: var(--fd-font-family-sans);
   --font-weight-regular: var(--fd-font-weight-regular);
@@ -104,6 +106,7 @@
   --color-primary: var(--fd-color-primary);
   --color-primary-pressed: var(--fd-color-primary-pressed);
   --color-on-primary: var(--fd-color-on-primary);
+  --color-heading: var(--fd-color-heading);
   --color-accent: var(--fd-color-accent);
   --color-on-accent: var(--fd-color-on-accent);
   --color-border: var(--fd-color-border);

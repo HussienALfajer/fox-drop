@@ -1,98 +1,55 @@
-# FOX DROP design directions (D.3)
+# FOX DROP design direction (D.3)
 
-Four directions drawn on the same three screens and one icon sheet, each scored against the principles of [`expression.md`](expression.md) §1, so the owner picks the look the design system (D.4 to D.7) is built in. They were drawn on a private Claude design canvas, «Fox Drop Directions» (architecture §9.8: exploration stays on its own canvas, and its link stays out of this repository), from the D.2 tokens by semantic name, CoFo Sans Pro Arabic 400, 500 and 700, and synthetic data only.
+The owner adopted the Figma file "Fox Drop" on 2026-11-23 as FOX DROP's design direction and the reference of its design system (architecture §9.8, decision T12). Four directions had been drawn and scored on a private design canvas on 2026-11-22; the owner set them aside in favour of the file, so there is no pick among them. The file's values were measured from its nodes through the Figma REST API and written into the tokens (`packages/design-tokens`, version 0.2.0); the tokens stay the source of truth. The file's link and images stay out of this repository (§9.8).
 
-## The Figma file (mood board)
+## What the file holds
 
-The owner's Figma file "Fox Drop" was read on 2026-11-22 as a mood board, not a source of values (§9.8). What it holds, in words:
+- **Colors:** three swatches, the brand blue `#03428E`, the brand orange `#FF6E31` and the ivory.
+- **Typography:** specimens of CoFo Sans Pro Arabic 400 and Emad-Diana 300, at a line height of about 1.95, and one sample of Arabic-Indic digits.
+- **Components:** 11 rough components with a Latin placeholder face: the «اطلب الآن» button (default, pressed, disabled), four input states (default, focused, disabled, error), a product card, the bottom bar and two badges; and six customer screens imported as flat vectors (onboarding, home, dish details, cart, menu variants). No variables, no styles, no auto layout.
 
-- **Three pages.** «Colors»: three swatches, the brand blue, the brand orange and the ivory. «Typography»: a specimen of a rounded bold Arabic display face with its digits and symbols. «Components»: customer screens (a dark onboarding slide, home, a dish's details, the cart, three menu variants) and their parts: badges (neutral, active), the bottom navigation, inputs (default, focused, disabled, error), a product card and the order button's states.
-- **Home.** Ivory ground; a top row with the avatar, a rounded search pill and a bell; four category circles (offers, restaurants, groceries, breakfast) with orange line icons on white discs and orange labels; one large orange banner card with very round corners, a dish photo bleeding over its edge, a heart badge, a discount headline and outlined pill tags.
-- **Dish details.** A full-width photo on top, an ivory sheet with large top corners overlapping it, the rating with an icon, outlined pill tags, add-on rows with orange line icons, and a full-width pill button «أطلب الآن».
-- **Cart.** Each item a card with a thin orange outline and large radius; round outlined orange steppers; a white totals card with amounts in blue and the discount in orange; the total as a filled orange bar; a pill button «تأكيد الطلب».
-- **Onboarding.** A black slide, white headline, orange page dashes with one blue active dash.
+## Measurements
 
-**What direction A keeps:** pill shapes for search, tags and the main button; round category discs with line icons; outlined cards on ivory; blue for amounts; large, soft corners; a warm, friendly density.
+| Item           | Figma value                                                                                      | Token                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Ground         | `#FBF2E7`                                                                                        | `color.surface`                                       |
+| Raised cards   | `#FEFEFE` (also `#FBFAF8`)                                                                       | `color.surface-raised`                                |
+| Text, prices   | Blue `#03428E`                                                                                   | `color.on-surface`                                    |
+| Muted text     | Blue at 9 to 45% alpha                                                                           | `color.on-surface-muted`: blue at 75% over the ground |
+| Headings       | Orange `#FF6E31`                                                                                 | `color.heading`                                       |
+| Buttons, bars  | Orange `#FF6E31`, ivory label                                                                    | `color.primary`, `color.on-primary`                   |
+| Borders        | Blue at 40% (inputs), orange 2 px (focused)                                                      | `color.border` (16%), `color.border-strong` (60%)     |
+| Error          | `#BF2929`                                                                                        | `color.danger`                                        |
+| Offset shadow  | `#FD6425`, 7 px down, no blur                                                                    | `elevation.offset`                                    |
+| Radii          | 8 (add-on cards), 10 (components), 15 (cart cards, totals, total bar), 30 (banner), full (pills) | `radius.sm`, `md`, `lg`, `xl`, `full`                 |
+| Controls       | Buttons pills 50 high; icon buttons circles of 50                                                | `size.control`, Button `height` and `radius`          |
+| Category discs | 80                                                                                               | Not a token yet (D.6, D.7)                            |
+| Tags           | Pills 32 high                                                                                    | Not a token yet (D.6, D.7)                            |
+| Bottom bar     | Floating blue bar 301 × 69, circles of 50, the active one orange at 57, ring `#E3DFD8`           | Not a token yet (D.6, D.7)                            |
+| Spacing        | 4, 8, 16, 32; screen margins 16 to 18                                                            | `space.*` (4-point grid), margin 16                   |
+| Icons          | Rounded line icons, stroke about 2 at 24                                                         | D.5                                                   |
+| Shapes         | The S-curve tab (banner, dish sheet), cut-out dish photos                                        | Brand expression §2, §5                               |
 
-**What does not carry over, and why:**
+Where the file's values fail the contrast rule, the tokens move them as little as passes: muted text at 75% (`#416EA4`, 4.59:1; the file's 45% and lighter fail 4.5:1), the control border at 60% (`#6688B2`, 3.20:1; the file's 40% fails 3:1). The brand orange stays as drawn, under the owner's exception (architecture §9.5 R4, brand expression §6).
 
-| In the Figma file                                 | In direction A                                                    | Rule                                   |
-| ------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------- |
-| Labels and the discount in brand orange `#FF6E31` | Accessible orange `#C2410C` (`primary`) or on-surface text        | 4.5:1 (R4, expression §6)              |
-| A rounded display face for headings               | CoFo Sans Pro Arabic only, 700 for headings                       | expression §7                          |
-| Corners of about 24 to 32 px                      | `radius-lg` (16) and `radius-full`; a larger step is a token note | No invented values (§9.8); see Not yet |
-| An orange outline on every card                   | `border` on cards; orange only on the active or main element      | 60/30/10 (brand README)                |
-| Money as `TL 450`, Latin code before the number   | `450 ₺`                                                           | AP §4.7                                |
-| A black onboarding slide                          | Not drawn (no such screen in D.3); black is not in the palette    | Brand palette                          |
-| «أطلب» with a hamza on the alif                   | «اطلب» (imperative of a form I verb takes hamzat al-wasl)         | Spelling; the specs' strings take over |
+## The owner's decisions per screen (2026-11-23)
 
-## The four directions
+- **Home:** the file, with these changes: category labels in blue instead of orange; tags as ivory pills with blue text; «اطلب الآن» instead of «أطلب الآن»; the offset shadow as drawn. The brand orange stays as drawn (a stronger orange was proposed and rejected).
+- **Dish details:** the file unchanged.
+- **Cart:** the file unchanged, except a minus sign before the discount amount.
+- **Everywhere:**
+  - The brand-orange exception covers every app, the captain's included (orange on buttons and headings only, never on numbers).
+  - Prices keep the «450 ₺» format (AP §4.7), not the file's «TL 450».
+  - The radii are the file's exact values.
+  - Emad-Diana is not used in the UI; button labels are CoFo 700 (brand expression §7).
 
-Every direction uses only the D.2 tokens and keeps 60% ivory, 30% orange, 10% blue across a screen. They differ in how orange and blue are spent, the shape of surfaces, density and imagery.
+## Findings
 
-### A «اتجاه Figma»
+- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana. The money component (D.6, D.7) needs a fallback font for it.
+- **The cart's items do not add up** in the file (499.6 against a total of 450); a drawing for approval uses consistent synthetic amounts.
+- **The ± stepper** in the cart is 34 px, below the 48 touch target (R4); its touch area grows to 48 while the drawn circle stays.
+- **The onboarding slide is black,** which is not in the palette; it is not adopted until the onboarding screen is designed.
 
-- **Palette use:** ivory ground, white raised cards with a `border` outline; orange on the category icons, the active tab and the main pill button; blue for amounts and the rating.
-- **Surfaces and shape:** pill search, pill tags and pill main button (`radius-full`); cards at `radius-lg`.
-- **Density:** airy; one restaurant card per row with a 16:9 cover.
-- **Imagery:** the cover with the logo overlapping its bottom start corner; category discs with line icons.
-- **Type:** titles 700, body 400; amounts 700 in blue.
-- **Motion note:** soft fades and lifts at `base`; the pill button presses at `fast`.
+## Archived directions
 
-### B «دافئ بالصور»
-
-- **Palette use:** ivory everywhere, no coloured headers; orange only on the main action, the active tab and small accents (the free-delivery tag, the selected category); text in near-black.
-- **Surfaces and shape:** borderless cards on ivory, separated by space; photos at `radius-md`.
-- **Density:** generous; covers large and full width at 16:9, dish photos at 1:1 (R7).
-- **Imagery:** the photo leads every card; categories as small square photo tiles with a label.
-- **Type:** names 700 at title size; secondary data muted.
-- **Motion note:** images fade in over their dominant colour (expression §9); no other motion on the list.
-
-### C «أزرق الثقة»
-
-- **Palette use:** a solid blue (`accent`) header band with the location and search; blue for every number, state and section title; orange for the one main action per screen only.
-- **Surfaces and shape:** white cards with `radius-md`, firm `border-strong` dividers, square-ish chips at `radius-sm`.
-- **Density:** compact and structured; covers smaller (16:9 at reduced width) with data in aligned rows.
-- **Imagery:** photos smaller and secondary to the facts (fee, time, rating) set in a table-like row.
-- **Type:** numbers tabular 700 in blue; labels 500.
-- **Motion note:** almost still; changes highlight in place.
-
-### D «زاوية القطرة»
-
-- **Palette use:** bold orange blocks: an orange home header, orange category tiles with ivory icons, the main button orange; blue for numbers.
-- **Surfaces and shape:** the "drop corner" on cards: three corners at `radius-lg`, the bottom start corner at `radius-xs` (expression §2: tried in one direction only, never on buttons or inputs).
-- **Density:** medium.
-- **Imagery:** covers 16:9 inside the drop-corner card; logos in a white rounded square.
-- **Type:** titles 700; the header title in ivory on orange is large text only (`brand` fails as a text background below large size, so the header uses `primary`).
-- **Motion note:** cards enter with a short rise at `base`; the drop corner carries no motion.
-
-### On every direction
-
-- **Captain step 3** keeps the sunlight rules in all four: text and numbers at 7:1 in near-black or blue, no orange text, the sunlight map (route width 8, solid orange after pickup), the main button «وصلت» full width in the thumb zone. The directions differ only in the header, card shapes and button shape.
-- **Panel operations board** stays compact in all four (AP §9.2.1); SLA time always shows an icon with its colour (R4).
-- **Icons:** about 13 line icons on a 24-point grid with one stroke, drawn in each direction's style as a sketch; D.5 draws the real set.
-
-## Scores
-
-Each direction scored 1 to 5 on the principles of expression §1, in their order, then on R7 fit per surface. There is no weighted total: when two directions tie, the higher principle decides.
-
-| Criterion                 | A «اتجاه Figma»                                | B «دافئ بالصور»                                    | C «أزرق الثقة»                                            | D «زاوية القطرة»                                |
-| ------------------------- | ---------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------- |
-| 1. Clear before beautiful | 4: pills and discs take room; facts stay clear | 3: photos dominate, data is smaller                | 5: amount, time and state in one ordered row              | 4: orange blocks compete a little with the data |
-| 2. Honest numbers         | 4: fee and range on the card, amounts in blue  | 4: fees shown but not set apart                    | 5: every number tabular blue in a fixed place             | 4: as A                                         |
-| 3. Light as a fox         | 4: a 16:9 cover per restaurant                 | 2: large photos everywhere on a weak network       | 5: small photos, higher density                           | 4: as A                                         |
-| 4. Each screen its moment | 3: the same soft pills in the dense panel      | 3: the photo style does not serve captain or panel | 4: fits captain and panel; less appetite for the customer | 3: the orange header is heavy in the panel      |
-| 5. Local and warm         | 5: closest to the owner's taste and to food    | 5: warm and appetising                             | 3: cooler; orange below its 30%                           | 4: bold and warm; orange above its share        |
-| R7 customer               | 5                                              | 5                                                  | 3                                                         | 4                                               |
-| R7 captain                | 3: pills shrink the buttons                    | 3: no cards, less separation in the sun            | 5: blue band and strong borders in the sun                | 4: solid buttons                                |
-| R7 panel                  | 3: large corners waste room                    | 3: calm grey columns, weak edges                   | 5: blue column heads, high density                        | 3: orange blocks distract                       |
-
-**Recommendation:** C as the base, with A's warmth on the customer app (pills, category discs, orange on the main action). C leads on the first three principles and fits the captain and the panel; its weak point, warmth and appetite (principle 5), is what A brings, and principle 4 allows each surface its own moment. The drop corner is not added now.
-
-## The pick
-
-Pending the owner.
-
-## Not yet
-
-- Larger card corners (24 px or more) would need a new radius token in a later token pull request, if the picked direction wants them.
+Directions B «دافئ بالصور», C «أزرق الثقة» and D «زاوية القطرة», and direction A as drawn from the D.2 tokens, stay on the private canvas as a record and are not used. The "drop corner" of D is not adopted (brand expression §2).
