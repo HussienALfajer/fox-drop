@@ -47,7 +47,7 @@ Owner answers (2026-11-22): four directions; captain screen step 3; only the scr
 
 - [x] Read the cited sections and write the design here.
 - [x] Read the Figma file in the built-in browser; write the Figma notes and the four briefs in `docs/brand/directions.md`.
-- [ ] Create the canvas with the token sheet, CoFo assets and direction A's four artboards.
+- [x] Create the canvas with the token sheet, CoFo assets and direction A's four artboards. (Built as four templates on the canvas's «القوالب» page, `Home`, `Captain`, `Board`, `Icons`, each with a `look` prop A to D, plus a shared `Icon`; each direction's artboards are thin wrappers. The home artboard is 390×1400, the whole scroll, so the busy and closed cards show.)
 - [ ] Draw directions B, C and D.
 - [ ] Score the four on the canvas and in `directions.md`; the owner picks one.
 - [ ] Record the pick (directions.md, architecture §9.11, brand README); review; hand over to D.4; pull request.
