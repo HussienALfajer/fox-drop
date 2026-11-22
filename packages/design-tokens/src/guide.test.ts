@@ -1,0 +1,66 @@
+import { describe, expect, it } from 'vitest';
+import { boards, canvas, rules } from './guide.ts';
+import { exported } from './generate.ts';
+import { resolveAll } from './resolve.ts';
+
+const themes = await resolveAll();
+const config = { system: 'https://claude.ai/artifact/example', created: '2026-11-23T00:00:00Z' };
+const list = boards(themes, config, '0.0.0');
+const index = JSON.parse(canvas(list, config, '2026-11-23T01:00:00Z')) as {
+  boards: Record<string, { w: number; h: number }>;
+  order: string[];
+  designSystems: { namespace: string; artifact: string }[];
+};
+
+describe('the Fox Drop Guide (architecture §9.8)', () => {
+  it('has the six pages, Main first', () => {
+    expect(index.order).toEqual([
+      'Main.dc.html',
+      'Colour.dc.html',
+      'Type.dc.html',
+      'Foundations.dc.html',
+      'Shapes.dc.html',
+      'Rules.dc.html',
+    ]);
+  });
+
+  it.each(list.map((b) => [b.file, b] as const))('%s follows the artboard skeleton', (file, b) => {
+    expect(b.html).toContain('<script src="./support.js"></script>');
+    expect(b.html).toMatch(/<script type="text\/x-dc" data-dc-script data-props='[^']*'>/);
+    expect(b.html).toContain('class Component extends DCLogic');
+    expect(b.html).toContain('<html lang="ar" dir="rtl">');
+    const props = /data-props='([^']*)'/.exec(b.html)![1]!;
+    const preview = (JSON.parse(props) as { $preview: { width: number; height: number } }).$preview;
+    expect(preview).toEqual({ width: index.boards[file]!.w, height: index.boards[file]!.h });
+  });
+
+  it('shows every semantic colour of every theme on the Colour page', () => {
+    const html = list.find((b) => b.file === 'Colour.dc.html')!.html;
+    for (const theme of Object.values(themes))
+      for (const token of exported(theme).filter((t) => t.path[0] === 'color')) {
+        expect(html, token.path.join('.')).toContain(`>${token.path.slice(1).join('-')}<`);
+        expect(html, token.path.join('.')).toContain(String(token.value));
+      }
+    expect(html).toContain('owner exception');
+  });
+
+  it('lists the nine rules of §9.5', () => {
+    expect(rules().map((r) => r.id)).toEqual([
+      'R1',
+      'R2',
+      'R3',
+      'R4',
+      'R5',
+      'R6',
+      'R7',
+      'R8',
+      'R9',
+    ]);
+  });
+
+  it('installs the Fox Drop Design System', () => {
+    expect(index.designSystems).toEqual([
+      expect.objectContaining({ namespace: 'fox-drop', artifact: config.system }),
+    ]);
+  });
+});

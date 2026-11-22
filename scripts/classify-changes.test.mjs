@@ -36,6 +36,17 @@ describe('the change classifier', () => {
     assert.equal(flags([SPEC_FILES_READ_BY_TESTS[0]]), 'code typescript server');
   });
 
+  it('runs the TypeScript tests for the docs the design tokens read', () => {
+    for (const file of [
+      'docs/architecture/09-design-system.md',
+      'docs/brand/fonts-manifest.json',
+      'docs/brand/logo/mark/mark-orange.svg',
+      'docs/brand/app-icon/svg/app-icon-08.svg',
+    ])
+      assert.equal(flags([file]), 'code typescript', file);
+    assert.equal(flags(['docs/brand/expression.md']), '');
+  });
+
   it('sets the server tests and not Dart for a server change', () => {
     assert.equal(
       flags(['apps/server/src/modules/ledger/ledger.service.ts']),

@@ -5,6 +5,13 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from D.4 (`feat/design-system-project`)
+
+- **The owner opens both artifacts** (links in Claude's memory, not here): the Fox Drop Design System (cover, brand book, colours across four themes, the three type scales, spacing, radii, shadows, sizes, the CoFo fonts, logos and app icons; read-only, synced from code) and the Fox Drop Guide (Main, Colour, Type, Foundations, Shapes, Rules). Both are private; sharing them is the owner's choice.
+- **Decided by us (to confirm with the owner):** the brand book is English with Arabic examples; the cover's tagline «الجار الشاطر»: warm orange for appetite, honest blue for every number; the guide's labels are English with Arabic samples; the type style names `<surface>-<role>`; a `size` family beside the four the design named; durations and easing listed in the brand book and the guide only (the Design System type has no motion family).
+- **Not yet:** components (D.6, D.7) and line icons (D.5) in the Design System; the `broken-edges` app icons; publishing from CI (the artifacts have no API for it, so every sync is a Claude Code step, `packages/design-tokens/CLAUDE.md` «Sync»).
+- **Also:** the design tokens read the §9.5 rules table, the fonts manifest and the logo and app icon folders under `docs/`, so `scripts/classify-changes.mjs` (`DOCS_READ_BY_TOKEN_TESTS`) runs the TypeScript checks for a change to one of them; the rules table's row format (`| R<n> |`) must stay. The asset store reports sizes a little above the files on disk, so the index records the reported size.
+
 ## Left from D.3 (`feat/design-directions`)
 
 - **Owner decisions (2026-11-23):** the Figma file "Fox Drop" is adopted as the design direction (T12, `docs/brand/directions.md`) instead of a pick among the four drawn directions; the brand orange `#FF6E31` stays on buttons, bars and headings in every app under a named contrast exception (architecture §9.5 R4), replacing the accessible orange `#C2410C` approved in D.2; the exact Figma radii 8, 10, 15, 30 and full; Emad-Diana not used in the UI; money keeps «450 ₺». Home: category labels blue, tags ivory pills with blue text, «اطلب الآن». Dish page unchanged. Cart unchanged except a minus sign on the discount.

@@ -15,6 +15,8 @@ export interface Token {
   type: string;
   value: unknown;
   description?: string;
+  /** What replaces a deprecated token (architecture §9.2 governance). */
+  deprecated?: string;
 }
 
 const SOURCES: Record<Theme, { include: string[]; source: string[] }> = {
@@ -55,6 +57,7 @@ export async function resolveTheme(theme: Theme): Promise<Map<string, Token>> {
       type: String(token.$type ?? token.type),
       value: token.$value ?? token.value,
       ...(token.$description ? { description: String(token.$description) } : {}),
+      ...(token.$deprecated ? { deprecated: String(token.$deprecated) } : {}),
     });
   }
   return tokens;

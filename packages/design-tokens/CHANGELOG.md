@@ -2,6 +2,10 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## Unreleased (slice D.4: the Design System artifact)
+
+- New output `generated/design-system.json`: the tokens in the Design System artifact's `tokens.json` shape (architecture §9.8). Every semantic colour, space step and elevation now carries a `$description`, its usage note there. No value changed, so no version bump.
+
 ## 0.2.0 (2026-11-23, slice D.3: the Figma file adopted)
 
 - The owner adopted the Figma file "Fox Drop" as the design direction. Changed: `surface` is the Figma ground `#FBF2E7` (new neutral 75), `surface-raised` `#FEFEFE` (new neutral 25); `on-surface` is the brand blue and `on-surface-muted` the blue at 75% over the ground (`#416EA4`); `border` and `border-strong` are the blue at 16% and 60%; `primary` is the brand orange `#FF6E31`, `primary-pressed` orange 500, `on-primary` ivory; danger red 600 is the Figma error red `#BF2929`.

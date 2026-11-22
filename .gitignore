@@ -35,6 +35,8 @@ GoogleService-Info.plist
 
 # The licensed fonts, fetched by `pnpm fonts:fetch` (architecture §9.3); never committed
 .fonts/
+# The Design System and Guide artifact files, built by packages/design-tokens (they carry the fonts)
+.design-system/
 
 # Tests
 .verify/

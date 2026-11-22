@@ -3,31 +3,40 @@
     "$type": "dimension",
     "$description": "Semantic steps of the 4-point grid.",
     "none": {
-      "$value": "{primitive.space.0}"
+      "$value": "{primitive.space.0}",
+      "$description": "No gap."
     },
     "2xs": {
-      "$value": "{primitive.space.4}"
+      "$value": "{primitive.space.4}",
+      "$description": "Between an icon and its label."
     },
     "xs": {
-      "$value": "{primitive.space.8}"
+      "$value": "{primitive.space.8}",
+      "$description": "Inside chips and between tight rows."
     },
     "sm": {
-      "$value": "{primitive.space.12}"
+      "$value": "{primitive.space.12}",
+      "$description": "Between related items in a list or a form."
     },
     "md": {
-      "$value": "{primitive.space.16}"
+      "$value": "{primitive.space.16}",
+      "$description": "Card padding and the screen margin."
     },
     "lg": {
-      "$value": "{primitive.space.24}"
+      "$value": "{primitive.space.24}",
+      "$description": "Between groups on a screen."
     },
     "xl": {
-      "$value": "{primitive.space.32}"
+      "$value": "{primitive.space.32}",
+      "$description": "Between sections."
     },
     "2xl": {
-      "$value": "{primitive.space.48}"
+      "$value": "{primitive.space.48}",
+      "$description": "Around empty states and above a page title on the web."
     },
     "3xl": {
-      "$value": "{primitive.space.64}"
+      "$value": "{primitive.space.64}",
+      "$description": "The largest gap, for wide web layouts."
     }
   },
   "radius": {
@@ -35,6 +44,7 @@
     "$description": "The Figma file's radii (owner, 2026-11-23).",
     "xs": {
       "$value": "{primitive.radius.4}",
+      "$description": "Deprecated: use radius.sm.",
       "$deprecated": "radius.sm: the Figma file has no 4 px corner"
     },
     "sm": {
@@ -61,13 +71,16 @@
   "elevation": {
     "$type": "shadow",
     "low": {
-      "$value": "{primitive.shadow.1}"
+      "$value": "{primitive.shadow.1}",
+      "$description": "Cards resting on the ground."
     },
     "medium": {
-      "$value": "{primitive.shadow.2}"
+      "$value": "{primitive.shadow.2}",
+      "$description": "Menus, popovers and sticky bars."
     },
     "high": {
-      "$value": "{primitive.shadow.3}"
+      "$value": "{primitive.shadow.3}",
+      "$description": "Dialogs and sheets over a scrim."
     },
     "offset": {
       "$value": "{primitive.shadow.offset}",

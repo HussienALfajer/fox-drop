@@ -85,6 +85,8 @@ One design project, private to the owner's account; its links are never committe
 
 Inputs: the owner's brand pack and the Figma file "Fox Drop", which the owner adopted on 2026-11-23 as the design direction (D.3, `docs/brand/directions.md`). The file has no variables and its screens are flat vectors, so its values were measured from its nodes into the tokens; the tokens, not the file, stay the source of truth, and a later change to the file reaches the apps only through a token change.
 
+**The sync (D.4).** `packages/design-tokens` builds both mirrored parts: the Design System's files (its `tokens.json` is a committed, drift-tested output; the brand book, cover, fonts and logos are assembled into an ignored folder) and the Guide's artboards, drawn from the resolved tokens. The artifacts have no API for CI, so Claude publishes them with its Artifact tool after a change (`packages/design-tokens/CLAUDE.md` «Sync»): uploads first, then the files, the index last. The Design System's index is marked synced from code, so its page is read-only.
+
 A design is made with the Fox Drop Design System only; a missing value or component is added in code and synced, never invented on the canvas. Exploration outside the system happens on a separate canvas. Synthetic data only; no secret, production host or real personal data enters a design.
 
 ## 9.9 The cycles

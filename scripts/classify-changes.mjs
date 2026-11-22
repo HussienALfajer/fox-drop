@@ -28,6 +28,21 @@ export const READ_BY_SERVER_TESTS = [
   'apps/merchant-portal/src/locales/**',
 ];
 
+// The docs packages/design-tokens reads to build the Design System and the
+// Guide (D.4): its tests check them, so a change to one runs the TypeScript
+// tests. A path ending in /** is a folder.
+export const DOCS_READ_BY_TOKEN_TESTS = [
+  'docs/architecture/09-design-system.md',
+  'docs/brand/fonts-manifest.json',
+  'docs/brand/logo/**',
+  'docs/brand/app-icon/**',
+];
+
+const readByTokenTests = (file) =>
+  DOCS_READ_BY_TOKEN_TESTS.some((each) =>
+    each.endsWith('/**') ? file.startsWith(each.slice(0, -2)) : file === each,
+  );
+
 const readByServerTests = (file) =>
   READ_BY_SERVER_TESTS.some((each) =>
     each.endsWith('/**') ? file.startsWith(each.slice(0, -2)) : file === each,
@@ -68,7 +83,9 @@ const SERVER_SOURCE = /^apps\/server\/src\/.*\.ts$/;
  *   contract: regenerate the API contract; dartScope: null, 'changed' or 'all'.
  */
 export function classify(files, read = readText) {
-  const specRead = files.some((file) => SPEC_FILES_READ_BY_TESTS.includes(file));
+  const specRead = files.some(
+    (file) => SPEC_FILES_READ_BY_TESTS.includes(file) || readByTokenTests(file),
+  );
   const build = files.some((file) => !DOCS.test(file));
   const code = build || specRead;
   const dart = files.some((file) => !DOCS.test(file) && DART.test(file));

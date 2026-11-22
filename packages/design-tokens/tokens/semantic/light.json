@@ -6,17 +6,20 @@
       "$description": "The screen ground of the Figma file."
     },
     "surface-raised": {
-      "$value": "{primitive.color.neutral.25}"
+      "$value": "{primitive.color.neutral.25}",
+      "$description": "Cards, sheets and inputs raised above the screen ground."
     },
     "surface-pressed": {
-      "$value": "{primitive.color.neutral.100}"
+      "$value": "{primitive.color.neutral.100}",
+      "$description": "A raised surface while it is pressed or selected."
     },
     "on-surface": {
       "$value": "{primitive.color.blue.500}",
       "$description": "Text and numbers are blue, as in the Figma file."
     },
     "on-surface-muted": {
-      "$value": "{primitive.color.blue-on-ivory.75}"
+      "$value": "{primitive.color.blue-on-ivory.75}",
+      "$description": "Secondary text, hints and captions on the surfaces."
     },
     "brand": {
       "$value": "{primitive.color.orange.400}",
@@ -27,7 +30,8 @@
       "$description": "The brand orange on filled controls, bars and orange text; under the owner's contrast exception (architecture §9.5 R4)."
     },
     "primary-pressed": {
-      "$value": "{primitive.color.orange.500}"
+      "$value": "{primitive.color.orange.500}",
+      "$description": "A primary control while it is pressed."
     },
     "on-primary": {
       "$value": "{primitive.color.neutral.50}",
@@ -38,76 +42,97 @@
       "$description": "Titles and section headings, in bold; under the owner's contrast exception."
     },
     "accent": {
-      "$value": "{primitive.color.blue.500}"
+      "$value": "{primitive.color.blue.500}",
+      "$description": "The brand blue on filled secondary controls and selected states."
     },
     "on-accent": {
-      "$value": "{primitive.color.white}"
+      "$value": "{primitive.color.white}",
+      "$description": "Labels and icons on accent."
     },
     "border": {
       "$value": "{primitive.color.blue-on-ivory.16}",
       "$description": "Decorative dividers and card outlines only; a control boundary uses border-strong."
     },
     "border-strong": {
-      "$value": "{primitive.color.blue-on-ivory.60}"
+      "$value": "{primitive.color.blue-on-ivory.60}",
+      "$description": "Control boundaries at 3:1: inputs, checkboxes, outlined buttons."
     },
     "focus-ring": {
-      "$value": "{primitive.color.blue.500}"
+      "$value": "{primitive.color.blue.500}",
+      "$description": "The keyboard focus ring, at 3:1 on every surface."
     },
     "success": {
-      "$value": "{primitive.color.green.700}"
+      "$value": "{primitive.color.green.700}",
+      "$description": "Delivered, paid, accepted: success text, icons and fills."
     },
     "on-success": {
-      "$value": "{primitive.color.white}"
+      "$value": "{primitive.color.white}",
+      "$description": "Labels and icons on success."
     },
     "warning": {
-      "$value": "{primitive.color.amber.700}"
+      "$value": "{primitive.color.amber.700}",
+      "$description": "Delays and states that need attention soon."
     },
     "on-warning": {
-      "$value": "{primitive.color.white}"
+      "$value": "{primitive.color.white}",
+      "$description": "Labels and icons on warning."
     },
     "danger": {
-      "$value": "{primitive.color.red.600}"
+      "$value": "{primitive.color.red.600}",
+      "$description": "Errors, refusals and destructive actions."
     },
     "on-danger": {
-      "$value": "{primitive.color.white}"
+      "$value": "{primitive.color.white}",
+      "$description": "Labels and icons on danger."
     },
     "info": {
-      "$value": "{primitive.color.blue.500}"
+      "$value": "{primitive.color.blue.500}",
+      "$description": "Neutral notices and tips."
     },
     "on-info": {
-      "$value": "{primitive.color.white}"
+      "$value": "{primitive.color.white}",
+      "$description": "Labels and icons on info."
     },
     "alert": {
       "$value": "{primitive.color.red.800}",
       "$description": "Alerts read from across a room: 7:1."
     },
     "on-alert": {
-      "$value": "{primitive.color.white}"
+      "$value": "{primitive.color.white}",
+      "$description": "Labels and icons on alert, at 7:1."
     },
     "disabled": {
-      "$value": "{primitive.color.neutral.200}"
+      "$value": "{primitive.color.neutral.200}",
+      "$description": "The fill of a disabled control."
     },
     "on-disabled": {
-      "$value": "{primitive.color.neutral.500}"
+      "$value": "{primitive.color.neutral.500}",
+      "$description": "The label of a disabled control."
     },
     "chart": {
       "1": {
-        "$value": "{primitive.color.blue.500}"
+        "$value": "{primitive.color.blue.500}",
+        "$description": "The first categorical chart series."
       },
       "2": {
-        "$value": "{primitive.color.orange.500}"
+        "$value": "{primitive.color.orange.500}",
+        "$description": "The second categorical chart series."
       },
       "3": {
-        "$value": "{primitive.color.teal.700}"
+        "$value": "{primitive.color.teal.700}",
+        "$description": "The third categorical chart series."
       },
       "4": {
-        "$value": "{primitive.color.violet.600}"
+        "$value": "{primitive.color.violet.600}",
+        "$description": "The fourth categorical chart series."
       },
       "5": {
-        "$value": "{primitive.color.olive.800}"
+        "$value": "{primitive.color.olive.800}",
+        "$description": "The fifth categorical chart series."
       },
       "6": {
-        "$value": "{primitive.color.pink.700}"
+        "$value": "{primitive.color.pink.700}",
+        "$description": "The sixth categorical chart series."
       },
       "$description": "Categorical chart colours, in this order."
     }
