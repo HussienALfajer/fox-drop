@@ -354,10 +354,7 @@ export function afterPickupEntries(facts: {
 // Without such an edit, the order's own values. Read it in the transaction
 // that books from it, under the order's lock, so an edit committed since is
 // counted.
-export async function frozenAtPickup(
-  executor: Executor,
-  order: { id: string; placedAt: Date; itemsValue: bigint; deliveryFee: bigint },
-): Promise<{
+export interface FrozenAtPickup {
   itemsValue: bigint;
   deliveryFee: bigint;
   commissionToClearing: bigint;
@@ -366,12 +363,17 @@ export async function frozenAtPickup(
   captainCharge: bigint;
   platformCharge: bigint;
   feeCuts: { restaurant: bigint; captain: bigint; platform: bigint };
-}> {
+}
+
+export async function frozenAtPickup(
+  executor: Executor,
+  order: { id: string; placedAt: Date; itemsValue: bigint; deliveryFee: bigint },
+): Promise<FrozenAtPickup> {
   const edits = await executor
     .select({
       itemsValueBefore: orderEdits.itemsValueBefore,
+      itemsValueAfter: orderEdits.itemsValueAfter,
       deliveryFeeBefore: orderEdits.deliveryFeeBefore,
-      deliveryFeeAfter: orderEdits.deliveryFeeAfter,
       responsible: orderEdits.responsible,
       charge: orderEdits.charge,
       commissionCut: orderEdits.commissionCut,
@@ -385,14 +387,41 @@ export async function frozenAtPickup(
       ),
     )
     .orderBy(asc(orderEdits.at));
+  return frozenFromEdits(order, edits);
+}
+
+// An edit after the pickup as `order_edits` keeps it: the fees as the order
+// shows them, before a free-delivery code.
+export interface BookedEdit {
+  itemsValueBefore: bigint;
+  itemsValueAfter: bigint;
+  deliveryFeeBefore: bigint;
+  responsible: string | null;
+  charge: bigint | null;
+  commissionCut: bigint | null;
+}
+
+// frozenAtPickup's sums over the order's edits after the pickup, oldest
+// first.
+export function frozenFromEdits(
+  order: { itemsValue: bigint; deliveryFee: bigint },
+  edits: readonly BookedEdit[],
+): FrozenAtPickup {
   const sum = (party: (responsible: string | null) => boolean, of: 'charge' | 'commissionCut') =>
     edits
       .filter((edit) => party(edit.responsible))
       .reduce((total, edit) => total + (edit[of] ?? 0n), 0n);
+  // The fee's part of an edit's charge: what afterPickupEntries charged for
+  // the fee the customer no longer pays, so after a free-delivery code (the
+  // stored fees are before it). The rest of the charge is the items'.
   const feeCut = (party: string) =>
     edits
       .filter((edit) => edit.responsible === party)
-      .reduce((total, edit) => total + edit.deliveryFeeBefore - edit.deliveryFeeAfter, 0n);
+      .reduce((total, edit) => {
+        const removed = edit.itemsValueBefore - edit.itemsValueAfter;
+        const itemsCharge = party === 'restaurant' ? removed : removed - (edit.commissionCut ?? 0n);
+        return total + (edit.charge ?? 0n) - itemsCharge;
+      }, 0n);
   const first = edits[0];
   return {
     itemsValue: first?.itemsValueBefore ?? order.itemsValue,

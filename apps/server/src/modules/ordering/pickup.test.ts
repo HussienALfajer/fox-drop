@@ -844,7 +844,8 @@ describe('who may answer, keys and races (architecture §5.3)', () => {
 describe('any confirmations of one pickup, together', () => {
   const confirmation = fc.record({
     by: fc.constantFrom('restaurant' as const, 'operations' as const, 'automatic' as const),
-    // A repeat sends the party's first key again; else a key of its own.
+    // A repeat sends the party's key again; else a key of its own. A party's
+    // first confirmation always sends its key, so one repeat is a real one.
     repeat: fc.boolean(),
   });
 
@@ -860,15 +861,22 @@ describe('any confirmations of one pickup, together', () => {
           ).rows[0].placed_at.toISOString();
           const due = new Date(new Date(request.confirmBy).getTime() + SECOND);
           const keys = { restaurant: randomUUID(), operations: randomUUID() };
+          const used = new Set<string>();
+          const sent: (string | null)[] = confirmations.map(({ by, repeat }) => {
+            if (by === 'automatic') return null;
+            const key = repeat || !used.has(by) ? keys[by] : randomUUID();
+            used.add(by);
+            return key;
+          });
           const answers = await Promise.all(
-            confirmations.map(({ by, repeat }) => {
+            confirmations.map(({ by }, index) => {
               if (by === 'automatic') {
                 return app
                   .get(PickupBooking)
                   .autoConfirm({ requestId: request.id, orderId: at.order.id, placedAt }, due)
                   .then((confirmed) => (confirmed ? 200 : 409));
               }
-              const key = repeat ? keys[by] : randomUUID();
+              const key = sent[index]!;
               const answer =
                 by === 'restaurant'
                   ? at.restaurant('confirm', undefined, key)
@@ -885,6 +893,13 @@ describe('any confirmations of one pickup, together', () => {
           // Each answer is the pickup or the state it is in now, never a fault.
           for (const status of answers) expect([200, 409]).toContain(status);
           expect(answers).toContain(200);
+          // A key sent more than once gets one answer (architecture §5.3):
+          // the first's, replayed, even while the first is still running.
+          for (const key of new Set(sent)) {
+            if (key === null) continue;
+            const ofKey = answers.filter((_, index) => sent[index] === key);
+            expect(new Set(ofKey).size).toBe(1);
+          }
           const pickups = await sql.query(
             "SELECT count(*)::int AS n FROM ordering.order_events WHERE order_id = $1 AND type = 'order.picked_up'",
             [at.order.id],
@@ -909,9 +924,11 @@ describe('any confirmations of one pickup, together', () => {
           expect(await custody(at.captain.captainId)).toBe(-24_000n);
         },
       ),
-      { numRuns: 6 },
+      // A failure reports its case at once: shrinking would place orders
+      // again past the test's time.
+      { numRuns: 6, endOnFailure: true },
     );
-  });
+  }, 120_000);
 });
 
 // RA §12.7, CA §10.5, AP §8.6: the restaurant's pickup currencies, the

@@ -4,8 +4,18 @@ import type { RateSnapshot, RoundingMode, SnapshotCurrency } from '../fx/index.j
 import { cancellationEntries, keptPaymentJournals } from './cancellation.js';
 import { commission } from './door-payment.js';
 import { type OrderDiscount, withinCaps } from './order-discount.js';
-import { afterPickupEntries, type AfterPickupParty } from './order-edits.js';
-import { type OutcomeFacts, outcomeEntries, type SetOutcome } from './outcome.js';
+import {
+  afterPickupEntries,
+  type AfterPickupParty,
+  type BookedEdit,
+  frozenFromEdits,
+} from './order-edits.js';
+import {
+  FEE_CUT_RETURNED_REASON,
+  type OutcomeFacts,
+  outcomeEntries,
+  type SetOutcome,
+} from './outcome.js';
 import { baseTotal, checkLines, pickupCurrencies, proposeLines } from './pickup-booking.js';
 import { redeliveryEntries } from './redelivery.js';
 import { cashAnswers, outcomeFoods, responsibleParties } from './schema.js';
@@ -98,9 +108,10 @@ function afterEdits(order: Placed, edits: Edit[]) {
   let deliveryFee = order.deliveryFee;
   let discount = order.discount;
   const journals: Journal[] = [];
-  const charges = { restaurant: 0n, captain: 0n, platform: 0n };
-  const feeCuts = { restaurant: 0n, captain: 0n, platform: 0n };
-  let restaurantCommissionCut = 0n;
+  // The rows order-commands.ts stores, and what each party was charged for
+  // the fee the customer no longer pays (after a free-delivery code).
+  const rows: BookedEdit[] = [];
+  const feeCharged = { restaurant: 0n, captain: 0n, platform: 0n };
   for (const each of edits) {
     const itemsAfter = itemsValue - (itemsValue * BigInt(each.removed)) / 1000n;
     const feeAfter = deliveryFee - (deliveryFee * BigInt(each.feeCut)) / 1000n;
@@ -122,27 +133,22 @@ function afterEdits(order: Placed, edits: Edit[]) {
     // The party bears exactly what the clearing account gives up.
     expect(-clearing(booking.journals)).toBe(booking.charge);
     journals.push(...booking.journals);
-    charges[each.responsible] += booking.charge;
-    feeCuts[each.responsible] += feeBefore - feeAfterDiscount;
-    if (each.responsible === 'restaurant') restaurantCommissionCut += booking.commissionCut;
+    rows.push({
+      itemsValueBefore: itemsValue,
+      itemsValueAfter: itemsAfter,
+      deliveryFeeBefore: deliveryFee,
+      responsible: each.responsible,
+      charge: booking.charge,
+      commissionCut: booking.commissionCut,
+    });
+    feeCharged[each.responsible] += feeBefore - feeAfterDiscount;
     itemsValue = itemsAfter;
     deliveryFee = feeAfter;
     discount = capped;
   }
-  return {
-    itemsValue,
-    deliveryFee,
-    discount,
-    journals,
-    pickup: {
-      itemsValue: order.itemsValue,
-      restaurantCharge: charges.restaurant,
-      restaurantCommissionCut,
-      captainCharge: charges.captain,
-      platformCharge: charges.platform,
-      feeCuts,
-    },
-  };
+  // What the delivery and an outcome read back (frozenAtPickup).
+  const frozen = frozenFromEdits(order, rows);
+  return { itemsValue, deliveryFee, discount, journals, feeCharged, pickup: frozen };
 }
 
 const edits = fc.array(edit, { maxLength: 4 });
@@ -217,12 +223,13 @@ describe('an outcome after edits (docs/domain/09, AP §8.9)', () => {
             food: pick.food,
             amountToCollect,
           });
-        if (order.discount.merchant > 0n) {
+        if (now.discount.merchant > 0n) {
           // Open, for the owner: a restaurant-funded discount can be more
           // than the clearing account holds once the commission is taken
           // (a free-delivery code above the items' merchant net, or a minor
           // unit of rounding after an edit), and outcomeEntries then throws.
-          // Without one it always settles.
+          // Without one it always settles: the edits' commission cuts and the
+          // outcome's commission then telescope exactly.
           try {
             outcome();
           } catch (error) {
@@ -245,6 +252,20 @@ describe('an outcome after edits (docs/domain/09, AP §8.9)', () => {
         const held = order.itemsValue + clearing(now.journals) - amountToCollect;
         expect(held + clearing(booking.journals)).toBe(0n);
         expect(booking.loss >= 0n).toBe(true);
+        // Settling alone cannot see money booked to the wrong party: with
+        // the restaurant not responsible, each party gets back exactly the
+        // fee cut it was charged for, no more.
+        if (pick.responsible !== 'restaurant') {
+          const givenBack = (account: string) =>
+            booking.journals
+              .filter((journal) => journal.reason === FEE_CUT_RETURNED_REASON)
+              .flatMap((journal) => journal.entries)
+              .filter((entry) => entry.account === account)
+              .reduce((sum, entry) => sum - entry.amount, 0n);
+          expect(givenBack('merchant.account')).toBe(now.feeCharged.restaurant);
+          expect(givenBack('captain.earnings')).toBe(now.feeCharged.captain);
+          expect(givenBack('platform.operating_cost')).toBe(now.feeCharged.platform);
+        }
       }),
     );
   });
@@ -419,6 +440,15 @@ describe('the money after a delivery (AP §8.6, §8.10, §9.9.3)', () => {
           });
           expectPostable(booking.journals);
           expect(clearing(booking.journals)).toBe(0n);
+          // The figures the pushes and the ticket show are what is posted.
+          const posted = (type: string, account: string) =>
+            booking.journals
+              .filter((journal) => journal.type === type)
+              .flatMap((journal) => journal.entries)
+              .filter((entry) => entry.account === account)
+              .reduce((sum, entry) => sum + entry.amount, 0n);
+          expect(posted('earn.charge', 'captain.earnings')).toBe(booking.captainCharge);
+          expect(posted('merchant.debit', 'merchant.account')).toBe(booking.merchantDebit);
         },
       ),
     );

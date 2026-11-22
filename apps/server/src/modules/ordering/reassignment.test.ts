@@ -144,4 +144,22 @@ describe('reassignmentEntries', () => {
       .reduce((sum, entry) => sum + entry.amount, 0n);
     expect(clearing).toBe(0n);
   });
+
+  it('owes nothing for lines that come to 0 in the base', () => {
+    // One cent is 0.412 kuruş, 0 to the nearest: no merchant.debit, since
+    // the ledger takes no entry of zero (found by
+    // money-journals.property.test.ts).
+    const result = reassignmentEntries(
+      { ...atRestaurant, cashLines: [{ currency: 'USD', amount: 1n }], cashBase: 0n },
+      'not_returned',
+    );
+    if ('problem' in result) throw new Error('refused');
+    expect(result.journals.map((journal) => journal.type)).toEqual([
+      'custody.pay_merchant',
+      'platform.fx_rounding',
+    ]);
+    for (const journal of result.journals) {
+      for (const entry of journal.entries) expect(entry.amount).not.toBe(0n);
+    }
+  });
 });

@@ -1013,7 +1013,9 @@ describe('any journals (architecture §5.6, AP §8.5)', () => {
           expect(total).toBe(0n);
         }
       }),
-      { numRuns: 30 },
+      // A failure reports its case at once: shrinking would post again past
+      // the test's time.
+      { numRuns: 30, endOnFailure: true },
     );
-  });
+  }, 60_000);
 });
