@@ -247,7 +247,7 @@ const PLAYWRIGHT_INSTALL =
 function scriptTests() {
   step(
     'Claude Code hooks and scripts',
-    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/fonts.test.mjs',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs',
   );
 }
 

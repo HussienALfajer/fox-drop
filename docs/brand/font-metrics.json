@@ -1,0 +1,23 @@
+{
+  "400": {
+    "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Regular.ttf",
+    "sha256": "7b366d1dffe5fcfd262cbc8642b0a4c5aac78f6e070863b1fcaff3ebab18a86b",
+    "unitsPerEm": 1000,
+    "proportional": [657, 514, 623, 644, 646, 622, 628, 559, 653, 635],
+    "tabular": [650, 650, 650, 650, 650, 650, 650, 650, 650, 650]
+  },
+  "500": {
+    "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Medium.ttf",
+    "sha256": "b90d2b4c201a73746de776e6be7facb905befcea71b65694dc6f3ae751d7618f",
+    "unitsPerEm": 1000,
+    "proportional": [686, 541, 640, 658, 661, 639, 650, 582, 671, 657],
+    "tabular": [650, 650, 650, 650, 650, 650, 650, 650, 650, 650]
+  },
+  "700": {
+    "path": "cofo-sans-pro-arabic/CoFoSansProArabic-Bold.ttf",
+    "sha256": "8afdf4d1eebe139eac64963f44351407f0f773e1295d0f296fc4ae5f8cbe215d",
+    "unitsPerEm": 1000,
+    "proportional": [703, 566, 652, 666, 669, 651, 663, 599, 680, 669],
+    "tabular": [650, 650, 650, 650, 650, 650, 650, 650, 650, 650]
+  }
+}
