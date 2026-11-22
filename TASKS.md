@@ -30,6 +30,7 @@ Owner decisions (2026-11-23, planning session): the grid below; back, motorcycle
 - [x] The other 34 icons
 - [x] Web and Dart outputs with the drift test and the Dart test
 - [ ] Icon sheet; create «Component proposals», publish the page; owner reviews (stop until approved)
+  - Stopped at (2026-11-23): sheet drawn (`src/icon-sheet.ts`) and published on «Component proposals» (link in Claude's memory); waiting for the owner's review. Changes the owner asks for: edit the SVGs, rerun `icon-sheet`, republish.
 - [ ] Sync the `Icons` group into the Design System; docs (CLAUDE.md, docs/code, architecture §9.4 and §9.11)
 - [ ] Review, hand over (roadmap, TASKS.md for D.6, slice notes), pull request
 

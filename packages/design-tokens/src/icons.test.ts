@@ -2,6 +2,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseIcon, pathPoints, shapePoints } from './icon-geometry.ts';
+import { ARABIC } from './icon-sheet.ts';
+import { readIcons } from './icons.ts';
 import { PACKAGE_DIR } from './resolve.ts';
 
 // The icon grid (architecture §9.4, §9.5 R8; owner, 2026-11-23) and the first
@@ -112,6 +114,24 @@ describe('the icon manifest', () => {
       Money: 5,
       'Contact and rating': 5,
     });
+  });
+});
+
+describe('the icon sheet (architecture §9.9)', () => {
+  it('labels every icon and group in Arabic', () => {
+    for (const entry of manifest) {
+      expect(ARABIC[entry.name], entry.name).toBeTruthy();
+      expect(ARABIC[entry.group], entry.group).toBeTruthy();
+    }
+  });
+
+  it('draws every icon, normalised to paths that stay on the grid', () => {
+    for (const icon of readIcons())
+      for (const d of icon.paths)
+        for (const { x, y } of pathPoints(d)) {
+          expect(Math.min(x, y), icon.name).toBeGreaterThanOrEqual(LIVE.min - EPSILON);
+          expect(Math.max(x, y), icon.name).toBeLessThanOrEqual(LIVE.max + EPSILON);
+        }
   });
 });
 
