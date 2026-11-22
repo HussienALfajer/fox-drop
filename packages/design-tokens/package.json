@@ -10,6 +10,7 @@
   "scripts": {
     "generate": "node src/generate.ts",
     "design-system": "node src/design-system-build.ts",
+    "guide": "node src/guide.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
