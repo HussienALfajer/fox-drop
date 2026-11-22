@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import fc from 'fast-check';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
@@ -834,6 +835,100 @@ describe('who may answer, keys and races (architecture §5.3)', () => {
     expect(repeat.json().order.status).toBe('picked_up');
     expect(await custody(at.captain.captainId)).toBe(-24_000n);
   });
+});
+
+// Phase 7 item 2 of docs/claude-code-workflow.md (architecture §5.3, §5.5):
+// whatever confirms a pickup, at once or again with the same key, the
+// restaurant, operations or the automatic confirmation's job, the order is
+// picked up once and its money posted once.
+describe('any confirmations of one pickup, together', () => {
+  const confirmation = fc.record({
+    by: fc.constantFrom('restaurant' as const, 'operations' as const, 'automatic' as const),
+    // A repeat sends the party's key again; else a key of its own. A party's
+    // first confirmation always sends its key, so one repeat is a real one.
+    repeat: fc.boolean(),
+  });
+
+  it('picks the order up once and posts its money once', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.array(confirmation, { minLength: 2, maxLength: 5 }),
+        async (confirmations) => {
+          const at = await captainAtRestaurant();
+          const request = (await at.requestPickup()).json().order.pickup.request;
+          const placedAt = (
+            await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [at.order.id])
+          ).rows[0].placed_at.toISOString();
+          const due = new Date(new Date(request.confirmBy).getTime() + SECOND);
+          const keys = { restaurant: randomUUID(), operations: randomUUID() };
+          const used = new Set<string>();
+          const sent: (string | null)[] = confirmations.map(({ by, repeat }) => {
+            if (by === 'automatic') return null;
+            const key = repeat || !used.has(by) ? keys[by] : randomUUID();
+            used.add(by);
+            return key;
+          });
+          const answers = await Promise.all(
+            confirmations.map(({ by }, index) => {
+              if (by === 'automatic') {
+                return app
+                  .get(PickupBooking)
+                  .autoConfirm({ requestId: request.id, orderId: at.order.id, placedAt }, due)
+                  .then((confirmed) => (confirmed ? 200 : 409));
+              }
+              const key = sent[index]!;
+              const answer =
+                by === 'restaurant'
+                  ? at.restaurant('confirm', undefined, key)
+                  : app.inject({
+                      method: 'POST',
+                      url: `/v1/admin/orders/${at.order.id}/confirm-pickup`,
+                      cookies: at.ops.cookies,
+                      headers: { 'idempotency-key': key },
+                      payload: { lines: TRY('24000'), reason: 'لا يرد المطعم' },
+                    });
+              return answer.then((response) => response.statusCode);
+            }),
+          );
+          // Each answer is the pickup or the state it is in now, never a fault.
+          for (const status of answers) expect([200, 409]).toContain(status);
+          expect(answers).toContain(200);
+          // A key sent more than once gets one answer (architecture §5.3):
+          // the first's, replayed, even while the first is still running.
+          for (const key of new Set(sent)) {
+            if (key === null) continue;
+            const ofKey = answers.filter((_, index) => sent[index] === key);
+            expect(new Set(ofKey).size).toBe(1);
+          }
+          const pickups = await sql.query(
+            "SELECT count(*)::int AS n FROM ordering.order_events WHERE order_id = $1 AND type = 'order.picked_up'",
+            [at.order.id],
+          );
+          expect(pickups.rows[0].n).toBe(1);
+          // The captain's custody entries for the order, through the ledger.
+          const ledger = app.get(LedgerService);
+          const accounts = await ledger.ownerAccounts(
+            azaz,
+            at.captain.captainId,
+            'captain.custody',
+          );
+          const entries = await ledger.accountEntries(
+            accounts.map((account) => account.id),
+            'captain.custody',
+            100,
+          );
+          const paid = entries.filter(
+            (entry) => entry.type === 'custody.pay_merchant' && entry.sourceId === at.order.id,
+          );
+          expect(new Set(paid.map((entry) => entry.journalId)).size).toBe(1);
+          expect(await custody(at.captain.captainId)).toBe(-24_000n);
+        },
+      ),
+      // A failure reports its case at once: shrinking would place orders
+      // again past the test's time.
+      { numRuns: 6, endOnFailure: true },
+    );
+  }, 120_000);
 });
 
 // RA §12.7, CA §10.5, AP §8.6: the restaurant's pickup currencies, the

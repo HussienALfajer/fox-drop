@@ -4,6 +4,7 @@ import {
   afterPickupEntries,
   COMMISSION_REVERSED_REASON,
   FEE_LOWERED_AFTER_PICKUP_REASON,
+  frozenFromEdits,
   REMOVED_AFTER_PICKUP_REASON,
 } from './order-edits.js';
 
@@ -117,5 +118,47 @@ describe('afterPickupEntries', () => {
     expect(() =>
       afterPickupEntries({ ...facts, deliveryFeeAfter: 5_000n, responsible: 'platform' }),
     ).toThrow();
+  });
+});
+
+describe('frozenFromEdits', () => {
+  it("counts a party's fee cut as it was charged, after a free-delivery code", () => {
+    // The fee 4 000 is free by a code. An edit charged to the captain lowers
+    // it to 2 000: the customer paid no fee before or after, so the captain
+    // is charged nothing, and an outcome must give back nothing. The stored
+    // fees are before the code (found by money-journals.property.test.ts).
+    const frozen = frozenFromEdits({ itemsValue: 24_000n, deliveryFee: 2_000n }, [
+      {
+        itemsValueBefore: 24_000n,
+        itemsValueAfter: 24_000n,
+        deliveryFeeBefore: 4_000n,
+        responsible: 'captain',
+        charge: 0n,
+        commissionCut: 0n,
+      },
+    ]);
+    expect(frozen.feeCuts).toEqual({ restaurant: 0n, captain: 0n, platform: 0n });
+    expect(frozen.deliveryFee).toBe(4_000n);
+  });
+
+  it("takes the items' part off each charge, by who bore it", () => {
+    const booked = (responsible: 'restaurant' | 'captain') =>
+      afterPickupEntries({ ...facts, responsible });
+    const restaurant = booked('restaurant');
+    const captain = booked('captain');
+    const row = (responsible: 'restaurant' | 'captain', booking: typeof restaurant) => ({
+      itemsValueBefore: facts.itemsValueBefore,
+      itemsValueAfter: facts.itemsValueAfter,
+      deliveryFeeBefore: facts.deliveryFeeBefore,
+      responsible,
+      charge: booking.charge,
+      commissionCut: booking.commissionCut,
+    });
+    const frozen = frozenFromEdits({ itemsValue: 0n, deliveryFee: 0n }, [
+      row('restaurant', restaurant),
+      row('captain', captain),
+    ]);
+    // Each was charged the fee cut of 3 000 on top of the items.
+    expect(frozen.feeCuts).toEqual({ restaurant: 3_000n, captain: 3_000n, platform: 0n });
   });
 });

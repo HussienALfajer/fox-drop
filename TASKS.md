@@ -4,14 +4,17 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Plan the D.1b slice, brand expression (owner decision 2026-11-21, after the D.0 review found the spec strong on governance and thin on character): add it to `docs/roadmap.md` before D.2 and its scope to architecture §9.12.
+Phase 7 item 2 of `docs/claude-code-workflow.md`: property tests with fast-check for money (every journal balances per currency, rounding round-trips, a repeated request or timer job posts once).
 
-- **Branch:** `docs/brand-expression-plan`.
+- **Branch:** `test/money-properties`.
 
 ### Plan
 
-- [x] D.1b in the roadmap; §9.12 lists what it decides; D.3 scores its directions against the D.1b principles.
+- [x] fast-check in the server; properties of rounding and conversion, of every pure journal rule, of the ledger's posting, and of concurrent pickup confirmations.
+- [x] Fix the two journals with an entry of zero they found (`keptPaymentJournals`, `ticketMoneyEntries`).
+- [x] Review: fix `frozenAtPickup`'s fee cuts after a free-delivery code, model it in the property, example tests for each fix, one answer per repeated key, timeouts.
 - [ ] Pull request; merge when its checks pass.
+- [ ] Owner: what an outcome posts when a restaurant-funded discount exceeds what the clearing account holds (`outcomeEntries` throws today; the property skips that case).
 
 ## Waiting for the owner
 

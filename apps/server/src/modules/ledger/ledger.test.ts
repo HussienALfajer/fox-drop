@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { Test } from '@nestjs/testing';
+import fc from 'fast-check';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DATABASE } from '../../database/database.module.js';
@@ -916,4 +917,105 @@ describe('LedgerService.journalRecords', () => {
     });
     expect(await ledger.journalRecords([randomUUID()])).toEqual([]);
   });
+});
+
+// Phase 7 item 2 of docs/claude-code-workflow.md: for any journals, the
+// ledger posts exactly the ones that balance in each currency, so every
+// account's balance is the sum of what was posted and reversed, and a city's
+// entries sum to zero in each currency.
+describe('any journals (architecture §5.6, AP §8.5)', () => {
+  const accountsOf = ['custody', 'clearing', 'custodyUsd', 'clearingUsd'] as const;
+  const attempt = fc
+    .record({
+      lines: fc
+        .subarray([...accountsOf], { minLength: 1 })
+        .chain((names) =>
+          fc.tuple(
+            ...names.map((name) =>
+              fc.bigInt({ min: -500n, max: 500n }).map((amount) => ({ name, amount })),
+            ),
+          ),
+        ),
+      // Most random journals do not balance: half of them are made to.
+      balanced: fc.boolean(),
+      reversed: fc.boolean(),
+    })
+    .map(({ lines, balanced, reversed }) => {
+      const currency = (name: string) => (name.endsWith('Usd') ? 'USD' : 'TRY');
+      if (balanced) {
+        for (const code of ['TRY', 'USD']) {
+          const of = lines.filter((line) => currency(line.name) === code);
+          const rest = of.slice(0, -1).reduce((sum, line) => sum + line.amount, 0n);
+          if (of.length > 0) of[of.length - 1]!.amount = -rest;
+        }
+      }
+      return { lines: lines.map((line) => ({ ...line, currency: currency(line.name) })), reversed };
+    });
+
+  it('posts exactly the balanced ones and keeps every balance their sum', async () => {
+    await fc.assert(
+      fc.asyncProperty(fc.array(attempt, { minLength: 1, maxLength: 6 }), async (attempts) => {
+        const { cityId, custody, custodyUsd, clearing, open } = await setUp();
+        const ids = {
+          custody,
+          custodyUsd,
+          clearing,
+          clearingUsd: await open('platform.order_clearing', 'USD'),
+        };
+        const expected = new Map<string, bigint>();
+        for (const { lines, reversed } of attempts) {
+          const sums = new Map<string, bigint>();
+          for (const line of lines)
+            sums.set(line.currency, (sums.get(line.currency) ?? 0n) + line.amount);
+          const postable =
+            lines.length >= 2 &&
+            lines.every((line) => line.amount !== 0n) &&
+            lines.some((line) => line.name.startsWith('custody')) &&
+            [...sums.values()].every((sum) => sum === 0n);
+          const journal: PostJournal = {
+            cityId,
+            type: 'custody.pay_merchant',
+            source: { kind: 'order', id: randomUUID() },
+            actor: system,
+            entries: lines.map((line) => ({
+              accountId: ids[line.name],
+              currency: line.currency,
+              amount: line.amount,
+            })),
+            // A journal across currencies names the rate of each but the base.
+            ...(sums.size > 1 ? { rates: [{ currency: 'USD', rateVersionId: randomUUID() }] } : {}),
+          };
+          if (!postable) {
+            await expect(post(journal)).rejects.toThrow(LedgerRefusal);
+            continue;
+          }
+          const id = await post(journal);
+          if (reversed) {
+            await db.transaction((tx) => ledger.reverse(id, { actor: system, reason: 'test' }, tx));
+            continue;
+          }
+          for (const line of lines) {
+            expected.set(line.name, (expected.get(line.name) ?? 0n) + line.amount);
+          }
+        }
+        const { rows } = await pool.query<{ account_id: string; currency: string; sum: string }>(
+          'SELECT account_id, currency, sum(amount)::text AS sum FROM ledger.entries WHERE city_id = $1 GROUP BY account_id, currency',
+          [cityId],
+        );
+        const byAccount = new Map(rows.map((row) => [row.account_id, BigInt(row.sum)]));
+        for (const name of accountsOf) {
+          expect(byAccount.get(ids[name]) ?? 0n).toBe(expected.get(name) ?? 0n);
+        }
+        for (const code of ['TRY', 'USD']) {
+          const total = rows
+            .filter((row) => row.currency === code)
+            .reduce((sum, row) => sum + BigInt(row.sum), 0n);
+          expect(total).toBe(0n);
+        }
+      }),
+      // A failure reports its case at once: shrinking would post again past
+      // the test's time.
+      { numRuns: 30, endOnFailure: true },
+    );
+  }, 60_000);
 });

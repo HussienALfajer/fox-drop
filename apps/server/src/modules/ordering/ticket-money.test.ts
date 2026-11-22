@@ -107,6 +107,19 @@ describe('ticketMoneyEntries', () => {
     ]);
   });
 
+  it('charges the captain nothing when the commission takes all of V', () => {
+    // At 100% the merchant net of V is 0, and the ledger takes no entry of
+    // zero (found by money-journals.property.test.ts).
+    const booking = ticketMoneyEntries({
+      ...order,
+      commissionOf: (value: bigint) => commission(value, 10_000),
+      responsible: 'captain',
+      affected: 6_000n,
+      wrongChange: null,
+    });
+    expect(booking).toEqual({ journals: [], merchantDebit: 0n, captainCharge: 0n });
+  });
+
   it('posts nothing for the platform, the customer, or no affected items', () => {
     for (const responsible of ['platform', 'customer'] as const) {
       expect(

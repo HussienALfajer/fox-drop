@@ -270,18 +270,30 @@ export function keptPaymentJournals(
           },
         ]
       : []),
-    {
-      type: 'merchant.debit',
-      reason: null,
-      entries: [
-        {
-          account: 'merchant.account',
-          party: { kind: 'merchant', id: facts.restaurantId },
-          amount: facts.cashBase,
-          currency,
-        },
-        { account: 'platform.order_clearing', party: platform, amount: -facts.cashBase, currency },
-      ],
-    },
+    // Lines that come to nothing in the base (a minor unit of a weaker
+    // currency) leave the restaurant nothing to owe; the ledger takes no
+    // entry of zero.
+    ...(facts.cashBase !== 0n
+      ? [
+          {
+            type: 'merchant.debit' as const,
+            reason: null,
+            entries: [
+              {
+                account: 'merchant.account' as const,
+                party: { kind: 'merchant' as const, id: facts.restaurantId },
+                amount: facts.cashBase,
+                currency,
+              },
+              {
+                account: 'platform.order_clearing' as const,
+                party: platform,
+                amount: -facts.cashBase,
+                currency,
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 }
