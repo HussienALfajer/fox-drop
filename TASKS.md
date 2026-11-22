@@ -46,7 +46,7 @@ Owner answers (2026-11-22): four directions; captain screen step 3; only the scr
 ### Plan
 
 - [x] Read the cited sections and write the design here.
-- [ ] Read the Figma file in the built-in browser; write the Figma notes and the four briefs in `docs/brand/directions.md`.
+- [x] Read the Figma file in the built-in browser; write the Figma notes and the four briefs in `docs/brand/directions.md`.
 - [ ] Create the canvas with the token sheet, CoFo assets and direction A's four artboards.
 - [ ] Draw directions B, C and D.
 - [ ] Score the four on the canvas and in `directions.md`; the owner picks one.
