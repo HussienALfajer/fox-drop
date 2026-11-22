@@ -12,7 +12,7 @@ D.1b Brand expression (architecture §9.12, `docs/roadmap.md` Phase D): each §9
 
 - [x] Principles and personality.
 - [x] Signature shape.
-- [ ] Motion language.
+- [x] Motion language.
 - [ ] Map style.
 - [ ] Illustration and photos.
 - [ ] Full palette.
@@ -28,6 +28,7 @@ Decided so far (owner, 2026-11-22):
 - Personality: «الجار الشاطر», the clever, quick, warm neighbour we know. The fox is wit and speed, the drop is delivery to your door; orange carries warmth and appetite, blue carries trust in numbers and states; friendly, never clowning. Rejected: loud and playful (hurts trust with cash and dense screens), calm premium (loses appetite, breaks the 30% orange).
 - Principles, ordered; the higher one wins a conflict: (1) clear before beautiful: amount, time and state read at a glance; (2) honest numbers: every price, fee and time shown before the user commits, no surprise at the door; (3) light as a fox: fewest steps, felt speed, works on a low-end Android phone and a weak network; (4) each screen its moment: captain in the sun with one hand, kitchen alert seen from afar, dense panel with the keyboard; (5) local and warm: Arabic first, people's words, calm in errors, every error says what to do next.
 - Signature shape: measured presence. The drop appears where it means "a place" or "on its way to you": the map pins (restaurant, customer, captain: drops told apart by icon and colour), the loading indicator (a drop filling), the order-confirmed moment (the fox leaving the drop), the frame of empty-state illustrations. Never on cards, buttons, inputs, anything pressed or typed in, never cropping a restaurant logo or food photo; in the panel only as map pins. The "drop corner" on cards (three large radii, one smaller) may be tried in a D.3 direction and added later.
+- Motion: "motion with meaning". Durations fast 100 ms (press, state toggle), base 200 ms (appear, disappear), slow 300 ms (screen transitions), a signature moment at most 1.2 s; calm easing, no bounce; transitions follow RTL (the next screen enters from the end side). Two signature moments only: order confirmed (the fox leaps out of the drop, straight into tracking, never blocking, skippable with a tap) and delivered (the drop settles at the door, then rating). The captain's pin glides along the route line between the 10-second points; after 30 s without an update it stops and shows «آخر تحديث قبل …», never motion without a fact behind it. Per surface: captain's new offer enters strongly with a pulse, a 45-second countdown ring and the C3 sound; restaurant's new order pulses until accepted; panel almost still (a changed row lights briefly). Haptics: light on order confirmed and add to cart, a distinct pattern for the captain's new offer, none in the restaurant app (sound and light there). Reduced motion: fades or instant, signature moments become a still image, the pin jumps; haptics stay. Motion is drawn in code or small vector files, no video or heavy animation (technique settled under device budgets).
 
 ## Waiting for the owner
 
