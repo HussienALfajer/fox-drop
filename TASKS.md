@@ -15,7 +15,7 @@ D.1b Brand expression (architecture §9.12, `docs/roadmap.md` Phase D): each §9
 - [x] Motion language.
 - [x] Map style.
 - [x] Illustration and photos.
-- [ ] Full palette.
+- [ ] Full palette (discussing).
 - [ ] Arabic typography.
 - [ ] Voice and tone.
 - [ ] Device budgets.
