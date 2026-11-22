@@ -40,6 +40,10 @@ describe('the Design System tokens (architecture §9.8)', () => {
     expect(new Set(styles).size).toBe(styles.length);
   });
 
+  it('leaves out deprecated tokens (architecture §9.2 governance)', () => {
+    expect(entries.map((entry) => entry.name)).not.toContain('radius-xs');
+  });
+
   it('gives every token a usage', () => {
     for (const entry of entries) expect(entry.usage, entry.name).toMatch(/\S/);
   });

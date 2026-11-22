@@ -10,7 +10,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { check, ORANGE } from './contrast.ts';
-import { DS_THEMES, designSystem } from './design-system.ts';
+import { DS_THEMES, designSystem, group as groupOf } from './design-system.ts';
 import { cssValue, exported } from './generate.ts';
 import { PACKAGE_DIR, resolveAll, type Theme, type Token } from './resolve.ts';
 
@@ -201,7 +201,8 @@ function colour(themes: Themes, config: GuideConfig): Board {
   const pairs = results
     .map((r) => {
       const status = r.exception ? 'owner exception' : r.pass ? 'pass' : 'fail';
-      const ink = r.exception ? 'color.heading' : r.pass ? 'color.success' : 'color.danger';
+      // Orange is for buttons and headings only: the exception is named in blue.
+      const ink = r.exception ? 'color.on-surface' : r.pass ? 'color.success' : 'color.danger';
       return `<div style="display: grid; grid-template-columns: 96px minmax(0, 2fr) 72px 72px minmax(0, 1fr); gap: ${v(themes, 'space.md')}; align-items: center">
 <span style="padding: ${v(themes, 'space.2xs')} ${v(themes, 'space.xs')}; border-radius: ${v(themes, 'radius.sm')}; background: ${r.bg}; color: ${r.fg}; font-weight: 700; text-align: center">طلبك</span>
 <span dir="ltr" style="font-size: ${v(themes, 'type.panel.secondary.size')}">${esc(`${r.surface}: ${r.foreground} on ${r.background}`)}</span>
@@ -279,7 +280,7 @@ ${label(themes, `${scale}-${role} · ${get('size')} / ${get('line-height')} / ${
 // Foundations: space, radius, size, elevation, motion -------------------------
 
 function foundations(themes: Themes, config: GuideConfig): Board {
-  const group = (name: string) => exported(themes.light).filter((t) => t.path[0] === name);
+  const group = (name: string) => groupOf(themes.light, name);
   const name = (t: Token) => t.path.join('.');
   const space = group('space')
     .map(
@@ -388,7 +389,7 @@ function rulesBoard(themes: Themes, config: GuideConfig): Board {
     .map(
       (r) =>
         `<div dir="ltr" style="display: grid; grid-template-columns: 56px minmax(0, 3fr) minmax(0, 2fr) 120px; gap: ${v(themes, 'space.md')}; padding-block: ${v(themes, 'space.sm')}; border-top: 1px solid ${v(themes, 'color.border')}; font-size: ${v(themes, 'type.panel.body.size')}; line-height: 1.6">
-<strong style="color: ${v(themes, 'color.heading')}">${esc(r.id)}</strong><span>${esc(r.rule)}</span><span style="color: ${v(themes, 'color.on-surface-muted')}">${esc(r.enforced)}</span><span>${esc(r.slice)}</span>
+<strong>${esc(r.id)}</strong><span>${esc(r.rule)}</span><span style="color: ${v(themes, 'color.on-surface-muted')}">${esc(r.enforced)}</span><span>${esc(r.slice)}</span>
 </div>`,
     )
     .join('\n');

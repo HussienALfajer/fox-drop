@@ -1,5 +1,14 @@
+import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { assets, index, MAX_FONT, MAX_SVG, systemFiles } from './design-system-build.ts';
+import {
+  assets,
+  fonts,
+  FONTS,
+  index,
+  MAX_FONT,
+  MAX_SVG,
+  systemFiles,
+} from './design-system-build.ts';
 import { designSystem, FONT_FILES } from './design-system.ts';
 import { resolveAll } from './resolve.ts';
 
@@ -46,7 +55,17 @@ describe("the Design System's files (architecture §9.8)", () => {
       expect(key).not.toMatch(/broken-edges/);
       expect(bytes.length).toBeLessThanOrEqual(MAX_SVG);
     }
-    for (const bytes of fake.values()) expect(bytes.length).toBeLessThanOrEqual(MAX_FONT);
+  });
+
+  // The real fonts exist only where `pnpm fonts:fetch` ran (not in CI).
+  it.runIf(existsSync(FONTS))('checks the fetched CoFo files: pinned and under 1 MB', () => {
+    const real = fonts();
+    expect([...real.keys()]).toEqual(Object.values(FONT_FILES));
+    for (const bytes of real.values()) expect(bytes.length).toBeLessThanOrEqual(MAX_FONT);
+  });
+
+  it.runIf(!existsSync(FONTS))('asks for pnpm fonts:fetch when the fonts are absent', () => {
+    expect(() => fonts()).toThrow(/run pnpm fonts:fetch/);
   });
 
   it('indexes every upload, synced from code', () => {

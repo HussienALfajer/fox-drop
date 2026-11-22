@@ -39,10 +39,10 @@ In order; when two conflict, the higher one wins.
 Ivory ground, blue words, orange actions.
 
 - **Ground and cards:** `surface` (`#FBF2E7`) is every screen's ground; `surface-raised` (`#FEFEFE`) carries cards, sheets and inputs; `surface-pressed` a pressed card.
-- **Text and numbers are blue:** `on-surface` (`#03428E`, 8.72:1 on the ground) for all text, prices and numbers; `on-surface-muted` (`#416EA4`, 4.59:1) for hints and captions.
+- **Text and numbers are blue:** `on-surface` (`#03428E`, 8.72:1 on the ground) for all text, prices and numbers; `on-surface-muted` (`#416EA4`, 4.75:1 on the ground, 4.59:1 at worst) for hints and captions.
 - **Orange acts and titles:** `primary` (`#FF6E31`) fills buttons, bars and the active item, with `on-primary` ivory labels; `heading` sets titles in bold orange; `brand` is the logo and decorative areas.
 - **The orange exception.** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory labels, below 4.5:1. The owner accepts this for `brand`, `primary`, `primary-pressed` and `heading` only (architecture §9.5 R4). Orange is never body text, a price or a number.
-- **Borders:** `border` for decorative dividers and card outlines only; `border-strong` (3.20:1) for every control boundary; `focus-ring` blue.
+- **Borders:** `border` for decorative dividers and card outlines only; `border-strong` (3.20:1 at worst) for every control boundary; `focus-ring` blue.
 - **States, always with an icon:** `success`, `warning` (a brown amber, not orange), `danger` (the Figma error red `#BF2929`), `info` (the brand blue), each with its `on-*` label colour. `alert` (`#8C1530`, 7:1) is for alerts read from across a kitchen.
 - **Charts:** `chart-1` to `chart-6`, in that order, blue first; told apart under colour-blind simulation.
 - **Themes:** Light is the only designed theme. Dark copies Light until dark mode is designed. Captain light and Captain dark raise text and status colours to 7:1 for the sun.

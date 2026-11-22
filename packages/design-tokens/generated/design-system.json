@@ -576,11 +576,6 @@
   "radius": {
     "tokens": [
       {
-        "name": "radius-xs",
-        "value": "4px",
-        "usage": "Deprecated: use radius.sm."
-      },
-      {
         "name": "radius-sm",
         "value": "8px",
         "usage": "Small cards and image slots."

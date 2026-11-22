@@ -15,7 +15,7 @@ import { PACKAGE_DIR, resolveAll } from './resolve.ts';
 const ROOT = path.resolve(PACKAGE_DIR, '../..');
 const SOURCE = path.join(PACKAGE_DIR, 'design-system');
 export const OUT = path.join(PACKAGE_DIR, '.design-system/system');
-const FONTS = path.join(ROOT, '.fonts/cofo-sans-pro-arabic');
+export const FONTS = path.join(ROOT, '.fonts/cofo-sans-pro-arabic');
 
 export const MAX_FONT = 1024 * 1024;
 export const MAX_SVG = 2 * 1024 * 1024;
@@ -63,6 +63,7 @@ export function fonts(): Map<string, Buffer> {
     const pinned = manifest.files.find((f) => f.path === `cofo-sans-pro-arabic/${file}`);
     const sha = createHash('sha256').update(bytes).digest('hex');
     if (sha !== pinned?.sha256) throw new Error(`${file} does not match fonts-manifest.json`);
+    if (bytes.length > MAX_FONT) throw new Error(`${file} is over the 1 MB font cap`);
     out.set(file, bytes);
   }
   return out;

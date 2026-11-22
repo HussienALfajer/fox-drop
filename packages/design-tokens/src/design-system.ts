@@ -37,8 +37,9 @@ function usage(token: Token): string {
   return token.description;
 }
 
-const group = (tokens: Tokens, name: string) =>
-  exported(tokens).filter((token) => token.path[0] === name);
+/** A group's tokens; a deprecated one is left out so nobody starts using it. */
+export const group = (tokens: Tokens, name: string) =>
+  exported(tokens).filter((token) => token.path[0] === name && !token.deprecated);
 
 /** A list family: `{prefix}-{rest of the path}`, the value as CSS. */
 const family = (tokens: Tokens, name: string, prefix: string): { tokens: Entry[] } => ({

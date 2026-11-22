@@ -60,13 +60,15 @@
     r: calc(var(--size-control) / 2);
   }
 </style>
-<div class="cover">
+<!-- The cover is a fixed 960 px picture laid out left to right (the type's cover format), not a screen. -->
+<div class="cover" dir="ltr">
   <svg class="art" width="480" height="288" viewBox="0 0 480 288" aria-hidden="true">
     <!--
       blocks: brand slab 272 x 232 (radius-xl), accent pill 300 x 100 (half its height), raised ivory pill 200 x size-control on primary-pressed (the offset shadow)
       arrangement: one tall orange slab bleeding off the top, the blue pill staggered over its foot, bleeding off the right edge
       pattern: pills and circles at size-control, cut in ivory out of the blocks - the brand README's pill-and-circle shape language
-      scales: size-control 50, space-md 16 gaps, space-xs 8, radius-xl 30, radius-full; elevation-offset 7 px under the ivory pill
+      scales: size-control 50, space-md 16 gaps, space-xs 8, radius-xl 30, radius-full; the offset shadow's 7 px drop under the ivory pill,
+      drawn in primary-pressed because SVG cannot take elevation-offset's box-shadow and no colour token holds its #FD6425
     -->
     <rect class="brand slab" x="48" y="-40" width="272" height="232" />
     <rect class="accent pill" x="200" y="172" width="300" height="100" />
