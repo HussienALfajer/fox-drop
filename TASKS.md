@@ -15,7 +15,7 @@ D.1b Brand expression (architecture §9.12, `docs/roadmap.md` Phase D): each §9
 - [x] Motion language.
 - [x] Map style.
 - [x] Illustration and photos.
-- [ ] Full palette (discussing).
+- [x] Full palette.
 - [ ] Arabic typography.
 - [ ] Voice and tone.
 - [ ] Device budgets.
@@ -33,6 +33,7 @@ Decided so far (owner, 2026-11-22):
 - Illustration: in the three phone apps, the fox in simple flat scenes, lines at the icon stroke, the three brand colours only, inside the drop frame; in the panel and the restaurant web portal, a large icon in a drop with text. First set about 8 SVG scenes (empty cart, no search results, outside the delivery zone, offline, general error, restaurant closed, captain with no orders yet, restaurant with no new orders), drawn in D.3 and D.5, each approved by the owner.
 - Missing photos: a dish without a photo is a text row without an image slot, never a fake placeholder; a restaurant without a cover shows its logo centred on a light tint; without a logo, its first letter in a rounded square (not a drop).
 - Food photo guide (given to restaurants, applied by the panel on review): dish 1:1, cover 16:9, at least 1080 px; daylight, no flash; plain background, the dish fills about 70%, from above or at 45°; no text, phone numbers, watermarks, photos from the internet or AI-generated photos of a real dish. V1: each restaurant photographs its own dishes with its phone, from the guide with a good and a bad example (no platform photography).
+- Palette (exact values settled by the contrast test in D.2; candidates in brackets): ten steps 50 to 900 for each brand colour on one scale, orange `#FF6E31` at 400, blue `#03428E` at 500, ivory `#FFFAED` at neutral 50; the accessible orange candidate `#C2410C` at orange 600 (4.97:1 on ivory, 5.18:1 under white). Warm neutrals derived from the ivory, not cold grey. Status colours kept apart from the brand orange, always with an icon: danger a crimson leaning pink (`#B91C3C`), warning a brown amber (`#8A5A00`), success green (`#067647`), info the brand blue. Chart palette of six for the panel, starting blue then orange, then teal, violet, olive green, pink, checked for colour blindness in D.2; sequential charts (heat maps, the vote map) in the blue scale only. Captain app: text and numbers (amount, address, time) at 7:1 or more in near-black or blue, buttons at 4.5:1 with large bold labels, no orange text; the restaurant app's alerts at 7:1 too.
 
 ## Waiting for the owner
 
