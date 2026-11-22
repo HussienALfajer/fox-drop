@@ -137,7 +137,9 @@ export function ticketMoneyEntries(facts: {
           ],
         });
       }
-    } else if (facts.responsible === 'captain') {
+    } else if (facts.responsible === 'captain' && facts.affected > cut) {
+      // The merchant net of V; nothing when its commission takes all of it
+      // (a minor unit at a high rate), since the ledger takes no entry of zero.
       charged += facts.affected - cut;
       journals.push(captainCharge(facts.affected - cut, POST_DELIVERY_PROBLEM_REASON));
     }
