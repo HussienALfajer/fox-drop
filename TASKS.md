@@ -11,7 +11,7 @@ D.1b Brand expression (architecture §9.12, `docs/roadmap.md` Phase D): each §9
 ### Plan
 
 - [x] Principles and personality.
-- [ ] Signature shape.
+- [x] Signature shape.
 - [ ] Motion language.
 - [ ] Map style.
 - [ ] Illustration and photos.
@@ -27,6 +27,7 @@ Decided so far (owner, 2026-11-22):
 
 - Personality: «الجار الشاطر», the clever, quick, warm neighbour we know. The fox is wit and speed, the drop is delivery to your door; orange carries warmth and appetite, blue carries trust in numbers and states; friendly, never clowning. Rejected: loud and playful (hurts trust with cash and dense screens), calm premium (loses appetite, breaks the 30% orange).
 - Principles, ordered; the higher one wins a conflict: (1) clear before beautiful: amount, time and state read at a glance; (2) honest numbers: every price, fee and time shown before the user commits, no surprise at the door; (3) light as a fox: fewest steps, felt speed, works on a low-end Android phone and a weak network; (4) each screen its moment: captain in the sun with one hand, kitchen alert seen from afar, dense panel with the keyboard; (5) local and warm: Arabic first, people's words, calm in errors, every error says what to do next.
+- Signature shape: measured presence. The drop appears where it means "a place" or "on its way to you": the map pins (restaurant, customer, captain: drops told apart by icon and colour), the loading indicator (a drop filling), the order-confirmed moment (the fox leaving the drop), the frame of empty-state illustrations. Never on cards, buttons, inputs, anything pressed or typed in, never cropping a restaurant logo or food photo; in the panel only as map pins. The "drop corner" on cards (three large radii, one smaller) may be tried in a D.3 direction and added later.
 
 ## Waiting for the owner
 
