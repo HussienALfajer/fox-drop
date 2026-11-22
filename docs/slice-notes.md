@@ -7,7 +7,7 @@ do not read it whole.
 
 ## Left from D.2 (`feat/design-tokens`)
 
-- **Pending the owner:** the values the contrast test settled (`TASKS.md` «Waiting for the owner»); the private contrast Artifact is published after the merge from `packages/design-tokens/generated/contrast-report.md` (232 pairs, none failing).
+- **Owner decision (2026-11-22):** the owner read the private contrast Artifact (from `packages/design-tokens/generated/contrast-report.md`, 232 pairs, none failing) and approved the palette: the accessible orange `#C2410C`, the status colours, the captain's darker status text, the alert `#8C1530` and the six chart colours.
 - **Decided by us (to confirm with the owner):** the captain override darkens the muted text and the success, warning and danger text to reach 7:1; `border` (neutral 200) is decorative with no contrast pair and `border-strong` is the control boundary; disabled colours have no pair (WCAG exempts them); type weights per role (body 400, subtitle 500, titles and numbers 700); the chart distance rule is CIEDE2000 ≥ 11 (the closest pair is 11.97).
 - **Not yet:** the two densities of §9.2 (comfortable, compact): the panel type scale stands for the compact one until D.6 needs more; `tnum` is not a token, so D.6 and D.7 set tabular figures on the number role and on money, timer and table text; real dark values (dark and captain dark copy light); wiring into the web apps (D.6) and Flutter (D.7); nothing consumes `generated/tailwind.css` yet, so its Tailwind v4 compile is first seen in D.6.
 - **Also:** the Dart analyzer now excludes `**/node_modules/**` (style-dictionary ships a Flutter example pubspec). The build ran in one session without a compaction.

@@ -15,7 +15,6 @@ D.3 Design directions (`docs/roadmap.md` Phase D): three or four directions on t
 
 ## Waiting for the owner
 
-- D.2: read the contrast report (a private Artifact, published after the merge) and approve the settled values: the accessible orange `#C2410C`, the status colours, the captain's darker status text (`#055A37`, `#6B4500`, `#8C1530`), the alert `#8C1530` and the six chart colours (olive `#4D5A12` and pink `#BE185D` replace the first candidates). Until then they stand as settled by the test, pending the owner (architecture §9.11).
 - From `test/money-properties` (merged, PR 246): what an outcome posts when a restaurant-funded discount exceeds what the clearing account holds (`outcomeEntries` throws today; the property skips that case).
 - D.1: the `FONTS_DEPLOY_KEY` secret (the private half of a read-only deploy key on `fox-drop-fonts`, no expiry; commands in the pull request thread) in the repository's Actions secrets; until then the CI fetch step skips. (The owner confirmed on 2026-11-21 that he holds the right to use every font in the pack, CoFo included, in the apps.) The meaning of the `broken-edges` icon SVGs and of the `variant-b/c` icons.
 - Phase 3 of `docs/claude-code-workflow.md`: the phase 4 session started at 75.7K tokens with one MCP delta (goal: under 45K, none). Left: the `marketing` and `social-media-skills` plugins, off only in the app's settings.
