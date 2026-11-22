@@ -74,7 +74,20 @@ Every direction uses only the D.2 tokens and keeps 60% ivory, 30% orange, 10% bl
 
 ## Scores
 
-Scored after drawing; see the canvas's last artboard.
+Each direction scored 1 to 5 on the principles of expression §1, in their order, then on R7 fit per surface. There is no weighted total: when two directions tie, the higher principle decides.
+
+| Criterion                 | A «اتجاه Figma»                                | B «دافئ بالصور»                                    | C «أزرق الثقة»                                            | D «زاوية القطرة»                                |
+| ------------------------- | ---------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------- |
+| 1. Clear before beautiful | 4: pills and discs take room; facts stay clear | 3: photos dominate, data is smaller                | 5: amount, time and state in one ordered row              | 4: orange blocks compete a little with the data |
+| 2. Honest numbers         | 4: fee and range on the card, amounts in blue  | 4: fees shown but not set apart                    | 5: every number tabular blue in a fixed place             | 4: as A                                         |
+| 3. Light as a fox         | 4: a 16:9 cover per restaurant                 | 2: large photos everywhere on a weak network       | 5: small photos, higher density                           | 4: as A                                         |
+| 4. Each screen its moment | 3: the same soft pills in the dense panel      | 3: the photo style does not serve captain or panel | 4: fits captain and panel; less appetite for the customer | 3: the orange header is heavy in the panel      |
+| 5. Local and warm         | 5: closest to the owner's taste and to food    | 5: warm and appetising                             | 3: cooler; orange below its 30%                           | 4: bold and warm; orange above its share        |
+| R7 customer               | 5                                              | 5                                                  | 3                                                         | 4                                               |
+| R7 captain                | 3: pills shrink the buttons                    | 3: no cards, less separation in the sun            | 5: blue band and strong borders in the sun                | 4: solid buttons                                |
+| R7 panel                  | 3: large corners waste room                    | 3: calm grey columns, weak edges                   | 5: blue column heads, high density                        | 3: orange blocks distract                       |
+
+**Recommendation:** C as the base, with A's warmth on the customer app (pills, category discs, orange on the main action). C leads on the first three principles and fits the captain and the panel; its weak point, warmth and appetite (principle 5), is what A brings, and principle 4 allows each surface its own moment. The drop corner is not added now.
 
 ## The pick
 
