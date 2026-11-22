@@ -50,7 +50,9 @@ describe("the Design System's files (architecture §9.8)", () => {
   });
 
   it('indexes every upload, synced from code', () => {
-    const blobs = Object.fromEntries([...uploads.keys()].map((key, i) => [key, `id${i}`]));
+    const blobs = Object.fromEntries(
+      [...uploads.keys()].map((key, i) => [key, { blob: `id${i}`, size: 1 }]),
+    );
     const value = JSON.parse(
       index({ created: '2026-11-23T00:00:00Z', assets: blobs }, uploads, '2026-11-23T01:00:00Z'),
     ) as {

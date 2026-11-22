@@ -44,8 +44,7 @@ Two private artifacts (§9.8): **Fox Drop Design System** ("Design System" type)
 - [x] Read the cited sections and write the design here
 - [x] Token output `generated/design-system.json`, usage descriptions and its test
 - [x] Brand book README, cover, assets and the build of the system's files, with its test
-- [x] The guide generator and its test (`pnpm --filter @fox-drop/design-tokens guide --config <file>`; the config, outside the repo, holds the system link, `created` and the font blob urls)
-- [ ] Create and publish both artifacts; CLAUDE.md «Sync», docs/code, §9.8; the owner opens both
+- [x] The guide generator and its test- [x] Create and publish both artifacts; CLAUDE.md «Sync», docs/code, §9.8; the owner opens both
 - [ ] Review, hand over (roadmap, TASKS.md for D.5, slice notes), pull request
 
 ## Waiting for the owner

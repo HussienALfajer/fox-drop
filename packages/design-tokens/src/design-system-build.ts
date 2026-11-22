@@ -85,8 +85,8 @@ export function systemFiles(tokens: string, fontFiles: Map<string, Buffer>): Fil
 export interface Blobs {
   /** When the system was first indexed; kept on every later sync. */
   created: string;
-  /** `<Group>/<file>` to the blob id the upload returned. */
-  assets: Record<string, string>;
+  /** `<Group>/<file>` to the blob id and the size the upload reply gave. */
+  assets: Record<string, { blob: string; size: number }>;
 }
 
 /** The index (the type's «A system kept in files»), written last. */
@@ -99,10 +99,12 @@ export function index(blobs: Blobs, uploads: Map<string, Buffer>, now: string): 
         .map((key) => key.slice(name.length + 1));
       const files = Object.fromEntries(
         names.map((file) => {
-          const blob = blobs.assets[`${name}/${file}`];
-          if (!blob) throw new Error(`No blob id for ${name}/${file} in the --blobs file`);
-          const size = uploads.get(`${name}/${file}`)!.length;
-          return [file, { name: file, blob, size, type: 'image/svg+xml' }];
+          const upload = blobs.assets[`${name}/${file}`];
+          if (!upload) throw new Error(`No blob id for ${name}/${file} in the --blobs file`);
+          return [
+            file,
+            { name: file, blob: upload.blob, size: upload.size, type: 'image/svg+xml' },
+          ];
         }),
       );
       const tile = ASSET_GROUPS.find((g) => g.name === name)!.tile;
