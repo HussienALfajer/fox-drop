@@ -4,18 +4,14 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-D.1b Brand expression (architecture §9.12, `docs/roadmap.md` Phase D): each §9.12 item discussed with the owner in chat, one at a time, with options and a recommendation; `docs/brand/expression.md` is written only after the owner decides.
+D.3 Design directions (`docs/roadmap.md` Phase D): three or four directions on the same screens (customer home, captain active order, panel operations board), one of them the Figma direction, drawn in a Claude design canvas; the first icons drawn in each, and each scored against the D.1b principles. The owner picks one.
 
-- **Branch:** `docs/brand-expression`.
+- **Branch:** `feat/design-directions`.
+- **Read first:** architecture §9.1, §9.5 R7, §9.8, §9.9, §9.11, §9.12; `docs/brand/expression.md` (all of it: principles, signature shape, motion, map style, illustration, palette, typography, voice, budgets, first icon set); `docs/brand/README.md` and `docs/brand/guidelines/`; the D.2 tokens (`packages/design-tokens/CLAUDE.md`, `generated/contrast-report.md`); the specs of the three screens (CU home, CA active order, AP operations board).
 
 ### Plan
 
-- [x] The ten items of §9.12, each decided by the owner on 2026-11-22.
-- [x] Write `docs/brand/expression.md` from the decisions; mark §9.12 decided and D.1b done in the roadmap.
-- [x] Pull request 247, merged.
-- [x] The owner confirmed that CoFo's licence allows subsetting and WOFF2 (2026-11-22).
-
-Every decision is in `docs/brand/expression.md`.
+- [ ] Read the cited sections and write the design here.
 
 ## Waiting for the owner
 
@@ -27,6 +23,6 @@ Every decision is in `docs/brand/expression.md`.
 
 ## After that
 
-D.2 (`feat/design-tokens`, reads `docs/brand/expression.md` §1, §3, §6, §7 and §9), then L.2 The permission matrix (branch `test/permission-matrix`; read first: architecture §18.1, AP §6 and §14 item 2, RA §22 item 2, the AP-2 and RA-2 rows of `docs/launch/dod-checklist.md`, `apps/server/CLAUDE.md` «Deny by default», the route table in `apps/server/src/modules/identity/admin-team.test.ts`), then the rest of launch readiness from L.3 (`docs/roadmap.md`).
+L.2 The permission matrix (branch `test/permission-matrix`; read first: architecture §18.1, AP §6 and §14 item 2, RA §22 item 2, the AP-2 and RA-2 rows of `docs/launch/dod-checklist.md`, `apps/server/CLAUDE.md` «Deny by default», the route table in `apps/server/src/modules/identity/admin-team.test.ts`), then the rest of launch readiness from L.3 (`docs/roadmap.md`).
 
-Branches of Phase D: D.2 `feat/design-tokens`, D.3 `feat/design-directions`, D.4 `feat/design-system-project`, D.5 `feat/icon-set`, D.6 `feat/ui-web`, D.7 `feat/core-ui`. Branches of the later slices: L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.
+Branches of Phase D: D.4 `feat/design-system-project`, D.5 `feat/icon-set`, D.6 `feat/ui-web`, D.7 `feat/core-ui`. Branches of the later slices: L.3 `feat/captain-simulator`, L.4 `test/load-k6`, L.5 `chore/pgbackrest`, L.6 `feat/monitoring-alerts`, L.7 `chore/production-environment`, L.8 `test/patrol-e2e`, L.9 `docs/device-lab`, L.10 `docs/staging-rehearsal`, L.11 `chore/launch`.

@@ -1,0 +1,18 @@
+{
+  "color": {
+    "$type": "color",
+    "$description": "The dark slot of the captain override: a copy of captain.json until dark mode is designed. Text and numbers at 7:1 in near-black or blue, no orange text (brand expression §6).",
+    "on-surface-muted": {
+      "$value": "{primitive.color.neutral.700}"
+    },
+    "success": {
+      "$value": "{primitive.color.green.800}"
+    },
+    "warning": {
+      "$value": "{primitive.color.amber.800}"
+    },
+    "danger": {
+      "$value": "{primitive.color.red.800}"
+    }
+  }
+}

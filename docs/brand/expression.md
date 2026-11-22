@@ -105,7 +105,7 @@ The base is Protomaps' style on our own tiles (architecture §7.2), recoloured a
 
 ## 6. Palette
 
-Ten steps, 50 to 900, for each colour on one shared scale. Candidates below; D.2's contrast test settles the exact values.
+Ten steps, 50 to 900, for each colour on one shared scale. D.2's contrast test settled the values below (`packages/design-tokens/tokens/`, report in `packages/design-tokens/generated/contrast-report.md`).
 
 | Scale        | Anchor                                                                                     |
 | ------------ | ------------------------------------------------------------------------------------------ |
@@ -113,17 +113,18 @@ Ten steps, 50 to 900, for each colour on one shared scale. Candidates below; D.2
 | Blue         | Brand `#03428E` at 500                                                                     |
 | Warm neutral | Ivory `#FFFAED` at 50; greys derived from the ivory, leaning slightly beige, not cold grey |
 
-- **Accessible orange (candidate):** `#C2410C`, 4.97:1 on ivory and 5.18:1 under white text; the closest to the brand hue that reaches 4.5:1. It carries text and filled controls; `#FF6E31` stays for the logo, the app icon and large decorative areas (architecture §9.2).
+- **Accessible orange (settled in D.2):** `#C2410C`, 4.97:1 on ivory and 5.18:1 under white text; the closest to the brand hue that reaches 4.5:1. It carries text and filled controls; `#FF6E31` stays for the logo, the app icon and large decorative areas (architecture §9.2).
 - **Status colours, kept apart from the brand orange and always with an icon (R4):**
 
-| Status  | Candidate | On ivory | Note                                                        |
+| Status  | Settled   | On ivory | Note                                                        |
 | ------- | --------- | -------- | ----------------------------------------------------------- |
 | Danger  | `#B91C3C` | 6.12:1   | A crimson leaning pink, so it never reads as a brand button |
 | Warning | `#8A5A00` | 5.69:1   | A brown amber, not orange                                   |
 | Success | `#067647` | 5.46:1   |                                                             |
 | Info    | `#03428E` | 9.27:1   | The brand blue                                              |
 
-- **Charts (panel):** six categorical colours, blue first, then orange, teal, violet, olive green and pink, checked for colour blindness in D.2. Sequential charts (heat maps, the vote map) use the blue scale only.
+- **Status in the captain app:** success, warning and danger text darken to `#055A37`, `#6B4500` and `#8C1530` to reach 7:1. **Alerts** (restaurant, panel): `#8C1530`, 8.90:1 on ivory.
+- **Charts (panel):** six categorical colours, blue `#03428E` first, then orange `#EA580C`, teal `#0F766E`, violet `#7C3AED`, olive green `#4D5A12` and pink `#BE185D`, each at 3:1 or more on the surfaces and at CIEDE2000 11 or more from each other (the closest pair, orange and olive under protanopia, is 11.97) under protan, deutan and tritan simulation (D.2). Sequential charts (heat maps, the vote map) use the blue scale only.
 - **Contrast targets:** WCAG 2.2 AA (4.5:1) everywhere (R4), and more on two surfaces:
   - **Captain app:** text and numbers (amount, address, time) at **7:1** or more, in near-black or blue; buttons at 4.5:1 with large bold labels. No orange text in the captain app: the accessible orange reaches 7:1 only as brown (`#9A3412`).
   - **Restaurant app:** alerts at 7:1, because they are read from across the kitchen.

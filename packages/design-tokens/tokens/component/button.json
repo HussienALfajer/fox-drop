@@ -1,0 +1,60 @@
+{
+  "button": {
+    "height": {
+      "$type": "dimension",
+      "$value": "{size.touch-target}"
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.md}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.xs}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.md}"
+    },
+    "focus-ring": {
+      "$type": "color",
+      "$value": "{color.focus-ring}"
+    },
+    "primary": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.primary}"
+      },
+      "background-pressed": {
+        "$value": "{color.primary-pressed}"
+      },
+      "label": {
+        "$value": "{color.on-primary}"
+      }
+    },
+    "secondary": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.surface-raised}"
+      },
+      "background-pressed": {
+        "$value": "{color.surface-pressed}"
+      },
+      "border": {
+        "$value": "{color.border-strong}"
+      },
+      "label": {
+        "$value": "{color.on-surface}"
+      }
+    },
+    "disabled": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.disabled}"
+      },
+      "label": {
+        "$value": "{color.on-disabled}"
+      }
+    }
+  }
+}

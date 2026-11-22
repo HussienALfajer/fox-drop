@@ -14,3 +14,5 @@ apps/*/ios/
 apps/*/windows/
 # Written by pnpm --filter @fox-drop/infra maps:style; infra.test.mjs fails when it is stale.
 infra/maps/style.json
+# Written by pnpm --filter @fox-drop/design-tokens generate; pnpm verify fails when they are stale.
+packages/design-tokens/generated/
