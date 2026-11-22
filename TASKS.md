@@ -17,10 +17,10 @@ Two private artifacts (§9.8): **Fox Drop Design System** ("Design System" type)
 
 **1. Token output (committed, drift-tested).** `src/design-system.ts` renders `generated/design-system.json`, the type's `tokens.json` shape (the type's `SKILL.md` «tokens.json, in brief»; read `artifact-type/reference/format.md` on the type for the full grammar). It joins `OUTPUTS` in `src/generate.ts`, so the existing drift test covers it.
 
-- `color.themes`: `light` first, then `dark`, `captain-light`, `captain-dark` (the four `THEMES` of `src/resolve.ts`). Semantic colours only (R1: screens use semantic names), as hex, one flat list.
+- `color.themes`: `light` first, then `dark`, `captain-light`, `captain-dark`. Semantic colours only (R1), hex, one flat list.
 - `type`: `fonts` = the three CoFo files at `fonts/<file>`, `families.sans` = the CoFo stack of `font.*`; `groups` = Phone, Panel, Captain, one style per type role (size, line height, weight; expression §7).
-- `spacing`, `radius`, `shadow` (`elevation.offset` as a CSS shadow), each `{tokens:[{name,value,usage}]}`.
-- Every token has a `usage`: from a `$description` on the semantic and base tokens, added where missing (no token value changes, so no version bump; a CHANGELOG line for the new output).
+- `spacing`, `radius`, `shadow` (`elevation.offset` as a CSS shadow), each `{tokens:[{name,value,usage}]}`. Also `size` (the cover's shapes bind to `size-control`). Names: `chart-1`, `space-md`, `elevation-offset`; styles `<surface>-<role>`.
+- Every token has a `usage` from its `$description`, added where missing (no value change, no version bump; a CHANGELOG line).
 - `meta`: source `github`, repo `HussienALfajer/fox-drop`, package `packages/design-tokens`, the token `version` (no sha or date: the file must render the same twice).
 - Test (`src/design-system.test.ts`): names match `[A-Za-z0-9][A-Za-z0-9_.-]{0,63}`, unique across families; no `var(`, `color-mix(` or named colours; every semantic key of `semantic/light.json` appears in every theme; every entry has a usage.
 
@@ -42,7 +42,7 @@ Two private artifacts (§9.8): **Fox Drop Design System** ("Design System" type)
 ### Plan
 
 - [x] Read the cited sections and write the design here
-- [ ] Token output `generated/design-system.json`, usage descriptions and its test
+- [x] Token output `generated/design-system.json`, usage descriptions and its test
 - [ ] Brand book README, cover, assets and the build of the system's files, with its test
 - [ ] The guide generator and its test
 - [ ] Create and publish both artifacts; CLAUDE.md «Sync», docs/code, §9.8; the owner opens both

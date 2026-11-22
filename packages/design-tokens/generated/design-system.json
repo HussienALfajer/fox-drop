@@ -1,0 +1,662 @@
+{
+  "name": "Fox Drop",
+  "version": 1,
+  "color": {
+    "themes": [
+      {
+        "id": "light",
+        "name": "Light"
+      },
+      {
+        "id": "dark",
+        "name": "Dark"
+      },
+      {
+        "id": "captain-light",
+        "name": "Captain light"
+      },
+      {
+        "id": "captain-dark",
+        "name": "Captain dark"
+      }
+    ],
+    "tokens": [
+      {
+        "name": "surface",
+        "value": {
+          "light": "#FBF2E7",
+          "dark": "#FBF2E7",
+          "captain-light": "#FBF2E7",
+          "captain-dark": "#FBF2E7"
+        },
+        "usage": "The screen ground of the Figma file."
+      },
+      {
+        "name": "surface-raised",
+        "value": {
+          "light": "#FEFEFE",
+          "dark": "#FEFEFE",
+          "captain-light": "#FEFEFE",
+          "captain-dark": "#FEFEFE"
+        },
+        "usage": "Cards, sheets and inputs raised above the screen ground."
+      },
+      {
+        "name": "surface-pressed",
+        "value": {
+          "light": "#F5EFE2",
+          "dark": "#F5EFE2",
+          "captain-light": "#F5EFE2",
+          "captain-dark": "#F5EFE2"
+        },
+        "usage": "A raised surface while it is pressed or selected."
+      },
+      {
+        "name": "on-surface",
+        "value": {
+          "light": "#03428E",
+          "dark": "#03428E",
+          "captain-light": "#03428E",
+          "captain-dark": "#03428E"
+        },
+        "usage": "Text and numbers are blue, as in the Figma file."
+      },
+      {
+        "name": "on-surface-muted",
+        "value": {
+          "light": "#416EA4",
+          "dark": "#416EA4",
+          "captain-light": "#4D473D",
+          "captain-dark": "#4D473D"
+        },
+        "usage": "Secondary text, hints and captions on the surfaces."
+      },
+      {
+        "name": "brand",
+        "value": {
+          "light": "#FF6E31",
+          "dark": "#FF6E31",
+          "captain-light": "#FF6E31",
+          "captain-dark": "#FF6E31"
+        },
+        "usage": "The logo, the app icon and decorative areas."
+      },
+      {
+        "name": "primary",
+        "value": {
+          "light": "#FF6E31",
+          "dark": "#FF6E31",
+          "captain-light": "#FF6E31",
+          "captain-dark": "#FF6E31"
+        },
+        "usage": "The brand orange on filled controls, bars and orange text; under the owner's contrast exception (architecture §9.5 R4)."
+      },
+      {
+        "name": "primary-pressed",
+        "value": {
+          "light": "#EA580C",
+          "dark": "#EA580C",
+          "captain-light": "#EA580C",
+          "captain-dark": "#EA580C"
+        },
+        "usage": "A primary control while it is pressed."
+      },
+      {
+        "name": "on-primary",
+        "value": {
+          "light": "#FFFAED",
+          "dark": "#FFFAED",
+          "captain-light": "#FFFAED",
+          "captain-dark": "#FFFAED"
+        },
+        "usage": "Ivory labels on orange, as in the Figma file."
+      },
+      {
+        "name": "heading",
+        "value": {
+          "light": "#FF6E31",
+          "dark": "#FF6E31",
+          "captain-light": "#FF6E31",
+          "captain-dark": "#FF6E31"
+        },
+        "usage": "Titles and section headings, in bold; under the owner's contrast exception."
+      },
+      {
+        "name": "accent",
+        "value": {
+          "light": "#03428E",
+          "dark": "#03428E",
+          "captain-light": "#03428E",
+          "captain-dark": "#03428E"
+        },
+        "usage": "The brand blue on filled secondary controls and selected states."
+      },
+      {
+        "name": "on-accent",
+        "value": {
+          "light": "#FFFFFF",
+          "dark": "#FFFFFF",
+          "captain-light": "#FFFFFF",
+          "captain-dark": "#FFFFFF"
+        },
+        "usage": "Labels and icons on accent."
+      },
+      {
+        "name": "border",
+        "value": {
+          "light": "#D3D6D9",
+          "dark": "#D3D6D9",
+          "captain-light": "#D3D6D9",
+          "captain-dark": "#D3D6D9"
+        },
+        "usage": "Decorative dividers and card outlines only; a control boundary uses border-strong."
+      },
+      {
+        "name": "border-strong",
+        "value": {
+          "light": "#6688B2",
+          "dark": "#6688B2",
+          "captain-light": "#6688B2",
+          "captain-dark": "#6688B2"
+        },
+        "usage": "Control boundaries at 3:1: inputs, checkboxes, outlined buttons."
+      },
+      {
+        "name": "focus-ring",
+        "value": {
+          "light": "#03428E",
+          "dark": "#03428E",
+          "captain-light": "#03428E",
+          "captain-dark": "#03428E"
+        },
+        "usage": "The keyboard focus ring, at 3:1 on every surface."
+      },
+      {
+        "name": "success",
+        "value": {
+          "light": "#067647",
+          "dark": "#067647",
+          "captain-light": "#055A37",
+          "captain-dark": "#055A37"
+        },
+        "usage": "Delivered, paid, accepted: success text, icons and fills."
+      },
+      {
+        "name": "on-success",
+        "value": {
+          "light": "#FFFFFF",
+          "dark": "#FFFFFF",
+          "captain-light": "#FFFFFF",
+          "captain-dark": "#FFFFFF"
+        },
+        "usage": "Labels and icons on success."
+      },
+      {
+        "name": "warning",
+        "value": {
+          "light": "#8A5A00",
+          "dark": "#8A5A00",
+          "captain-light": "#6B4500",
+          "captain-dark": "#6B4500"
+        },
+        "usage": "Delays and states that need attention soon."
+      },
+      {
+        "name": "on-warning",
+        "value": {
+          "light": "#FFFFFF",
+          "dark": "#FFFFFF",
+          "captain-light": "#FFFFFF",
+          "captain-dark": "#FFFFFF"
+        },
+        "usage": "Labels and icons on warning."
+      },
+      {
+        "name": "danger",
+        "value": {
+          "light": "#BF2929",
+          "dark": "#BF2929",
+          "captain-light": "#8C1530",
+          "captain-dark": "#8C1530"
+        },
+        "usage": "Errors, refusals and destructive actions."
+      },
+      {
+        "name": "on-danger",
+        "value": {
+          "light": "#FFFFFF",
+          "dark": "#FFFFFF",
+          "captain-light": "#FFFFFF",
+          "captain-dark": "#FFFFFF"
+        },
+        "usage": "Labels and icons on danger."
+      },
+      {
+        "name": "info",
+        "value": {
+          "light": "#03428E",
+          "dark": "#03428E",
+          "captain-light": "#03428E",
+          "captain-dark": "#03428E"
+        },
+        "usage": "Neutral notices and tips."
+      },
+      {
+        "name": "on-info",
+        "value": {
+          "light": "#FFFFFF",
+          "dark": "#FFFFFF",
+          "captain-light": "#FFFFFF",
+          "captain-dark": "#FFFFFF"
+        },
+        "usage": "Labels and icons on info."
+      },
+      {
+        "name": "alert",
+        "value": {
+          "light": "#8C1530",
+          "dark": "#8C1530",
+          "captain-light": "#8C1530",
+          "captain-dark": "#8C1530"
+        },
+        "usage": "Alerts read from across a room: 7:1."
+      },
+      {
+        "name": "on-alert",
+        "value": {
+          "light": "#FFFFFF",
+          "dark": "#FFFFFF",
+          "captain-light": "#FFFFFF",
+          "captain-dark": "#FFFFFF"
+        },
+        "usage": "Labels and icons on alert, at 7:1."
+      },
+      {
+        "name": "disabled",
+        "value": {
+          "light": "#E8E1D2",
+          "dark": "#E8E1D2",
+          "captain-light": "#E8E1D2",
+          "captain-dark": "#E8E1D2"
+        },
+        "usage": "The fill of a disabled control."
+      },
+      {
+        "name": "on-disabled",
+        "value": {
+          "light": "#857D6E",
+          "dark": "#857D6E",
+          "captain-light": "#857D6E",
+          "captain-dark": "#857D6E"
+        },
+        "usage": "The label of a disabled control."
+      },
+      {
+        "name": "chart-1",
+        "value": {
+          "light": "#03428E",
+          "dark": "#03428E",
+          "captain-light": "#03428E",
+          "captain-dark": "#03428E"
+        },
+        "usage": "The first categorical chart series."
+      },
+      {
+        "name": "chart-2",
+        "value": {
+          "light": "#EA580C",
+          "dark": "#EA580C",
+          "captain-light": "#EA580C",
+          "captain-dark": "#EA580C"
+        },
+        "usage": "The second categorical chart series."
+      },
+      {
+        "name": "chart-3",
+        "value": {
+          "light": "#0F766E",
+          "dark": "#0F766E",
+          "captain-light": "#0F766E",
+          "captain-dark": "#0F766E"
+        },
+        "usage": "The third categorical chart series."
+      },
+      {
+        "name": "chart-4",
+        "value": {
+          "light": "#7C3AED",
+          "dark": "#7C3AED",
+          "captain-light": "#7C3AED",
+          "captain-dark": "#7C3AED"
+        },
+        "usage": "The fourth categorical chart series."
+      },
+      {
+        "name": "chart-5",
+        "value": {
+          "light": "#4D5A12",
+          "dark": "#4D5A12",
+          "captain-light": "#4D5A12",
+          "captain-dark": "#4D5A12"
+        },
+        "usage": "The fifth categorical chart series."
+      },
+      {
+        "name": "chart-6",
+        "value": {
+          "light": "#BE185D",
+          "dark": "#BE185D",
+          "captain-light": "#BE185D",
+          "captain-dark": "#BE185D"
+        },
+        "usage": "The sixth categorical chart series."
+      }
+    ]
+  },
+  "type": {
+    "fonts": [
+      {
+        "family": "CoFo Sans Pro Arabic",
+        "file": "fonts/CoFoSansProArabic-Regular.ttf",
+        "weight": "400",
+        "style": "normal"
+      },
+      {
+        "family": "CoFo Sans Pro Arabic",
+        "file": "fonts/CoFoSansProArabic-Medium.ttf",
+        "weight": "500",
+        "style": "normal"
+      },
+      {
+        "family": "CoFo Sans Pro Arabic",
+        "file": "fonts/CoFoSansProArabic-Bold.ttf",
+        "weight": "700",
+        "style": "normal"
+      }
+    ],
+    "families": {
+      "sans": "\"CoFo Sans Pro Arabic\", sans-serif"
+    },
+    "groups": [
+      {
+        "name": "Phone",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "phone-caption",
+            "fontSize": "12px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "phone-secondary",
+            "fontSize": "14px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "phone-body",
+            "fontSize": "16px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "phone-subtitle",
+            "fontSize": "18px",
+            "lineHeight": 1.3,
+            "fontWeight": 500
+          },
+          {
+            "name": "phone-title",
+            "fontSize": "20px",
+            "lineHeight": 1.3,
+            "fontWeight": 700
+          },
+          {
+            "name": "phone-large-title",
+            "fontSize": "24px",
+            "lineHeight": 1.3,
+            "fontWeight": 700
+          },
+          {
+            "name": "phone-number",
+            "fontSize": "30px",
+            "lineHeight": 1.2,
+            "fontWeight": 700
+          }
+        ]
+      },
+      {
+        "name": "Panel",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "panel-caption",
+            "fontSize": "12px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "panel-secondary",
+            "fontSize": "13px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "panel-body",
+            "fontSize": "14px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "panel-subtitle",
+            "fontSize": "16px",
+            "lineHeight": 1.3,
+            "fontWeight": 500
+          },
+          {
+            "name": "panel-title",
+            "fontSize": "18px",
+            "lineHeight": 1.3,
+            "fontWeight": 700
+          },
+          {
+            "name": "panel-large-title",
+            "fontSize": "22px",
+            "lineHeight": 1.3,
+            "fontWeight": 700
+          },
+          {
+            "name": "panel-number",
+            "fontSize": "28px",
+            "lineHeight": 1.2,
+            "fontWeight": 700
+          }
+        ]
+      },
+      {
+        "name": "Captain",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "captain-caption",
+            "fontSize": "14px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "captain-secondary",
+            "fontSize": "16px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "captain-body",
+            "fontSize": "18px",
+            "lineHeight": 1.6,
+            "fontWeight": 400
+          },
+          {
+            "name": "captain-subtitle",
+            "fontSize": "20px",
+            "lineHeight": 1.3,
+            "fontWeight": 500
+          },
+          {
+            "name": "captain-title",
+            "fontSize": "24px",
+            "lineHeight": 1.3,
+            "fontWeight": 700
+          },
+          {
+            "name": "captain-large-title",
+            "fontSize": "28px",
+            "lineHeight": 1.3,
+            "fontWeight": 700
+          },
+          {
+            "name": "captain-number",
+            "fontSize": "36px",
+            "lineHeight": 1.2,
+            "fontWeight": 700
+          }
+        ]
+      }
+    ]
+  },
+  "spacing": {
+    "tokens": [
+      {
+        "name": "space-none",
+        "value": "0px",
+        "usage": "No gap."
+      },
+      {
+        "name": "space-2xs",
+        "value": "4px",
+        "usage": "Between an icon and its label."
+      },
+      {
+        "name": "space-xs",
+        "value": "8px",
+        "usage": "Inside chips and between tight rows."
+      },
+      {
+        "name": "space-sm",
+        "value": "12px",
+        "usage": "Between related items in a list or a form."
+      },
+      {
+        "name": "space-md",
+        "value": "16px",
+        "usage": "Card padding and the screen margin."
+      },
+      {
+        "name": "space-lg",
+        "value": "24px",
+        "usage": "Between groups on a screen."
+      },
+      {
+        "name": "space-xl",
+        "value": "32px",
+        "usage": "Between sections."
+      },
+      {
+        "name": "space-2xl",
+        "value": "48px",
+        "usage": "Around empty states and above a page title on the web."
+      },
+      {
+        "name": "space-3xl",
+        "value": "64px",
+        "usage": "The largest gap, for wide web layouts."
+      }
+    ]
+  },
+  "radius": {
+    "tokens": [
+      {
+        "name": "radius-xs",
+        "value": "4px",
+        "usage": "Deprecated: use radius.sm."
+      },
+      {
+        "name": "radius-sm",
+        "value": "8px",
+        "usage": "Small cards and image slots."
+      },
+      {
+        "name": "radius-md",
+        "value": "10px",
+        "usage": "Inputs, badges, product cards."
+      },
+      {
+        "name": "radius-lg",
+        "value": "15px",
+        "usage": "Cart items, totals, bars."
+      },
+      {
+        "name": "radius-xl",
+        "value": "30px",
+        "usage": "Banners and sheets."
+      },
+      {
+        "name": "radius-full",
+        "value": "9999px",
+        "usage": "Pills and circles: buttons, search, tags, icon buttons."
+      }
+    ]
+  },
+  "shadow": {
+    "tokens": [
+      {
+        "name": "elevation-low",
+        "value": "0px 1px 2px 0px #1F1C1814",
+        "usage": "Cards resting on the ground."
+      },
+      {
+        "name": "elevation-medium",
+        "value": "0px 4px 8px 0px #1F1C181F",
+        "usage": "Menus, popovers and sticky bars."
+      },
+      {
+        "name": "elevation-high",
+        "value": "0px 12px 24px 0px #1F1C182E",
+        "usage": "Dialogs and sheets over a scrim."
+      },
+      {
+        "name": "elevation-offset",
+        "value": "0px 7px 0px 0px #FD6425",
+        "usage": "The flat orange shadow under orange banners and buttons; the soft ones are for overlays."
+      }
+    ]
+  },
+  "size": {
+    "tokens": [
+      {
+        "name": "size-touch-target",
+        "value": "48px",
+        "usage": "The minimum touch target (R4)."
+      },
+      {
+        "name": "size-control",
+        "value": "50px",
+        "usage": "The Figma file's button height and icon-button diameter."
+      }
+    ]
+  },
+  "meta": {
+    "source": "github",
+    "repo": "HussienALfajer/fox-drop",
+    "package": "packages/design-tokens",
+    "version": "0.2.0",
+    "paths": {
+      "tokens": [
+        "packages/design-tokens/tokens"
+      ],
+      "fonts": [
+        ".fonts/cofo-sans-pro-arabic"
+      ]
+    }
+  }
+}
