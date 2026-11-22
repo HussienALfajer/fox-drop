@@ -11,13 +11,13 @@ D.3 Design directions (`docs/roadmap.md` Phase D): three or four directions on t
 
 ### Design
 
-Owner answers (2026-11-22, planning session): four directions; the captain screen is step 3 «إلى الزبون»; icons are only those the three screens use; the Figma file is read in the built-in browser; the CoFo files may be uploaded to the private canvas.
+Owner answers (2026-11-22): four directions; captain screen step 3; only the screens' icons; Figma read in the built-in browser; CoFo may be uploaded to the private canvas.
 
-**Medium.** One private Artifact of the core "Design" type (live artboards on a canvas; quickstart intent `design`), titled «Fox Drop Directions», created with no design system: the Fox Drop Design System does not exist until D.4, and §9.8 puts exploration outside the system on a separate canvas. Its link is never committed (§9.8); it goes in the chat report only. Standalone claude.ai/design closes on 2026-12-14, so the Artifact type is the canvas.
+**Medium.** One private Artifact of the core "Design" type (quickstart intent `design`), titled «Fox Drop Directions», with no design system (none exists until D.4; §9.8 keeps exploration on a separate canvas). Its link stays out of the repo (§9.8).
 
-**Inputs on the canvas.** Colours, spacing, radii, durations and type sizes copied from `packages/design-tokens/generated/tokens.css` (the semantic names, so the pick maps to tokens; nothing invented, §9.8). CoFo Sans Pro Arabic 400/500/700 from `.fonts/` (run `pnpm fonts:fetch` first) uploaded as private assets of that Artifact (owner yes); never committed. Logo from `docs/brand/logo/`. Synthetic data only: invented restaurant and customer names, Azaz-like neighbourhoods, SYP amounts in Western tabular digits.
+**Inputs on the canvas.** Values from `packages/design-tokens/generated/tokens.css` by semantic name; nothing invented (§9.8). CoFo 400/500/700 from `.fonts/` (`pnpm fonts:fetch`) as private assets. Logo from `docs/brand/logo/`. Synthetic data only, Western tabular digits.
 
-**The Figma file.** The owner sends its link in chat and signs in on the built-in browser pane; the session reads the frames as a mood board (§9.8: no values taken from it) and writes what it sees in words, never the link or images, into `docs/brand/directions.md`.
+**The Figma file.** The owner sends its link in chat and signs in on the built-in browser pane; it is read as a mood board (no values, §9.8) and described in words, never the link or images, in `docs/brand/directions.md`.
 
 **Four directions**, each a brief of palette use (60/30/10 kept), surfaces, shape and radii, density, imagery, type use and motion note:
 
@@ -33,7 +33,7 @@ Owner answers (2026-11-22, planning session): four directions; the captain scree
 1. Customer home, phone 390×844 (CU §8.1, §8.2): header with location and search, banners, categories, «الأقرب إليك», restaurant cards with cover, logo, rating or «جديد», delivery range, fee or «توصيل مجاني», one «مشغول» and one closed faded card, bottom navigation.
 2. Captain step 3, phone 390×844 (CA §9.1, §9.5): the four-step progress bar, the sunlight map (expression §4: high contrast, route width 8, solid orange after pickup, drop pins), «تقبض من الزبون: …» with equivalents, address with building, floor, landmark, directions, note, «التسليم المتوقع قبل …», «ابدأ الملاحة», «اتصال بالزبون», «واتساب الزبون», main button «وصلت» in the thumb zone, «مشكلة» and «طوارئ». 7:1 text, no orange text (expression §6).
 3. Panel operations board, 1440×900, compact (AP §9.2.1): five columns right to left with count and late count, cards with number, restaurant, neighbourhood, time in state with SLA colour plus icon (never colour alone, R4), captain or red «بلا كابتن», total, a few badges, the filter bar, one card's side panel open.
-4. Icons sheet: the ~12 icons these screens use (home, search, cart, orders, account, heart, phone, route and navigation, cash, clock, warning, drop pin; plus chat for WhatsApp if needed), 24-point grid, one stroke, drawn in that direction's style (§9.4; D.5 draws the real set).
+4. Icons sheet: the ~12 icons these screens use (home, search, cart, orders, account, heart, phone, route, cash, clock, warning, drop pin, chat), 24-point grid, one stroke, drawn in that direction's style (§9.4; D.5 draws the real set).
 
 **Scoring.** A last artboard and `docs/brand/directions.md` hold one table: each direction scored 1 to 5 on the five principles of expression §1, in their order, plus R7 fit per surface, each score with a one-line reason. No weighted total: principle order breaks ties. The session recommends one; **the owner picks** (design stop, AskUserQuestion with the four plus "mix").
 
