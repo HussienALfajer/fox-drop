@@ -9,9 +9,48 @@ D.3 Design directions (`docs/roadmap.md` Phase D): three or four directions on t
 - **Branch:** `feat/design-directions`.
 - **Read first:** architecture §9.1, §9.5 R7, §9.8, §9.9, §9.11, §9.12; `docs/brand/expression.md` (all of it: principles, signature shape, motion, map style, illustration, palette, typography, voice, budgets, first icon set); `docs/brand/README.md` and `docs/brand/guidelines/`; the D.2 tokens (`packages/design-tokens/CLAUDE.md`, `generated/contrast-report.md`); the specs of the three screens (CU home, CA active order, AP operations board).
 
+### Design
+
+Owner answers (2026-11-22, planning session): four directions; the captain screen is step 3 «إلى الزبون»; icons are only those the three screens use; the Figma file is read in the built-in browser; the CoFo files may be uploaded to the private canvas.
+
+**Medium.** One private Artifact of the core "Design" type (live artboards on a canvas; quickstart intent `design`), titled «Fox Drop Directions», created with no design system: the Fox Drop Design System does not exist until D.4, and §9.8 puts exploration outside the system on a separate canvas. Its link is never committed (§9.8); it goes in the chat report only. Standalone claude.ai/design closes on 2026-12-14, so the Artifact type is the canvas.
+
+**Inputs on the canvas.** Colours, spacing, radii, durations and type sizes copied from `packages/design-tokens/generated/tokens.css` (the semantic names, so the pick maps to tokens; nothing invented, §9.8). CoFo Sans Pro Arabic 400/500/700 from `.fonts/` (run `pnpm fonts:fetch` first) uploaded as private assets of that Artifact (owner yes); never committed. Logo from `docs/brand/logo/`. Synthetic data only: invented restaurant and customer names, Azaz-like neighbourhoods, SYP amounts in Western tabular digits.
+
+**The Figma file.** The owner sends its link in chat and signs in on the built-in browser pane; the session reads the frames as a mood board (§9.8: no values taken from it) and writes what it sees in words, never the link or images, into `docs/brand/directions.md`.
+
+**Four directions**, each a brief of palette use (60/30/10 kept), surfaces, shape and radii, density, imagery, type use and motion note:
+
+| #   | Name           | Idea                                                                                           |
+| --- | -------------- | ---------------------------------------------------------------------------------------------- |
+| A   | «اتجاه Figma»  | The owner's Figma mood board turned into the tokens                                            |
+| B   | «دافئ بالصور»  | Ivory, large food photos at fixed ratios, orange accents only (R7 appetite)                    |
+| C   | «أزرق الثقة»   | Blue headers and numbers, calm structure, orange for the one main action                       |
+| D   | «زاوية القطرة» | Bold orange blocks and the "drop corner" on cards (expression §2: tried in one direction only) |
+
+**Artboards per direction** (Arabic RTL, default state only; the five R6 states belong to each screen's own cycle, §9.9):
+
+1. Customer home, phone 390×844 (CU §8.1, §8.2): header with location and search, banners, categories, «الأقرب إليك», restaurant cards with cover, logo, rating or «جديد», delivery range, fee or «توصيل مجاني», one «مشغول» and one closed faded card, bottom navigation.
+2. Captain step 3, phone 390×844 (CA §9.1, §9.5): the four-step progress bar, the sunlight map (expression §4: high contrast, route width 8, solid orange after pickup, drop pins), «تقبض من الزبون: …» with equivalents, address with building, floor, landmark, directions, note, «التسليم المتوقع قبل …», «ابدأ الملاحة», «اتصال بالزبون», «واتساب الزبون», main button «وصلت» in the thumb zone, «مشكلة» and «طوارئ». 7:1 text, no orange text (expression §6).
+3. Panel operations board, 1440×900, compact (AP §9.2.1): five columns right to left with count and late count, cards with number, restaurant, neighbourhood, time in state with SLA colour plus icon (never colour alone, R4), captain or red «بلا كابتن», total, a few badges, the filter bar, one card's side panel open.
+4. Icons sheet: the ~12 icons these screens use (home, search, cart, orders, account, heart, phone, route and navigation, cash, clock, warning, drop pin; plus chat for WhatsApp if needed), 24-point grid, one stroke, drawn in that direction's style (§9.4; D.5 draws the real set).
+
+**Scoring.** A last artboard and `docs/brand/directions.md` hold one table: each direction scored 1 to 5 on the five principles of expression §1, in their order, plus R7 fit per surface, each score with a one-line reason. No weighted total: principle order breaks ties. The session recommends one; **the owner picks** (design stop, AskUserQuestion with the four plus "mix").
+
+**Repo output** (docs only, no code): `docs/brand/directions.md` (Figma notes, the four briefs, the scores, the pick and what carries into D.4/D.5, e.g. whether the drop corner is kept); architecture §9.11 says the direction is chosen; `docs/brand/README.md` links the new file.
+
+**Left out on purpose:** the R6 states, the restaurant app and portal screens, dark mode, motion prototypes, the full 44 icons (D.5), component sheets (D.6/D.7 cycles), any token change (a needed value goes to a later token PR, noted in directions.md).
+
+**Checks:** a Markdown-only change, so the `checker` runs Prettier and the instruction size check.
+
 ### Plan
 
-- [ ] Read the cited sections and write the design here.
+- [x] Read the cited sections and write the design here.
+- [ ] Read the Figma file in the built-in browser; write the Figma notes and the four briefs in `docs/brand/directions.md`.
+- [ ] Create the canvas with the token sheet, CoFo assets and direction A's four artboards.
+- [ ] Draw directions B, C and D.
+- [ ] Score the four on the canvas and in `directions.md`; the owner picks one.
+- [ ] Record the pick (directions.md, architecture §9.11, brand README); review; hand over to D.4; pull request.
 
 ## Waiting for the owner
 
