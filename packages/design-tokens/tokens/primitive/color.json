@@ -1,0 +1,73 @@
+{
+  "primitive": {
+    "color": {
+      "$type": "color",
+      "$description": "Raw colours (brand expression §6). Only semantic tokens reference them.",
+      "white": { "$value": "#FFFFFF" },
+      "orange": {
+        "50": { "$value": "#FFF4ED" },
+        "100": { "$value": "#FFE4D1" },
+        "200": { "$value": "#FFC7A3" },
+        "300": { "$value": "#FFA06B" },
+        "400": {
+          "$value": "#FF6E31",
+          "$description": "The brand orange: logo, app icon, large decorative areas only."
+        },
+        "500": { "$value": "#EA580C" },
+        "600": {
+          "$value": "#C2410C",
+          "$description": "The accessible orange: text and filled controls."
+        },
+        "700": { "$value": "#9A3412" },
+        "800": { "$value": "#7C2D12" },
+        "900": { "$value": "#5C210B" }
+      },
+      "blue": {
+        "50": { "$value": "#EEF4FC" },
+        "100": { "$value": "#D6E4F7" },
+        "200": { "$value": "#ADC9EE" },
+        "300": { "$value": "#7AA6E0" },
+        "400": { "$value": "#3C76C4" },
+        "500": { "$value": "#03428E", "$description": "The brand blue." },
+        "600": { "$value": "#033878" },
+        "700": { "$value": "#032E62" },
+        "800": { "$value": "#02234B" },
+        "900": { "$value": "#021A38" }
+      },
+      "neutral": {
+        "$description": "Warm greys derived from the ivory, leaning slightly beige.",
+        "50": { "$value": "#FFFAED", "$description": "The brand ivory." },
+        "100": { "$value": "#F5EFE2" },
+        "200": { "$value": "#E8E1D2" },
+        "300": { "$value": "#D4CBBA" },
+        "400": { "$value": "#ADA493" },
+        "500": { "$value": "#857D6E" },
+        "600": { "$value": "#665F52" },
+        "700": { "$value": "#4D473D" },
+        "800": { "$value": "#34302A" },
+        "900": { "$value": "#1F1C18" }
+      },
+      "red": {
+        "600": { "$value": "#B91C3C" },
+        "800": { "$value": "#8C1530" }
+      },
+      "amber": {
+        "700": { "$value": "#8A5A00" },
+        "800": { "$value": "#6B4500" }
+      },
+      "green": {
+        "700": { "$value": "#067647" },
+        "800": { "$value": "#055A37" }
+      },
+      "teal": { "700": { "$value": "#0F766E" } },
+      "violet": { "600": { "$value": "#7C3AED" } },
+      "olive": { "800": { "$value": "#4D5A12" } },
+      "pink": { "700": { "$value": "#BE185D" } },
+      "shadow": {
+        "soft": { "$value": "#1F1C1814" },
+        "medium": { "$value": "#1F1C181F" },
+        "strong": { "$value": "#1F1C182E" }
+      }
+    }
+  }
+}

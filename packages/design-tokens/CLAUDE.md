@@ -1,0 +1,13 @@
+# packages/design-tokens
+
+The design tokens of every app (architecture §9.2, §9.5 R1 and R4; brand expression §3, §6, §7). W3C DTCG JSON under `tokens/`, resolved by Style Dictionary (`src/resolve.ts`) and written by `src/generate.ts`. What was built and decided: `docs/code/packages/design-tokens.md`.
+
+## Rules
+
+- **Edit the JSON under `tokens/`, never an output.** Then run `pnpm --filter @fox-drop/design-tokens generate` and commit what changed: `generated/tokens.css`, `generated/tailwind.css`, `generated/contrast-report.md` and `packages/core_tokens/lib/src/tokens.g.dart`. A test fails when a committed output differs from a fresh render.
+- **Three layers.** `tokens/primitive/` holds raw values under `primitive.*`; only semantic tokens reference them, and no output exports them. `tokens/semantic/` holds meanings; `tokens/component/` holds one component's tokens, referencing semantic tokens only. Screens use semantic names only.
+- **Every semantic colour has its dark slot:** a key added to `semantic/light.json` goes into `semantic/dark.json` too (a test compares the key sets). Until dark mode is designed, the dark value copies the light one (owner, 2026-11-22). `semantic/captain.json` overrides existing keys only.
+- **A new foreground or background colour gets its contrast pair** in `src/contrast.ts` with its target: 4.5:1 text and filled controls, 3:1 control boundaries, focus ring and icons, 7:1 captain text and alerts. `brand` (`#FF6E31`) is decorative and never text; the captain app has no orange text.
+- **Chart colours** stay at 3:1 on the surfaces and at CIEDE2000 ≥ 10 from each other under protan, deutan and tritan simulation (`src/tokens.test.ts`).
+- **Governance (§9.2):** bump `version` in `package.json` and add a `CHANGELOG.md` entry for every token change. To remove a token, first mark it `"$deprecated": "<what replaces it>"` for one release.
+- Tailwind breakpoints carry literal values (a media query cannot read a variable); every other Tailwind entry points at a `--fd-*` variable.

@@ -1,0 +1,108 @@
+{
+  "color": {
+    "$type": "color",
+    "surface": {
+      "$value": "{primitive.color.neutral.50}"
+    },
+    "surface-raised": {
+      "$value": "{primitive.color.white}"
+    },
+    "surface-pressed": {
+      "$value": "{primitive.color.neutral.100}"
+    },
+    "on-surface": {
+      "$value": "{primitive.color.neutral.900}"
+    },
+    "on-surface-muted": {
+      "$value": "{primitive.color.neutral.600}"
+    },
+    "brand": {
+      "$value": "{primitive.color.orange.400}",
+      "$description": "Decorative only: logo, app icon, large areas. Never text or a control."
+    },
+    "primary": {
+      "$value": "{primitive.color.orange.600}",
+      "$description": "The accessible orange: text and filled controls."
+    },
+    "primary-pressed": {
+      "$value": "{primitive.color.orange.700}"
+    },
+    "on-primary": {
+      "$value": "{primitive.color.white}"
+    },
+    "accent": {
+      "$value": "{primitive.color.blue.500}"
+    },
+    "on-accent": {
+      "$value": "{primitive.color.white}"
+    },
+    "border": {
+      "$value": "{primitive.color.neutral.200}",
+      "$description": "Decorative dividers only; a control boundary uses border-strong."
+    },
+    "border-strong": {
+      "$value": "{primitive.color.neutral.500}"
+    },
+    "focus-ring": {
+      "$value": "{primitive.color.blue.500}"
+    },
+    "success": {
+      "$value": "{primitive.color.green.700}"
+    },
+    "on-success": {
+      "$value": "{primitive.color.white}"
+    },
+    "warning": {
+      "$value": "{primitive.color.amber.700}"
+    },
+    "on-warning": {
+      "$value": "{primitive.color.white}"
+    },
+    "danger": {
+      "$value": "{primitive.color.red.600}"
+    },
+    "on-danger": {
+      "$value": "{primitive.color.white}"
+    },
+    "info": {
+      "$value": "{primitive.color.blue.500}"
+    },
+    "on-info": {
+      "$value": "{primitive.color.white}"
+    },
+    "alert": {
+      "$value": "{primitive.color.red.800}",
+      "$description": "Alerts read from across a room: 7:1."
+    },
+    "on-alert": {
+      "$value": "{primitive.color.white}"
+    },
+    "disabled": {
+      "$value": "{primitive.color.neutral.200}"
+    },
+    "on-disabled": {
+      "$value": "{primitive.color.neutral.500}"
+    },
+    "chart": {
+      "1": {
+        "$value": "{primitive.color.blue.500}"
+      },
+      "2": {
+        "$value": "{primitive.color.orange.500}"
+      },
+      "3": {
+        "$value": "{primitive.color.teal.700}"
+      },
+      "4": {
+        "$value": "{primitive.color.violet.600}"
+      },
+      "5": {
+        "$value": "{primitive.color.olive.800}"
+      },
+      "6": {
+        "$value": "{primitive.color.pink.700}"
+      },
+      "$description": "Categorical chart colours, in this order."
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "primitive": {
+    "space": {
+      "$type": "dimension",
+      "$description": "The 4-point grid.",
+      "0": { "$value": "0px" },
+      "4": { "$value": "4px" },
+      "8": { "$value": "8px" },
+      "12": { "$value": "12px" },
+      "16": { "$value": "16px" },
+      "24": { "$value": "24px" },
+      "32": { "$value": "32px" },
+      "48": { "$value": "48px" },
+      "64": { "$value": "64px" }
+    },
+    "radius": {
+      "$type": "dimension",
+      "4": { "$value": "4px" },
+      "8": { "$value": "8px" },
+      "12": { "$value": "12px" },
+      "16": { "$value": "16px" },
+      "full": { "$value": "9999px" }
+    },
+    "shadow": {
+      "$type": "shadow",
+      "1": {
+        "$value": {
+          "color": "{primitive.color.shadow.soft}",
+          "offsetX": "0px",
+          "offsetY": "1px",
+          "blur": "2px",
+          "spread": "0px"
+        }
+      },
+      "2": {
+        "$value": {
+          "color": "{primitive.color.shadow.medium}",
+          "offsetX": "0px",
+          "offsetY": "4px",
+          "blur": "8px",
+          "spread": "0px"
+        }
+      },
+      "3": {
+        "$value": {
+          "color": "{primitive.color.shadow.strong}",
+          "offsetX": "0px",
+          "offsetY": "12px",
+          "blur": "24px",
+          "spread": "0px"
+        }
+      }
+    },
+    "duration": {
+      "$type": "duration",
+      "$description": "Brand expression §3.",
+      "100": { "$value": "100ms" },
+      "200": { "$value": "200ms" },
+      "300": { "$value": "300ms" },
+      "1200": { "$value": "1200ms" }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "calm": {
+        "$value": [0.2, 0, 0, 1],
+        "$description": "Decelerates without overshoot: no bounce (§3)."
+      }
+    },
+    "font": {
+      "family": {
+        "$type": "fontFamily",
+        "cofo": { "$value": ["CoFo Sans Pro Arabic", "sans-serif"] }
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "400": { "$value": 400 },
+        "500": { "$value": 500 },
+        "700": { "$value": 700 }
+      },
+      "size": {
+        "$type": "dimension",
+        "$description": "Never below 12 (§7).",
+        "12": { "$value": "12px" },
+        "13": { "$value": "13px" },
+        "14": { "$value": "14px" },
+        "16": { "$value": "16px" },
+        "18": { "$value": "18px" },
+        "20": { "$value": "20px" },
+        "22": { "$value": "22px" },
+        "24": { "$value": "24px" },
+        "28": { "$value": "28px" },
+        "30": { "$value": "30px" },
+        "36": { "$value": "36px" }
+      },
+      "line-height": {
+        "$type": "number",
+        "text": { "$value": 1.6 },
+        "heading": { "$value": 1.3 },
+        "number": { "$value": 1.2 }
+      }
+    },
+    "breakpoint": {
+      "$type": "dimension",
+      "640": { "$value": "640px" },
+      "768": { "$value": "768px" },
+      "1024": { "$value": "1024px" },
+      "1280": { "$value": "1280px" }
+    }
+  }
+}
