@@ -37,7 +37,8 @@ const readByServerTests = (file) =>
 // or windows/ folder), checked by classify-changes.test.mjs.
 export const NATIVE_PACKAGES = ['packages/core_alerts'];
 
-const DOCS = /(\.md$|^docs\/)/;
+// Generated Markdown is code: a test compares it with a fresh render.
+const DOCS = /^(?!packages\/design-tokens\/generated\/)(.*\.md$|docs\/)/;
 // packages/design-tokens generates the Dart tokens of packages/core_tokens.
 const DART =
   /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml)$|^(apps\/(customer|captain|merchant)|packages\/core_[a-z0-9_]+|packages\/design-tokens)\/|^\.fvmrc$|^\.github\/workflows\/ci\.yml$|^scripts\/verify(-support)?\.mjs$)/;

@@ -12,7 +12,7 @@ export interface Pair {
   use: string;
 }
 
-const BACKGROUNDS = ['surface', 'surface-raised'];
+const BACKGROUNDS = ['surface', 'surface-raised', 'surface-pressed'];
 const on = (names: string[], target: number, use: string, backgrounds = BACKGROUNDS): Pair[] =>
   names.flatMap((foreground) =>
     backgrounds.map((background) => ({ foreground, background, target, use })),
@@ -46,7 +46,6 @@ export const PAIRS: Record<Surface, Pair[]> = {
   phone: [
     ...on(['on-surface', 'on-surface-muted', 'accent', 'primary'], 4.5, 'text'),
     ...on(statusText, 4.5, 'status text'),
-    { foreground: 'on-surface', background: 'surface-pressed', target: 4.5, use: 'text' },
     ...fills,
     ...nonText,
     ...alerts,
@@ -63,7 +62,6 @@ export const PAIRS: Record<Surface, Pair[]> = {
   captain: [
     ...on(['on-surface', 'on-surface-muted', 'accent'], 7, 'text and numbers'),
     ...on(statusText, 7, 'status text'),
-    { foreground: 'on-surface', background: 'surface-pressed', target: 7, use: 'text' },
     ...fills,
     ...nonText,
   ],

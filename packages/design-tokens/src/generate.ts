@@ -1,7 +1,7 @@
 // Writes every output of the tokens from the resolved DTCG sources:
 //   node src/generate.ts   (pnpm --filter @fox-drop/design-tokens generate)
-// The outputs are committed; `pnpm verify` regenerates them and fails when one
-// changes. Primitives are never exported (architecture §9.5 R1).
+// The outputs are committed; src/tokens.test.ts fails when one differs from a
+// fresh render. Primitives are never exported (architecture §9.5 R1).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -69,7 +69,8 @@ export function css(themes: Record<Theme, Tokens>): string {
     '}',
     '',
     '[data-theme="dark"][data-surface="captain"],',
-    '[data-theme="dark"] [data-surface="captain"] {',
+    '[data-theme="dark"] [data-surface="captain"],',
+    '[data-surface="captain"] [data-theme="dark"] {',
     declarations(changed(themes.captainDark, themes.dark)),
     '}',
     '',
@@ -114,6 +115,10 @@ export function tailwind(light: Tokens): string {
     '',
     '@theme inline {',
     '  --*: initial;',
+    // Preflight and the transition utilities read these defaults.
+    '  --default-font-family: var(--fd-font-family-sans);',
+    '  --default-transition-duration: var(--fd-duration-base);',
+    '  --default-transition-timing-function: var(--fd-easing-standard);',
     ...lines,
     '}',
     '',

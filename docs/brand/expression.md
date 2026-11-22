@@ -124,7 +124,7 @@ Ten steps, 50 to 900, for each colour on one shared scale. D.2's contrast test s
 | Info    | `#03428E` | 9.27:1   | The brand blue                                              |
 
 - **Status in the captain app:** success, warning and danger text darken to `#055A37`, `#6B4500` and `#8C1530` to reach 7:1. **Alerts** (restaurant, panel): `#8C1530`, 8.90:1 on ivory.
-- **Charts (panel):** six categorical colours, blue `#03428E` first, then orange `#EA580C`, teal `#0F766E`, violet `#7C3AED`, olive green `#4D5A12` and pink `#BE185D`, each at 3:1 or more on the surfaces and at CIEDE2000 12 or more from each other under protan, deutan and tritan simulation (D.2). Sequential charts (heat maps, the vote map) use the blue scale only.
+- **Charts (panel):** six categorical colours, blue `#03428E` first, then orange `#EA580C`, teal `#0F766E`, violet `#7C3AED`, olive green `#4D5A12` and pink `#BE185D`, each at 3:1 or more on the surfaces and at CIEDE2000 11 or more from each other (the closest pair, orange and olive under protanopia, is 11.97) under protan, deutan and tritan simulation (D.2). Sequential charts (heat maps, the vote map) use the blue scale only.
 - **Contrast targets:** WCAG 2.2 AA (4.5:1) everywhere (R4), and more on two surfaces:
   - **Captain app:** text and numbers (amount, address, time) at **7:1** or more, in near-black or blue; buttons at 4.5:1 with large bold labels. No orange text in the captain app: the accessible orange reaches 7:1 only as brown (`#9A3412`).
   - **Restaurant app:** alerts at 7:1, because they are read from across the kitchen.

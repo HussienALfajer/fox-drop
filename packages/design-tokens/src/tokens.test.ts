@@ -27,6 +27,9 @@ describe('the generated outputs', () => {
     const theme = read(OUTPUTS.tailwind);
     expect(theme).toMatch(/@theme inline \{\n {2}--\*: initial;/);
     expect(theme).not.toMatch(/primitive|#[0-9a-f]{3,8}\b/i);
+    // `--*: initial` also removes the defaults Preflight and `transition` read.
+    for (const variable of ['font-family', 'transition-duration', 'transition-timing-function'])
+      expect(theme).toMatch(new RegExp(`--default-${variable}: var\\(--fd-`));
   });
 });
 
@@ -49,6 +52,9 @@ describe('the dark slot (architecture §9.2)', () => {
   it('overrides only keys that exist, for the captain', () => {
     const light = new Set(leaves('tokens/semantic/light.json'));
     expect(leaves('tokens/semantic/captain.json').filter((key) => !light.has(key))).toEqual([]);
+    expect(leaves('tokens/semantic/captain-dark.json')).toEqual(
+      leaves('tokens/semantic/captain.json'),
+    );
   });
 });
 
@@ -76,14 +82,25 @@ describe('contrast (R4, brand expression §6)', () => {
     ).toBe(true);
   });
 
-  it('has no orange text in the captain app', () => {
-    const orange = ['color.primary', 'color.brand'].map((name) =>
-      colour(themes.captainLight, name),
+  it('writes captain text in near-black, blue or a dark status shade only', () => {
+    const primitives = themes.captainLight;
+    const allowed = new Set(
+      [...primitives.values()]
+        .filter((t) =>
+          /^primitive\.color\.(neutral\.[789]00|blue\.\d+|(green|amber|red)\.800)$/.test(
+            t.path.join('.'),
+          ),
+        )
+        .map((t) => String(t.value)),
     );
-    const text = PAIRS.captain
-      .filter((p) => p.target === 7)
-      .map((p) => colour(themes.captainLight, `color.${p.foreground}`));
-    expect(text.filter((each) => orange.includes(each))).toEqual([]);
+    for (const theme of ['captainLight', 'captainDark'] as const) {
+      const text = PAIRS.captain
+        .filter((p) => p.use !== 'filled control label' && p.target === 7)
+        .map((p) => `color.${p.foreground}`);
+      expect(text.length).toBeGreaterThan(0);
+      for (const name of text)
+        expect(allowed, `${theme} ${name}`).toContain(colour(themes[theme], name));
+    }
   });
 
   it('computes WCAG ratios', () => {
@@ -94,8 +111,8 @@ describe('contrast (R4, brand expression §6)', () => {
 
 describe('the chart palette (brand expression §6)', () => {
   const chart = [1, 2, 3, 4, 5, 6].map((n) => colour(themes.light, `color.chart.${n}`));
-  // CIEDE2000 of 10 or more: two colours that read as different at a glance.
-  const MIN_DISTANCE = 10;
+  // CIEDE2000 of 11 or more (brand expression §6); the closest pair is 11.97.
+  const MIN_DISTANCE = 11;
 
   it('has six colours, each at 3:1 on the surfaces', () => {
     expect(new Set(chart).size).toBe(6);

@@ -82,6 +82,12 @@ describe('the change classifier', () => {
       flags(['packages/design-tokens/tokens/semantic/light.json']),
       'code dart build typescript',
     );
+    // Generated Markdown and the font metrics are read by tests: they are code.
+    assert.equal(
+      flags(['packages/design-tokens/generated/contrast-report.md']),
+      'code dart build typescript',
+    );
+    assert.equal(flags(['packages/design-tokens/font-metrics.json']), 'code dart build typescript');
   });
 
   it('sets the native builds for what can break them', () => {

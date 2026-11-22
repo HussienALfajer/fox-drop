@@ -3,6 +3,9 @@
 
 @theme inline {
   --*: initial;
+  --default-font-family: var(--fd-font-family-sans);
+  --default-transition-duration: var(--fd-duration-base);
+  --default-transition-timing-function: var(--fd-easing-standard);
   --spacing-none: var(--fd-space-none);
   --spacing-2xs: var(--fd-space-2xs);
   --spacing-xs: var(--fd-space-xs);

@@ -5,7 +5,7 @@ import { FONTS_DIR, measureAll, readMetrics, WEIGHTS } from './font-metrics.mjs'
 import { readManifest } from './fonts.mjs';
 
 // Brand expression §7: money, timers and tables use CoFo's tabular digits.
-describe('the tabular digits of CoFo (docs/brand/font-metrics.json)', () => {
+describe('the tabular digits of CoFo (packages/design-tokens/font-metrics.json)', () => {
   const metrics = readMetrics();
   const manifest = readManifest();
 

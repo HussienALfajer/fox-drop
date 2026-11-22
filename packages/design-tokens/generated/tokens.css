@@ -198,7 +198,8 @@
 }
 
 [data-theme="dark"][data-surface="captain"],
-[data-theme="dark"] [data-surface="captain"] {
+[data-theme="dark"] [data-surface="captain"],
+[data-surface="captain"] [data-theme="dark"] {
   --fd-color-on-surface-muted: #4D473D;
   --fd-color-success: #055A37;
   --fd-color-warning: #6B4500;

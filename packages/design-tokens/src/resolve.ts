@@ -26,7 +26,10 @@ const SOURCES: Record<Theme, { include: string[]; source: string[] }> = {
     include: ['tokens/semantic/light.json'],
     source: ['tokens/semantic/captain.json'],
   },
-  captainDark: { include: ['tokens/semantic/dark.json'], source: ['tokens/semantic/captain.json'] },
+  captainDark: {
+    include: ['tokens/semantic/dark.json'],
+    source: ['tokens/semantic/captain-dark.json'],
+  },
 };
 
 // Style Dictionary's globs take forward slashes, on Windows too.

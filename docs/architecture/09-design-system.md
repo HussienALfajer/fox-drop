@@ -104,7 +104,7 @@ Flutter 3.47 moved Material and Cupertino out of the framework into `material_ui
 
 ## 9.11 Open until D.2 and D.3
 
-The darker orange is settled: `#C2410C` (D.2, §9.2). The three design directions and the icon grid details are decided in their slices, each with the owner's approval.
+The darker orange is settled by D.2's contrast test, `#C2410C` (§9.2), pending the owner's reading of the report. The three design directions and the icon grid details are decided in their slices, each with the owner's approval.
 
 ## 9.12 Brand expression (D.1b)
 

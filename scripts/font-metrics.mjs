@@ -4,7 +4,7 @@
 // are committed, keyed by each file's SHA-256 from the fonts manifest.
 //
 //   node scripts/font-metrics.mjs   reads .fonts/ (pnpm fonts:fetch first) and
-//                                   writes docs/brand/font-metrics.json
+//                                   writes packages/design-tokens/font-metrics.json
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,7 +12,7 @@ import * as fontkit from 'fontkit';
 import { readManifest, sha256 } from './fonts.mjs';
 
 export const FONTS_DIR = new URL('../.fonts/', import.meta.url);
-export const METRICS_URL = new URL('../docs/brand/font-metrics.json', import.meta.url);
+export const METRICS_URL = new URL('../packages/design-tokens/font-metrics.json', import.meta.url);
 
 // The weights of the UI (brand expression §7) and their files.
 export const WEIGHTS = {
