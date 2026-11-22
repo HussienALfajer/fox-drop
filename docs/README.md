@@ -4,21 +4,22 @@ Start here. This page says where each kind of information lives. Each rule has e
 
 ## Map
 
-| Folder or file                                                      | What it holds                                                                                                                           |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| [`product/v1/admin-panel/`](product/v1/admin-panel/README.md)       | Admin panel V1 spec (AP)                                                                                                                |
-| [`product/v1/restaurant-app/`](product/v1/restaurant-app/README.md) | Restaurant app and owner web portal V1 spec (RA)                                                                                        |
-| [`product/v1/captain-app/`](product/v1/captain-app/README.md)       | Captain app V1 spec (CA)                                                                                                                |
-| [`product/v1/customer-app/`](product/v1/customer-app/README.md)     | Customer app V1 spec (CU)                                                                                                               |
-| [`domain/`](domain/README.md)                                       | Shared domain rules (AP §8): order statuses, timers, order money, custody and earnings, currencies, restaurant account, trust, outcomes |
-| [`architecture/`](architecture/README.md)                           | Technology stack and architecture                                                                                                       |
-| [`runbooks/`](runbooks/staging-cycle.md)                            | Run books for the owner's trials on staging, such as the whole order cycle on real phones                                               |
-| [`launch/dod-checklist.md`](launch/dod-checklist.md)                | Every item of the four definitions of done, the test or staging demonstration that proves it, and its state                             |
-| [`code/`](code/)                                                    | What the features of each code folder do and why, one file per folder (`code/<folder path>.md`); grep it, never read it whole           |
-| [`slice-notes.md`](slice-notes.md)                                  | What each built slice left: before deploying, to check on staging, decisions pending the owner, not yet                                 |
-| [`claude-code-workflow.md`](claude-code-workflow.md)                | How the project uses Claude Code: token and check-time baseline, and the planned changes                                                |
-| [`roadmap.md`](roadmap.md)                                          | Versions V1–V6 and the V1 build phases                                                                                                  |
-| [`open-questions.md`](open-questions.md)                            | Where every open item lives                                                                                                             |
+| Folder or file                                                      | What it holds                                                                                                                                                     |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`product/v1/admin-panel/`](product/v1/admin-panel/README.md)       | Admin panel V1 spec (AP)                                                                                                                                          |
+| [`product/v1/restaurant-app/`](product/v1/restaurant-app/README.md) | Restaurant app and owner web portal V1 spec (RA)                                                                                                                  |
+| [`product/v1/captain-app/`](product/v1/captain-app/README.md)       | Captain app V1 spec (CA)                                                                                                                                          |
+| [`product/v1/customer-app/`](product/v1/customer-app/README.md)     | Customer app V1 spec (CU)                                                                                                                                         |
+| [`domain/`](domain/README.md)                                       | Shared domain rules (AP §8): order statuses, timers, order money, custody and earnings, currencies, restaurant account, trust, outcomes                           |
+| [`architecture/`](architecture/README.md)                           | Technology stack and architecture                                                                                                                                 |
+| [`brand/`](brand/README.md)                                         | The brand pack and its rules; [`brand/expression.md`](brand/expression.md), the brand's character (principles, motion, map, palette, type, voice, budgets, icons) |
+| [`runbooks/`](runbooks/staging-cycle.md)                            | Run books for the owner's trials on staging, such as the whole order cycle on real phones                                                                         |
+| [`launch/dod-checklist.md`](launch/dod-checklist.md)                | Every item of the four definitions of done, the test or staging demonstration that proves it, and its state                                                       |
+| [`code/`](code/)                                                    | What the features of each code folder do and why, one file per folder (`code/<folder path>.md`); grep it, never read it whole                                     |
+| [`slice-notes.md`](slice-notes.md)                                  | What each built slice left: before deploying, to check on staging, decisions pending the owner, not yet                                                           |
+| [`claude-code-workflow.md`](claude-code-workflow.md)                | How the project uses Claude Code: token and check-time baseline, and the planned changes                                                                          |
+| [`roadmap.md`](roadmap.md)                                          | Versions V1–V6 and the V1 build phases                                                                                                                            |
+| [`open-questions.md`](open-questions.md)                            | Where every open item lives                                                                                                                                       |
 
 ## Citations
 
