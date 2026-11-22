@@ -202,7 +202,7 @@ Each budget becomes a CI check in D.6 or D.7 (or the slice that first ships the 
 | Apps (TTF)  | ~135 KB    | ~405 KB       | 450 KB |
 | Web (WOFF2) | ~40 KB     | ~120 KB       | 150 KB |
 
-Subsetting and converting to WOFF2 wait for the owner to confirm that CoFo's licence (embedding flag `fsType` 4) allows them; until then the full files are used and the font budget is not enforced.
+The owner confirmed on 2026-11-22 that CoFo's licence allows subsetting the fonts and converting them to WOFF2 for the web.
 
 **Images,** resized by the server; the original never reaches the phone:
 

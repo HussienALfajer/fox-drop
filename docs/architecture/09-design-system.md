@@ -108,7 +108,7 @@ The darker orange's value, the three design directions, and the icon grid detail
 
 ## 9.12 Brand expression (D.1b)
 
-Sections §9.1 to §9.10 govern the system; this one gives it its character. Every item below was decided by the owner on 2026-11-22 (slice D.1b) and is written in [`docs/brand/expression.md`](../brand/expression.md), which D.2 and D.3 use. Open: whether CoFo's licence allows subsetting and WOFF2 (the font budget waits for it).
+Sections §9.1 to §9.10 govern the system; this one gives it its character. Every item below was decided by the owner on 2026-11-22 (slice D.1b) and is written in [`docs/brand/expression.md`](../brand/expression.md), which D.2 and D.3 use.
 
 | Item                       | Decides                                                                                                                                                       | Feeds      |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
