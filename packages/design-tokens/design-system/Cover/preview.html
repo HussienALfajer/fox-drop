@@ -1,0 +1,83 @@
+<!-- @dsCard height=288 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--surface);
+  }
+  .cover {
+    position: relative;
+    width: 960px;
+    height: 288px;
+    overflow: hidden;
+    background: var(--surface);
+    font-family: var(--font-sans);
+  }
+  .art {
+    position: absolute;
+    top: 0;
+    left: 480px;
+  }
+  .name {
+    position: absolute;
+    left: var(--space-xl);
+    bottom: calc(var(--space-xl) + 28px);
+    margin: 0;
+    max-width: 440px;
+    font-size: 88px;
+    line-height: 0.95;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+  .tagline {
+    position: absolute;
+    left: var(--space-xl);
+    bottom: var(--space-xl);
+    margin: 0;
+    max-width: 440px;
+    font-size: 14px;
+    color: var(--on-surface-muted);
+  }
+  .brand {
+    fill: var(--brand);
+  }
+  .accent {
+    fill: var(--accent);
+  }
+  .ivory {
+    fill: var(--on-primary);
+  }
+  .shadow {
+    fill: var(--primary-pressed);
+  }
+  .slab {
+    rx: var(--radius-xl);
+  }
+  .pill {
+    rx: calc(var(--size-control) / 2);
+  }
+  .disc {
+    r: calc(var(--size-control) / 2);
+  }
+</style>
+<div class="cover">
+  <svg class="art" width="480" height="288" viewBox="0 0 480 288" aria-hidden="true">
+    <!--
+      blocks: brand slab 272 x 232 (radius-xl), accent pill 300 x 100 (half its height), raised ivory pill 200 x size-control on primary-pressed (the offset shadow)
+      arrangement: one tall orange slab bleeding off the top, the blue pill staggered over its foot, bleeding off the right edge
+      pattern: pills and circles at size-control, cut in ivory out of the blocks - the brand README's pill-and-circle shape language
+      scales: size-control 50, space-md 16 gaps, space-xs 8, radius-xl 30, radius-full; elevation-offset 7 px under the ivory pill
+    -->
+    <rect class="brand slab" x="48" y="-40" width="272" height="232" />
+    <rect class="accent pill" x="200" y="172" width="300" height="100" />
+    <circle class="ivory disc" cx="105" cy="49" />
+    <circle class="ivory disc" cx="171" cy="49" />
+    <circle class="ivory disc" cx="237" cy="49" />
+    <rect class="shadow pill" x="80" y="122" width="200" height="50" />
+    <rect class="ivory pill" x="80" y="115" width="200" height="50" />
+    <circle class="ivory disc" cx="275" cy="222" />
+    <rect class="ivory pill" x="316" y="197" width="124" height="50" />
+  </svg>
+  <h1 class="name">FOX DROP</h1>
+  <p class="tagline">«الجار الشاطر»: warm orange for appetite, honest blue for every number.</p>
+</div>
