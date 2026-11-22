@@ -12,13 +12,13 @@ D.1b Brand expression (architecture §9.12, `docs/roadmap.md` Phase D): each §9
 
 - [x] The ten items of §9.12, each decided by the owner on 2026-11-22.
 - [x] Write `docs/brand/expression.md` from the decisions; mark §9.12 decided and D.1b done in the roadmap.
-- [ ] Pull request; merge when its checks pass.
+- [x] Pull request 247, merged.
+- [x] The owner confirmed that CoFo's licence allows subsetting and WOFF2 (2026-11-22).
 
 Every decision is in `docs/brand/expression.md`.
 
 ## Waiting for the owner
 
-- D.1b: whether CoFo's licence (embedding flag `fsType` 4) allows subsetting the fonts and converting them to WOFF2 for the web. Until confirmed, the full files are used and the font budget waits.
 - From `test/money-properties` (merged, PR 246): what an outcome posts when a restaurant-funded discount exceeds what the clearing account holds (`outcomeEntries` throws today; the property skips that case).
 - D.1: the `FONTS_DEPLOY_KEY` secret (the private half of a read-only deploy key on `fox-drop-fonts`, no expiry; commands in the pull request thread) in the repository's Actions secrets; until then the CI fetch step skips. (The owner confirmed on 2026-11-21 that he holds the right to use every font in the pack, CoFo included, in the apps.) The meaning of the `broken-edges` icon SVGs and of the `variant-b/c` icons.
 - Phase 3 of `docs/claude-code-workflow.md`: the phase 4 session started at 75.7K tokens with one MCP delta (goal: under 45K, none). Left: the `marketing` and `social-media-skills` plugins, off only in the app's settings.
