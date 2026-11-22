@@ -493,4 +493,8 @@ abstract final class FoxType {
 /// Sizes.
 abstract final class FoxSize {
   static const double touchTarget = 48.0;
+  static const double control = 50.0;
+  static const double iconSm = 16.0;
+  static const double iconMd = 24.0;
+  static const double iconLg = 32.0;
 }

@@ -1,11 +1,12 @@
 {
   "name": "@fox-drop/design-tokens",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "exports": {
     "./tokens.css": "./generated/tokens.css",
-    "./tailwind.css": "./generated/tailwind.css"
+    "./tailwind.css": "./generated/tailwind.css",
+    "./icons": "./generated/icons.ts"
   },
   "scripts": {
     "generate": "node src/generate.ts",

@@ -98,6 +98,9 @@
   --fd-breakpoint-xl: 1280px;
   --fd-size-touch-target: 48px;
   --fd-size-control: 50px;
+  --fd-size-icon-sm: 16px;
+  --fd-size-icon-md: 24px;
+  --fd-size-icon-lg: 32px;
   --fd-button-height: 50px;
   --fd-button-padding-inline: 16px;
   --fd-button-gap: 8px;
