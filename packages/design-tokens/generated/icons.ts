@@ -4,29 +4,29 @@
 // joins; `mirror` icons flip horizontally in right-to-left layouts.
 
 export const icons = {
-  /** The home tab: a house with an arched door. */
+  /** The home tab: a soft house drawn in one line, its arched door cut into the base (the Figma bottom bar). */
   'home': {
-    d: ['M3.5 10.5 12 3.5l8.5 7', 'M5.5 9v10a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V9', 'M10 21v-4.5a2 2 0 0 1 4 0V21'],
+    d: ['M9.5 21H6a2 2 0 0 1-2-2v-7.5a2 2 0 0 1 .7-1.5l6-5.1a2 2 0 0 1 2.6 0l6 5.1a2 2 0 0 1 .7 1.5V19a2 2 0 0 1-2 2h-3.5v-3.5a2.5 2.5 0 0 0-5 0Z'],
     mirror: false,
   },
   /** Search: a lens with a glint and a handle. */
   'search': {
-    d: ['M4 10.5A6.5 6.5 0 1 0 17 10.5A6.5 6.5 0 1 0 4 10.5Z', 'M15.5 15.5 20.5 20.5', 'M7.5 10a3 3 0 0 1 2.5-2.5'],
+    d: ['M4 10.5A6.5 6.5 0 1 0 17 10.5A6.5 6.5 0 1 0 4 10.5Z', 'm15.5 15.5 4.5 4.5', 'M7.6 9.4a3.2 3.2 0 0 1 1.8-1.8'],
     mirror: false,
   },
-  /** The cart: an open basket on two wheels. */
+  /** The cart: a shopping basket with a rim, three slats and a round handle (the Figma bottom bar). */
   'cart': {
-    d: ['M2.5 4H5l2.2 11h10.6L20 7.5H6', 'M7.5 19.5A1.5 1.5 0 1 0 10.5 19.5A1.5 1.5 0 1 0 7.5 19.5Z', 'M15.5 19.5A1.5 1.5 0 1 0 18.5 19.5A1.5 1.5 0 1 0 15.5 19.5Z'],
+    d: ['M7.5 9a4.5 4.5 0 0 1 9 0', 'M4.75 9h14.5a1.75 1.75 0 0 1 1.75 1.75v0a1.75 1.75 0 0 1 -1.75 1.75h-14.5a1.75 1.75 0 0 1 -1.75 -1.75v0a1.75 1.75 0 0 1 1.75 -1.75Z', 'm4.7 12.5 1.2 6.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6l1.2-6.4', 'M9.5 15.5v2', 'M12 15.5v2', 'M14.5 15.5v2'],
     mirror: false,
   },
   /** My orders: a carry bag with a tick. */
   'orders': {
-    d: ['M5 8h14l-1.2 12.1a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9Z', 'M9 8V6.5a3 3 0 0 1 6 0V8', 'm9.5 14 2 2 3.5-3.5'],
+    d: ['M5.5 8.5h13l-.9 10.7a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8Z', 'M9 8.5V7a3 3 0 0 1 6 0v1.5', 'm9.5 14.6 1.8 1.8 3.4-3.4'],
     mirror: false,
   },
-  /** The account: a head and shoulders. */
+  /** The account: a round head over soft shoulders (the Figma bottom bar). */
   'account': {
-    d: ['M8 8A4 4 0 1 0 16 8A4 4 0 1 0 8 8Z', 'M4.5 21a7.5 7.5 0 0 1 15 0'],
+    d: ['M8.5 7.5A3.5 3.5 0 1 0 15.5 7.5A3.5 3.5 0 1 0 8.5 7.5Z', 'M5 20.5v-1a5.5 5.5 0 0 1 5.5-5.5h3a5.5 5.5 0 0 1 5.5 5.5v1'],
     mirror: false,
   },
   /** Settings: a cog of eight rounded teeth. */
@@ -34,19 +34,19 @@ export const icons = {
     d: ['M10.31 5.21 10.71 2.79A9.3 9.3 0 0 1 13.29 2.79L13.69 5.21A7 7 0 0 1 15.61 6L17.6 4.57A9.3 9.3 0 0 1 19.43 6.4L18 8.39A7 7 0 0 1 18.79 10.31L21.21 10.71A9.3 9.3 0 0 1 21.21 13.29L18.79 13.69A7 7 0 0 1 18 15.61L19.43 17.6A9.3 9.3 0 0 1 17.6 19.43L15.61 18A7 7 0 0 1 13.69 18.79L13.29 21.21A9.3 9.3 0 0 1 10.71 21.21L10.31 18.79A7 7 0 0 1 8.39 18L6.4 19.43A9.3 9.3 0 0 1 4.57 17.6L6 15.61A7 7 0 0 1 5.21 13.69L2.79 13.29A9.3 9.3 0 0 1 2.79 10.71L5.21 10.31A7 7 0 0 1 6 8.39L4.57 6.4A9.3 9.3 0 0 1 6.4 4.57L8.39 6A7 7 0 0 1 10.31 5.21Z', 'M9 12A3 3 0 1 0 15 12A3 3 0 1 0 9 12Z'],
     mirror: false,
   },
-  /** Back: an arrow drawn pointing left, flipped in RTL so it points to the start side. */
+  /** Back: a heavy rounded chevron, drawn pointing left and flipped in RTL (the Figma headers). */
   'back': {
-    d: ['M19 12H5', 'm11 6-6 6 6 6'],
+    d: ['m14.5 5.5-6 6.5 6 6.5'],
     mirror: true,
   },
   /** Close or dismiss: a cross. */
   'close': {
-    d: ['M6 6 18 18', 'M18 6 6 18'],
+    d: ['M7 7 17 17', 'M17 7 7 17'],
     mirror: false,
   },
   /** More actions: three dots in a row. */
   'more': {
-    d: ['M4 12A1 1 0 1 0 6 12A1 1 0 1 0 4 12Z', 'M11 12A1 1 0 1 0 13 12A1 1 0 1 0 11 12Z', 'M18 12A1 1 0 1 0 20 12A1 1 0 1 0 18 12Z'],
+    d: ['M4.25 12A1.25 1.25 0 1 0 6.75 12A1.25 1.25 0 1 0 4.25 12Z', 'M10.75 12A1.25 1.25 0 1 0 13.25 12A1.25 1.25 0 1 0 10.75 12Z', 'M17.25 12A1.25 1.25 0 1 0 19.75 12A1.25 1.25 0 1 0 17.25 12Z'],
     mirror: false,
   },
   /** Filter and sort: two sliders with knobs. */
@@ -56,27 +56,27 @@ export const icons = {
   },
   /** Add one more, or a new item: a plus. */
   'add': {
-    d: ['M12 5v14', 'M5 12h14'],
+    d: ['M12 6v12', 'M6 12h12'],
     mirror: false,
   },
   /** Take one away: a minus. */
   'remove': {
-    d: ['M5 12h14'],
+    d: ['M6 12h12'],
     mirror: false,
   },
-  /** Delete: a bin with a lid and two ribs. */
+  /** Delete: a bin with a handled lid and three slats (the Figma cart). */
   'delete': {
-    d: ['M4 7h16', 'M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2', 'm6 7 1 12.2a2 2 0 0 0 2 1.8h6a2 2 0 0 0 2-1.8L18 7', 'M10 11v6', 'M14 11v6'],
+    d: ['M4.5 6.5h15', 'M9.5 6.5V5A1.5 1.5 0 0 1 11 3.5h2A1.5 1.5 0 0 1 14.5 5v1.5', 'm6 6.5.8 12.2a2.5 2.5 0 0 0 2.5 2.3h5.4a2.5 2.5 0 0 0 2.5-2.3L18 6.5', 'M9.5 10.5v6', 'M12 10.5v6', 'M14.5 10.5v6'],
     mirror: false,
   },
-  /** Edit: a pencil writing. */
+  /** Edit: a pencil over a little wavy stroke of handwriting. */
   'edit': {
-    d: ['M15 4.5a2.12 2.12 0 0 1 3 0l1.5 1.5a2.12 2.12 0 0 1 0 3L9 19.5 4 20l.5-5Z', 'm13.5 6 4.5 4.5'],
+    d: ['M16.2 3.8a2.12 2.12 0 0 1 3 3L8.5 17.5l-4 1 1-4Z', 'm14.5 5.5 3 3', 'M13 20.5c1-.8 2-.8 3 0s2 .8 3 0'],
     mirror: false,
   },
-  /** Confirm or done: a tick. */
+  /** Confirm or done: a tick with a soft elbow. */
   'confirm': {
-    d: ['m5 12.5 4.5 4.5L19 7'],
+    d: ['m4.5 12.5 4.8 4.8a1 1 0 0 0 1.4 0L19.5 8.5'],
     mirror: false,
   },
   /** Try again: a circular arrow, clockwise. */
@@ -91,12 +91,12 @@ export const icons = {
   },
   /** Take a photo: a camera with a round lens. */
   'camera': {
-    d: ['M3 8.5a2 2 0 0 1 2-2h2.5L9 4h6l1.5 2.5H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z', 'M8.5 13A3.5 3.5 0 1 0 15.5 13A3.5 3.5 0 1 0 8.5 13Z'],
+    d: ['M3 9a2.5 2.5 0 0 1 2.5-2.5h1.8L9 4h6l1.7 2.5h1.8A2.5 2.5 0 0 1 21 9v8.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5Z', 'M8.5 13A3.5 3.5 0 1 0 15.5 13A3.5 3.5 0 1 0 8.5 13Z', 'M17 10A0.5 0.5 0 1 0 18 10A0.5 0.5 0 1 0 17 10Z'],
     mirror: false,
   },
   /** A picture or gallery: a frame with the sun and two hills. */
   'image': {
-    d: ['M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2Z', 'M7 9A1.5 1.5 0 1 0 10 9A1.5 1.5 0 1 0 7 9Z', 'm3.5 17.5 5-5 4.5 4.5 2.5-2.5 5 5'],
+    d: ['M5.5 4h13a2.5 2.5 0 0 1 2.5 2.5v11a2.5 2.5 0 0 1 -2.5 2.5h-13a2.5 2.5 0 0 1 -2.5 -2.5v-11a2.5 2.5 0 0 1 2.5 -2.5Z', 'M7 9A1.5 1.5 0 1 0 10 9A1.5 1.5 0 1 0 7 9Z', 'm3.5 17.5 4.2-4.2a1.5 1.5 0 0 1 2.1 0l4.2 4.2', 'm13 15.5 1.7-1.7a1.5 1.5 0 0 1 2.1 0l3.7 3.7'],
     mirror: false,
   },
   /** Information: an i in a circle. */
@@ -119,24 +119,24 @@ export const icons = {
     d: ['M3 12A9 9 0 1 0 21 12A9 9 0 1 0 3 12Z', 'm8 12.5 2.8 2.8 5.7-5.8'],
     mirror: false,
   },
-  /** Notifications: a bell with its clapper. */
+  /** Notifications: a bell whose dome opens onto a notification dot (the Figma home). */
   'bell': {
-    d: ['M6 15v-4.5a6 6 0 0 1 12 0V15l1.5 2.5h-15Z', 'M10 20a2 2 0 0 0 4 0', 'M12 3v1.5'],
+    d: ['M17.5 10.5V15l1.5 2H5l1.5-2v-4.5a5.5 5.5 0 0 1 7.8-5', 'M16 5.5A1.5 1.5 0 1 0 19 5.5A1.5 1.5 0 1 0 16 5.5Z', 'M10 20a2 2 0 0 0 4 0'],
     mirror: false,
   },
-  /** No connection: the signal arcs struck through. */
+  /** No connection: a cloud struck through. */
   'offline': {
-    d: ['M2.5 9a13.5 13.5 0 0 1 19 0', 'M5.5 12.5a9.2 9.2 0 0 1 13 0', 'M8.5 16a4.9 4.9 0 0 1 7 0', 'M11.5 19.5A0.5 0.5 0 1 0 12.5 19.5A0.5 0.5 0 1 0 11.5 19.5Z', 'M3 3 21 21'],
+    d: ['M7 18.5a4 4 0 0 1-.6-8 5.5 5.5 0 0 1 10.6-1.3A4.5 4.5 0 0 1 17 18.5Z', 'M4 4 20 20'],
     mirror: false,
   },
-  /** Time and timers: a clock face at a quarter past. */
+  /** Time and timers: a stopwatch, for delivery times. */
   'clock': {
-    d: ['M3 12A9 9 0 1 0 21 12A9 9 0 1 0 3 12Z', 'M12 7v5l3.5 2'],
+    d: ['M4 13A8 8 0 1 0 20 13A8 8 0 1 0 4 13Z', 'M10 3h4', 'M12 9v4l2.5 2.5', 'm18.5 5.5 1 1'],
     mirror: false,
   },
-  /** A place on the map: the logo's drop as a pin (brand expression §2). */
+  /** A place on the map: the logo's drop as a pin over a ground line (brand expression §2). */
   'drop-pin': {
-    d: ['M12 21.5s7-6.6 7-12a7 7 0 0 0-14 0c0 5.4 7 12 7 12Z', 'M9.5 9.5A2.5 2.5 0 1 0 14.5 9.5A2.5 2.5 0 1 0 9.5 9.5Z'],
+    d: ['M12 19s6.5-5.6 6.5-10.5a6.5 6.5 0 0 0-13 0C5.5 13.4 12 19 12 19Z', 'M9.5 8.5A2.5 2.5 0 1 0 14.5 8.5A2.5 2.5 0 1 0 9.5 8.5Z', 'M9 21.5h6'],
     mirror: false,
   },
   /** The map: a folded map holding a small drop. */
@@ -149,9 +149,9 @@ export const icons = {
     d: ['M4 18A2 2 0 1 0 8 18A2 2 0 1 0 4 18Z', 'M8 18h7.5a3 3 0 0 0 0-6h-7a3 3 0 0 1 0-6H16', 'M16 6A2 2 0 1 0 20 6A2 2 0 1 0 16 6Z'],
     mirror: false,
   },
-  /** The captain's motorcycle with its delivery box, drawn facing right and flipped in RTL. */
+  /** The captain's scooter with its delivery box and two speed lines, drawn facing right and flipped in RTL (the Figma bottom bar). */
   'motorcycle': {
-    d: ['M4.5 6h4.5a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-4.5a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1Z', 'M3.5 13.5h7l2 4h3', 'M18 17.5 15.5 8h3', 'M3.5 17.5A2.5 2.5 0 1 0 8.5 17.5A2.5 2.5 0 1 0 3.5 17.5Z', 'M15.5 17.5A2.5 2.5 0 1 0 20.5 17.5A2.5 2.5 0 1 0 15.5 17.5Z'],
+    d: ['M2 7h1.5', 'M2 10h1.5', 'M8 4.5h3a1.5 1.5 0 0 1 1.5 1.5v2a1.5 1.5 0 0 1 -1.5 1.5h-3a1.5 1.5 0 0 1 -1.5 -1.5v-2a1.5 1.5 0 0 1 1.5 -1.5Z', 'M4.5 14c0-1.9 1.6-3.5 3.5-3.5h4', 'M10 17.5h3.5L16.5 8h2', 'm15.6 11 2.4 6.5', 'M4.5 17.5A2.5 2.5 0 1 0 9.5 17.5A2.5 2.5 0 1 0 4.5 17.5Z', 'M15.5 17.5A2.5 2.5 0 1 0 20.5 17.5A2.5 2.5 0 1 0 15.5 17.5Z'],
     mirror: true,
   },
   /** A car, drawn facing right and flipped in RTL. */
@@ -164,29 +164,29 @@ export const icons = {
     d: ['M3 9 4.5 4h15L21 9', 'M3 9a2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0', 'M5 11.5V20h14v-8.5', 'M10 20v-4.5h4V20'],
     mirror: false,
   },
-  /** A dish: a serving cloche over a plate. */
+  /** A dish: a bowl with three wavy lines of steam. */
   'plate': {
-    d: ['M4.5 16a7.5 7.5 0 0 1 15 0', 'M3 16h18', 'M12 6v2.5', 'M5 19.5h14'],
+    d: ['M4 11.5h16a8 7.5 0 0 1-16 0Z', 'M9.5 21h5', 'M9 3.5c-1 1 1 2 0 3.5', 'M12.5 3c-1 1.2 1 2.3 0 4', 'M16 3.5c-1 1 1 2 0 3.5'],
     mirror: false,
   },
-  /** A delivery address: a house with a chimney and a window. */
+  /** A delivery address: a house with a chimney and a heart for a window. */
   'house': {
-    d: ['M3 11 12 4l9 7', 'M5 9.5V20h14V9.5', 'M16.5 7.5v-3h2v4.56', 'M10 12.5h4a0.5 0.5 0 0 1 0.5 0.5v3.5a0.5 0.5 0 0 1 -0.5 0.5h-4a0.5 0.5 0 0 1 -0.5 -0.5v-3.5a0.5 0.5 0 0 1 0.5 -0.5Z'],
+    d: ['M3.5 11.5 12 4.5l8.5 7', 'M5.5 10v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9', 'M16 6.5V4h2v4.2', 'M12 18s-2.5-1.5-2.5-3a1.25 1.25 0 0 1 2.5-.5 1.25 1.25 0 0 1 2.5.5c0 1.5-2.5 3-2.5 3Z'],
     mirror: false,
   },
-  /** Cash: a banknote. */
+  /** Cash: two stacked banknotes. */
   'cash': {
-    d: ['M4.5 6h15a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-15a2 2 0 0 1 -2 -2v-8a2 2 0 0 1 2 -2Z', 'M9.5 12A2.5 2.5 0 1 0 14.5 12A2.5 2.5 0 1 0 9.5 12Z', 'M5.5 12A0.5 0.5 0 1 0 6.5 12A0.5 0.5 0 1 0 5.5 12Z', 'M17.5 12A0.5 0.5 0 1 0 18.5 12A0.5 0.5 0 1 0 17.5 12Z'],
+    d: ['M5 5h14.5a2 2 0 0 1 2 2v8', 'M4.5 8h12a2 2 0 0 1 2 2v7a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-7a2 2 0 0 1 2 -2Z', 'M8 13.5A2.5 2.5 0 1 0 13 13.5A2.5 2.5 0 1 0 8 13.5Z'],
     mirror: false,
   },
-  /** The wallet and its balance: a wallet with a clasp. */
+  /** The wallet and its balance: a wallet with a flap and a clasp tab. */
   'wallet': {
-    d: ['M19 7V5.5A1.5 1.5 0 0 0 17.5 4H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6', 'M16 14A0.5 0.5 0 1 0 17 14A0.5 0.5 0 1 0 16 14Z'],
+    d: ['M5.5 7h12a2.5 2.5 0 0 1 2.5 2.5v8.5a2.5 2.5 0 0 1 -2.5 2.5h-12a2.5 2.5 0 0 1 -2.5 -2.5v-8.5a2.5 2.5 0 0 1 2.5 -2.5Z', 'M6 7l8.5-3.2a1.5 1.5 0 0 1 2 1.4V7', 'M20 11.25h-3a2.25 2.25 0 0 0 0 4.5h3', 'M16.5 13.5A0.5 0.5 0 1 0 17.5 13.5A0.5 0.5 0 1 0 16.5 13.5Z'],
     mirror: false,
   },
-  /** A discount coupon: a notched ticket with a percent sign. */
+  /** A discount: a flame holding a percent sign (the Figma offers category). */
   'discount': {
-    d: ['M3 7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 0 0 4v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a2 2 0 0 0 0-4Z', 'm9.5 14.5 5-5', 'M8.75 9.5A0.75 0.75 0 1 0 10.25 9.5A0.75 0.75 0 1 0 8.75 9.5Z', 'M13.75 14.5A0.75 0.75 0 1 0 15.25 14.5A0.75 0.75 0 1 0 13.75 14.5Z'],
+    d: ['M12 21.5a7 7 0 0 1-7-7c0-3.5 2.4-5.6 4-8 .5 1.6 1.4 2.6 2.4 3.1.3-3 1.6-5.5 4-7.1-.2 3.4 3.6 6.3 3.6 11.5a7 7 0 0 1-7 7.5Z', 'm10 17.5 4-5', 'M9.25 13A0.75 0.75 0 1 0 10.75 13A0.75 0.75 0 1 0 9.25 13Z', 'M13.25 17A0.75 0.75 0 1 0 14.75 17A0.75 0.75 0 1 0 13.25 17Z'],
     mirror: false,
   },
   /** A receipt or bill: a slip with a torn edge and lines. */
@@ -199,14 +199,14 @@ export const icons = {
     d: ['M4 7h16a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1Z', 'M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9', 'M12 7v13', 'M12 7c-1.5-3-5-3.5-5-1.25S10 7 12 7', 'M12 7c1.5-3 5-3.5 5-1.25S14 7 12 7'],
     mirror: false,
   },
-  /** Call: a handset. */
+  /** Call: a handset with two sound waves. */
   'phone': {
-    d: ['M5 4.5h3l1.5 4-2 1.5a10 10 0 0 0 6.5 6.5l1.5-2 4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 3 6.5a2 2 0 0 1 2-2Z'],
+    d: ['M5 4.5h3l1.5 4-2 1.5a10 10 0 0 0 6.5 6.5l1.5-2 4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 3 6.5a2 2 0 0 1 2-2Z', 'M15 3a6 6 0 0 1 6 6', 'M14.5 6.5a3 3 0 0 1 3 3'],
     mirror: false,
   },
-  /** Chat and support: a speech bubble with three dots. */
+  /** Chat and support: a round speech bubble with three dots. */
   'chat': {
-    d: ['M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-4.5 3.5V17H6a2 2 0 0 1-2-2Z', 'M8 10.5A0.5 0.5 0 1 0 9 10.5A0.5 0.5 0 1 0 8 10.5Z', 'M11.5 10.5A0.5 0.5 0 1 0 12.5 10.5A0.5 0.5 0 1 0 11.5 10.5Z', 'M15 10.5A0.5 0.5 0 1 0 16 10.5A0.5 0.5 0 1 0 15 10.5Z'],
+    d: ['M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-6.5L6 20.5V17a2 2 0 0 1-2-2Z', 'M7.75 10.5A0.75 0.75 0 1 0 9.25 10.5A0.75 0.75 0 1 0 7.75 10.5Z', 'M11.25 10.5A0.75 0.75 0 1 0 12.75 10.5A0.75 0.75 0 1 0 11.25 10.5Z', 'M14.75 10.5A0.75 0.75 0 1 0 16.25 10.5A0.75 0.75 0 1 0 14.75 10.5Z'],
     mirror: false,
   },
   /** A rating: a five-pointed star. */
@@ -214,9 +214,9 @@ export const icons = {
     d: ['M12 3.1 14.53 9.12 21.04 9.66 16.09 13.93 17.58 20.29 12 16.9 6.42 20.29 7.91 13.93 2.96 9.66 9.47 9.12Z'],
     mirror: false,
   },
-  /** A favourite: a heart. */
+  /** A favourite: a plump heart with a shine (the Figma bottom bar). */
   'heart': {
-    d: ['M12 20s-8-4.8-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15.2 12 20 12 20Z'],
+    d: ['M12 20.5C6 16.6 3 13.2 3 9.4A4.9 4.9 0 0 1 7.9 4.5c1.7 0 3.2.9 4.1 2.3.9-1.4 2.4-2.3 4.1-2.3A4.9 4.9 0 0 1 21 9.4c0 3.8-3 7.2-9 11.1Z', 'M6.5 9.5a2.2 2.2 0 0 1 1.6-1.9'],
     mirror: false,
   },
   /** The language setting: a globe. */

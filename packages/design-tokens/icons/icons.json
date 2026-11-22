@@ -3,7 +3,7 @@
     "name": "home",
     "group": "Navigation",
     "mirror": false,
-    "description": "The home tab: a house with an arched door."
+    "description": "The home tab: a soft house drawn in one line, its arched door cut into the base (the Figma bottom bar)."
   },
   {
     "name": "search",
@@ -15,7 +15,7 @@
     "name": "cart",
     "group": "Navigation",
     "mirror": false,
-    "description": "The cart: an open basket on two wheels."
+    "description": "The cart: a shopping basket with a rim, three slats and a round handle (the Figma bottom bar)."
   },
   {
     "name": "orders",
@@ -27,7 +27,7 @@
     "name": "account",
     "group": "Navigation",
     "mirror": false,
-    "description": "The account: a head and shoulders."
+    "description": "The account: a round head over soft shoulders (the Figma bottom bar)."
   },
   {
     "name": "settings",
@@ -39,7 +39,7 @@
     "name": "back",
     "group": "Navigation",
     "mirror": true,
-    "description": "Back: an arrow drawn pointing left, flipped in RTL so it points to the start side."
+    "description": "Back: a heavy rounded chevron, drawn pointing left and flipped in RTL (the Figma headers)."
   },
   {
     "name": "close",
@@ -75,19 +75,19 @@
     "name": "delete",
     "group": "Actions",
     "mirror": false,
-    "description": "Delete: a bin with a lid and two ribs."
+    "description": "Delete: a bin with a handled lid and three slats (the Figma cart)."
   },
   {
     "name": "edit",
     "group": "Actions",
     "mirror": false,
-    "description": "Edit: a pencil writing."
+    "description": "Edit: a pencil over a little wavy stroke of handwriting."
   },
   {
     "name": "confirm",
     "group": "Actions",
     "mirror": false,
-    "description": "Confirm or done: a tick."
+    "description": "Confirm or done: a tick with a soft elbow."
   },
   {
     "name": "retry",
@@ -141,25 +141,25 @@
     "name": "bell",
     "group": "States",
     "mirror": false,
-    "description": "Notifications: a bell with its clapper."
+    "description": "Notifications: a bell whose dome opens onto a notification dot (the Figma home)."
   },
   {
     "name": "offline",
     "group": "States",
     "mirror": false,
-    "description": "No connection: the signal arcs struck through."
+    "description": "No connection: a cloud struck through."
   },
   {
     "name": "clock",
     "group": "States",
     "mirror": false,
-    "description": "Time and timers: a clock face at a quarter past."
+    "description": "Time and timers: a stopwatch, for delivery times."
   },
   {
     "name": "drop-pin",
     "group": "Place and delivery",
     "mirror": false,
-    "description": "A place on the map: the logo's drop as a pin (brand expression §2)."
+    "description": "A place on the map: the logo's drop as a pin over a ground line (brand expression §2)."
   },
   {
     "name": "map",
@@ -177,7 +177,7 @@
     "name": "motorcycle",
     "group": "Place and delivery",
     "mirror": true,
-    "description": "The captain's motorcycle with its delivery box, drawn facing right and flipped in RTL."
+    "description": "The captain's scooter with its delivery box and two speed lines, drawn facing right and flipped in RTL (the Figma bottom bar)."
   },
   {
     "name": "car",
@@ -195,31 +195,31 @@
     "name": "plate",
     "group": "Place and delivery",
     "mirror": false,
-    "description": "A dish: a serving cloche over a plate."
+    "description": "A dish: a bowl with three wavy lines of steam."
   },
   {
     "name": "house",
     "group": "Place and delivery",
     "mirror": false,
-    "description": "A delivery address: a house with a chimney and a window."
+    "description": "A delivery address: a house with a chimney and a heart for a window."
   },
   {
     "name": "cash",
     "group": "Money",
     "mirror": false,
-    "description": "Cash: a banknote."
+    "description": "Cash: two stacked banknotes."
   },
   {
     "name": "wallet",
     "group": "Money",
     "mirror": false,
-    "description": "The wallet and its balance: a wallet with a clasp."
+    "description": "The wallet and its balance: a wallet with a flap and a clasp tab."
   },
   {
     "name": "discount",
     "group": "Money",
     "mirror": false,
-    "description": "A discount coupon: a notched ticket with a percent sign."
+    "description": "A discount: a flame holding a percent sign (the Figma offers category)."
   },
   {
     "name": "receipt",
@@ -237,13 +237,13 @@
     "name": "phone",
     "group": "Contact and rating",
     "mirror": false,
-    "description": "Call: a handset."
+    "description": "Call: a handset with two sound waves."
   },
   {
     "name": "chat",
     "group": "Contact and rating",
     "mirror": false,
-    "description": "Chat and support: a speech bubble with three dots."
+    "description": "Chat and support: a round speech bubble with three dots."
   },
   {
     "name": "star",
@@ -255,7 +255,7 @@
     "name": "heart",
     "group": "Contact and rating",
     "mirror": false,
-    "description": "A favourite: a heart."
+    "description": "A favourite: a plump heart with a shine (the Figma bottom bar)."
   },
   {
     "name": "language",
