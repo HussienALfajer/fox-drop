@@ -77,6 +77,13 @@ describe('the change classifier', () => {
     );
   });
 
+  it('sets TypeScript and Dart for the design tokens, which generate both outputs', () => {
+    assert.equal(
+      flags(['packages/design-tokens/tokens/semantic/light.json']),
+      'code dart build typescript',
+    );
+  });
+
   it('sets the native builds for what can break them', () => {
     assert.equal(flags(['.fvmrc']), 'code dart native build dartScope:all');
     assert.equal(

@@ -19,7 +19,7 @@ approved sheet ──▶ component code        approved screen ──▶ screen 
 
 ## 9.2 Token layers
 
-Tokens are W3C Design Tokens (JSON) in `packages/design-tokens`, compiled by **Style Dictionary** into CSS variables and a Tailwind theme (web) and a Dart theme (`core_ui`). A change reaches both platforms in the same build.
+Tokens are W3C Design Tokens (JSON) in `packages/design-tokens`, compiled by **Style Dictionary** into CSS variables and a Tailwind theme (web) and pure-Dart constants in `packages/core_tokens`, which `core_ui` wraps (Flutter). A change reaches both platforms in the same build.
 
 | Layer         | Holds                                                                                                                                                                        | Used by                                    |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
@@ -27,7 +27,7 @@ Tokens are W3C Design Tokens (JSON) in `packages/design-tokens`, compiled by **S
 | **Semantic**  | Meanings: surface, on-surface, primary, accent, border, success, warning, danger, focus ring, and so on. Each has a light value and a **dark slot**                          | Components and screens; the Tailwind theme |
 | **Component** | Per component: its height, padding, radius, colour roles per state                                                                                                           | That component only                        |
 
-- **The accessible orange.** `#FF6E31` fails contrast on ivory (2.68:1) and under white text (2.79:1). A darker orange, chosen in D.2 to reach at least 4.5:1 for text and for button fills, carries text and filled controls; `#FF6E31` stays for the logo, the app icon and large decorative areas. Blue `#03428E` on ivory is 9.27:1.
+- **The accessible orange.** `#FF6E31` fails contrast on ivory (2.68:1) and under white text (2.79:1). The accessible orange **`#C2410C`** (orange 600, settled in D.2: 4.97:1 on ivory, 5.18:1 under white text) carries text and filled controls; `#FF6E31` stays for the logo, the app icon and large decorative areas (`color.brand`). Blue `#03428E` on ivory is 9.27:1. Every pair and its ratio: `packages/design-tokens/generated/contrast-report.md`.
 - **Dark mode comes later.** Every semantic token has its dark slot from D.2 so no component has to change when dark mode is built; V1 ships light only.
 - **Foundations:** a 4-point spacing grid; a functional type scale; radius, elevation and motion tokens (reduced motion is respected); two densities, comfortable for the phone apps and compact for the panel; web breakpoints; phone safe areas.
 - **Governance:** tokens are versioned with a changelog; a token is deprecated for a release before it is removed.
@@ -104,7 +104,7 @@ Flutter 3.47 moved Material and Cupertino out of the framework into `material_ui
 
 ## 9.11 Open until D.2 and D.3
 
-The darker orange's value, the three design directions, and the icon grid details are decided in their slices, each with the owner's approval.
+The darker orange is settled: `#C2410C` (D.2, §9.2). The three design directions and the icon grid details are decided in their slices, each with the owner's approval.
 
 ## 9.12 Brand expression (D.1b)
 

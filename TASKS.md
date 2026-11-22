@@ -35,17 +35,19 @@ Owner answers (2026-11-22): Dart output in a new pure-Dart package `packages/cor
 
 **Left out on purpose:** real dark values; wiring the theme into the web apps (D.6) and Flutter (D.7); the Design System sync (D.4); font subsetting and the size budgets (D.6/D.7, expression §9); map style tokens (D.3); icon tokens (D.5).
 
+**Changed while building:** outputs in `generated/`; the drift check is a test (`docs/code/packages/design-tokens.md`).
+
 **After the merge:** publish the private contrast Artifact from `contrast-report.md` (owner answer) and give the owner the link.
 
 ### Plan
 
 - [x] Read the cited sections and write the design here.
-- [ ] Scaffold `packages/design-tokens`, the primitive layer and the Style Dictionary build to CSS.
-- [ ] Semantic (light, dark slot, captain) and Button layers; the Tailwind theme.
-- [ ] `packages/core_tokens` and the Dart output.
-- [ ] Contrast and chart tests, `contrast-report.md`; settle the accessible orange and status colours.
-- [ ] Font metrics script, `font-metrics.json` and the tabular digits test.
-- [ ] Drift check in `verify.mjs` and `classify-changes.mjs`; the `CLAUDE.md` files, `docs/code`, architecture §9.2/§9.11 and expression §6.
+- [x] Scaffold `packages/design-tokens`, the primitive layer and the Style Dictionary build to CSS.
+- [x] Semantic (light, dark slot, captain) and Button layers; the Tailwind theme.
+- [x] `packages/core_tokens` and the Dart output.
+- [x] Contrast and chart tests, `contrast-report.md`; settle the accessible orange and status colours.
+- [x] Font metrics script, `font-metrics.json` and the tabular digits test.
+- [x] Drift check in `verify.mjs` and `classify-changes.mjs`; the `CLAUDE.md` files, `docs/code`, architecture §9.2/§9.11 and expression §6.
 - [ ] Review, hand over to D.3, pull request, merge; then the contrast Artifact.
 
 ## Waiting for the owner
