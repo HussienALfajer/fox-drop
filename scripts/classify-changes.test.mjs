@@ -115,7 +115,12 @@ describe('the change classifier', () => {
       flags(['pubspec.lock', 'apps/customer/lib/main.dart']),
       'code dart native build dartScope:all',
     );
-    assert.equal(flags(['apps/customer/pubspec.yaml']), 'code dart native build dartScope:changed');
+    // A dependency changes the native builds only through the lock file.
+    assert.equal(flags(['apps/customer/pubspec.yaml']), 'code dart build dartScope:changed');
+    assert.equal(
+      flags(['packages/core_ui/pubspec.yaml', 'pubspec.lock']),
+      'code dart native build dartScope:all',
+    );
     assert.equal(
       flags(['apps/captain/ios/Runner/Info.plist']),
       'code dart native build dartScope:changed',
@@ -132,7 +137,8 @@ describe('the change classifier', () => {
   });
 
   it('keeps what CI sets for its own workflow and verify.mjs, without local Dart checks', () => {
-    assert.equal(flags(['.github/workflows/ci.yml']), 'code dart native build typescript');
+    // A change to the native jobs takes the native-builds label.
+    assert.equal(flags(['.github/workflows/ci.yml']), 'code dart build typescript');
     assert.equal(flags(['scripts/verify.mjs']), 'code dart build typescript');
     assert.equal(flags(['scripts/verify-support.mjs']), 'code dart build typescript');
     // The golden job runs it.
