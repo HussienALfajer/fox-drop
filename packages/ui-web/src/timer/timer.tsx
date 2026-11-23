@@ -7,7 +7,8 @@ export const STATES = ['default', 'soon', 'minutes', 'late', 'waiting', 'compact
 export type TimerTone = 'calm' | 'soon' | 'late';
 
 /**
- * A duration as AP §4.7 shows it: «4:32» under ten minutes, «12 د» from ten
+ * A running duration as the approved sheet shows it (owner, 2026-11-24; AP
+ * §4.7 gives «12 د» and «45 ث», backlog): «4:32» under ten minutes, «12 د» from ten
  * on (whole seconds, never negative). `minuteUnit` is the app's «د».
  */
 export function formatDuration(seconds: number, minuteUnit: string): string {

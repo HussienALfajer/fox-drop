@@ -15,7 +15,8 @@ const countdownRingStates = ['default', 'last'];
 /// Calm, soon (the last minute of a countdown) and late (counting up, red).
 enum FoxTimerTone { calm, soon, late }
 
-/// A duration as AP §4.7 shows it: «4:32» under ten minutes, «12 د» from ten
+/// A running duration as the approved sheet shows it (owner, 2026-11-24; AP
+/// §4.7 gives «12 د» and «45 ث», backlog): «4:32» under ten minutes, «12 د» from ten
 /// on (whole seconds, never negative); [minuteUnit] is the app's «د».
 String foxFormatDuration(int seconds, String minuteUnit) {
   final whole = math.max(0, seconds);
