@@ -26,6 +26,7 @@ export const ASSET_GROUPS: { name: string; tile: string; dir: string; files: Reg
   { name: 'Logos', tile: 'l', dir: 'docs/brand/logo/mark', files: /\.svg$/ },
   // The broken-edges icons wait for the owner to name their purpose.
   { name: 'App icon', tile: 'm', dir: 'docs/brand/app-icon/svg', files: /^app-icon-\d+\.svg$/ },
+  { name: 'Icons', tile: 'm', dir: 'packages/design-tokens/icons', files: /\.svg$/ },
 ];
 
 const GROUP_README: Record<string, string> = {
@@ -33,6 +34,8 @@ const GROUP_README: Record<string, string> = {
     '# Logos\n\nThe fox mark and the four lockups, as drawn in the brand pack. The file name says the colours: `mark-ivory-on-orange-square` is an ivory fox on an orange square, `-drop` files carry the drop backing, plain `mark-orange`, `mark-ivory` and `mark-blue` are the fox alone on a transparent ground. Never recolour, rotate, stretch or shadow a mark; use an Arabic lockup on Arabic screens.\n',
   'App icon':
     '# App icon\n\nThe app icon artwork. The ivory fox on orange is the official icon; the others are alternatives the owner has not named.\n',
+  Icons:
+    '# Icons\n\nThe first 44 line icons (brand expression §10), drawn after the Figma file\'s icons. Each file is the source: `viewBox="0 0 24 24"`, `stroke="currentColor"`, stroke 2, round caps and joins, no fill, every point inside the live area 2..22. Colour it with the text colour: `on-surface` by default, `on-primary` inside the orange active circle. Sizes: `size-icon-sm` 16, `size-icon-md` 24, `size-icon-lg` 32; the stroke scales with the size. `back`, `motorcycle` and `car` are drawn left to right and flip in RTL. In code, use `@fox-drop/design-tokens/icons` (web) or `FoxIcons` (Flutter), never these files.\n',
 };
 
 export type Files = Map<string, Buffer | string>;

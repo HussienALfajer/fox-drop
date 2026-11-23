@@ -36,6 +36,17 @@ const ROOT = {
   'stroke-linejoin': 'round',
 };
 
+/** The attributes each shape must carry: a missing one would default to 0. */
+const REQUIRED: Record<string, string[]> = {
+  path: ['d'],
+  circle: ['cx', 'cy', 'r'],
+  ellipse: ['cx', 'cy', 'rx', 'ry'],
+  line: ['x1', 'y1', 'x2', 'y2'],
+  polyline: ['points'],
+  polygon: ['points'],
+  rect: ['x', 'y', 'width', 'height'],
+};
+
 const GEOMETRY: Record<string, string[]> = {
   path: ['d'],
   circle: ['cx', 'cy', 'r'],
@@ -62,14 +73,23 @@ describe('the icon grid (architecture §9.5 R8)', () => {
       expect(allowed, `<${shape.name}> is not a shape element`).toBeDefined();
       for (const key of Object.keys(shape.attributes))
         expect(allowed, `<${shape.name}> may not carry ${key}`).toContain(key);
+      for (const key of REQUIRED[shape.name] ?? [])
+        expect(shape.attributes[key]?.trim(), `<${shape.name}> needs ${key}`).toBeTruthy();
+      // The outputs quote path data on one line.
+      expect(shape.attributes.d ?? '', `<${shape.name}> d spans lines`).not.toMatch(/[\r\n]/);
     }
   });
 
   it.each(icons)('$name.svg writes numbers with at most 2 decimals', ({ source }) => {
-    for (const { attributes } of parseIcon(source).shapes)
-      for (const value of Object.values(attributes))
+    for (const { name, attributes } of parseIcon(source).shapes)
+      for (const [key, value] of Object.entries(attributes)) {
         for (const number of value.match(/\d*\.\d+/g) ?? [])
           expect(number.split('.')[1]!.length, number).toBeLessThanOrEqual(2);
+        // Shape attributes are plain numbers: no exponent, no unit.
+        if (key !== 'd')
+          for (const item of value.trim().split(/[\s,]+/))
+            expect(item, `<${name}> ${key}`).toMatch(/^-?\d*\.?\d{1,2}$|^-?\d+$/);
+      }
   });
 
   it.each(icons)('$name.svg stays inside the live area 2..22', ({ source }) => {

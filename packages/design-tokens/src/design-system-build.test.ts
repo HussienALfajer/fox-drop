@@ -48,10 +48,10 @@ describe("the Design System's files (architecture §9.8)", () => {
     ]);
   });
 
-  it('uploads the logo and app icon SVGs within the caps, the broken-edges icons left out', () => {
-    expect(uploads.size).toBeGreaterThan(0);
+  it('uploads the logo, app icon and line icon SVGs within the caps, the broken-edges icons left out', () => {
+    expect([...uploads.keys()].filter((key) => key.startsWith('Icons/'))).toHaveLength(44);
     for (const [key, bytes] of uploads) {
-      expect(key).toMatch(/^(Logos|App icon)\/[\w.-]+\.svg$/);
+      expect(key).toMatch(/^(Logos|App icon|Icons)\/[\w.-]+\.svg$/);
       expect(key).not.toMatch(/broken-edges/);
       expect(bytes.length).toBeLessThanOrEqual(MAX_SVG);
     }
@@ -82,7 +82,7 @@ describe("the Design System's files (architecture §9.8)", () => {
     };
     expect(value.editing).toBe('code');
     expect(value.createdOnFiles.at).toBe('2026-11-23T00:00:00Z');
-    expect(value.groups).toEqual(['Logos', 'App icon']);
+    expect(value.groups).toEqual(['Logos', 'App icon', 'Icons']);
     const named = Object.entries(value.assetGroups).flatMap(([group, g]) =>
       g.order.map((file) => `${group}/${file}`),
     );

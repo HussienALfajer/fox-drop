@@ -159,6 +159,8 @@ export function segments(d: string): Segment[] {
   return result;
 }
 
+// Curves and arcs are checked at 32 samples each, so an extreme between two
+// samples can pass by up to about 0.05; draw an edge-touching curve with care.
 const STEPS = 32;
 
 function arcPoints(from: Point, arc: Extract<Segment, { type: 'A' }>): Point[] {
@@ -167,6 +169,8 @@ function arcPoints(from: Point, arc: Extract<Segment, { type: 'A' }>): Point[] {
   let rx = Math.abs(arc.rx);
   let ry = Math.abs(arc.ry);
   if (rx === 0 || ry === 0) return [to];
+  // An arc that ends where it starts is omitted (SVG 1.1 F.6.2).
+  if (from.x === to.x && from.y === to.y) return [];
   const phi = (arc.rotation * Math.PI) / 180;
   const cos = Math.cos(phi);
   const sin = Math.sin(phi);
