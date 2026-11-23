@@ -58,6 +58,8 @@ logs/
 CLAUDE.local.md
 .claude/settings.local.json
 .claude/worktrees/
+# Hook state: red phase, locked tests, the last green tree (docs/process/development-workflow.md)
+.claude/state/
 
 # OS and editors
 .DS_Store

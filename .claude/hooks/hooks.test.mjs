@@ -6,51 +6,316 @@ import path from 'node:path';
 import { after, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { check, parse, summarized } from './bash.mjs';
+import { recordGreen, treeState } from '../../scripts/green-tree.mjs';
+import { checkBash, checkEdit, stripPayload, toRepoPath } from './lib/policy.mjs';
 import {
   clearEdits,
+  cut,
   editsFile,
   failingStep,
   recordEdit,
   shouldCheck,
   statusPaths,
 } from './stop-verify.mjs';
-import { cut } from './test-summary.mjs';
 
+const hooks = path.dirname(fileURLToPath(import.meta.url));
 const scratch = mkdtempSync(path.join(os.tmpdir(), 'hooks-test-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
 
-describe('the fast check at the end of a turn', () => {
-  it('checks only a session that edited files since its last pass', () => {
-    const dir = path.join(scratch, 'edits');
-    assert.equal(shouldCheck({ session_id: 'watcher' }, dir), false);
-    recordEdit('builder', 'apps/server/src/app.ts', dir);
-    assert.equal(shouldCheck({ session_id: 'builder' }, dir), true);
-    assert.equal(shouldCheck({ session_id: 'watcher' }, dir), false);
-    assert.equal(shouldCheck({ session_id: 'builder', stop_hook_active: true }, dir), false);
+const branchOnly = { onMain: false, lockedTests: [] };
+const merged = { onMain: true, lockedTests: [] };
+
+describe('toRepoPath', () => {
+  it('strips the project root on Windows and POSIX, case-insensitively', () => {
+    assert.equal(toRepoPath('D:\\fox-drop\\apps\\server\\x.ts', 'D:\\fox-drop'), 'apps/server/x.ts');
+    assert.equal(toRepoPath('d:/Fox-Drop/apps/x.ts', 'D:\\fox-drop\\'), 'apps/x.ts');
+    assert.equal(toRepoPath('/home/u/fox-drop/a.ts', '/home/u/fox-drop'), 'a.ts');
   });
 
-  // Runs the hook in a new repository with one uncommitted code file, where a
-  // stand-in scripts/verify.mjs exits with `status`; the hook's temp folder is
-  // under the scratch folder.
-  const runHook = (name, status, { edited = true } = {}) => {
+  it('resolves .. and a leading ./', () => {
+    assert.equal(
+      toRepoPath('D:\\fox-drop\\apps\\..\\docs\\archive\\x.md', 'D:\\fox-drop'),
+      'docs/archive/x.md',
+    );
+    assert.equal(toRepoPath('./apps/admin/a.test.ts', 'D:\\fox-drop'), 'apps/admin/a.test.ts');
+  });
+
+  it('leaves paths outside the project unchanged', () => {
+    assert.equal(toRepoPath('/tmp/other.ts', '/home/u/fox-drop'), '/tmp/other.ts');
+  });
+});
+
+describe('checkEdit', () => {
+  it('allows secret files (owner decision 2026-11-23)', () => {
+    for (const p of ['.env', '.env.local', 'apps/server/.env.production', 'infra/key.pem'])
+      assert.equal(checkEdit(p, branchOnly), null);
+  });
+
+  it('allows ordinary source, new files and hand-written parts of generated packages', () => {
+    assert.equal(checkEdit('apps/server/src/modules/ledger/ledger.ts', merged), null);
+    assert.equal(checkEdit('apps/server/migrations/0152_new.sql', branchOnly), null);
+    assert.equal(checkEdit('packages/core_api/pubspec.yaml', merged), null);
+    assert.equal(checkEdit('packages/core_api/test/client_test.dart', merged), null);
+    assert.equal(checkEdit('packages/api-schema/src/index.ts', merged), null);
+    assert.equal(checkEdit('packages/design-tokens/tokens/color.json', merged), null);
+    assert.equal(checkEdit('docs/slices/D.8-inputs-and-forms.md', merged), null);
+    assert.equal(checkEdit('docs/backlog.md', merged), null);
+  });
+
+  it('refuses generated files and the lockfiles', () => {
+    for (const p of [
+      'packages/core_api/lib/core_api.dart',
+      'packages/core_api/lib/src/model/order.dart',
+      'packages/api-schema/openapi.json',
+      'packages/api-schema/src/schema.ts',
+      'packages/design-tokens/generated/tokens.css',
+      'packages/core_l10n/lib/src/generated/app_localizations.dart',
+      'packages/core_tokens/lib/src/tokens.g.dart',
+      'apps/customer/lib/x.freezed.dart',
+      'apps/customer/test/x.mocks.dart',
+      'pnpm-lock.yaml',
+      'pubspec.lock',
+      'apps/server/migrations/meta/_journal.json',
+      'apps/server/migrations/meta/0150_snapshot.json',
+    ])
+      assert.match(checkEdit(p, branchOnly) ?? '', /generated/, p);
+  });
+
+  it('refuses the read-only archives in any casing', () => {
+    assert.match(checkEdit('docs/archive/claude-code-workflow.md', branchOnly), /read-only/);
+    assert.match(checkEdit('docs/slice-notes.md', branchOnly), /read-only/);
+    assert.match(checkEdit('Docs/Slice-Notes.md', branchOnly), /read-only/);
+  });
+
+  it('protects merged migrations but not ones still on the branch', () => {
+    assert.match(checkEdit('apps/server/migrations/0001_audit_events.sql', merged), /merged/);
+    assert.equal(checkEdit('apps/server/migrations/0001_audit_events.sql', branchOnly), null);
+  });
+
+  it('refuses locked tests only', () => {
+    const ctx = { onMain: false, lockedTests: ['apps/server/src/a.test.ts'] };
+    assert.match(checkEdit('apps/server/src/a.test.ts', ctx), /locked/);
+    assert.match(checkEdit('Apps/Server/src/a.test.ts', ctx), /locked/);
+    assert.equal(checkEdit('apps/server/src/b.test.ts', ctx), null);
+  });
+});
+
+describe('stripPayload', () => {
+  it('drops heredoc bodies but keeps the first line', () => {
+    const cmd = "cat <<'EOF' > /tmp/x\nsee > apps/admin\nEOF";
+    assert.equal(stripPayload(cmd).includes('apps/admin'), false);
+    assert.match(stripPayload('cat <<EOF > packages/x.ts\nbody\nEOF'), /> packages\/x\.ts/);
+  });
+
+  it('empties message, body and title values', () => {
+    assert.equal(stripPayload('git commit -m "move -> apps/admin"'), 'git commit -m ""');
+    assert.equal(
+      stripPayload("gh pr create --body '> packages/ui-web' --title 'x'"),
+      'gh pr create --body "" --title ""',
+    );
+  });
+});
+
+describe('checkBash', () => {
+  const refused = [
+    // shell writes into source folders
+    'echo x > packages/core_ui/lib/a.dart',
+    'cat <<EOF >> scripts/verify.mjs',
+    'printf x | tee apps/server/src/x.ts',
+    "sed -i 's/a/b/' packages/core_time/lib/clock.dart",
+    "perl -pi -e 's/a/b/' infra/nginx/headers.conf",
+    'Set-Content -Path packages/x/a.ts -Value 1',
+    'echo hi > ./.claude/settings.json',
+    'echo x > D:/fox-drop/apps/admin/x.ts',
+    'echo x > /d/fox-drop/apps/admin/x.ts',
+    'echo x > "$CLAUDE_PROJECT_DIR/apps/admin/x.ts"',
+    'Set-Content -Path apps\\admin\\x.ts -Value 1',
+    'Set-Content -Path D:\\fox-drop\\apps\\admin\\x.ts -Value 1',
+    '"x" | Out-File apps\\admin\\x.ts',
+    '"x" > apps\\admin\\x.ts',
+    'sc apps/admin/x.ts 1',
+    'Add-Content scripts/x.mjs 1',
+    // git and permissions
+    'git commit --no-verify -m x',
+    'git push --force origin feature',
+    'git push --force-with-lease',
+    'git push -f',
+    'git push origin +feature',
+    'git push origin main',
+    'git push origin HEAD:main',
+    'git push origin refs/heads/main',
+    'claude --dangerously-skip-permissions',
+    'claude --permission-mode bypassPermissions',
+    'claude --permission-mode=bypassPermissions',
+    // run-time fetches
+    'npx skills@latest add vercel-labs/ui --skill ui-sdk',
+    'npx -y skills add x',
+    'npx --yes skills@1.2.3 add x',
+    'npx shadcn@latest add button',
+    'npx --package=skills skills add x',
+    'npx -p skills skills add x',
+    'npx.cmd skills',
+    'npm exec skills add x',
+    'npm x -- skills',
+    'pnpm dlx skills add x',
+    'yarn dlx skills',
+    'bunx skills add x',
+    'pnpx skills add x',
+    'pnpm exec npx -y skills',
+    'yarn exec npx skills@latest',
+    'pnpm --filter ui exec npx -y x',
+    'pnpm -r exec npx --yes x',
+    'bun x npx -y skills',
+    'corepack pnpm dlx skills',
+    // installs outside pnpm
+    'npm i -D vitest',
+    'npm install',
+    'npm add react',
+    'npm ci',
+    'cd packages/ui-web && npm install left-pad',
+    'npm --prefix packages/ui-web install left-pad',
+    'npm.cmd install',
+    '/usr/bin/npm install',
+    'sudo npm install -g x',
+    'yarn',
+    'yarn add react',
+    'bun add react',
+    'bun install',
+    'corepack npm install x',
+    'corepack yarn add react',
+  ];
+  for (const cmd of refused) it(`refuses: ${cmd}`, () => assert.notEqual(checkBash(cmd), null));
+
+  const allowed = [
+    'pnpm verify',
+    'node scripts/verify.mjs --changed',
+    'git push -u origin chore/shifa-workflow',
+    'git push',
+    'git status --short',
+    'git log --oneline main',
+    // reading is allowed again, secrets included
+    'cat CLAUDE.md',
+    "sed -n '1,40p' scripts/verify.mjs",
+    'head -n 3 apps/server/.env',
+    'cat .env',
+    'Get-Content apps/server/.env.local',
+    // writes outside source folders
+    'node scripts/verify.mjs > /dev/null 2>&1',
+    'echo done > /tmp/out.txt',
+    "sed -i 's/a/b/' docs/myapps/x.md",
+    'echo x > docs/notes.md',
+    'touch .claude/state/red-phase',
+    'rm .claude/state/red-phase',
+    // payload text is not a command
+    'git commit -m "refactor: move helpers -> apps/admin"',
+    'git commit -m "docs: explain --no-verify is refused"',
+    "gh pr create --title 'x' --body '> packages/core_ui changed'",
+    "cat <<'EOF' > /tmp/notes.md\nwrites go > apps/admin via Edit\nEOF",
+    'git commit -m "docs: never run npx skills add or npm install"',
+    'grep -rn bypassPermissions .claude/',
+    "grep -rn 'npm install' docs",
+    "grep -rn 'mainly' docs",
+    'echo use npm ci',
+    // pnpm and local bins
+    'pnpm install --frozen-lockfile',
+    'pnpm --filter @fox-drop/server add -D vitest',
+    'pnpm exec playwright install chromium',
+    'pnpm exec tsc',
+    'pnpm exec npx tsc -p tsconfig.json',
+    'npx tsc -p tsconfig.json',
+    'npx vitest run',
+    'npm view prettier version',
+    'npm run build',
+    'corepack enable',
+    'corepack pnpm install',
+    `npx ${'--- '.repeat(40)}tsc`,
+  ];
+  for (const cmd of allowed) it(`allows: ${cmd}`, () => assert.equal(checkBash(cmd), null));
+});
+
+// Runs a hook script with an event on stdin.
+const runScript = (name, event, env = {}) =>
+  spawnSync(process.execPath, [path.join(hooks, name)], {
+    input: typeof event === 'string' ? event : JSON.stringify(event),
+    encoding: 'utf8',
+    env: { ...process.env, ...env },
+  });
+
+describe('the guard scripts', () => {
+  it('refuse an unreadable event (fail closed)', () => {
+    assert.equal(runScript('guard-bash.mjs', '{not json').status, 2);
+    assert.equal(runScript('guard-edits.mjs', '{not json').status, 2);
+  });
+
+  it('pass the policy through with exit 2 and the reason', () => {
+    const bash = runScript('guard-bash.mjs', { tool_input: { command: 'git push -f' } });
+    assert.equal(bash.status, 2);
+    assert.match(bash.stderr, /Force-pushing/);
+    assert.equal(runScript('guard-bash.mjs', { tool_input: { command: 'ls' } }).status, 0);
+    const edit = runScript(
+      'guard-edits.mjs',
+      { tool_input: { file_path: path.join(scratch, 'pnpm-lock.yaml') } },
+      { CLAUDE_PROJECT_DIR: scratch },
+    );
+    assert.equal(edit.status, 2);
+    assert.match(edit.stderr, /generated/);
+  });
+
+  it('read the locked tests from .claude/state', () => {
+    const root = path.join(scratch, 'locked');
+    mkdirSync(path.join(root, '.claude', 'state'), { recursive: true });
+    writeFileSync(
+      path.join(root, '.claude', 'state', 'locked-tests.txt'),
+      '# slice D.8\napps/x/a.test.ts\n',
+    );
+    const edit = (file) =>
+      runScript(
+        'guard-edits.mjs',
+        { tool_name: 'Edit', tool_input: { file_path: path.join(root, file) } },
+        { CLAUDE_PROJECT_DIR: root },
+      );
+    assert.equal(edit('apps/x/a.test.ts').status, 2);
+    assert.equal(edit('apps/x/b.test.ts').status, 0);
+  });
+});
+
+describe('the fast check at the end of a turn', () => {
+  it('checks only a session that edited files, never in the red phase or on its retry', () => {
+    const dir = path.join(scratch, 'edits');
+    const root = path.join(scratch, 'root');
+    assert.equal(shouldCheck({ session_id: 'watcher' }, root, dir), false);
+    recordEdit('author', 'apps/server/src/app.ts', dir);
+    assert.equal(shouldCheck({ session_id: 'author' }, root, dir), true);
+    assert.equal(shouldCheck({ session_id: 'watcher' }, root, dir), false);
+    assert.equal(shouldCheck({ session_id: 'author', stop_hook_active: true }, root, dir), false);
+    mkdirSync(path.join(root, '.claude', 'state'), { recursive: true });
+    writeFileSync(path.join(root, '.claude', 'state', 'red-phase'), '');
+    assert.equal(shouldCheck({ session_id: 'author' }, root, dir), false);
+  });
+
+  // Runs the hook in a new repository with one uncommitted code file, where a stand-in
+  // scripts/verify.mjs exits with `status`; the hook's temp folder is under the scratch folder.
+  const runHook = (name, status, { edited = true, green = false } = {}) => {
     const repo = path.join(scratch, name);
     const tmp = path.join(repo, 'tmp');
     mkdirSync(path.join(repo, 'scripts'), { recursive: true });
-    spawnSync('git', ['init', '--quiet'], { cwd: repo });
-    writeFileSync(path.join(repo, '.gitignore'), 'tmp/\n');
+    const git = (...args) => spawnSync('git', args, { cwd: repo });
+    git('init', '--quiet');
+    writeFileSync(path.join(repo, '.gitignore'), 'tmp/\n.claude/state/\n');
+    git('add', '.gitignore');
+    git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '--quiet', '-m', 'init');
     writeFileSync(
       path.join(repo, 'scripts', 'verify.mjs'),
       `console.log('=== Step');\nconsole.log('the output');\nprocess.exitCode = ${status};`,
     );
+    if (green) recordGreen(repo, treeState(repo).fingerprint);
     const dir = path.join(tmp, 'claude-stop-verify');
     if (edited) recordEdit(name, 'scripts/verify.mjs', dir);
-    const hook = path.join(path.dirname(fileURLToPath(import.meta.url)), 'stop-verify.mjs');
-    const result = spawnSync(process.execPath, [hook], {
-      input: JSON.stringify({ session_id: name, cwd: repo }),
-      encoding: 'utf8',
-      env: { ...process.env, CLAUDE_PROJECT_DIR: repo, TMP: tmp, TEMP: tmp, TMPDIR: tmp },
-    });
+    const result = runScript(
+      'stop-verify.mjs',
+      { session_id: name, cwd: repo },
+      { CLAUDE_PROJECT_DIR: repo, TMP: tmp, TEMP: tmp, TMPDIR: tmp },
+    );
     return { ...result, edits: editsFile(name, dir) };
   };
 
@@ -68,6 +333,13 @@ describe('the fast check at the end of a turn', () => {
     assert.ok(existsSync(result.edits));
   });
 
+  it('skips a tree the last passing verify recorded', () => {
+    const result = runHook('green', 1, { green: true });
+    assert.equal(result.status, 0);
+    assert.equal(result.stdout + result.stderr, '');
+    assert.ok(!existsSync(result.edits));
+  });
+
   it('lets the turn end with a notice while another check runs, and keeps the edits', () => {
     const result = runHook('busy', 3);
     assert.equal(result.status, 0);
@@ -83,21 +355,22 @@ describe('the fast check at the end of a turn', () => {
 
   it('keeps edits recorded while the check ran for the next turn', () => {
     const dir = path.join(scratch, 'clear');
+    const root = path.join(scratch, 'clear-root');
     recordEdit('s', 'a.ts', dir);
     const seen = readFileSync(editsFile('s', dir), 'utf8');
     recordEdit('s', 'b.ts', dir);
     clearEdits('s', seen, dir);
-    assert.equal(shouldCheck({ session_id: 's' }, dir), true);
+    assert.equal(shouldCheck({ session_id: 's' }, root, dir), true);
     clearEdits('s', readFileSync(editsFile('s', dir), 'utf8'), dir);
-    assert.equal(shouldCheck({ session_id: 's' }, dir), false);
+    assert.equal(shouldCheck({ session_id: 's' }, root, dir), false);
   });
 
   it('reads the uncommitted paths, renames by their new name', () => {
-    const porcelain = ' M apps/server/src/app.ts\0R  docs/new.md\0docs/old.md\0?? scripts/x.mjs\0';
+    const porcelain = ' M apps/server/src/app.ts\nR  docs/old.md -> docs/new.md\n?? "scripts/a b.mjs"\n';
     assert.deepEqual(statusPaths(porcelain), [
       'apps/server/src/app.ts',
       'docs/new.md',
-      'scripts/x.mjs',
+      'scripts/a b.mjs',
     ]);
   });
 
@@ -105,209 +378,29 @@ describe('the fast check at the end of a turn', () => {
     const output = '\n=== Prettier\nok\n\n=== Server tests\n FAIL a.test.ts\n\nverify: failed';
     assert.equal(failingStep(output), '=== Server tests\n FAIL a.test.ts\n\nverify: failed');
   });
-});
 
-const TRACKED = new Set(['CLAUDE.md', 'apps/server/src/app.ts', 'docs/roadmap.md']);
-const root = path.resolve('/repo');
-// Like `git ls-files --error-unmatch`: a tracked file, or a folder holding one.
-const isTracked = (file, cwd) => {
-  const relative = path.relative(root, path.resolve(cwd, file)).replaceAll('\\', '/');
-  return [...TRACKED].some((each) => each === relative || each.startsWith(`${relative}/`));
-};
-const rules = (command, cwd = root) =>
-  check(command, cwd, isTracked).map((each) => `${each.rule} ${each.file ?? ''}`.trim());
-
-describe('the Bash guard', () => {
-  it('flags reading a tracked file', () => {
-    assert.deepEqual(rules('cat CLAUDE.md'), ['read CLAUDE.md']);
-    assert.deepEqual(rules("sed -n '10,40p' apps/server/src/app.ts"), [
-      'read apps/server/src/app.ts',
-    ]);
-    assert.deepEqual(rules('head -n 20 docs/roadmap.md'), ['read docs/roadmap.md']);
-    assert.deepEqual(rules('tail -30 CLAUDE.md'), ['read CLAUDE.md']);
-    assert.deepEqual(rules('cat CLAUDE.md | grep -n Money'), ['read CLAUDE.md']);
-  });
-
-  it('follows cd before the read', () => {
-    assert.deepEqual(rules('cd apps/server && sed -n 1,5p src/app.ts'), ['read src/app.ts']);
-    assert.deepEqual(rules('cd /elsewhere; cat CLAUDE.md'), []);
-  });
-
-  it('allows filtering a command output and reading untracked files', () => {
-    assert.deepEqual(rules('git log --oneline | head -20'), []);
-    assert.deepEqual(rules('pnpm test 2>&1 | tail -n 50'), []);
-    assert.deepEqual(rules('git diff | sed -n 1,80p'), []);
-    assert.deepEqual(rules('cat .env.example.local'), []);
-    assert.deepEqual(rules('tail -f server.log'), []);
-    assert.deepEqual(rules('cat > notes.txt <<EOF\nsee CLAUDE.md\nEOF'), []);
-  });
-
-  it('flags in-place edits of a tracked file', () => {
-    assert.deepEqual(rules("sed -i 's/a/b/' CLAUDE.md"), ['edit CLAUDE.md']);
-    assert.deepEqual(rules("sed -i.bak -e 's/a/b/' docs/roadmap.md"), ['edit docs/roadmap.md']);
-    assert.deepEqual(rules("perl -pi -e 's/a/b/' CLAUDE.md"), ['edit CLAUDE.md']);
-    assert.deepEqual(rules("sed -i 's/a/b/' /tmp/scratch.txt"), []);
-  });
-
-  it('flags inline scripts that write files, but not scratchpad ones', () => {
-    const python =
-      "python - <<'PY'\nfrom pathlib import Path\nPath('CLAUDE.md').write_text('x')\nPY";
-    assert.deepEqual(rules(python), ['edit']);
-    assert.deepEqual(rules(`node -e "require('fs').writeFileSync('CLAUDE.md', '')"`), ['edit']);
-    assert.deepEqual(rules(`node -e "require('fs').writeFileSync('apps/server/src/new.ts', '')"`), [
-      'edit',
-    ]);
-    assert.deepEqual(rules("python -c \"open('C:/Users/x/AppData/Local/Temp/out.txt','w')\""), []);
-    assert.deepEqual(rules("python - <<'PY'\nprint(sum(range(10)))\nPY"), []);
-    assert.deepEqual(rules('python scripts/tool.py'), []);
-  });
-
-  it('allows inline scripts that write only outside the repository', () => {
-    const settings = [
-      "node - <<'JS'",
-      "const fs = require('fs'), os = require('os'), path = require('path');",
-      "const file = path.join(os.homedir(), '.claude.json');",
-      'fs.writeFileSync(file, JSON.stringify({}));',
-      'JS',
-    ].join('\n');
-    assert.deepEqual(rules(settings), []);
-    assert.deepEqual(
-      rules(`node -e "require('fs').writeFileSync('~/.claude/settings.json', '')"`),
-      [],
-    );
-    assert.deepEqual(rules("python -c \"open('C:/Users/x/.claude.json','w').write('{}')\""), []);
-    assert.deepEqual(rules("python - <<'PY'\nimport sys\nopen(sys.argv[1],'w')\nPY"), []);
-  });
-
-  it('allows inline scripts that only print, and a file redirected into a command', () => {
-    assert.deepEqual(rules(`node -e "process.stdout.write(String(1 + 1))"`), []);
-    assert.deepEqual(rules('python -c "import sys; sys.stderr.write(\'x\')"'), []);
-    assert.deepEqual(rules(`node -e "f = open('docs/roadmap.md'); f.write('x')"`), ['edit']);
-    assert.deepEqual(rules('docker compose exec -T postgres psql < docs/roadmap.md'), []);
-  });
-
-  it('splits on operators but not inside quotes', () => {
-    const [first, second] = parse("grep -n 'a|b; c' x && echo ok");
-    assert.deepEqual(first[0].words, ['grep', '-n', 'a|b; c', 'x']);
-    assert.deepEqual(second[0].words, ['echo', 'ok']);
-    const redirected = parse('cat CLAUDE.md 2>&1 >&2');
-    assert.equal(redirected.length, 1);
-    assert.deepEqual(rules('cat CLAUDE.md 2>&1'), ['read CLAUDE.md']);
+  it('cuts a long step to its failures and its end, never the server log', () => {
+    const lines = Array.from({ length: 400 }, (_, i) => `line ${i}`);
+    lines[50] = ' FAIL src/a.test.ts > adds';
+    lines[100] = '[WebServer] http proxy error: ECONNREFUSED';
+    const out = cut(lines.join('\n'), 'C:/out.log');
+    assert.match(out, /FAIL src\/a\.test\.ts/);
+    assert.match(out, /line 399/);
+    assert.doesNotMatch(out, /line 200\n/);
+    assert.doesNotMatch(out, /WebServer/);
+    assert.match(out, /whole output is in C:\/out\.log/);
+    assert.equal(cut('short\noutput', 'x'), 'short\noutput');
   });
 });
 
-// The bash that Claude Code's Bash tool runs: Git for Windows' on Windows
-// (`bash` there may be WSL's), else the one on PATH.
-function findBash() {
-  if (process.platform !== 'win32') return 'bash';
-  const exec = spawnSync('git', ['--exec-path'], { encoding: 'utf8' }).stdout.trim();
-  const gitBash = path.resolve(exec, '..', '..', '..', 'bin', 'bash.exe');
-  assert.ok(existsSync(gitBash), 'no bash on PATH and none next to git');
-  return gitBash;
-}
-
-describe('the test output filter', () => {
-  const rewrite = (command) =>
-    summarized(command, 'C:\\hooks\\test-summary.mjs', 'C:\\node\\node.exe', 'C:\\out\\x.log');
-  const filter = path.join(path.dirname(fileURLToPath(import.meta.url)), 'test-summary.mjs');
-  // Runs, through the rewritten command, a stand-in scripts/verify.mjs with this body.
-  const runRewritten = (name, body, filterPath, savedTo) => {
-    const project = path.join(scratch, name);
-    mkdirSync(path.join(project, 'scripts'), { recursive: true });
-    writeFileSync(path.join(project, 'scripts', 'verify.mjs'), body);
-    const command = `cd "${project.replaceAll('\\', '/')}" && node scripts/verify.mjs`;
-    const rewritten = summarized(command, filterPath, process.execPath, savedTo);
-    assert.ok(rewritten);
-    return spawnSync(findBash(), ['-c', rewritten], { encoding: 'utf8' });
-  };
-
-  it('wraps test commands: the shell saves the whole output, the filter reads the file', () => {
-    assert.equal(
-      rewrite('pnpm --filter @fox-drop/server test'),
-      '{ pnpm --filter @fox-drop/server test\n} > "C:/out/x.log" 2>&1; __status=$?; "C:/node/node.exe" "C:/hooks/test-summary.mjs" "C:/out/x.log" ||' +
-        ' { echo "[The output filter failed; the last 60 lines follow, the whole output is in C:/out/x.log]"; tail -n 60 "C:/out/x.log"; }; (exit $__status)',
-    );
-    assert.ok(rewrite('cd /d/fox-drop && pnpm verify'));
-    assert.ok(rewrite('node scripts/verify.mjs format'));
-    assert.ok(rewrite('dart run melos run test:flutter --no-select'));
-    assert.ok(rewrite('cd apps/customer; flutter test test/cart_test.dart'));
-  });
-
-  it('leaves alone anything that is not only tests, or already filters its output', () => {
-    assert.equal(rewrite('pnpm test | tail -50'), null);
-    assert.equal(rewrite('pnpm test > out.txt'), null);
-    assert.equal(rewrite('git status && pnpm test'), null);
-    assert.equal(rewrite('pnpm install'), null);
-    assert.equal(rewrite('cd apps/server'), null);
-    assert.equal(rewrite('export PATH="$(evil):$PATH"; pnpm verify'), null);
-    assert.equal(rewrite('pnpm test; `evil`'), null);
-  });
-
-  it('allows cd, export, echo and node -v around the tests', () => {
-    assert.ok(rewrite('export CI=1; node -v; pnpm verify; echo "exit $?"'));
-    assert.equal(rewrite('echo start; rm -r build; pnpm test'), null);
-  });
-
-  it('keeps short output whole', () => {
-    const text = Array.from({ length: 50 }, (_, i) => `line ${i}`).join('\n');
-    assert.equal(cut(text, 'saved.log'), text);
-  });
-
-  it('cuts long output to headers, failures and the summary', () => {
-    const lines = Array.from({ length: 1000 }, (_, i) => `ok test ${i}`);
-    lines[0] = '=== Prettier';
-    lines[500] = ' FAIL  src/order.test.ts > accepts an order';
-    lines[501] = 'AssertionError: expected 1 to be 2';
-    lines[999] = 'Tests  1 failed | 998 passed';
-    const out = cut(lines.join('\n'), 'saved.log').split('\n');
-    assert.ok(out.includes('=== Prettier'));
-    assert.ok(out.includes(' FAIL  src/order.test.ts > accepts an order'));
-    assert.ok(out.includes('AssertionError: expected 1 to be 2'));
-    assert.ok(out.includes('Tests  1 failed | 998 passed'));
-    assert.ok(out.includes('ok test 960'));
-    assert.ok(!out.includes('ok test 300'));
-    assert.match(out.at(-1), /cut from 1000 lines; the whole output is in saved\.log/);
-    assert.ok(out.length < 120);
-  });
-
-  it("does not take the Playwright web server's log for failures", () => {
-    const proxy =
-      '@fox-drop/admin:test:e2e: [WebServer] 10:01:02 [vite] http proxy error: /api/v1/me\n' +
-      '@fox-drop/admin:test:e2e: [WebServer] AggregateError [ECONNREFUSED]: connect error';
-    const lines = [...Array(961).fill(proxy), ...Array(200).fill('ok')];
-    lines[1000] =
-      'apps/admin/src/main.ts:12:3  error  Unexpected any  @typescript-eslint/no-explicit-any';
-    lines.push('Tasks: 1 failed');
-    const out = cut(lines.join('\n'), 'saved.log');
-    assert.ok(out.includes('@typescript-eslint/no-explicit-any'));
-    assert.ok(!out.includes('over the limit'));
-    assert.ok(out.split('\n').length < 120);
-  });
-
-  it('keeps the exit status and the whole output of a long run', () => {
-    const savedTo = path.join(scratch, 'long.log');
-    const result = runRewritten(
-      'long',
-      "for (let i = 0; i < 200000; i++) console.log('line ' + i);\nprocess.exitCode = 3;",
-      filter,
-      savedTo,
-    );
-    assert.equal(result.status, 3);
-    assert.match(result.stdout, /cut from 200001 lines; the whole output is in/);
-    assert.equal(readFileSync(savedTo, 'utf8').split('\n').length, 200001);
-  });
-
-  it('prints the last lines and the path when the filter itself fails', () => {
-    const savedTo = path.join(scratch, 'fallback.log');
-    const result = runRewritten(
-      'fallback',
-      "console.log('first');\nconsole.error('the real error');\nprocess.exitCode = 1;",
-      path.join(scratch, 'missing-filter.mjs'),
-      savedTo,
-    );
-    assert.equal(result.status, 1);
-    assert.match(result.stdout, /The output filter failed;.*whole output is in/);
-    assert.match(result.stdout, /the real error/);
-    assert.match(readFileSync(savedTo, 'utf8'), /first\n.*the real error/s);
+describe('session end', () => {
+  it('warns about uncommitted work and never blocks', () => {
+    const repo = path.join(scratch, 'end');
+    mkdirSync(repo, { recursive: true });
+    spawnSync('git', ['init', '--quiet'], { cwd: repo });
+    writeFileSync(path.join(repo, 'a.txt'), 'x');
+    const result = runScript('session-end.mjs', { cwd: repo }, { CLAUDE_PROJECT_DIR: repo });
+    assert.equal(result.status, 0);
+    assert.match(result.stderr, /1 uncommitted change/);
   });
 });
