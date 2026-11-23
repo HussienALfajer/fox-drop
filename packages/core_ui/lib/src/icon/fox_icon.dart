@@ -4,6 +4,10 @@ import 'package:flutter/widgets.dart';
 import '../theme/fox_theme.dart';
 import 'path_data.dart';
 
+/// The states every Icon use case and golden shows (R3), as the web's
+/// `STATES` of the Icon.
+const iconStates = ['default', 'sm', 'md', 'lg', 'labelled', 'mirrored'];
+
 /// The three icon sizes (`size.icon-*`).
 enum FoxIconSize {
   sm(t.FoxSize.iconSm),
