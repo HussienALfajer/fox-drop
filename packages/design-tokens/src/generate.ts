@@ -177,18 +177,29 @@ export function dart(themes: Record<Theme, Tokens>): string {
       .filter((token) => token.path[0] === 'color')
       .map((token) => [camel(token.path.slice(1)), argb(String(token.value))]);
 
-  const button = group('button');
-  const buttonField = (token: Token): [string, string] => [
-    camel(token.path.slice(1)),
-    token.type === 'color' ? 'int' : 'double',
-  ];
-  const buttonArgs = (tokens: Tokens): [string, string][] =>
-    exported(tokens)
-      .filter((token) => token.path[0] === 'button')
-      .map((token) => [
-        camel(token.path.slice(1)),
-        token.type === 'color' ? argb(String(token.value)) : number(dimension(token.value)),
-      ]);
+  // One component's tokens: a class of fields and one instance per theme.
+  const component = (name: string, label: string) => {
+    const type = `${label}Tokens`;
+    const fields = group(name).map((token): [string, string] => [
+      camel(token.path.slice(1)),
+      token.type === 'color' ? 'int' : 'double',
+    ]);
+    const args = (tokens: Tokens): [string, string][] =>
+      exported(tokens)
+        .filter((token) => token.path[0] === name)
+        .map((token) => [
+          camel(token.path.slice(1)),
+          token.type === 'color' ? argb(String(token.value)) : number(dimension(token.value)),
+        ]);
+    return [
+      dartClass(type, `The ${label} component tokens of one theme.`, fields),
+      '',
+      `/// The ${label} tokens per theme.`,
+      `abstract final class Fox${label} {`,
+      DART_THEMES.map((theme) => dartInstance(type, theme, args(themes[theme]))).join('\n\n'),
+      '}',
+    ].join('\n');
+  };
 
   const constants = (name: string, doc: string, type: string, value: (t: Token) => string) =>
     [
@@ -235,14 +246,9 @@ export function dart(themes: Record<Theme, Tokens>): string {
     ),
     '}',
     '',
-    dartClass('ButtonTokens', 'The Button component tokens of one theme.', button.map(buttonField)),
+    component('button', 'Button'),
     '',
-    '/// The Button tokens per theme.',
-    'abstract final class FoxButton {',
-    DART_THEMES.map((theme) => dartInstance('ButtonTokens', theme, buttonArgs(themes[theme]))).join(
-      '\n\n',
-    ),
-    '}',
+    component('input', 'Input'),
     '',
     constants('FoxSpace', 'The spacing steps of the 4-point grid.', 'double', (t) =>
       number(dimension(t.value)),

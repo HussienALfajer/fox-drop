@@ -116,6 +116,7 @@
   --color-border: var(--fd-color-border);
   --color-border-strong: var(--fd-color-border-strong);
   --color-border-hover: var(--fd-color-border-hover);
+  --color-border-pressed: var(--fd-color-border-pressed);
   --color-focus-ring: var(--fd-color-focus-ring);
   --color-success: var(--fd-color-success);
   --color-on-success: var(--fd-color-on-success);

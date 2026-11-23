@@ -77,6 +77,10 @@
       "$value": "{primitive.color.blue.500}",
       "$description": "A control boundary under the pointer: the outline turns full blue (R10)."
     },
+    "border-pressed": {
+      "$value": "{primitive.color.blue.700}",
+      "$description": "A control boundary or an off track pressed: a deeper blue beyond the hover (R10)."
+    },
     "focus-ring": {
       "$value": "{primitive.color.blue.500}",
       "$description": "The keyboard focus ring, at 3:1 on every surface."

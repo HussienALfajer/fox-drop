@@ -1,0 +1,57 @@
+<!-- @dsCard group="Forms" height=520 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: var(--fd-space-lg) 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--fd-space-lg);
+    margin-block-end: var(--fd-space-sm);
+  }
+  .row > * {
+    min-width: 260px;
+    max-width: 320px;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, TextField } = FoxDrop;
+  const sections = (section, h) => [
+    ...section(
+      'Hint',
+      h(TextField, { label: 'الاسم', hint: 'كما يظهر في الهوية', placeholder: 'اكتب اسمك' }),
+    ),
+    ...section(
+      'Optional',
+      h(TextField, { label: 'الكنية', optionalLabel: '(اختياري)', placeholder: 'اكتب كنيتك' }),
+    ),
+    ...section(
+      'Error',
+      h(TextField, { label: 'الاسم', error: 'اكتب الاسم كما في الهوية', defaultValue: 'محمد' }),
+    ),
+    ...section(
+      'Disabled',
+      h(TextField, { label: 'الاسم', disabled: true, placeholder: 'اكتب اسمك' }),
+    ),
+  ];
+  const h = React.createElement;
+  const section = (title, ...items) => [
+    h('h2', { key: title }, title),
+    h('div', { className: 'row', key: title + 'row' }, ...items),
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render(sections(section, h));
+</script>

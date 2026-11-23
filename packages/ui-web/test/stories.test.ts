@@ -17,7 +17,21 @@ const components = Object.entries(library).filter(
 
 describe('stories cover every state (R3)', () => {
   it('finds the components', () => {
-    expect(components.map(([name]) => name).sort()).toEqual(['Button', 'Icon']);
+    expect(components.map(([name]) => name).sort()).toEqual([
+      'Button',
+      'Checkbox',
+      'CodeField',
+      'Field',
+      'Icon',
+      'PhoneField',
+      'QuantityStepper',
+      'RadioGroup',
+      'SearchField',
+      'Select',
+      'Switch',
+      'TextArea',
+      'TextField',
+    ]);
   });
 
   it.each(components.map(([name]) => [name, kebab(name)]))('%s', async (_, dir) => {

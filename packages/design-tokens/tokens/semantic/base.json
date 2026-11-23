@@ -474,6 +474,33 @@
     "icon-lg": {
       "$value": "32px",
       "$description": "A large icon: empty states and the active circle of the floating bar."
+    },
+    "selection": {
+      "$value": "24px",
+      "$description": "The drawn checkbox and radio, centred in a touch target."
+    },
+    "step": {
+      "$value": "32px",
+      "$description": "The circles of the quantity stepper, centred in a touch target."
+    },
+    "switch-width": {
+      "$value": "52px",
+      "$description": "The switch track's width."
+    },
+    "switch-height": {
+      "$value": "32px",
+      "$description": "The switch track's height."
+    }
+  },
+  "border-width": {
+    "$type": "dimension",
+    "thin": {
+      "$value": "1px",
+      "$description": "A control's outline at rest and under the pointer."
+    },
+    "thick": {
+      "$value": "2px",
+      "$description": "A focused or invalid control's outline, a checkbox's and a radio's ring."
     }
   }
 }

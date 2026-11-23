@@ -1,10 +1,21 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { buildBundle, checkJs, ICON_NAMES, PACKAGE_DIR } from '../scripts/bundle.ts';
+import { buildBundle, checkJs, COMPONENTS, ICON_NAMES, PACKAGE_DIR } from '../scripts/bundle.ts';
 import { preview, typesDoc } from '../scripts/docs.ts';
 import type { ButtonProps } from '../src/button/button';
+import type { CheckboxProps } from '../src/checkbox/checkbox';
+import type { CodeFieldProps } from '../src/code-field/code-field';
+import type { FieldProps } from '../src/field/field';
 import type { IconProps } from '../src/icon/icon';
+import type { PhoneFieldProps } from '../src/phone-field/phone-field';
+import type { QuantityStepperProps } from '../src/quantity-stepper/quantity-stepper';
+import type { RadioGroupProps } from '../src/radio-group/radio-group';
+import type { SearchFieldProps } from '../src/search-field/search-field';
+import type { SelectProps } from '../src/select/select';
+import type { SwitchProps } from '../src/switch/switch';
+import type { TextAreaProps } from '../src/text-area/text-area';
+import type { TextFieldProps } from '../src/text-field/text-field';
 
 describe('the Design System bundle', () => {
   let bundle: { js: string; css: string };
@@ -23,16 +34,17 @@ describe('the Design System bundle', () => {
     delete (window as unknown as Record<string, unknown>)['React'];
     window.eval(bundle.js);
     const api = (window as unknown as { FoxDrop: Record<string, unknown> }).FoxDrop;
-    expect(Object.keys(api)).toEqual(
-      expect.arrayContaining(['Button', 'Icon', 'React', 'ReactDOM']),
-    );
-    expect(typeof api['Button']).toBe('function');
+    expect(Object.keys(api)).toEqual(expect.arrayContaining([...COMPONENTS, 'React', 'ReactDOM']));
+    for (const name of COMPONENTS) expect(typeof api[name], name).toBe('function');
     expect((window as unknown as { React: unknown }).React).toBe(api['React']);
   });
 
   it('carries the --fd-* variables and the component classes, with no font and no style end', () => {
     expect(bundle.css).toContain('--fd-button-primary-background');
     expect(bundle.css).toContain('min-h-');
+    // the form components: the classes of src/field/styles.ts and the input tokens
+    expect(bundle.css).toContain('--fd-input-color-border-focus');
+    expect(bundle.css).toContain('inset-ring');
     expect(bundle.css.toLowerCase()).not.toContain('</style');
     expect(bundle.css).not.toContain('@font-face');
     expect(bundle.css).not.toContain('.fonts');
@@ -71,6 +83,153 @@ describe('the component docs', () => {
     label: true,
   } satisfies Record<Keys<ButtonProps>, true>;
   const iconProps = { name: true, label: true, size: true } satisfies Record<Keys<IconProps>, true>;
+  const fieldProps = {
+    label: true,
+    optionalLabel: true,
+    hint: true,
+    error: true,
+    aside: true,
+    disabled: true,
+    name: true,
+    density: true,
+    children: true,
+  } satisfies Record<Keys<FieldProps>, true>;
+  const textFieldProps = {
+    label: true,
+    optionalLabel: true,
+    hint: true,
+    error: true,
+    placeholder: true,
+    value: true,
+    defaultValue: true,
+    onValueChange: true,
+    name: true,
+    type: true,
+    inputMode: true,
+    autoComplete: true,
+    maxLength: true,
+    required: true,
+    disabled: true,
+    density: true,
+  } satisfies Record<Keys<TextFieldProps>, true>;
+  const textAreaProps = {
+    label: true,
+    optionalLabel: true,
+    hint: true,
+    error: true,
+    placeholder: true,
+    value: true,
+    defaultValue: true,
+    onValueChange: true,
+    name: true,
+    maxLength: true,
+    required: true,
+    disabled: true,
+  } satisfies Record<Keys<TextAreaProps>, true>;
+  const searchFieldProps = {
+    label: true,
+    clearLabel: true,
+    placeholder: true,
+    value: true,
+    defaultValue: true,
+    onValueChange: true,
+    name: true,
+    loading: true,
+    disabled: true,
+    density: true,
+  } satisfies Record<Keys<SearchFieldProps>, true>;
+  const phoneFieldProps = {
+    label: true,
+    optionalLabel: true,
+    hint: true,
+    error: true,
+    countryLabels: true,
+    countryLabel: true,
+    placeholder: true,
+    value: true,
+    defaultValue: true,
+    onValueChange: true,
+    country: true,
+    defaultCountry: true,
+    onCountryChange: true,
+    name: true,
+    required: true,
+    disabled: true,
+    density: true,
+  } satisfies Record<Keys<PhoneFieldProps>, true>;
+  const codeFieldProps = {
+    label: true,
+    hint: true,
+    error: true,
+    value: true,
+    defaultValue: true,
+    onValueChange: true,
+    onComplete: true,
+    done: true,
+    name: true,
+    autoFocus: true,
+    disabled: true,
+  } satisfies Record<Keys<CodeFieldProps>, true>;
+  const selectProps = {
+    label: true,
+    optionalLabel: true,
+    hint: true,
+    error: true,
+    placeholder: true,
+    items: true,
+    value: true,
+    defaultValue: true,
+    onValueChange: true,
+    name: true,
+    required: true,
+    disabled: true,
+    density: true,
+  } satisfies Record<Keys<SelectProps>, true>;
+  const checkboxProps = {
+    label: true,
+    checked: true,
+    defaultChecked: true,
+    onCheckedChange: true,
+    name: true,
+    value: true,
+    required: true,
+    disabled: true,
+    invalid: true,
+  } satisfies Record<Keys<CheckboxProps>, true>;
+  const radioGroupProps = {
+    label: true,
+    optionalLabel: true,
+    hint: true,
+    error: true,
+    options: true,
+    value: true,
+    defaultValue: true,
+    onValueChange: true,
+    name: true,
+    required: true,
+    disabled: true,
+  } satisfies Record<Keys<RadioGroupProps>, true>;
+  const switchProps = {
+    label: true,
+    checked: true,
+    defaultChecked: true,
+    onCheckedChange: true,
+    name: true,
+    disabled: true,
+  } satisfies Record<Keys<SwitchProps>, true>;
+  const stepperProps = {
+    label: true,
+    increaseLabel: true,
+    decreaseLabel: true,
+    removeLabel: true,
+    value: true,
+    defaultValue: true,
+    onValueChange: true,
+    onRemove: true,
+    min: true,
+    max: true,
+    disabled: true,
+  } satisfies Record<Keys<QuantityStepperProps>, true>;
 
   /** The property names declared in the doc's interfaces of that name, sorted. */
   const documented = (types: string, interfaces: string[]) =>
@@ -89,9 +248,25 @@ describe('the component docs', () => {
       Object.keys(buttonProps).sort(),
     );
     expect(documented(types, ['IconProps'])).toEqual(Object.keys(iconProps).sort());
+    const forms = {
+      FieldProps: fieldProps,
+      TextFieldProps: textFieldProps,
+      TextAreaProps: textAreaProps,
+      SearchFieldProps: searchFieldProps,
+      PhoneFieldProps: phoneFieldProps,
+      CodeFieldProps: codeFieldProps,
+      SelectProps: selectProps,
+      CheckboxProps: checkboxProps,
+      RadioGroupProps: radioGroupProps,
+      SwitchProps: switchProps,
+      QuantityStepperProps: stepperProps,
+    };
+    for (const [name, props] of Object.entries(forms)) {
+      expect(documented(types, [name]), name).toEqual(Object.keys(props).sort());
+    }
   });
 
-  it.each(['Button', 'Icon'])('gives %s a card first line and a summary', (name) => {
+  it.each(COMPONENTS)('gives %s a card first line and a summary', (name) => {
     const html = preview(name);
     expect(html.split('\n')[0]).toMatch(/^<!-- @dsCard group="\w+" height=\d+ -->$/);
     expect(html).toContain('dir="rtl" lang="ar"');

@@ -1,6 +1,6 @@
 # D.8 Inputs and forms
 
-Status: In progress · Tier: T2 · Branch: `feat/components-forms`
+Status: Done · Tier: T2 · Branch: `feat/components-forms` (PR 261, merged 2026-11-23)
 Spec: architecture §9.5 (R1 to R10), §9.6, §9.7, §9.9 (the component cycle), §9.10; the spec lines that use each control: sign-in (architecture §8.3.4), the customer's item options and cart (CU), the restaurant's open switch (RA), the panel's forms (AP) · Definition of done: the D.8 line of `docs/roadmap.md` Phase D
 
 ## Goal
@@ -9,34 +9,30 @@ Text field and its wrapper (label, hint, error), long text, search, phone (+963)
 
 ## Plan
 
-Written before 2026-11-23 in `TASKS.md` on the slice's branch, which the build session follows; that branch's final handover moves here when it merges.
-
-- [x] Split «D.8 onward» into slices with the owner: D.8 forms, D.9 data display, D.10 overlays and navigation, one pull request each for both platforms (2026-11-23).
-- [ ] Look at the Figma file, read the cited sections and write the design, including its proposals sheet (§9.9 step 1) for the owner's approval. The owner's analysis page of 2026-11-23 (link in Claude's memory, not here) lists what the file holds: the search pill, the focused and error inputs, the quantity stepper with its concave bridge, the circle and pill pairing.
-- [ ] The rest of the plan, written in the design step.
-
-Read first: `docs/brand/directions.md`; `docs/slice-notes.md` «Left from D.7» and «Left from D.6»; `packages/ui-web/CLAUDE.md` and `packages/core_ui/CLAUDE.md`; grep `docs/code/packages/ui-web.md` and `docs/code/packages/core_ui.md` for the Button and the patterns every component repeats (states exported for R3, R10 hover and pressed tokens, RTL and text-scale tests, goldens and the visual gate).
-
-Built so far: tokens 0.5.0 (`packages/design-tokens`, `core_tokens`), the icon set, the Button and Icon on the web (`ui-web`, Storybook, synced into the Design System) and in Flutter (`core_ui`, widgetbook, goldens in Docker, `fox_lints`).
+Built under the earlier two-session workflow, with its plan in `TASKS.md` on the slice's branch; the hand-over below moved here when the workflow changed (`chore/shifa-workflow`).
 
 ## Stopped at
 
-Being built on `feat/components-forms` in the main checkout (2026-11-23).
+Done: merged in PR 261 (2026-11-23).
 
 ## Evidence
 
-<filled when the slice's pull request is opened>
+The pull request's test plan and CI run (PR 261).
+
+## Owner decisions (2026-11-23)
+
+The forms sheet «Inputs and forms — batch 2» (now marked superseded, §9.9 step 4); the orange exception extended to 3:1 non-text elements (focus outlines, checked controls, the switch, the stepper, icons inside controls), then, after the review, orange allowed anywhere, body text, prices, amounts and timers included (owner, in chat on 2026-11-23, knowing such text sits near 2.5:1 against WCAG's 4.5:1). Written in architecture §9.5, decision T12, the brand docs, `packages/design-tokens` and `REVIEW.md` item 13 (now: orange from the orange tokens only, each pair listed in `src/contrast.ts`), named under «Checks changed» in the pull request.
 
 ## Before deploying
 
-Nothing: components only.
+Nothing: components only. New dependencies: `material_ui` 1.11.1, `intl` 0.20.3 and `flutter_localizations` in `core_ui` only.
 
 ## To check on staging
 
-Nothing new.
+Nothing new. The owner can try Storybook (`pnpm --filter @fox-drop/ui-web storybook`) and widgetbook (`apps/widgetbook`, `flutter run -d windows`): every form control in its states, phone and captain; the Design System (version 10) shows the eleven web cards.
 
 ## Notes for the next session
 
-The workflow changed while D.8 was being built (`chore/shifa-workflow`, 2026-11-23). On `feat/components-forms`: merging `main` gives a modify/delete conflict on `TASKS.md`; resolve it by deleting `TASKS.md` and moving its hand-over here (Stopped at, Evidence, Before deploying, To check on staging). `docs/slice-notes.md` is now a read-only archive and the edit guard refuses changes to it, so D.8's hand-over goes into this file, and open items into `docs/backlog.md`. D.8 merges with squash like every pull request.
-
-After D.8: D.9 Data display, then D.10 Overlays and navigation, then the screens' slice plans (`docs/roadmap.md`). Then L.2 The permission matrix (`test/permission-matrix`; read first: architecture §18.1, AP §6 and §14 item 2, RA §22 item 2, the AP-2 and RA-2 rows of `docs/launch/dod-checklist.md`, `apps/server/CLAUDE.md` «Deny by default», the route table in `apps/server/src/modules/identity/admin-team.test.ts`), then L.3 to L.11.
+- **Decided by us (to confirm with the owner):** one phone rule on both platforms (`ui-web` `phone.ts`, `core_ui` `foxParsePhone`): a pasted calling code (`+`, `00` or bare) switches the country when the rest is valid for it and is refused otherwise; extra digits are refused, never cut; Arabic-Indic and Persian digits become 0-9. A bare calling code works pasted only, not typed digit by digit. The web QuantityStepper is two buttons (the SDK's NumberInput disables «−» at the minimum, where delete must work); its label is the noun («الكمية») and the count is the value on both platforms. New `FoxRadioGroup` (label, hint, error, one tab stop, arrow keys). `FoxTimeOfDay` is core_ui's own time type. The Syriac months, «ص/م» and the narrow weekday letters live in `core_ui`'s Material localizations (removing the letters shows English initials). `border-pressed` (blue 700) is new for the off switch pressed.
+- **Not yet:** Cupertino localizations for the iOS text toolbar (each app adds them); the web date pickers; Flutter compact density; the code field's IME composition on real Android and iOS keyboards (only device testing tells); a story or golden of the code field's current cell after an error (unit test only).
+- **Next:** [D.9 Data display](D.9-data-display.md).

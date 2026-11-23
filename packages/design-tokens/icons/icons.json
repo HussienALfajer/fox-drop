@@ -48,6 +48,12 @@
     "description": "Close or dismiss: a cross."
   },
   {
+    "name": "chevron-down",
+    "group": "Navigation",
+    "mirror": false,
+    "description": "Open a list: a chevron pointing down, for selects and menus (D.8)."
+  },
+  {
     "name": "more",
     "group": "Navigation",
     "mirror": false,
@@ -154,6 +160,12 @@
     "group": "States",
     "mirror": false,
     "description": "Time and timers: a stopwatch, for delivery times."
+  },
+  {
+    "name": "calendar",
+    "group": "States",
+    "mirror": false,
+    "description": "A date: a calendar page with two rings, for date fields (D.8)."
   },
   {
     "name": "drop-pin",

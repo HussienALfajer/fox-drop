@@ -10,7 +10,21 @@ import { build } from 'vite';
 export const PACKAGE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 /** The components the bundle exposes, in the index's order. */
-export const COMPONENTS = ['Button', 'Icon'] as const;
+export const COMPONENTS = [
+  'Button',
+  'Icon',
+  'Field',
+  'TextField',
+  'TextArea',
+  'SearchField',
+  'PhoneField',
+  'CodeField',
+  'Select',
+  'Checkbox',
+  'RadioGroup',
+  'Switch',
+  'QuantityStepper',
+] as const;
 
 export const MAX_JS = 6 * 1024 * 1024;
 export const MAX_CSS = 2 * 1024 * 1024;

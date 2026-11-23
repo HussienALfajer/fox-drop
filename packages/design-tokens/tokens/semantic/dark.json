@@ -65,6 +65,9 @@
     "border-hover": {
       "$value": "{primitive.color.blue.500}"
     },
+    "border-pressed": {
+      "$value": "{primitive.color.blue.700}"
+    },
     "focus-ring": {
       "$value": "{primitive.color.blue.500}"
     },

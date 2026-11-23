@@ -17,6 +17,8 @@ export default tseslint.config(
       // while lint scans the folder.
       '**/test-results/',
       '**/playwright-report/',
+      // Other sessions' git worktrees (gitignored): their own checkouts, linted there.
+      '.claude/worktrees/',
     ],
   },
   js.configs.recommended,

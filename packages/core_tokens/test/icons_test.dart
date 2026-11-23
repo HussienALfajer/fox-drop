@@ -2,8 +2,8 @@ import 'package:core_tokens/core_tokens.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('holds the 44 icons of the first set (brand expression §10)', () {
-    expect(FoxIcons.all, hasLength(44));
+  test('holds the 44 icons of the first set and the forms pair (D.8)', () {
+    expect(FoxIcons.all, hasLength(46));
   });
 
   test('gives every icon its path data', () {

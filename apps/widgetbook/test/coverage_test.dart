@@ -11,6 +11,20 @@ import 'package:widgetbook/widgetbook.dart';
 final _states = <String, (List<String>, List<String>)>{
   'FoxButton': (buttonVariants, buttonStates),
   'FoxIcon': ([''], iconStates),
+  'FoxField': ([''], fieldStates),
+  'FoxTextField': ([''], textFieldStates),
+  'FoxTextArea': ([''], textAreaStates),
+  'FoxSearchField': ([''], searchFieldStates),
+  'FoxPhoneField': ([''], phoneFieldStates),
+  'FoxCodeField': ([''], codeFieldStates),
+  'FoxSelect': ([''], selectStates),
+  'FoxCheckbox': (checkboxValues, checkboxStates),
+  'FoxRadio': (radioValues, radioStates),
+  'FoxRadioGroup': ([''], radioGroupStates),
+  'FoxSwitch': (switchValues, switchStates),
+  'FoxQuantityStepper': ([''], quantityStepperStates),
+  'FoxDateField': ([''], dateFieldStates),
+  'FoxTimeField': ([''], timeFieldStates),
 };
 
 void main() {
@@ -22,7 +36,7 @@ void main() {
       for (final file in source.listSync(recursive: true).whereType<File>())
         if (file.path.endsWith('.dart'))
           for (final match in RegExp(
-            r'^class (Fox\w+) extends (StatelessWidget|StatefulWidget)',
+            r'^class (Fox\w+)(?:<[^>]*>)? extends (StatelessWidget|StatefulWidget)',
             multiLine: true,
           ).allMatches(file.readAsStringSync()))
             match[1]!,
@@ -35,15 +49,23 @@ void main() {
     for (final theme in [FoxThemeData.phone(), FoxThemeData.captain()]) {
       for (final component in catalogue.whereType<WidgetbookComponent>()) {
         for (final useCase in component.useCases) {
+          // Widgetbook gives each use case an Overlay and a MediaQuery, as an
+          // app does; the menus open on the Overlay.
           await tester.pumpWidget(
-            FoxTheme(
-              data: theme,
-              child: Directionality(
-                textDirection: TextDirection.rtl,
-                child: Builder(builder: useCase.builder),
+            MediaQuery(
+              data: const MediaQueryData(size: Size(800, 600)),
+              child: FoxTheme(
+                data: theme,
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: Overlay(
+                    initialEntries: [OverlayEntry(builder: useCase.builder)],
+                  ),
+                ),
               ),
             ),
           );
+          await tester.pump();
           expect(tester.takeException(), isNull, reason: useCase.name);
         }
       }

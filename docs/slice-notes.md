@@ -5,6 +5,10 @@ Read-only since 2026-11-23 (the edit guard refuses changes): a slice now hands o
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from D.8 (`feat/components-forms`)
+
+Moved to its slice file, [`slices/D.8-inputs-and-forms.md`](slices/D.8-inputs-and-forms.md).
+
 ## Left from D.7 (`feat/core-ui`)
 
 - **Before the merge:** the `golden` CI job, like `visual`, needs `FONTS_DEPLOY_KEY` and fails without the fonts, by design.
