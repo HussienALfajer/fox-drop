@@ -125,6 +125,8 @@ jobs:
       - name: Trust GitHub's SSH host keys
         if: env.HAS_FONTS_KEY == 'true'
         run: node scripts/github-known-hosts.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Fetch the licensed fonts
         if: env.HAS_FONTS_KEY == 'true'
@@ -204,6 +206,8 @@ jobs:
       # System-wide: in a container ssh reads /root, not the $HOME Node sees.
       - name: Trust GitHub's SSH host keys
         run: node scripts/github-known-hosts.mjs /etc/ssh/ssh_known_hosts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Fetch the licensed fonts
         run: pnpm fonts:fetch
@@ -329,6 +333,8 @@ jobs:
 
       - name: Trust GitHub's SSH host keys
         run: node scripts/github-known-hosts.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Fetch the licensed fonts
         run: node scripts/fonts-fetch.mjs
