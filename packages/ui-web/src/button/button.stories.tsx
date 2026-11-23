@@ -78,7 +78,7 @@ export const CompactWithIcon: Story = {
 function Presses(props: ButtonProps) {
   const [count, setCount] = useState(0);
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-md">
       <Button {...props} onClick={() => setCount((value) => value + 1)} />
       <output aria-label="عدد الضغطات">{count}</output>
     </div>

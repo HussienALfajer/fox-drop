@@ -16,7 +16,9 @@ describe('ui-web lint rules', () => {
 
   it.each([
     ['an arbitrary value', 'export const c = "w-[13px]";'],
-    ['an arbitrary colour', 'export const c = `bg-[var(--fd-x)] p-2`;'],
+    ['an arbitrary colour', 'export const c = `bg-[var(--fd-x)] p-sm`;'],
+    ['a numeric spacing utility', 'export const c = "absolute inset-0";'],
+    ['a numeric padding under a variant', 'export const c = "md:px-0";'],
     ['a hex colour', 'export const c = "#ff6e31";'],
     ['a style prop', 'export const X = () => <i style={{ color: "red" }} />;'],
     ['ml-', 'export const c = "flex ml-2";'],
@@ -33,7 +35,7 @@ describe('ui-web lint rules', () => {
   it('passes tokens as variables and logical directions', async () => {
     const code = [
       'export const c =',
-      '  "bg-(--fd-button-primary-background) ms-2 pe-4 start-0 text-start rounded-s-lg border-e";',
+      '  "bg-(--fd-button-primary-background) ms-xs pe-md start-none text-start rounded-s-lg border-e";',
       'export const d = `ps-${1}`;',
     ].join('\n');
     expect(await errors(code)).toEqual([]);

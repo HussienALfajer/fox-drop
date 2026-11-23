@@ -201,8 +201,9 @@ jobs:
             apt-get install --yes --no-install-recommends git openssh-client ca-certificates
           fi
 
+      # System-wide: in a container ssh reads /root, not the $HOME Node sees.
       - name: Trust GitHub's SSH host keys
-        run: node scripts/github-known-hosts.mjs
+        run: node scripts/github-known-hosts.mjs /etc/ssh/ssh_known_hosts
 
       - name: Fetch the licensed fonts
         run: pnpm fonts:fetch

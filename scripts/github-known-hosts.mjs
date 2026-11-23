@@ -14,9 +14,9 @@ const { ssh_keys: keys } = await response.json();
 if (!Array.isArray(keys) || keys.length === 0)
   throw new Error('api.github.com/meta has no ssh_keys');
 
-const dir = path.join(os.homedir(), '.ssh');
-mkdirSync(dir, { recursive: true, mode: 0o700 });
-appendFileSync(path.join(dir, 'known_hosts'), keys.map((key) => `github.com ${key}\n`).join(''), {
-  mode: 0o600,
-});
-console.log(`known_hosts: ${keys.length} GitHub host keys.`);
+// An optional path argument: a container job passes /etc/ssh/ssh_known_hosts,
+// since ssh reads the passwd home (/root), not the $HOME that os.homedir() sees.
+const file = process.argv[2] ?? path.join(os.homedir(), '.ssh', 'known_hosts');
+mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+appendFileSync(file, keys.map((key) => `github.com ${key}\n`).join(''), { mode: 0o644 });
+console.log(`${file}: ${keys.length} GitHub host keys.`);

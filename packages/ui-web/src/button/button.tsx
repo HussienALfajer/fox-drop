@@ -49,7 +49,7 @@ const button = buttonTv({
       comfortable: 'min-h-(--fd-button-height) text-phone-subtitle',
       compact: 'min-h-(--fd-button-compact-height) text-panel-subtitle',
     },
-    iconOnly: { true: 'px-0', false: 'px-(--fd-button-padding-inline)' },
+    iconOnly: { true: 'px-none', false: 'px-(--fd-button-padding-inline)' },
     disabled: {
       true: 'cursor-not-allowed text-(color:--fd-button-disabled-label)',
       false: 'cursor-pointer',
@@ -194,7 +194,7 @@ export function Button(props: ButtonProps) {
         {iconEnd && <Icon name={iconEnd} size={iconSize} />}
       </span>
       {loading && (
-        <span className="absolute inset-0 flex items-center justify-center">
+        <span className="absolute inset-none flex items-center justify-center">
           <svg
             viewBox="0 0 24 24"
             fill="none"

@@ -17,8 +17,14 @@ const arbitrary = /-\[|(^|[\s:])\[[^\]\s]*[:&]/;
 // A Tailwind class's utility, without its variants (`hover:`) or `!` and `-`.
 const physical =
   /^(?:-?(?:ml|mr|pl|pr|left|right|scroll-ml|scroll-mr|scroll-pl|scroll-pr)-|text-(?:left|right)$|rounded-(?:l|r|tl|tr|bl|br)(?:-|$)|border-(?:l|r)(?:-|$)|float-(?:left|right)$|clear-(?:left|right)$)/;
+// The theme resets Tailwind's numeric spacing scale (only named spacing such as
+// p-sm exists), so p-0 or inset-0 silently generates no CSS.
+const numericSpacing =
+  /^-?(?:p|px|py|ps|pe|pt|pb|m|mx|my|ms|me|mt|mb|inset|inset-x|inset-y|top|bottom|start|end|gap|gap-x|gap-y|space-x|space-y|w|h|size|min-w|min-h|max-w|max-h|translate-x|translate-y)-\d/;
 
 const messages = {
+  numericSpacing:
+    'No numeric spacing utility: the theme has named spacing only (p-none, p-sm, inset-none), so p-0 generates no CSS.',
   arbitrary:
     'No arbitrary Tailwind value (R1): use a semantic class or a component token, bg-(--fd-button-background).',
   hex: 'No hex colour in code (R1): a colour is a design token.',
@@ -34,6 +40,7 @@ function textChecks(context, node, text) {
   for (const word of text.split(/\s+/)) {
     const utility = word.split(':').at(-1).replace(/^!/, '');
     if (physical.test(utility)) context.report({ node, messageId: 'physical' });
+    if (numericSpacing.test(utility)) context.report({ node, messageId: 'numericSpacing' });
   }
   if (arbitrary.test(text)) context.report({ node, messageId: 'arbitrary' });
 }

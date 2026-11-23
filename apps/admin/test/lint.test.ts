@@ -47,7 +47,7 @@ describe('web lint rules', () => {
   });
 
   it('passes semantic classes and logical directions', async () => {
-    const code = 'export const c = "bg-surface ms-2 pe-4 text-start";';
+    const code = 'export const c = "bg-surface ms-xs pe-md text-start";';
     expect(await errors(code)).toEqual([]);
   });
 
