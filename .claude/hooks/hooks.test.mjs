@@ -338,7 +338,11 @@ describe('the guard scripts', () => {
     spawnSync('git', ['init', '-q', tree]);
     const edit = runScript(
       'guard-edits.mjs',
-      { tool_name: 'Write', cwd: tree, tool_input: { file_path: path.join(tree, 'docs/archive/x.md') } },
+      {
+        tool_name: 'Write',
+        cwd: tree,
+        tool_input: { file_path: path.join(tree, 'docs/archive/x.md') },
+      },
       { CLAUDE_PROJECT_DIR: main },
     );
     assert.equal(edit.status, 2);
