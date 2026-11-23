@@ -92,6 +92,7 @@ Eligibility, ranking, offers, assignments and handovers (architecture §4.2): ma
   the `dispatcher` role runs `AutoDispatcher` (`DispatcherModule`, architecture §4.4): every `DISPATCH_TICK_MS` (1 s) a pass over each active city it leads.
   A city's leader holds its session advisory lock (`dispatcher:<cityId>`) on one connection of its own;
   a lost connection or a stop frees every lock, and another dispatcher leads at its next tick.
+  A stop (`onModuleDestroy`) resolves only once the connection has ended, so the lock is already free; a tick never waits on a broken connection (the flaky handover test of main run 45242432777, fixed in `fix/dispatcher-handover-flake`).
   Two leaders for a moment never offer one order twice: every offer is checked under the order's and the captain's locks.
 - **The captain's acceptance and offer log (AP §9.7.4, §9.7.6, CA §11.1; slice 2.36a):** `acceptance(captainIds, window)` counts, of each captain's last `window` offers answered (`accepted`, `declined`, `expired`, by `offered_at`), those accepted, in one read;
   a `withdrawn` offer (the captain went offline first, operations ended the order) is no answer, in the picker's rate too.

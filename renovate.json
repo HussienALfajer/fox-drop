@@ -20,6 +20,28 @@
       "separateMajorMinor": false
     },
     {
+      "description": "pnpm refuses a package published less than a day ago (its minimumReleaseAge default, 1440 minutes), so `pnpm install --frozen-lockfile` failed on every update proposed on its release day. Renovate waits as long.",
+      "matchDatasources": ["npm"],
+      "minimumReleaseAge": "1 day"
+    },
+    {
+      "description": "The Playwright container of the visual job carries the browsers of one @playwright/test version: they move together, or the job finds no browser.",
+      "matchPackageNames": [
+        "mcr.microsoft.com/playwright",
+        "@playwright/test",
+        "playwright",
+        "playwright-core"
+      ],
+      "groupName": "Playwright",
+      "separateMajorMinor": false
+    },
+    {
+      "description": "TypeScript 7 (the native compiler) is not supported by typescript-eslint, and openapi-typescript uses its removed compiler API: approved by the owner once both support it.",
+      "matchPackageNames": ["typescript"],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
       "description": "Runtimes move once a quarter, on staging first (architecture §19.4).",
       "matchDepNames": ["node", "flutter", "dart"],
       "groupName": "runtimes",
