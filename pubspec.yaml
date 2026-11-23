@@ -20,6 +20,7 @@ workspace:
   - packages/core_storage
   - packages/core_time
   - packages/core_tokens
+  - packages/core_ui
 
 dev_dependencies:
   lints: 6.1.0
