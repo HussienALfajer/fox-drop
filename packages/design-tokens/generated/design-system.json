@@ -639,6 +639,11 @@
         "usage": "The Figma file's button height and icon-button diameter."
       },
       {
+        "name": "size-control-compact",
+        "value": "40px",
+        "usage": "The compact button height for the admin panel and the restaurant portal (pointer devices only)."
+      },
+      {
         "name": "size-icon-sm",
         "value": "16px",
         "usage": "A small icon: inside chips, badges and dense rows; the stroke scales to 2/24 of it."
@@ -659,7 +664,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

@@ -58,6 +58,17 @@ const fills: Pair[] = FILLS.map(([foreground, background]) => ({
   target: 4.5,
   use: 'filled control label',
 }));
+// The danger Button: its label on the fill and on the pressed fill (`alert`);
+// the ghost label on its pressed ground is covered by `on-surface` text.
+// `alert` is the 7:1 red, so a pair on it targets 7:1 everywhere.
+const dangerButton: Pair[] = [
+  { foreground: 'on-danger', background: 'alert', target: 7, use: 'filled control label' },
+];
+// The captain's danger is red.800, so its Button label reads at 7:1 on the fill too.
+const captainDangerButton: Pair[] = [
+  ...dangerButton,
+  { foreground: 'on-danger', background: 'danger', target: 7, use: 'filled control label' },
+];
 const nonText = on(['border-strong', 'focus-ring'], 3, 'control boundary, focus ring, icon');
 // Alerts are read from across a room: the restaurant tablet, the panel (§6).
 const alerts: Pair[] = [
@@ -72,6 +83,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
     ...on(statusText, 4.5, 'status text'),
     ...fills,
+    ...dangerButton,
     ...nonText,
     ...alerts,
     ...orangeText,
@@ -81,6 +93,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
     ...on(statusText, 4.5, 'status text'),
     ...fills,
+    ...dangerButton,
     ...nonText,
     ...alerts,
     ...orangeText,
@@ -92,6 +105,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...on(['on-surface', 'on-surface-muted', 'accent'], 7, 'text and numbers'),
     ...on(statusText, 7, 'status text'),
     ...fills,
+    ...captainDangerButton,
     ...nonText,
     ...orangeText,
     ...orangeFills,

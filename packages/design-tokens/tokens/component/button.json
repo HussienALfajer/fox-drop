@@ -4,6 +4,12 @@
       "$type": "dimension",
       "$value": "{size.control}"
     },
+    "compact": {
+      "height": {
+        "$type": "dimension",
+        "$value": "{size.control-compact}"
+      }
+    },
     "padding-inline": {
       "$type": "dimension",
       "$value": "{space.md}"
@@ -42,6 +48,27 @@
       },
       "border": {
         "$value": "{color.border-strong}"
+      },
+      "label": {
+        "$value": "{color.on-surface}"
+      }
+    },
+    "danger": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.danger}"
+      },
+      "background-pressed": {
+        "$value": "{color.alert}"
+      },
+      "label": {
+        "$value": "{color.on-danger}"
+      }
+    },
+    "ghost": {
+      "$type": "color",
+      "background-pressed": {
+        "$value": "{color.surface-pressed}"
       },
       "label": {
         "$value": "{color.on-surface}"

@@ -42,6 +42,10 @@ The first 44 line icons of brand expression §10, on the grid of architecture §
 - **The sheet:** `src/icon-sheet.ts` draws «Icons — batch 1» on the Component proposals canvas (every icon with its Arabic label, active state, three sizes, the mirrored three in LTR and RTL, a grid overlay). The owner approved it on 2026-11-23, open to edits when the screens are built.
 - **Design System:** an `Icons` asset group (tile `m`) with a README of the grid rules.
 
+## Button tokens (D.6)
+
+Version 0.4.0, the set the owner approved on 2026-11-23 (`button()` in `src/button-sheet.ts`). New: `size.control-compact` 40 and `button.compact.height` (the panel's compact Button); `button.danger.{background,background-pressed,label}` (`color.danger`, `color.alert`, `color.on-danger`); `button.ghost.{background-pressed,label}` (`color.surface-pressed`, `color.on-surface`). The ghost ground is transparent, so it has no token; the disabled ghost keeps it. Contrast: `on-danger` on `alert` at 7:1 on every surface, and `on-danger` on `danger` at 7:1 for the captain (danger is red 800 there, 9.27:1, and equals `alert`, so its pressed step is invisible); the ghost label on `surface-pressed` was already covered by the `on-surface` pairs.
+
 ## Left out
 
 The `tnum` feature as a token (D.6 and D.7 set `font-variant-numeric: tabular-nums` or `FontFeature.tabularFigures()` on the number role and on money, timer and table text); real dark values; wiring the theme into the web apps (D.6) and Flutter (D.7); components in the Design System (D.6); publishing the artifacts from CI; font subsetting and size budgets; map style tokens (D.3); densities (the panel scale covers the compact one for now). Icons: the `Icon` components (D.6 `ui-web`, D.7 `core_ui`); the second batch (expression §10); filled or duotone variants and the Figma file's orange accent layer (the bell's dot, filled stars), which R8 forbids today and waits for the owner; an icon font.

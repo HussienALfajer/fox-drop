@@ -2,6 +2,11 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.4.0 (2026-11-23, slice D.6: the approved Button set)
+
+- New: `size.control-compact` 40 px; Button tokens `button.compact.height`, `button.danger.{background,background-pressed,label}` (danger, alert, on-danger) and `button.ghost.{background-pressed,label}` (surface-pressed, on-surface). The ghost ground is transparent, so it has no token.
+- New contrast pairs: `on-danger` on `alert` at 7:1 (every surface; `alert` is the 7:1 red) and, for the captain, whose danger is red 800, `on-danger` on `danger` at 7:1. In the captain theme danger and alert are the same red, so its pressed danger Button shows no darker step. The ghost label on its pressed ground is covered by `on-surface` on `surface-pressed`.
+
 ## 0.3.0 (2026-11-23, slice D.5: the icon set)
 
 - New: `size.icon-sm` 16, `size.icon-md` 24 and `size.icon-lg` 32 px, the three icon sizes; icons are drawn on the 24 grid and their stroke scales to 2/24 of the size (architecture §9.4). Dart `FoxSize` now carries every `size.*` token.

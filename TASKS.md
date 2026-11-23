@@ -33,8 +33,8 @@ Owner (2026-11-23): visual tests use the real CoFo (`FONTS_DEPLOY_KEY` before th
 - [x] Draw «Button and Icon — batch 1» (`src/button-sheet.ts`); the owner approves
   - **Approved 2026-11-23** (values: `button()` in `src/button-sheet.ts`): the four variants plus icon circles; danger pressed = `color.alert`; ghost transparent, pressed `surface-pressed`; **no button shadow**; hover = 88% bg mixed with pressed; compact 40 panel only.
 - [x] Package skeleton: Tailwind, Storybook in RTL, fonts, turbo, verify, CI and classify wiring; the lint rules and their test
-- [ ] Icon with stories and unit tests
-- [ ] Tokens for the approved set (0.4.0) and Button on UI SDK with stories and unit tests
+- [x] Icon with stories and unit tests
+- [x] Tokens for the approved set (0.4.0) and Button on UI SDK with stories and unit tests
 - [ ] RTL gate, axe, 130% text and visual snapshots in Docker; the story coverage test
 - [ ] Bundle for the Design System and the first sync; the docs
 - [ ] Review, hand over to D.7, pull request (waits for `FONTS_DEPLOY_KEY`)

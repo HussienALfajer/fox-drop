@@ -62,12 +62,16 @@ function look(themes: Themes, theme: Theme, variant: Variant): Look {
         border: t('button.secondary.border'),
       };
     case 'danger':
-      return { bg: t('color.danger'), bgPressed: t('color.alert'), fg: t('color.on-danger') };
+      return {
+        bg: t('button.danger.background'),
+        bgPressed: t('button.danger.background-pressed'),
+        fg: t('button.danger.label'),
+      };
     case 'ghost':
       return {
         bg: 'transparent',
-        bgPressed: t('color.surface-pressed'),
-        fg: t('color.on-surface'),
+        bgPressed: t('button.ghost.background-pressed'),
+        fg: t('button.ghost.label'),
       };
   }
 }
@@ -97,7 +101,7 @@ function button(themes: Themes, o: Opts): string {
   const state = o.state ?? 'default';
   const disabled = state === 'disabled';
   const scale = o.scale ?? 1;
-  const iconSize = o.height >= 50 ? 24 : 20;
+  const iconSize = Number.parseFloat(t(o.height >= 50 ? 'size.icon-md' : 'size.icon-sm'));
   let bg = l.bg;
   if (state === 'hover')
     bg =
@@ -115,7 +119,7 @@ function button(themes: Themes, o: Opts): string {
     ? `width: ${o.height}px; padding: 0;`
     : `padding-inline: ${t('button.padding-inline')};`;
   const weight = 500;
-  const font = `font-size: ${Math.round((o.height >= 50 ? 17 : 15) * scale)}px; font-weight: ${weight}; line-height: 1.3;`;
+  const font = `font-size: ${Math.round(Number.parseFloat(t(o.height >= 50 ? 'type.phone.subtitle.size' : 'type.panel.subtitle.size')) * scale)}px; font-weight: ${weight}; line-height: 1.3;`;
   const inner = o.only
     ? svg(o.only, iconSize, o.only.mirror)
     : [

@@ -225,6 +225,7 @@ abstract final class FoxColors {
 final class ButtonTokens {
   const ButtonTokens({
     required this.height,
+    required this.compactHeight,
     required this.paddingInline,
     required this.gap,
     required this.radius,
@@ -236,11 +237,17 @@ final class ButtonTokens {
     required this.secondaryBackgroundPressed,
     required this.secondaryBorder,
     required this.secondaryLabel,
+    required this.dangerBackground,
+    required this.dangerBackgroundPressed,
+    required this.dangerLabel,
+    required this.ghostBackgroundPressed,
+    required this.ghostLabel,
     required this.disabledBackground,
     required this.disabledLabel,
   });
 
   final double height;
+  final double compactHeight;
   final double paddingInline;
   final double gap;
   final double radius;
@@ -252,6 +259,11 @@ final class ButtonTokens {
   final int secondaryBackgroundPressed;
   final int secondaryBorder;
   final int secondaryLabel;
+  final int dangerBackground;
+  final int dangerBackgroundPressed;
+  final int dangerLabel;
+  final int ghostBackgroundPressed;
+  final int ghostLabel;
   final int disabledBackground;
   final int disabledLabel;
 }
@@ -260,6 +272,7 @@ final class ButtonTokens {
 abstract final class FoxButton {
   static const ButtonTokens light = ButtonTokens(
     height: 50.0,
+    compactHeight: 40.0,
     paddingInline: 16.0,
     gap: 8.0,
     radius: 9999.0,
@@ -271,12 +284,18 @@ abstract final class FoxButton {
     secondaryBackgroundPressed: 0xFFF5EFE2,
     secondaryBorder: 0xFF6688B2,
     secondaryLabel: 0xFF03428E,
+    dangerBackground: 0xFFBF2929,
+    dangerBackgroundPressed: 0xFF8C1530,
+    dangerLabel: 0xFFFFFFFF,
+    ghostBackgroundPressed: 0xFFF5EFE2,
+    ghostLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
   );
 
   static const ButtonTokens dark = ButtonTokens(
     height: 50.0,
+    compactHeight: 40.0,
     paddingInline: 16.0,
     gap: 8.0,
     radius: 9999.0,
@@ -288,12 +307,18 @@ abstract final class FoxButton {
     secondaryBackgroundPressed: 0xFFF5EFE2,
     secondaryBorder: 0xFF6688B2,
     secondaryLabel: 0xFF03428E,
+    dangerBackground: 0xFFBF2929,
+    dangerBackgroundPressed: 0xFF8C1530,
+    dangerLabel: 0xFFFFFFFF,
+    ghostBackgroundPressed: 0xFFF5EFE2,
+    ghostLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
   );
 
   static const ButtonTokens captainLight = ButtonTokens(
     height: 50.0,
+    compactHeight: 40.0,
     paddingInline: 16.0,
     gap: 8.0,
     radius: 9999.0,
@@ -305,12 +330,18 @@ abstract final class FoxButton {
     secondaryBackgroundPressed: 0xFFF5EFE2,
     secondaryBorder: 0xFF6688B2,
     secondaryLabel: 0xFF03428E,
+    dangerBackground: 0xFF8C1530,
+    dangerBackgroundPressed: 0xFF8C1530,
+    dangerLabel: 0xFFFFFFFF,
+    ghostBackgroundPressed: 0xFFF5EFE2,
+    ghostLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
   );
 
   static const ButtonTokens captainDark = ButtonTokens(
     height: 50.0,
+    compactHeight: 40.0,
     paddingInline: 16.0,
     gap: 8.0,
     radius: 9999.0,
@@ -322,6 +353,11 @@ abstract final class FoxButton {
     secondaryBackgroundPressed: 0xFFF5EFE2,
     secondaryBorder: 0xFF6688B2,
     secondaryLabel: 0xFF03428E,
+    dangerBackground: 0xFF8C1530,
+    dangerBackgroundPressed: 0xFF8C1530,
+    dangerLabel: 0xFFFFFFFF,
+    ghostBackgroundPressed: 0xFFF5EFE2,
+    ghostLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
   );
@@ -494,6 +530,7 @@ abstract final class FoxType {
 abstract final class FoxSize {
   static const double touchTarget = 48.0;
   static const double control = 50.0;
+  static const double controlCompact = 40.0;
   static const double iconSm = 16.0;
   static const double iconMd = 24.0;
   static const double iconLg = 32.0;
