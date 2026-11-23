@@ -23,6 +23,7 @@ import {
 } from './guide.ts';
 import { readIcons, type Icon } from './icons.ts';
 import { buttonSheet } from './button-sheet.ts';
+import { formsSheet } from './forms-sheet.ts';
 import { stateSheet } from './state-sheet.ts';
 import { designSystem } from './design-system.ts';
 import { PACKAGE_DIR, resolveAll, type Theme, type Token } from './resolve.ts';
@@ -180,6 +181,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     sheet(themes, config, icons),
     buttonSheet(themes, config, icons),
     stateSheet(themes, config, icons),
+    formsSheet(themes, config, icons),
   ];
   rmSync(OUT, { recursive: true, force: true });
   const files = new Map<string, string>([
