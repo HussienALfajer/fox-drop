@@ -28,6 +28,13 @@ for (const surface of surfaces)
         return document.fonts.check('500 16px "CoFo Sans Pro Arabic"');
       });
       expect(loaded, 'CoFo did not load: run `pnpm fonts:fetch` and rebuild').toBe(true);
+      // A state driven below starts a colour transition that `animations:
+      // 'disabled'` does not always catch, so the shot could land mid-way (a
+      // pressed baseline once held the hover colour). The end state is what is
+      // compared: no transitions.
+      await page.addStyleTag({
+        content: '*, *::before, *::after { transition: none !important; }',
+      });
       // The Hover, Focus and Pressed stories are the plain button: drive it.
       // Tab (not click) so that :focus-visible applies.
       // The first control of the story, whatever it is: a button, a text box, a
