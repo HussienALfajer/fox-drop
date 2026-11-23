@@ -31,12 +31,9 @@ D.8 Inputs and forms (`docs/roadmap.md` Phase D): text field and its wrapper (la
 - [x] Split «D.8 onward» into slices with the owner (`slice-plan`): D.8 forms, D.9 data display, D.10 overlays and navigation, one pull request each for both platforms (2026-11-23)
 - [x] Look at the Figma file, read the cited sections and write the design here, including its proposals sheet (§9.9 step 1) for the owner's approval
 - [x] Tokens 0.6.0 (`input.*`, Dart `FoxInput`, new `size.*`, `border-width.*`, the two icons); the Design System sync moves to the web cards step
-- [ ] Web: `Field`, `TextField`, `TextArea`, `SearchField`
-- [ ] Web: `PhoneField`, `CodeField`
-- [ ] Web: `Select`, `Checkbox`, `RadioGroup`, `Switch`, `QuantityStepper`; visual baselines; Design System cards and sync
-- [ ] Flutter: `FoxInputTheme`, `FoxField`, `FoxTextField`, `FoxTextArea`, `FoxSearchField`
-- [ ] Flutter: `FoxPhoneField`, `FoxCodeField`, `FoxSelect`, `FoxCheckbox`, `FoxRadio`, `FoxSwitch`, `FoxQuantityStepper`
-- [ ] Flutter: `FoxDateField`, `FoxTimeField`; widgetbook use cases; goldens
+- [x] Web: the eleven components, stories, e2e `forms.spec.ts`, visual baselines, Design System cards (one commit)
+- [x] Flutter: `FoxInputTheme` and the thirteen widgets plus `FoxRadioGroup`, widgetbook, goldens (one commit)
+- [ ] Design System sync (tokens 0.6.0 and the web cards)
 - [ ] Docs (`docs/code/packages/*.md`, folder `CLAUDE.md` rules), mark the forms sheet superseded; review; hand over to D.9
 
 ## Waiting for the owner
