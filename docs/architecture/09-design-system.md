@@ -71,7 +71,7 @@ Every rule names the slice that builds its enforcement. A rule a machine can che
 ## 9.7 Flutter components: `core_ui`
 
 - `core_ui` implements the same components as Flutter widgets on the Dart theme. The apps use only `core_ui` widgets, never Material or Cupertino widgets (R2), so they look like FOX DROP.
-- The behaviour base is Flutter's own widgets layer alone, with no third-party UI package, behind the `core_ui` API (T11, §9.10).
+- The behaviour base is chosen per component behind the `core_ui` API, with no third-party UI package (T11, §9.10; owner, 2026-11-23): simple components (button, icon, chips, cards, list rows, badges) on Flutter's widgets layer; complex ones (text input with its selection controls, date and time pickers, dialogs, bottom sheets, pull to refresh) may wrap `material_ui` inside `core_ui`, themed wholly from the tokens with ripples and Material defaults off. Apps never import Material or Cupertino (R2).
 - RTL by default (`Directionality` from the Arabic locale). Layouts stay usable with the system font at 130% (RA §4.8, CA §4.7, CU §4.6).
 - A widget catalogue app (**widgetbook**) documents the components with all their states, like Storybook on the web.
 
@@ -100,12 +100,12 @@ A design is made with the Fox Drop Design System only; a missing value or compon
 
 ## 9.10 Headless bases (T11)
 
-| Platform | Base                                                                       | Safeguards                                                                                                                                                                                                         |
-| -------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Web      | UI SDK `@ui-sdk/react` (React 19, beta), pinned to an exact version        | Imported only by `packages/ui-web` (lint); its agent bridge is forbidden (lint); an Arabic RTL gate passes before the core set is built; Base UI is the fallback per component; an upgrade is its own pull request |
-| Flutter  | Flutter's own widgets layer only (no UI package), behind the `core_ui` API | Flutter widgets used only inside `core_ui` (R2 lint); the RTL gate before the core set; the Flutter version is pinned (`.fvmrc`)                                                                                   |
+| Platform | Base                                                                                | Safeguards                                                                                                                                                                                                         |
+| -------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Web      | UI SDK `@ui-sdk/react` (React 19, beta), pinned to an exact version                 | Imported only by `packages/ui-web` (lint); its agent bridge is forbidden (lint); an Arabic RTL gate passes before the core set is built; Base UI is the fallback per component; an upgrade is its own pull request |
+| Flutter  | Flutter's widgets layer; `material_ui` per complex component, inside `core_ui` only | Material and Cupertino imported only inside `core_ui` (R2 lint); the RTL gate before the core set; the Flutter version is pinned (`.fvmrc`)                                                                        |
 
-Flutter 3.47 moved Material and Cupertino out of the framework into `material_ui` and `cupertino_ui`, so `core_ui` does not depend on them for its look. Styled kits (forui, shadcn_ui, shadcn_flutter) are not used: their look fights the FOX DROP identity.
+Flutter 3.47 moved Material and Cupertino out of the framework into `material_ui` and `cupertino_ui`. The owner chose a hybrid base on 2026-11-23 (D.7 planning), replacing "the widgets layer only": rebuilding text selection, pickers and dialogs from scratch costs weeks and risks accessibility, while simple components on the widgets layer keep the R10 states exact. This mirrors the web's UI SDK with Base UI per component. Styled kits (forui, shadcn_ui, shadcn_flutter) are not used: their look fights the FOX DROP identity.
 
 ## 9.11 Settled in D.2, D.3 and D.5
 
