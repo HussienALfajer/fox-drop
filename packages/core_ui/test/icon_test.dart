@@ -103,6 +103,8 @@ void main() {
     test('rejects unknown commands and data without a command', () {
       expect(() => parseSvgPath('M0 0X1 1'), throwsFormatException);
       expect(() => parseSvgPath('1 1'), throwsFormatException);
+      // Z takes no numbers: a reader that never advanced would loop forever.
+      expect(() => parseSvgPath('M0 0 Z 5'), throwsFormatException);
     });
   });
 

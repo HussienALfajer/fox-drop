@@ -22,7 +22,8 @@ Path parseSvgPath(String data) {
       command = next;
       reader.advance();
     } else if (command == null) {
-      throw FormatException('Path data must start with a command', data);
+      // At the start, or after Z, which takes no numbers.
+      throw FormatException('Numbers without a command', data);
     }
     final cmd = command;
     final relative = cmd == cmd.toLowerCase();
@@ -107,6 +108,7 @@ Path parseSvgPath(String data) {
       case 'Z':
         path.close();
         current = start;
+        command = null;
       default:
         throw FormatException('Unknown path command "$cmd"', data);
     }

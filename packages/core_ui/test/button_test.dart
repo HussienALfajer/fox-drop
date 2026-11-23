@@ -34,6 +34,11 @@ BoxDecoration _outline(WidgetTester tester) =>
             .foregroundDecoration!
         as BoxDecoration;
 
+/// The focus ring's painter: a `CustomPaint` with a foreground painter.
+final _ring = find.byWidgetPredicate(
+  (widget) => widget is CustomPaint && widget.foregroundPainter != null,
+);
+
 FocusNode _focus(WidgetTester tester) =>
     Focus.of(tester.element(find.byType(GestureDetector)));
 
@@ -84,13 +89,28 @@ void main() {
     expect(presses, 3);
   });
 
-  testWidgets('disabled: not focusable, ignores taps and keys', (tester) async {
+  testWidgets('disabled: not enabled, not focusable', (tester) async {
+    final semantics = tester.ensureSemantics();
     await tester.pumpWidget(
       _app(const FoxButton(label: 'اطلب', onPressed: null)),
     );
-    expect(_focus(tester).canRequestFocus, isFalse);
+    expect(
+      tester.getSemantics(find.byType(FoxButton)),
+      matchesSemantics(
+        label: 'اطلب',
+        isButton: true,
+        hasEnabledState: true,
+        isEnabled: false,
+        isFocusable: false,
+      ),
+    );
+    _focus(tester).requestFocus();
+    await tester.pump();
+    expect(_focus(tester).hasFocus, isFalse);
     await tester.tap(find.byType(FoxButton), warnIfMissed: false);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     expect(tester.takeException(), isNull);
+    semantics.dispose();
   });
 
   testWidgets('loading: focusable, keeps width and name, ignores presses', (
@@ -110,7 +130,19 @@ void main() {
     await tester.pumpWidget(button(true));
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.getSize(find.byType(FoxButton)).width, width);
-    expect(find.bySemanticsLabel('اطلب الآن'), findsOneWidget);
+    // Busy: focusable but not enabled, with no tap action (the web's
+    // aria-disabled while loading).
+    expect(
+      tester.getSemantics(find.byType(FoxButton)),
+      matchesSemantics(
+        label: 'اطلب الآن',
+        isButton: true,
+        hasEnabledState: true,
+        isEnabled: false,
+        isFocusable: true,
+        hasFocusAction: true,
+      ),
+    );
     expect(_focus(tester).canRequestFocus, isTrue);
     await tester.tap(find.byType(FoxButton));
     _focus(tester).requestFocus();
@@ -205,7 +237,7 @@ void main() {
           _app(FoxButton(label: 'اطلب', variant: variant, onPressed: () {})),
         );
         expect(_decoration(tester).color, rest);
-        expect(_decoration(tester).boxShadow, isEmpty);
+        expect(_ring, findsNothing);
 
         final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
         await mouse.addPointer(location: Offset.zero);
@@ -230,10 +262,18 @@ void main() {
             FocusHighlightStrategy.alwaysTraditional;
         _focus(tester).requestFocus();
         await tester.pumpAndSettle();
-        expect(_decoration(tester).boxShadow!.map((s) => s.color), [
-          b.focusRing,
-          _theme.colors.surface,
-        ]);
+        // Two strokes outside the button and nothing inside it, so a
+        // transparent ghost stays transparent on any background.
+        final painter = tester.widget<CustomPaint>(_ring).foregroundPainter!;
+        final size = tester.getSize(_ring);
+        void ring(Canvas canvas) => painter.paint(canvas, size);
+        expect(
+          ring,
+          paints
+            ..rrect(color: _theme.colors.surface, style: PaintingStyle.stroke)
+            ..rrect(color: b.focusRing, style: PaintingStyle.stroke),
+        );
+        expect(ring, paintsExactlyCountTimes(#drawRRect, 2));
         await mouse.removePointer();
       });
     }

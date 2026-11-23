@@ -57,6 +57,10 @@ const DOCS = /^(?!packages\/design-tokens\/generated\/)(.*\.md$|docs\/)/;
 // packages/design-tokens generates the Dart tokens of packages/core_tokens.
 const DART =
   /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml|dart_test\.yaml)$|^(apps\/(customer|captain|merchant|widgetbook)|packages\/(core_[a-z0-9_]+|fox_lints)|packages\/design-tokens)\/|^\.fvmrc$|^\.github\/workflows\/ci\.yml$|^scripts\/(verify(-support)?|golden-docker)\.mjs$)/;
+// What the `golden` job (part of the Dart checks) reads besides Dart: the
+// fonts it fetches and the scripts it runs (D.7).
+const GOLDEN_INPUTS =
+  /^(docs\/brand\/fonts-manifest\.json|scripts\/(fonts|fonts-fetch|github-known-hosts)\.mjs)$/;
 // What can break a native release build that the Dart tests cannot see: a
 // native project, a dependency (a pubspec or the lock file), a package with
 // native code, the pinned Flutter, the workflow. The staging builds on main
@@ -88,7 +92,9 @@ export function classify(files, read = readText) {
   );
   const build = files.some((file) => !DOCS.test(file));
   const code = build || specRead;
-  const dart = files.some((file) => !DOCS.test(file) && DART.test(file));
+  const dart = files.some(
+    (file) => GOLDEN_INPUTS.test(file) || (!DOCS.test(file) && DART.test(file)),
+  );
   const native = files.some(
     (file) => !DOCS.test(file) && (NATIVE.test(file) || nativePackage(file)),
   );

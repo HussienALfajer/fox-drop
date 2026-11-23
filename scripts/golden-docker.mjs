@@ -39,36 +39,54 @@ const run = (args, options = {}) => {
 
 run(['build', '--tag', image, '-'], { input: dockerfile, stdio: ['pipe', 'inherit', 'inherit'] });
 
+// The file list comes from the host's git: inside the container a worktree's
+// `.git` file points at a host path that does not exist there.
+const files = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
+  cwd: repo,
+  encoding: 'buffer',
+  maxBuffer: 64 * 1024 * 1024,
+});
+if (files.status !== 0) process.exit(files.status ?? 1);
+
 const forwarded = process.argv.slice(2).map((arg) => `'${arg.replaceAll("'", "'\\''")}'`);
 const golden = 'packages/core_ui/test/golden';
+// On Linux and macOS the copies go back owned by the host user, not root.
+const owner = process.getuid ? `${process.getuid()}:${process.getgid()}` : '';
 const script = [
   'set -e',
   'mkdir /work',
   'cd /repo',
-  'git ls-files -z --cached --others --exclude-standard | tar --null --files-from - --create --file - | tar --extract --file - --directory /work',
+  'tar --null --files-from - --create --file - | tar --extract --file - --directory /work',
   'cp -r /repo/.fonts /work/.fonts',
   'cd /work',
   'flutter pub get --enforce-lockfile >/dev/null',
   'cd packages/core_ui',
   'status=0',
   `flutter test --tags golden --run-skipped ${forwarded.join(' ')} || status=$?`,
-  `rm -rf /out/goldens /out/failures`,
-  `cp -r /work/${golden}/goldens /out/goldens`,
+  // Copy first, then swap, so a failed copy never removes the baselines.
+  'rm -rf /out/goldens.new /out/failures',
+  `cp -r /work/${golden}/goldens /out/goldens.new`,
+  'rm -rf /out/goldens && mv /out/goldens.new /out/goldens',
   `if [ -d /work/${golden}/failures ]; then cp -r /work/${golden}/failures /out/failures; fi`,
+  owner ? `chown -R ${owner} /out/goldens /out/failures 2>/dev/null || true` : 'true',
   'exit $status',
 ].join('\n');
 
-run([
-  'run',
-  '--rm',
-  '-v',
-  `${repo}:/repo:ro`,
-  '-v',
-  `${resolve(repo, golden)}:/out`,
-  '-v',
-  'fd-golden-pub-cache:/root/.pub-cache',
-  image,
-  'sh',
-  '-c',
-  script,
-]);
+run(
+  [
+    'run',
+    '--rm',
+    '--interactive',
+    '-v',
+    `${repo}:/repo:ro`,
+    '-v',
+    `${resolve(repo, golden)}:/out`,
+    '-v',
+    'fd-golden-pub-cache:/root/.pub-cache',
+    image,
+    'sh',
+    '-c',
+    script,
+  ],
+  { input: files.stdout, stdio: ['pipe', 'inherit', 'inherit'] },
+);

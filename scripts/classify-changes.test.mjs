@@ -39,7 +39,6 @@ describe('the change classifier', () => {
   it('runs the TypeScript tests for the docs the design tokens read', () => {
     for (const file of [
       'docs/architecture/09-design-system.md',
-      'docs/brand/fonts-manifest.json',
       'docs/brand/logo/mark/mark-orange.svg',
       'docs/brand/app-icon/svg/app-icon-08.svg',
     ])
@@ -138,6 +137,17 @@ describe('the change classifier', () => {
     assert.equal(flags(['scripts/verify-support.mjs']), 'code dart build typescript');
     // The golden job runs it.
     assert.equal(flags(['scripts/golden-docker.mjs']), 'code dart build typescript');
+  });
+
+  it('runs the goldens for the fonts and the scripts that fetch them', () => {
+    assert.equal(flags(['docs/brand/fonts-manifest.json']), 'code dart typescript');
+    for (const file of [
+      'scripts/fonts.mjs',
+      'scripts/fonts-fetch.mjs',
+      'scripts/github-known-hosts.mjs',
+    ]) {
+      assert.equal(flags([file]), 'code dart build typescript', file);
+    }
   });
 
   it('lists every spec file a test reads', () => {

@@ -167,16 +167,6 @@ class _FoxButtonState extends State<FoxButton> {
         color: colors.background,
         shape: shape,
         borderRadius: radius,
-        // The ring sits outside the button and never moves its layout.
-        boxShadow: ring
-            ? [
-                BoxShadow(
-                  color: theme.button.focusRing,
-                  spreadRadius: _ringGap + _ringWidth,
-                ),
-                BoxShadow(color: theme.colors.surface, spreadRadius: _ringGap),
-              ]
-            : const [],
       ),
       // The outline is drawn over the fill, so it takes no room (as the
       // web's inset border).
@@ -188,12 +178,31 @@ class _FoxButtonState extends State<FoxButton> {
       child: layout,
     );
 
+    // The ring is painted outside the button and never moves its layout.
+    // Strokes, not shadows: a shadow also paints under a transparent fill
+    // (ghost), which the web's clipped box-shadow never does.
+    final framed = CustomPaint(
+      foregroundPainter: ring
+          ? _RingPainter(
+              ring: theme.button.focusRing,
+              gap: theme.colors.surface,
+              circle: widget.iconOnly,
+              radius: theme.button.radius,
+            )
+          : null,
+      child: button,
+    );
+
+    // A loading button keeps focus but is not enabled, as the web's
+    // `aria-disabled` while it is busy.
     return Semantics(
       container: true,
       button: true,
-      enabled: !_disabled,
-      focusable: !_disabled,
-      focused: _node.hasFocus,
+      enabled: _interactive,
+      // Null, not false: a focus state, even false, marks the node as one
+      // that can take focus.
+      focusable: _disabled ? null : true,
+      focused: _disabled ? null : _node.hasFocus,
       label: widget.label,
       onTap: _interactive ? _activate : null,
       onFocus: _disabled ? null : _node.requestFocus,
@@ -218,7 +227,7 @@ class _FoxButtonState extends State<FoxButton> {
             onTapUp: _interactive ? (_) => _setPressed(false) : null,
             onTapCancel: _interactive ? () => _setPressed(false) : null,
             onTap: _interactive ? _activate : null,
-            child: button,
+            child: framed,
           ),
         ),
       ),
@@ -305,6 +314,48 @@ class _FoxButtonState extends State<FoxButton> {
         return _Colors(fill, b.ghostLabel, fill);
     }
   }
+}
+
+/// The keyboard focus ring: [_ringGap] in [gap] around the button, then
+/// [_ringWidth] in [ring], following its corners (the web's `ring-2
+/// ring-offset-2`). The inside is left unpainted.
+class _RingPainter extends CustomPainter {
+  _RingPainter({
+    required this.ring,
+    required this.gap,
+    required this.circle,
+    required this.radius,
+  });
+
+  final Color ring;
+  final Color gap;
+  final bool circle;
+  final double radius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final shape = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(circle ? size.shortestSide / 2 : radius),
+    );
+    Paint stroke(Color color, double width) => Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width;
+    canvas
+      ..drawRRect(shape.inflate(_ringGap / 2), stroke(gap, _ringGap))
+      ..drawRRect(
+        shape.inflate(_ringGap + _ringWidth / 2),
+        stroke(ring, _ringWidth),
+      );
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter old) =>
+      old.ring != ring ||
+      old.gap != gap ||
+      old.circle != circle ||
+      old.radius != radius;
 }
 
 final class _Colors {
