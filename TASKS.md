@@ -10,14 +10,39 @@ D.6 `packages/ui-web` (`docs/roadmap.md` Phase D): Storybook, UI lint rules, But
 - **Cited:** architecture §9.5 R1, R3, R4, R5 and R9, §9.6, §9.8, §9.9, §9.10 (UI SDK pinned, Base UI fallback, the RTL gate); `docs/brand/directions.md` «Measurements» (controls row: pills 50 high, the offset shadow); `apps/admin/CLAUDE.md` for the web rules; `docs/code/packages/design-tokens.md` «Icons (D.5)» for the icon data (`@fox-drop/design-tokens/icons`: `{d: string[], mirror}`, stroke 2/24 of the size, `mirror` flips under RTL) and «The Design System and the Guide (D.4)» for the sync; `docs/slice-notes.md` «Left from D.5».
 - **Component cycle (§9.9):** the Button and Icon sheet goes on «Component proposals» for the owner's approval before they are coded.
 
+### Design
+
+Owner answers (2026-11-23): visual tests use the real CoFo, so the owner adds `FONTS_DEPLOY_KEY` before the merge; the sheet shows every Button variant and state and the owner picks on it; the panel gets a compact Button of 40; visual comparison is Playwright snapshots in the repository (no Chromatic).
+
+- **Package** `packages/ui-web` (`@fox-drop/ui-web`, private, ESM, exports its TS source like `design-tokens`). Exact pins: `@ui-sdk/react` and `@ui-sdk/core` `0.1.0-beta.14` (T11), `tailwind-variants` 4.0.2, `tailwindcss` and `@tailwindcss/vite` 4.3.5, `storybook` and `@storybook/react-vite` 10.6.8, `@axe-core/playwright` 4.14.0, Testing Library, and the repo's React, Vite, Vitest and Playwright versions. Base UI (`@base-ui/react` 1.9.0) only for a piece that fails the RTL gate.
+- **Styles:** `src/styles.css` imports `tokens.css` and `tailwind.css` and declares CoFo 400/500/700 by `@font-face` from `.fonts/` (self-hosted, §9.3). Components read their component tokens as `(--fd-button-*)`; the Tailwind theme stays semantic only (R1).
+- **Icon** (§9.4): `<Icon name size="sm|md|lg" label?>` over `@fox-drop/design-tokens/icons`, inline SVG (CSP forbids `data:`): viewBox 24, `stroke="currentColor"`, width 2, round caps and joins, no fill; `mirror` flips with `rtl:-scale-x-100`; `aria-hidden` without `label`, `role="img"` with it.
+- **Button** on `@ui-sdk/react/button` (read its `.d.ts` first): `variant` (the set approved on the sheet), `density` `comfortable` 50 or `compact` 40 (panel), `icon` and `iconEnd` (`IconName`, at start and end), `loading` (`aria-busy`, width kept, no activation), `disabled`, icon-only circle with a required `label`. Visible focus ring `focus-ring`. Compact is for pointer devices: the sheet asks the owner to confirm it against R4's 48 dp touch rule.
+- **Tokens** (design-tokens 0.4.0, changelog): `button.compact.height` 40 and the colour roles of each approved variant beyond primary and secondary, each with its pair in `src/contrast.ts`.
+- **Lint** (R1, R3, R5, T11), a local plugin in `eslint.web.mjs`, so `ui-web` and both apps get it, scanning every string and template in `.ts`/`.tsx`: no arbitrary Tailwind value (`[..]`; `(--fd-*)` only); no hex colour; no `style` prop; no physical direction (`ml-`, `mr-`, `pl-`, `pr-`, `left-`, `right-`, `text-left`, `text-right`, `rounded-l/r`, `border-l/r`, `float-left/right`, `scroll-ml/mr`...); apps may not import `@ui-sdk/*` or `@base-ui/*`; nobody imports `@ui-sdk/react/agent` (agent bridge). Before turning it on, grep the apps for `style=` and physical classes. `packages/ui-web/test/lint.test.ts` proves each rule fires, as `apps/admin/test/lint.test.ts` does.
+- **R3 test:** every component exported by `src/index.ts` has `<name>.stories.tsx` with one story per state in its `STATES` list (default, hover, focus, pressed, disabled, loading, both densities).
+- **Storybook** (§9.6): `.storybook/` with a decorator `dir="rtl" lang="ar"`, a surface toolbar (phone, captain via `data-surface="captain"`, panel), `.fonts/` as a static dir. Story labels are Arabic sample text (stories are excluded from the JSX-text lint like tests).
+- **RTL gate** (§9.10) and R4/R9, Playwright over the built Storybook in Chromium, `e2e/`: in RTL the start icon sits right of the label; `back` is mirrored; Enter and Space activate; disabled and loading do not; focus ring visible; axe (WCAG 2.2 AA) with `color-contrast` off, since the token test is the contrast gate and the brand orange is excepted; at 130% root text no label clips. Snapshots: every story, phone and captain surfaces, `toHaveScreenshot`, run in `mcr.microsoft.com/playwright:v1.64.1-noble` locally and in CI so they match; a missing `.fonts/` fails with a message, never a skip. CI's visual job runs `pnpm fonts:fetch` first.
+- **Wiring:** turbo `build` (Storybook and the bundle), `test`, `test:e2e`; `scripts/classify-changes.mjs` and `ci.yml` for the new package (`## Checks changed`).
+- **Bundle and sync** (§9.8; the Design System type's `format.md`, read on the system's url before writing): `pnpm --filter @fox-drop/ui-web design-system` builds one classic IIFE script `window.FoxDrop` with React 19 inside (React 19 has no UMD; `libraries: []`), `bundle.css`, `index.d.ts`, and `components/Button/` and `components/Icon/` (`README.md`, `preview.html` with every state) into `.design-system/system/project/components/`; then the design-tokens index (`--blobs`) and the publish as in `packages/design-tokens/CLAUDE.md` «Sync», extended for this step.
+- **Docs:** `packages/ui-web/CLAUDE.md`, `docs/code/packages/ui-web.md`; `apps/admin/CLAUDE.md`'s stale design-stop line becomes: UI only from `@fox-drop/ui-web`, a screen only after its drawing is approved (§9.9).
+- **Left out:** wiring `ui-web` into the apps (styled screens are later slices); the money component and the ₺ fallback (D.8); bidi isolation of Latin runs (text and money components, D.8); dark mode; Flutter (D.7); the orange icon accent layer.
+
 ### Plan
 
-- [ ] Read the cited sections and write the design here
+- [x] Read the cited sections and write the design here
+- [ ] Draw «Button and Icon — batch 1» on Component proposals (every variant: primary, secondary, danger, ghost, icon circle; every §9.9 state; 50 and 40; RTL; phone, captain, panel); the owner approves; write the approved set here
+- [ ] Package skeleton: Tailwind, Storybook in RTL, fonts, turbo, verify, CI and classify wiring; the lint rules and their test
+- [ ] Icon with stories and unit tests
+- [ ] Tokens for the approved set (0.4.0) and Button on UI SDK with stories and unit tests
+- [ ] RTL gate, axe, 130% text and visual snapshots in Docker; the story coverage test
+- [ ] Bundle for the Design System and the first sync; the docs
+- [ ] Review, hand over to D.7, pull request (waits for `FONTS_DEPLOY_KEY`)
 
 ## Waiting for the owner
 
 - From `test/money-properties` (merged, PR 246): what an outcome posts when a restaurant-funded discount exceeds what the clearing account holds (`outcomeEntries` throws today; the property skips that case).
-- D.1: the `FONTS_DEPLOY_KEY` secret (the private half of a read-only deploy key on `fox-drop-fonts`, no expiry; commands in the pull request thread) in the repository's Actions secrets; until then the CI fetch step skips. The meaning of the `broken-edges` icon SVGs and of the `variant-b/c` icons.
+- D.1: the `FONTS_DEPLOY_KEY` secret (the private half of a read-only deploy key on `fox-drop-fonts`, no expiry; commands in the pull request thread) in the repository's Actions secrets; until then the CI fetch step skips. D.6's visual tests need it before the merge (owner agreed 2026-11-23). The meaning of the `broken-edges` icon SVGs and of the `variant-b/c` icons.
 - D.3: the choices under «Decided by us» in `docs/slice-notes.md` «Left from D.3».
 - D.4: open both artifacts; the choices under «Decided by us» in «Left from D.4».
 - D.5: the orange accent layer for icons («Left from D.5»).
