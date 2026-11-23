@@ -8,7 +8,6 @@ D.6 `packages/ui-web` (`docs/roadmap.md` Phase D): Storybook, UI lint rules, But
 
 - **Branch:** `feat/ui-web`.
 - **Cited:** architecture §9.5 R1, R3, R4, R5 and R9, §9.6, §9.8, §9.9, §9.10 (UI SDK pinned, Base UI fallback, the RTL gate); `docs/brand/directions.md` «Measurements» (controls row: pills 50 high, the offset shadow); `apps/admin/CLAUDE.md` for the web rules; `docs/code/packages/design-tokens.md` «Icons (D.5)» for the icon data (`@fox-drop/design-tokens/icons`: `{d: string[], mirror}`, stroke 2/24 of the size, `mirror` flips under RTL) and «The Design System and the Guide (D.4)» for the sync; `docs/slice-notes.md` «Left from D.5».
-- **Component cycle (§9.9):** the Button and Icon sheet goes on «Component proposals» for the owner's approval before they are coded.
 
 ### Design
 
@@ -31,8 +30,8 @@ Owner (2026-11-23): visual tests use the real CoFo (`FONTS_DEPLOY_KEY` before th
 ### Plan
 
 - [x] Read the cited sections and write the design here
-- [x] Draw «Button and Icon — batch 1» on Component proposals (`src/button-sheet.ts`, beside the icons); the owner approves; write the approved set here
-  - **Approved 2026-11-23:** variants `primary`, `secondary`, `danger` (bg `color.danger`, pressed `color.alert`, label `color.on-danger`), `ghost` (transparent, pressed `color.surface-pressed`, label `color.on-surface`), each also as an icon-only circle. **No shadow** on any button (the offset shadow stays for banners). Hover = `color-mix(in srgb, <bg> 88%, <pressed>)` (ghost: pressed at 60% over transparent). Focus = 2 px surface gap + 2 px `focus-ring`. Disabled = `button.disabled.*` (ghost keeps a transparent ground). Loading = spinner over the hidden label, width kept, no activation. Compact 40 for the panel only; phone and captain always 50.
+- [x] Draw «Button and Icon — batch 1» (`src/button-sheet.ts`); the owner approves
+  - **Approved 2026-11-23** (values: `button()` in `src/button-sheet.ts`): the four variants plus icon circles; danger pressed = `color.alert`; ghost transparent, pressed `surface-pressed`; **no button shadow**; hover = 88% bg mixed with pressed; compact 40 panel only.
 - [ ] Package skeleton: Tailwind, Storybook in RTL, fonts, turbo, verify, CI and classify wiring; the lint rules and their test
 - [ ] Icon with stories and unit tests
 - [ ] Tokens for the approved set (0.4.0) and Button on UI SDK with stories and unit tests
