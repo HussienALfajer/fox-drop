@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import { Button, type ButtonProps, type ButtonVariant } from './button';
 
 // One story per entry of STATES for each variant (R3), named <Variant><State>:
@@ -71,6 +72,25 @@ export const WithBothIcons: Story = {
 export const CompactWithIcon: Story = {
   args: { variant: 'secondary', density: 'compact', icon: 'filter', children: 'تصفية' },
 };
+
+// The keyboard gate (e2e/rtl.spec.ts) presses these and reads the count that
+// the button's `onClick` produced.
+function Presses(props: ButtonProps) {
+  const [count, setCount] = useState(0);
+  return (
+    <div className="flex items-center gap-4">
+      <Button {...props} onClick={() => setCount((value) => value + 1)} />
+      <output aria-label="عدد الضغطات">{count}</output>
+    </div>
+  );
+}
+const presses = (args: Pick<ButtonProps, 'disabled' | 'loading'> = {}): Story => ({
+  args: { children: 'اضغط', ...args },
+  render: (props) => <Presses {...props} />,
+});
+export const Presseable = presses();
+export const PresseableDisabled = presses({ disabled: true });
+export const PresseableLoading = presses({ loading: true });
 
 // An icon alone is a circle of the control height; its label is the accessible name.
 export const IconOnly: Story = { args: { icon: 'add', label: 'إضافة' } };

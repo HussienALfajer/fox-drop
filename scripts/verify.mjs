@@ -241,7 +241,7 @@ const turboTasks = 'lint:root lint typecheck build test:e2e';
 // The web apps' smoke tests run in Chromium; this downloads it once. One app
 // at a time: two installs at once race on the shared browser cache.
 const PLAYWRIGHT_INSTALL =
-  'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium';
+  'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal --filter @fox-drop/ui-web exec playwright install chromium';
 
 // The Node tests of the Claude Code hooks and of the scripts here: a second each.
 function scriptTests() {

@@ -157,7 +157,47 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: playwright-results
-          path: apps/*/test-results/
+          path: |
+            apps/*/test-results/
+            packages/ui-web/test-results/
+          if-no-files-found: ignore
+
+  # The Storybook screenshots (architecture §9.5 R9) are valid only from the
+  # Playwright image, so this job runs in it. It needs the licensed fonts: with
+  # no FONTS_DEPLOY_KEY it fails on purpose, never skips (owner, 2026-11-23).
+  visual:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: mcr.microsoft.com/playwright:v1.64.1-noble
+    env:
+      FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
+      FD_VISUAL: '1'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm fonts:fetch
+
+      - run: pnpm --filter @fox-drop/ui-web build
+
+      - run: pnpm --filter @fox-drop/ui-web exec playwright test --project=visual
+
+      # The expected, actual and diff images of a failed comparison.
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: visual-diff
+          path: packages/ui-web/test-results/
           if-no-files-found: ignore
 
   # The server's tests start PostGIS and Valkey with Testcontainers, in three
@@ -259,6 +299,7 @@ jobs:
         contract,
         format,
         typescript,
+        visual,
         server,
         dart,
         flutter,

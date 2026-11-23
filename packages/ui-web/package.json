@@ -11,7 +11,9 @@
     "build": "storybook build -o dist/storybook",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test --project=functional",
+    "test:visual": "node scripts/visual-docker.mjs"
   },
   "dependencies": {
     "@fox-drop/design-tokens": "workspace:*",

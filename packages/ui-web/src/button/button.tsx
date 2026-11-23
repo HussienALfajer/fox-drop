@@ -106,7 +106,10 @@ const button = tv({
 
 const content = tv({
   base: 'inline-flex items-center justify-center gap-(--fd-button-gap)',
-  variants: { loading: { true: 'invisible' } },
+  // opacity, not `invisible`: visibility hidden would take the label out of
+  // the accessibility tree and leave a loading button without a name (found
+  // by the axe gate).
+  variants: { loading: { true: 'opacity-0' } },
 });
 
 const spinner = tv({
