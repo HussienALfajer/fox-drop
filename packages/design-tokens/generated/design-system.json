@@ -212,6 +212,16 @@
         "usage": "A control boundary under the pointer: the outline turns full blue (R10)."
       },
       {
+        "name": "border-pressed",
+        "value": {
+          "light": "#032E62",
+          "dark": "#032E62",
+          "captain-light": "#032E62",
+          "captain-dark": "#032E62"
+        },
+        "usage": "A control boundary or an off track pressed: a deeper blue beyond the hover (R10)."
+      },
+      {
         "name": "focus-ring",
         "value": {
           "light": "#03428E",
@@ -727,6 +737,26 @@
         "name": "size-icon-lg",
         "value": "32px",
         "usage": "A large icon: empty states and the active circle of the floating bar."
+      },
+      {
+        "name": "size-selection",
+        "value": "24px",
+        "usage": "The drawn checkbox and radio, centred in a touch target."
+      },
+      {
+        "name": "size-step",
+        "value": "32px",
+        "usage": "The circles of the quantity stepper, centred in a touch target."
+      },
+      {
+        "name": "size-switch-width",
+        "value": "52px",
+        "usage": "The switch track's width."
+      },
+      {
+        "name": "size-switch-height",
+        "value": "32px",
+        "usage": "The switch track's height."
       }
     ]
   },
@@ -734,7 +764,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

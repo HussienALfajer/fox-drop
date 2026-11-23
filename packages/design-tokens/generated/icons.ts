@@ -44,6 +44,11 @@ export const icons = {
     d: ['M7 7 17 17', 'M17 7 7 17'],
     mirror: false,
   },
+  /** Open a list: a chevron pointing down, for selects and menus (D.8). */
+  'chevron-down': {
+    d: ['M6 9l6 6 6-6'],
+    mirror: false,
+  },
   /** More actions: three dots in a row. */
   'more': {
     d: ['M4.25 12A1.25 1.25 0 1 0 6.75 12A1.25 1.25 0 1 0 4.25 12Z', 'M10.75 12A1.25 1.25 0 1 0 13.25 12A1.25 1.25 0 1 0 10.75 12Z', 'M17.25 12A1.25 1.25 0 1 0 19.75 12A1.25 1.25 0 1 0 17.25 12Z'],
@@ -132,6 +137,11 @@ export const icons = {
   /** Time and timers: a stopwatch, for delivery times. */
   'clock': {
     d: ['M4 13A8 8 0 1 0 20 13A8 8 0 1 0 4 13Z', 'M10 3h4', 'M12 9v4l2.5 2.5', 'm18.5 5.5 1 1'],
+    mirror: false,
+  },
+  /** A date: a calendar page with two rings, for date fields (D.8). */
+  'calendar': {
+    d: ['M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'M4 10h16', 'M8 3v4', 'M16 3v4'],
     mirror: false,
   },
   /** A place on the map: the logo's drop as a pin over a ground line (brand expression §2). */

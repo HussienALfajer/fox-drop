@@ -10,7 +10,7 @@ The visual identity pack (V1.1, 2026-11-21) under professional names, and the br
 | Coral orange | `#FF6E31` | 30%   | The brand, the app icon, accents |
 | Royal blue   | `#03428E` | 10%   | Headings, supporting elements    |
 
-In the apps the owner adopted the Figma file's use of these colours (2026-11-23, `directions.md`): the ground is a warmer ivory `#FBF2E7` with raised cards `#FEFEFE`; all text, prices and numbers are blue (8.72:1); the orange carries buttons, bars and headings in every app. `#FF6E31` misses 4.5:1 (2.52:1 on the ground, 2.68:1 under ivory text): the owner accepts this as a named exception to the contrast rule (architecture §9.5 R4), limited to the orange tokens by a test. The accessible orange `#C2410C` of D.2 is retired.
+In the apps the owner adopted the Figma file's use of these colours (2026-11-23, `directions.md`): the ground is a warmer ivory `#FBF2E7` with raised cards `#FEFEFE`; text, prices and numbers are blue by default (8.72:1); the orange carries buttons, bars and headings in every app, and the owner allowed it anywhere else too, text and numbers included (2026-11-23). `#FF6E31` misses 4.5:1 (2.52:1 on the ground, 2.68:1 under ivory text): the owner accepts this as a named exception to the contrast rule (architecture §9.5 R4), limited to the orange tokens by a test. The accessible orange `#C2410C` of D.2 is retired.
 
 ## Logo rules (boards 01 to 03)
 

@@ -41,7 +41,7 @@ Ivory ground, blue words, orange actions.
 - **Ground and cards:** `surface` (`#FBF2E7`) is every screen's ground; `surface-raised` (`#FEFEFE`) carries cards, sheets and inputs.
 - **Text and numbers are blue:** `on-surface` (`#03428E`, 8.72:1 on the ground) for all text, prices and numbers; `on-surface-muted` (`#416EA4`, 4.75:1 on the ground, 4.59:1 at worst) for hints and captions.
 - **Orange acts and titles:** `primary` (`#FF6E31`) fills buttons, bars and the active item, with `on-primary` ivory labels; `heading` sets titles in bold orange; `brand` is the logo and decorative areas.
-- **The orange exception.** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory labels, below 4.5:1. The owner accepts this for `brand`, `primary`, `primary-hover`, `primary-pressed` and `heading` only (architecture §9.5 R4). Orange is never body text, a price or a number.
+- **The orange exception.** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory labels, below 4.5:1. The owner accepts this for `brand`, `primary`, `primary-hover`, `primary-pressed` and `heading` only (architecture §9.5 R4). Text and numbers are blue by default; the owner allows orange anywhere, body text, prices and numbers included (2026-11-23).
 - **Borders:** `border` for decorative dividers and card outlines only; `border-strong` (3.20:1 at worst) for every control boundary; `focus-ring` blue.
 - **States, always with an icon:** `success`, `warning` (a brown amber, not orange), `danger` (the Figma error red `#BF2929`), `info` (the brand blue), each with its `on-*` label colour. `alert` (`#8C1530`, 7:1) is for alerts read from across a kitchen.
 - **Interaction states, one model for everything pressed** (R10, «brand tonal steps»): a filled control deepens inside its own ramp: `primary` → `primary-hover` → `primary-pressed`, `danger` → `danger-hover` → `danger-pressed`. A light control (outlined button, ghost, tag, list row, card) takes the brand blue's tint: on the ground `surface-hover` → `surface-pressed`, on white `surface-raised-hover` → `surface-raised-pressed`, and an outline turns `border-hover` blue. Every step is measured: hover is ΔE2000 ≥ 8 from rest and pressed ≥ 5 beyond it, so a state is always seen. The colour fades over 200 ms; nothing moves. A component never invents its own state colour. Phones have no hover, so the pressed colour carries the feedback there.
@@ -88,14 +88,14 @@ Short motion that shows what changed: 100 ms press, 200 ms appear, 300 ms screen
 
 ## Iconography
 
-- **Line icons** (assets, Icons): FOX DROP's own 44 icons, drawn after the Figma file's icons: a 24 grid, stroke 2 in `currentColor`, round caps and joins, plump soft shapes, one small detail where it reads. Sizes `size-icon-sm` 16, `size-icon-md` 24, `size-icon-lg` 32. Blue (`on-surface`) by default; active, ivory (`on-primary`) inside an orange (`primary`) circle of `size-control`. `back`, `motorcycle` and `car` flip in RTL. The drop appears only in `drop-pin` and `map`. A missing icon waits for the next batch or uses text; never borrow one from another library.
+- **Line icons** (assets, Icons): FOX DROP's own 46 icons, drawn after the Figma file's icons: a 24 grid, stroke 2 in `currentColor`, round caps and joins, plump soft shapes, one small detail where it reads. Sizes `size-icon-sm` 16, `size-icon-md` 24, `size-icon-lg` 32. Blue (`on-surface`) by default; active, ivory (`on-primary`) inside an orange (`primary`) circle of `size-control`. `back`, `motorcycle` and `car` flip in RTL. The drop appears only in `drop-pin` and `map`. A missing icon waits for the next batch or uses text; never borrow one from another library.
 - **Logos** (assets, Logos): the fox mark alone in orange, ivory or blue, on a square or a drop backing, and the four lockups (horizontal and vertical, Arabic and Latin). Use the ready lockups; never change the order of the mark and the name, never rotate, stretch, shadow or recolour. Arabic lockups on Arabic screens. Minimum: the mark 24 px, the horizontal lockup 120 px wide.
 - **App icon** (assets, App icon): the ivory fox on orange is the official icon; the others are alternatives.
 
 ## Usage rules
 
 - Use semantic tokens only: never a raw hex, a length or a shadow that is not a token.
-- Text, prices, numbers: `on-surface`. Hints: `on-surface-muted`. Titles: `heading`. Never orange numbers.
+- Text, prices, numbers: `on-surface`. Hints: `on-surface-muted`. Titles: `heading`. Orange text or numbers, where a design wants them, use `primary` (owner, 2026-11-23).
 - A primary button: `primary` fill, `on-primary` label in CoFo 700, `radius-full`, `size-control` high, `elevation-offset` under it.
 - A card: `surface-raised` on `surface`, `radius-lg`, padding `space-md`, `elevation-low` or a `border` outline.
 - An input: `surface-raised`, `radius-md`, a `border-strong` boundary, `focus-ring` on focus, `danger` with an icon and a message on error.
@@ -104,7 +104,7 @@ Short motion that shows what changed: 100 ms press, 200 ms appear, 300 ms screen
 
 ## Not synced
 
-- No components yet: they are built and tested in code first, then synced (web in D.6, Flutter in D.7).
+- Components are the web ones (`packages/ui-web`); the Flutter widgets (`packages/core_ui`) draw the same design and are not carried.
 - YR-Speed (marketing only) and Emad-Diana (not used) are not carried; only the three CoFo weights are.
 - The `app-icon-broken-edges` SVGs are left out until the owner names their purpose.
 - Durations and easing are not a token family here; they are listed under Motion.

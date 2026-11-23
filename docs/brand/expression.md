@@ -126,11 +126,11 @@ Ten steps, 50 to 900, for each colour on one shared scale, plus the in-between s
 
 - **The Figma file's colours (D.3, owner 2026-11-23):**
   - Ground `#FBF2E7`, raised cards `#FEFEFE`.
-  - All text, prices and numbers in the brand blue `#03428E` (8.72:1). Muted text is the blue at 75% over the ground, `#416EA4` (4.59:1), because the file's lighter blues fail 4.5:1.
+  - Text, prices and numbers in the brand blue `#03428E` by default (8.72:1); orange may be used for them too (below). Muted text is the blue at 75% over the ground, `#416EA4` (4.59:1), because the file's lighter blues fail 4.5:1.
   - Headings, buttons, bars and the active item in the brand orange `#FF6E31`, with ivory labels.
   - Borders in the blue at 16% (decorative) and 60% (control boundary, 3.20:1; the file's 40% fails 3:1).
   - The offset shadow `#FD6425` (§2).
-- **The brand-orange exception (owner 2026-11-23, every app, the captain's included):** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory text, below 4.5:1. The owner accepts this for the orange tokens only (`brand`, `primary`, `primary-pressed`, `heading`); the contrast report marks those pairs «owner exception» and a test keeps the exception from spreading (architecture §9.5 R4). Orange is never used for body text, prices or numbers. The accessible orange `#C2410C` of D.2 is retired.
+- **The brand-orange exception (owner 2026-11-23, every app, the captain's included):** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory text, below 4.5:1. The owner accepts this for the orange tokens only (`brand`, `primary`, `primary-pressed`, `heading`); the contrast report marks those pairs «owner exception» and a test keeps the exception from spreading (architecture §9.5 R4). In D.8 the owner allowed orange anywhere, body text, prices, numbers and timers included (2026-11-23); each orange pair a design uses is listed in the contrast report. The accessible orange `#C2410C` of D.2 is retired.
 - **Status colours, kept apart from the brand orange and always with an icon (R4):**
 
 | Status  | Settled   | On the ground `#FBF2E7` | Note                                                  |

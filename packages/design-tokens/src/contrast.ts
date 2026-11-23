@@ -41,8 +41,9 @@ const on = (names: string[], target: number, use: string, backgrounds = BACKGROU
 const excepted = (pairs: Pair[], floor: number): Pair[] =>
   pairs.map((p) => ({ ...p, exception: EXCEPTION, floor }));
 
-// Orange text is for headings only; `primary` is a fill, never text.
-const orangeText = excepted(on(['heading'], 4.5, 'orange heading'), 2.4);
+// The owner allows orange anywhere, text and numbers included (2026-11-23):
+// headings in `heading`, any other orange text or number in `primary`.
+const orangeText = excepted(on(['heading', 'primary'], 4.5, 'orange text'), 2.4);
 const orangeFills = excepted(
   ['primary', 'primary-hover', 'primary-pressed'].map((background) => ({
     foreground: 'on-primary',
@@ -84,7 +85,19 @@ const states = (target: number): Pair[] => [
   ...on(['on-surface'], target, 'control label, hovered or pressed', STATE_BACKGROUNDS),
   ...on(['focus-ring'], 3, 'focus ring, hovered or pressed', STATE_BACKGROUNDS),
 ];
-const nonText = on(['border-strong', 'focus-ring'], 3, 'control boundary, focus ring, icon');
+const nonText = on(
+  ['border-strong', 'border-hover', 'border-pressed', 'focus-ring'],
+  3,
+  'control boundary, focus ring, icon',
+);
+// Forms (D.8, owner 2026-11-23): a focused field's outline, a checked box, the
+// switch's track, the stepper's circles and the orange icons inside controls
+// (the search lens, the stepper's signs, the select's tick) are the brand
+// orange, under the same exception extended to 3:1 non-text elements.
+const orangeBoundary = excepted(
+  on(['primary'], 3, 'control boundary, checked control, icon in a control'),
+  2.5,
+);
 // Alerts are read from across a room: the restaurant tablet, the panel (§6).
 const alerts: Pair[] = [
   { foreground: 'on-alert', background: 'alert', target: 7, use: 'alert' },
@@ -104,6 +117,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...alerts,
     ...orangeText,
     ...orangeFills,
+    ...orangeBoundary,
   ],
   panel: [
     ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
@@ -115,6 +129,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...alerts,
     ...orangeText,
     ...orangeFills,
+    ...orangeBoundary,
   ],
   // Text and numbers at 7:1 in near-black or blue; orange only on buttons and
   // headings, under the owner's exception (§6).
@@ -127,6 +142,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...nonText,
     ...orangeText,
     ...orangeFills,
+    ...orangeBoundary,
   ],
 };
 
@@ -142,6 +158,7 @@ export const STATE_TRIPLES: [rest: string, hover: string, pressed: string][] = [
   ['danger', 'danger-hover', 'danger-pressed'],
   ['surface', 'surface-hover', 'surface-pressed'],
   ['surface-raised', 'surface-raised-hover', 'surface-raised-pressed'],
+  ['border-strong', 'border-hover', 'border-pressed'],
 ];
 export const MIN_HOVER = 8;
 export const MIN_PRESS = 5;

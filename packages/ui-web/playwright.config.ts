@@ -19,7 +19,7 @@ export default defineConfig({
   projects: [
     {
       name: 'functional',
-      testMatch: 'rtl.spec.ts',
+      testMatch: ['rtl.spec.ts', 'forms.spec.ts'],
       use: { ...devices['Desktop Chrome'] },
     },
     ...(visual

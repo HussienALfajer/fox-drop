@@ -2,6 +2,14 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.6.0 (2026-11-24, slice D.8: inputs and forms)
+
+- New component tokens `input.*` (`tokens/component/input.json`): field height 50 (compact 40), padding, the pill radius and `area-radius` (long text), outline widths 1 and 2, every field colour per state, and the checkbox and radio, switch, quantity stepper and sign-in code tokens, from the approved forms sheet. Dart `FoxInput` beside `FoxButton`.
+- New semantic tokens: `size.selection` 24, `size.step` 32, `size.switch-width` 52, `size.switch-height` 32, `border-width.thin` 1 and `border-width.thick` 2.
+- The owner's orange exception now covers `primary` as a 3:1 control boundary (a focused outline, a checked box, the switch, the stepper) on `surface` and `surface-raised`, floor 2.5. New pair: `border-hover` at 3:1.
+- New icons `chevron-down` and `calendar`.
+- New semantic `border-pressed` (blue 700) and the triple `border-strong`/`border-hover`/`border-pressed` under the R10 ΔE test; `input.switch.color.track-pressed` and `input.stepper.color.background-hover`, so the off switch and the stepper have their own pressed and hover steps (review of D.8).
+
 ## 0.5.0 (2026-11-24, slice D.6: interaction states, R10)
 
 - The owner picked «Brand tonal steps» on the Interaction states sheet: one state model for every interactive component, measured. The 0.4.0 hover (a 50% mix of fill and pressed) was ΔE2000 3.3 on primary and 1.3 on ghost, which the eye barely notices.

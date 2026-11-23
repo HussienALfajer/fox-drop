@@ -1,0 +1,58 @@
+<!-- @dsCard group="Forms" height=520 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: var(--fd-space-lg) 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--fd-space-lg);
+    margin-block-end: var(--fd-space-sm);
+  }
+  .row > * {
+    min-width: 260px;
+    max-width: 320px;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, PhoneField } = FoxDrop;
+  const base = {
+    label: 'رقم الهاتف',
+    countryLabel: 'الدولة',
+    countryLabels: { sy: 'سوريا', tr: 'تركيا' },
+    placeholder: '9xx xxx xxx',
+  };
+  const sections = (section, h) => [
+    ...section(
+      'Default and filled',
+      h(PhoneField, { ...base, hint: 'سنرسل الرمز إلى واتساب' }),
+      h(PhoneField, { ...base, defaultValue: '+963912345678' }),
+    ),
+    ...section(
+      'Turkey and invalid',
+      h(PhoneField, { ...base, defaultValue: '+905321234567', placeholder: '5xx xxx xx xx' }),
+      h(PhoneField, { ...base, defaultValue: '+963912345678', error: 'رقم غير صحيح' }),
+    ),
+    ...section('Disabled', h(PhoneField, { ...base, disabled: true })),
+  ];
+  const h = React.createElement;
+  const section = (title, ...items) => [
+    h('h2', { key: title }, title),
+    h('div', { className: 'row', key: title + 'row' }, ...items),
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render(sections(section, h));
+</script>
