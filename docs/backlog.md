@@ -14,4 +14,5 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 
 ## Follow-ups
 
+- **L.1c's two-session measurement** (formerly in `TASKS.md`): record what the two-session slice cost, measured with `scripts/claude-audit.mjs`, in the evidence of the slice that measures it, now that `docs/archive/claude-code-workflow.md` is read-only; it is the baseline for the item below.
 - **Claude Code workflow, measure after a month** (2026-11-23, `chore/shifa-workflow`): cost and speed of slices under the new workflow with `scripts/claude-audit.mjs`, against L.1a, L.1b and L.1c in the archive `claude-code-workflow.md` (phase 6).

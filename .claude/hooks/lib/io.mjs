@@ -1,5 +1,7 @@
 // Shared I/O for the hook entry points: read the JSON event from stdin, find the project root.
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 /**
  * @param {{ failClosed?: boolean }} [options] guards pass failClosed so an unreadable event
@@ -16,8 +18,23 @@ export async function readEvent({ failClosed = false } = {}) {
   }
 }
 
-export function projectDir(event) {
-  return process.env.CLAUDE_PROJECT_DIR || event.cwd || process.cwd();
+/**
+ * The root of the checkout the session works in. A session that entered a worktree keeps the
+ * main checkout as CLAUDE_PROJECT_DIR, so the event's cwd (or a given path) decides first.
+ */
+export function projectDir(event, near) {
+  const fallback = process.env.CLAUDE_PROJECT_DIR || event.cwd || process.cwd();
+  let dir = near ?? event.cwd ?? fallback;
+  while (!existsSync(dir)) {
+    const up = dirname(dir);
+    if (up === dir) return fallback;
+    dir = up;
+  }
+  try {
+    return git(['rev-parse', '--show-toplevel'], dir).trim() || fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export function git(args, cwd) {

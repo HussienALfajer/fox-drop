@@ -150,6 +150,42 @@ describe('checkBash', () => {
     'claude --dangerously-skip-permissions',
     'claude --permission-mode bypassPermissions',
     'claude --permission-mode=bypassPermissions',
+    'claude --permission-mode "bypassPermissions"',
+    'git commit -n -m x',
+    'git commit -nm x',
+    'git push -fu origin feat/x',
+    'git push -uf origin feat/x',
+    'git push --force=feat/x origin feat/x',
+    'git -C . push --force origin feat/x',
+    'git -c a=b push -f origin feat/x',
+    'git push origin "main"',
+    "git push origin HEAD:'main'",
+    'git push origin :main',
+    'git push --mirror origin',
+    'git push --all origin',
+    'git -C D:/fox-drop push origin main',
+    // a shell started with a command string
+    'bash -c "npx -y foo"',
+    "sh -c 'git push -f'",
+    'powershell -Command "npm install x"',
+    'pwsh -NoProfile -c "Set-Content apps/admin/x.ts 1"',
+    'cmd /c npx -y foo',
+    // more fetches and install aliases
+    'npm create vite@latest',
+    'pnpm create vite',
+    'yarn create react-app x',
+    'npm init react-app x',
+    'npx create-react-app x',
+    'npx @scope/pkg',
+    'npx github:user/repo',
+    'npx https://example.com/x.tgz',
+    'npx -pfoo foo',
+    'npm it',
+    'npm install-test',
+    'npm install-ci-test',
+    // a worktree's own source folders still count
+    'echo x > D:/fox-drop/.claude/worktrees/w/apps/admin/x.ts',
+    'echo x > .claude/settings.json',
     // run-time fetches
     'npx skills@latest add vercel-labs/ui --skill ui-sdk',
     'npx -y skills add x',
@@ -196,6 +232,19 @@ describe('checkBash', () => {
     'git push',
     'git status --short',
     'git log --oneline main',
+    'git push --follow-tags origin feat/x',
+    'git -C . push -u origin feat/x',
+    'git commit --amend --no-edit',
+    'git fetch origin main',
+    'npm init',
+    'bash -c "pnpm verify"',
+    "sh -c 'echo x > /tmp/y'",
+    'bash scripts/x.sh',
+    'rg -n sc apps/server',
+    "Set-Content x.txt 'a' && ls apps/",
+    'git push origin feat/x\ngit switch main',
+    'node x.mjs > D:/fox-drop/.claude/worktrees/w/out.log',
+    'echo 1 > .claude/state/red-phase',
     // reading is allowed again, secrets included
     'cat CLAUDE.md',
     "sed -n '1,40p' scripts/verify.mjs",
@@ -279,6 +328,21 @@ describe('the guard scripts', () => {
       );
     assert.equal(edit('apps/x/a.test.ts').status, 2);
     assert.equal(edit('apps/x/b.test.ts').status, 0);
+  });
+
+  it('take the root from the checkout the file is in, a worktree included', () => {
+    const main = path.join(scratch, 'main-checkout');
+    const tree = path.join(main, '.claude', 'worktrees', 'w');
+    mkdirSync(tree, { recursive: true });
+    spawnSync('git', ['init', '-q', main]);
+    spawnSync('git', ['init', '-q', tree]);
+    const edit = runScript(
+      'guard-edits.mjs',
+      { tool_name: 'Write', cwd: tree, tool_input: { file_path: path.join(tree, 'docs/archive/x.md') } },
+      { CLAUDE_PROJECT_DIR: main },
+    );
+    assert.equal(edit.status, 2);
+    assert.match(edit.stderr, /read-only archive/);
   });
 });
 

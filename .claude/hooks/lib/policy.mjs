@@ -85,12 +85,21 @@ export function stripPayload(command) {
 const SOURCE_DIRS = ['apps', 'packages', 'scripts', 'infra', '.claude'];
 // A path into a source folder: relative (`apps/`, `./apps\`) or absolute
 // (`D:\fox-drop\apps`, `/d/fox-drop/apps`, `$CLAUDE_PROJECT_DIR/apps`), with / or \ separators.
-const DIRS = SOURCE_DIRS.map((d) => d.replace('.', '\\.')).join('|');
+// `.claude/worktrees/` (checkouts, whose own source folders still count) and `.claude/state/`
+// (the slice's markers) are not source.
+const DIRS = SOURCE_DIRS.map((d) =>
+  d === '.claude' ? String.raw`\.claude(?![\\/](?:worktrees|state)[\\/])` : d,
+).join('|');
 // Optional prefix ending in a separator, then the folder name. `docs/myapps/` does not match,
 // because the prefix must end exactly before the folder name.
 const PATH_INTO_SRC = String.raw`["']?(?:[^\s"'|;&<>]*?[\\/])?(?:${DIRS})[\\/]`;
 const SRC = String.raw`(?:^|[\s"'=(])${PATH_INTO_SRC}`;
 const SRC_AFTER_OP = String.raw`\s*${PATH_INTO_SRC}`;
+
+// `git`, then its global options (`-C <dir>`, `-c <name>=<value>`, `--git-dir=x`), then the
+// subcommand.
+const GIT = String.raw`\bgit(?:\s+-[cC]\s+\S+|\s+-\S+)*\s+`;
+const unquote = (cmd) => cmd.replace(/["']/g, '');
 
 const BASH_RULES = [
   {
@@ -107,22 +116,36 @@ const BASH_RULES = [
   },
   {
     re: new RegExp(
-      String.raw`(?:^|[\s;|(])(Set-Content|Add-Content|Out-File|sc|ac)\b[^|;]*${SRC}`,
+      // `sc` and `ac` count only as the first word of a command (`rg sc apps/` is a search).
+      String.raw`(?:(?:^|[;|&(\n])\s*(?:sc|ac)\b|\b(?:Set-Content|Add-Content|Out-File)\b)[^|;&\n]*${SRC}`,
       'i',
     ),
     why: 'PowerShell writes into a source folder bypass the edit hooks; use the Edit or Write tool.',
   },
   { re: /\s--no-verify\b/, why: 'Skipping git hooks (--no-verify) is not allowed.' },
   {
-    re: /\bgit\s+push\b[^|;&]*(\s(-f|--force|--force-with-lease)\b|\s\+)/,
+    re: new RegExp(String.raw`${GIT}commit\b[^|;&\n]*\s-[a-zA-Z]*n[a-zA-Z]*(\s|$)`),
+    why: 'Skipping git hooks (git commit -n) is not allowed.',
+  },
+  {
+    re: new RegExp(
+      String.raw`${GIT}push\b[^|;&\n]*(\s-[a-zA-Z]*f[a-zA-Z]*(\s|$)|\s--force(-with-lease)?(=\S*)?(\s|$)|\s\+)`,
+    ),
     why: 'Force-pushing is not allowed.',
   },
   {
-    re: /\bgit\s+push\b[^|;&]*\s(\S+:)?(refs\/heads\/)?main(\s|$)/,
+    // Quotes removed first, so `"main"` and `HEAD:'main'` count; an empty source deletes main.
+    test: (cmd) =>
+      new RegExp(
+        String.raw`${GIT}push\b[^|;&\n]*(\s(\S*:)?(refs/heads/)?main(\s|$)|\s--(mirror|all)\b)`,
+      ).test(unquote(cmd)),
     why: '`main` changes only through a pull request; push the branch instead.',
   },
   {
-    re: /(--dangerously-skip-permissions|--permission-mode[\s=]+bypassPermissions)/,
+    test: (cmd) =>
+      /(--dangerously-skip-permissions|--permission-mode[\s=]+bypassPermissions)/.test(
+        unquote(cmd),
+      ),
     why: 'Claude never starts a session that skips permissions; the owner chooses the permission mode.',
   },
   // Setup prompts in node_modules and on the web ask agents to fetch skills and packages at run
@@ -207,6 +230,11 @@ const NPM_INSTALL = new Set([
   'isntall',
   'add',
   'ci',
+  'it',
+  'install-test',
+  'install-ci-test',
+  'install-clean',
+  'isntall-clean',
 ]);
 
 function installsOutsidePnpm({ program, args, nested }) {
@@ -221,28 +249,45 @@ function installsOutsidePnpm({ program, args, nested }) {
 
 function fetchesAndRuns({ program, args }) {
   if (program === 'bunx' || program === 'pnpx') return true;
-  if (program === 'npm') return args.some((a) => ['exec', 'x'].includes(a));
+  // `create <x>` (and `npm init <x>`) fetches and runs the create-<x> package.
+  const first = args.find((a) => !a.startsWith('-'));
+  if (['npm', 'pnpm', 'yarn', 'bun'].includes(program) && first === 'create') return true;
+  if (program === 'npm') {
+    if (first === 'init' && args.slice(args.indexOf('init') + 1).some((a) => !a.startsWith('-')))
+      return true;
+    return args.some((a) => ['exec', 'x'].includes(a));
+  }
   if (program === 'pnpm' || program === 'yarn' || program === 'bun') {
     return args.includes('dlx') || (program === 'bun' && args.includes('x'));
   }
   if (program !== 'npx') return false;
   // `npx <local bin>` runs what the lockfile installed. npx's own options come before the
-  // command; `-y`, `--package` or a versioned or `skills` command fetch from the registry.
+  // command; `-y`, `--package` or a package spec (versioned, scoped, a path, a URL, a git host,
+  // create-*, skills) fetch from the registry.
   for (const a of args) {
     if (a.startsWith('-')) {
-      if (/^(-y|--yes|-p|--package(=.*)?)$/.test(a)) return true;
+      if (/^(-y|--yes|-p.*|--package(=.*)?)$/.test(a)) return true;
       continue;
     }
-    return /^skills(@.*)?$/.test(a) || /^(@[\w.-]+\/)?[\w.-]+@[^\s/]*$/.test(a);
+    return /^(skills|create-[\w.-]+)(@.*)?$/.test(a) || /^@|.@|[:/]/.test(a);
   }
   return false;
 }
 
 /** @returns {string | null} reason the command is blocked */
-export function checkBash(command) {
+export function checkBash(command, depth = 0) {
   const cmd = stripPayload(command);
   for (const rule of BASH_RULES) {
     if (rule.re ? rule.re.test(cmd) : rule.test(cmd)) return rule.why;
+  }
+  // A shell started with a command string runs that string: check it too
+  // (`bash -c "npx -y x"`, `pwsh -Command '…'`, `cmd /c npx -y x`).
+  if (depth < 3) {
+    const shell = String.raw`\b(?:bash|sh|zsh|dash|pwsh|powershell|cmd)(?:\.exe)?\s+(?:-\w+\s+)*?(?:-\w*c|-Command|/c|/k)\s+`;
+    for (const m of cmd.matchAll(new RegExp(`${shell}("([^"]*)"|'([^']*)'|(.+))`, 'gi'))) {
+      const inner = checkBash(m[2] ?? m[3] ?? m[4], depth + 1);
+      if (inner) return inner;
+    }
   }
   return null;
 }

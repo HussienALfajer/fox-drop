@@ -43,7 +43,11 @@ function baseRef(root) {
  */
 export function treeState(root) {
   try {
-    const status = git(['status', '--porcelain', '--untracked-files=all'], root);
+    // Unquoted paths, so an Arabic file name reaches the classifier as it is on disk.
+    const status = git(
+      ['-c', 'core.quotePath=false', 'status', '--porcelain', '--untracked-files=all'],
+      root,
+    );
     const hash = createHash('sha256')
       .update(git(['rev-parse', 'HEAD'], root))
       .update(`\0base:${baseRef(root)}\0`)

@@ -37,4 +37,6 @@ Nothing new.
 
 ## Notes for the next session
 
+The workflow changed while D.8 was being built (`chore/shifa-workflow`, 2026-11-23). On `feat/components-forms`: merging `main` gives a modify/delete conflict on `TASKS.md`; resolve it by deleting `TASKS.md` and moving its hand-over here (Stopped at, Evidence, Before deploying, To check on staging). `docs/slice-notes.md` is now a read-only archive and the edit guard refuses changes to it, so D.8's hand-over goes into this file, and open items into `docs/backlog.md`. D.8 merges with squash like every pull request.
+
 After D.8: D.9 Data display, then D.10 Overlays and navigation, then the screens' slice plans (`docs/roadmap.md`). Then L.2 The permission matrix (`test/permission-matrix`; read first: architecture §18.1, AP §6 and §14 item 2, RA §22 item 2, the AP-2 and RA-2 rows of `docs/launch/dod-checklist.md`, `apps/server/CLAUDE.md` «Deny by default», the route table in `apps/server/src/modules/identity/admin-team.test.ts`), then L.3 to L.11.

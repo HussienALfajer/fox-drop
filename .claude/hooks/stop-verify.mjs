@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 
 import { classify } from '../../scripts/classify-changes.mjs';
 import { isGreen, treeState } from '../../scripts/green-tree.mjs';
+import { projectDir } from './lib/io.mjs';
 
 const DIR = path.join(os.tmpdir(), 'claude-stop-verify');
 // scripts/verify.mjs exits with 3 while another check holds the folder's lock.
@@ -122,7 +123,16 @@ export function cut(text, savedTo) {
 
 function main() {
   const input = JSON.parse(readFileSync(0, 'utf8') || '{}');
-  const root = process.env.CLAUDE_PROJECT_DIR ?? input.cwd ?? process.cwd();
+  const root = projectDir(input);
+  if (!input.stop_hook_active && existsSync(path.join(root, '.claude', 'state', 'red-phase'))) {
+    process.stdout.write(
+      JSON.stringify({
+        systemMessage:
+          'The fast check is off: .claude/state/red-phase exists. Remove it when the red phase ends.',
+      }),
+    );
+    return;
+  }
   if (!shouldCheck(input, root)) return;
   const edits = readFileSync(editsFile(input.session_id), 'utf8');
   const tree = treeState(root);
