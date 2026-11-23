@@ -8,6 +8,7 @@ workspace:
   - apps/captain
   - apps/customer
   - apps/merchant
+  - apps/widgetbook
   - packages/core_alerts
   - packages/core_api
   - packages/core_commands
