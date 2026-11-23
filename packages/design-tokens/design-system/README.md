@@ -88,14 +88,14 @@ Short motion that shows what changed: 100 ms press, 200 ms appear, 300 ms screen
 
 ## Iconography
 
-- **Line icons** (assets, Icons): FOX DROP's own 44 icons, drawn after the Figma file's icons: a 24 grid, stroke 2 in `currentColor`, round caps and joins, plump soft shapes, one small detail where it reads. Sizes `size-icon-sm` 16, `size-icon-md` 24, `size-icon-lg` 32. Blue (`on-surface`) by default; active, ivory (`on-primary`) inside an orange (`primary`) circle of `size-control`. `back`, `motorcycle` and `car` flip in RTL. The drop appears only in `drop-pin` and `map`. A missing icon waits for the next batch or uses text; never borrow one from another library.
+- **Line icons** (assets, Icons): FOX DROP's own 46 icons, drawn after the Figma file's icons: a 24 grid, stroke 2 in `currentColor`, round caps and joins, plump soft shapes, one small detail where it reads. Sizes `size-icon-sm` 16, `size-icon-md` 24, `size-icon-lg` 32. Blue (`on-surface`) by default; active, ivory (`on-primary`) inside an orange (`primary`) circle of `size-control`. `back`, `motorcycle` and `car` flip in RTL. The drop appears only in `drop-pin` and `map`. A missing icon waits for the next batch or uses text; never borrow one from another library.
 - **Logos** (assets, Logos): the fox mark alone in orange, ivory or blue, on a square or a drop backing, and the four lockups (horizontal and vertical, Arabic and Latin). Use the ready lockups; never change the order of the mark and the name, never rotate, stretch, shadow or recolour. Arabic lockups on Arabic screens. Minimum: the mark 24 px, the horizontal lockup 120 px wide.
 - **App icon** (assets, App icon): the ivory fox on orange is the official icon; the others are alternatives.
 
 ## Usage rules
 
 - Use semantic tokens only: never a raw hex, a length or a shadow that is not a token.
-- Text, prices, numbers: `on-surface`. Hints: `on-surface-muted`. Titles: `heading`. Never orange numbers.
+- Text, prices, numbers: `on-surface`. Hints: `on-surface-muted`. Titles: `heading`. Orange text or numbers, where a design wants them, use `primary` (owner, 2026-11-23).
 - A primary button: `primary` fill, `on-primary` label in CoFo 700, `radius-full`, `size-control` high, `elevation-offset` under it.
 - A card: `surface-raised` on `surface`, `radius-lg`, padding `space-md`, `elevation-low` or a `border` outline.
 - An input: `surface-raised`, `radius-md`, a `border-strong` boundary, `focus-ring` on focus, `danger` with an icon and a message on error.
@@ -104,7 +104,7 @@ Short motion that shows what changed: 100 ms press, 200 ms appear, 300 ms screen
 
 ## Not synced
 
-- No components yet: they are built and tested in code first, then synced (web in D.6, Flutter in D.7).
+- Components are the web ones (`packages/ui-web`); the Flutter widgets (`packages/core_ui`) draw the same design and are not carried.
 - YR-Speed (marketing only) and Emad-Diana (not used) are not carried; only the three CoFo weights are.
 - The `app-icon-broken-edges` SVGs are left out until the owner names their purpose.
 - Durations and easing are not a token family here; they are listed under Motion.
