@@ -33,7 +33,7 @@ D.8 Inputs and forms (`docs/roadmap.md` Phase D): text field and its wrapper (la
 - [x] Tokens 0.6.0 (`input.*`, Dart `FoxInput`, new `size.*`, `border-width.*`, the two icons); the Design System sync moves to the web cards step
 - [x] Web: the eleven components, stories, e2e `forms.spec.ts`, visual baselines, Design System cards (one commit)
 - [x] Flutter: `FoxInputTheme` and the thirteen widgets plus `FoxRadioGroup`, widgetbook, goldens (one commit)
-- [ ] Design System sync (tokens 0.6.0 and the web cards)
+- [x] Design System sync (tokens 0.6.0 and the web cards)
 - [ ] Docs (`docs/code/packages/*.md`, folder `CLAUDE.md` rules), mark the forms sheet superseded; review; hand over to D.9
 
 ## Waiting for the owner
