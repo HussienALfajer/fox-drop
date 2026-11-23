@@ -31,7 +31,8 @@ Owner (2026-11-23): visual tests use the real CoFo (`FONTS_DEPLOY_KEY` before th
 ### Plan
 
 - [x] Read the cited sections and write the design here
-- [ ] Draw «Button and Icon — batch 1» on Component proposals (every variant: primary, secondary, danger, ghost, icon circle; every §9.9 state; 50 and 40; RTL; phone, captain, panel); the owner approves; write the approved set here
+- [x] Draw «Button and Icon — batch 1» on Component proposals (`src/button-sheet.ts`, beside the icons); the owner approves; write the approved set here
+  - **Approved 2026-11-23:** variants `primary`, `secondary`, `danger` (bg `color.danger`, pressed `color.alert`, label `color.on-danger`), `ghost` (transparent, pressed `color.surface-pressed`, label `color.on-surface`), each also as an icon-only circle. **No shadow** on any button (the offset shadow stays for banners). Hover = `color-mix(in srgb, <bg> 88%, <pressed>)` (ghost: pressed at 60% over transparent). Focus = 2 px surface gap + 2 px `focus-ring`. Disabled = `button.disabled.*` (ghost keeps a transparent ground). Loading = spinner over the hidden label, width kept, no activation. Compact 40 for the panel only; phone and captain always 50.
 - [ ] Package skeleton: Tailwind, Storybook in RTL, fonts, turbo, verify, CI and classify wiring; the lint rules and their test
 - [ ] Icon with stories and unit tests
 - [ ] Tokens for the approved set (0.4.0) and Button on UI SDK with stories and unit tests

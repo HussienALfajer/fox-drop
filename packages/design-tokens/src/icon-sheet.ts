@@ -1,5 +1,6 @@
 // Draws the icon sheet for the owner's review (architecture §9.9 step 3) as
 // the «Icons — batch 1» artboard of the «Component proposals» Design canvas,
+// with «Button and Icon — batch 1» (src/button-sheet.ts) beside it,
 // into the ignored .design-system/icons/:
 //   pnpm --filter @fox-drop/design-tokens icon-sheet --config <file>
 // The config (kept outside the repository) holds the Design System's link and
@@ -21,6 +22,7 @@ import {
   type GuideConfig,
 } from './guide.ts';
 import { readIcons, type Icon } from './icons.ts';
+import { buttonSheet } from './button-sheet.ts';
 import { designSystem } from './design-system.ts';
 import { PACKAGE_DIR, resolveAll, type Theme, type Token } from './resolve.ts';
 
@@ -172,14 +174,12 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   if (at === -1) throw new Error('Usage: icon-sheet --config <file>');
   const config = JSON.parse(readFileSync(process.argv[at + 1]!, 'utf8')) as GuideConfig;
   const themes = await resolveAll();
-  const board = sheet(themes, config, readIcons());
+  const icons = readIcons();
+  const list = [sheet(themes, config, icons), buttonSheet(themes, config, icons)];
   rmSync(OUT, { recursive: true, force: true });
   const files = new Map<string, string>([
-    [
-      'project/canvas.json',
-      canvas([board], config, new Date().toISOString(), 'Component proposals'),
-    ],
-    [`project/${board.file}`, board.html],
+    ['project/canvas.json', canvas(list, config, new Date().toISOString(), 'Component proposals')],
+    ...list.map((board) => [`project/${board.file}`, board.html] as [string, string]),
     [`project/ds/${DS_FOLDER}/tokens.json`, designSystem(themes)],
   ]);
   for (const [file, body] of files) {
