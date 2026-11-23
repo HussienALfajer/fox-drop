@@ -13,6 +13,16 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 - **RTL and text scale:** directional insets and alignment only; a test pumps each component in RTL and at text scale 1.3 and 2.0 without overflow.
 - **Goldens (R9)** live in `test/golden/`, tagged `golden`, skipped by plain `flutter test`; they run on Linux only: `pnpm test:golden` (Docker, `scripts/golden-docker.mjs`), `pnpm test:golden --update-goldens` after an intended change. They need the CoFo fonts in `.fonts/` (`pnpm fonts:fetch`); `loadFoxFonts` throws without them. Never update a baseline to make a failure pass without looking at `test/golden/failures/`. The run passes `--run-skipped`, which un-skips every test in the package, so never skip a test here with `skip:`.
 
+## Inputs and forms (D.8)
+
+- **Material only through `MaterialScope`** (`lib/src/internal`): `m.TextField` and the pickers import `material_ui` with the prefix `m`, never `package:flutter/material.dart`. Nothing Material is drawn: no ripple, no `InputDecoration` look, no counter. A focused field, a menu or a picker needs an Overlay (a Navigator); a test without one throws.
+- **Name and describe a control once:** entries merge the label and error into the text field's node (`MergeSemantics`); select, date and time pass `namesControl: false`. Check with `tester.getSemantics`.
+- **Strings come in as props.** The only ones here are the Syriac months and «ص»/«م» in `FoxMaterialLocalizations` (AP §4.7), whose delegate must load synchronously.
+- **Mixed direction is explicit:** the phone pill and code cells sit under `Directionality(ltr)`, the label and error stay RTL; dates and times show LTR.
+- **A control is as small as its content** (`Align` with factors), so a stretched column does not widen it.
+- **The code field's `done` ignores reduced motion** (`FoxDuration.moment`); every other fade respects it.
+- Tests use `test/forms_harness.dart` (`expectNoOverflow`: both directions, themes, scales 1.0, 1.3, 2.0). Change the phone rule in `phone_number_test.dart` first.
+
 ## More
 
 Behaviour, decisions and history: `docs/code/packages/core_ui.md`. Grep it for what you change; never read it whole.

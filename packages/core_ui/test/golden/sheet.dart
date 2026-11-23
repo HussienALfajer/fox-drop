@@ -15,14 +15,15 @@ Future<void> pumpSheet(
   FoxThemeData theme,
   Widget child, {
   double textScale = 1,
+  Size size = const Size(800, 1200),
 }) async {
   tester.view.devicePixelRatio = 2;
-  tester.view.physicalSize = const Size(1600, 2400);
+  tester.view.physicalSize = size * 2;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     MediaQuery(
       data: MediaQueryData(
-        size: const Size(800, 1200),
+        size: size,
         devicePixelRatio: 2,
         disableAnimations: true,
         textScaler: TextScaler.linear(textScale),
