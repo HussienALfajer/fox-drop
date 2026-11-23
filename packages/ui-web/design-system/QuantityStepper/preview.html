@@ -1,0 +1,61 @@
+<!-- @dsCard group="Forms" height=380 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: var(--fd-space-lg) 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--fd-space-lg);
+    margin-block-end: var(--fd-space-sm);
+  }
+  .row > * {
+    min-width: 260px;
+    max-width: 320px;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, QuantityStepper } = FoxDrop;
+  const base = {
+    label: 'الكمية 2',
+    increaseLabel: 'زيادة',
+    decreaseLabel: 'تقليل',
+    removeLabel: 'حذف',
+  };
+  const sections = (section, h) => [
+    ...section(
+      'Default and minimum (delete)',
+      h('div', null, h(QuantityStepper, { ...base, defaultValue: 2 })),
+      h(
+        'div',
+        null,
+        h(QuantityStepper, { ...base, label: 'الكمية 1', defaultValue: 1, onRemove: () => {} }),
+      ),
+    ),
+    ...section(
+      'Maximum and disabled',
+      h('div', null, h(QuantityStepper, { ...base, label: 'الكمية 5', defaultValue: 5, max: 5 })),
+      h('div', null, h(QuantityStepper, { ...base, disabled: true, defaultValue: 2 })),
+    ),
+  ];
+  const h = React.createElement;
+  const section = (title, ...items) => [
+    h('h2', { key: title }, title),
+    h('div', { className: 'row', key: title + 'row' }, ...items),
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render(sections(section, h));
+</script>
