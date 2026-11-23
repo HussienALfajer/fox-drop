@@ -80,10 +80,19 @@ export function CodeField(props: CodeFieldProps) {
 
   // The SDK keeps only 0-9. Arabic-Indic and Persian digits (the phone's Arabic
   // keyboard, a pasted code) are turned into Western digits first (AP §4.7).
-  const insert = (text: string) => {
+  const insert = (text: string, target: EventTarget | null) => {
     const typed = digitsOf(text);
     if (typed === '') return;
-    const next = (latest.current.current + typed).slice(0, CODE_LENGTH);
+    const old = latest.current.current;
+    const input = target instanceof HTMLInputElement ? target : null;
+    const start = input?.selectionStart ?? old.length;
+    const end = input?.selectionEnd ?? old.length;
+    // A full code is replaced (the SDK keeps the last cell selected, so the
+    // caret cannot tell); a shorter one takes the digits at the caret or over the selection.
+    const replaces = old.length >= CODE_LENGTH;
+    const next = replaces
+      ? typed.slice(0, CODE_LENGTH)
+      : (old.slice(0, start) + typed + old.slice(end)).slice(0, CODE_LENGTH);
     setOwn(next);
     latest.current.onValueChange?.(next);
     if (next.length === CODE_LENGTH && next !== latest.current.current) {
@@ -97,7 +106,7 @@ export function CodeField(props: CodeFieldProps) {
       const data = (event as InputEvent).data;
       if (data && NON_WESTERN.test(data)) {
         event.preventDefault();
-        insert(data);
+        insert(data, event.target);
       }
     };
     node.addEventListener('beforeinput', beforeInput);
@@ -119,7 +128,7 @@ export function CodeField(props: CodeFieldProps) {
           const text = event.clipboardData.getData('text');
           if (NON_WESTERN.test(text)) {
             event.preventDefault();
-            insert(text);
+            insert(text, event.target);
           }
         }}
       >

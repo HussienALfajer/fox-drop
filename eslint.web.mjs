@@ -20,7 +20,7 @@ const physical =
 // The theme resets Tailwind's numeric spacing scale (only named spacing such as
 // p-sm exists), so p-0 or inset-0 silently generates no CSS.
 const numericSpacing =
-  /^-?(?:p|px|py|ps|pe|pt|pb|m|mx|my|ms|me|mt|mb|inset|inset-x|inset-y|top|bottom|start|end|gap|gap-x|gap-y|space-x|space-y|w|h|size|min-w|min-h|max-w|max-h|translate-x|translate-y)-\d+(?:\.\d+)?(?:$|\/)/;
+  /^-?(?:p|px|py|ps|pe|pt|pb|m|mx|my|ms|me|mt|mb|inset|inset-x|inset-y|top|bottom|start|end|gap|gap-x|gap-y|space-x|space-y|w|h|size|min-w|min-h|max-w|max-h|translate-x|translate-y)-\d+(?:\.\d+)?(?:$|\/|!)/;
 // A number alone is the numeric scale (`p-4`, `w-0.5`); a named step such as
 // `gap-2xs` or `w-2xl` goes on with letters, and the theme has it.
 

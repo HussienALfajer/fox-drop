@@ -3,7 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { bridgePath, QuantityStepper, STEPPER_SIZE, STEPPER_TARGET } from './quantity-stepper';
+import { SIDE_OFFSET } from '../select/menu';
+import {
+  BRIDGE_GAP,
+  bridgePath,
+  QuantityStepper,
+  STEPPER_SIZE,
+  STEPPER_TARGET,
+} from './quantity-stepper';
 
 const labels = {
   label: 'الكمية',
@@ -38,6 +45,9 @@ describe('QuantityStepper', () => {
     );
     expect(css).toContain(`--fd-input-stepper-size: ${STEPPER_SIZE}px;`);
     expect(css).toContain(`--fd-input-stepper-target: ${STEPPER_TARGET}px;`);
+    const px = (name: string) => Number(new RegExp(`${name}: (\\d+)px;`).exec(css)?.[1]);
+    expect(BRIDGE_GAP).toBe(px('--fd-input-border-width') + px('--fd-input-focus-width'));
+    expect(SIDE_OFFSET).toBe(px('--fd-space-2xs'));
   });
 
   it('adds and removes one and reports the count', async () => {

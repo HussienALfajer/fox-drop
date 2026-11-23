@@ -38,36 +38,210 @@ enum FoxPhoneCountry {
   final String firstDigit;
 }
 
+String _dial(FoxPhoneCountry country) => country.dialCode.substring(1);
+
+/// Western digits only: Arabic-Indic (٠-٩) and Persian (۰-۹) digits become
+/// 0-9 (AP §4.7), everything else goes. The web's `digitsOf`.
+String foxPhoneDigits(String text) {
+  final out = StringBuffer();
+  for (final rune in text.runes) {
+    if (rune >= 0x30 && rune <= 0x39) {
+      out.writeCharCode(rune);
+    } else if (rune >= 0x0660 && rune <= 0x0669) {
+      out.write(rune - 0x0660);
+    } else if (rune >= 0x06F0 && rune <= 0x06F9) {
+      out.write(rune - 0x06F0);
+    }
+  }
+  return out.toString();
+}
+
+bool _isComplete(FoxPhoneCountry country, String national) =>
+    national.length == country.digits &&
+    national.startsWith(country.firstDigit);
+
+/// What [foxParsePhone] read.
+class FoxParsedPhone {
+  const FoxParsedPhone({
+    required this.country,
+    required this.display,
+    required this.e164,
+    required this.refused,
+  });
+
+  /// The picked country, or the one the number's own calling code names.
+  final FoxPhoneCountry country;
+
+  /// The digits as typed, or the national digits of a number given with its
+  /// calling code.
+  final String display;
+
+  /// The E.164 number, or null while it is not a complete mobile number.
+  final String? e164;
+
+  /// The text cannot be a number of either country (too long, or a calling
+  /// code with a wrong rest); it is shown, never reshaped.
+  final bool refused;
+}
+
+FoxParsedPhone _international(FoxPhoneCountry country, String national) =>
+    _isComplete(country, national)
+    ? FoxParsedPhone(
+        country: country,
+        display: national,
+        e164: '${country.dialCode}$national',
+        refused: false,
+      )
+    : FoxParsedPhone(
+        country: country,
+        display: national,
+        e164: null,
+        refused: true,
+      );
+
+/// Reads what was typed or pasted under the [selected] country, as the web's
+/// `parsePhone` (CU §5.2). A number with its own calling code (`+90…`,
+/// `0090…`, or exactly that code and a full national number such as
+/// `963912345678`) belongs to that country, whichever is selected, and must
+/// be complete for it. Otherwise the leading 0 is dropped and nothing is cut:
+/// more digits than the country has make the text refused.
+FoxParsedPhone foxParsePhone(FoxPhoneCountry selected, String text) {
+  final trimmed = text.trim();
+  final digits = foxPhoneDigits(trimmed);
+  final refused = FoxParsedPhone(
+    country: selected,
+    display: digits,
+    e164: null,
+    refused: true,
+  );
+
+  if (trimmed.startsWith('+') || digits.startsWith('00')) {
+    final rest = trimmed.startsWith('+') ? digits : digits.substring(2);
+    final code = FoxPhoneCountry.values
+        .where((c) => rest.startsWith(_dial(c)))
+        .firstOrNull;
+    if (code == null) return refused;
+    final result = _international(code, rest.substring(_dial(code).length));
+    return result.refused ? refused : result;
+  }
+
+  final full = FoxPhoneCountry.values
+      .where(
+        (c) =>
+            digits.length == _dial(c).length + c.digits &&
+            digits.startsWith(_dial(c)),
+      )
+      .firstOrNull;
+  if (full != null) {
+    final result = _international(full, digits.substring(_dial(full).length));
+    if (!result.refused) return result;
+  }
+
+  final national = digits.startsWith('0') ? digits.substring(1) : digits;
+  if (national.length > selected.digits) return refused;
+  return FoxParsedPhone(
+    country: selected,
+    display: digits,
+    e164: _isComplete(selected, national)
+        ? '${selected.dialCode}$national'
+        : null,
+    refused: false,
+  );
+}
+
 /// The E.164 number (`+963912345678`) of what a person typed for [country],
 /// or null while it is not a complete mobile number (CU §5.2): Syrian mobiles
 /// are 9 digits starting with 9, typed `09xxxxxxxx` or `9xxxxxxxx`; Turkish
 /// mobiles are 10 digits starting with 5, typed `05xxxxxxxxx` or
-/// `5xxxxxxxxx`. Spaces, dashes and Arabic-Indic digits are tolerated.
-String? foxPhoneE164(FoxPhoneCountry country, String input) {
-  final buffer = StringBuffer();
-  for (final unit in input.runes) {
-    if (unit >= 0x30 && unit <= 0x39) {
-      buffer.writeCharCode(unit);
-    } else if (unit >= 0x0660 && unit <= 0x0669) {
-      buffer.write(unit - 0x0660);
-    } else if (unit != 0x20 && unit != 0x2D && unit != 0xA0) {
-      return null;
+/// `5xxxxxxxxx`. Anything but digits is ignored; Arabic-Indic and Persian
+/// digits count. A number with its own calling code gives that country's
+/// number (see [foxParsePhone]).
+String? foxPhoneE164(FoxPhoneCountry country, String input) =>
+    foxParsePhone(country, input).e164;
+
+/// The country and national digits of a stored E.164 number, or null when it
+/// is neither country's complete mobile number.
+({FoxPhoneCountry country, String national})? foxPhoneFromE164(String value) {
+  for (final country in FoxPhoneCountry.values) {
+    if (value.startsWith(country.dialCode)) {
+      final national = value.substring(country.dialCode.length);
+      if (_isComplete(country, national)) {
+        return (country: country, national: national);
+      }
     }
   }
-  var digits = buffer.toString();
-  if (digits.startsWith('0')) digits = digits.substring(1);
-  if (digits.length != country.digits ||
-      !digits.startsWith(country.firstDigit)) {
-    return null;
+  return null;
+}
+
+/// Keeps the box to digits, `+`, spaces and dashes, in Western digits, and
+/// stops typing at the country's length: a single added character that makes
+/// the text too long is dropped. A paste of more is kept whole (it shows, and
+/// is refused by [foxParsePhone]), never cut.
+class _PhoneFormatter extends TextInputFormatter {
+  const _PhoneFormatter(this.country);
+
+  final FoxPhoneCountry country;
+
+  static String _clean(String text) {
+    final out = StringBuffer();
+    for (final rune in text.runes) {
+      final char = String.fromCharCode(rune);
+      if (char == '+' || char == ' ' || char == '-') {
+        out.write(char);
+      } else {
+        out.write(foxPhoneDigits(char));
+      }
+    }
+    return out.toString();
   }
-  return '${country.dialCode}$digits';
+
+  bool _tooLong(String text) {
+    final trimmed = text.trim();
+    final digits = foxPhoneDigits(trimmed);
+    if (trimmed.startsWith('+') || digits.startsWith('00')) {
+      final rest = trimmed.startsWith('+') ? digits : digits.substring(2);
+      for (final c in FoxPhoneCountry.values) {
+        if (rest.startsWith(_dial(c))) {
+          return rest.length - _dial(c).length > c.digits;
+        }
+      }
+      // The calling code is still being typed.
+      return false;
+    }
+    final national = digits.startsWith('0') ? digits.substring(1) : digits;
+    return national.length > country.digits;
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = _clean(newValue.text);
+    if (text.length == oldValue.text.length + 1 && _tooLong(text)) {
+      return oldValue;
+    }
+    if (text == newValue.text) return newValue;
+    final offset = newValue.selection.baseOffset.clamp(0, newValue.text.length);
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(
+        offset: _clean(newValue.text.substring(0, offset)).length,
+      ),
+    );
+  }
 }
 
 /// A mobile number field (D.8, CU §5.2): one pill holding a left-to-right
 /// island, the country chip («+963» or «+90» with a chevron, opening a menu of
 /// the two countries) then the digits, under a label, hint and error that
 /// read right to left. [onChanged] gets the E.164 number, or null while it
-/// is incomplete. The names are passed in.
+/// is incomplete or refused. Text given with its own calling code (`+90…`,
+/// `0090…`, `905321234567`) switches the chip to that country when the rest
+/// is a complete number for it ([onCountryChanged] is called, the box shows
+/// the national digits and [onChanged] gets the number with the new code); a
+/// calling code with a wrong rest, or more digits than the country has, stays
+/// as typed and gives null, never cut. The names are passed in.
 class FoxPhoneField extends StatefulWidget {
   const FoxPhoneField({
     super.key,
@@ -169,7 +343,7 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
           onSelected: (country) {
             _close();
             widget.onCountryChanged(country);
-            widget.onChanged(foxPhoneE164(country, controller.text));
+            widget.onChanged(foxParsePhone(country, controller.text).e164);
           },
           onClosed: _close,
           // The island: the digits and the chip always run left to right.
@@ -186,12 +360,20 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.telephoneNumberNational],
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9٠-٩ \-]')),
-                LengthLimitingTextInputFormatter(16),
-              ],
-              onChanged: (text) =>
-                  widget.onChanged(foxPhoneE164(widget.country, text)),
+              inputFormatters: [_PhoneFormatter(widget.country)],
+              onChanged: (text) {
+                final parsed = foxParsePhone(widget.country, text);
+                if (parsed.country != widget.country) {
+                  widget.onCountryChanged(parsed.country);
+                }
+                // A number given with its calling code shows its national
+                // digits under the chip that now names the country.
+                if (parsed.e164 != null &&
+                    parsed.display != foxPhoneDigits(text)) {
+                  controller.text = parsed.display;
+                }
+                widget.onChanged(parsed.e164);
+              },
               start: _Chip(
                 dialCode: widget.country.dialCode,
                 label: widget.countryLabel,

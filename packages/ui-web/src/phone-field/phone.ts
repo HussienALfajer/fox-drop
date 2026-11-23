@@ -1,9 +1,14 @@
-// The phone number rules of the customer app (CU §5.2): a country picker with
-// Syria +963 and Turkey +90; Syrian mobiles have 9 digits after +963 and start
-// with 9 (`09xxxxxxxx` and `9xxxxxxxx` are accepted); Turkish mobiles have 10
-// digits after +90 and start with 5 (`05xxxxxxxxx`, `5xxxxxxxxx`); the number
-// is stored in E.164. The same rules as Flutter's `foxPhoneE164`: digits are
-// never cut, and a number that is too long is refused, not reshaped.
+// The phone number rules of the customer app (CU §5.2), the same as Flutter's
+// `foxPhoneE164`. The web's rules, exactly:
+// 1. Countries: Syria +963 (9 national digits, starts with 9; `09…` and `9…`)
+//    and Turkey +90 (10 digits, starts with 5; `05…` and `5…`); stored as E.164.
+// 2. Digits: Arabic-Indic and Persian digits become 0-9; other characters go.
+// 3. A number with its own calling code (`+`, `00`, or exactly code + full
+//    national number such as `963912345678`) belongs to that country whichever
+//    is picked; it must be complete for it, else it is refused.
+// 4. Otherwise one leading 0 is dropped; digits are never cut: more than the
+//    picked country's length is refused, not reshaped.
+// 5. A number that is not complete reports E.164 `''`.
 
 export type CountryCode = 'sy' | 'tr';
 

@@ -28,6 +28,7 @@ describe('ui-web lint rules', () => {
     ['border-r', 'export const c = "border-r";'],
     ['a numeric gap', 'export const c = "gap-2";'],
     ['a decimal width', 'export const c = "w-0.5";'],
+    ['an important numeric padding', 'export const c = "p-4!";'],
     ['a numeric min width', 'export const c = "min-w-0";'],
     ['left-', 'export const c = "absolute left-0";'],
     ['float-left', 'export const c = "float-left";'],

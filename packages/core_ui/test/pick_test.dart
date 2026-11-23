@@ -95,6 +95,95 @@ void main() {
       expect(seen, ['+905321234567']);
     });
 
+    // The country is the app's state, as a screen holds it.
+    Widget live(
+      List<String?> seen,
+      List<FoxPhoneCountry> countries, {
+      FoxPhoneCountry country = FoxPhoneCountry.syria,
+    }) => formApp(
+      StatefulBuilder(
+        builder: (context, setState) => FoxPhoneField(
+          country: country,
+          onChanged: seen.add,
+          onCountryChanged: (c) => setState(() {
+            country = c;
+            countries.add(c);
+          }),
+          countryNames: _names,
+          countryLabel: 'رمز الدولة',
+        ),
+      ),
+    );
+
+    String shown(WidgetTester tester) =>
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text;
+
+    testWidgets('a number with its own calling code switches the chip', (
+      tester,
+    ) async {
+      final seen = <String?>[];
+      final countries = <FoxPhoneCountry>[];
+      await tester.pumpWidget(live(seen, countries));
+      await tester.enterText(find.byType(EditableText), '+90 532 123 45 67');
+      await tester.pump();
+      expect(countries, [FoxPhoneCountry.turkey]);
+      expect(seen.last, '+905321234567');
+      expect(find.text('+90'), findsOneWidget);
+      expect(find.text('+963'), findsNothing);
+      expect(shown(tester), '5321234567');
+      // The bare calling code and `00` switch back.
+      await tester.enterText(find.byType(EditableText), '963912345678');
+      await tester.pump();
+      expect(countries, [FoxPhoneCountry.turkey, FoxPhoneCountry.syria]);
+      expect(seen.last, '+963912345678');
+      expect(find.text('+963'), findsOneWidget);
+      expect(shown(tester), '912345678');
+    });
+
+    testWidgets('a calling code with a wrong rest is shown and refused', (
+      tester,
+    ) async {
+      final seen = <String?>[];
+      final countries = <FoxPhoneCountry>[];
+      await tester.pumpWidget(live(seen, countries));
+      await tester.enterText(find.byType(EditableText), '+90912345678');
+      await tester.pump();
+      expect(countries, isEmpty);
+      expect(seen.last, isNull);
+      expect(shown(tester), '+90912345678');
+      expect(find.text('+963'), findsOneWidget);
+    });
+
+    testWidgets('typing stops at the country length, a paste is never cut', (
+      tester,
+    ) async {
+      final seen = <String?>[];
+      await tester.pumpWidget(live(seen, []));
+      await tester.enterText(find.byType(EditableText), '0912345678');
+      expect(shown(tester), '0912345678');
+      // One more typed digit is dropped.
+      await tester.enterText(find.byType(EditableText), '09123456789');
+      expect(shown(tester), '0912345678');
+      expect(seen.last, '+963912345678');
+      // A longer paste shows whole and is refused.
+      await tester.enterText(find.byType(EditableText), '');
+      await tester.enterText(find.byType(EditableText), '09123456789999');
+      expect(shown(tester), '09123456789999');
+      expect(seen.last, isNull);
+    });
+
+    testWidgets('Arabic-Indic and Persian digits show as 0-9', (tester) async {
+      final seen = <String?>[];
+      await tester.pumpWidget(live(seen, []));
+      await tester.enterText(find.byType(EditableText), '٠٩١٢٣٤٥٦٧٨');
+      expect(shown(tester), '0912345678');
+      expect(seen.last, '+963912345678');
+      await tester.enterText(find.byType(EditableText), '');
+      await tester.enterText(find.byType(EditableText), '۰۹۱۲۳۴۵۶۷۸');
+      expect(shown(tester), '0912345678');
+      expect(seen.last, '+963912345678');
+    });
+
     testWidgets('the chip opens a menu of two countries under the field', (
       tester,
     ) async {

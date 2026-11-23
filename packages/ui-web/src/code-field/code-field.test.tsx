@@ -49,6 +49,22 @@ describe('CodeField', () => {
     },
   );
 
+  it('replaces a full code with a pasted Arabic-Indic code', async () => {
+    render(<CodeField label="رمز" defaultValue="111111" />);
+    await userEvent.click(screen.getByRole('textbox'));
+    await userEvent.paste('٤٨٢٩١٣');
+    expect(screen.getByRole('textbox')).toHaveValue('482913');
+  });
+
+  it('replaces the selected digits when an Arabic-Indic digit is typed over them', async () => {
+    render(<CodeField label="رمز" defaultValue="111111" />);
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    input.focus();
+    input.setSelectionRange(0, 6);
+    await userEvent.keyboard('٧');
+    expect(input).toHaveValue('7');
+  });
+
   it('reads typed Arabic-Indic digits as Western digits', async () => {
     const onValueChange = vi.fn();
     render(<CodeField label="رمز" onValueChange={onValueChange} />);

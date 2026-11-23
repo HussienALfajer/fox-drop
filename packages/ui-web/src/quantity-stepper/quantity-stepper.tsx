@@ -27,7 +27,8 @@ const root = formTv({ base: 'relative inline-flex items-center' });
 // (its radius is the circle's plus the 3 gap the drawing leaves).
 export const STEPPER_SIZE = 32;
 export const STEPPER_TARGET = 48;
-const BRIDGE_GAP = 3;
+// Border width 1 plus focus width 2 (`--fd-input-border-width`, `-focus-width`).
+export const BRIDGE_GAP = 3;
 
 /** The concave strip between the two circles, in a viewBox of three targets by one. */
 export function bridgePath(size: number, target: number): string {

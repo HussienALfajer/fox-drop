@@ -32,7 +32,7 @@ export interface MenuItem {
 
 // The gap between the field and its list: `--fd-space-2xs` (4), which a prop
 // cannot read as a CSS variable.
-const SIDE_OFFSET = 4;
+export const SIDE_OFFSET = 4;
 
 /**
  * The popup list of a select and of the phone field's country chip. Internal.

@@ -82,6 +82,16 @@ describe('PhoneField', () => {
     expect(onValueChange).toHaveBeenLastCalledWith('', { country: 'sy' });
   });
 
+  it('lets a too-long pasted number be deleted one digit at a time until valid', async () => {
+    const onValueChange = vi.fn();
+    render(<PhoneField {...props} onValueChange={onValueChange} />);
+    await userEvent.click(screen.getByRole('textbox'));
+    await userEvent.paste('09123456789');
+    await userEvent.keyboard('{Backspace}');
+    expect(screen.getByRole('textbox')).toHaveValue('0912345678');
+    expect(onValueChange).toHaveBeenLastCalledWith('+963912345678', { country: 'sy' });
+  });
+
   it('switches the country to the one a pasted number names', async () => {
     const onValueChange = vi.fn();
     const onCountryChange = vi.fn();

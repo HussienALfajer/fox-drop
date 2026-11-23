@@ -143,7 +143,8 @@ export function PhoneField(props: PhoneFieldProps) {
           onValueChange={(next: string) => {
             const parsed = parsePhone(country, next);
             // Typing stops at the country's length; a paste is shown as it came.
-            if (parsed.refused && next.length - text.length <= 1) return;
+            if (parsed.refused && next.length > text.length && next.length - text.length <= 1)
+              return;
             setText(parsed.display);
             if (parsed.country !== country) {
               setOwnCountry(parsed.country);
