@@ -458,6 +458,18 @@
     "control": {
       "$value": "50px",
       "$description": "The Figma file's button height and icon-button diameter."
+    },
+    "icon-sm": {
+      "$value": "16px",
+      "$description": "A small icon: inside chips, badges and dense rows; the stroke scales to 2/24 of it."
+    },
+    "icon-md": {
+      "$value": "24px",
+      "$description": "The default icon, drawn on the 24 grid: tabs, buttons, list rows."
+    },
+    "icon-lg": {
+      "$value": "32px",
+      "$description": "A large icon: empty states and the active circle of the floating bar."
     }
   }
 }

@@ -36,13 +36,13 @@ export interface Board {
 }
 
 const W = 1280;
-const esc = (text: string) =>
+export const esc = (text: string) =>
   text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
 /** A value of the light theme, as CSS. */
-const v = (themes: Themes, name: string) => cssValue(themes.light.get(name)!);
+export const v = (themes: Themes, name: string) => cssValue(themes.light.get(name)!);
 
-function page(
+export function page(
   themes: Themes,
   config: GuideConfig,
   board: Omit<Board, 'html'>,
@@ -99,16 +99,16 @@ return {};
   return { ...board, html };
 }
 
-const heading = (themes: Themes, text: string, sub?: string) =>
+export const heading = (themes: Themes, text: string, sub?: string) =>
   `<div style="display: flex; flex-direction: column; gap: ${v(themes, 'space.xs')}">
 <h1 style="margin: 0; font-size: ${v(themes, 'type.phone.large-title.size')}; line-height: 1.3; font-weight: 700; color: ${v(themes, 'color.heading')}">${esc(text)}</h1>
 ${sub ? `<p style="margin: 0; font-size: ${v(themes, 'type.phone.secondary.size')}; line-height: 1.6; color: ${v(themes, 'color.on-surface-muted')}">${esc(sub)}</p>` : ''}
 </div>`;
 
-const card = (themes: Themes, inner: string, extra = '') =>
+export const card = (themes: Themes, inner: string, extra = '') =>
   `<div style="background: ${v(themes, 'color.surface-raised')}; border-radius: ${v(themes, 'radius.lg')}; padding: ${v(themes, 'space.lg')}; display: flex; flex-direction: column; gap: ${v(themes, 'space.md')}; ${extra}">${inner}</div>`;
 
-const label = (themes: Themes, text: string) =>
+export const label = (themes: Themes, text: string) =>
   `<span dir="ltr" style="font-size: ${v(themes, 'type.panel.caption.size')}; line-height: 1.6; color: ${v(themes, 'color.on-surface-muted')}; font-feature-settings: 'tnum'">${esc(text)}</span>`;
 
 const colours = (tokens: Tokens) => exported(tokens).filter((token) => token.path[0] === 'color');
@@ -418,7 +418,12 @@ export function boards(themes: Themes, config: GuideConfig, version: string): Bo
   ];
 }
 
-export function canvas(list: Board[], config: GuideConfig, now: string): string {
+export function canvas(
+  list: Board[],
+  config: GuideConfig,
+  now: string,
+  title = 'Fox Drop Guide',
+): string {
   let x = 0;
   const entries = list.map((b) => {
     const entry = [b.file, { x, y: 0, w: b.w, h: b.h, title: b.title }] as const;
@@ -428,7 +433,7 @@ export function canvas(list: Board[], config: GuideConfig, now: string): string 
   const value = {
     v: 3,
     createdOnFiles: { v: 1, at: config.created },
-    title: 'Fox Drop Guide',
+    title,
     launch: { view: 'canvas' },
     pages: [],
     boards: Object.fromEntries(entries),

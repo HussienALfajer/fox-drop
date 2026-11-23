@@ -637,6 +637,21 @@
         "name": "size-control",
         "value": "50px",
         "usage": "The Figma file's button height and icon-button diameter."
+      },
+      {
+        "name": "size-icon-sm",
+        "value": "16px",
+        "usage": "A small icon: inside chips, badges and dense rows; the stroke scales to 2/24 of it."
+      },
+      {
+        "name": "size-icon-md",
+        "value": "24px",
+        "usage": "The default icon, drawn on the 24 grid: tabs, buttons, list rows."
+      },
+      {
+        "name": "size-icon-lg",
+        "value": "32px",
+        "usage": "A large icon: empty states and the active circle of the floating bar."
       }
     ]
   },
@@ -644,7 +659,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

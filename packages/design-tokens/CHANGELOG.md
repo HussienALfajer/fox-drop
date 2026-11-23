@@ -2,6 +2,10 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.3.0 (2026-11-23, slice D.5: the icon set)
+
+- New: `size.icon-sm` 16, `size.icon-md` 24 and `size.icon-lg` 32 px, the three icon sizes; icons are drawn on the 24 grid and their stroke scales to 2/24 of the size (architecture §9.4). Dart `FoxSize` now carries every `size.*` token.
+
 ## Unreleased (slice D.4: the Design System artifact)
 
 - New output `generated/design-system.json`: the tokens in the Design System artifact's `tokens.json` shape (architecture §9.8). Every semantic colour, space step and elevation now carries a `$description`, its usage note there. No value changed, so no version bump.

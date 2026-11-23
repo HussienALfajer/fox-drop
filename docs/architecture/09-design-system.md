@@ -40,8 +40,10 @@ Tokens are W3C Design Tokens (JSON) in `packages/design-tokens`, compiled by **S
 
 ## 9.4 Icons
 
-- FOX DROP's own hand-drawn **line icon set**, in the style of the owner's Figma file (rounded line icons, a stroke of about 2 at 24, round caps and joins), one source for web and Flutter: a 24-point grid, one stroke width, the same caps and joins, a safe area. Built in D.5.
-- The set is exposed through an `Icon` component on each platform, so the set can change without touching screens. Directional icons mirror in RTL.
+- FOX DROP's own hand-drawn **line icon set**, in the style of the owner's Figma file (rounded line icons, a stroke of about 2 at 24, round caps and joins), one source for web and Flutter. Built in D.5: one SVG per icon in `packages/design-tokens/icons/`, with the manifest `icons.json`.
+- **The grid (owner, 2026-11-23):** `viewBox="0 0 24 24"`, `stroke="currentColor"`, stroke width 2, round caps and joins, no fill; children are plain shapes with geometry attributes only; every point inside the live area 2..22; at most 2 decimals. Sizes `size.icon-sm` 16, `size.icon-md` 24, `size.icon-lg` 32; the stroke scales with the size.
+- **Mirroring:** sources are drawn left to right; exactly `back`, `motorcycle` and `car` flip in RTL.
+- The set is exposed through an `Icon` component on each platform (D.6, D.7), so the set can change without touching screens.
 
 ## 9.5 Rules (owner, 2026-11-21)
 
@@ -104,9 +106,9 @@ A design is made with the Fox Drop Design System only; a missing value or compon
 
 Flutter 3.47 moved Material and Cupertino out of the framework into `material_ui` and `cupertino_ui`, so `core_ui` does not depend on them for its look. Styled kits (forui, shadcn_ui, shadcn_flutter) are not used: their look fights the FOX DROP identity.
 
-## 9.11 Settled in D.2 and D.3
+## 9.11 Settled in D.2, D.3 and D.5
 
-D.2 settled the palette (2026-11-22). D.3 settled the direction (2026-11-23): the owner adopted the Figma file instead of choosing among drawn directions, with the brand orange `#FF6E31` kept under the R4 exception, the file's radii (8, 10, 15, 30, full) and the per-screen decisions in `docs/brand/directions.md`. The icon grid details are decided in D.5.
+D.2 settled the palette (2026-11-22). D.3 settled the direction (2026-11-23): the owner adopted the Figma file instead of choosing among drawn directions, with the brand orange `#FF6E31` kept under the R4 exception, the file's radii (8, 10, 15, 30, full) and the per-screen decisions in `docs/brand/directions.md`. D.5 settled the icon grid and the mirror set of §9.4 (2026-11-23); the owner approved the first 44 icons, open to edits when the screens are built.
 
 ## 9.12 Brand expression (D.1b)
 

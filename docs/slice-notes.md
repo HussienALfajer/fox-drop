@@ -5,6 +5,13 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from D.5 (`feat/icon-set`)
+
+- **The owner approved** the 44 icons on 2026-11-23 after the redraw led by the Figma file's own icons, open to edits when the real screens are built: edit the SVG, regenerate, redraw the sheet and sync again.
+- **Pending the owner:** the Figma file's orange accent layer (the bell's dot, filled stars) needs a second, accent-coloured layer that the R8 grid forbids today; the set is monochrome `currentColor` until the owner decides.
+- **Not yet:** the `Icon` components (D.6 `ui-web` inline SVG with `mirror` under RTL; D.7 `core_ui` painter with stroke 2/24 of the size, parsing the path data, arcs and relative commands included); the second batch (expression §10); filled variants; an icon font.
+- **Also:** the grid test samples curves and arcs at 32 points, so an extreme between samples can pass by up to about 0.05; the Design System's Icons tiles come in file name order; the Component proposals canvas has no CoFo font uploaded, so its Arabic labels fall back to the system font; the owner may revoke the Figma REST token used for the analysis (it lives only on the owner's machine).
+
 ## Left from D.4 (`feat/design-system-project`)
 
 - **The owner opens both artifacts** (links in Claude's memory, not here): the Fox Drop Design System (cover, brand book, colours across four themes, the three type scales, spacing, radii, shadows, sizes, the CoFo fonts, logos and app icons; read-only, synced from code) and the Fox Drop Guide (Main, Colour, Type, Foundations, Shapes, Rules). Both are private; sharing them is the owner's choice.
