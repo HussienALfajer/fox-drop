@@ -26,7 +26,7 @@ Owner (2026-11-23): visual tests use the real CoFo (`FONTS_DEPLOY_KEY` before th
 - **Wiring:** turbo `build` (Storybook and the bundle), `test`, `test:e2e`; `scripts/classify-changes.mjs` and `ci.yml` for the new package (`## Checks changed`).
 - **Bundle and sync** (§9.8; read the type's `format.md` on the system's url first): `pnpm --filter @fox-drop/ui-web design-system` writes one classic IIFE `window.FoxDrop` with React 19 inside (no UMD; `libraries: []`), `bundle.css`, `index.d.ts` and `Button/`, `Icon/` (`README.md`, `preview.html` with every state) into `.design-system/system/project/components/`; then the index and publish of `packages/design-tokens/CLAUDE.md` «Sync», extended for it.
 - **Docs:** `packages/ui-web/CLAUDE.md`, `docs/code/packages/ui-web.md`; `apps/admin/CLAUDE.md`'s stale design-stop line becomes: UI only from `@fox-drop/ui-web`, a screen only after its drawing is approved (§9.9).
-- **Left out:** wiring `ui-web` into the apps (styled screens are later slices); the money component and the ₺ fallback (D.8); bidi isolation of Latin runs (text and money components, D.8); dark mode; Flutter (D.7); the orange icon accent layer.
+- **Left out:** wiring into the apps (later screen slices); money and the ₺ fallback, bidi isolation of Latin runs (D.8); dark mode; Flutter (D.7); the icon accent layer.
 
 ### Plan
 
