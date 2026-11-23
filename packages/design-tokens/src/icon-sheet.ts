@@ -48,6 +48,8 @@ export const ARABIC: Record<string, string> = {
   settings: 'الإعدادات',
   back: 'رجوع',
   close: 'إغلاق',
+  'chevron-down': 'فتح القائمة',
+  calendar: 'التاريخ',
   more: 'المزيد',
   filter: 'تصفية',
   add: 'إضافة',

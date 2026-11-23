@@ -63,6 +63,9 @@ abstract final class FoxIcons {
   /// Close or dismiss: a cross.
   static const close = FoxIconData(['M7 7 17 17', 'M17 7 7 17']);
 
+  /// Open a list: a chevron pointing down, for selects and menus (D.8).
+  static const chevronDown = FoxIconData(['M6 9l6 6 6-6']);
+
   /// More actions: three dots in a row.
   static const more = FoxIconData([
     'M4.25 12A1.25 1.25 0 1 0 6.75 12A1.25 1.25 0 1 0 4.25 12Z',
@@ -182,6 +185,14 @@ abstract final class FoxIcons {
     'M10 3h4',
     'M12 9v4l2.5 2.5',
     'm18.5 5.5 1 1',
+  ]);
+
+  /// A date: a calendar page with two rings, for date fields (D.8).
+  static const calendar = FoxIconData([
+    'M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z',
+    'M4 10h16',
+    'M8 3v4',
+    'M16 3v4',
   ]);
 
   /// A place on the map: the logo's drop as a pin over a ground line (brand expression §2).
@@ -334,6 +345,7 @@ abstract final class FoxIcons {
     'settings': settings,
     'back': back,
     'close': close,
+    'chevron-down': chevronDown,
     'more': more,
     'filter': filter,
     'add': add,
@@ -352,6 +364,7 @@ abstract final class FoxIcons {
     'bell': bell,
     'offline': offline,
     'clock': clock,
+    'calendar': calendar,
     'drop-pin': dropPin,
     'map': map,
     'route': route,

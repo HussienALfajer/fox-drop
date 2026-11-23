@@ -1,0 +1,210 @@
+{
+  "input": {
+    "height": {
+      "$type": "dimension",
+      "$value": "{size.control}"
+    },
+    "compact": {
+      "height": {
+        "$type": "dimension",
+        "$value": "{size.control-compact}"
+      },
+      "padding-inline": {
+        "$type": "dimension",
+        "$value": "{space.sm}"
+      }
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.md}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.xs}"
+    },
+    "label-gap": {
+      "$type": "dimension",
+      "$value": "{space.2xs}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.full}"
+    },
+    "area-radius": {
+      "$type": "dimension",
+      "$value": "{radius.lg}"
+    },
+    "border-width": {
+      "$type": "dimension",
+      "$value": "{border-width.thin}"
+    },
+    "focus-width": {
+      "$type": "dimension",
+      "$value": "{border-width.thick}"
+    },
+    "color": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.surface-raised}"
+      },
+      "border": {
+        "$value": "{color.border-strong}"
+      },
+      "border-hover": {
+        "$value": "{color.border-hover}"
+      },
+      "border-focus": {
+        "$value": "{color.primary}"
+      },
+      "border-invalid": {
+        "$value": "{color.danger}"
+      },
+      "text": {
+        "$value": "{color.on-surface}"
+      },
+      "placeholder": {
+        "$value": "{color.on-surface-muted}"
+      },
+      "label": {
+        "$value": "{color.on-surface}"
+      },
+      "hint": {
+        "$value": "{color.on-surface-muted}"
+      },
+      "error": {
+        "$value": "{color.danger}"
+      },
+      "accent": {
+        "$value": "{color.primary}"
+      },
+      "focus-ring": {
+        "$value": "{color.focus-ring}"
+      },
+      "disabled": {
+        "$value": "{color.disabled}"
+      },
+      "on-disabled": {
+        "$value": "{color.on-disabled}"
+      }
+    },
+    "check": {
+      "size": {
+        "$type": "dimension",
+        "$value": "{size.selection}"
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": "{size.touch-target}"
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.sm}"
+      },
+      "border-width": {
+        "$type": "dimension",
+        "$value": "{border-width.thick}"
+      },
+      "color": {
+        "$type": "color",
+        "background": {
+          "$value": "{color.surface-raised}"
+        },
+        "background-hover": {
+          "$value": "{color.surface-raised-hover}"
+        },
+        "background-pressed": {
+          "$value": "{color.surface-raised-pressed}"
+        },
+        "border": {
+          "$value": "{color.border-strong}"
+        },
+        "border-hover": {
+          "$value": "{color.border-hover}"
+        },
+        "checked": {
+          "$value": "{color.primary}"
+        },
+        "checked-hover": {
+          "$value": "{color.primary-hover}"
+        },
+        "checked-pressed": {
+          "$value": "{color.primary-pressed}"
+        },
+        "mark": {
+          "$value": "{color.on-primary}"
+        }
+      }
+    },
+    "switch": {
+      "width": {
+        "$type": "dimension",
+        "$value": "{size.switch-width}"
+      },
+      "height": {
+        "$type": "dimension",
+        "$value": "{size.switch-height}"
+      },
+      "color": {
+        "$type": "color",
+        "track": {
+          "$value": "{color.border-strong}"
+        },
+        "track-hover": {
+          "$value": "{color.border-hover}"
+        },
+        "track-on": {
+          "$value": "{color.primary}"
+        },
+        "track-on-hover": {
+          "$value": "{color.primary-hover}"
+        },
+        "track-on-pressed": {
+          "$value": "{color.primary-pressed}"
+        },
+        "thumb": {
+          "$value": "{color.surface-raised}"
+        }
+      }
+    },
+    "stepper": {
+      "size": {
+        "$type": "dimension",
+        "$value": "{size.step}"
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": "{size.touch-target}"
+      },
+      "color": {
+        "$type": "color",
+        "background": {
+          "$value": "{color.surface-raised}"
+        },
+        "background-pressed": {
+          "$value": "{color.surface-raised-pressed}"
+        },
+        "border": {
+          "$value": "{color.primary}"
+        },
+        "value": {
+          "$value": "{color.on-surface}"
+        }
+      }
+    },
+    "code": {
+      "size": {
+        "$type": "dimension",
+        "$value": "{size.touch-target}"
+      },
+      "color": {
+        "$type": "color",
+        "done": {
+          "$value": "{color.primary}"
+        },
+        "on-done": {
+          "$value": "{color.on-primary}"
+        }
+      }
+    }
+  }
+}

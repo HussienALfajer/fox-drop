@@ -435,6 +435,352 @@ abstract final class FoxButton {
   );
 }
 
+/// The Input component tokens of one theme.
+final class InputTokens {
+  const InputTokens({
+    required this.height,
+    required this.compactHeight,
+    required this.compactPaddingInline,
+    required this.paddingInline,
+    required this.gap,
+    required this.labelGap,
+    required this.radius,
+    required this.areaRadius,
+    required this.borderWidth,
+    required this.focusWidth,
+    required this.colorBackground,
+    required this.colorBorder,
+    required this.colorBorderHover,
+    required this.colorBorderFocus,
+    required this.colorBorderInvalid,
+    required this.colorText,
+    required this.colorPlaceholder,
+    required this.colorLabel,
+    required this.colorHint,
+    required this.colorError,
+    required this.colorAccent,
+    required this.colorFocusRing,
+    required this.colorDisabled,
+    required this.colorOnDisabled,
+    required this.checkSize,
+    required this.checkTarget,
+    required this.checkRadius,
+    required this.checkBorderWidth,
+    required this.checkColorBackground,
+    required this.checkColorBackgroundHover,
+    required this.checkColorBackgroundPressed,
+    required this.checkColorBorder,
+    required this.checkColorBorderHover,
+    required this.checkColorChecked,
+    required this.checkColorCheckedHover,
+    required this.checkColorCheckedPressed,
+    required this.checkColorMark,
+    required this.switchWidth,
+    required this.switchHeight,
+    required this.switchColorTrack,
+    required this.switchColorTrackHover,
+    required this.switchColorTrackOn,
+    required this.switchColorTrackOnHover,
+    required this.switchColorTrackOnPressed,
+    required this.switchColorThumb,
+    required this.stepperSize,
+    required this.stepperTarget,
+    required this.stepperColorBackground,
+    required this.stepperColorBackgroundPressed,
+    required this.stepperColorBorder,
+    required this.stepperColorValue,
+    required this.codeSize,
+    required this.codeColorDone,
+    required this.codeColorOnDone,
+  });
+
+  final double height;
+  final double compactHeight;
+  final double compactPaddingInline;
+  final double paddingInline;
+  final double gap;
+  final double labelGap;
+  final double radius;
+  final double areaRadius;
+  final double borderWidth;
+  final double focusWidth;
+  final int colorBackground;
+  final int colorBorder;
+  final int colorBorderHover;
+  final int colorBorderFocus;
+  final int colorBorderInvalid;
+  final int colorText;
+  final int colorPlaceholder;
+  final int colorLabel;
+  final int colorHint;
+  final int colorError;
+  final int colorAccent;
+  final int colorFocusRing;
+  final int colorDisabled;
+  final int colorOnDisabled;
+  final double checkSize;
+  final double checkTarget;
+  final double checkRadius;
+  final double checkBorderWidth;
+  final int checkColorBackground;
+  final int checkColorBackgroundHover;
+  final int checkColorBackgroundPressed;
+  final int checkColorBorder;
+  final int checkColorBorderHover;
+  final int checkColorChecked;
+  final int checkColorCheckedHover;
+  final int checkColorCheckedPressed;
+  final int checkColorMark;
+  final double switchWidth;
+  final double switchHeight;
+  final int switchColorTrack;
+  final int switchColorTrackHover;
+  final int switchColorTrackOn;
+  final int switchColorTrackOnHover;
+  final int switchColorTrackOnPressed;
+  final int switchColorThumb;
+  final double stepperSize;
+  final double stepperTarget;
+  final int stepperColorBackground;
+  final int stepperColorBackgroundPressed;
+  final int stepperColorBorder;
+  final int stepperColorValue;
+  final double codeSize;
+  final int codeColorDone;
+  final int codeColorOnDone;
+}
+
+/// The Input tokens per theme.
+abstract final class FoxInput {
+  static const InputTokens light = InputTokens(
+    height: 50.0,
+    compactHeight: 40.0,
+    compactPaddingInline: 12.0,
+    paddingInline: 16.0,
+    gap: 8.0,
+    labelGap: 4.0,
+    radius: 9999.0,
+    areaRadius: 15.0,
+    borderWidth: 1.0,
+    focusWidth: 2.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFF6688B2,
+    colorBorderHover: 0xFF03428E,
+    colorBorderFocus: 0xFFFF6E31,
+    colorBorderInvalid: 0xFFBF2929,
+    colorText: 0xFF03428E,
+    colorPlaceholder: 0xFF416EA4,
+    colorLabel: 0xFF03428E,
+    colorHint: 0xFF416EA4,
+    colorError: 0xFFBF2929,
+    colorAccent: 0xFFFF6E31,
+    colorFocusRing: 0xFF03428E,
+    colorDisabled: 0xFFE8E1D2,
+    colorOnDisabled: 0xFF857D6E,
+    checkSize: 24.0,
+    checkTarget: 48.0,
+    checkRadius: 8.0,
+    checkBorderWidth: 2.0,
+    checkColorBackground: 0xFFFEFEFE,
+    checkColorBackgroundHover: 0xFFD6E4F7,
+    checkColorBackgroundPressed: 0xFFADC9EE,
+    checkColorBorder: 0xFF6688B2,
+    checkColorBorderHover: 0xFF03428E,
+    checkColorChecked: 0xFFFF6E31,
+    checkColorCheckedHover: 0xFFDA531B,
+    checkColorCheckedPressed: 0xFFC2410C,
+    checkColorMark: 0xFFFFFAED,
+    switchWidth: 52.0,
+    switchHeight: 32.0,
+    switchColorTrack: 0xFF6688B2,
+    switchColorTrackHover: 0xFF03428E,
+    switchColorTrackOn: 0xFFFF6E31,
+    switchColorTrackOnHover: 0xFFDA531B,
+    switchColorTrackOnPressed: 0xFFC2410C,
+    switchColorThumb: 0xFFFEFEFE,
+    stepperSize: 32.0,
+    stepperTarget: 48.0,
+    stepperColorBackground: 0xFFFEFEFE,
+    stepperColorBackgroundPressed: 0xFFADC9EE,
+    stepperColorBorder: 0xFFFF6E31,
+    stepperColorValue: 0xFF03428E,
+    codeSize: 48.0,
+    codeColorDone: 0xFFFF6E31,
+    codeColorOnDone: 0xFFFFFAED,
+  );
+
+  static const InputTokens dark = InputTokens(
+    height: 50.0,
+    compactHeight: 40.0,
+    compactPaddingInline: 12.0,
+    paddingInline: 16.0,
+    gap: 8.0,
+    labelGap: 4.0,
+    radius: 9999.0,
+    areaRadius: 15.0,
+    borderWidth: 1.0,
+    focusWidth: 2.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFF6688B2,
+    colorBorderHover: 0xFF03428E,
+    colorBorderFocus: 0xFFFF6E31,
+    colorBorderInvalid: 0xFFBF2929,
+    colorText: 0xFF03428E,
+    colorPlaceholder: 0xFF416EA4,
+    colorLabel: 0xFF03428E,
+    colorHint: 0xFF416EA4,
+    colorError: 0xFFBF2929,
+    colorAccent: 0xFFFF6E31,
+    colorFocusRing: 0xFF03428E,
+    colorDisabled: 0xFFE8E1D2,
+    colorOnDisabled: 0xFF857D6E,
+    checkSize: 24.0,
+    checkTarget: 48.0,
+    checkRadius: 8.0,
+    checkBorderWidth: 2.0,
+    checkColorBackground: 0xFFFEFEFE,
+    checkColorBackgroundHover: 0xFFD6E4F7,
+    checkColorBackgroundPressed: 0xFFADC9EE,
+    checkColorBorder: 0xFF6688B2,
+    checkColorBorderHover: 0xFF03428E,
+    checkColorChecked: 0xFFFF6E31,
+    checkColorCheckedHover: 0xFFDA531B,
+    checkColorCheckedPressed: 0xFFC2410C,
+    checkColorMark: 0xFFFFFAED,
+    switchWidth: 52.0,
+    switchHeight: 32.0,
+    switchColorTrack: 0xFF6688B2,
+    switchColorTrackHover: 0xFF03428E,
+    switchColorTrackOn: 0xFFFF6E31,
+    switchColorTrackOnHover: 0xFFDA531B,
+    switchColorTrackOnPressed: 0xFFC2410C,
+    switchColorThumb: 0xFFFEFEFE,
+    stepperSize: 32.0,
+    stepperTarget: 48.0,
+    stepperColorBackground: 0xFFFEFEFE,
+    stepperColorBackgroundPressed: 0xFFADC9EE,
+    stepperColorBorder: 0xFFFF6E31,
+    stepperColorValue: 0xFF03428E,
+    codeSize: 48.0,
+    codeColorDone: 0xFFFF6E31,
+    codeColorOnDone: 0xFFFFFAED,
+  );
+
+  static const InputTokens captainLight = InputTokens(
+    height: 50.0,
+    compactHeight: 40.0,
+    compactPaddingInline: 12.0,
+    paddingInline: 16.0,
+    gap: 8.0,
+    labelGap: 4.0,
+    radius: 9999.0,
+    areaRadius: 15.0,
+    borderWidth: 1.0,
+    focusWidth: 2.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFF6688B2,
+    colorBorderHover: 0xFF03428E,
+    colorBorderFocus: 0xFFFF6E31,
+    colorBorderInvalid: 0xFF8C1530,
+    colorText: 0xFF03428E,
+    colorPlaceholder: 0xFF4D473D,
+    colorLabel: 0xFF03428E,
+    colorHint: 0xFF4D473D,
+    colorError: 0xFF8C1530,
+    colorAccent: 0xFFFF6E31,
+    colorFocusRing: 0xFF03428E,
+    colorDisabled: 0xFFE8E1D2,
+    colorOnDisabled: 0xFF857D6E,
+    checkSize: 24.0,
+    checkTarget: 48.0,
+    checkRadius: 8.0,
+    checkBorderWidth: 2.0,
+    checkColorBackground: 0xFFFEFEFE,
+    checkColorBackgroundHover: 0xFFD6E4F7,
+    checkColorBackgroundPressed: 0xFFD6E4F7,
+    checkColorBorder: 0xFF6688B2,
+    checkColorBorderHover: 0xFF03428E,
+    checkColorChecked: 0xFFFF6E31,
+    checkColorCheckedHover: 0xFFDA531B,
+    checkColorCheckedPressed: 0xFFC2410C,
+    checkColorMark: 0xFFFFFAED,
+    switchWidth: 52.0,
+    switchHeight: 32.0,
+    switchColorTrack: 0xFF6688B2,
+    switchColorTrackHover: 0xFF03428E,
+    switchColorTrackOn: 0xFFFF6E31,
+    switchColorTrackOnHover: 0xFFDA531B,
+    switchColorTrackOnPressed: 0xFFC2410C,
+    switchColorThumb: 0xFFFEFEFE,
+    stepperSize: 32.0,
+    stepperTarget: 48.0,
+    stepperColorBackground: 0xFFFEFEFE,
+    stepperColorBackgroundPressed: 0xFFD6E4F7,
+    stepperColorBorder: 0xFFFF6E31,
+    stepperColorValue: 0xFF03428E,
+    codeSize: 48.0,
+    codeColorDone: 0xFFFF6E31,
+    codeColorOnDone: 0xFFFFFAED,
+  );
+
+  static const InputTokens captainDark = InputTokens(
+    height: 50.0,
+    compactHeight: 40.0,
+    compactPaddingInline: 12.0,
+    paddingInline: 16.0,
+    gap: 8.0,
+    labelGap: 4.0,
+    radius: 9999.0,
+    areaRadius: 15.0,
+    borderWidth: 1.0,
+    focusWidth: 2.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFF6688B2,
+    colorBorderHover: 0xFF03428E,
+    colorBorderFocus: 0xFFFF6E31,
+    colorBorderInvalid: 0xFF8C1530,
+    colorText: 0xFF03428E,
+    colorPlaceholder: 0xFF4D473D,
+    colorLabel: 0xFF03428E,
+    colorHint: 0xFF4D473D,
+    colorError: 0xFF8C1530,
+    colorAccent: 0xFFFF6E31,
+    colorFocusRing: 0xFF03428E,
+    colorDisabled: 0xFFE8E1D2,
+    colorOnDisabled: 0xFF857D6E,
+    checkSize: 24.0,
+    checkTarget: 48.0,
+    checkRadius: 8.0,
+    checkBorderWidth: 2.0,
+    checkColorBackground: 0xFFFEFEFE,
+    checkColorBackgroundHover: 0xFFD6E4F7,
+    checkColorBackgroundPressed: 0xFFD6E4F7,
+    checkColorBorder: 0xFF6688B2,
+    checkColorBorderHover: 0xFF03428E,
+    checkColorChecked: 0xFFFF6E31,
+    checkColorCheckedHover: 0xFFDA531B,
+    checkColorCheckedPressed: 0xFFC2410C,
+    checkColorMark: 0xFFFFFAED,
+    switchWidth: 52.0,
+    switchHeight: 32.0,
+    switchColorTrack: 0xFF6688B2,
+    switchColorTrackHover: 0xFF03428E,
+    switchColorTrackOn: 0xFFFF6E31,
+    switchColorTrackOnHover: 0xFFDA531B,
+    switchColorTrackOnPressed: 0xFFC2410C,
+    switchColorThumb: 0xFFFEFEFE,
+    stepperSize: 32.0,
+    stepperTarget: 48.0,
+    stepperColorBackground: 0xFFFEFEFE,
+    stepperColorBackgroundPressed: 0xFFD6E4F7,
+    stepperColorBorder: 0xFFFF6E31,
+    stepperColorValue: 0xFF03428E,
+    codeSize: 48.0,
+    codeColorDone: 0xFFFF6E31,
+    codeColorOnDone: 0xFFFFFAED,
+  );
+}
+
 /// The spacing steps of the 4-point grid.
 abstract final class FoxSpace {
   static const double none = 0.0;
@@ -606,4 +952,8 @@ abstract final class FoxSize {
   static const double iconSm = 16.0;
   static const double iconMd = 24.0;
   static const double iconLg = 32.0;
+  static const double selection = 24.0;
+  static const double step = 32.0;
+  static const double switchWidth = 52.0;
+  static const double switchHeight = 32.0;
 }

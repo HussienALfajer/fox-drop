@@ -84,7 +84,15 @@ const states = (target: number): Pair[] => [
   ...on(['on-surface'], target, 'control label, hovered or pressed', STATE_BACKGROUNDS),
   ...on(['focus-ring'], 3, 'focus ring, hovered or pressed', STATE_BACKGROUNDS),
 ];
-const nonText = on(['border-strong', 'focus-ring'], 3, 'control boundary, focus ring, icon');
+const nonText = on(
+  ['border-strong', 'border-hover', 'focus-ring'],
+  3,
+  'control boundary, focus ring, icon',
+);
+// Forms (D.8, owner 2026-11-23): a focused field's outline, a checked box, the
+// switch's track and the stepper's circles are the brand orange, under the
+// same exception extended to 3:1 control boundaries.
+const orangeBoundary = excepted(on(['primary'], 3, 'control boundary (focus, checked)'), 2.5);
 // Alerts are read from across a room: the restaurant tablet, the panel (§6).
 const alerts: Pair[] = [
   { foreground: 'on-alert', background: 'alert', target: 7, use: 'alert' },
@@ -104,6 +112,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...alerts,
     ...orangeText,
     ...orangeFills,
+    ...orangeBoundary,
   ],
   panel: [
     ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
@@ -115,6 +124,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...alerts,
     ...orangeText,
     ...orangeFills,
+    ...orangeBoundary,
   ],
   // Text and numbers at 7:1 in near-black or blue; orange only on buttons and
   // headings, under the owner's exception (§6).
@@ -127,6 +137,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...nonText,
     ...orangeText,
     ...orangeFills,
+    ...orangeBoundary,
   ],
 };
 

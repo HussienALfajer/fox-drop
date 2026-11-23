@@ -30,7 +30,7 @@ D.8 Inputs and forms (`docs/roadmap.md` Phase D): text field and its wrapper (la
 
 - [x] Split «D.8 onward» into slices with the owner (`slice-plan`): D.8 forms, D.9 data display, D.10 overlays and navigation, one pull request each for both platforms (2026-11-23)
 - [x] Look at the Figma file, read the cited sections and write the design here, including its proposals sheet (§9.9 step 1) for the owner's approval
-- [ ] Tokens 0.6.0: `input.*`, the extended exception, the two icons; generate; sync the Design System
+- [x] Tokens 0.6.0: `input.*` (Dart `FoxInput`), `size.selection|step|switch-width|switch-height`, `border-width.thin|thick`, the extended exception (`primary` 3:1 boundary, floor 2.5), `chevron-down` and `calendar`; generate (the Design System sync moves to the web cards step, one sync for both)
 - [ ] Web: `Field`, `TextField`, `TextArea`, `SearchField`
 - [ ] Web: `PhoneField`, `CodeField`
 - [ ] Web: `Select`, `Checkbox`, `RadioGroup`, `Switch`, `QuantityStepper`; visual baselines; Design System cards and sync
