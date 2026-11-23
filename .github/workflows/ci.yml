@@ -227,8 +227,8 @@ jobs:
           path: packages/ui-web/test-results/**/*.png
           if-no-files-found: ignore
 
-  # The server's tests start PostGIS and Valkey with Testcontainers, in three
-  # shards (Vitest's split of the files).
+  # The server's tests start PostGIS and Valkey with Testcontainers, in four
+  # shards balanced by the files' measured times (apps/server/test/timed-shards.ts).
   server:
     needs: changes
     if: needs.changes.outputs.code == 'true'
@@ -237,7 +237,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
 
@@ -250,7 +250,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: node scripts/verify.mjs server --shard=${{ matrix.shard }}/3
+      - run: node scripts/verify.mjs server --shard=${{ matrix.shard }}/4
 
   dart:
     needs: changes

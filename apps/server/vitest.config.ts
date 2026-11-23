@@ -1,6 +1,7 @@
 import { availableParallelism } from 'node:os';
 import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
+import { TimedShards } from './test/timed-shards.js';
 
 // NestJS dependency injection reads decorator metadata, which esbuild does not
 // emit, so tests compile through SWC.
@@ -17,6 +18,8 @@ export default defineConfig({
     // as 16 or 31 (223 s, 224 s, 238 s, each file then with its own PostGIS);
     // more only load Docker. CI's 4 vCPUs stay at 3.
     maxWorkers: Math.max(1, Math.min(availableParallelism() - 1, 12)),
+    // `--shard` splits the files by their measured time (test/timed-shards.ts).
+    sequence: { sequencer: TimedShards },
     // `vitest run --changed` (node scripts/verify.mjs --changed, for a change
     // outside src/modules) runs the tests that import a changed file; a
     // change to one of these runs them all: every database test migrates, the

@@ -16,6 +16,7 @@ The FOX DROP server: one NestJS on Fastify application, strict TypeScript, ES mo
 - Tests sit next to the code as `*.test.ts`;
   `test/` holds tests of the tooling and their fixtures.
   Vitest spreads files, not tests, across its workers and CI's shards, so a test file whose tests take more than about 30 s splits by its top-level `describe`s into files that share their setup and helpers through a `<name>.fixture.ts` beside them (`ordering/order-edits.fixture.ts`; kept out of the build like the tests).
+  CI's shards split the files by their measured seconds (`test/timed-shards.ts`, `test/test-seconds.json`: the files of 4 s or more on CI, median of four runs; an unlisted file counts 2 s). Refresh the list from a run's per-file times when a shard runs well past the others.
   Each test file importing a fixture gets its own app, database and Valkey.
 
 ## Rules
