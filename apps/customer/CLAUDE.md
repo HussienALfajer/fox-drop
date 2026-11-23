@@ -15,7 +15,7 @@ The customer app «تطبيق الزبون» (Android, iOS), a Flutter app in th
 - **Server address:** `--dart-define=API_BASE_URL=http://<address>:3000`. A release build refuses to start without it. Never put a key or secret in the app (E7): every `--dart-define` ships inside it. Never hand out a release build signed with the debug key.
 - **Native folders:** `android/`, `ios/` and `windows/` come from `flutter create`; edit them only for a reason, and say it in a comment.
 - **Arabic, right to left (AP §4.7):** every user-facing string is a getter of `AppLocalizations` from `core_l10n` (`packages/core_l10n/CLAUDE.md`); never a literal in a widget. Use `EdgeInsetsDirectional`, `AlignmentDirectional` and `start`/`end`, never `left`/`right`. Only the launcher name and the system's permission texts stay outside ARB (`AndroidManifest.xml`, `Info.plist`).
-- **Design stop:** no `core_ui`, theme, colours, fonts or styling until the owner says the UI/UX and the design system are ready (root `CLAUDE.md`). Screens use plain Material widgets with their defaults.
+- **Design stop:** screens move to `core_ui` only in the app's screen slice, after the owner approved their drawing; that slice adds the app to `enforcedPackages` (`packages/fox_lints`). Until then, plain Material with its defaults.
 
 ## Commands
 

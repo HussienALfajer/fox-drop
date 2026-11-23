@@ -310,8 +310,8 @@ export function stateSheet(themes: Themes, config: GuideConfig, icons: Icon[]): 
     `<style>${CSS}</style>`,
     heading(
       themes,
-      'حالات التفاعل — نظام واحد لكل المكوّنات',
-      'Interaction states (architecture §9.5 R10, §9.9). The approved hover was not visible; three systems for every interactive component, live and measured. The owner picked B «Brand tonal steps» on 2026-11-24 (design-tokens 0.5.0). Sample copy is review text only.',
+      'حالات التفاعل — نظام واحد لكل المكوّنات (مُستبدَلة)',
+      'Superseded (architecture §9.9 step 4): the record of the decision only; system B is rule R10 and lives in the Design System and core_ui (D.6, D.7). Interaction states (architecture §9.5 R10, §9.9). The approved hover was not visible; three systems for every interactive component, live and measured. The owner picked B «Brand tonal steps» on 2026-11-24 (design-tokens 0.5.0). Sample copy is review text only.',
     ),
     problem,
     systems,
@@ -322,7 +322,7 @@ export function stateSheet(themes: Themes, config: GuideConfig, icons: Icon[]): 
     config,
     {
       file: 'States.dc.html',
-      title: 'Interaction states — one system',
+      title: 'Interaction states — one system (superseded)',
       w: W,
       h: 2100,
       interactive: true,
