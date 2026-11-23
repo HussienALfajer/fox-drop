@@ -12,9 +12,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { changedFiles, classify } from './classify-changes.mjs';
+import { recordGreen, treeState } from './green-tree.mjs';
 import { gitDir, pinnedFlutterBin, releaseLock, takeLock } from './verify-support.mjs';
 
-// One check at a time in a folder (docs/claude-code-workflow.md, phase 6): two
+// One check at a time in a folder (docs/archive/claude-code-workflow.md, phase 6): two
 // at once share the Playwright ports and write packages/core_api together.
 // The Stop hook, the checker and a manual run all come through here. Exit 3
 // says another check is running.
@@ -40,6 +41,22 @@ process.on('exit', () => releaseLock(lockFile));
 // stale, and the next check takes it over (verify-support.mjs).
 process.on('SIGINT', () => process.exit(130));
 process.on('SIGHUP', () => process.exit(129));
+
+// The tree as it was when the check started: a passing `--changed` or full run records it, so
+// the Stop hook does not check the same tree again (green-tree.mjs). Not in CI.
+const treeBefore = process.env.CI ? null : treeState(path.resolve('.'));
+
+/** Records the tree as green, unless it changed while the checks ran (an edit mid-run). */
+function recordPass() {
+  if (!treeBefore) return;
+  const root = path.resolve('.');
+  if (treeState(root)?.fingerprint !== treeBefore.fingerprint) return;
+  try {
+    recordGreen(root, treeBefore.fingerprint);
+  } catch {
+    // A read-only state folder only costs the Stop hook a repeat run.
+  }
+}
 
 // `fvm install` links the Flutter pinned in .fvmrc at .fvm/flutter_sdk; use it,
 // or the main checkout's in a worktree, before any Flutter on PATH. CI puts the
@@ -209,18 +226,19 @@ function checkLocalizations() {
 }
 
 // Claude Code loads a folder's CLAUDE.md whenever it reads a file there and
-// resends it every turn after (docs/claude-code-workflow.md): keep the
-// instruction files small. What a feature does goes in docs/code instead.
+// resends it every turn after (docs/process/development-workflow.md §8): keep
+// the instruction files small. What a feature does goes in docs/code instead.
+// A path-scoped rule in .claude/rules loads the same way.
 const INSTRUCTION_LIMITS = [
   { test: (file) => file === 'CLAUDE.md', bytes: 10_240 },
-  { test: (file) => file === 'TASKS.md', bytes: 8_192 },
   { test: (file) => file.endsWith('/CLAUDE.md'), bytes: 4_096 },
+  { test: (file) => file.startsWith('.claude/rules/'), bytes: 4_096 },
 ];
 
 function checkInstructionSizes() {
   console.log('\n=== Instruction file sizes');
   const files = read(
-    'git ls-files --cached --others --exclude-standard -- CLAUDE.md TASKS.md "*/CLAUDE.md"',
+    'git ls-files --cached --others --exclude-standard -- CLAUDE.md "*/CLAUDE.md" ".claude/rules/*.md"',
   )
     .split(/\r?\n/)
     .filter((file) => file && existsSync(file));
@@ -247,11 +265,11 @@ const PLAYWRIGHT_INSTALL =
 function scriptTests() {
   step(
     'Claude Code hooks and scripts',
-    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs',
   );
 }
 
-// `--changed` (docs/claude-code-workflow.md, phase 4): only what the change
+// `--changed` (docs/archive/claude-code-workflow.md, phase 4): only what the change
 // since origin/main can break, committed or not; `--changed=<ref>` compares
 // with another commit (a branch stacked on another). CI runs everything and
 // stays the gate.
@@ -362,7 +380,10 @@ if (changed) {
     console.error('verify: --changed takes no part or shard: it picks them from the change.');
     process.exit(1);
   }
-  verifyChanged(changed.split('=')[1] ?? 'origin/main');
+  const since = changed.split('=')[1] ?? 'origin/main';
+  verifyChanged(since);
+  // The Stop hook compares with origin/main: a check against another base proves nothing for it.
+  if (since === 'origin/main') recordPass();
   console.log('\nverify: the checks of the change passed');
   process.exit(0);
 }
@@ -441,4 +462,6 @@ if (parts.has('flutter')) {
   }
 }
 
+// Only the whole check proves the tree; a part or a shard does not.
+if (named.length === 0) recordPass();
 console.log(`\nverify: ${named.length > 0 ? [...parts].join(', ') : 'all checks'} passed`);

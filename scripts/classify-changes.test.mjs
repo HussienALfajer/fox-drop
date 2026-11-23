@@ -27,7 +27,7 @@ const flags = (files, read = plain) => {
 describe('the change classifier', () => {
   it('counts Markdown and docs as nothing but Prettier', () => {
     assert.equal(flags(['README.md', 'docs/roadmap.md', 'apps/customer/README.md']), '');
-    assert.equal(flags(['TASKS.md', 'apps/server/CLAUDE.md']), '');
+    assert.equal(flags(['docs/slices/D.8-inputs-and-forms.md', 'apps/server/CLAUDE.md']), '');
   });
 
   it('counts as code only the spec files a test reads, and builds nothing for them', () => {

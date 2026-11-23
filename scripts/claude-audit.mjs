@@ -1,14 +1,19 @@
 // Measures how this project's Claude Code sessions spend tokens, from the
 // transcripts Claude Code keeps under ~/.claude/projects/<project>/
-// (docs/claude-code-workflow.md, Baseline). Every phase of that plan is
-// measured with it.
+// (docs/archive/claude-code-workflow.md, Baseline).
 //
 //   node scripts/claude-audit.mjs [--since=YYYY-MM-DD] [--session=<id>] [--dir=<transcripts>]
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { parse } from '../.claude/hooks/bash.mjs';
+/** The words of each command of a shell line, split at `;`, `&&`, `||`, `|` and newlines. */
+function commands(line) {
+  return line
+    .split(/;|&&|\|\||\||\n/)
+    .map((part) => part.trim().split(/\s+/).filter(Boolean))
+    .filter((words) => words.length > 0);
+}
 
 // USD per million tokens, API list prices (2026-11): only to weigh one cost
 // against another. Cache writes: 1.25 × input for 5 minutes, 2 × for 1 hour.
@@ -85,8 +90,10 @@ const contextOf = ({ usage }) =>
 
 /** A Bash command's kind: its first command (after cd), with the flag or subcommand that matters. */
 function bashKind(command) {
-  for (const stages of parse(command ?? '')) {
-    const words = stages[0].words.filter((word) => !/^\w+=/.test(word));
+  for (const each of commands(command ?? '')) {
+    const words = each
+      .filter((word) => !/^\w+=/.test(word))
+      .map((word) => word.replace(/^["']|["']$/g, ''));
     const name = path.basename(words[0] ?? '').replace(/\.exe$/, '');
     if (['cd', 'eval', 'fnm', 'builtin', 'export', ''].includes(name)) continue;
     if (name === 'sed') return words.some((word) => /^-[^-]*i/.test(word)) ? 'sed -i' : 'sed -n';
@@ -173,9 +180,6 @@ const effortHigh = main.filter((request) =>
   ['high', 'xhigh', 'max'].includes(request.effort),
 ).length;
 
-const guardLog = path.join('.claude', 'bash-guard.log');
-const guardLines = existsSync(guardLog) ? readLines(guardLog) : [];
-
 console.log(`Claude Code audit: ${dir}`);
 console.log(
   args.session
@@ -241,10 +245,3 @@ console.log(
     ],
   ]),
 );
-if (guardLines.length > 0) {
-  const rules = {};
-  for (const line of guardLines)
-    for (const finding of line.findings) rules[finding.rule] = (rules[finding.rule] ?? 0) + 1;
-  console.log('\nBash guard log (.claude/bash-guard.log)');
-  console.log(table(Object.entries(rules)));
-}

@@ -28,4 +28,4 @@ An item is a bug class with its source (the pull request that first had it, or t
 
 ## After a merge
 
-A bug found after a merge becomes a new item here or a test, in the same fix's pull request, with the pull request number as its source. If it is a test, name it in the fix's description; if it is an item, add it under a trigger above. Pruning is in `docs/claude-code-workflow.md`, phase 7 item 4.
+A bug found after a merge becomes a new item here or a test, in the same fix's pull request, with the pull request number as its source. If it is a test, name it in the fix's description; if it is an item, add it under a trigger above. Pruning is in `docs/archive/claude-code-workflow.md`, phase 7 item 4.

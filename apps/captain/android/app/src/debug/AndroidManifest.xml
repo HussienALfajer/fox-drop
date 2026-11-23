@@ -4,7 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- The development server answers over plain HTTP (apps/customer/CLAUDE.md);
+    <!-- The development server answers over plain HTTP (.claude/rules/flutter-apps.md);
          release builds keep Android's default, HTTPS only. -->
     <application android:usesCleartextTraffic="true"/>
 </manifest>

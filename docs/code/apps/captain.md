@@ -1,8 +1,8 @@
 # apps/captain
 
-> Moved here from `apps/captain/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/captain/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
-The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, §14). It follows the rules of `apps/customer/CLAUDE.md`.
+The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, §14). It follows the rules of `.claude/rules/flutter-apps.md`.
 
 ## The work cycle (slice 1.14g; CA §4.3–4.6, §7–§9, §14–§15)
 
@@ -298,7 +298,7 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 ## Terms (slice 2.4b; AP §9.13, CA §4.8, §7.2, K7)
 
-- `termsCheckProvider` (`lib/src/terms.dart`) follows `apps/customer/CLAUDE.md` «Terms».
+- `termsCheckProvider` (`lib/src/terms.dart`) follows `.claude/rules/flutter-apps.md` «Terms».
   A pending version shows «وافق على الشروط الجديدة لتتمكن من الاتصال» on home while offline, with a link to `/terms`;
   «متصل» refused with `terms_not_accepted` («The terms screen», CA §7.2) reads the terms again and opens `/terms`, beside the other blocks' message.
   A version published while the captain is online or on an order blocks nothing until the next time they go online.
@@ -335,7 +335,7 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 ## iOS (slice 2.46; architecture §14, CA §4.3–4.5, K15; owner decisions 2026-11-20)
 
-- **The project:** the customer app's flavors and entitlements (`apps/customer/CLAUDE.md`), all its plugins through Swift Package Manager (no Podfile).
+- **The project:** the customer app's flavors and entitlements (`.claude/rules/flutter-apps.md`), all its plugins through Swift Package Manager (no Podfile).
   Info.plist asks for the location «دائماً» (`NSLocationAlwaysAndWhenInUseUsageDescription`), declares the background modes `location`, `fetch` and `remote-notification`, the library's `com.transistorsoft.fetch` task and its licence `TSLocationManagerLicense` from the build setting `FOXDROP_BGGEO_LICENSE` (the CI secret, as on Android; empty otherwise).
   The bundled sounds are resources of the Runner target straight from `packages/core_alerts` (`fd_offer`, `fd_chime`, `fd_cancellation` and the offer's 29-second `fd_offer_30s`, since a notification plays its sound once).
 - **Offers (CA §4.4, K15):** in the foreground `core_alerts`' iOS layer loops the offer sound and vibrates;

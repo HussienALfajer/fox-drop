@@ -1,4 +1,6 @@
-# Claude Code workflow plan
+# Claude Code workflow plan (archive)
+
+> Superseded on 2026-11-23 by [`docs/process/development-workflow.md`](../process/development-workflow.md): the owner moved FOX DROP to the workflow of the Shifa project, keeping the small instruction files and their size check, `verify --changed` and its classifier, the CI filters, `REVIEW.md` read from `main` and the money property tests. This file is read-only history (the edit guard refuses changes); its measurements still explain why those pieces exist.
 
 How FOX DROP is built with Claude Code, what it costs, and the plan to cut tokens and check time. It applies three Anthropic posts (Code Mode, how the Claude Code team thinks about verification, which Claude model to build with) and the Claude Code docs on costs, context, prompt caching, memory and subagents.
 

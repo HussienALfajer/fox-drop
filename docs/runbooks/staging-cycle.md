@@ -15,7 +15,7 @@ Operating the server (deploys, secrets, the commands below) is in the `deploy` s
 | The captain          | «كابتن فوكس التجريبي» (motorbike, cash limit 3000 TRY), moved from `+963900000003` to a real number the same way; or signed in with an emergency code from the panel     |
 | Three phones         | Android with Google Play services (App Check is on), location on, in Azaz. Each staging app on its own phone: the captain and the restaurant must ring and stay in front |
 
-The placeholder values on staging (`TASKS.md`): base currency TRY with a rounding unit of 5 TRY, a flat delivery fee of 40 TRY, a 15% commission, a minimum order of 100 TRY, captain pay of 25 TRY including the first 3 km plus 5 TRY per extra km, no waiting pay, manual dispatch (`dispatch.mode` `manual`), and the demo restaurant open 10:00–02:00 every day.
+The placeholder values on staging: base currency TRY with a rounding unit of 5 TRY, a flat delivery fee of 40 TRY, a 15% commission, a minimum order of 100 TRY, captain pay of 25 TRY including the first 3 km plus 5 TRY per extra km, no waiting pay, manual dispatch (`dispatch.mode` `manual`), and the demo restaurant open 10:00–02:00 every day.
 
 ## Where to stand
 

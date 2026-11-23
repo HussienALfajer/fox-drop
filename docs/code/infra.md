@@ -1,6 +1,6 @@
 # infra
 
-> Moved here from `infra/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `infra/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 How FOX DROP runs on the owner's shared Contabo server (architecture §17, T9, E8).
 The `deploy` skill (`.claude/skills/deploy/SKILL.md`) is the runbook: deploy, rollback, provisioning, secrets, backups and restores.

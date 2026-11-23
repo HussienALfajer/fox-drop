@@ -1,6 +1,6 @@
 # apps/captain
 
-The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, §14; CA §4.3-4.6, §7-§9, §14-§15). Read `apps/customer/CLAUDE.md` first (it does not load here by itself): its rules hold here too: generated API client, strings in `core_l10n`, start/end layout, the design stop.
+The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, §14; CA §4.3-4.6, §7-§9, §14-§15). The rules shared by the three Flutter apps are `.claude/rules/flutter-apps.md`; they load by themselves here.
 
 ## Rules
 
