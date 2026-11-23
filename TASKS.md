@@ -8,7 +8,7 @@ D.8 Inputs and forms (`docs/roadmap.md` Phase D): text field and its wrapper (la
 
 - **Branch:** `feat/components-forms`.
 - **Read first:** architecture §9.5 (R1 to R10), §9.7, §9.10; `packages/ui-web/CLAUDE.md`, `packages/core_ui/CLAUDE.md`; grep `docs/code/packages/ui-web.md` and `core_ui.md` for the Button's patterns (exported states, R10 tokens, RTL and text-scale tests, goldens, the visual gate). Specs: architecture §8.3.4 (code), CU §5.2 (phone), AP §4.7 (formats).
-- **Built so far:** tokens 0.5.0 (`packages/design-tokens`, `core_tokens`), the icon set, the Button and Icon on the web (`ui-web`, Storybook, synced into the Design System) and in Flutter (`core_ui`, widgetbook, goldens in Docker, `fox_lints`).
+- **Built so far:** tokens, icons, Button and Icon on the web (`ui-web`) and in Flutter (`core_ui`, widgetbook, goldens).
 
 ### Design
 
@@ -30,7 +30,7 @@ D.8 Inputs and forms (`docs/roadmap.md` Phase D): text field and its wrapper (la
 
 - [x] Split «D.8 onward» into slices with the owner (`slice-plan`): D.8 forms, D.9 data display, D.10 overlays and navigation, one pull request each for both platforms (2026-11-23)
 - [x] Look at the Figma file, read the cited sections and write the design here, including its proposals sheet (§9.9 step 1) for the owner's approval
-- [x] Tokens 0.6.0: `input.*` (Dart `FoxInput`), `size.selection|step|switch-width|switch-height`, `border-width.thin|thick`, the extended exception (`primary` 3:1 boundary, floor 2.5), `chevron-down` and `calendar`; generate (the Design System sync moves to the web cards step, one sync for both)
+- [x] Tokens 0.6.0 (`input.*`, Dart `FoxInput`, new `size.*`, `border-width.*`, the two icons); the Design System sync moves to the web cards step
 - [ ] Web: `Field`, `TextField`, `TextArea`, `SearchField`
 - [ ] Web: `PhoneField`, `CodeField`
 - [ ] Web: `Select`, `Checkbox`, `RadioGroup`, `Switch`, `QuantityStepper`; visual baselines; Design System cards and sync
