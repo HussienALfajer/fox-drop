@@ -42,14 +42,44 @@
         "usage": "Cards, sheets and inputs raised above the screen ground."
       },
       {
+        "name": "surface-hover",
+        "value": {
+          "light": "#EEF4FC",
+          "dark": "#EEF4FC",
+          "captain-light": "#EEF4FC",
+          "captain-dark": "#EEF4FC"
+        },
+        "usage": "A control on the ground or on ivory under the pointer: the brand blue's tint (R10)."
+      },
+      {
         "name": "surface-pressed",
         "value": {
-          "light": "#F5EFE2",
-          "dark": "#F5EFE2",
-          "captain-light": "#F5EFE2",
-          "captain-dark": "#F5EFE2"
+          "light": "#D6E4F7",
+          "dark": "#D6E4F7",
+          "captain-light": "#D6E4F7",
+          "captain-dark": "#D6E4F7"
         },
-        "usage": "A raised surface while it is pressed or selected."
+        "usage": "A control on the ground or on ivory while it is pressed (R10). A pressed state only: a selected item is designed with accent."
+      },
+      {
+        "name": "surface-raised-hover",
+        "value": {
+          "light": "#D6E4F7",
+          "dark": "#D6E4F7",
+          "captain-light": "#D6E4F7",
+          "captain-dark": "#D6E4F7"
+        },
+        "usage": "A control on a raised surface under the pointer (R10): one step deeper than on the ground, which white needs to show."
+      },
+      {
+        "name": "surface-raised-pressed",
+        "value": {
+          "light": "#ADC9EE",
+          "dark": "#ADC9EE",
+          "captain-light": "#D6E4F7",
+          "captain-dark": "#D6E4F7"
+        },
+        "usage": "A control on a raised surface while it is pressed (R10)."
       },
       {
         "name": "on-surface",
@@ -92,14 +122,24 @@
         "usage": "The brand orange on filled controls, bars and orange text; under the owner's contrast exception (architecture §9.5 R4)."
       },
       {
+        "name": "primary-hover",
+        "value": {
+          "light": "#DA531B",
+          "dark": "#DA531B",
+          "captain-light": "#DA531B",
+          "captain-dark": "#DA531B"
+        },
+        "usage": "A primary control under the pointer: a deeper step of the brand orange (R10)."
+      },
+      {
         "name": "primary-pressed",
         "value": {
-          "light": "#EA580C",
-          "dark": "#EA580C",
-          "captain-light": "#EA580C",
-          "captain-dark": "#EA580C"
+          "light": "#C2410C",
+          "dark": "#C2410C",
+          "captain-light": "#C2410C",
+          "captain-dark": "#C2410C"
         },
-        "usage": "A primary control while it is pressed."
+        "usage": "A primary control while it is pressed (R10)."
       },
       {
         "name": "on-primary",
@@ -162,6 +202,16 @@
         "usage": "Control boundaries at 3:1: inputs, checkboxes, outlined buttons."
       },
       {
+        "name": "border-hover",
+        "value": {
+          "light": "#03428E",
+          "dark": "#03428E",
+          "captain-light": "#03428E",
+          "captain-dark": "#03428E"
+        },
+        "usage": "A control boundary under the pointer: the outline turns full blue (R10)."
+      },
+      {
         "name": "focus-ring",
         "value": {
           "light": "#03428E",
@@ -220,6 +270,26 @@
           "captain-dark": "#8C1530"
         },
         "usage": "Errors, refusals and destructive actions."
+      },
+      {
+        "name": "danger-hover",
+        "value": {
+          "light": "#9B1B2E",
+          "dark": "#9B1B2E",
+          "captain-light": "#6B1729",
+          "captain-dark": "#6B1729"
+        },
+        "usage": "A danger control under the pointer (R10)."
+      },
+      {
+        "name": "danger-pressed",
+        "value": {
+          "light": "#6B1729",
+          "dark": "#6B1729",
+          "captain-light": "#521020",
+          "captain-dark": "#521020"
+        },
+        "usage": "A danger control while it is pressed (R10)."
       },
       {
         "name": "on-danger",
@@ -639,6 +709,11 @@
         "usage": "The Figma file's button height and icon-button diameter."
       },
       {
+        "name": "size-control-compact",
+        "value": "40px",
+        "usage": "The compact button height for the admin panel and the restaurant portal (pointer devices only)."
+      },
+      {
         "name": "size-icon-sm",
         "value": "16px",
         "usage": "A small icon: inside chips, badges and dense rows; the stroke scales to 2/24 of it."
@@ -659,7 +734,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.3.0",
+    "version": "0.5.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

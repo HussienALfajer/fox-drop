@@ -97,8 +97,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      # Empty on a pull request from a fork: the fonts step below then skips.
-      FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
+      # Only whether the secret exists (false on a pull request from a fork:
+      # the fonts steps below then skip); the secret itself goes to the fetch
+      # step alone, so no install script can read it.
+      HAS_FONTS_KEY: ${{ secrets.FONTS_DEPLOY_KEY != '' }}
     steps:
       # The whole history: the fonts guard scans every commit of a pull request
       # for a font file (scripts/fonts.test.mjs), not only the tip.
@@ -120,9 +122,15 @@ jobs:
       # Proves the fonts secret and the manifest agree. Skipped where the secret
       # is absent (a pull request from a fork). The builds that bundle the fonts
       # run this same command first (D.6 and D.7).
+      - name: Trust GitHub's SSH host keys
+        if: env.HAS_FONTS_KEY == 'true'
+        run: node scripts/github-known-hosts.mjs
+
       - name: Fetch the licensed fonts
-        if: env.FONTS_DEPLOY_KEY != ''
+        if: env.HAS_FONTS_KEY == 'true'
         run: pnpm fonts:fetch
+        env:
+          FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
 
   typescript:
     needs: changes
@@ -157,7 +165,62 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: playwright-results
+          # Not ui-web's: its Storybook serves the licensed fonts (no trace there either).
           path: apps/*/test-results/
+          if-no-files-found: ignore
+
+  # The Storybook screenshots (architecture §9.5 R9) are valid only from the
+  # Playwright image, so this job runs in it. It needs the licensed fonts: with
+  # no FONTS_DEPLOY_KEY it fails on purpose, never skips (owner, 2026-11-23).
+  visual:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: mcr.microsoft.com/playwright:v1.64.1-noble
+    env:
+      FD_VISUAL: '1'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # fonts:fetch clones over SSH: it needs git and ssh, which the image may
+      # lack, and GitHub's host keys (checked strictly).
+      - name: Install git and ssh if missing
+        run: |
+          if ! command -v git >/dev/null || ! command -v ssh >/dev/null; then
+            apt-get update
+            apt-get install --yes --no-install-recommends git openssh-client ca-certificates
+          fi
+
+      # System-wide: in a container ssh reads /root, not the $HOME Node sees.
+      - name: Trust GitHub's SSH host keys
+        run: node scripts/github-known-hosts.mjs /etc/ssh/ssh_known_hosts
+
+      - name: Fetch the licensed fonts
+        run: pnpm fonts:fetch
+        env:
+          FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
+
+      - run: pnpm --filter @fox-drop/ui-web build
+
+      - run: pnpm --filter @fox-drop/ui-web exec playwright test --project=visual
+
+      # The expected, actual and diff images of a failed comparison.
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: visual-diff
+          # Images only: no trace or other file that could carry the fonts.
+          path: packages/ui-web/test-results/**/*.png
           if-no-files-found: ignore
 
   # The server's tests start PostGIS and Valkey with Testcontainers, in three
@@ -259,6 +322,7 @@ jobs:
         contract,
         format,
         typescript,
+        visual,
         server,
         dart,
         flutter,

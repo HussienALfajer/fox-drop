@@ -32,6 +32,8 @@ export interface Board {
   title: string;
   w: number;
   h: number;
+  /** Working controls on the canvas (hover and press them). */
+  interactive?: boolean;
   html: string;
 }
 
@@ -367,7 +369,7 @@ function shapes(themes: Themes, config: GuideConfig): Board {
   return page(themes, config, { file: 'Shapes.dc.html', title: 'Shapes', w: W, h: 900 }, body);
 }
 
-// Rules: R1 to R9 of §9.5, read from the architecture document ---------------
+// Rules: R1 to R10 of §9.5, read from the architecture document ---------------
 
 export function rules(): { id: string; rule: string; enforced: string; slice: string }[] {
   const doc = readFileSync(path.join(ROOT, 'docs/architecture/09-design-system.md'), 'utf8');
@@ -426,7 +428,10 @@ export function canvas(
 ): string {
   let x = 0;
   const entries = list.map((b) => {
-    const entry = [b.file, { x, y: 0, w: b.w, h: b.h, title: b.title }] as const;
+    const entry = [
+      b.file,
+      { x, y: 0, w: b.w, h: b.h, title: b.title, ...(b.interactive && { is_interactive: true }) },
+    ] as const;
     x += b.w + 80;
     return entry;
   });

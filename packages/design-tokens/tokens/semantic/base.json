@@ -459,6 +459,10 @@
       "$value": "50px",
       "$description": "The Figma file's button height and icon-button diameter."
     },
+    "control-compact": {
+      "$value": "40px",
+      "$description": "The compact button height for the admin panel and the restaurant portal (pointer devices only)."
+    },
     "icon-sm": {
       "$value": "16px",
       "$description": "A small icon: inside chips, badges and dense rows; the stroke scales to 2/24 of it."

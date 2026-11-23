@@ -15,7 +15,7 @@ The admin panel «لوحة الإدارة»: a static single-page app (architect
 - **Commands (architecture §5.3):** a command that takes `Idempotency-Key` keeps one key per choice until an answer arrives, so a retry replays instead of acting twice. A command that only sets a value takes none.
 - **Content-Security-Policy:** staging and production serve `default-src 'self'` (`infra/nginx/headers.conf`): no inline script or style, no `data:` image, no third-party origin. Draw generated images as inline SVG. Playwright runs without it: check new resources against it.
 - **Types:** `tsconfig.json` types `src` for the browser; `tsconfig.node.json` types `e2e`, `test` and the config files.
-- **Design stop:** no styling, design tokens or shared UI package until the owner says the design is ready (root `CLAUDE.md`). Layout, when it comes, uses start and end, never left and right.
+- **UI:** it comes only from `@fox-drop/ui-web`; a screen is coded only after its drawing is approved (architecture §9.9). Layouts use start and end, never left and right.
 
 ## Tests
 

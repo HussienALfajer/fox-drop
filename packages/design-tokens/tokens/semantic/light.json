@@ -9,9 +9,21 @@
       "$value": "{primitive.color.neutral.25}",
       "$description": "Cards, sheets and inputs raised above the screen ground."
     },
+    "surface-hover": {
+      "$value": "{primitive.color.blue.50}",
+      "$description": "A control on the ground or on ivory under the pointer: the brand blue's tint (R10)."
+    },
     "surface-pressed": {
-      "$value": "{primitive.color.neutral.100}",
-      "$description": "A raised surface while it is pressed or selected."
+      "$value": "{primitive.color.blue.100}",
+      "$description": "A control on the ground or on ivory while it is pressed (R10). A pressed state only: a selected item is designed with accent."
+    },
+    "surface-raised-hover": {
+      "$value": "{primitive.color.blue.100}",
+      "$description": "A control on a raised surface under the pointer (R10): one step deeper than on the ground, which white needs to show."
+    },
+    "surface-raised-pressed": {
+      "$value": "{primitive.color.blue.200}",
+      "$description": "A control on a raised surface while it is pressed (R10)."
     },
     "on-surface": {
       "$value": "{primitive.color.blue.500}",
@@ -29,9 +41,13 @@
       "$value": "{primitive.color.orange.400}",
       "$description": "The brand orange on filled controls, bars and orange text; under the owner's contrast exception (architecture §9.5 R4)."
     },
+    "primary-hover": {
+      "$value": "{primitive.color.orange.550}",
+      "$description": "A primary control under the pointer: a deeper step of the brand orange (R10)."
+    },
     "primary-pressed": {
-      "$value": "{primitive.color.orange.500}",
-      "$description": "A primary control while it is pressed."
+      "$value": "{primitive.color.orange.600}",
+      "$description": "A primary control while it is pressed (R10)."
     },
     "on-primary": {
       "$value": "{primitive.color.neutral.50}",
@@ -57,6 +73,10 @@
       "$value": "{primitive.color.blue-on-ivory.60}",
       "$description": "Control boundaries at 3:1: inputs, checkboxes, outlined buttons."
     },
+    "border-hover": {
+      "$value": "{primitive.color.blue.500}",
+      "$description": "A control boundary under the pointer: the outline turns full blue (R10)."
+    },
     "focus-ring": {
       "$value": "{primitive.color.blue.500}",
       "$description": "The keyboard focus ring, at 3:1 on every surface."
@@ -80,6 +100,14 @@
     "danger": {
       "$value": "{primitive.color.red.600}",
       "$description": "Errors, refusals and destructive actions."
+    },
+    "danger-hover": {
+      "$value": "{primitive.color.red.700}",
+      "$description": "A danger control under the pointer (R10)."
+    },
+    "danger-pressed": {
+      "$value": "{primitive.color.red.900}",
+      "$description": "A danger control while it is pressed (R10)."
     },
     "on-danger": {
       "$value": "{primitive.color.white}",

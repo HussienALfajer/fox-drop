@@ -316,7 +316,7 @@ function BannerEditor({
     if (context === null) return;
     // A transparent part of a PNG or WebP would turn black in the JPEG:
     // white behind it (decided by us, until the design).
-    context.fillStyle = '#ffffff';
+    context.fillStyle = 'white';
     context.fillRect(0, 0, BANNER_WIDTH, BANNER_HEIGHT);
     context.drawImage(image, box.sx, box.sy, box.sw, box.sh, 0, 0, BANNER_WIDTH, BANNER_HEIGHT);
   }, [image, crop]);
@@ -615,7 +615,7 @@ function PreviewImage({
     const context = small.current.getContext('2d');
     if (context === null) return;
     // White behind a transparent part, as in the uploaded JPEG.
-    context.fillStyle = '#ffffff';
+    context.fillStyle = 'white';
     context.fillRect(0, 0, PHONE_WIDTH, PHONE_HEIGHT);
     context.drawImage(image, box.sx, box.sy, box.sw, box.sh, 0, 0, PHONE_WIDTH, PHONE_HEIGHT);
   }, [image, crop]);

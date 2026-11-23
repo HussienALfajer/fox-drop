@@ -1,6 +1,6 @@
 # apps/merchant-portal
 
-The owner web portal «بوابة المطعم» (architecture §10.4, RA §17): the same stack and rules as the admin panel; read `apps/admin/CLAUDE.md` first, it does not load here by itself (the API through `api` only, same origin, feature and page pairs, Arabic and right to left, no styling until the design). It calls the `merchant` route group, serves on port 5174 in development and previews on 4174 for its smoke test (`e2e/smoke.spec.ts`).
+The owner web portal «بوابة المطعم» (architecture §10.4, RA §17): the same stack and rules as the admin panel; read `apps/admin/CLAUDE.md` first, it does not load here by itself (the API through `api` only, same origin, feature and page pairs, Arabic and right to left). It calls the `merchant` route group, serves on port 5174 in development and previews on 4174 for its smoke test (`e2e/smoke.spec.ts`).
 
 ## Rules
 
@@ -13,7 +13,8 @@ The owner web portal «بوابة المطعم» (architecture §10.4, RA §17):
 - **Commands:** a command with an `Idempotency-Key` keeps one key per ask until answered; a new row's id is made once per form (`crypto.randomUUID`), so a resend changes the same row.
 - **Uploads and downloads:** photos, report files and Excel exports are signed for the portal's own origin and go through nginx (Vite in development); a download asks its URL at the click.
 - **Terms and terminated restaurants:** until the terms are accepted every screen but «الطلبات» and the terms shows the terms (`AfterTerms` in `router.tsx`); a terminated restaurant's owners see the money section only, read only.
-- **Print:** the browser's print with `data-print="hide"` and the one print rule in `index.html`; no layout until the design.
+- **Print:** the browser's print with `data-print="hide"` and the one print rule in `index.html`.
+- **UI:** it comes only from `@fox-drop/ui-web`; a screen is coded only after its drawing is approved (architecture §9.9). Layouts use start and end, never left and right.
 
 ## More
 

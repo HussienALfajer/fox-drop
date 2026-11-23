@@ -42,6 +42,19 @@ The first 44 line icons of brand expression §10, on the grid of architecture §
 - **The sheet:** `src/icon-sheet.ts` draws «Icons — batch 1» on the Component proposals canvas (every icon with its Arabic label, active state, three sizes, the mirrored three in LTR and RTL, a grid overlay). The owner approved it on 2026-11-23, open to edits when the screens are built.
 - **Design System:** an `Icons` asset group (tile `m`) with a README of the grid rules.
 
+## Button tokens (D.6)
+
+Version 0.4.0, the set the owner approved on 2026-11-23 (`button()` in `src/button-sheet.ts`). New: `size.control-compact` 40 and `button.compact.height` (the panel's compact Button); `button.danger.{background,background-pressed,label}` (`color.danger`, `color.alert`, `color.on-danger`); `button.ghost.{background-pressed,label}` (`color.surface-pressed`, `color.on-surface`). The ghost ground is transparent, so it has no token; the disabled ghost keeps it. Contrast: `on-danger` on `alert` at 7:1 on every surface, and `on-danger` on `danger` at 7:1 for the captain (danger is red 800 there, 9.27:1, and equals `alert`, so its pressed step is invisible); the ghost label on `surface-pressed` was already covered by the `on-surface` pairs.
+
+## Interaction states, R10 (D.6)
+
+Version 0.5.0 (owner, 2026-11-24). The 0.4.0 hover, a mix of fill and pressed, measured ΔE2000 3.3 on primary and 1.3 on ghost and was not seen. `src/state-sheet.ts` drew three systems live on the Component proposals canvas («Interaction states — one system»: an ink layer, brand tonal steps, tonal steps with motion); the owner picked **brand tonal steps** without motion.
+
+- **Triples** (`STATE_TRIPLES` in `src/contrast.ts`): `primary` → `primary-hover` (orange 550) → `primary-pressed` (orange 600); `danger` → `danger-hover` (red 700) → `danger-pressed` (red 900; captain red 900 → red 950); `surface` → `surface-hover` (blue 50) → `surface-pressed` (blue 100); `surface-raised` → `surface-raised-hover` (blue 100) → `surface-raised-pressed` (blue 200; captain blue 100). `border-hover` (blue 500) is the outline under the pointer. White needs the deeper blue: blue 50 on it is only ΔE 4.7.
+- **The test** (`tokens.test.ts`, «makes every hover and press visible»): in the pointer themes (light, dark) hover ≥ `MIN_HOVER` 8 from rest and pressed ≥ `MIN_PRESS` 5 beyond hover; in the captain themes (touch, no hover) pressed ≥ 8 from rest.
+- **Contrast:** the state grounds (`STATE_BACKGROUNDS`) need only `on-surface` (4.5, captain 7) and the focus ring, since they are transient; `surface-pressed` therefore left `BACKGROUNDS`, and a selected item is designed with accent. `on-danger` on `danger-hover` and `danger-pressed`; `on-primary` on `primary-hover` under the orange exception (`ORANGE`).
+- **Changed values:** `primary-pressed` orange 500 → 600; `surface-pressed` neutral 100 → blue 100; `button.danger.background-pressed` is `danger-pressed`, no longer `alert`, so the captain's pressed danger now shows a step.
+
 ## Left out
 
 The `tnum` feature as a token (D.6 and D.7 set `font-variant-numeric: tabular-nums` or `FontFeature.tabularFigures()` on the number role and on money, timer and table text); real dark values; wiring the theme into the web apps (D.6) and Flutter (D.7); components in the Design System (D.6); publishing the artifacts from CI; font subsetting and size budgets; map style tokens (D.3); densities (the panel scale covers the compact one for now). Icons: the `Icon` components (D.6 `ui-web`, D.7 `core_ui`); the second batch (expression §10); filled or duotone variants and the Figma file's orange accent layer (the bell's dot, filled stars), which R8 forbids today and waits for the owner; an icon font.

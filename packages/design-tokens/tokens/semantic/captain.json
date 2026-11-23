@@ -13,6 +13,17 @@
     },
     "danger": {
       "$value": "{primitive.color.red.800}"
+    },
+    "danger-hover": {
+      "$value": "{primitive.color.red.900}"
+    },
+    "danger-pressed": {
+      "$value": "{primitive.color.red.950}",
+      "$description": "Touch only: pressed must stand out from rest by itself (R10)."
+    },
+    "surface-raised-pressed": {
+      "$value": "{primitive.color.blue.100}",
+      "$description": "Blue 100, not 200: text on it keeps 7:1 (R10)."
     }
   }
 }
