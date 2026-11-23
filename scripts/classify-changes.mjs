@@ -62,11 +62,14 @@ const DART =
 const GOLDEN_INPUTS =
   /^(docs\/brand\/fonts-manifest\.json|scripts\/(fonts|fonts-fetch|github-known-hosts)\.mjs)$/;
 // What can break a native release build that the Dart tests cannot see: a
-// native project, a dependency (a pubspec or the lock file), a package with
-// native code, the pinned Flutter, the workflow. The staging builds on main
-// catch the rest.
+// native project, a resolved dependency (the lock file), a package with
+// native code, the pinned Flutter. A pubspec.yaml whose change leaves the
+// lock file alone resolves the same packages, and a change to the native
+// jobs of ci.yml takes the native-builds label (owner decision 2026-11-23:
+// 9 of 20 native runs were one of these two). Main builds Android only
+// (staging-apks), so iOS and Windows have no later catch-all.
 const NATIVE =
-  /(^apps\/(customer|captain|merchant)\/(android|ios|windows|macos|linux)\/|(^|\/)pubspec\.(yaml|lock)$|^\.fvmrc$|^\.github\/workflows\/ci\.yml$)/;
+  /(^apps\/(customer|captain|merchant)\/(android|ios|windows|macos|linux)\/|(^|\/)pubspec\.lock$|^\.fvmrc$)/;
 const nativePackage = (file) => NATIVE_PACKAGES.some((each) => file.startsWith(`${each}/`));
 // Only Dart and Flutter look at these; everything else counts for TypeScript.
 const DART_ONLY =

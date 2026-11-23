@@ -23,9 +23,9 @@ jobs:
   # pinned Flutter, this workflow or verify.mjs (a server route changes
   # packages/core_api, the committed client, and the contract job fails one
   # left stale). The native release builds of a pull request run only for a
-  # native project, a pubspec or the lock file, a package with native code,
-  # the pinned Flutter or this workflow (`native`), or with the native-builds
-  # label; the staging builds on main catch the rest.
+  # native project, the lock file, a package with native code or the pinned
+  # Flutter (`native`), or with the native-builds label, which a change to
+  # the native jobs below takes. Main builds Android only (staging-apks).
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
