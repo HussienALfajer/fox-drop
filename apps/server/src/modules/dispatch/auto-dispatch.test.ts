@@ -462,6 +462,14 @@ describe('automatic dispatch (AP §9.12.6, CA §8.1)', () => {
 });
 
 describe('the dispatcher role (architecture §4.4)', () => {
+  // Only this file's database: the run's other test files share the server.
+  const advisoryLocks = async () =>
+    (
+      await sql.query<{ n: number }>(
+        "SELECT count(*)::int AS n FROM pg_locks WHERE locktype = 'advisory' AND database = (SELECT oid FROM pg_database WHERE datname = current_database())",
+      )
+    ).rows[0]?.n;
+
   it('leads each city from one process at a time, and hands over when it stops', async () => {
     const passes: string[] = [];
     const counting = (name: string) =>
@@ -479,6 +487,9 @@ describe('the dispatcher role (architecture §4.4)', () => {
       await first.tick();
       expect(passes).toEqual(['first', 'first']);
       await first.onModuleDestroy();
+      // Stopping waits until the server freed the lock, not only until the
+      // end was sent: a busy server let `second` find it still held.
+      expect(await advisoryLocks()).toBe(0);
       await second.tick();
       expect(passes).toEqual(['first', 'first', 'second']);
       // The leader's session ends on the server: it connects again and
