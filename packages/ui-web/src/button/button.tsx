@@ -32,16 +32,15 @@ const buttonTv = createTV({
 });
 
 // The look drawn on the approved sheet (`button()` in design-tokens
-// `src/button-sheet.ts`). Hover and pressed are an overlay: the pressed colour
-// at 50% over the fill (owner, 2026-11-24) or at 60% over a transparent ghost,
-// so a class never needs an arbitrary `color-mix`. The
-// overlay sits behind the label (`isolate`, `-z-10`) and goes away while the
-// button is pressed, when the pressed colour is the fill itself. No shadow.
+// `src/button-sheet.ts`) with the interaction states the owner picked on
+// 2026-11-24 (architecture §9.5 R10, «Brand tonal steps»): each variant has its
+// own hover and pressed tokens, measured visible by design-tokens' R10 test.
+// The colour fades over `duration.base`; nothing moves. No shadow.
 const button = buttonTv({
   base: [
-    'relative isolate inline-flex items-center justify-center rounded-(--fd-button-radius) font-medium whitespace-nowrap',
+    'relative inline-flex items-center justify-center rounded-(--fd-button-radius) font-medium whitespace-nowrap',
+    'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
     'outline-hidden focus-visible:ring-2 focus-visible:ring-(color:--fd-button-focus-ring) focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-    'before:pointer-events-none before:absolute before:inset-none before:-z-10 before:rounded-(--fd-button-radius) before:opacity-0',
   ],
   variants: {
     variant: { primary: '', secondary: '', danger: '', ghost: '' },
@@ -54,7 +53,7 @@ const button = buttonTv({
       true: 'cursor-not-allowed text-(color:--fd-button-disabled-label)',
       false: 'cursor-pointer',
     },
-    interactive: { true: 'hover:before:opacity-50 active:before:opacity-0', false: '' },
+    interactive: { true: '', false: '' },
   },
   compoundVariants: [
     { density: 'comfortable', iconOnly: true, class: 'w-(--fd-button-height)' },
@@ -90,25 +89,25 @@ const button = buttonTv({
       variant: 'primary',
       interactive: true,
       class:
-        'before:bg-(--fd-button-primary-background-pressed) active:bg-(--fd-button-primary-background-pressed)',
+        'hover:bg-(--fd-button-primary-background-hover) active:bg-(--fd-button-primary-background-pressed)',
     },
     {
       variant: 'secondary',
       interactive: true,
       class:
-        'before:bg-(--fd-button-secondary-background-pressed) active:bg-(--fd-button-secondary-background-pressed)',
+        'hover:bg-(--fd-button-secondary-background-hover) hover:inset-ring-(--fd-button-secondary-border-hover) active:bg-(--fd-button-secondary-background-pressed)',
     },
     {
       variant: 'danger',
       interactive: true,
       class:
-        'before:bg-(--fd-button-danger-background-pressed) active:bg-(--fd-button-danger-background-pressed)',
+        'hover:bg-(--fd-button-danger-background-hover) active:bg-(--fd-button-danger-background-pressed)',
     },
     {
       variant: 'ghost',
       interactive: true,
       class:
-        'before:bg-(--fd-button-ghost-background-pressed) active:bg-(--fd-button-ghost-background-pressed) hover:before:opacity-60',
+        'hover:bg-(--fd-button-ghost-background-hover) active:bg-(--fd-button-ghost-background-pressed)',
     },
   ],
   defaultVariants: { variant: 'primary', density: 'comfortable' },

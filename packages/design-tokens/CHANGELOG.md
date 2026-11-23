@@ -2,6 +2,14 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.5.0 (2026-11-24, slice D.6: interaction states, R10)
+
+- The owner picked «Brand tonal steps» on the Interaction states sheet: one state model for every interactive component, measured. The 0.4.0 hover (a 50% mix of fill and pressed) was ΔE2000 3.3 on primary and 1.3 on ghost, which the eye barely notices.
+- New semantic colours: `primary-hover` (orange 550, new), `danger-hover` (red 700, new), `danger-pressed` (red 900, new), `surface-hover` (blue 50), `surface-raised-hover` (blue 100), `surface-raised-pressed` (blue 200), `border-hover` (blue 500). The captain overrides `danger-hover` (red 900), `danger-pressed` (red 950, new) and `surface-raised-pressed` (blue 100, for 7:1 text).
+- Changed: `primary-pressed` orange 500 → 600; `surface-pressed` neutral 100 → blue 100, now a pressed state only (a selected item is designed with accent).
+- Button: `background-hover` for every variant, `secondary.border-hover`; `secondary` presses to `surface-raised-*`; `danger.background-pressed` is `danger-pressed`, no longer `alert`.
+- New test (R10): with a pointer (light, dark) hover is ΔE ≥ 8 from rest and pressed ≥ 5 beyond hover; on touch (captain) pressed is ≥ 8 from rest. Contrast: `on-surface` and the focus ring on every state ground, `on-danger` on its hover and pressed fills, `on-primary` on `primary-hover` under the orange exception.
+
 ## 0.4.0 (2026-11-23, slice D.6: the approved Button set)
 
 - New: `size.control-compact` 40 px; Button tokens `button.compact.height`, `button.danger.{background,background-pressed,label}` (danger, alert, on-danger) and `button.ghost.{background-pressed,label}` (surface-pressed, on-surface). The ghost ground is transparent, so it has no token.

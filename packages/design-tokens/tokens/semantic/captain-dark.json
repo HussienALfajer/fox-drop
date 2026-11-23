@@ -13,6 +13,15 @@
     },
     "danger": {
       "$value": "{primitive.color.red.800}"
+    },
+    "danger-hover": {
+      "$value": "{primitive.color.red.900}"
+    },
+    "danger-pressed": {
+      "$value": "{primitive.color.red.950}"
+    },
+    "surface-raised-pressed": {
+      "$value": "{primitive.color.blue.100}"
     }
   }
 }

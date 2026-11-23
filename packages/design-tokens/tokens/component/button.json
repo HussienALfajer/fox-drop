@@ -31,6 +31,9 @@
       "background": {
         "$value": "{color.primary}"
       },
+      "background-hover": {
+        "$value": "{color.primary-hover}"
+      },
       "background-pressed": {
         "$value": "{color.primary-pressed}"
       },
@@ -43,11 +46,17 @@
       "background": {
         "$value": "{color.surface-raised}"
       },
+      "background-hover": {
+        "$value": "{color.surface-raised-hover}"
+      },
       "background-pressed": {
-        "$value": "{color.surface-pressed}"
+        "$value": "{color.surface-raised-pressed}"
       },
       "border": {
         "$value": "{color.border-strong}"
+      },
+      "border-hover": {
+        "$value": "{color.border-hover}"
       },
       "label": {
         "$value": "{color.on-surface}"
@@ -58,8 +67,11 @@
       "background": {
         "$value": "{color.danger}"
       },
+      "background-hover": {
+        "$value": "{color.danger-hover}"
+      },
       "background-pressed": {
-        "$value": "{color.alert}"
+        "$value": "{color.danger-pressed}"
       },
       "label": {
         "$value": "{color.on-danger}"
@@ -67,6 +79,9 @@
     },
     "ghost": {
       "$type": "color",
+      "background-hover": {
+        "$value": "{color.surface-hover}"
+      },
       "background-pressed": {
         "$value": "{color.surface-pressed}"
       },

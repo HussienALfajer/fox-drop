@@ -8,8 +8,17 @@
     "surface-raised": {
       "$value": "{primitive.color.neutral.25}"
     },
+    "surface-hover": {
+      "$value": "{primitive.color.blue.50}"
+    },
     "surface-pressed": {
-      "$value": "{primitive.color.neutral.100}"
+      "$value": "{primitive.color.blue.100}"
+    },
+    "surface-raised-hover": {
+      "$value": "{primitive.color.blue.100}"
+    },
+    "surface-raised-pressed": {
+      "$value": "{primitive.color.blue.200}"
     },
     "on-surface": {
       "$value": "{primitive.color.blue.500}",
@@ -26,8 +35,11 @@
       "$value": "{primitive.color.orange.400}",
       "$description": "The brand orange on filled controls, bars and orange text; under the owner's contrast exception (architecture §9.5 R4)."
     },
+    "primary-hover": {
+      "$value": "{primitive.color.orange.550}"
+    },
     "primary-pressed": {
-      "$value": "{primitive.color.orange.500}"
+      "$value": "{primitive.color.orange.600}"
     },
     "on-primary": {
       "$value": "{primitive.color.neutral.50}",
@@ -50,6 +62,9 @@
     "border-strong": {
       "$value": "{primitive.color.blue-on-ivory.60}"
     },
+    "border-hover": {
+      "$value": "{primitive.color.blue.500}"
+    },
     "focus-ring": {
       "$value": "{primitive.color.blue.500}"
     },
@@ -67,6 +82,12 @@
     },
     "danger": {
       "$value": "{primitive.color.red.600}"
+    },
+    "danger-hover": {
+      "$value": "{primitive.color.red.700}"
+    },
+    "danger-pressed": {
+      "$value": "{primitive.color.red.900}"
     },
     "on-danger": {
       "$value": "{primitive.color.white}"

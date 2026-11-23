@@ -44,7 +44,7 @@ for (const surface of surfaces)
       await expect(page).toHaveScreenshot(`${story.id}-${surface}.png`, {
         animations: 'disabled',
         fullPage: true,
-        // Playwright's default colour tolerance hides a faint hover overlay.
+        // Exact colours: Playwright's default tolerance would hide a state change.
         threshold: 0,
       });
     });

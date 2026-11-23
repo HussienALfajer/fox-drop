@@ -40,39 +40,42 @@ const SAMPLE: Record<Variant, string> = {
 
 interface Look {
   bg: string;
+  bgHover: string;
   bgPressed: string;
   fg: string;
   border?: string;
+  borderHover?: string;
 }
 
 function look(themes: Themes, theme: Theme, variant: Variant): Look {
   const t = (name: string) => cssValue(themes[theme].get(name)!);
+  const states = (v: Variant) => ({
+    bgHover: t(`button.${v}.background-hover`),
+    bgPressed: t(`button.${v}.background-pressed`),
+  });
   switch (variant) {
     case 'primary':
       return {
         bg: t('button.primary.background'),
-        bgPressed: t('button.primary.background-pressed'),
+        ...states(variant),
         fg: t('button.primary.label'),
       };
     case 'secondary':
       return {
         bg: t('button.secondary.background'),
-        bgPressed: t('button.secondary.background-pressed'),
+        ...states(variant),
         fg: t('button.secondary.label'),
         border: t('button.secondary.border'),
+        borderHover: t('button.secondary.border-hover'),
       };
     case 'danger':
       return {
         bg: t('button.danger.background'),
-        bgPressed: t('button.danger.background-pressed'),
+        ...states(variant),
         fg: t('button.danger.label'),
       };
     case 'ghost':
-      return {
-        bg: 'transparent',
-        bgPressed: t('button.ghost.background-pressed'),
-        fg: t('button.ghost.label'),
-      };
+      return { bg: 'transparent', ...states(variant), fg: t('button.ghost.label') };
   }
 }
 
@@ -103,16 +106,13 @@ function button(themes: Themes, o: Opts): string {
   const scale = o.scale ?? 1;
   const iconSize = Number.parseFloat(t(o.height >= 50 ? 'size.icon-md' : 'size.icon-sm'));
   let bg = l.bg;
-  if (state === 'hover')
-    bg =
-      o.variant === 'ghost'
-        ? `color-mix(in srgb, ${l.bgPressed} 60%, transparent)`
-        : `color-mix(in srgb, ${l.bg} 50%, ${l.bgPressed})`;
+  if (state === 'hover') bg = l.bgHover;
   if (state === 'pressed') bg = l.bgPressed;
   if (disabled) bg = o.variant === 'ghost' ? 'transparent' : t('button.disabled.background');
   const fg = disabled ? t('button.disabled.label') : l.fg;
   const shadows: string[] = [];
-  if (l.border && !disabled) shadows.push(`inset 0 0 0 1px ${l.border}`);
+  const border = state === 'hover' ? l.borderHover : l.border;
+  if (border && !disabled) shadows.push(`inset 0 0 0 1px ${border}`);
   if (state === 'focus')
     shadows.push(`0 0 0 2px ${t('color.surface')}`, `0 0 0 4px ${t('button.focus-ring')}`);
   const size = o.only
@@ -287,7 +287,7 @@ export function buttonSheet(themes: Themes, config: GuideConfig, icons: Icon[]):
 <li>الأنواع الأربعة: أساسي، ثانوي، خطر، شفاف، ومن كل نوع زر أيقونة دائري.</li>
 <li>بلا ظل تحت الزر: الظل البرتقالي المزاح للبانرات فقط.</li>
 <li>الحجم المضغوط 40 للوحة الإدارة وبوابة المطعم فقط؛ تطبيقات الهاتف والكابتن 50.</li>
-<li>الضغط للخطر بالأحمر الداكن «alert»، والتمرير مزيج بالنصف بين العادي والمضغوط (عُدّل في 2026-11-24: 12٪ لم يكن يُرى).</li>
+<li>التمرير والضغط من نظام «تدرّج العلامة» (2026-11-24، القاعدة R10): البرتقالي والأحمر يغمقان داخل درجاتهما، والأزرار الفاتحة تأخذ مسحة الأزرق وحافة زرقاء كاملة.</li>
 <li>التحميل: دائرة دوّارة مكان النص، وعرض الزر ثابت، ولا يُضغط.</li>
 </ol>`,
   );

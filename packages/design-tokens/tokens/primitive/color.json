@@ -18,9 +18,13 @@
           "$description": "The Figma file's offset shadow under orange shapes."
         },
         "500": { "$value": "#EA580C" },
+        "550": {
+          "$value": "#DA531B",
+          "$description": "The primary hover: 60% of the way from 400 to 600 (R10, owner 2026-11-24)."
+        },
         "600": {
           "$value": "#C2410C",
-          "$description": "The former accessible orange; no semantic token uses it since 2026-11-23."
+          "$description": "The primary pressed (R10); the former accessible orange."
         },
         "700": { "$value": "#9A3412" },
         "800": { "$value": "#7C2D12" },
@@ -61,7 +65,10 @@
       },
       "red": {
         "600": { "$value": "#BF2929", "$description": "The Figma file's error red." },
-        "800": { "$value": "#8C1530" }
+        "700": { "$value": "#9B1B2E", "$description": "The danger hover (R10)." },
+        "800": { "$value": "#8C1530" },
+        "900": { "$value": "#6B1729", "$description": "The danger pressed (R10)." },
+        "950": { "$value": "#521020", "$description": "The captain's danger pressed (R10)." }
       },
       "amber": {
         "700": { "$value": "#8A5A00" },

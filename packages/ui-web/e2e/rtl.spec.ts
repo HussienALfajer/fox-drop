@@ -127,25 +127,35 @@ test.describe('axe, WCAG 2.2 AA', () => {
   }
 });
 
-test('hover shows the overlay: it has a size and turns visible', async ({ page }) => {
-  await openStory(page, 'button--primary-hover');
-  const button = page.getByRole('button');
-  const overlay = () =>
-    button.evaluate((element) => {
-      const style = getComputedStyle(element, '::before');
-      return {
-        opacity: Number(style.opacity),
-        width: parseFloat(style.width),
-        height: parseFloat(style.height),
-      };
-    });
-  expect((await overlay()).opacity).toBe(0);
-  await button.hover();
-  const hovered = await overlay();
-  expect(hovered.opacity).toBe(0.5);
-  expect(hovered.width).toBeGreaterThan(0);
-  expect(hovered.height).toBeGreaterThan(0);
-});
+// R10: hover and pressed paint the variant's own state tokens (design-tokens
+// measures them visible). The colour fades, so poll until it settles.
+for (const variant of ['primary', 'secondary', 'danger', 'ghost']) {
+  test(`${variant} hover and pressed paint their state tokens`, async ({ page }) => {
+    await openStory(page, `button--${variant}-hover`);
+    const button = page.getByRole('button');
+    const paint = () =>
+      button.evaluate((element, v) => {
+        const style = getComputedStyle(element);
+        const rgb = (name: string) => {
+          const hex = style.getPropertyValue(`--fd-button-${v}-${name}`).trim();
+          const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+          return `rgb(${r}, ${g}, ${b})`;
+        };
+        return {
+          now: style.backgroundColor,
+          hover: rgb('background-hover'),
+          pressed: rgb('background-pressed'),
+        };
+      }, variant);
+    const before = await paint();
+    expect(before.now).not.toBe(before.hover);
+    await button.hover();
+    await expect.poll(async () => (await paint()).now).toBe(before.hover);
+    await page.mouse.down();
+    await expect.poll(async () => (await paint()).now).toBe(before.pressed);
+    await page.mouse.up();
+  });
+}
 
 test.describe('130% text', () => {
   for (const story of stories('Button')) {

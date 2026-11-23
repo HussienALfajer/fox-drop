@@ -22,10 +22,18 @@ export interface Pair {
  * file draws it, although it misses 4.5:1 (architecture §9.5 R4). The report
  * lists these pairs with their ratios; a test keeps the exception to them.
  */
-export const ORANGE = new Set(['brand', 'primary', 'primary-pressed', 'heading']);
+export const ORANGE = new Set(['brand', 'primary', 'primary-hover', 'primary-pressed', 'heading']);
 const EXCEPTION = 'owner, 2026-11-23: the brand orange as in the Figma file';
 
-export const BACKGROUNDS = ['surface', 'surface-raised', 'surface-pressed'];
+export const BACKGROUNDS = ['surface', 'surface-raised'];
+// The grounds of a control under the pointer or pressed (R10): transient, so
+// only its own label (on-surface) and the focus ring must read on them.
+export const STATE_BACKGROUNDS = [
+  'surface-hover',
+  'surface-pressed',
+  'surface-raised-hover',
+  'surface-raised-pressed',
+];
 const on = (names: string[], target: number, use: string, backgrounds = BACKGROUNDS): Pair[] =>
   names.flatMap((foreground) =>
     backgrounds.map((background) => ({ foreground, background, target, use })),
@@ -36,7 +44,7 @@ const excepted = (pairs: Pair[], floor: number): Pair[] =>
 // Orange text is for headings only; `primary` is a fill, never text.
 const orangeText = excepted(on(['heading'], 4.5, 'orange heading'), 2.4);
 const orangeFills = excepted(
-  ['primary', 'primary-pressed'].map((background) => ({
+  ['primary', 'primary-hover', 'primary-pressed'].map((background) => ({
     foreground: 'on-primary',
     background,
     target: 4.5,
@@ -58,16 +66,23 @@ const fills: Pair[] = FILLS.map(([foreground, background]) => ({
   target: 4.5,
   use: 'filled control label',
 }));
-// The danger Button: its label on the fill and on the pressed fill (`alert`);
-// the ghost label on its pressed ground is covered by `on-surface` text.
-// `alert` is the 7:1 red, so a pair on it targets 7:1 everywhere.
-const dangerButton: Pair[] = [
-  { foreground: 'on-danger', background: 'alert', target: 7, use: 'filled control label' },
-];
+// The danger fill under the pointer and pressed (R10).
+const dangerStates = (target: number): Pair[] =>
+  ['danger-hover', 'danger-pressed'].map((background) => ({
+    foreground: 'on-danger',
+    background,
+    target,
+    use: 'filled control label',
+  }));
+const dangerButton = dangerStates(4.5);
 // The captain's danger is red.800, so its Button label reads at 7:1 on the fill too.
 const captainDangerButton: Pair[] = [
-  ...dangerButton,
+  ...dangerStates(7),
   { foreground: 'on-danger', background: 'danger', target: 7, use: 'filled control label' },
+];
+const states = (target: number): Pair[] => [
+  ...on(['on-surface'], target, 'control label, hovered or pressed', STATE_BACKGROUNDS),
+  ...on(['focus-ring'], 3, 'focus ring, hovered or pressed', STATE_BACKGROUNDS),
 ];
 const nonText = on(['border-strong', 'focus-ring'], 3, 'control boundary, focus ring, icon');
 // Alerts are read from across a room: the restaurant tablet, the panel (§6).
@@ -84,6 +99,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...on(statusText, 4.5, 'status text'),
     ...fills,
     ...dangerButton,
+    ...states(4.5),
     ...nonText,
     ...alerts,
     ...orangeText,
@@ -94,6 +110,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...on(statusText, 4.5, 'status text'),
     ...fills,
     ...dangerButton,
+    ...states(4.5),
     ...nonText,
     ...alerts,
     ...orangeText,
@@ -106,11 +123,29 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...on(statusText, 7, 'status text'),
     ...fills,
     ...captainDangerButton,
+    ...states(7),
     ...nonText,
     ...orangeText,
     ...orangeFills,
   ],
 };
+
+/**
+ * Interaction states (architecture §9.5 R10, owner 2026-11-24): every
+ * interactive component takes its hover and pressed colours from one of these
+ * rest/hover/pressed triples, and each step is measured in CIEDE2000. With a
+ * pointer, hover stands MIN_HOVER from rest and pressed MIN_PRESS beyond hover;
+ * on touch, where there is no hover, pressed stands MIN_HOVER from rest.
+ */
+export const STATE_TRIPLES: [rest: string, hover: string, pressed: string][] = [
+  ['primary', 'primary-hover', 'primary-pressed'],
+  ['danger', 'danger-hover', 'danger-pressed'],
+  ['surface', 'surface-hover', 'surface-pressed'],
+  ['surface-raised', 'surface-raised-hover', 'surface-raised-pressed'],
+];
+export const MIN_HOVER = 8;
+export const MIN_PRESS = 5;
+export const POINTER_THEMES: Theme[] = ['light', 'dark'];
 
 /** The themes a surface is drawn in. */
 export const SURFACE_THEMES: Record<Surface, Theme[]> = {

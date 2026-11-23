@@ -6,11 +6,15 @@ final class ColorTokens {
   const ColorTokens({
     required this.surface,
     required this.surfaceRaised,
+    required this.surfaceHover,
     required this.surfacePressed,
+    required this.surfaceRaisedHover,
+    required this.surfaceRaisedPressed,
     required this.onSurface,
     required this.onSurfaceMuted,
     required this.brand,
     required this.primary,
+    required this.primaryHover,
     required this.primaryPressed,
     required this.onPrimary,
     required this.heading,
@@ -18,12 +22,15 @@ final class ColorTokens {
     required this.onAccent,
     required this.border,
     required this.borderStrong,
+    required this.borderHover,
     required this.focusRing,
     required this.success,
     required this.onSuccess,
     required this.warning,
     required this.onWarning,
     required this.danger,
+    required this.dangerHover,
+    required this.dangerPressed,
     required this.onDanger,
     required this.info,
     required this.onInfo,
@@ -41,11 +48,15 @@ final class ColorTokens {
 
   final int surface;
   final int surfaceRaised;
+  final int surfaceHover;
   final int surfacePressed;
+  final int surfaceRaisedHover;
+  final int surfaceRaisedPressed;
   final int onSurface;
   final int onSurfaceMuted;
   final int brand;
   final int primary;
+  final int primaryHover;
   final int primaryPressed;
   final int onPrimary;
   final int heading;
@@ -53,12 +64,15 @@ final class ColorTokens {
   final int onAccent;
   final int border;
   final int borderStrong;
+  final int borderHover;
   final int focusRing;
   final int success;
   final int onSuccess;
   final int warning;
   final int onWarning;
   final int danger;
+  final int dangerHover;
+  final int dangerPressed;
   final int onDanger;
   final int info;
   final int onInfo;
@@ -79,24 +93,31 @@ abstract final class FoxColors {
   static const ColorTokens light = ColorTokens(
     surface: 0xFFFBF2E7,
     surfaceRaised: 0xFFFEFEFE,
-    surfacePressed: 0xFFF5EFE2,
+    surfaceHover: 0xFFEEF4FC,
+    surfacePressed: 0xFFD6E4F7,
+    surfaceRaisedHover: 0xFFD6E4F7,
+    surfaceRaisedPressed: 0xFFADC9EE,
     onSurface: 0xFF03428E,
     onSurfaceMuted: 0xFF416EA4,
     brand: 0xFFFF6E31,
     primary: 0xFFFF6E31,
-    primaryPressed: 0xFFEA580C,
+    primaryHover: 0xFFDA531B,
+    primaryPressed: 0xFFC2410C,
     onPrimary: 0xFFFFFAED,
     heading: 0xFFFF6E31,
     accent: 0xFF03428E,
     onAccent: 0xFFFFFFFF,
     border: 0xFFD3D6D9,
     borderStrong: 0xFF6688B2,
+    borderHover: 0xFF03428E,
     focusRing: 0xFF03428E,
     success: 0xFF067647,
     onSuccess: 0xFFFFFFFF,
     warning: 0xFF8A5A00,
     onWarning: 0xFFFFFFFF,
     danger: 0xFFBF2929,
+    dangerHover: 0xFF9B1B2E,
+    dangerPressed: 0xFF6B1729,
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
@@ -115,24 +136,31 @@ abstract final class FoxColors {
   static const ColorTokens dark = ColorTokens(
     surface: 0xFFFBF2E7,
     surfaceRaised: 0xFFFEFEFE,
-    surfacePressed: 0xFFF5EFE2,
+    surfaceHover: 0xFFEEF4FC,
+    surfacePressed: 0xFFD6E4F7,
+    surfaceRaisedHover: 0xFFD6E4F7,
+    surfaceRaisedPressed: 0xFFADC9EE,
     onSurface: 0xFF03428E,
     onSurfaceMuted: 0xFF416EA4,
     brand: 0xFFFF6E31,
     primary: 0xFFFF6E31,
-    primaryPressed: 0xFFEA580C,
+    primaryHover: 0xFFDA531B,
+    primaryPressed: 0xFFC2410C,
     onPrimary: 0xFFFFFAED,
     heading: 0xFFFF6E31,
     accent: 0xFF03428E,
     onAccent: 0xFFFFFFFF,
     border: 0xFFD3D6D9,
     borderStrong: 0xFF6688B2,
+    borderHover: 0xFF03428E,
     focusRing: 0xFF03428E,
     success: 0xFF067647,
     onSuccess: 0xFFFFFFFF,
     warning: 0xFF8A5A00,
     onWarning: 0xFFFFFFFF,
     danger: 0xFFBF2929,
+    dangerHover: 0xFF9B1B2E,
+    dangerPressed: 0xFF6B1729,
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
@@ -151,24 +179,31 @@ abstract final class FoxColors {
   static const ColorTokens captainLight = ColorTokens(
     surface: 0xFFFBF2E7,
     surfaceRaised: 0xFFFEFEFE,
-    surfacePressed: 0xFFF5EFE2,
+    surfaceHover: 0xFFEEF4FC,
+    surfacePressed: 0xFFD6E4F7,
+    surfaceRaisedHover: 0xFFD6E4F7,
+    surfaceRaisedPressed: 0xFFD6E4F7,
     onSurface: 0xFF03428E,
     onSurfaceMuted: 0xFF4D473D,
     brand: 0xFFFF6E31,
     primary: 0xFFFF6E31,
-    primaryPressed: 0xFFEA580C,
+    primaryHover: 0xFFDA531B,
+    primaryPressed: 0xFFC2410C,
     onPrimary: 0xFFFFFAED,
     heading: 0xFFFF6E31,
     accent: 0xFF03428E,
     onAccent: 0xFFFFFFFF,
     border: 0xFFD3D6D9,
     borderStrong: 0xFF6688B2,
+    borderHover: 0xFF03428E,
     focusRing: 0xFF03428E,
     success: 0xFF055A37,
     onSuccess: 0xFFFFFFFF,
     warning: 0xFF6B4500,
     onWarning: 0xFFFFFFFF,
     danger: 0xFF8C1530,
+    dangerHover: 0xFF6B1729,
+    dangerPressed: 0xFF521020,
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
@@ -187,24 +222,31 @@ abstract final class FoxColors {
   static const ColorTokens captainDark = ColorTokens(
     surface: 0xFFFBF2E7,
     surfaceRaised: 0xFFFEFEFE,
-    surfacePressed: 0xFFF5EFE2,
+    surfaceHover: 0xFFEEF4FC,
+    surfacePressed: 0xFFD6E4F7,
+    surfaceRaisedHover: 0xFFD6E4F7,
+    surfaceRaisedPressed: 0xFFD6E4F7,
     onSurface: 0xFF03428E,
     onSurfaceMuted: 0xFF4D473D,
     brand: 0xFFFF6E31,
     primary: 0xFFFF6E31,
-    primaryPressed: 0xFFEA580C,
+    primaryHover: 0xFFDA531B,
+    primaryPressed: 0xFFC2410C,
     onPrimary: 0xFFFFFAED,
     heading: 0xFFFF6E31,
     accent: 0xFF03428E,
     onAccent: 0xFFFFFFFF,
     border: 0xFFD3D6D9,
     borderStrong: 0xFF6688B2,
+    borderHover: 0xFF03428E,
     focusRing: 0xFF03428E,
     success: 0xFF055A37,
     onSuccess: 0xFFFFFFFF,
     warning: 0xFF6B4500,
     onWarning: 0xFFFFFFFF,
     danger: 0xFF8C1530,
+    dangerHover: 0xFF6B1729,
+    dangerPressed: 0xFF521020,
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
@@ -231,15 +273,20 @@ final class ButtonTokens {
     required this.radius,
     required this.focusRing,
     required this.primaryBackground,
+    required this.primaryBackgroundHover,
     required this.primaryBackgroundPressed,
     required this.primaryLabel,
     required this.secondaryBackground,
+    required this.secondaryBackgroundHover,
     required this.secondaryBackgroundPressed,
     required this.secondaryBorder,
+    required this.secondaryBorderHover,
     required this.secondaryLabel,
     required this.dangerBackground,
+    required this.dangerBackgroundHover,
     required this.dangerBackgroundPressed,
     required this.dangerLabel,
+    required this.ghostBackgroundHover,
     required this.ghostBackgroundPressed,
     required this.ghostLabel,
     required this.disabledBackground,
@@ -253,15 +300,20 @@ final class ButtonTokens {
   final double radius;
   final int focusRing;
   final int primaryBackground;
+  final int primaryBackgroundHover;
   final int primaryBackgroundPressed;
   final int primaryLabel;
   final int secondaryBackground;
+  final int secondaryBackgroundHover;
   final int secondaryBackgroundPressed;
   final int secondaryBorder;
+  final int secondaryBorderHover;
   final int secondaryLabel;
   final int dangerBackground;
+  final int dangerBackgroundHover;
   final int dangerBackgroundPressed;
   final int dangerLabel;
+  final int ghostBackgroundHover;
   final int ghostBackgroundPressed;
   final int ghostLabel;
   final int disabledBackground;
@@ -278,16 +330,21 @@ abstract final class FoxButton {
     radius: 9999.0,
     focusRing: 0xFF03428E,
     primaryBackground: 0xFFFF6E31,
-    primaryBackgroundPressed: 0xFFEA580C,
+    primaryBackgroundHover: 0xFFDA531B,
+    primaryBackgroundPressed: 0xFFC2410C,
     primaryLabel: 0xFFFFFAED,
     secondaryBackground: 0xFFFEFEFE,
-    secondaryBackgroundPressed: 0xFFF5EFE2,
+    secondaryBackgroundHover: 0xFFD6E4F7,
+    secondaryBackgroundPressed: 0xFFADC9EE,
     secondaryBorder: 0xFF6688B2,
+    secondaryBorderHover: 0xFF03428E,
     secondaryLabel: 0xFF03428E,
     dangerBackground: 0xFFBF2929,
-    dangerBackgroundPressed: 0xFF8C1530,
+    dangerBackgroundHover: 0xFF9B1B2E,
+    dangerBackgroundPressed: 0xFF6B1729,
     dangerLabel: 0xFFFFFFFF,
-    ghostBackgroundPressed: 0xFFF5EFE2,
+    ghostBackgroundHover: 0xFFEEF4FC,
+    ghostBackgroundPressed: 0xFFD6E4F7,
     ghostLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
@@ -301,16 +358,21 @@ abstract final class FoxButton {
     radius: 9999.0,
     focusRing: 0xFF03428E,
     primaryBackground: 0xFFFF6E31,
-    primaryBackgroundPressed: 0xFFEA580C,
+    primaryBackgroundHover: 0xFFDA531B,
+    primaryBackgroundPressed: 0xFFC2410C,
     primaryLabel: 0xFFFFFAED,
     secondaryBackground: 0xFFFEFEFE,
-    secondaryBackgroundPressed: 0xFFF5EFE2,
+    secondaryBackgroundHover: 0xFFD6E4F7,
+    secondaryBackgroundPressed: 0xFFADC9EE,
     secondaryBorder: 0xFF6688B2,
+    secondaryBorderHover: 0xFF03428E,
     secondaryLabel: 0xFF03428E,
     dangerBackground: 0xFFBF2929,
-    dangerBackgroundPressed: 0xFF8C1530,
+    dangerBackgroundHover: 0xFF9B1B2E,
+    dangerBackgroundPressed: 0xFF6B1729,
     dangerLabel: 0xFFFFFFFF,
-    ghostBackgroundPressed: 0xFFF5EFE2,
+    ghostBackgroundHover: 0xFFEEF4FC,
+    ghostBackgroundPressed: 0xFFD6E4F7,
     ghostLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
@@ -324,16 +386,21 @@ abstract final class FoxButton {
     radius: 9999.0,
     focusRing: 0xFF03428E,
     primaryBackground: 0xFFFF6E31,
-    primaryBackgroundPressed: 0xFFEA580C,
+    primaryBackgroundHover: 0xFFDA531B,
+    primaryBackgroundPressed: 0xFFC2410C,
     primaryLabel: 0xFFFFFAED,
     secondaryBackground: 0xFFFEFEFE,
-    secondaryBackgroundPressed: 0xFFF5EFE2,
+    secondaryBackgroundHover: 0xFFD6E4F7,
+    secondaryBackgroundPressed: 0xFFD6E4F7,
     secondaryBorder: 0xFF6688B2,
+    secondaryBorderHover: 0xFF03428E,
     secondaryLabel: 0xFF03428E,
     dangerBackground: 0xFF8C1530,
-    dangerBackgroundPressed: 0xFF8C1530,
+    dangerBackgroundHover: 0xFF6B1729,
+    dangerBackgroundPressed: 0xFF521020,
     dangerLabel: 0xFFFFFFFF,
-    ghostBackgroundPressed: 0xFFF5EFE2,
+    ghostBackgroundHover: 0xFFEEF4FC,
+    ghostBackgroundPressed: 0xFFD6E4F7,
     ghostLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,
@@ -347,16 +414,21 @@ abstract final class FoxButton {
     radius: 9999.0,
     focusRing: 0xFF03428E,
     primaryBackground: 0xFFFF6E31,
-    primaryBackgroundPressed: 0xFFEA580C,
+    primaryBackgroundHover: 0xFFDA531B,
+    primaryBackgroundPressed: 0xFFC2410C,
     primaryLabel: 0xFFFFFAED,
     secondaryBackground: 0xFFFEFEFE,
-    secondaryBackgroundPressed: 0xFFF5EFE2,
+    secondaryBackgroundHover: 0xFFD6E4F7,
+    secondaryBackgroundPressed: 0xFFD6E4F7,
     secondaryBorder: 0xFF6688B2,
+    secondaryBorderHover: 0xFF03428E,
     secondaryLabel: 0xFF03428E,
     dangerBackground: 0xFF8C1530,
-    dangerBackgroundPressed: 0xFF8C1530,
+    dangerBackgroundHover: 0xFF6B1729,
+    dangerBackgroundPressed: 0xFF521020,
     dangerLabel: 0xFFFFFFFF,
-    ghostBackgroundPressed: 0xFFF5EFE2,
+    ghostBackgroundHover: 0xFFEEF4FC,
+    ghostBackgroundPressed: 0xFFD6E4F7,
     ghostLabel: 0xFF03428E,
     disabledBackground: 0xFFE8E1D2,
     disabledLabel: 0xFF857D6E,

@@ -2,7 +2,17 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFICIENCIES, contrast, deltaE2000, distance } from './color.ts';
-import { BACKGROUNDS, check, failing, ORANGE, PAIRS } from './contrast.ts';
+import {
+  BACKGROUNDS,
+  check,
+  failing,
+  MIN_HOVER,
+  MIN_PRESS,
+  ORANGE,
+  PAIRS,
+  POINTER_THEMES,
+  STATE_TRIPLES,
+} from './contrast.ts';
 import { OUTPUTS, render } from './generate.ts';
 import { colour, PACKAGE_DIR, resolveAll } from './resolve.ts';
 
@@ -85,13 +95,31 @@ describe('contrast (R4, brand expression §6)', () => {
       brand: '#FF6E31',
       primary: '#FF6E31',
       heading: '#FF6E31',
-      'primary-pressed': '#EA580C',
+      'primary-hover': '#DA531B',
+      'primary-pressed': '#C2410C',
       'on-primary': '#FFFAED',
     };
     for (const theme of Object.keys(themes) as (keyof typeof themes)[])
       for (const [name, value] of Object.entries(orange))
         expect(colour(themes[theme], `color.${name}`), `${theme} ${name}`).toBe(value);
     expect(Object.keys(orange)).toEqual(expect.arrayContaining([...ORANGE]));
+  });
+
+  it('makes every hover and press visible (R10, owner 2026-11-24)', () => {
+    const weak: string[] = [];
+    for (const theme of Object.keys(themes) as (keyof typeof themes)[])
+      for (const [rest, hover, pressed] of STATE_TRIPLES) {
+        const [r, h, p] = [rest, hover, pressed].map((n) => colour(themes[theme], `color.${n}`));
+        const steps: [string, number, number][] = POINTER_THEMES.includes(theme)
+          ? [
+              [`${rest} → ${hover}`, distance(r!, h!), MIN_HOVER],
+              [`${hover} → ${pressed}`, distance(h!, p!), MIN_PRESS],
+            ]
+          : [[`${rest} → ${pressed}`, distance(r!, p!), MIN_HOVER]];
+        for (const [step, value, min] of steps)
+          if (value < min) weak.push(`${theme} ${step}: ΔE ${value.toFixed(1)} < ${min}`);
+      }
+    expect(weak).toEqual([]);
   });
 
   it('checks the stricter surfaces: captain text at 7:1, alerts at 7:1', () => {

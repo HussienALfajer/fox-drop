@@ -369,7 +369,7 @@ function shapes(themes: Themes, config: GuideConfig): Board {
   return page(themes, config, { file: 'Shapes.dc.html', title: 'Shapes', w: W, h: 900 }, body);
 }
 
-// Rules: R1 to R9 of §9.5, read from the architecture document ---------------
+// Rules: R1 to R10 of §9.5, read from the architecture document ---------------
 
 export function rules(): { id: string; rule: string; enforced: string; slice: string }[] {
   const doc = readFileSync(path.join(ROOT, 'docs/architecture/09-design-system.md'), 'utf8');

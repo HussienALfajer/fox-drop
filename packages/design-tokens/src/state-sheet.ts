@@ -311,7 +311,7 @@ export function stateSheet(themes: Themes, config: GuideConfig, icons: Icon[]): 
     heading(
       themes,
       'حالات التفاعل — نظام واحد لكل المكوّنات',
-      'Interaction states (architecture §9.5, §9.9). The approved hover was not visible; three systems for every interactive component, live and measured. Sample copy is review text only.',
+      'Interaction states (architecture §9.5 R10, §9.9). The approved hover was not visible; three systems for every interactive component, live and measured. The owner picked B «Brand tonal steps» on 2026-11-24 (design-tokens 0.5.0). Sample copy is review text only.',
     ),
     problem,
     systems,
