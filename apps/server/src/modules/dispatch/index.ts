@@ -130,7 +130,9 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
   async onModuleDestroy(): Promise<void> {
     if (this.timer) clearInterval(this.timer);
     await this.running;
-    this.drop();
+    // The server frees the locks before it closes the connection, so once
+    // the end resolves another process can lead at its next tick.
+    await this.drop();
   }
 
   // One pass over every active city this process leads.
@@ -169,7 +171,7 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
         );
         if (rows[0]?.held) return true;
         this.logger.warn({ cityId }, 'the city lock was lost');
-        this.drop();
+        void this.drop();
         return false;
       }
       this.client ??= await this.connect();
@@ -184,7 +186,7 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
       return this.led.has(cityId);
     } catch (error) {
       this.logger.warn({ err: error }, 'the leader connection failed');
-      this.drop();
+      void this.drop();
       return false;
     }
   }
@@ -195,17 +197,19 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
     const client = new pg.Client({ ...this.database.pool.options, keepAlive: true });
     client.on('error', (error) => {
       this.logger.warn({ err: error }, 'the leader connection was lost');
-      if (this.client === client) this.drop();
+      if (this.client === client) void this.drop();
     });
     await client.connect();
     return client;
   }
 
-  // Closes the leader connection, which frees every lock it held.
-  private drop(): void {
-    void this.client?.end().catch(() => undefined);
+  // Closes the leader connection, which frees every lock it held. Only
+  // stopping waits for it: a tick never waits on a broken connection.
+  private async drop(): Promise<void> {
+    const client = this.client;
     this.client = null;
     this.led.clear();
+    await client?.end().catch(() => undefined);
   }
 }
 
