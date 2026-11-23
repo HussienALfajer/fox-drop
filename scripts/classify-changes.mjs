@@ -1,4 +1,4 @@
-// What a change touches, from its paths (docs/claude-code-workflow.md,
+// What a change touches, from its paths (docs/archive/claude-code-workflow.md,
 // phases 4 and 5). CI's `changes` job and `node scripts/verify.mjs --changed`
 // both use it, so the two never disagree about what a path sets.
 //
@@ -80,7 +80,7 @@ const SERVER_SOURCE = /^apps\/server\/src\/.*\.ts$/;
 /**
  * What the changed `files` (repository-relative, forward slashes) set.
  * `read(file)` returns a file's text, or null when it was deleted.
- * - code, dart, native, build: CI's jobs (docs/claude-code-workflow.md,
+ * - code, dart, native, build: CI's jobs (docs/archive/claude-code-workflow.md,
  *   phase 5): the checks, the Dart checks, the native release builds of a
  *   pull request, the images and the staging builds and deploy.
  * - typescript: Turborepo's affected packages; server: the server's tests;

@@ -1,6 +1,6 @@
 # files module
 
-> Moved here from `apps/server/src/modules/files/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/files/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 Uploads to the object storage and their checks before a record links them (architecture §4.2, §5.8; slice 2.5).
 The storage is Garage (T7);

@@ -27,7 +27,10 @@ const merged = { onMain: true, lockedTests: [] };
 
 describe('toRepoPath', () => {
   it('strips the project root on Windows and POSIX, case-insensitively', () => {
-    assert.equal(toRepoPath('D:\\fox-drop\\apps\\server\\x.ts', 'D:\\fox-drop'), 'apps/server/x.ts');
+    assert.equal(
+      toRepoPath('D:\\fox-drop\\apps\\server\\x.ts', 'D:\\fox-drop'),
+      'apps/server/x.ts',
+    );
     assert.equal(toRepoPath('d:/Fox-Drop/apps/x.ts', 'D:\\fox-drop\\'), 'apps/x.ts');
     assert.equal(toRepoPath('/home/u/fox-drop/a.ts', '/home/u/fox-drop'), 'a.ts');
   });
@@ -366,7 +369,8 @@ describe('the fast check at the end of a turn', () => {
   });
 
   it('reads the uncommitted paths, renames by their new name', () => {
-    const porcelain = ' M apps/server/src/app.ts\nR  docs/old.md -> docs/new.md\n?? "scripts/a b.mjs"\n';
+    const porcelain =
+      ' M apps/server/src/app.ts\nR  docs/old.md -> docs/new.md\n?? "scripts/a b.mjs"\n';
     assert.deepEqual(statusPaths(porcelain), [
       'apps/server/src/app.ts',
       'docs/new.md',

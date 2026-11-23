@@ -15,7 +15,7 @@ import {
 
 // AP §8.6 (D14), architecture §5.2: the rounding and conversion rules hold
 // for any amount, rate and rounding unit, not only the worked examples of
-// conversion.test.ts. Phase 7 item 2 of docs/claude-code-workflow.md.
+// conversion.test.ts. Phase 7 item 2 of docs/archive/claude-code-workflow.md.
 
 const mode = fc.constantFrom(...roundingModes);
 // Minor units well past any real order, so an overflow or a float would show.

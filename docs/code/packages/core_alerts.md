@@ -1,6 +1,6 @@
 # packages/core_alerts
 
-> Moved here from `packages/core_alerts/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `packages/core_alerts/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The native ringing layer of the restaurant app (architecture §11.2, §12.2; RA §4.3–4.5; slice 2.42) and of the captain app (architecture §14.2; CA §4.4–4.5; slice 2.43; its iOS layer slice 2.46), and the restaurant app's Windows layer (architecture §12.3; RA §4.3–4.5; slice 2.44).
 
@@ -40,7 +40,7 @@ The native ringing layer of the restaurant app (architecture §11.2, §12.2; RA 
   The chime plays once on `USAGE_NOTIFICATION`, never over a ring.
 - **The device check's readers (RA §4.5 checks 1–5):** notifications allowed, battery optimisation off (asked directly with `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`), full-screen allowed (always below Android 14), the alarm volume in percent, Do Not Disturb silencing alarms (total silence, or priority without alarms), and whether the brand has an auto-start page (Xiaomi, Huawei, Honor, Oppo, Realme, Vivo, Samsung), which no app can read: the user confirms it.
   `openSettings` opens each check's page, else the app's details.
-- **Strings:** the service's and the ring channel's texts are system texts in `res/values/strings.xml` (apps/customer/CLAUDE.md «Arabic»); the ring's own text comes from the app.
+- **Strings:** the service's and the ring channel's texts are system texts in `res/values/strings.xml` (.claude/rules/flutter-apps.md «Arabic»); the ring's own text comes from the app.
 - The Kotlin builds with the app (the `android-release` CI job); it has no unit tests. `test/alerts_test.dart` proves the channel's calls.
 - **Windows (slice 2.44; owner decisions 2026-11-20):** `WindowsAlerts.setUp` (from the app's `main`) makes closing the window hide it (`window_manager` 0.5.2's `setPreventClose`), and the tray icon (`tray_manager` 0.5.3, `assets/tray.ico`) opens it on a click and offers «فتح التطبيق» and «إغلاق التطبيق», which asks the app's question first (RA §4.3);
   `quitNow` quits without asking (the self-update).

@@ -1,7 +1,7 @@
-# Slice notes
+# Slice notes (archive)
 
-The handover notes earlier slices left in `TASKS.md`, newest first: what to do before deploying, what to check on staging, owner decisions, what was decided pending the owner, what is not built yet.
-Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
+The handover notes of the slices built before 2026-11-23, newest first: what to do before deploying, what to check on staging, owner decisions, what was decided pending the owner, what is not built yet.
+Read-only since 2026-11-23 (the edit guard refuses changes): a slice now hands over in its own file in [`slices/`](slices/README.md), and open items live in [`backlog.md`](backlog.md).
 Grep it for a slice number or a feature;
 do not read it whole.
 

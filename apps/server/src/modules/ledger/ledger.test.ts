@@ -919,7 +919,7 @@ describe('LedgerService.journalRecords', () => {
   });
 });
 
-// Phase 7 item 2 of docs/claude-code-workflow.md: for any journals, the
+// Phase 7 item 2 of docs/archive/claude-code-workflow.md: for any journals, the
 // ledger posts exactly the ones that balance in each currency, so every
 // account's balance is the sum of what was posted and reversed, and a city's
 // entries sum to zero in each currency.

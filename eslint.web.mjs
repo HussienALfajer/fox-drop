@@ -2,7 +2,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 // The rules every web app and packages/ui-web add to eslint.config.mjs
-// (apps/admin/CLAUDE.md, packages/ui-web/CLAUDE.md).
+// (.claude/rules/web-apps.md, packages/ui-web/CLAUDE.md).
 const translated = 'User-facing text is a key in src/locales/ar.json, read with t() (AP §4.7).';
 const westernDigits = "Plain 'ar' formats with Arabic-Indic digits; use 'ar-u-nu-latn' (AP §4.7).";
 const labels =

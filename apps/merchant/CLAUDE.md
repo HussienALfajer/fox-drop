@@ -1,6 +1,6 @@
 # apps/merchant
 
-The restaurant app «تطبيق المطعم» (Android and Windows; architecture §11, §12; RA §4–§16). Read `apps/customer/CLAUDE.md` first (it does not load here by itself): its rules hold here too.
+The restaurant app «تطبيق المطعم» (Android and Windows; architecture §11, §12; RA §4–§16). The rules shared by the three Flutter apps are `.claude/rules/flutter-apps.md`; they load by themselves here.
 
 ## Rules
 

@@ -1,8 +1,8 @@
 # apps/merchant
 
-> Moved here from `apps/merchant/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/merchant/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
-The restaurant app «تطبيق المطعم» (Android, Windows; architecture §11, §12). It follows the rules of `apps/customer/CLAUDE.md`.
+The restaurant app «تطبيق المطعم» (Android, Windows; architecture §11, §12). It follows the rules of `.claude/rules/flutter-apps.md`.
 
 ## The board (slice 1.14e; RA §4.3–4.7, §8.1–8.11)
 
@@ -154,7 +154,7 @@ The restaurant app «تطبيق المطعم» (Android, Windows; architecture �
 
 ## Terms (slice 2.4b; AP §9.13, RA §4.10, §5.2 item 3, S13)
 
-- `termsCheckProvider` (`lib/src/terms.dart`) follows `apps/customer/CLAUDE.md` «Terms»;
+- `termsCheckProvider` (`lib/src/terms.dart`) follows `.claude/rules/flutter-apps.md` «Terms»;
   the server answers `pending: false` to a cashier, so a cashier's device is never affected.
   An owner with a pending version gets `/terms` pushed over the board once per version, on the next open or resume, after the device is named (`termsPromptProvider`, watched by `MerchantApp`), may go back to Orders, and sees «وافق على الشروط الجديدة لتستخدم شاشات المطعم الأخرى. الطلبات تصل كالمعتاد.» on the board;
   the router sends every other screen to `/terms` while pending (`ownerScreenWaits`: only `/`, `/orders/:id` and `/terms` stay), so each owner screen added later is covered.

@@ -1,58 +1,60 @@
 ---
 name: build-slice
-description: Build one slice of the FOX DROP roadmap in two sessions, a planning session and a build session, from TASKS.md to a merged pull request, then hand over to the next slice. Use when asked to build, start or continue a roadmap slice such as "0.2" or "the next slice".
+description: Build one planned FOX DROP slice from its slice file in one session, test-first and layer by layer, to a pull request with auto-merge. Use when asked to build, start or continue a roadmap slice such as "D.8" or "the next slice".
+argument-hint: '<slice id or slice file path>'
 ---
 
-# Build one roadmap slice
+# Build one slice
 
-Input: the slice, such as "0.2", or nothing for the slice `TASKS.md` names.
+Input: the slice, such as `D.8`, or its file `docs/slices/<id>-<name>.md`. The process is `docs/process/development-workflow.md` §3; this is its build step.
 
-A slice takes two sessions (owner decision 2026-11-21, `docs/claude-code-workflow.md` phase 6 items 1 and 2): a planning session that reads and writes the design, and a build session that starts from `TASKS.md` alone and builds, reviews, fixes and merges. The planning session's reads never ride along with the build.
+## 1. Start
 
-## 0. Which session this is
+- Read the slice file. If it does not exist, or has no plan yet, stop: the slice is planned first with `/slice-plan` in a fresh session in plan mode.
+- `git fetch`, then `git status`. Switch to the branch the file names if it exists on `origin` (pull it), or create it from an up-to-date `origin/main`.
+- Read the spec and architecture sections the file cites and their definition of done; for what a feature already does and why, grep the folder's `docs/code/<folder path>.md` (and `docs/slice-notes.md`, the archive of earlier slices). Build only what the cited sections say.
+- Restate the goal and the tier to the owner in one line. The tier sets the effort (§2 of the workflow): T0 high or xhigh, T1 medium (high for tricky logic), T2 medium or low.
 
-- If the slice's branch exists on `origin`, switch to it and pull; its `TASKS.md` is the current one. Otherwise work from an up-to-date `main`.
-- If `TASKS.md` describes another slice that is not done, stop and ask the owner.
-- The first plan step of the slice is the design step ("Read the cited sections and write the design here"). Unticked: this is the **planning session**, do 1 and stop. Ticked: this is the **build session**, start at 2.
+## 2. Components and screens: look and approval first
 
-## 1. Plan (planning session)
+When the slice builds components or screens:
 
-- Read the slice's line in `docs/roadmap.md`, the spec and architecture sections it cites and their definition of done. A folder's `CLAUDE.md` and its parents' load by themselves when you read a file there; do not read them again, but Read once one that a loaded file says to read first (`apps/customer/CLAUDE.md` for the captain and restaurant apps, `apps/admin/CLAUDE.md` for the portal). For what a feature already does and why, grep the folder's `docs/code/<folder path>.md` and `docs/slice-notes.md`, or ask the `Explore` agent.
-- **Look at the Figma file** when the slice builds components or screens (owner, 2026-11-23): a quick look for inspiration, not rules, so each component comes out professional, creative and fitted to its surface. Render it with `node .claude/skills/build-slice/figma-look.mjs <scratchpad folder> [node id ...]` (the owner's token in `~/.figma-token`; the main screens are `49:2041` home, `49:1765` dish, `49:1557` cart, the rest of page `1:3` its rough components) and Read the PNGs. Say in the design which ideas the slice takes from it. The images and the file's link never enter the repository (architecture §9.8).
-- Write the design under `### Design` in `TASKS.md`, for a session that has read none of it: what is built and where (files, modules, routes, tables, screens), each decision with its reason and the spec line it rests on, the tests that prove each definition-of-done item, and what is left out on purpose. Then the plan as a checklist, one step per commit. `TASKS.md` stays under 8 KB: point to spec lines instead of copying them.
-- Stop and ask the owner about everything `CLAUDE.md` says to ask about, and at the design stop. Write the answers into the design.
-- Tick the design step, create the branch from an up-to-date `main`, commit `TASKS.md` and push.
-- Report as in 6, with «الخطوة التالية» giving a new session (`/clear`) and its first message, `ابنِ الشريحة <slice>`. Build nothing.
+- **Look at the Figma file** (owner, 2026-11-23): inspiration, not rules, so each component comes out professional, creative and fitted to its surface. Render it with `node .claude/skills/build-slice/figma-look.mjs <scratchpad folder> [node id ...]` (the owner's token in `~/.figma-token`; the main screens are `49:2041` home, `49:1765` dish, `49:1557` cart, the rest of page `1:3` its rough components) and Read the PNGs. Say in the slice file which ideas the slice takes from it. The images and the file's link never enter the repository (architecture §9.8).
+- **Design approval** (architecture §9.9): no component or screen code before the owner approved its sheet or drawing. That approval is the slice's first checkpoint; record it in the slice file.
 
-## 2. Build (build session)
+## 3. Red phase: the tests first
 
-- Read `TASKS.md` on the branch first, then only the files the step at hand needs; the design is the plan of record. If it is wrong or missing something, fix it in `TASKS.md` with the reason before building on it.
-- One plan step at a time. For domain rules (order states, timers, money), write the failing test first and see it fail.
-- Build only what the cited sections say.
-- In the same slice: a rule an agent editing the folder would get wrong goes in its `CLAUDE.md` (at most 4 KB; `pnpm verify` checks), a rule a machine can check goes in a test or a lint rule, and what the slice built, decided or left out goes in the folder's `docs/code/<folder path>.md`.
-- After each step: run the `checker` agent; when it passes, tick the step in `TASKS.md`, commit (Conventional Commits, body says what and why) and push. A compaction may come at any time: what a later step needs from an earlier one goes in `TASKS.md`, not only in the conversation.
+- Write `.claude/state/red-phase` (empty) with the Write tool: the Stop hook skips the check while it exists.
+- Write the failing tests the plan lists (for domain rules, order states, timers and money always) and run them to see each fail for the right reason.
+- List their paths in `.claude/state/locked-tests.txt`, one per line: the edit guard then refuses changes to them. If a locked test turns out wrong, stop and ask the owner.
+- Delete `.claude/state/red-phase`.
 
-## 3. Review
+## 4. Build layer by layer
 
-- Run the `reviewer` agent with the spec sections the slice implements. It runs at medium effort; pass `effort: high` when the diff touches money or order state (`ledger`, `ordering`, `cashdesk`).
-- Fix every blocking and should-fix finding and run `checker` again, then send the fixes' diff to the same reviewer (SendMessage) for the next round instead of starting a new one. After three rounds with a blocking finding still open, stop and ask the owner.
+In the plan's order: database and server module → routes, contract and generated clients (`pnpm generate:api`) → web (`ui-web`, the panel and portal) → Flutter (`core_ui`, the apps) → end-to-end. After each layer:
 
-## 4. Hand over
+- run the `checker` agent (`node scripts/verify.mjs --changed`) and fix at the root until it passes;
+- commit at the green checkpoint (Conventional Commits, the slice ID in the scope, the body says what and why) and push;
+- update the slice file's "Stopped at" line.
 
-As the last commit of the slice:
+In the same slice: a rule an agent editing a folder would get wrong goes in that folder's `CLAUDE.md` (at most 4 KB; `pnpm verify` checks), a rule a machine can check goes in a test or a lint rule, and what the slice built, decided or left out goes in the folder's `docs/code/<folder path>.md`.
 
-- Mark the slice `[x]` in `docs/roadmap.md`.
-- Rewrite `TASKS.md` for the next slice: its roadmap line, spec sections, branch name and plan as a checklist whose first step is the design step (at most 8 KB).
-- What this slice leaves (before deploying, to check on staging, decisions pending the owner, not yet, what was checked) goes as a `## Left from <slice>` section at the top of `docs/slice-notes.md`, never in `TASKS.md`.
+## 5. Before the pull request
 
-If the session ends with work open instead, add a "Stopped at" line to `TASKS.md`, commit and push.
+- `checker` passes on the final tree. Run the full `pnpm verify` through it as well when the slice changes `scripts/verify.mjs`, `scripts/classify-changes.mjs`, `.github/` or the generators; CI runs everything and is the gate.
+- For screens and components: run them (Storybook, widgetbook, the app) in Arabic, right to left, and compare each with its approved drawing; fix a difference or explain it in the slice file.
+- Write the evidence into the slice file: the commands and their summary lines, screenshots' paths outside the repository, what the owner can try. Fill "Before deploying" and "To check on staging".
+- Review by tier: the `reviewer` agent with the branch and the slice file (it applies `REVIEW.md` from `main`); for T0 also the `security-reviewer`, in parallel. Fix every blocking and should-fix finding and run `checker` again; send the fixes' diff to the same reviewer (SendMessage) for the next round. After three rounds with a blocking finding still open, stop and ask the owner. Non-blocking findings go to `docs/backlog.md` with their source.
 
-## 5. Merge
+## 6. Pull request
 
-- Open the pull request: `## Summary` (what and why, the spec sections) and `## Test plan` (the commands and their results, and what the owner can try).
-- Wait for CI. Fix failures at their root; never skip or silence a check.
-- Merge with a merge commit once CI passes (`gh pr merge --merge --delete-branch`).
+- Empty `.claude/state/locked-tests.txt`.
+- Mark the slice `[x]` in `docs/roadmap.md`, set the slice file's status to Done, and commit.
+- `gh pr create --base main`: `## Summary` (what and why, the slice file, the spec sections, the tier), `## Test plan` (the evidence and what the owner can try), and `## Checks changed` when it touches `ci.yml`, `scripts/verify.mjs` or `REVIEW.md`.
+- At once: auto-merge with squash (`gh pr merge --auto --squash --delete-branch`) and the app's Auto-fix. If CI fails, fix the cause on the branch and push; never skip or silence a check.
 
-## 6. Report
+## 7. Report
 
-In the format of "Reporting" in `CLAUDE.md`. Under «ما المطلوب منك», turn the slice's "what the owner can try" into numbered steps to run after the merge. Under «ما وجدته», say whether the context was compacted, how often, and what was re-read or redone after it. Under «الخطوة التالية», name the next session: after planning, the build session of the same slice; after the merge, the planning session of the next slice; with its first message, such as `ابنِ الشريحة 0.3`.
+In the format of "Reporting" in the root `CLAUDE.md`. Under «ما المطلوب منك», the slice's acceptance steps as numbered steps to run after the merge; under «الخطوة التالية», the next slice from `docs/roadmap.md`: whether its slice file exists (else `/slice-plan` first, in plan mode), its tier and effort, and its first message, such as `/build-slice D.9`.
+
+If the session ends with work open instead: commit what is green, update "Stopped at" and "Notes for the next session" in the slice file, commit and push.

@@ -1,6 +1,6 @@
 # content module
 
-> Moved here from `apps/server/src/modules/content/CLAUDE.md` on 2026-11-20 (`docs/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/content/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The texts and reason lists of AP §9.13, edited in the panel and read by the apps (architecture §4.2).
 The terms and privacy versions (slice 2.4b), canned replies (2.23b) and categories (2.27a) joined with their slices.
