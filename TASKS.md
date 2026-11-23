@@ -36,7 +36,7 @@ Owner (2026-11-23): visual tests use the real CoFo (`FONTS_DEPLOY_KEY` before th
 - [x] Icon with stories and unit tests
 - [x] Tokens for the approved set (0.4.0) and Button on UI SDK with stories and unit tests
 - [x] RTL gate, axe, 130% text and visual snapshots in Docker; the story coverage test
-- [ ] Bundle for the Design System and the first sync; the docs
+- [x] Bundle for the Design System and the first sync; the docs
 - [ ] Review, hand over to D.7, pull request (waits for `FONTS_DEPLOY_KEY`)
 
 ## Waiting for the owner
