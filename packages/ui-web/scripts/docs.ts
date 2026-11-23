@@ -249,6 +249,182 @@ interface QuantityStepperProps {
   max?: number;
   disabled?: boolean;
 }
+
+// Data display (D.9)
+
+/** Money is given in minor units as a string, as the API sends it: '41000' TRY is 410. */
+interface MoneyProps {
+  amount: string;
+  /** The currency's symbol: the lira sign, '$', or the Syrian pound's Arabic abbreviation. */
+  symbol: string;
+  /** The currency's minor digits. Default 2. */
+  decimals?: number;
+  /** A plus on a gain. */
+  signed?: boolean;
+  size?: 'secondary' | 'body' | 'subtitle' | 'number' | 'compact';
+  tone?: 'default' | 'success' | 'danger' | 'muted' | 'inverse';
+  bold?: boolean;
+}
+
+type OrderStatus = 'placed' | 'accepted' | 'ready' | 'picked_up' | 'arrived' | 'delivered' | 'rejected' | 'cancelled' | 'failed';
+type Tone = 'warning' | 'info' | 'success' | 'primary' | 'danger' | 'neutral';
+
+/** Give either status (an order state) or tone with an optional icon. */
+interface StatusChipProps {
+  /** The words of the app. */
+  label: string;
+  status?: OrderStatus;
+  tone?: Tone;
+  icon?: IconName;
+  density?: Density;
+}
+
+interface CountBadgeProps {
+  /** Without it the badge is a dot; zero shows nothing. */
+  count?: number;
+  /** Default 99. */
+  max?: number;
+  /** The full count in words for screen readers. */
+  label: string;
+  tone?: 'danger' | 'primary' | 'accent';
+  /** What the badge sits on the corner of; without it the badge is inline. */
+  children?: ReactNode;
+}
+
+interface CardProps {
+  children: ReactNode;
+  /** 'offset' is the customer app's Figma shadow; 'outline' everywhere else. */
+  elevation?: 'outline' | 'offset';
+  /** 'danger' for a late order. */
+  tone?: 'default' | 'danger';
+  /** Makes the whole card one button. */
+  onPress?: () => void;
+  label?: string;
+}
+
+interface ListRowProps {
+  title: string;
+  description?: string;
+  leading?: IconName;
+  /** A value or a chip; a switch only on a row without onPress. A pressable row is described by it. */
+  end?: ReactNode;
+  /** Makes the row one button with a chevron. */
+  onPress?: () => void;
+  tone?: 'default' | 'danger';
+  disabled?: boolean;
+  density?: Density;
+}
+
+interface TimerProps {
+  /** Seconds left (down) or gone by (up). */
+  seconds: number;
+  direction: 'down' | 'up';
+  /** The minute unit shown from ten minutes on. */
+  minuteUnit: string;
+  late?: boolean;
+  tone?: 'calm' | 'soon' | 'late';
+  /** Words before the time. */
+  prefix?: string;
+  icon?: IconName;
+  density?: Density;
+}
+
+interface Action {
+  label: string;
+  onPress: () => void;
+}
+
+interface OrderCardProps {
+  /** The card's name for screen readers. */
+  label: string;
+  /** Without the hash sign. */
+  number: string;
+  since: string;
+  items: string;
+  captain: string;
+  /** A Timer. */
+  timer: ReactNode;
+  badges?: ReactNode;
+  /** The one main button; the portal shows none. */
+  action?: Action;
+  late?: boolean;
+  lateLabel?: string;
+  /** Opens the order detail: the number becomes its button. */
+  onOpen?: () => void;
+}
+
+interface AmountLine {
+  label: string;
+  /** Minor units. */
+  amount: string;
+  /** Words instead of the amount, for a free fee. */
+  text?: string;
+  tone?: 'default' | 'success' | 'danger';
+}
+
+interface AmountsTotal {
+  label: string;
+  amount: string;
+}
+
+interface AmountsSummaryProps {
+  lines: AmountLine[];
+  total: AmountsTotal;
+  symbol: string;
+  decimals?: number;
+  /** One equivalent per accepted currency, under the total. */
+  equivalents?: string;
+  /** 'prominent' is the customer cart's orange total bar. */
+  variant?: 'plain' | 'prominent';
+  density?: Density;
+}
+
+/** Lay out Skeleton.Block elements (shape: line, title, circle, square, media, pill) inside. */
+interface SkeletonProps {
+  /** Read once by screen readers. */
+  label: string;
+  children: ReactNode;
+}
+
+interface EmptyStateProps {
+  icon: IconName;
+  title: string;
+  description?: string;
+  action?: Action;
+  tone?: 'default' | 'error';
+  density?: Density;
+}
+
+interface Column {
+  key: string;
+  header: string;
+  cell: (row: unknown) => ReactNode;
+  numeric?: boolean;
+  sortable?: boolean;
+}
+
+interface Sort {
+  key: string;
+  direction: 'ascending' | 'descending';
+}
+
+interface DataTableProps {
+  label: string;
+  columns: Column[];
+  rows: unknown[];
+  rowKey: (row: unknown) => string;
+  sort?: Sort;
+  onSortChange?: (sort: Sort) => void;
+  selection?: Set<string>;
+  onSelectionChange?: (selection: Set<string>) => void;
+  /** The checkbox's name for a row. */
+  rowLabel?: (row: unknown) => string;
+  onRowOpen?: (row: unknown) => void;
+  loading?: boolean;
+  loadingLabel?: string;
+  /** An EmptyState shown inside the table. */
+  empty?: ReactNode;
+}
 `;
 }
 

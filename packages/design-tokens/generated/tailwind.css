@@ -128,6 +128,14 @@
   --color-on-danger: var(--fd-color-on-danger);
   --color-info: var(--fd-color-info);
   --color-on-info: var(--fd-color-on-info);
+  --color-success-subtle: var(--fd-color-success-subtle);
+  --color-warning-subtle: var(--fd-color-warning-subtle);
+  --color-danger-subtle: var(--fd-color-danger-subtle);
+  --color-info-subtle: var(--fd-color-info-subtle);
+  --color-primary-subtle: var(--fd-color-primary-subtle);
+  --color-on-primary-subtle: var(--fd-color-on-primary-subtle);
+  --color-neutral: var(--fd-color-neutral);
+  --color-neutral-subtle: var(--fd-color-neutral-subtle);
   --color-alert: var(--fd-color-alert);
   --color-on-alert: var(--fd-color-on-alert);
   --color-disabled: var(--fd-color-disabled);

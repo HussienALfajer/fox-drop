@@ -24,6 +24,17 @@ export const COMPONENTS = [
   'RadioGroup',
   'Switch',
   'QuantityStepper',
+  'Money',
+  'StatusChip',
+  'CountBadge',
+  'Card',
+  'ListRow',
+  'Timer',
+  'OrderCard',
+  'AmountsSummary',
+  'Skeleton',
+  'EmptyState',
+  'DataTable',
 ] as const;
 
 export const MAX_JS = 6 * 1024 * 1024;

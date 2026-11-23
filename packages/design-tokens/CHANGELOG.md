@@ -2,6 +2,12 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.7.0 (2026-11-24, slice D.9: data display)
+
+- From the approved sheet «Data display — batch 3»: the status tints `success-subtle`, `warning-subtle`, `danger-subtle`, `info-subtle`, `primary-subtle` and `neutral-subtle`, with `neutral` (inactive status text, neutral 700) and `on-primary-subtle` (orange 600; blue 500 in the captain app, which has no orange text). New primitives green, amber and red 50, orange 75 and neutral 150.
+- New contrast pairs: each tone's text on its tint, and `on-surface` on the info and primary tints (a running timer, a selected table row); 4.5:1, 7:1 for the captain.
+- `font.family.sans` gains the fallback «Fox Lira» after CoFo: the ₺ (U+20BA) cut from Noto Sans by `scripts/lira-font.py` into `ui-web/fonts/fox-lira` and `core_ui/assets/fonts/fox-lira`, under the SIL OFL (owner, 2026-11-24).
+
 ## 0.6.0 (2026-11-24, slice D.8: inputs and forms)
 
 - New component tokens `input.*` (`tokens/component/input.json`): field height 50 (compact 40), padding, the pill radius and `area-radius` (long text), outline widths 1 and 2, every field colour per state, and the checkbox and radio, switch, quantity stepper and sign-in code tokens, from the approved forms sheet. Dart `FoxInput` beside `FoxButton`.

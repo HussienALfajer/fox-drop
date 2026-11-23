@@ -101,6 +101,30 @@
     "on-info": {
       "$value": "{primitive.color.white}"
     },
+    "success-subtle": {
+      "$value": "{primitive.color.green.50}"
+    },
+    "warning-subtle": {
+      "$value": "{primitive.color.amber.50}"
+    },
+    "danger-subtle": {
+      "$value": "{primitive.color.red.50}"
+    },
+    "info-subtle": {
+      "$value": "{primitive.color.blue.50}"
+    },
+    "primary-subtle": {
+      "$value": "{primitive.color.orange.75}"
+    },
+    "on-primary-subtle": {
+      "$value": "{primitive.color.orange.600}"
+    },
+    "neutral": {
+      "$value": "{primitive.color.neutral.700}"
+    },
+    "neutral-subtle": {
+      "$value": "{primitive.color.neutral.150}"
+    },
     "alert": {
       "$value": "{primitive.color.red.800}",
       "$description": "Alerts read from across a room: 7:1."

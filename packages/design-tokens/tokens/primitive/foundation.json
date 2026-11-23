@@ -81,7 +81,10 @@
     "font": {
       "family": {
         "$type": "fontFamily",
-        "cofo": { "$value": ["CoFo Sans Pro Arabic", "sans-serif"] }
+        "cofo": {
+          "$value": ["CoFo Sans Pro Arabic", "Fox Lira", "sans-serif"],
+          "$description": "Fox Lira carries the ₺ that CoFo lacks: U+20BA cut from Noto Sans (scripts/lira-font.py)."
+        }
       },
       "weight": {
         "$type": "fontWeight",

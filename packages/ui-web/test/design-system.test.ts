@@ -3,7 +3,18 @@ import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildBundle, checkJs, COMPONENTS, ICON_NAMES, PACKAGE_DIR } from '../scripts/bundle.ts';
 import { preview, typesDoc } from '../scripts/docs.ts';
+import type { AmountsSummaryProps } from '../src/amounts-summary/amounts-summary';
 import type { ButtonProps } from '../src/button/button';
+import type { CardProps } from '../src/card/card';
+import type { CountBadgeProps } from '../src/count-badge/count-badge';
+import type { DataTableProps } from '../src/data-table/data-table';
+import type { EmptyStateProps } from '../src/empty-state/empty-state';
+import type { ListRowProps } from '../src/list-row/list-row';
+import type { MoneyProps } from '../src/money/money';
+import type { OrderCardProps } from '../src/order-card/order-card';
+import type { SkeletonProps } from '../src/skeleton/skeleton';
+import type { StatusChipProps } from '../src/status-chip/status-chip';
+import type { TimerProps } from '../src/timer/timer';
 import type { CheckboxProps } from '../src/checkbox/checkbox';
 import type { CodeFieldProps } from '../src/code-field/code-field';
 import type { FieldProps } from '../src/field/field';
@@ -264,6 +275,112 @@ describe('the component docs', () => {
     for (const [name, props] of Object.entries(forms)) {
       expect(documented(types, [name]), name).toEqual(Object.keys(props).sort());
     }
+  });
+
+  // Data display (D.9).
+  const data = {
+    MoneyProps: {
+      amount: true,
+      symbol: true,
+      decimals: true,
+      signed: true,
+      size: true,
+      tone: true,
+      bold: true,
+    } satisfies Record<Keys<MoneyProps>, true>,
+    StatusChipProps: {
+      label: true,
+      status: true,
+      tone: true,
+      icon: true,
+      density: true,
+    } satisfies Record<Keys<StatusChipProps>, true>,
+    CountBadgeProps: {
+      count: true,
+      max: true,
+      label: true,
+      tone: true,
+      children: true,
+    } satisfies Record<Keys<CountBadgeProps>, true>,
+    CardProps: {
+      children: true,
+      elevation: true,
+      tone: true,
+      onPress: true,
+      label: true,
+    } satisfies Record<Keys<CardProps>, true>,
+    ListRowProps: {
+      title: true,
+      description: true,
+      leading: true,
+      end: true,
+      onPress: true,
+      tone: true,
+      disabled: true,
+      density: true,
+    } satisfies Record<Keys<ListRowProps>, true>,
+    TimerProps: {
+      seconds: true,
+      direction: true,
+      minuteUnit: true,
+      late: true,
+      tone: true,
+      prefix: true,
+      icon: true,
+      density: true,
+    } satisfies Record<Keys<TimerProps>, true>,
+    OrderCardProps: {
+      label: true,
+      number: true,
+      since: true,
+      items: true,
+      captain: true,
+      timer: true,
+      badges: true,
+      action: true,
+      late: true,
+      lateLabel: true,
+      onOpen: true,
+    } satisfies Record<Keys<OrderCardProps>, true>,
+    AmountsSummaryProps: {
+      lines: true,
+      total: true,
+      symbol: true,
+      decimals: true,
+      equivalents: true,
+      variant: true,
+      density: true,
+    } satisfies Record<Keys<AmountsSummaryProps>, true>,
+    SkeletonProps: { label: true, children: true } satisfies Record<Keys<SkeletonProps>, true>,
+    EmptyStateProps: {
+      icon: true,
+      title: true,
+      description: true,
+      action: true,
+      tone: true,
+      density: true,
+    } satisfies Record<Keys<EmptyStateProps>, true>,
+    DataTableProps: {
+      label: true,
+      columns: true,
+      rows: true,
+      rowKey: true,
+      sort: true,
+      onSortChange: true,
+      selection: true,
+      onSelectionChange: true,
+      rowLabel: true,
+      onRowOpen: true,
+      loading: true,
+      loadingLabel: true,
+      empty: true,
+    } satisfies Record<Keys<DataTableProps<unknown>>, true>,
+  };
+
+  it('documents exactly the props of the data display components', () => {
+    const types = typesDoc();
+    for (const [name, props] of Object.entries(data))
+      expect(documented(types, [name]), name).toEqual(Object.keys(props).sort());
   });
 
   it.each(COMPONENTS)('gives %s a card first line and a summary', (name) => {

@@ -125,6 +125,38 @@
       "$value": "{primitive.color.white}",
       "$description": "Labels and icons on info."
     },
+    "success-subtle": {
+      "$value": "{primitive.color.green.50}",
+      "$description": "The tint behind success text: a status chip, a free fee (D.9)."
+    },
+    "warning-subtle": {
+      "$value": "{primitive.color.amber.50}",
+      "$description": "The tint behind warning text: a waiting status, a timer about to run out."
+    },
+    "danger-subtle": {
+      "$value": "{primitive.color.red.50}",
+      "$description": "The tint behind danger text: a refused or failed status, a late card."
+    },
+    "info-subtle": {
+      "$value": "{primitive.color.blue.50}",
+      "$description": "The tint behind info text and a running timer."
+    },
+    "primary-subtle": {
+      "$value": "{primitive.color.orange.75}",
+      "$description": "The tint behind orange status text (primary-pressed), a selected table row, a missing cover."
+    },
+    "on-primary-subtle": {
+      "$value": "{primitive.color.orange.600}",
+      "$description": "Orange status text on its tint («مع الكابتن»): the deepest orange step; blue in the captain app."
+    },
+    "neutral": {
+      "$value": "{primitive.color.neutral.700}",
+      "$description": "Text and icons of an inactive status: a cancelled order, a closed restaurant."
+    },
+    "neutral-subtle": {
+      "$value": "{primitive.color.neutral.150}",
+      "$description": "The tint behind neutral text, and the skeleton's blocks."
+    },
     "alert": {
       "$value": "{primitive.color.red.800}",
       "$description": "Alerts read from across a room: 7:1."

@@ -24,6 +24,10 @@
     "surface-raised-pressed": {
       "$value": "{primitive.color.blue.100}",
       "$description": "Blue 100, not 200: text on it keeps 7:1 (R10)."
+    },
+    "on-primary-subtle": {
+      "$value": "{primitive.color.blue.500}",
+      "$description": "No orange text in the captain app: the orange status reads in blue on its tint."
     }
   }
 }

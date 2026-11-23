@@ -2,6 +2,8 @@ import 'package:core_ui/core_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:widgetbook/widgetbook.dart';
 
+import 'data_catalogue.dart';
+
 /// Every core_ui component with a use case per state (R3): the same names
 /// as the web's stories and the goldens. Hover, focus and pressed are live
 /// buttons: point, tab or press to see them, as on Storybook.
@@ -202,6 +204,7 @@ final List<WidgetbookNode> catalogue = [
         ),
     ],
   ),
+  ...dataCatalogue,
 ];
 
 const _countryNames = {

@@ -25,7 +25,7 @@
   --fd-duration-slow: 300ms;
   --fd-duration-moment: 1200ms;
   --fd-easing-standard: cubic-bezier(0.2, 0, 0, 1);
-  --fd-font-family-sans: "CoFo Sans Pro Arabic", sans-serif;
+  --fd-font-family-sans: "CoFo Sans Pro Arabic", "Fox Lira", sans-serif;
   --fd-font-weight-regular: 400;
   --fd-font-weight-medium: 500;
   --fd-font-weight-bold: 700;
@@ -220,6 +220,14 @@
   --fd-color-on-danger: #FFFFFF;
   --fd-color-info: #03428E;
   --fd-color-on-info: #FFFFFF;
+  --fd-color-success-subtle: #E3F3EA;
+  --fd-color-warning-subtle: #FBEFD5;
+  --fd-color-danger-subtle: #FBE9E9;
+  --fd-color-info-subtle: #EEF4FC;
+  --fd-color-primary-subtle: #FFEDE3;
+  --fd-color-on-primary-subtle: #C2410C;
+  --fd-color-neutral: #4D473D;
+  --fd-color-neutral-subtle: #EFE8DA;
   --fd-color-alert: #8C1530;
   --fd-color-on-alert: #FFFFFF;
   --fd-color-disabled: #E8E1D2;
@@ -322,6 +330,14 @@
   --fd-color-on-danger: #FFFFFF;
   --fd-color-info: #03428E;
   --fd-color-on-info: #FFFFFF;
+  --fd-color-success-subtle: #E3F3EA;
+  --fd-color-warning-subtle: #FBEFD5;
+  --fd-color-danger-subtle: #FBE9E9;
+  --fd-color-info-subtle: #EEF4FC;
+  --fd-color-primary-subtle: #FFEDE3;
+  --fd-color-on-primary-subtle: #C2410C;
+  --fd-color-neutral: #4D473D;
+  --fd-color-neutral-subtle: #EFE8DA;
   --fd-color-alert: #8C1530;
   --fd-color-on-alert: #FFFFFF;
   --fd-color-disabled: #E8E1D2;
@@ -353,6 +369,7 @@
   --fd-color-danger: #8C1530;
   --fd-color-danger-hover: #6B1729;
   --fd-color-danger-pressed: #521020;
+  --fd-color-on-primary-subtle: #03428E;
 }
 
 [data-theme="dark"][data-surface="captain"],
@@ -375,4 +392,5 @@
   --fd-color-danger: #8C1530;
   --fd-color-danger-hover: #6B1729;
   --fd-color-danger-pressed: #521020;
+  --fd-color-on-primary-subtle: #03428E;
 }

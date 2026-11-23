@@ -39,6 +39,14 @@ final class FoxColorScheme {
   Color get onDanger => Color(_tokens.onDanger);
   Color get info => Color(_tokens.info);
   Color get onInfo => Color(_tokens.onInfo);
+  Color get successSubtle => Color(_tokens.successSubtle);
+  Color get warningSubtle => Color(_tokens.warningSubtle);
+  Color get dangerSubtle => Color(_tokens.dangerSubtle);
+  Color get infoSubtle => Color(_tokens.infoSubtle);
+  Color get primarySubtle => Color(_tokens.primarySubtle);
+  Color get onPrimarySubtle => Color(_tokens.onPrimarySubtle);
+  Color get neutral => Color(_tokens.neutral);
+  Color get neutralSubtle => Color(_tokens.neutralSubtle);
   Color get alert => Color(_tokens.alert);
   Color get onAlert => Color(_tokens.onAlert);
   Color get disabled => Color(_tokens.disabled);
@@ -175,8 +183,13 @@ final class FoxTextTheme {
   final TextStyle largeTitle;
   final TextStyle number;
 
+  /// Fox Lira, this package's font holding only the ₺ that CoFo lacks
+  /// (`assets/fonts/fox-lira`, cut from Noto Sans under the SIL OFL).
+  static const liraFallback = 'packages/core_ui/Fox Lira';
+
   static TextStyle _style(t.TypeRole role) => TextStyle(
     fontFamily: t.FoxFont.family,
+    fontFamilyFallback: const [liraFallback],
     fontSize: role.size,
     height: role.lineHeight,
     // CSS spreads the extra line height evenly above and below the text.

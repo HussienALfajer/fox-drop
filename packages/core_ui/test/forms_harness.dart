@@ -44,6 +44,12 @@ Future<void> expectNoOverflow(
   WidgetTester tester,
   Widget Function() build,
 ) async {
+  // The test font draws every glyph as a full square, so a card of real copy
+  // at 200% outgrows the default 600 high surface, which a phone would
+  // scroll; only the width is under test here (D.9).
+  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   for (final theme in [FoxThemeData.phone(), FoxThemeData.captain()]) {
     for (final direction in TextDirection.values) {
       for (final scale in [1.0, 1.3, 2.0]) {

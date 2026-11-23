@@ -802,7 +802,7 @@ export function dataSheet(themes: Themes, config: GuideConfig, icons: Icon[]): B
     h2(
       themes,
       'ملخص المبالغ',
-      'CU §10.2 step 7: items value, delivery fee or «مجاني», discount with its code, rounding only when not 0, the total in the base currency and one equivalent per accepted currency under it',
+      'CU §10.3 step 7: items value, delivery fee or «مجاني», discount with its code, rounding only when not 0, the total in the base currency and one equivalent per accepted currency under it',
     ) +
       options(themes, [
         option(
@@ -1137,24 +1137,24 @@ export function dataSheet(themes: Themes, config: GuideConfig, icons: Icon[]): B
   // 15. Questions.
   const questions = card(
     themes,
-    h2(themes, 'ما نحتاج قرارك فيه', 'the framed option is our proposal') +
+    h2(themes, 'ما اعتمده المالك', '2026-11-24 · every framed proposal') +
       `<ol style="margin: 0; padding-inline-start: 24px; display: flex; flex-direction: column; gap: ${v(themes, 'space.xs')}; line-height: 1.7">
-<li>رمز ₺: (أ) حرف مضمَّن من Noto Sans، (ب) خط النظام، (ج) «TL».</li>
-<li>فاصل الآلاف في المبالغ: فاصلة غربية «3,300,000» أم بلا فاصل.</li>
-<li>شارة الحالة: (أ) خلفية فاتحة، (ب) مصمتة، (ج) نقطة؛ وألوان الحالات: الانتظار كهرماني، التحضير أزرق، الجاهز والمسلَّم أخضر، مع الكابتن برتقالي، المرفوض والفاشل أحمر، الملغى رمادي.</li>
+<li>رمز ₺: (أ) حرف مضمَّن من Noto Sans باسم Fox Lira.</li>
+<li>فاصل الآلاف: فاصلة غربية «3,300,000».</li>
+<li>شارة الحالة: (أ) خلفية فاتحة ونص داكن، بالألوان المقترحة (في تطبيق الكابتن يُقرأ البرتقالي بالأزرق).</li>
 <li>حاوية البطاقة: الظل المُزاح في تطبيق الزبون والحدّ الرفيع في البقية.</li>
 <li>ملخص المبالغ: شريط برتقالي للمجموع في سلة الزبون، ومجموع عريض تحت خط في البقية.</li>
-<li>بطاقة الطبق: سطر مع صورة مربعة (أ) أم كتلة Figma (ب).</li>
-<li>الهيكل: نبض هادئ (أ) أم وميض (ب).</li>
-<li>ألوان خلفيات الحالات الفاتحة الجديدة (*-subtle) كما في الشارة؛ تُضاف رموزاً دلالية بعد موافقتك.</li>
+<li>بطاقة الطبق: (أ) سطر مع صورة مربعة.</li>
+<li>الهيكل: (أ) نبض هادئ.</li>
+<li>خلفيات الحالات الفاتحة صارت رموزاً دلالية (*-subtle)، الإصدار 0.7.0.</li>
 </ol>`,
   );
 
   const body = [
     heading(
       themes,
-      'عرض البيانات — الدفعة الثالثة',
-      'Data display — batch 3 (architecture §9.9 step 1, slice D.9). Money, the order status chip, count badge, card, list row, timer and countdown, order card, amounts summary, restaurant and dish cards, skeleton, empty and error states, and the web data table; phone, captain and panel, RTL, 130% text; real tokens, options side by side where you decide. Photos are stand-ins and every sample is review copy only.',
+      'عرض البيانات — الدفعة الثالثة (مُستبدَلة)',
+      'Superseded (architecture §9.9 step 4): the record of the approval only; the components live in the Design System (ui-web) and core_ui (Flutter), slice D.9. Data display — batch 3 (architecture §9.9 step 1, slice D.9). Money, the order status chip, count badge, card, list row, timer and countdown, order card, amounts summary, restaurant and dish cards, skeleton, empty and error states, and the web data table; phone, captain and panel, RTL, 130% text; real tokens, options side by side where you decide. Photos are stand-ins and every sample is review copy only.',
     ),
     moneyCard,
     chipCard,
