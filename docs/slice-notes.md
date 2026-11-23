@@ -5,6 +5,14 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from D.6 (`feat/ui-web`)
+
+- **Before the merge:** the owner adds `FONTS_DEPLOY_KEY` to the Actions secrets; the `visual` job (required by `verify`) fails without the fonts, by design. Its container steps (installing git and ssh, `github-known-hosts.mjs /etc/ssh/ssh_known_hosts`, the fetch) have not run in CI yet: watch the first run.
+- **Owner decisions:** the Button set approved 2026-11-23 on the Component proposals sheet; the hover changed to a 50% mix of fill and pressed on 2026-11-24 (12% was invisible). The proposals sheet is now the record only: per §9.9 step 4 the Design System's real components supersede it; mark it superseded when D.7 lands.
+- **Decided by us (to confirm with the owner):** the captain's danger pressed looks the same as its default (both resolve to `color.alert` on the captain surface); hover is an overlay (`before:`) so no class needs `color-mix`; the admin's canvas and QR code use the named colours `white` and `black` instead of hex literals.
+- **Not yet:** wiring `@fox-drop/ui-web` into the apps (screen slices); money, the ₺ fallback and bidi isolation (D.8); dark mode; the icon accent layer; `scripts/classify-changes.mjs` could skip the visual and e2e jobs for changes outside `packages/ui-web` and `packages/design-tokens` (a follow-up to speed CI).
+- **Also:** the `createTV` tailwind-merge config declares only `phone-subtitle` and `panel-subtitle`; a component using another `text-<surface>-<role>` size with a `text-(color:…)` must add it. The design lint has known gaps: `#add` in prose reads as hex, `origin-left`, `bg-left` and `object-left` pass, `translate-x` is caught only as numeric spacing. One visual run failed once on `button--icon-only-back` on captain and passed on the two runs after: watch it for flakiness. Every Design System sync is a Claude Code step (`packages/design-tokens/CLAUDE.md` «Sync»); components synced at version 7.
+
 ## Left from D.5 (`feat/icon-set`)
 
 - **The owner approved** the 44 icons on 2026-11-23 after the redraw led by the Figma file's own icons, open to edits when the real screens are built: edit the SVG, regenerate, redraw the sheet and sync again.
