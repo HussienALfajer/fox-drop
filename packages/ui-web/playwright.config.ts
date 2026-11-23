@@ -13,7 +13,9 @@ export default defineConfig({
   forbidOnly: !!process.env['CI'],
   reporter: process.env['CI'] ? 'github' : 'list',
   snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
-  use: { baseURL: 'http://127.0.0.1:6007', locale: 'ar', trace: 'retain-on-failure' },
+  // No trace: a trace archives every response, and Storybook serves the
+  // licensed fonts. CI uploads only the PNGs of a failed comparison.
+  use: { baseURL: 'http://127.0.0.1:6007', locale: 'ar', trace: 'off' },
   projects: [
     {
       name: 'functional',

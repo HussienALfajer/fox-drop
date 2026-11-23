@@ -1,6 +1,7 @@
 import { Button as SdkButton } from '@ui-sdk/react/button';
 import type { MouseEvent, ReactNode } from 'react';
 import { tv } from 'tailwind-variants';
+import { createTV } from 'tailwind-variants/config';
 import { Icon, type IconName } from '../icon/icon';
 
 /**
@@ -21,17 +22,26 @@ export const STATES = [
 export const VARIANTS = ['primary', 'secondary', 'danger', 'ghost'] as const;
 export type ButtonVariant = (typeof VARIANTS)[number];
 
+// tailwind-merge does not know our `text-<surface>-<role>` font sizes and took
+// them for colours: `text-(color:--fd-button-*)` then dropped the size (the 130%
+// text gate found the label at 16px). Declare the ones used here.
+const buttonTv = createTV({
+  twMergeConfig: {
+    extend: { classGroups: { 'font-size': [{ text: ['phone-subtitle', 'panel-subtitle'] }] } },
+  },
+});
+
 // The look drawn on the approved sheet (`button()` in design-tokens
 // `src/button-sheet.ts`). Hover and pressed are an overlay: the pressed colour
-// at 12% over the fill (hover = 88% fill mixed with pressed) or at 60% over a
-// transparent ghost, so a class never needs an arbitrary `color-mix`. The
+// at 50% over the fill (owner, 2026-11-24) or at 60% over a transparent ghost,
+// so a class never needs an arbitrary `color-mix`. The
 // overlay sits behind the label (`isolate`, `-z-10`) and goes away while the
 // button is pressed, when the pressed colour is the fill itself. No shadow.
-const button = tv({
+const button = buttonTv({
   base: [
     'relative isolate inline-flex items-center justify-center rounded-(--fd-button-radius) font-medium whitespace-nowrap',
     'outline-hidden focus-visible:ring-2 focus-visible:ring-(color:--fd-button-focus-ring) focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-    'before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-(--fd-button-radius) before:opacity-0',
+    'before:pointer-events-none before:absolute before:inset-none before:-z-10 before:rounded-(--fd-button-radius) before:opacity-0',
   ],
   variants: {
     variant: { primary: '', secondary: '', danger: '', ghost: '' },
@@ -44,7 +54,7 @@ const button = tv({
       true: 'cursor-not-allowed text-(color:--fd-button-disabled-label)',
       false: 'cursor-pointer',
     },
-    interactive: { true: 'hover:before:opacity-12 active:before:opacity-0', false: '' },
+    interactive: { true: 'hover:before:opacity-50 active:before:opacity-0', false: '' },
   },
   compoundVariants: [
     { density: 'comfortable', iconOnly: true, class: 'w-(--fd-button-height)' },

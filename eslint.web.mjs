@@ -25,6 +25,8 @@ const messages = {
   physical:
     'No physical direction (R5): use ms-, me-, ps-, pe-, start-, end-, text-start, text-end, rounded-s, rounded-e, border-s, border-e, float-start, float-end.',
   style: 'No style prop (R1): style with classes over design tokens.',
+  cssVariable:
+    'No CSS-variable class in an app (R1): a screen uses semantic classes only; a component token belongs in @fox-drop/ui-web.',
 };
 
 function textChecks(context, node, text) {
@@ -53,7 +55,26 @@ const designRules = {
   }),
 };
 
-const plugin = { rules: { design: designRules } };
+// An app writes no `bg-(--fd-x)` or `text-(color:--fd-x)`: component tokens
+// are read in packages/ui-web only.
+const cssVariable = /\((?:[\w-]+:)?--/;
+function appTextChecks(context, node, text) {
+  if (cssVariable.test(text)) context.report({ node, messageId: 'cssVariable' });
+}
+
+const appDesignRules = {
+  meta: { type: 'problem', messages, schema: [] },
+  create: (context) => ({
+    Literal(node) {
+      if (typeof node.value === 'string') appTextChecks(context, node, node.value);
+    },
+    TemplateElement(node) {
+      appTextChecks(context, node, node.value.cooked ?? node.value.raw);
+    },
+  }),
+};
+
+const plugin = { rules: { design: designRules, 'app-design': appDesignRules } };
 
 const intlSelectors = [
   {
@@ -95,11 +116,6 @@ const common = [
       ],
     },
   },
-  {
-    // Stories show Arabic sample text and tests use plain strings.
-    files: ['src/**/*.stories.tsx', 'src/**/*.test.tsx'],
-    rules: { 'no-restricted-syntax': ['error', ...intlSelectors] },
-  },
 ];
 
 // The apps style only through @fox-drop/ui-web, the one importer of the UI SDK
@@ -109,13 +125,30 @@ export const webAppConfig = [
   {
     files: ['src/**/*.{ts,tsx}'],
     rules: {
+      'fd/app-design': 'error',
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['@ui-sdk/*', '@base-ui/*', '@base-ui-components/*'],
-              message: 'Only @fox-drop/ui-web imports the UI SDK and Base UI (T11).',
+              group: [
+                '@ui-sdk/*',
+                '@base-ui/*',
+                '@base-ui-components/*',
+                '@radix-ui/*',
+                '@headlessui/*',
+                '@mui/*',
+                '@chakra-ui/*',
+                '@mantine/*',
+                'antd',
+                'antd/*',
+                'react-aria',
+                'react-aria/*',
+                'react-aria-components',
+                'react-aria-components/*',
+                '@ark-ui/*',
+              ],
+              message: 'Only @fox-drop/ui-web imports the UI SDK, Base UI and other UI kits (T11).',
             },
           ],
         },
@@ -129,5 +162,10 @@ export const uiWebConfig = [
   {
     files: ['src/**/*.{ts,tsx}'],
     rules: { 'no-restricted-imports': ['error', { patterns: [noAgent] }] },
+  },
+  {
+    // Stories show Arabic sample text and tests use plain strings (ui-web only).
+    files: ['src/**/*.stories.tsx', 'src/**/*.test.tsx'],
+    rules: { 'no-restricted-syntax': ['error', ...intlSelectors] },
   },
 ];

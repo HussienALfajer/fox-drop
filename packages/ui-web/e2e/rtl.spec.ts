@@ -127,14 +127,51 @@ test.describe('axe, WCAG 2.2 AA', () => {
   }
 });
 
+test('hover shows the overlay: it has a size and turns visible', async ({ page }) => {
+  await openStory(page, 'button--primary-hover');
+  const button = page.getByRole('button');
+  const overlay = () =>
+    button.evaluate((element) => {
+      const style = getComputedStyle(element, '::before');
+      return {
+        opacity: Number(style.opacity),
+        width: parseFloat(style.width),
+        height: parseFloat(style.height),
+      };
+    });
+  expect((await overlay()).opacity).toBe(0);
+  await button.hover();
+  const hovered = await overlay();
+  expect(hovered.opacity).toBe(0.5);
+  expect(hovered.width).toBeGreaterThan(0);
+  expect(hovered.height).toBeGreaterThan(0);
+});
+
 test.describe('130% text', () => {
   for (const story of stories('Button')) {
     test(story.id, async ({ page }) => {
       await openStory(page, story.id);
-      // Browser text zoom scales the root font size; every length is rem.
-      await page.evaluate(() => {
-        document.documentElement.style.fontSize = '130%';
+      // The type tokens are px, so a root font size would change nothing:
+      // scale every --fd-type-*-size on :root by 1.3 and check the label grew.
+      const label = page.locator('#storybook-root button').first();
+      const size = () => label.evaluate((button) => parseFloat(getComputedStyle(button).fontSize));
+      const before = await size();
+      const scaled = await page.evaluate(() => {
+        const root = document.documentElement;
+        const names = new Set<string>();
+        for (const sheet of document.styleSheets)
+          for (const rule of sheet.cssRules)
+            if (rule instanceof CSSStyleRule)
+              for (const name of rule.style) if (/^--fd-type-.*-size$/.test(name)) names.add(name);
+        const computed = getComputedStyle(root);
+        for (const name of names) {
+          const px = parseFloat(computed.getPropertyValue(name));
+          if (Number.isFinite(px)) root.style.setProperty(name, `${px * 1.3}px`);
+        }
+        return names.size;
       });
+      expect(scaled, 'no --fd-type-*-size property found').toBeGreaterThan(0);
+      expect(await size()).toBeGreaterThan(before);
       const clipped = await page.evaluate(() =>
         [...document.querySelectorAll('#storybook-root button')].flatMap((button) => {
           const box = button.getBoundingClientRect();

@@ -107,7 +107,7 @@ function button(themes: Themes, o: Opts): string {
     bg =
       o.variant === 'ghost'
         ? `color-mix(in srgb, ${l.bgPressed} 60%, transparent)`
-        : `color-mix(in srgb, ${l.bg} 88%, ${l.bgPressed})`;
+        : `color-mix(in srgb, ${l.bg} 50%, ${l.bgPressed})`;
   if (state === 'pressed') bg = l.bgPressed;
   if (disabled) bg = o.variant === 'ghost' ? 'transparent' : t('button.disabled.background');
   const fg = disabled ? t('button.disabled.label') : l.fg;
@@ -287,7 +287,7 @@ export function buttonSheet(themes: Themes, config: GuideConfig, icons: Icon[]):
 <li>الأنواع الأربعة: أساسي، ثانوي، خطر، شفاف، ومن كل نوع زر أيقونة دائري.</li>
 <li>بلا ظل تحت الزر: الظل البرتقالي المزاح للبانرات فقط.</li>
 <li>الحجم المضغوط 40 للوحة الإدارة وبوابة المطعم فقط؛ تطبيقات الهاتف والكابتن 50.</li>
-<li>الضغط للخطر بالأحمر الداكن «alert»، والتمرير مزيج خفيف بين العادي والمضغوط.</li>
+<li>الضغط للخطر بالأحمر الداكن «alert»، والتمرير مزيج بالنصف بين العادي والمضغوط (عُدّل في 2026-11-24: 12٪ لم يكن يُرى).</li>
 <li>التحميل: دائرة دوّارة مكان النص، وعرض الزر ثابت، ولا يُضغط.</li>
 </ol>`,
   );

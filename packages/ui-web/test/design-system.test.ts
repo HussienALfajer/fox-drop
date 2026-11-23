@@ -3,6 +3,8 @@ import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildBundle, checkJs, ICON_NAMES, PACKAGE_DIR } from '../scripts/bundle.ts';
 import { preview, typesDoc } from '../scripts/docs.ts';
+import type { ButtonProps } from '../src/button/button';
+import type { IconProps } from '../src/icon/icon';
 
 describe('the Design System bundle', () => {
   let bundle: { js: string; css: string };
@@ -50,6 +52,43 @@ describe('the component docs', () => {
     expect(types).toContain('type ButtonProps');
     expect(types).not.toMatch(/^import /m);
     for (const name of ICON_NAMES) expect(types).toContain(`'${name}'`);
+  });
+
+  // The doc's types are written by hand: these lists are checked against the
+  // real prop types at compile time (`satisfies` fails on a missing or extra
+  // key) and against the generated text at run time, so they cannot drift.
+  type Keys<T> = T extends unknown ? keyof T : never;
+  const buttonProps = {
+    variant: true,
+    density: true,
+    loading: true,
+    disabled: true,
+    type: true,
+    onClick: true,
+    children: true,
+    icon: true,
+    iconEnd: true,
+    label: true,
+  } satisfies Record<Keys<ButtonProps>, true>;
+  const iconProps = { name: true, label: true, size: true } satisfies Record<Keys<IconProps>, true>;
+
+  /** The property names declared in the doc's interfaces of that name, sorted. */
+  const documented = (types: string, interfaces: string[]) =>
+    [
+      ...new Set(
+        interfaces.flatMap((name) => {
+          const body = new RegExp(`interface ${name}\\b[^{]*\\{([^}]*)\\}`).exec(types)?.[1] ?? '';
+          return [...body.matchAll(/^ {2}(\w+)\??:/gm)].map((match) => match[1]!);
+        }),
+      ),
+    ].sort();
+
+  it('documents exactly the props of the real components', () => {
+    const types = typesDoc();
+    expect(documented(types, ['ButtonBase', 'TextButtonProps', 'IconOnlyButtonProps'])).toEqual(
+      Object.keys(buttonProps).sort(),
+    );
+    expect(documented(types, ['IconProps'])).toEqual(Object.keys(iconProps).sort());
   });
 
   it.each(['Button', 'Icon'])('gives %s a card first line and a summary', (name) => {

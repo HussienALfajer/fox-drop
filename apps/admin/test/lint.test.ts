@@ -33,6 +33,12 @@ describe('web lint rules', () => {
     ],
     ['an import of Base UI', 'import { Menu } from "@base-ui/react/menu";\nexport { Menu };'],
     [
+      'an import of another UI kit',
+      'import { Dialog } from "@radix-ui/react-dialog";\nexport { Dialog };',
+    ],
+    ['a CSS-variable class', 'export const c = "bg-(--fd-button-primary-background)";'],
+    ['a CSS-variable colour class', 'export const c = "text-(color:--fd-button-ghost-label)";'],
+    [
       'an import of the SDK agent',
       'import { Agent } from "@ui-sdk/react/agent";\nexport { Agent };',
     ],
@@ -40,8 +46,8 @@ describe('web lint rules', () => {
     expect(await errors(code)).toHaveLength(1);
   });
 
-  it('passes token variables and logical directions', async () => {
-    const code = 'export const c = "bg-(--fd-button-primary-background) ms-2 pe-4 text-start";';
+  it('passes semantic classes and logical directions', async () => {
+    const code = 'export const c = "bg-surface ms-2 pe-4 text-start";';
     expect(await errors(code)).toEqual([]);
   });
 

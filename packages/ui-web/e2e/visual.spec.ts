@@ -28,9 +28,24 @@ for (const surface of surfaces)
         return document.fonts.check('500 16px "CoFo Sans Pro Arabic"');
       });
       expect(loaded, 'CoFo did not load: run `pnpm fonts:fetch` and rebuild').toBe(true);
+      // The Hover, Focus and Pressed stories are the plain button: drive it.
+      // Tab (not click) so that :focus-visible applies.
+      const button = page.getByRole('button').first();
+      if (story.name.endsWith('Hover')) await button.hover();
+      if (story.name.endsWith('Focus')) {
+        await page.keyboard.press('Tab');
+        await expect(button).toBeFocused();
+      }
+      if (story.name.endsWith('Pressed')) {
+        const box = (await button.boundingBox())!;
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.down();
+      }
       await expect(page).toHaveScreenshot(`${story.id}-${surface}.png`, {
         animations: 'disabled',
         fullPage: true,
+        // Playwright's default colour tolerance hides a faint hover overlay.
+        threshold: 0,
       });
     });
   }

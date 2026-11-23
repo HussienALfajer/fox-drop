@@ -54,6 +54,30 @@ describe('Button', () => {
     ).not.toBeNull();
   });
 
+  it('does not submit a form by default, only with type submit', async () => {
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <Button>اطلب</Button>
+        <Button type="submit">أرسل</Button>
+      </form>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'اطلب' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'أرسل' }));
+    expect(onSubmit).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the font size class next to the label colour class', () => {
+    const { rerender } = render(<Button>اطلب</Button>);
+    expect(screen.getByRole('button').className).toContain('text-phone-subtitle');
+    expect(screen.getByRole('button').className).toContain(
+      'text-(color:--fd-button-primary-label)',
+    );
+    rerender(<Button density="compact">اطلب</Button>);
+    expect(screen.getByRole('button').className).toContain('text-panel-subtitle');
+  });
+
   it('is not busy when idle', () => {
     render(<Button>اطلب</Button>);
     expect(screen.getByRole('button').hasAttribute('aria-busy')).toBe(false);

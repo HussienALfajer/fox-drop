@@ -20,8 +20,10 @@ const icon = tv({
   defaultVariants: { size: 'md' },
 });
 
-export interface IconProps extends VariantProps<typeof icon> {
+// Not the whole VariantProps: `mirror` comes from the icon's own data, never a prop.
+export interface IconProps {
   name: IconName;
+  size?: VariantProps<typeof icon>['size'];
   /** The accessible name. Without it the icon is decorative and hidden from screen readers. */
   label?: string;
 }
