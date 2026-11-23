@@ -152,6 +152,9 @@
         "track-hover": {
           "$value": "{color.border-hover}"
         },
+        "track-pressed": {
+          "$value": "{color.border-pressed}"
+        },
         "track-on": {
           "$value": "{color.primary}"
         },
@@ -179,6 +182,9 @@
         "$type": "color",
         "background": {
           "$value": "{color.surface-raised}"
+        },
+        "background-hover": {
+          "$value": "{color.surface-raised-hover}"
         },
         "background-pressed": {
           "$value": "{color.surface-raised-pressed}"

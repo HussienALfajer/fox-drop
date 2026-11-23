@@ -85,14 +85,18 @@ const states = (target: number): Pair[] => [
   ...on(['focus-ring'], 3, 'focus ring, hovered or pressed', STATE_BACKGROUNDS),
 ];
 const nonText = on(
-  ['border-strong', 'border-hover', 'focus-ring'],
+  ['border-strong', 'border-hover', 'border-pressed', 'focus-ring'],
   3,
   'control boundary, focus ring, icon',
 );
 // Forms (D.8, owner 2026-11-23): a focused field's outline, a checked box, the
-// switch's track and the stepper's circles are the brand orange, under the
-// same exception extended to 3:1 control boundaries.
-const orangeBoundary = excepted(on(['primary'], 3, 'control boundary (focus, checked)'), 2.5);
+// switch's track, the stepper's circles and the orange icons inside controls
+// (the search lens, the stepper's signs, the select's tick) are the brand
+// orange, under the same exception extended to 3:1 non-text elements.
+const orangeBoundary = excepted(
+  on(['primary'], 3, 'control boundary, checked control, icon in a control'),
+  2.5,
+);
 // Alerts are read from across a room: the restaurant tablet, the panel (§6).
 const alerts: Pair[] = [
   { foreground: 'on-alert', background: 'alert', target: 7, use: 'alert' },
@@ -153,6 +157,7 @@ export const STATE_TRIPLES: [rest: string, hover: string, pressed: string][] = [
   ['danger', 'danger-hover', 'danger-pressed'],
   ['surface', 'surface-hover', 'surface-pressed'],
   ['surface-raised', 'surface-raised-hover', 'surface-raised-pressed'],
+  ['border-strong', 'border-hover', 'border-pressed'],
 ];
 export const MIN_HOVER = 8;
 export const MIN_PRESS = 5;

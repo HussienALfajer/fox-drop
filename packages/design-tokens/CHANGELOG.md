@@ -8,6 +8,7 @@ Every token change bumps `version` in `package.json` and gets an entry here (arc
 - New semantic tokens: `size.selection` 24, `size.step` 32, `size.switch-width` 52, `size.switch-height` 32, `border-width.thin` 1 and `border-width.thick` 2.
 - The owner's orange exception now covers `primary` as a 3:1 control boundary (a focused outline, a checked box, the switch, the stepper) on `surface` and `surface-raised`, floor 2.5. New pair: `border-hover` at 3:1.
 - New icons `chevron-down` and `calendar`.
+- New semantic `border-pressed` (blue 700) and the triple `border-strong`/`border-hover`/`border-pressed` under the R10 ΔE test; `input.switch.color.track-pressed` and `input.stepper.color.background-hover`, so the off switch and the stepper have their own pressed and hover steps (review of D.8).
 
 ## 0.5.0 (2026-11-24, slice D.6: interaction states, R10)
 

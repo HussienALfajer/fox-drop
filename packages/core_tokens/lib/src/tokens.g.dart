@@ -23,6 +23,7 @@ final class ColorTokens {
     required this.border,
     required this.borderStrong,
     required this.borderHover,
+    required this.borderPressed,
     required this.focusRing,
     required this.success,
     required this.onSuccess,
@@ -65,6 +66,7 @@ final class ColorTokens {
   final int border;
   final int borderStrong;
   final int borderHover;
+  final int borderPressed;
   final int focusRing;
   final int success;
   final int onSuccess;
@@ -110,6 +112,7 @@ abstract final class FoxColors {
     border: 0xFFD3D6D9,
     borderStrong: 0xFF6688B2,
     borderHover: 0xFF03428E,
+    borderPressed: 0xFF032E62,
     focusRing: 0xFF03428E,
     success: 0xFF067647,
     onSuccess: 0xFFFFFFFF,
@@ -153,6 +156,7 @@ abstract final class FoxColors {
     border: 0xFFD3D6D9,
     borderStrong: 0xFF6688B2,
     borderHover: 0xFF03428E,
+    borderPressed: 0xFF032E62,
     focusRing: 0xFF03428E,
     success: 0xFF067647,
     onSuccess: 0xFFFFFFFF,
@@ -196,6 +200,7 @@ abstract final class FoxColors {
     border: 0xFFD3D6D9,
     borderStrong: 0xFF6688B2,
     borderHover: 0xFF03428E,
+    borderPressed: 0xFF032E62,
     focusRing: 0xFF03428E,
     success: 0xFF055A37,
     onSuccess: 0xFFFFFFFF,
@@ -239,6 +244,7 @@ abstract final class FoxColors {
     border: 0xFFD3D6D9,
     borderStrong: 0xFF6688B2,
     borderHover: 0xFF03428E,
+    borderPressed: 0xFF032E62,
     focusRing: 0xFF03428E,
     success: 0xFF055A37,
     onSuccess: 0xFFFFFFFF,
@@ -479,6 +485,7 @@ final class InputTokens {
     required this.switchHeight,
     required this.switchColorTrack,
     required this.switchColorTrackHover,
+    required this.switchColorTrackPressed,
     required this.switchColorTrackOn,
     required this.switchColorTrackOnHover,
     required this.switchColorTrackOnPressed,
@@ -486,6 +493,7 @@ final class InputTokens {
     required this.stepperSize,
     required this.stepperTarget,
     required this.stepperColorBackground,
+    required this.stepperColorBackgroundHover,
     required this.stepperColorBackgroundPressed,
     required this.stepperColorBorder,
     required this.stepperColorValue,
@@ -535,6 +543,7 @@ final class InputTokens {
   final double switchHeight;
   final int switchColorTrack;
   final int switchColorTrackHover;
+  final int switchColorTrackPressed;
   final int switchColorTrackOn;
   final int switchColorTrackOnHover;
   final int switchColorTrackOnPressed;
@@ -542,6 +551,7 @@ final class InputTokens {
   final double stepperSize;
   final double stepperTarget;
   final int stepperColorBackground;
+  final int stepperColorBackgroundHover;
   final int stepperColorBackgroundPressed;
   final int stepperColorBorder;
   final int stepperColorValue;
@@ -594,6 +604,7 @@ abstract final class FoxInput {
     switchHeight: 32.0,
     switchColorTrack: 0xFF6688B2,
     switchColorTrackHover: 0xFF03428E,
+    switchColorTrackPressed: 0xFF032E62,
     switchColorTrackOn: 0xFFFF6E31,
     switchColorTrackOnHover: 0xFFDA531B,
     switchColorTrackOnPressed: 0xFFC2410C,
@@ -601,6 +612,7 @@ abstract final class FoxInput {
     stepperSize: 32.0,
     stepperTarget: 48.0,
     stepperColorBackground: 0xFFFEFEFE,
+    stepperColorBackgroundHover: 0xFFD6E4F7,
     stepperColorBackgroundPressed: 0xFFADC9EE,
     stepperColorBorder: 0xFFFF6E31,
     stepperColorValue: 0xFF03428E,
@@ -651,6 +663,7 @@ abstract final class FoxInput {
     switchHeight: 32.0,
     switchColorTrack: 0xFF6688B2,
     switchColorTrackHover: 0xFF03428E,
+    switchColorTrackPressed: 0xFF032E62,
     switchColorTrackOn: 0xFFFF6E31,
     switchColorTrackOnHover: 0xFFDA531B,
     switchColorTrackOnPressed: 0xFFC2410C,
@@ -658,6 +671,7 @@ abstract final class FoxInput {
     stepperSize: 32.0,
     stepperTarget: 48.0,
     stepperColorBackground: 0xFFFEFEFE,
+    stepperColorBackgroundHover: 0xFFD6E4F7,
     stepperColorBackgroundPressed: 0xFFADC9EE,
     stepperColorBorder: 0xFFFF6E31,
     stepperColorValue: 0xFF03428E,
@@ -708,6 +722,7 @@ abstract final class FoxInput {
     switchHeight: 32.0,
     switchColorTrack: 0xFF6688B2,
     switchColorTrackHover: 0xFF03428E,
+    switchColorTrackPressed: 0xFF032E62,
     switchColorTrackOn: 0xFFFF6E31,
     switchColorTrackOnHover: 0xFFDA531B,
     switchColorTrackOnPressed: 0xFFC2410C,
@@ -715,6 +730,7 @@ abstract final class FoxInput {
     stepperSize: 32.0,
     stepperTarget: 48.0,
     stepperColorBackground: 0xFFFEFEFE,
+    stepperColorBackgroundHover: 0xFFD6E4F7,
     stepperColorBackgroundPressed: 0xFFD6E4F7,
     stepperColorBorder: 0xFFFF6E31,
     stepperColorValue: 0xFF03428E,
@@ -765,6 +781,7 @@ abstract final class FoxInput {
     switchHeight: 32.0,
     switchColorTrack: 0xFF6688B2,
     switchColorTrackHover: 0xFF03428E,
+    switchColorTrackPressed: 0xFF032E62,
     switchColorTrackOn: 0xFFFF6E31,
     switchColorTrackOnHover: 0xFFDA531B,
     switchColorTrackOnPressed: 0xFFC2410C,
@@ -772,6 +789,7 @@ abstract final class FoxInput {
     stepperSize: 32.0,
     stepperTarget: 48.0,
     stepperColorBackground: 0xFFFEFEFE,
+    stepperColorBackgroundHover: 0xFFD6E4F7,
     stepperColorBackgroundPressed: 0xFFD6E4F7,
     stepperColorBorder: 0xFFFF6E31,
     stepperColorValue: 0xFF03428E,
