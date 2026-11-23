@@ -593,13 +593,18 @@ jobs:
             ~/Library/Caches/CocoaPods
             ~/Library/Caches/org.swift.swiftpm
             ~/Library/Developer/Xcode/DerivedData/*/SourcePackages/checkouts
-            ~/Library/Developer/Xcode/DerivedData/*/SourcePackages/repositories
-          key: ios-dependencies-${{ matrix.app }}-${{ hashFiles('pubspec.lock', format('apps/{0}/ios/Podfile', matrix.app), format('apps/{0}/ios/Runner.xcodeproj/project.pbxproj', matrix.app)) }}
-          restore-keys: ios-dependencies-${{ matrix.app }}-
+            ~/Library/Developer/Xcode/DerivedData
+            apps/${{ matrix.app }}/build/ios
+          key: ios-experiment-${{ matrix.app }}-${{ hashFiles('pubspec.lock', format('apps/{0}/ios/Podfile', matrix.app), format('apps/{0}/ios/Runner.xcodeproj/project.pbxproj', matrix.app)) }}
+          restore-keys: ios-experiment-${{ matrix.app }}-
 
       - name: Build the staging release, unsigned
         working-directory: apps/${{ matrix.app }}
         run: flutter build ios --flavor staging --release --no-codesign
+
+      - name: Sizes (experiment)
+        if: always()
+        run: du -sh ~/Library/Developer/Xcode/DerivedData apps/${{ matrix.app }}/build/ios || true
 
   # Slice 2.46 (owner decisions 2026-11-20): every merge to main (but one of
   # docs only) builds the customer and captain apps' staging flavor for iOS,
