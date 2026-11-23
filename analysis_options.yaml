@@ -9,3 +9,11 @@ analyzer:
     strict-casts: true
     strict-inference: true
     strict-raw-types: true
+
+# R2 and R5 (architecture §9.5, packages/fox_lints): no colour or length
+# literals, no Material import, no left or right. A plugin can be declared
+# only here, at the workspace root; the packages it checks are listed in
+# packages/fox_lints/lib/src/rules.dart (`enforcedPackages`).
+plugins:
+  fox_lints:
+    path: packages/fox_lints

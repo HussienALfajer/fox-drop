@@ -1,0 +1,5 @@
+# The golden tests (R9) are valid only on Linux in Docker, so a plain
+# `flutter test` skips them: run `node scripts/golden-docker.mjs`.
+tags:
+  golden:
+    skip: 'Linux only: node scripts/golden-docker.mjs'

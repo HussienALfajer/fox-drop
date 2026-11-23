@@ -6,8 +6,15 @@ import { appendFileSync, mkdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+// With the job's GITHUB_TOKEN when CI passes it: an anonymous call shares the
+// runner IP's rate limit and got 403 on a busy runner.
+const token = process.env.GITHUB_TOKEN;
 const response = await fetch('https://api.github.com/meta', {
-  headers: { 'User-Agent': 'ci', Accept: 'application/vnd.github+json' },
+  headers: {
+    'User-Agent': 'ci',
+    Accept: 'application/vnd.github+json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  },
 });
 if (!response.ok) throw new Error(`api.github.com/meta answered ${response.status}`);
 const { ssh_keys: keys } = await response.json();

@@ -295,8 +295,8 @@ export function buttonSheet(themes: Themes, config: GuideConfig, icons: Icon[]):
   const body = [
     heading(
       themes,
-      'الأزرار والأيقونات — الدفعة الأولى',
-      'Button and Icon — batch 1 (architecture §9.9; brand directions «Measurements»: pills 50). Every variant and state at 50 and 40, icons in RTL, the three surfaces, 130% text. Sample labels are review copy only.',
+      'الأزرار والأيقونات — الدفعة الأولى (مُستبدَلة)',
+      'Superseded (architecture §9.9 step 4): the record of the approval only; the Button and Icon live in the Design System (ui-web, D.6) and core_ui (Flutter, D.7). Button and Icon — batch 1 (architecture §9.9; brand directions «Measurements»: pills 50). Every variant and state at 50 and 40, icons in RTL, the three surfaces, 130% text. Sample labels are review copy only.',
     ),
     matrix(themes, 50, 'الحالات — الحجم العادي 50', 'comfortable · phone and captain'),
     matrix(themes, 40, 'الحالات — الحجم المضغوط 40', 'compact · panel, pointer only (proposed)'),
@@ -309,7 +309,7 @@ export function buttonSheet(themes: Themes, config: GuideConfig, icons: Icon[]):
   return page(
     themes,
     config,
-    { file: 'Buttons.dc.html', title: 'Button and Icon — batch 1', w: W, h: 2180 },
+    { file: 'Buttons.dc.html', title: 'Button and Icon — batch 1 (superseded)', w: W, h: 2180 },
     body,
   );
 }

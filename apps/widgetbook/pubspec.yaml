@@ -1,0 +1,24 @@
+name: fox_widgetbook
+description: The core_ui component catalogue (architecture §9.7), a Windows app for the owner.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  core_ui: any
+  flutter:
+    sdk: flutter
+  widgetbook: 3.25.0
+
+dev_dependencies:
+  flutter_lints: 6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  # The widgetbook shell draws Material icons; the components never do.
+  uses-material-design: true

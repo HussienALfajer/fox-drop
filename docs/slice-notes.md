@@ -5,6 +5,15 @@ Moved here unchanged on 2026-11-20 so `TASKS.md` holds the current task only.
 Grep it for a slice number or a feature;
 do not read it whole.
 
+## Left from D.7 (`feat/core-ui`)
+
+- **Before the merge:** the `golden` CI job, like `visual`, needs `FONTS_DEPLOY_KEY` and fails without the fonts, by design.
+- **The owner can try:** `pnpm fonts:fetch`, then `flutter run -d windows` in `apps/widgetbook` (`apps/widgetbook/CLAUDE.md`): every Button variant and state and the icons, in the phone and captain themes, text scale 1 to 2.
+- **Decided by us (to confirm with the owner):** `FoxIcon` takes the token value (`FoxIcons.back`) instead of a name enum; a disabled `FoxButton` is `onPressed: null` (Flutter's convention); Flutter has comfortable density only; the goldens' image is a digest-pinned Ubuntu with Flutter cloned at the `.fvmrc` tag (no ready Flutter 3.47 image); the lints run on an opt-in list (`enforcedPackages`), since a plugin can be declared only at the workspace root.
+- **Done:** the Button and state sheets on the Component proposals canvas are marked superseded (§9.9 step 4).
+- **Watch:** `packages/core_auth/test/session_test.dart` «retries a refresh that got no answer with the same token» failed once under machine load (a 60 ms `refreshRetryWindow` on a real clock) and passed alone; it needs a fake clock.
+- **Not yet:** `core_ui` in the apps and CoFo bundled there (each app's screen slice, which adds the app to `enforcedPackages` and fixes what the rules find: about 330 findings today, mostly Material imports and literal insets); dark mode; money and the ₺ fallback (D.8); a hosted widgetbook; a CI build of the widgetbook Windows runner (no job builds it today, so a runner break shows only when the owner runs it).
+
 ## Left from D.6 (`feat/ui-web`)
 
 - **Before the merge:** the owner adds `FONTS_DEPLOY_KEY` to the Actions secrets; the `visual` job (required by `verify`) fails without the fonts, by design. Its container steps (installing git and ssh, `github-known-hosts.mjs /etc/ssh/ssh_known_hosts`, the fetch) have not run in CI yet: watch the first run.
