@@ -17,9 +17,24 @@ Read first: `packages/ui-web/CLAUDE.md`, `packages/core_ui/CLAUDE.md`; grep `doc
 
 Built so far: tokens 0.6.0, icons, Button and Icon, and the inputs and forms set ([D.8](D.8-inputs-and-forms.md)) on the web (`ui-web`) and in Flutter (`core_ui`, widgetbook, goldens).
 
+## Design (checkpoint 0, awaiting the owner)
+
+Sheet «Data display — batch 3» (`packages/design-tokens/src/data-sheet.ts`, board `Data.dc.html` on the Component proposals canvas, drawn by `pnpm --filter @fox-drop/design-tokens icon-sheet --config <file>`). The Figma API was rate limited (429), so the look used the renders of 2026-11-23 (home 49:2041, dish 49:1765, cart 49:1557, components page). Taken from the file: the cart's summary with dashed rules and the orange total bar, the offset shadow under customer cards, the outlined item cards, the dish block with an icon panel (offered as option B), the rating with a star, the chips of the dish page.
+
+Drawn, with the options the owner decides:
+
+1. **Money:** one isolated RTL run, amount then symbol (the symbol sits to the amount's left, as in the file), Western tabular digits, a whole amount drops its fraction; sizes secondary 14 to number 30 (captain 36); − reads first; a zero fee is «مجاني». The ₺: (A, ours) a 1 KB Noto Sans subset holding U+20BA bundled beside CoFo, (B) the platform's font, (C) «TL». Thousands: (ours) a Western comma, or none (today's `core_l10n` and pushes).
+2. **Status chip:** the nine AP §8.1 states, icon and word with every colour; (A, ours) tint behind dark text, (B) solid, (C) dot. Tones: placed warning, accepted info, ready and delivered success, picked up and arrived primary, rejected and failed danger, cancelled neutral. New tokens `*-subtle` (proposed hexes in the sheet, text 4.6:1 to 8.7:1).
+3. **Count badge:** dot, count, 99+; the restaurant's column tabs with count and late count.
+4. **Card shell:** outline, soft elevation, offset shadow; ours: offset in the customer app, outline elsewhere; R10 states when tappable.
+5. **List row**, **timer** (mm:ss under 10 min, «12 د» above; calm, soon, late counting up; the captain's 45 s offer ring), **order card** (restaurant board card per RA §8.2, late red; customer «طلباتي» row per CU §12.3).
+6. **Amounts summary** (CU §10.2): (A, ours for the customer cart) the orange total bar, (B, elsewhere) a bold total under a rule; equivalents per currency under it.
+7. **Restaurant card** (CU §8.2) and **dish card** (CU §9.3): (A, ours) a row with a 1:1 photo and «+», (B) the file's icon-panel block. Missing photos per brand expression §5.
+8. **Skeleton:** (A, ours) calm pulse, (B) shimmer; still under reduced motion. **Empty and error states** in the drop frame (icon until the fox scenes exist). **Data table** (web, compact 40).
+
 ## Stopped at
 
-Not started.
+Checkpoint 0: the sheet is published; waiting for the owner's approval and choices.
 
 ## Evidence
 
