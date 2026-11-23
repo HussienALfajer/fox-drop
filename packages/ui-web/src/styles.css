@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+@import '@fox-drop/design-tokens/tokens.css';
+@import '@fox-drop/design-tokens/tailwind.css';
+
+/* CoFo Sans Pro Arabic, self-hosted from the repository's .fonts/ folder
+   (architecture §9.3, fetched by `pnpm fonts:fetch`). Storybook serves the
+   folder at /fonts; an app copies it next to its own bundle. */
+@font-face {
+  font-family: 'CoFo Sans Pro Arabic';
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/cofo-sans-pro-arabic/CoFoSansProArabic-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'CoFo Sans Pro Arabic';
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/cofo-sans-pro-arabic/CoFoSansProArabic-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'CoFo Sans Pro Arabic';
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/cofo-sans-pro-arabic/CoFoSansProArabic-Bold.ttf') format('truetype');
+}

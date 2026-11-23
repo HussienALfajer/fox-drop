@@ -22,8 +22,27 @@ describe('web lint rules', () => {
     ['a label attribute in braces', "export function X() { return <i title={'نص'} />; }"],
     ['Intl in plain Arabic', "export const f = new Intl.NumberFormat('ar');"],
     ['toLocaleString in Arabic', "export const s = (1).toLocaleString('ar-SY');"],
+    ['an arbitrary Tailwind value', 'export const c = "w-[13px]";'],
+    ['a hex colour', 'export const c = "#ff6e31";'],
+    ['a style prop', 'export const X = () => <i style={{ margin: 0 }} />;'],
+    ['a physical direction', 'export const c = "flex ml-2";'],
+    ['a physical text direction', 'export const c = "text-right";'],
+    [
+      'an import of the UI SDK',
+      'import { Button } from "@ui-sdk/react/button";\nexport { Button };',
+    ],
+    ['an import of Base UI', 'import { Menu } from "@base-ui/react/menu";\nexport { Menu };'],
+    [
+      'an import of the SDK agent',
+      'import { Agent } from "@ui-sdk/react/agent";\nexport { Agent };',
+    ],
   ])('fails %s', async (_, code) => {
     expect(await errors(code)).toHaveLength(1);
+  });
+
+  it('passes token variables and logical directions', async () => {
+    const code = 'export const c = "bg-(--fd-button-primary-background) ms-2 pe-4 text-start";';
+    expect(await errors(code)).toEqual([]);
   });
 
   it('passes translated text and Western digits', async () => {

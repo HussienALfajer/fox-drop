@@ -1,0 +1,11 @@
+# packages/ui-web
+
+## Package skeleton (D.6, step 3)
+
+- **Package:** `@fox-drop/ui-web`, private, ESM; `exports` point at TypeScript source (`./src/index.ts`) and `./styles.css`. Exact pins as in `TASKS.md` D.6 (`@ui-sdk/react` and `@ui-sdk/core` 0.1.0-beta.14 both exist on npm, Storybook 10.6.8, Tailwind 4.3.5). `src/index.ts` exports nothing yet.
+- **Styles:** `src/styles.css` imports Tailwind, `tokens.css` and `tailwind.css` of `design-tokens`, and declares CoFo 400, 500 and 700 from `/fonts/cofo-sans-pro-arabic/CoFoSansProArabic-{Regular,Medium,Bold}.ttf`, the files and names of `scripts/font-metrics.mjs` (`WEIGHTS`). Storybook serves the repository's `.fonts/` at `/fonts` when the folder exists; without it (a fork's pull request) the build passes and text uses the fallback.
+- **Storybook:** `.storybook/main.ts` (react-vite, `@tailwindcss/vite`, telemetry off), `preview.tsx` (decorator `dir="rtl" lang="ar"`, toolbar global `surface`: phone default, captain sets `data-surface="captain"` as `tokens.css` defines it, panel uses the default tokens).
+- **Lint (R1, R3, R5, T11):** `eslint.web.mjs` holds a local plugin rule `fd/design` over every string and template literal and the `style` prop: arbitrary Tailwind value, hex colour, physical direction. `webAppConfig` (apps) bans `@ui-sdk/*` and `@base-ui/*`; `uiWebConfig` bans only `@ui-sdk/react/agent`. Stories and `*.test.tsx` skip the JSX-text rule. Known limits: any `-[` in a string counts as arbitrary (so `data-[state=open]:` fails too); a hex-looking anchor such as `#add` would count as a colour.
+- **Left for later steps:** `test:e2e` (Playwright and axe are installed; the RTL gate step adds the config and specs), the `design-system` bundle script, Icon and Button.
+- **Wiring:** Turborepo picks `lint`, `typecheck`, `test` and `build` up from the scripts. `classify-changes.mjs` needed no change: a path under `packages/ui-web/` is not Dart, so it already counts as TypeScript (`code`, `typescript`).
+- **Apps:** no `style=` or physical class. The lint found four hex literals in `apps/admin` (a white canvas fill in `banners-page.tsx`, the QR's white and black in `setup-page.tsx`); they became `white` and `black`, which stay fixed because a QR code needs that contrast in any theme.

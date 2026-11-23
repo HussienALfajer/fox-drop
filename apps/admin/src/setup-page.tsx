@@ -157,8 +157,8 @@ function QrCode({ otpauthUri }: { otpauthUri: string }) {
       height={(size + 8) * 6}
       shapeRendering="crispEdges"
     >
-      <rect x={-4} y={-4} width={size + 8} height={size + 8} fill="#fff" />
-      <path d={path} fill="#000" />
+      <rect x={-4} y={-4} width={size + 8} height={size + 8} fill="white" />
+      <path d={path} fill="black" />
     </svg>
   );
 }
