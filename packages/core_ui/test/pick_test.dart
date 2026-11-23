@@ -140,6 +140,28 @@ void main() {
       expect(shown(tester), '912345678');
     });
 
+    testWidgets('after a country switch the caret is at the end', (
+      tester,
+    ) async {
+      final seen = <String?>[];
+      await tester.pumpWidget(live(seen, []));
+      await tester.enterText(find.byType(EditableText), '+905321234567');
+      await tester.pump();
+      final controller = tester
+          .widget<EditableText>(find.byType(EditableText))
+          .controller;
+      expect(controller.text, '5321234567');
+      expect(controller.selection, const TextSelection.collapsed(offset: 10));
+      // Backspace deletes the character before the caret: the last digit.
+      final caret = controller.selection.baseOffset;
+      await tester.enterText(
+        find.byType(EditableText),
+        controller.text.substring(0, caret - 1),
+      );
+      expect(shown(tester), '532123456');
+      expect(seen.last, isNull);
+    });
+
     testWidgets('a calling code with a wrong rest is shown and refused', (
       tester,
     ) async {
@@ -291,6 +313,9 @@ void main() {
       // A paste (or an autofill) arrives as the whole text at once.
       await tester.enterText(find.byType(EditableText), '482915');
       expect(done, ['482915']);
+      // A longer paste keeps its first six digits (the old code is replaced
+      // first, see «new digits replace a full code»).
+      await tester.enterText(find.byType(EditableText), '');
       await tester.enterText(find.byType(EditableText), '4829150000');
       expect(
         tester.widget<EditableText>(find.byType(EditableText)).controller.text,
@@ -311,6 +336,29 @@ void main() {
       await tester.enterText(find.byType(EditableText), '٤٨۲٩١٥x');
       expect(controller.text, '482915');
       expect(done, ['482915']);
+    });
+
+    testWidgets('new digits replace a full code', (tester) async {
+      final done = <String>[];
+      final controller = TextEditingController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        code(controller: controller, onCompleted: done.add),
+      );
+      await tester.enterText(find.byType(EditableText), '482915');
+      // A paste of a whole new code.
+      await tester.enterText(find.byType(EditableText), '123456');
+      expect(controller.text, '123456');
+      expect(done, ['482915', '123456']);
+      // A keystroke on a full code starts a new one.
+      await tester.enterText(find.byType(EditableText), '1234567');
+      expect(controller.text, '7');
+      expect(done, hasLength(2));
+      // A paste in the middle of a full code is the new code.
+      await tester.enterText(find.byType(EditableText), '');
+      await tester.enterText(find.byType(EditableText), '482915');
+      await tester.enterText(find.byType(EditableText), '48777915');
+      expect(controller.text, '777');
     });
 
     testWidgets('keeps digits only', (tester) async {

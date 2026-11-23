@@ -76,7 +76,9 @@ const international = (country: CountryCode, national: string): ParsedPhone =>
 export function parsePhone(selected: CountryCode, text: string): ParsedPhone {
   const trimmed = text.trim();
   const digits = digitsOf(trimmed);
-  const refused: ParsedPhone = { country: selected, display: digits, e164: '', refused: true };
+  // A refused text keeps its `+`, so the next edit is still read with a calling code.
+  const shown = trimmed.startsWith('+') ? `+${digits}` : digits;
+  const refused: ParsedPhone = { country: selected, display: shown, e164: '', refused: true };
 
   if (trimmed.startsWith('+') || digits.startsWith('00')) {
     const rest = trimmed.startsWith('+') ? digits : digits.slice(2);

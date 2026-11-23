@@ -95,6 +95,42 @@ final TextInputFormatter _westernDigits = TextInputFormatter.withFunction((
   return text == value.text ? value : value.copyWith(text: text);
 });
 
+/// When the code is already full and digits arrive (a paste, a keystroke, an
+/// autofill), the new digits replace the old code instead of being dropped by
+/// the length limit, so a wrong code is retyped without deleting it first.
+class _ReplaceFullCode extends TextInputFormatter {
+  const _ReplaceFullCode(this.length);
+
+  final int length;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final old = oldValue.text;
+    final text = newValue.text;
+    if (old.length < length || text.length <= old.length) return newValue;
+    // What was inserted: the text between the common start and end.
+    var start = 0;
+    while (start < old.length && old[start] == text[start]) {
+      start++;
+    }
+    var end = 0;
+    while (end < old.length - start &&
+        old[old.length - 1 - end] == text[text.length - 1 - end]) {
+      end++;
+    }
+    final inserted = text.substring(start, text.length - end);
+    return TextEditingValue(
+      text: inserted,
+      selection: TextSelection.collapsed(
+        offset: inserted.length > length ? length : inserted.length,
+      ),
+    );
+  }
+}
+
 class _Cells extends StatelessWidget {
   const _Cells({
     required this.length,
@@ -190,6 +226,7 @@ class _Cells extends StatelessWidget {
                         inputFormatters: [
                           _westernDigits,
                           FilteringTextInputFormatter.digitsOnly,
+                          _ReplaceFullCode(length),
                           LengthLimitingTextInputFormatter(length),
                         ],
                         buildCounter:

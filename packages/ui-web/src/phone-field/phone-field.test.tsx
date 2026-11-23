@@ -92,6 +92,15 @@ describe('PhoneField', () => {
     expect(onValueChange).toHaveBeenLastCalledWith('+963912345678', { country: 'sy' });
   });
 
+  it('keeps the plus of a refused pasted number, so the next edit is read with its code', async () => {
+    const onValueChange = vi.fn();
+    render(<PhoneField {...props} onValueChange={onValueChange} />);
+    await userEvent.click(screen.getByRole('textbox'));
+    await userEvent.paste('+90912345678');
+    expect(screen.getByRole('textbox')).toHaveValue('+90912345678');
+    expect(onValueChange).toHaveBeenLastCalledWith('', { country: 'sy' });
+  });
+
   it('switches the country to the one a pasted number names', async () => {
     const onValueChange = vi.fn();
     const onCountryChange = vi.fn();

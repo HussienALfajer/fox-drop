@@ -907,8 +907,8 @@ export function formsSheet(themes: Themes, config: GuideConfig, icons: Icon[]): 
   const body = [
     heading(
       themes,
-      'الإدخال والنماذج — الدفعة الثانية',
-      'Inputs and forms — batch 2 (architecture §9.9 step 1, slice D.8). Every control in its states, phone 50 and panel 40, RTL, the three surfaces, 130% text; real tokens, options side by side where you decide. Sample text is review copy only.',
+      'الإدخال والنماذج — الدفعة الثانية (مُستبدَلة)',
+      'Superseded (architecture §9.9 step 4): the record of the approval only; the form components live in the Design System (ui-web) and core_ui (Flutter), slice D.8. Inputs and forms — batch 2 (architecture §9.9 step 1, slice D.8). Every control in its states, phone 50 and panel 40, RTL, the three surfaces, 130% text; real tokens, options side by side where you decide. Sample text is review copy only.',
     ),
     matrix(phone, 'الحقل — الحجم العادي 50', 'comfortable · phone and captain'),
     matrix(panel, 'الحقل — الحجم المضغوط 40', 'compact · panel and portal'),

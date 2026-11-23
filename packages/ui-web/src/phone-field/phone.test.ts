@@ -95,6 +95,18 @@ describe('parsePhone: a number with its own calling code', () => {
   });
 });
 
+describe('parsePhone: a refused text keeps its plus', () => {
+  it.each([
+    ['sy', '+90912345678', '+90912345678'],
+    ['sy', '+963 912 345 678 999', '+963912345678999'],
+    ['sy', '00441234567890', '441234567890'.padStart(14, '0')],
+  ] as const)('%s %s shows %s', (picked, typed, shown) => {
+    const parsed = parsePhone(picked, typed);
+    expect(parsed.refused).toBe(true);
+    expect(parsed.display).toBe(shown);
+  });
+});
+
 describe('fromE164', () => {
   it('splits a stored number into its country and national digits', () => {
     expect(fromE164('+963912345678')).toEqual({ country: 'sy', national: '912345678' });

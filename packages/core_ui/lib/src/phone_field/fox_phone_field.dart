@@ -370,7 +370,12 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
                 // digits under the chip that now names the country.
                 if (parsed.e164 != null &&
                     parsed.display != foxPhoneDigits(text)) {
-                  controller.text = parsed.display;
+                  controller.value = TextEditingValue(
+                    text: parsed.display,
+                    selection: TextSelection.collapsed(
+                      offset: parsed.display.length,
+                    ),
+                  );
                 }
                 widget.onChanged(parsed.e164);
               },
