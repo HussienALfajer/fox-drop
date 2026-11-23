@@ -41,8 +41,9 @@ const on = (names: string[], target: number, use: string, backgrounds = BACKGROU
 const excepted = (pairs: Pair[], floor: number): Pair[] =>
   pairs.map((p) => ({ ...p, exception: EXCEPTION, floor }));
 
-// Orange text is for headings only; `primary` is a fill, never text.
-const orangeText = excepted(on(['heading'], 4.5, 'orange heading'), 2.4);
+// The owner allows orange anywhere, text and numbers included (2026-11-23):
+// headings in `heading`, any other orange text or number in `primary`.
+const orangeText = excepted(on(['heading', 'primary'], 4.5, 'orange text'), 2.4);
 const orangeFills = excepted(
   ['primary', 'primary-hover', 'primary-pressed'].map((background) => ({
     foreground: 'on-primary',

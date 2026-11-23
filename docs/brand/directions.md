@@ -38,7 +38,7 @@ Where the file's values fail the contrast rule, the tokens move them as little a
 - **Dish details:** the file unchanged.
 - **Cart:** the file unchanged, except a minus sign before the discount amount.
 - **Everywhere:**
-  - The brand-orange exception covers every app, the captain's included (orange on buttons and headings only, never on numbers).
+  - The brand-orange exception covers every app, the captain's included. At first orange was for buttons and headings only; in D.8 the owner allowed it anywhere, numbers and prices included (2026-11-23).
   - Prices keep the «450 ₺» format (AP §4.7), not the file's «TL 450».
   - The radii are the file's exact values.
   - Emad-Diana is not used in the UI; button labels are CoFo 700 (brand expression §7).

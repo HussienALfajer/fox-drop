@@ -203,7 +203,7 @@ function colour(themes: Themes, config: GuideConfig): Board {
   const pairs = results
     .map((r) => {
       const status = r.exception ? 'owner exception' : r.pass ? 'pass' : 'fail';
-      // Orange is for buttons and headings only: the exception is named in blue.
+      // The exception is named in blue, whatever the pair.
       const ink = r.exception ? 'color.on-surface' : r.pass ? 'color.success' : 'color.danger';
       return `<div style="display: grid; grid-template-columns: 96px minmax(0, 2fr) 72px 72px minmax(0, 1fr); gap: ${v(themes, 'space.md')}; align-items: center">
 <span style="padding: ${v(themes, 'space.2xs')} ${v(themes, 'space.xs')}; border-radius: ${v(themes, 'radius.sm')}; background: ${r.bg}; color: ${r.fg}; font-weight: 700; text-align: center">طلبك</span>
@@ -217,7 +217,7 @@ ${label(themes, `${r.ratio.toFixed(2)}:1`)}${label(themes, `≥ ${r.target}`)}
     heading(
       themes,
       'Colour',
-      'The semantic colours per theme. Dark copies Light until dark mode is designed; the captain themes raise text to 7:1. The brand orange sits below 4.5:1 under the owner’s exception (R4), on buttons and headings only.',
+      'The semantic colours per theme. Dark copies Light until dark mode is designed; the captain themes raise text to 7:1. The brand orange sits below 4.5:1 under the owner’s exception (R4), allowed anywhere, text and numbers included.',
     ),
     card(themes, `${head}\n${rows}`),
     card(
