@@ -32,6 +32,8 @@ export interface Board {
   title: string;
   w: number;
   h: number;
+  /** Working controls on the canvas (hover and press them). */
+  interactive?: boolean;
   html: string;
 }
 
@@ -426,7 +428,10 @@ export function canvas(
 ): string {
   let x = 0;
   const entries = list.map((b) => {
-    const entry = [b.file, { x, y: 0, w: b.w, h: b.h, title: b.title }] as const;
+    const entry = [
+      b.file,
+      { x, y: 0, w: b.w, h: b.h, title: b.title, ...(b.interactive && { is_interactive: true }) },
+    ] as const;
     x += b.w + 80;
     return entry;
   });

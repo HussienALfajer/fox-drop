@@ -23,6 +23,7 @@ import {
 } from './guide.ts';
 import { readIcons, type Icon } from './icons.ts';
 import { buttonSheet } from './button-sheet.ts';
+import { stateSheet } from './state-sheet.ts';
 import { designSystem } from './design-system.ts';
 import { PACKAGE_DIR, resolveAll, type Theme, type Token } from './resolve.ts';
 
@@ -175,7 +176,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const config = JSON.parse(readFileSync(process.argv[at + 1]!, 'utf8')) as GuideConfig;
   const themes = await resolveAll();
   const icons = readIcons();
-  const list = [sheet(themes, config, icons), buttonSheet(themes, config, icons)];
+  const list = [
+    sheet(themes, config, icons),
+    buttonSheet(themes, config, icons),
+    stateSheet(themes, config, icons),
+  ];
   rmSync(OUT, { recursive: true, force: true });
   const files = new Map<string, string>([
     ['project/canvas.json', canvas(list, config, new Date().toISOString(), 'Component proposals')],
