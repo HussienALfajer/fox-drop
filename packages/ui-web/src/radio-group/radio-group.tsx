@@ -103,9 +103,11 @@ export function RadioGroup(props: RadioGroupProps) {
         className="flex flex-col"
         {...(value !== undefined && { value })}
         {...(defaultValue !== undefined && { defaultValue })}
-        {...(onValueChange && { onValueChange: (next: string | null) => {
+        {...(onValueChange && {
+          onValueChange: (next: string | null) => {
             if (next !== null) onValueChange(next);
-          } })}
+          },
+        })}
         {...(required && { required })}
         {...(disabled && { disabled })}
       >

@@ -31,8 +31,16 @@
 <script>
   const { React, ReactDOM, Switch } = FoxDrop;
   const sections = (section, h) => [
-    ...section('Off and on', h(Switch, { label: 'إشعارات الطلبات' }), h(Switch, { label: 'إشعارات الطلبات', defaultChecked: true })),
-    ...section('Disabled', h(Switch, { label: 'إشعارات الطلبات', disabled: true }), h(Switch, { label: 'إشعارات الطلبات', disabled: true, defaultChecked: true })),
+    ...section(
+      'Off and on',
+      h(Switch, { label: 'إشعارات الطلبات' }),
+      h(Switch, { label: 'إشعارات الطلبات', defaultChecked: true }),
+    ),
+    ...section(
+      'Disabled',
+      h(Switch, { label: 'إشعارات الطلبات', disabled: true }),
+      h(Switch, { label: 'إشعارات الطلبات', disabled: true, defaultChecked: true }),
+    ),
   ];
   const h = React.createElement;
   const section = (title, ...items) => [

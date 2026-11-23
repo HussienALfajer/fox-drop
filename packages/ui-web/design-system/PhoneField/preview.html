@@ -30,10 +30,23 @@
 <div id="root" dir="rtl" lang="ar"></div>
 <script>
   const { React, ReactDOM, PhoneField } = FoxDrop;
-  const base = { label: 'رقم الهاتف', countryLabel: 'الدولة', countryLabels: { sy: 'سوريا', tr: 'تركيا' }, placeholder: '9xx xxx xxx' };
+  const base = {
+    label: 'رقم الهاتف',
+    countryLabel: 'الدولة',
+    countryLabels: { sy: 'سوريا', tr: 'تركيا' },
+    placeholder: '9xx xxx xxx',
+  };
   const sections = (section, h) => [
-    ...section('Default and filled', h(PhoneField, { ...base, hint: 'سنرسل الرمز إلى واتساب' }), h(PhoneField, { ...base, defaultValue: '+963912345678' })),
-    ...section('Turkey and invalid', h(PhoneField, { ...base, defaultValue: '+905321234567', placeholder: '5xx xxx xx xx' }), h(PhoneField, { ...base, defaultValue: '+963912345678', error: 'رقم غير صحيح' })),
+    ...section(
+      'Default and filled',
+      h(PhoneField, { ...base, hint: 'سنرسل الرمز إلى واتساب' }),
+      h(PhoneField, { ...base, defaultValue: '+963912345678' }),
+    ),
+    ...section(
+      'Turkey and invalid',
+      h(PhoneField, { ...base, defaultValue: '+905321234567', placeholder: '5xx xxx xx xx' }),
+      h(PhoneField, { ...base, defaultValue: '+963912345678', error: 'رقم غير صحيح' }),
+    ),
     ...section('Disabled', h(PhoneField, { ...base, disabled: true })),
   ];
   const h = React.createElement;

@@ -30,12 +30,26 @@
 <div id="root" dir="rtl" lang="ar"></div>
 <script>
   const { React, ReactDOM, Select } = FoxDrop;
-  const items = [{ value: 'male', label: 'ذكر' }, { value: 'female', label: 'أنثى' }];
+  const items = [
+    { value: 'male', label: 'ذكر' },
+    { value: 'female', label: 'أنثى' },
+  ];
   const base = { label: 'الجنس', placeholder: 'اختر', items };
   const sections = (section, h) => [
-    ...section('Default and filled', h(Select, { ...base, hint: 'يظهر في ملفك الشخصي' }), h(Select, { ...base, defaultValue: 'female' })),
-    ...section('Invalid and disabled', h(Select, { ...base, error: 'اختر الجنس' }), h(Select, { ...base, disabled: true })),
-    ...section('Compact, 40 (panel and portal only)', h(Select, { ...base, density: 'compact', defaultValue: 'male' })),
+    ...section(
+      'Default and filled',
+      h(Select, { ...base, hint: 'يظهر في ملفك الشخصي' }),
+      h(Select, { ...base, defaultValue: 'female' }),
+    ),
+    ...section(
+      'Invalid and disabled',
+      h(Select, { ...base, error: 'اختر الجنس' }),
+      h(Select, { ...base, disabled: true }),
+    ),
+    ...section(
+      'Compact, 40 (panel and portal only)',
+      h(Select, { ...base, density: 'compact', defaultValue: 'male' }),
+    ),
   ];
   const h = React.createElement;
   const section = (title, ...items) => [

@@ -31,8 +31,28 @@
 <script>
   const { React, ReactDOM, TextArea } = FoxDrop;
   const sections = (section, h) => [
-    ...section('Default and filled', h(TextArea, { label: 'ملاحظات للمطعم', placeholder: 'اكتب ملاحظتك', hint: 'مثلاً: بدون بصل' }), h(TextArea, { label: 'ملاحظات للمطعم', defaultValue: 'من فضلكم بدون بصل،\nوزيادة صلصة الثوم.' })),
-    ...section('Counter and invalid', h(TextArea, { label: 'ملاحظات', optionalLabel: '(اختياري)', maxLength: 200, defaultValue: 'من فضلكم بدون بصل' }), h(TextArea, { label: 'ملاحظات', defaultValue: 'ملاحظة', error: 'الملاحظة أقصر من اللازم' })),
+    ...section(
+      'Default and filled',
+      h(TextArea, {
+        label: 'ملاحظات للمطعم',
+        placeholder: 'اكتب ملاحظتك',
+        hint: 'مثلاً: بدون بصل',
+      }),
+      h(TextArea, {
+        label: 'ملاحظات للمطعم',
+        defaultValue: 'من فضلكم بدون بصل،\nوزيادة صلصة الثوم.',
+      }),
+    ),
+    ...section(
+      'Counter and invalid',
+      h(TextArea, {
+        label: 'ملاحظات',
+        optionalLabel: '(اختياري)',
+        maxLength: 200,
+        defaultValue: 'من فضلكم بدون بصل',
+      }),
+      h(TextArea, { label: 'ملاحظات', defaultValue: 'ملاحظة', error: 'الملاحظة أقصر من اللازم' }),
+    ),
     ...section('Disabled', h(TextArea, { label: 'ملاحظات', disabled: true })),
   ];
   const h = React.createElement;

@@ -31,8 +31,18 @@
 <script>
   const { React, ReactDOM, Checkbox } = FoxDrop;
   const sections = (section, h) => [
-    ...section('Unchecked, checked, mixed', h(Checkbox, { label: 'أوافق على الشروط' }), h(Checkbox, { label: 'أوافق على الشروط', defaultChecked: true }), h(Checkbox, { label: 'كل الإضافات', defaultChecked: 'indeterminate' })),
-    ...section('Invalid and disabled', h(Checkbox, { label: 'أوافق على الشروط', invalid: true }), h(Checkbox, { label: 'أوافق على الشروط', disabled: true }), h(Checkbox, { label: 'أوافق على الشروط', disabled: true, defaultChecked: true })),
+    ...section(
+      'Unchecked, checked, mixed',
+      h(Checkbox, { label: 'أوافق على الشروط' }),
+      h(Checkbox, { label: 'أوافق على الشروط', defaultChecked: true }),
+      h(Checkbox, { label: 'كل الإضافات', defaultChecked: 'indeterminate' }),
+    ),
+    ...section(
+      'Invalid and disabled',
+      h(Checkbox, { label: 'أوافق على الشروط', invalid: true }),
+      h(Checkbox, { label: 'أوافق على الشروط', disabled: true }),
+      h(Checkbox, { label: 'أوافق على الشروط', disabled: true, defaultChecked: true }),
+    ),
   ];
   const h = React.createElement;
   const section = (title, ...items) => [

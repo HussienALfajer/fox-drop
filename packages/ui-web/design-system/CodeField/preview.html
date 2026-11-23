@@ -32,8 +32,16 @@
   const { React, ReactDOM, CodeField } = FoxDrop;
   const base = { label: 'رمز التحقق', hint: 'أرسلنا الرمز إلى واتساب' };
   const sections = (section, h) => [
-    ...section('Empty and typing', h(CodeField, base), h(CodeField, { ...base, defaultValue: '482' })),
-    ...section('Invalid and done', h(CodeField, { ...base, defaultValue: '482913', error: 'الرمز غير صحيح' }), h(CodeField, { ...base, defaultValue: '482913', done: true })),
+    ...section(
+      'Empty and typing',
+      h(CodeField, base),
+      h(CodeField, { ...base, defaultValue: '482' }),
+    ),
+    ...section(
+      'Invalid and done',
+      h(CodeField, { ...base, defaultValue: '482913', error: 'الرمز غير صحيح' }),
+      h(CodeField, { ...base, defaultValue: '482913', done: true }),
+    ),
     ...section('Disabled', h(CodeField, { ...base, disabled: true })),
   ];
   const h = React.createElement;

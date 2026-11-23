@@ -32,9 +32,20 @@
   const { React, ReactDOM, SearchField } = FoxDrop;
   const base = { label: 'ابحث عن مطعم', clearLabel: 'مسح', placeholder: 'ابحث عن مطعم أو وجبة' };
   const sections = (section, h) => [
-    ...section('Default and filled', h(SearchField, base), h(SearchField, { ...base, defaultValue: 'شاورما' })),
-    ...section('Loading and disabled', h(SearchField, { ...base, defaultValue: 'شاورما', loading: true }), h(SearchField, { ...base, disabled: true })),
-    ...section('Compact, 40 (panel and portal only)', h(SearchField, { ...base, density: 'compact', defaultValue: 'شاورما' })),
+    ...section(
+      'Default and filled',
+      h(SearchField, base),
+      h(SearchField, { ...base, defaultValue: 'شاورما' }),
+    ),
+    ...section(
+      'Loading and disabled',
+      h(SearchField, { ...base, defaultValue: 'شاورما', loading: true }),
+      h(SearchField, { ...base, disabled: true }),
+    ),
+    ...section(
+      'Compact, 40 (panel and portal only)',
+      h(SearchField, { ...base, density: 'compact', defaultValue: 'شاورما' }),
+    ),
   ];
   const h = React.createElement;
   const section = (title, ...items) => [

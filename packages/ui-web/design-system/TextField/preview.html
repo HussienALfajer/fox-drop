@@ -31,9 +31,21 @@
 <script>
   const { React, ReactDOM, TextField } = FoxDrop;
   const sections = (section, h) => [
-    ...section('Default and filled', h(TextField, { label: 'الاسم', placeholder: 'اكتب اسمك', hint: 'كما يظهر في الهوية' }), h(TextField, { label: 'الاسم', defaultValue: 'محمد الأحمد' })),
-    ...section('Invalid and disabled', h(TextField, { label: 'الاسم', defaultValue: 'محمد', error: 'اكتب الاسم كما في الهوية' }), h(TextField, { label: 'الاسم', disabled: true, placeholder: 'اكتب اسمك' })),
-    ...section('Compact, 40 (panel and portal only)', h(TextField, { label: 'اسم المطعم', density: 'compact', placeholder: 'اكتب الاسم' }), h(TextField, { label: 'اسم المطعم', density: 'compact', defaultValue: 'مطعم الشام' })),
+    ...section(
+      'Default and filled',
+      h(TextField, { label: 'الاسم', placeholder: 'اكتب اسمك', hint: 'كما يظهر في الهوية' }),
+      h(TextField, { label: 'الاسم', defaultValue: 'محمد الأحمد' }),
+    ),
+    ...section(
+      'Invalid and disabled',
+      h(TextField, { label: 'الاسم', defaultValue: 'محمد', error: 'اكتب الاسم كما في الهوية' }),
+      h(TextField, { label: 'الاسم', disabled: true, placeholder: 'اكتب اسمك' }),
+    ),
+    ...section(
+      'Compact, 40 (panel and portal only)',
+      h(TextField, { label: 'اسم المطعم', density: 'compact', placeholder: 'اكتب الاسم' }),
+      h(TextField, { label: 'اسم المطعم', density: 'compact', defaultValue: 'مطعم الشام' }),
+    ),
   ];
   const h = React.createElement;
   const section = (title, ...items) => [

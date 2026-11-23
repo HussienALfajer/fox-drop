@@ -30,11 +30,22 @@
 <div id="root" dir="rtl" lang="ar"></div>
 <script>
   const { React, ReactDOM, RadioGroup } = FoxDrop;
-  const options = [{ value: 'cash', label: 'نقداً عند الاستلام' }, { value: 'wallet', label: 'المحفظة' }];
+  const options = [
+    { value: 'cash', label: 'نقداً عند الاستلام' },
+    { value: 'wallet', label: 'المحفظة' },
+  ];
   const base = { label: 'طريقة الدفع', options };
   const sections = (section, h) => [
-    ...section('Default and selected', h(RadioGroup, base), h(RadioGroup, { ...base, defaultValue: 'cash' })),
-    ...section('Invalid and disabled', h(RadioGroup, { ...base, error: 'اختر طريقة الدفع' }), h(RadioGroup, { ...base, disabled: true, defaultValue: 'cash' })),
+    ...section(
+      'Default and selected',
+      h(RadioGroup, base),
+      h(RadioGroup, { ...base, defaultValue: 'cash' }),
+    ),
+    ...section(
+      'Invalid and disabled',
+      h(RadioGroup, { ...base, error: 'اختر طريقة الدفع' }),
+      h(RadioGroup, { ...base, disabled: true, defaultValue: 'cash' }),
+    ),
   ];
   const h = React.createElement;
   const section = (title, ...items) => [

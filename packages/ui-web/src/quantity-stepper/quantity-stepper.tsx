@@ -74,11 +74,7 @@ export function QuantityStepper(props: QuantityStepperProps) {
     onValueChange?.(next);
   };
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className={root()}
-    >
+    <div role="group" aria-label={label} className={root()}>
       <svg
         viewBox="0 0 144 48"
         width="144"
