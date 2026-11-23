@@ -1,7 +1,9 @@
 import 'package:core_tokens/core_tokens.dart' as t;
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../field/fox_field.dart';
 import '../internal/choice_row.dart';
 import '../internal/interaction.dart';
 import '../theme/fox_theme.dart';
@@ -20,49 +22,97 @@ const radioStates = [
 /// The values a radio use case shows.
 const radioValues = ['unselected', 'selected'];
 
-/// The states of a radio group's use cases: `default` and `disabled` (every
-/// radio of it without a callback).
-const radioGroupStates = ['default', 'disabled'];
+/// The states of a radio group's use cases: `default`, `invalid` (an error
+/// under the group, nothing chosen) and `disabled` (every radio of it without
+/// a callback).
+const radioGroupStates = ['default', 'invalid', 'disabled'];
 
 /// What a [FoxRadioGroup] needs of each radio inside it. Not exported.
 abstract interface class RadioEntry {
   BuildContext get context;
   FocusNode get node;
   bool get enabled;
+  bool get selected;
 
   /// Reports this radio's value as chosen.
   void select();
 }
 
 class _GroupScope extends InheritedWidget {
-  const _GroupScope({required this.entries, required super.child});
+  const _GroupScope({required this.group, required super.child});
 
-  final List<RadioEntry> entries;
+  final _FoxRadioGroupState group;
 
   @override
   bool updateShouldNotify(_GroupScope old) => false;
 }
 
-/// The keyboard of a group of [FoxRadio]s (D.8), as the web's RadioGroup:
-/// Down and the arrow pointing to the end of reading (Right in LTR, Left in
-/// RTL) move to the next enabled radio, Up and the arrow pointing to the
-/// start move to the previous one, both wrapping round, and the selection
-/// follows the focus. Without the group a radio still works by tap and Space.
+/// A group of [FoxRadio]s (D.8), as the web's RadioGroup. Its [label] names
+/// the group for a screen reader, with the [error] (else the [hint]) as its
+/// description; both are drawn as a field's are.
+///
+/// The keyboard: Tab reaches the selected radio only (the first enabled one
+/// when none is selected); inside, Down and the arrow pointing to the end of
+/// reading (Right in LTR, Left in RTL) move to the next enabled radio, Up and
+/// the arrow pointing to the start move to the previous one, both wrapping
+/// round, and the selection follows the focus. Without the group a radio
+/// still works by tap and Space.
 class FoxRadioGroup extends StatefulWidget {
-  const FoxRadioGroup({super.key, required this.child});
+  const FoxRadioGroup({
+    super.key,
+    required this.child,
+    this.label,
+    this.hint,
+    this.error,
+  });
 
   final Widget child;
+  final String? label;
+  final String? hint;
+  final String? error;
 
   @override
   State<FoxRadioGroup> createState() => _FoxRadioGroupState();
 }
 
 class _FoxRadioGroupState extends State<FoxRadioGroup> {
-  final List<RadioEntry> _entries = [];
+  final List<RadioEntry> entries = [];
+  bool _scheduled = false;
+
+  /// Once the frame is built (every radio has its new value), only the radio
+  /// that is the group's one tab stop stays in the Tab order.
+  void refresh() {
+    if (_scheduled) return;
+    _scheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scheduled = false;
+      if (!mounted) return;
+      final enabled = entries.where((e) => e.enabled).toList();
+      final stop =
+          enabled.where((e) => e.selected).firstOrNull ?? enabled.firstOrNull;
+      for (final entry in entries) {
+        entry.node.skipTraversal = entry != stop;
+      }
+    });
+  }
 
   @override
-  Widget build(BuildContext context) =>
-      _GroupScope(entries: _entries, child: widget.child);
+  Widget build(BuildContext context) => _GroupScope(
+    group: this,
+    child: Semantics(
+      container: true,
+      role: SemanticsRole.radioGroup,
+      label: widget.label,
+      hint: widget.error ?? widget.hint,
+      child: FoxField(
+        label: widget.label,
+        hint: widget.hint,
+        error: widget.error,
+        namesControl: false,
+        child: widget.child,
+      ),
+    ),
+  );
 }
 
 /// One radio of a group (D.8): a 24 circle in a 48 row that is the whole
@@ -95,13 +145,16 @@ class FoxRadio<T> extends StatefulWidget {
 
 class _FoxRadioState<T> extends State<FoxRadio<T>> implements RadioEntry {
   final FocusNode _node = FocusNode(debugLabel: 'FoxRadio');
-  List<RadioEntry>? _group;
+  _FoxRadioGroupState? _group;
 
   @override
   FocusNode get node => _node;
 
   @override
   bool get enabled => widget.onChanged != null;
+
+  @override
+  bool get selected => widget.value == widget.groupValue;
 
   @override
   void select() {
@@ -113,16 +166,25 @@ class _FoxRadioState<T> extends State<FoxRadio<T>> implements RadioEntry {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final group = context.getInheritedWidgetOfExactType<_GroupScope>()?.entries;
+    final group = context.getInheritedWidgetOfExactType<_GroupScope>()?.group;
     if (group != _group) {
-      _group?.remove(this);
-      _group = group?..add(this);
+      _group?.entries.remove(this);
+      _group?.refresh();
+      _group = group?..entries.add(this);
     }
+    _group?.refresh();
+  }
+
+  @override
+  void didUpdateWidget(FoxRadio<T> old) {
+    super.didUpdateWidget(old);
+    _group?.refresh();
   }
 
   @override
   void dispose() {
-    _group?.remove(this);
+    _group?.entries.remove(this);
+    _group?.refresh();
     _node.dispose();
     super.dispose();
   }
@@ -135,7 +197,7 @@ class _FoxRadioState<T> extends State<FoxRadio<T>> implements RadioEntry {
   }
 
   KeyEventResult _key(FocusNode _, KeyEvent event) {
-    final group = _group;
+    final group = _group?.entries;
     if (group == null || event is KeyUpEvent) return KeyEventResult.ignored;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final key = event.logicalKey;

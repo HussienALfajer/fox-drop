@@ -26,6 +26,17 @@ describe('Select', () => {
     expect(screen.getByRole('combobox')).toHaveTextContent('أنثى');
   });
 
+  it('cannot choose a disabled option', async () => {
+    const onValueChange = vi.fn();
+    const withOff = [...items, { value: 'none', label: 'غير محدد', disabled: true }];
+    render(<Select label="الجنس" items={withOff} onValueChange={onValueChange} />);
+    await userEvent.click(screen.getByRole('combobox'));
+    const option = screen.getByRole('option', { name: 'غير محدد', hidden: true });
+    expect(option).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(option);
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
   it('opens from the keyboard with the arrow key', async () => {
     render(<Select label="الجنس" items={items} />);
     await userEvent.tab();

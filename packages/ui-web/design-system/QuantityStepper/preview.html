@@ -31,7 +31,7 @@
 <script>
   const { React, ReactDOM, QuantityStepper } = FoxDrop;
   const base = {
-    label: 'الكمية 2',
+    label: 'الكمية',
     increaseLabel: 'زيادة',
     decreaseLabel: 'تقليل',
     removeLabel: 'حذف',
@@ -40,15 +40,11 @@
     ...section(
       'Default and minimum (delete)',
       h('div', null, h(QuantityStepper, { ...base, defaultValue: 2 })),
-      h(
-        'div',
-        null,
-        h(QuantityStepper, { ...base, label: 'الكمية 1', defaultValue: 1, onRemove: () => {} }),
-      ),
+      h('div', null, h(QuantityStepper, { ...base, defaultValue: 1, onRemove: () => {} })),
     ),
     ...section(
       'Maximum and disabled',
-      h('div', null, h(QuantityStepper, { ...base, label: 'الكمية 5', defaultValue: 5, max: 5 })),
+      h('div', null, h(QuantityStepper, { ...base, defaultValue: 5, max: 5 })),
       h('div', null, h(QuantityStepper, { ...base, disabled: true, defaultValue: 2 })),
     ),
   ];

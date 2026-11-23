@@ -209,6 +209,21 @@ void main() {
       );
     });
 
+    testWidgets('reads Arabic-Indic and Persian digits as 0-9', (tester) async {
+      final done = <String>[];
+      final controller = TextEditingController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        code(controller: controller, onCompleted: done.add),
+      );
+      await tester.enterText(find.byType(EditableText), '٤٨٢');
+      expect(controller.text, '482');
+      // A paste of mixed digits and letters, as one-time-code autofill sends.
+      await tester.enterText(find.byType(EditableText), '٤٨۲٩١٥x');
+      expect(controller.text, '482915');
+      expect(done, ['482915']);
+    });
+
     testWidgets('keeps digits only', (tester) async {
       final controller = TextEditingController();
       addTearDown(controller.dispose);
@@ -565,6 +580,14 @@ void main() {
         ),
       );
       expect(find.text('3:05 م'), findsOneWidget);
+      // The time reads right to left: the digits as their own run and «م»
+      // after them, at the left (a date is the one forced to LTR).
+      expect(
+        Directionality.of(tester.element(find.text('3:05 م'))),
+        TextDirection.rtl,
+      );
+      final text = tester.widget<Text>(find.text('3:05 م'));
+      expect(text.textAlign, isNull);
       expect(FoxMaterialLocalizations.time(0, 0), '12:00 ص');
       expect(FoxMaterialLocalizations.time(12, 30), '12:30 م');
       expect(FoxMaterialLocalizations.time(9, 7), '9:07 ص');
@@ -631,6 +654,13 @@ void main() {
 
   group('the Syriac, Saturday-first, dd/mm/yyyy strings', () {
     final l10n = FoxMaterialLocalizations();
+
+    test('the typed-in hint says dd/mm/yyyy and only Arabic is supported', () {
+      expect(l10n.dateHelpText, 'dd/mm/yyyy');
+      const delegate = FoxMaterialLocalizations.delegate;
+      expect(delegate.isSupported(const Locale('ar')), isTrue);
+      expect(delegate.isSupported(const Locale('en')), isFalse);
+    });
 
     test('twelve months from كانون الثاني to كانون الأول', () {
       expect(syriacMonths.first, 'كانون الثاني');

@@ -12,10 +12,6 @@ import '../theme/fox_theme.dart';
 /// dimmed). Hover and pressed are live.
 const quantityStepperStates = ['default', 'min', 'max', 'pressed', 'disabled'];
 
-/// The ring around a circle that the bridge keeps clear (the web sheet's
-/// 19 around a 16 radius).
-const double _bridgeClearance = 3;
-
 /// The cart's quantity stepper (D.8): «+» and «−» in two 32 circles inside
 /// 48 targets, bridged by a concave strip holding the count. «+» is at the
 /// start. At [min] the «−» becomes a delete icon that calls [onDelete]
@@ -82,6 +78,9 @@ class FoxQuantityStepper extends StatelessWidget {
             fill: i.stepperBackground,
             target: i.stepperTarget,
             circle: i.stepperSize,
+            // The ring the bridge keeps clear: the circle's border plus the
+            // focus ring (the web sheet's 19 around a 16 radius).
+            clearance: i.borderWidth + i.focusWidth,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -164,9 +163,9 @@ class _StepButton extends StatelessWidget {
                   color: state.pressed
                       ? i.stepperBackgroundPressed
                       : (state.hovered
-                            ? theme.colors.surfaceRaisedHover
+                            ? i.stepperBackgroundHover
                             : i.stepperBackground),
-                  border: Border.all(color: colour, width: i.borderWidth * 1.5),
+                  border: Border.all(color: colour, width: i.focusWidth),
                 ),
                 child: Center(
                   child: FoxIcon(icon, size: FoxIconSize.sm, color: colour),
@@ -181,21 +180,23 @@ class _StepButton extends StatelessWidget {
 }
 
 /// The strip between the two circles, its ends cut by a ring
-/// [_bridgeClearance] wider than each circle: the cart's concave bridge.
+/// [clearance] wider than each circle: the cart's concave bridge.
 class _BridgePainter extends CustomPainter {
   _BridgePainter({
     required this.fill,
     required this.target,
     required this.circle,
+    required this.clearance,
   });
 
   final Color fill;
   final double target;
   final double circle;
+  final double clearance;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final reach = circle / 2 + _bridgeClearance;
+    final reach = circle / 2 + clearance;
     final half = circle / 2;
     // Where the strip's top and bottom edges meet the clearance ring.
     final dx = math.sqrt(reach * reach - half * half);
@@ -222,5 +223,8 @@ class _BridgePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BridgePainter old) =>
-      old.fill != fill || old.target != target || old.circle != circle;
+      old.fill != fill ||
+      old.target != target ||
+      old.circle != circle ||
+      old.clearance != clearance;
 }

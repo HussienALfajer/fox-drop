@@ -80,6 +80,21 @@ class FoxCodeField extends StatelessWidget {
   );
 }
 
+/// Arabic-Indic (٠-٩) and Persian (۰-۹) digits, typed, pasted or autofilled,
+/// become 0-9 before the digit filter, so the code reads the same (AP §4.7).
+final TextInputFormatter _westernDigits = TextInputFormatter.withFunction((
+  old,
+  value,
+) {
+  final text = value.text.replaceAllMapped(RegExp('[٠-٩۰-۹]'), (m) {
+    final unit = m[0]!.codeUnitAt(0);
+    return String.fromCharCode(
+      0x30 + (unit >= 0x06F0 ? unit - 0x06F0 : unit - 0x0660),
+    );
+  });
+  return text == value.text ? value : value.copyWith(text: text);
+});
+
 class _Cells extends StatelessWidget {
   const _Cells({
     required this.length,
@@ -173,6 +188,7 @@ class _Cells extends StatelessWidget {
                         maxLines: 1,
                         onChanged: onChanged,
                         inputFormatters: [
+                          _westernDigits,
                           FilteringTextInputFormatter.digitsOnly,
                           LengthLimitingTextInputFormatter(length),
                         ],

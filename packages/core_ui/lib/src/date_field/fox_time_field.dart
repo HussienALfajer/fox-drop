@@ -90,7 +90,8 @@ class FoxTimeField extends StatelessWidget {
           label: label,
           description: error ?? hint,
           start: t.FoxIcons.clock,
-          ltrValue: value != null,
+          // Not `ltrValue`: the time reads right to left, its digits (a
+          // number run) left to right and «ص»/«م» after them, at the left.
           onTap: () => _pick(context),
         ),
       ),

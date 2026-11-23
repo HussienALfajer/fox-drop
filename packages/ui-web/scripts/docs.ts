@@ -233,7 +233,7 @@ interface SwitchProps {
 }
 
 interface QuantityStepperProps {
-  /** The accessible name of the group with the count, for example the Arabic word for quantity and 2. */
+  /** The accessible name of the group, the noun only (the Arabic word for quantity). The count is its description. */
   label: string;
   increaseLabel: string;
   decreaseLabel: string;

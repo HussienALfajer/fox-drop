@@ -133,6 +133,7 @@ final class FoxInputTheme {
   double get switchHeight => _tokens.switchHeight;
   Color get switchTrack => Color(_tokens.switchColorTrack);
   Color get switchTrackHover => Color(_tokens.switchColorTrackHover);
+  Color get switchTrackPressed => Color(_tokens.switchColorTrackPressed);
   Color get switchTrackOn => Color(_tokens.switchColorTrackOn);
   Color get switchTrackOnHover => Color(_tokens.switchColorTrackOnHover);
   Color get switchTrackOnPressed => Color(_tokens.switchColorTrackOnPressed);
@@ -140,6 +141,8 @@ final class FoxInputTheme {
   double get stepperSize => _tokens.stepperSize;
   double get stepperTarget => _tokens.stepperTarget;
   Color get stepperBackground => Color(_tokens.stepperColorBackground);
+  Color get stepperBackgroundHover =>
+      Color(_tokens.stepperColorBackgroundHover);
   Color get stepperBackgroundPressed =>
       Color(_tokens.stepperColorBackgroundPressed);
   Color get stepperBorder => Color(_tokens.stepperColorBorder);

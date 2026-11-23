@@ -65,6 +65,37 @@ describe('PhoneField', () => {
     expect(onValueChange).toHaveBeenLastCalledWith('+963912345678', { country: 'sy' });
   });
 
+  it('stops typing at the length of the country and never cuts digits', async () => {
+    const onValueChange = vi.fn();
+    render(<PhoneField {...props} onValueChange={onValueChange} />);
+    await userEvent.type(screen.getByRole('textbox'), '09123456789');
+    expect(screen.getByRole('textbox')).toHaveValue('0912345678');
+    expect(onValueChange).toHaveBeenLastCalledWith('+963912345678', { country: 'sy' });
+  });
+
+  it('shows a pasted number that is too long and reports no number', async () => {
+    const onValueChange = vi.fn();
+    render(<PhoneField {...props} onValueChange={onValueChange} />);
+    await userEvent.click(screen.getByRole('textbox'));
+    await userEvent.paste('09123456789');
+    expect(screen.getByRole('textbox')).toHaveValue('09123456789');
+    expect(onValueChange).toHaveBeenLastCalledWith('', { country: 'sy' });
+  });
+
+  it('switches the country to the one a pasted number names', async () => {
+    const onValueChange = vi.fn();
+    const onCountryChange = vi.fn();
+    render(
+      <PhoneField {...props} onValueChange={onValueChange} onCountryChange={onCountryChange} />,
+    );
+    await userEvent.click(screen.getByRole('textbox'));
+    await userEvent.paste('+905321234567');
+    expect(onCountryChange).toHaveBeenCalledWith('tr');
+    expect(screen.getByRole('combobox')).toHaveTextContent('+90');
+    expect(screen.getByRole('textbox')).toHaveValue('5321234567');
+    expect(onValueChange).toHaveBeenLastCalledWith('+905321234567', { country: 'tr' });
+  });
+
   it('offers Syria and Turkey with their codes and switches country', async () => {
     const onCountryChange = vi.fn();
     render(<PhoneField {...props} onCountryChange={onCountryChange} />);

@@ -37,6 +37,32 @@ describe('CodeField', () => {
     expect(onComplete).toHaveBeenCalledOnce();
   });
 
+  it.each(['٤٨٢٩١٣', '۴۸۲۹۱۳'])(
+    'reads Arabic-Indic digits %s as Western digits (AP §4.7)',
+    async (code) => {
+      const onComplete = vi.fn();
+      render(<CodeField label="رمز" onComplete={onComplete} />);
+      await userEvent.click(screen.getByRole('textbox'));
+      await userEvent.paste(code);
+      expect(screen.getByRole('textbox')).toHaveValue('482913');
+      expect(onComplete).toHaveBeenCalledWith('482913');
+    },
+  );
+
+  it('reads typed Arabic-Indic digits as Western digits', async () => {
+    const onValueChange = vi.fn();
+    render(<CodeField label="رمز" onValueChange={onValueChange} />);
+    await userEvent.type(screen.getByRole('textbox'), '٤٨٢');
+    expect(onValueChange).toHaveBeenLastCalledWith('482');
+  });
+
+  it('keeps the active cell outline orange when there is an error', () => {
+    const { container } = render(<CodeField label="رمز" error="غير صحيح" />);
+    expect(container.innerHTML).toContain(
+      'data-active:inset-ring-(color:--fd-input-color-border-focus)',
+    );
+  });
+
   it('fills the cells in the brand colour when done, and marks an error invalid', () => {
     const { container, rerender } = render(<CodeField label="رمز" defaultValue="482913" done />);
     expect(container.innerHTML).toContain('bg-(--fd-input-code-color-done)');

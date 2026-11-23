@@ -14,7 +14,7 @@ export const STATES = [
 ] as const;
 
 const row = formTv({
-  base: 'group/row -ms-sm inline-flex min-h-(--fd-input-check-target) items-center gap-(--fd-space-2xs) text-phone-body',
+  base: 'group/row -ms-sm inline-flex min-h-(--fd-input-check-target) items-center gap-2xs text-phone-body',
   variants: {
     disabled: {
       true: 'cursor-not-allowed text-(color:--fd-input-color-on-disabled)',

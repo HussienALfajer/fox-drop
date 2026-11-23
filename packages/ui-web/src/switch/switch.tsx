@@ -19,7 +19,7 @@ const row = formTv({
 // the slide uses logical directions only and animates.
 const track = formTv({
   base: [
-    'flex h-(--fd-input-switch-height) w-(--fd-input-switch-width) shrink-0 items-center rounded-full p-(--fd-space-2xs)',
+    'flex h-(--fd-input-switch-height) w-(--fd-input-switch-width) shrink-0 items-center rounded-full p-2xs',
     'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
     keyboardRing,
     'data-unchecked:bg-(--fd-input-switch-color-track) data-checked:bg-(--fd-input-switch-color-track-on)',
@@ -31,7 +31,7 @@ const track = formTv({
         'group-hover/row:data-unchecked:bg-(--fd-input-switch-color-track-hover)',
         'group-hover/row:data-checked:bg-(--fd-input-switch-color-track-on-hover)',
         'group-active/row:data-checked:bg-(--fd-input-switch-color-track-on-pressed)',
-        'group-active/row:data-unchecked:bg-(--fd-input-switch-color-track-hover)',
+        'group-active/row:data-unchecked:bg-(--fd-input-switch-color-track-pressed)',
       ],
     },
   },

@@ -54,9 +54,10 @@ export interface SelectProps {
 export function Select(props: SelectProps) {
   const { label, optionalLabel, hint, error, placeholder, items, density } = props;
   const { value: selected, defaultValue, onValueChange, name, required, disabled } = props;
-  const list: MenuItem[] = items.map(({ value: itemValue, label: itemLabel }) => ({
+  const list: MenuItem[] = items.map(({ value: itemValue, label: itemLabel, disabled: off }) => ({
     value: itemValue,
     label: itemLabel,
+    ...(off && { disabled: true }),
   }));
   return (
     <Field

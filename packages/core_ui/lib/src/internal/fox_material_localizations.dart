@@ -62,8 +62,14 @@ class FoxMaterialLocalizations extends m.MaterialLocalizationAr {
   @override
   int get firstDayOfWeekIndex => saturday;
 
+  /// Needed: without it Material falls back to English initials («S M T…»),
+  /// since no `ar` date symbols are loaded.
   @override
   List<String> get narrowWeekdays => const ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
+
+  /// The hint of the typed-in date: the order the field reads.
+  @override
+  String get dateHelpText => 'dd/mm/yyyy';
 
   @override
   String formatMonthYear(DateTime date) =>
@@ -137,7 +143,7 @@ class _Delegate extends LocalizationsDelegate<m.MaterialLocalizations> {
   const _Delegate();
 
   @override
-  bool isSupported(Locale locale) => true;
+  bool isSupported(Locale locale) => locale.languageCode == 'ar';
 
   @override
   Future<m.MaterialLocalizations> load(Locale locale) =>

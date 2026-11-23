@@ -1,20 +1,43 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { QuantityStepper } from './quantity-stepper';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { bridgePath, QuantityStepper, STEPPER_SIZE, STEPPER_TARGET } from './quantity-stepper';
 
 const labels = {
-  label: 'الكمية 2',
+  label: 'الكمية',
   increaseLabel: 'زيادة',
   decreaseLabel: 'تقليل',
   removeLabel: 'حذف',
 };
 
 describe('QuantityStepper', () => {
-  it('is a group announced with the label the app passes', () => {
+  it('is a group named by the noun, with the count as its description', async () => {
     render(<QuantityStepper {...labels} defaultValue={2} />);
-    expect(screen.getByRole('group', { name: 'الكمية 2' })).toBeInTheDocument();
+    const group = screen.getByRole('group', { name: 'الكمية' });
+    expect(group).toHaveAccessibleDescription('2');
     expect(screen.getByRole('status')).toHaveTextContent('2');
+    await userEvent.click(screen.getByRole('button', { name: 'زيادة' }));
+    expect(group).toHaveAccessibleDescription('3');
+  });
+
+  it('draws the bridge from the stepper tokens', () => {
+    const { container } = render(<QuantityStepper {...labels} defaultValue={2} />);
+    // size 32 and target 48 (`--fd-input-stepper-size`, `-target`): the strip between the two circles.
+    expect(container.querySelector('path')).toHaveAttribute('d', bridgePath(32, 48));
+    expect(bridgePath(32, 48)).toBe(
+      'M34.25 8H109.75A19 19 0 0 0 109.75 40H34.25A19 19 0 0 0 34.25 8Z',
+    );
+  });
+
+  it('keeps the bridge constants equal to the tokens', () => {
+    const css = readFileSync(
+      resolve(import.meta.dirname, '../../../design-tokens/generated/tokens.css'),
+      'utf8',
+    );
+    expect(css).toContain(`--fd-input-stepper-size: ${STEPPER_SIZE}px;`);
+    expect(css).toContain(`--fd-input-stepper-target: ${STEPPER_TARGET}px;`);
   });
 
   it('adds and removes one and reports the count', async () => {

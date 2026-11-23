@@ -91,7 +91,7 @@ class MaterialScope extends StatelessWidget {
       ).apply(bodyColor: i.text, displayColor: i.text),
       textSelectionTheme: m.TextSelectionThemeData(
         cursorColor: i.accent,
-        selectionColor: i.accent.withValues(alpha: 0.3),
+        selectionColor: c.surfaceRaisedPressed,
         selectionHandleColor: i.accent,
       ),
       datePickerTheme: m.DatePickerThemeData(

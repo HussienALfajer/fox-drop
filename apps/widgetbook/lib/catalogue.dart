@@ -358,9 +358,13 @@ Widget _radio(String value, String state) => _Live<String>(
 );
 
 /// Three radios in a group: Tab to one, then the arrows move and select.
-Widget _radioGroup(String state) => _Live<String>(
-  'cash',
+Widget _radioGroup(String state) => _Live<String?>(
+  // Invalid is the one with nothing chosen yet.
+  state == 'invalid' ? null : 'cash',
   (group, set) => FoxRadioGroup(
+    label: 'طريقة الدفع',
+    hint: 'اختر واحدة',
+    error: state == 'invalid' ? 'اختر طريقة الدفع' : null,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

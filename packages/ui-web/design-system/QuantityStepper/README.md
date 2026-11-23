@@ -6,7 +6,7 @@ The count of a cart line: two orange circles bridged by a concave strip holding 
 
 - «+» is at the start of the line (right in RTL), «−» at its end. `min` defaults to 1; `max` is optional and turns «+» off at the limit.
 - At the minimum, with `onRemove` and `removeLabel`, «−» becomes the delete icon and removes the line; without them it is off.
-- The number is announced when it changes; `label` names the group with the count («الكمية 2»), written and translated by the app.
+- The number is announced when it changes; `label` names the group with the noun only («الكمية»); the count is the group's accessible description, so the app never rebuilds the label per count.
 
 ## RTL and accessibility
 

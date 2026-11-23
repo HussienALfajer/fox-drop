@@ -5,7 +5,7 @@ import { QuantityStepper, type QuantityStepperProps } from './quantity-stepper';
 const meta = {
   title: 'QuantityStepper',
   component: QuantityStepper,
-  args: { label: 'الكمية 2', increaseLabel: 'زيادة', decreaseLabel: 'تقليل', removeLabel: 'حذف' },
+  args: { label: 'الكمية', increaseLabel: 'زيادة', decreaseLabel: 'تقليل', removeLabel: 'حذف' },
 } satisfies Meta<typeof QuantityStepper>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -13,9 +13,7 @@ type Story = StoryObj<typeof meta>;
 // The count and its group name move together, as an app would write them.
 function Counting(props: QuantityStepperProps) {
   const [count, setCount] = useState(props.defaultValue ?? 1);
-  return (
-    <QuantityStepper {...props} label={`الكمية ${count}`} value={count} onValueChange={setCount} />
-  );
+  return <QuantityStepper {...props} value={count} onValueChange={setCount} />;
 }
 const make = (args: Partial<QuantityStepperProps> = {}): Story => ({
   args,

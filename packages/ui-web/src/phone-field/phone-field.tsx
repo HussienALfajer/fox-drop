@@ -7,15 +7,7 @@ import { InputBox } from '../field/input-box';
 import { formTv, inputClass, keyboardRing, type Density } from '../field/styles';
 import { Icon } from '../icon/icon';
 import { Menu } from '../select/menu';
-import {
-  COUNTRIES,
-  COUNTRY_CODES,
-  digitsOf,
-  fromE164,
-  nationalDigits,
-  toE164,
-  type CountryCode,
-} from './phone';
+import { COUNTRIES, COUNTRY_CODES, fromE164, parsePhone, type CountryCode } from './phone';
 
 /** The states the stories show (R3). Hover and focus are driven in the browser by the gate. */
 export const STATES = [
@@ -32,7 +24,7 @@ export type { CountryCode as PhoneCountry };
 
 const chip = formTv({
   base: [
-    'flex shrink-0 cursor-pointer items-center gap-(--fd-space-2xs) rounded-full font-medium',
+    'flex shrink-0 cursor-pointer items-center gap-2xs rounded-full font-medium',
     'text-(color:--fd-input-color-text) data-disabled:cursor-not-allowed data-disabled:text-(color:--fd-input-color-on-disabled)',
     keyboardRing,
   ],
@@ -67,14 +59,6 @@ export interface PhoneFieldProps {
   density?: Density;
 }
 
-/** What the digits box shows for what was typed or pasted: Western digits, no `+963` prefix. */
-function clean(country: CountryCode, next: string): string {
-  const text = next.trim();
-  if (/^(\+|00)/.test(text)) return nationalDigits(country, text);
-  const digits = digitsOf(text);
-  return digits.slice(0, COUNTRIES[country].length + (digits.startsWith('0') ? 1 : 0));
-}
-
 /**
  * The phone number of the customer app (CU §5.2): one pill with a left-to-right
  * island, the country chip with its chevron and then the digits, under a label
@@ -93,7 +77,7 @@ export function PhoneField(props: PhoneFieldProps) {
   const country = props.country ?? ownCountry;
 
   // A controlled number that the typed digits do not make: take it over.
-  if (value !== undefined && value !== toE164(country, text)) {
+  if (value !== undefined && value !== parsePhone(country, text).e164) {
     const parsed = fromE164(value);
     if (parsed) {
       setOwnCountry(parsed.country);
@@ -136,7 +120,7 @@ export function PhoneField(props: PhoneFieldProps) {
                 const code = next as CountryCode;
                 setOwnCountry(code);
                 onCountryChange?.(code);
-                onValueChange?.(toE164(code, text), { country: code });
+                onValueChange?.(parsePhone(code, text).e164, { country: code });
               }}
             >
               <SelectTrigger aria-label={countryLabel} className={chip({ class: 'group' })}>
@@ -157,9 +141,15 @@ export function PhoneField(props: PhoneFieldProps) {
           className={inputClass()}
           value={text}
           onValueChange={(next: string) => {
-            const display = clean(country, next);
-            setText(display);
-            onValueChange?.(toE164(country, display), { country });
+            const parsed = parsePhone(country, next);
+            // Typing stops at the country's length; a paste is shown as it came.
+            if (parsed.refused && next.length - text.length <= 1) return;
+            setText(parsed.display);
+            if (parsed.country !== country) {
+              setOwnCountry(parsed.country);
+              onCountryChange?.(parsed.country);
+            }
+            onValueChange?.(parsed.e164, { country: parsed.country });
           }}
           {...(placeholder && { placeholder })}
           {...(required && { required })}

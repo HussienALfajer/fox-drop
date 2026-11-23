@@ -26,6 +26,9 @@ describe('ui-web lint rules', () => {
     ['text-right', 'export const c = "text-right";'],
     ['rounded-tl', 'export const c = "rounded-tl-lg";'],
     ['border-r', 'export const c = "border-r";'],
+    ['a numeric gap', 'export const c = "gap-2";'],
+    ['a decimal width', 'export const c = "w-0.5";'],
+    ['a numeric min width', 'export const c = "min-w-0";'],
     ['left-', 'export const c = "absolute left-0";'],
     ['float-left', 'export const c = "float-left";'],
   ])('fails %s', async (_, code) => {
@@ -38,6 +41,11 @@ describe('ui-web lint rules', () => {
       '  "bg-(--fd-button-primary-background) ms-xs pe-md start-none text-start rounded-s-lg border-e";',
       'export const d = `ps-${1}`;',
     ].join('\n');
+    expect(await errors(code)).toEqual([]);
+  });
+
+  it('passes the named spacing steps that start with a digit', async () => {
+    const code = 'export const c = "gap-2xs p-2xs w-2xl h-3xl md:min-w-2xl";';
     expect(await errors(code)).toEqual([]);
   });
 

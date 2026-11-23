@@ -289,6 +289,10 @@ void main() {
       bool row = false,
       Set<String> disabled = const {},
       TextDirection direction = TextDirection.rtl,
+      String? label,
+      String? hint,
+      String? error,
+      FocusNode? before,
     }) => formApp(
       direction: direction,
       StatefulBuilder(
@@ -311,10 +315,32 @@ void main() {
               }(),
           ];
           final body = row ? Row(children: items) : Column(children: items);
-          return grouped ? FoxRadioGroup(child: body) : body;
+          final group = grouped
+              ? FoxRadioGroup(
+                  label: label,
+                  hint: hint,
+                  error: error,
+                  child: body,
+                )
+              : body;
+          return before == null
+              ? group
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Focus(
+                      focusNode: before,
+                      child: const SizedBox(height: FoxSpace.xs),
+                    ),
+                    group,
+                  ],
+                );
         },
       ),
     );
+
+    bool focused(WidgetTester tester, String label) =>
+        Focus.of(tester.element(find.text(label))).hasPrimaryFocus;
 
     Future<void> focusFirst(WidgetTester tester) async {
       _keyboard();
@@ -365,6 +391,109 @@ void main() {
         await tester.sendKeyEvent(toStart);
         expect(seen.last, 'b', reason: '$direction to the start');
       }
+    });
+
+    testWidgets('Tab reaches only the selected radio, arrows move inside', (
+      tester,
+    ) async {
+      _keyboard();
+      final before = FocusNode();
+      addTearDown(before.dispose);
+      selected = 'b';
+      await tester.pumpWidget(radios(['a', 'b', 'c'], before: before));
+      before.requestFocus();
+      await tester.pump();
+      // The harness has no WidgetsApp, so no Tab shortcut: ask for the next
+      // focus as the shortcut does.
+      FocusManager.instance.primaryFocus!.nextFocus();
+      await tester.pump();
+      expect(focused(tester, 'b'), isTrue);
+      // Tab again leaves the group: no other radio is a tab stop.
+      // The harness has no WidgetsApp, so no Tab shortcut: ask for the next
+      // focus as the shortcut does.
+      FocusManager.instance.primaryFocus!.nextFocus();
+      await tester.pump();
+      expect(focused(tester, 'a'), isFalse);
+      expect(focused(tester, 'b'), isFalse);
+      expect(focused(tester, 'c'), isFalse);
+      // The tab stop follows the selection.
+      before.requestFocus();
+      await tester.pump();
+      // The harness has no WidgetsApp, so no Tab shortcut: ask for the next
+      // focus as the shortcut does.
+      FocusManager.instance.primaryFocus!.nextFocus();
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(selected, 'c');
+      before.requestFocus();
+      await tester.pump();
+      // The harness has no WidgetsApp, so no Tab shortcut: ask for the next
+      // focus as the shortcut does.
+      FocusManager.instance.primaryFocus!.nextFocus();
+      await tester.pump();
+      expect(focused(tester, 'c'), isTrue);
+    });
+
+    testWidgets('with none selected Tab reaches the first enabled radio', (
+      tester,
+    ) async {
+      _keyboard();
+      final before = FocusNode();
+      addTearDown(before.dispose);
+      selected = null;
+      await tester.pumpWidget(
+        radios(['a', 'b', 'c'], before: before, disabled: {'a'}),
+      );
+      before.requestFocus();
+      await tester.pump();
+      // The harness has no WidgetsApp, so no Tab shortcut: ask for the next
+      // focus as the shortcut does.
+      FocusManager.instance.primaryFocus!.nextFocus();
+      await tester.pump();
+      expect(focused(tester, 'b'), isTrue);
+    });
+
+    testWidgets('names the group, with the error as its description', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        radios(
+          ['a', 'b'],
+          label: 'طريقة الدفع',
+          hint: 'اختر واحدة',
+          error: 'اختر طريقة الدفع',
+        ),
+      );
+      final node = tester.getSemantics(find.byType(FoxRadioGroup));
+      expect(node.label, contains('طريقة الدفع'));
+      expect(node.hint, 'اختر طريقة الدفع');
+      expect(find.text('اختر طريقة الدفع'), findsOneWidget);
+      expect(find.text('اختر واحدة'), findsNothing);
+      await tester.pumpWidget(
+        radios(['a', 'b'], label: 'طريقة الدفع', hint: 'اختر واحدة'),
+      );
+      expect(
+        tester.getSemantics(find.byType(FoxRadioGroup)).hint,
+        'اختر واحدة',
+      );
+      await expectNoOverflow(
+        tester,
+        () => FoxRadioGroup(
+          label: 'طريقة الدفع',
+          error: 'اختر طريقة الدفع',
+          child: Column(
+            children: [
+              FoxRadio<int>(
+                value: 1,
+                groupValue: 1,
+                onChanged: (_) {},
+                label: 'نقدًا',
+              ),
+            ],
+          ),
+        ),
+      );
     });
 
     testWidgets('skips a disabled radio', (tester) async {
@@ -478,6 +607,14 @@ void main() {
       expect(track(), _i.switchTrack);
       await hover(tester, find.byType(FoxSwitch));
       expect(track(), _i.switchTrackHover);
+      // Unchecked and pressed has its own token, not the hover one.
+      final press = await tester.startGesture(
+        tester.getCenter(find.byType(FoxSwitch)),
+      );
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(track(), _i.switchTrackPressed);
+      expect(_i.switchTrackPressed, isNot(_i.switchTrackHover));
+      await press.up();
       await tester.pumpWidget(toggle(true, (_) {}));
       expect(track(), _i.switchTrackOn);
       await tester.pumpWidget(toggle(true, null));
@@ -543,6 +680,28 @@ void main() {
         expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
       }
       semantics.dispose();
+    });
+
+    testWidgets('the buttons take the stepper tokens and the focus width', (
+      tester,
+    ) async {
+      BoxDecoration circle() =>
+          (tester
+                  .widgetList<AnimatedContainer>(find.byType(AnimatedContainer))
+                  .firstWhere((c) => c.constraints?.maxWidth == _i.stepperSize)
+                  .decoration!
+              as BoxDecoration);
+      await tester.pumpWidget(stepper(2));
+      expect(circle().color, _i.stepperBackground);
+      expect((circle().border! as Border).top.width, _i.focusWidth);
+      await hover(tester, find.byType(Interaction).first);
+      expect(circle().color, _i.stepperBackgroundHover);
+      final press = await tester.startGesture(
+        tester.getCenter(find.byType(Interaction).first),
+      );
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(circle().color, _i.stepperBackgroundPressed);
+      await press.up();
     });
 
     testWidgets('«+» is at the start and «−» at the end', (tester) async {

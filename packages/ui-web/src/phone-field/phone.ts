@@ -2,7 +2,8 @@
 // Syria +963 and Turkey +90; Syrian mobiles have 9 digits after +963 and start
 // with 9 (`09xxxxxxxx` and `9xxxxxxxx` are accepted); Turkish mobiles have 10
 // digits after +90 and start with 5 (`05xxxxxxxxx`, `5xxxxxxxxx`); the number
-// is stored in E.164.
+// is stored in E.164. The same rules as Flutter's `foxPhoneE164`: digits are
+// never cut, and a number that is too long is refused, not reshaped.
 
 export type CountryCode = 'sy' | 'tr';
 
@@ -38,31 +39,65 @@ export function digitsOf(text: string): string {
   return out;
 }
 
-/**
- * The national digits of what was typed or pasted: the leading `0` of `09…`
- * goes, and so does a pasted `+963` or `00963`; cut to the country's length.
- */
-export function nationalDigits(country: CountryCode, text: string): string {
-  const { dial, length } = COUNTRIES[country];
-  const trimmed = text.trim();
-  let digits = digitsOf(trimmed);
-  if (/^\s*(\+|00)/.test(trimmed) && digits.replace(/^00/, '').startsWith(dial)) {
-    digits = digits.replace(/^00/, '').slice(dial.length);
-  }
-  if (digits.startsWith('0')) digits = digits.slice(1);
-  return digits.slice(0, length);
-}
-
 /** Whether the national digits are a complete mobile number of the country. */
 export function isComplete(country: CountryCode, national: string): boolean {
   const { length, prefix } = COUNTRIES[country];
   return national.length === length && national.startsWith(prefix);
 }
 
-/** The E.164 number of what was typed, or `''` while it is not a complete mobile number. */
-export function toE164(country: CountryCode, text: string): string {
-  const national = nationalDigits(country, text);
-  return isComplete(country, national) ? `+${COUNTRIES[country].dial}${national}` : '';
+export interface ParsedPhone {
+  /** The country the number belongs to: the one picked, or the one its own calling code names. */
+  country: CountryCode;
+  /** What the digits box shows: the digits as typed, or the national digits of a number pasted with its calling code. */
+  display: string;
+  /** The E.164 number, or `''` while it is not a complete mobile number. */
+  e164: string;
+  /** The text cannot be a number of either country (too long, or a calling code with a wrong rest). */
+  refused: boolean;
+}
+
+const international = (country: CountryCode, national: string): ParsedPhone =>
+  isComplete(country, national)
+    ? { country, display: national, e164: `+${COUNTRIES[country].dial}${national}`, refused: false }
+    : { country, display: national, e164: '', refused: true };
+
+/**
+ * Reads what was typed or pasted under the picked country. A number with its
+ * own calling code (`+90…`, `0090…`, or exactly that code and a full national
+ * number such as `963912345678`) belongs to that country, whichever is picked,
+ * and must be complete for it. Otherwise the leading `0` is dropped and nothing
+ * is cut: more digits than the country has make the text refused.
+ */
+export function parsePhone(selected: CountryCode, text: string): ParsedPhone {
+  const trimmed = text.trim();
+  const digits = digitsOf(trimmed);
+  const refused: ParsedPhone = { country: selected, display: digits, e164: '', refused: true };
+
+  if (trimmed.startsWith('+') || digits.startsWith('00')) {
+    const rest = trimmed.startsWith('+') ? digits : digits.slice(2);
+    const code = COUNTRY_CODES.find((country) => rest.startsWith(COUNTRIES[country].dial));
+    if (!code) return refused;
+    const result = international(code, rest.slice(COUNTRIES[code].dial.length));
+    return result.refused ? refused : result;
+  }
+
+  const full = COUNTRY_CODES.find((country) => {
+    const { dial, length } = COUNTRIES[country];
+    return digits.length === dial.length + length && digits.startsWith(dial);
+  });
+  if (full) {
+    const result = international(full, digits.slice(COUNTRIES[full].dial.length));
+    if (!result.refused) return result;
+  }
+
+  const national = digits.startsWith('0') ? digits.slice(1) : digits;
+  if (national.length > COUNTRIES[selected].length) return refused;
+  return {
+    country: selected,
+    display: digits,
+    e164: isComplete(selected, national) ? `+${COUNTRIES[selected].dial}${national}` : '',
+    refused: false,
+  };
 }
 
 /** The country and the national digits of an E.164 number, or null when it is neither country's. */

@@ -8,7 +8,7 @@ import { Icon } from '../icon/icon';
 // on `surface-hover`, the chosen one medium weight with a brand-orange check.
 const content = formTv({
   base: [
-    'z-10 min-w-(--anchor-width) max-h-(--available-height) overflow-y-auto p-(--fd-space-2xs) outline-hidden',
+    'z-10 min-w-(--anchor-width) max-h-(--available-height) overflow-y-auto p-2xs outline-hidden',
     'rounded-(--fd-input-area-radius) bg-(--fd-input-color-background) text-(color:--fd-input-color-text)',
     'shadow-(--fd-elevation-medium)',
   ],
@@ -27,16 +27,31 @@ const item = formTv({
 export interface MenuItem {
   value: string;
   label: string;
+  disabled?: boolean;
 }
+
+// The gap between the field and its list: `--fd-space-2xs` (4), which a prop
+// cannot read as a CSS variable.
+const SIDE_OFFSET = 4;
 
 /**
  * The popup list of a select and of the phone field's country chip. Internal.
  */
 export function Menu({ items, dir }: { items: readonly MenuItem[]; dir?: 'rtl' | 'ltr' }) {
   return (
-    <SelectContent className={content()} sideOffset={4} align="start" {...(dir && { dir })}>
+    <SelectContent
+      className={content()}
+      sideOffset={SIDE_OFFSET}
+      align="start"
+      {...(dir && { dir })}
+    >
       {items.map((entry) => (
-        <SelectItem key={entry.value} value={entry.value} className={item()}>
+        <SelectItem
+          key={entry.value}
+          value={entry.value}
+          className={item()}
+          {...(entry.disabled && { disabled: true })}
+        >
           {entry.label}
           <SelectItemIndicator className="flex text-(color:--fd-input-color-accent)">
             <Icon name="confirm" size="sm" />

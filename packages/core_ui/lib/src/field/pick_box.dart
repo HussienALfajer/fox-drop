@@ -40,7 +40,8 @@ class PickBox extends StatelessWidget {
   final bool? expanded;
   final FocusNode? focusNode;
 
-  /// A date or a time: digits and slashes keep their order in Arabic.
+  /// A date: digits and slashes keep their order in Arabic. A time is not,
+  /// it reads right to left.
   final bool ltrValue;
 
   @override

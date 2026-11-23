@@ -219,7 +219,7 @@ test.describe('quantity stepper', () => {
     await page.keyboard.press('Tab');
     await expect(page.getByRole('button', { name: 'زيادة' })).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('group', { name: 'الكمية 3' })).toBeVisible();
+    await expect(page.getByRole('group', { name: 'الكمية' })).toHaveAccessibleDescription('3');
     await expect(page.getByRole('status')).toHaveText('3');
   });
 

@@ -50,9 +50,9 @@ class FoxSwitch extends StatelessWidget {
               ? i.switchTrackOnPressed
               : (state.hovered ? i.switchTrackOnHover : i.switchTrackOn);
         } else {
-          track = state.hovered || state.pressed
-              ? i.switchTrackHover
-              : i.switchTrack;
+          track = state.pressed
+              ? i.switchTrackPressed
+              : (state.hovered ? i.switchTrackHover : i.switchTrack);
         }
         final radius = i.switchHeight / 2;
         return ConstrainedBox(

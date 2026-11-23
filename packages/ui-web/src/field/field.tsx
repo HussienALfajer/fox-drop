@@ -22,7 +22,7 @@ const field = formTv({
     optional: 'font-regular text-(color:--fd-input-color-hint)',
     below: 'flex items-start justify-between gap-(--fd-input-gap)',
     hint: 'text-(color:--fd-input-color-hint)',
-    error: 'flex items-center gap-(--fd-space-2xs) text-(color:--fd-input-color-error)',
+    error: 'flex items-center gap-2xs text-(color:--fd-input-color-error)',
   },
   variants: {
     density: {

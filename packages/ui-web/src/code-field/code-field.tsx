@@ -1,6 +1,11 @@
 import { OTPInput, OTPInputGroup, OTPInputSlot } from '@ui-sdk/react/otp-input';
+import { useEffect, useRef, useState } from 'react';
 import { Field } from '../field/field';
 import { formTv } from '../field/styles';
+import { digitsOf } from '../phone-field/phone';
+
+/** Arabic-Indic (٠-٩) and Persian (۰-۹) digits. */
+const NON_WESTERN = /[٠-٩۰-۹]/;
 
 /** The states the stories show (R3). Focus is driven in the browser by the gate. */
 export const STATES = ['default', 'focus', 'typing', 'invalid', 'done', 'disabled'] as const;
@@ -29,6 +34,8 @@ const slot = formTv({
       invalid: [
         'bg-(--fd-input-color-background) text-(color:--fd-input-color-text)',
         'inset-ring-(length:--fd-input-focus-width) inset-ring-(color:--fd-input-color-border-invalid)',
+        // The cell the next digit goes into keeps the focus colour.
+        'data-active:inset-ring-(color:--fd-input-color-border-focus)',
       ],
       done: 'bg-(--fd-input-code-color-done) text-(color:--fd-input-code-color-on-done)',
       disabled:
@@ -63,6 +70,40 @@ export function CodeField(props: CodeFieldProps) {
   const { label, hint, error, value, defaultValue, onValueChange, onComplete } = props;
   const { done, name, autoFocus, disabled } = props;
   const state = disabled ? 'disabled' : done ? 'done' : error ? 'invalid' : 'rest';
+  const [own, setOwn] = useState(defaultValue ?? '');
+  const current = value ?? own;
+  const wrapper = useRef<HTMLSpanElement>(null);
+  const latest = useRef({ current, onValueChange, onComplete });
+  useEffect(() => {
+    latest.current = { current, onValueChange, onComplete };
+  });
+
+  // The SDK keeps only 0-9. Arabic-Indic and Persian digits (the phone's Arabic
+  // keyboard, a pasted code) are turned into Western digits first (AP §4.7).
+  const insert = (text: string) => {
+    const typed = digitsOf(text);
+    if (typed === '') return;
+    const next = (latest.current.current + typed).slice(0, CODE_LENGTH);
+    setOwn(next);
+    latest.current.onValueChange?.(next);
+    if (next.length === CODE_LENGTH && next !== latest.current.current) {
+      latest.current.onComplete?.(next);
+    }
+  };
+  useEffect(() => {
+    const node = wrapper.current;
+    if (!node) return;
+    const beforeInput = (event: Event) => {
+      const data = (event as InputEvent).data;
+      if (data && NON_WESTERN.test(data)) {
+        event.preventDefault();
+        insert(data);
+      }
+    };
+    node.addEventListener('beforeinput', beforeInput);
+    return () => node.removeEventListener('beforeinput', beforeInput);
+  }, []);
+
   return (
     <Field
       label={label}
@@ -71,37 +112,51 @@ export function CodeField(props: CodeFieldProps) {
       {...(disabled && { disabled })}
       {...(name && { name })}
     >
-      <OTPInput
-        maxLength={CODE_LENGTH}
-        pattern="digits"
-        inputMode="numeric"
-        autoComplete="one-time-code"
-        textAlign="start"
-        {...(value !== undefined && { value })}
-        {...(defaultValue !== undefined && { defaultValue })}
-        {...(onValueChange && { onValueChange: (next: string) => onValueChange(next) })}
-        {...(onComplete && { onValueCommit: (next: string) => onComplete(next) })}
-        {...(autoFocus && { autoFocus })}
-        {...(disabled && { disabled })}
-        {...(error && { 'aria-invalid': true })}
-        dir="ltr"
-        className="relative inline-flex self-start"
+      <span
+        ref={wrapper}
+        className="contents"
+        onPasteCapture={(event) => {
+          const text = event.clipboardData.getData('text');
+          if (NON_WESTERN.test(text)) {
+            event.preventDefault();
+            insert(text);
+          }
+        }}
       >
-        <OTPInputGroup className={group({ done: done && !disabled })}>
-          {Array.from({ length: CODE_LENGTH }, (_, index) => (
-            <OTPInputSlot key={index} index={index} className={slot({ state })}>
-              {(slotState) => (
-                <>
-                  {slotState.char}
-                  {slotState.hasFakeCaret && (
-                    <span className="absolute h-(--fd-size-icon-md) w-(--fd-input-focus-width) animate-pulse bg-(--fd-input-color-accent) motion-reduce:animate-none" />
-                  )}
-                </>
-              )}
-            </OTPInputSlot>
-          ))}
-        </OTPInputGroup>
-      </OTPInput>
+        <OTPInput
+          maxLength={CODE_LENGTH}
+          pattern="digits"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          textAlign="start"
+          value={current}
+          onValueChange={(next: string) => {
+            setOwn(next);
+            onValueChange?.(next);
+          }}
+          {...(onComplete && { onValueCommit: (next: string) => onComplete(next) })}
+          {...(autoFocus && { autoFocus })}
+          {...(disabled && { disabled })}
+          {...(error && { 'aria-invalid': true })}
+          dir="ltr"
+          className="relative inline-flex self-start"
+        >
+          <OTPInputGroup className={group({ done: done && !disabled })}>
+            {Array.from({ length: CODE_LENGTH }, (_, index) => (
+              <OTPInputSlot key={index} index={index} className={slot({ state })}>
+                {(slotState) => (
+                  <>
+                    {slotState.char}
+                    {slotState.hasFakeCaret && (
+                      <span className="absolute h-(--fd-size-icon-md) w-(--fd-input-focus-width) animate-pulse bg-(--fd-input-color-accent) motion-reduce:animate-none" />
+                    )}
+                  </>
+                )}
+              </OTPInputSlot>
+            ))}
+          </OTPInputGroup>
+        </OTPInput>
+      </span>
     </Field>
   );
 }
