@@ -9,6 +9,7 @@
   "scripts": {
     "storybook": "storybook dev -p 6006",
     "build": "storybook build -o dist/storybook",
+    "design-system": "node scripts/design-system.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",

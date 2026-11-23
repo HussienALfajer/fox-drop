@@ -1,0 +1,9 @@
+/* The CSS of the Design System bundle: Tailwind for the components (not their
+   stories or tests) and the --fd-* variables. No @font-face: the system serves
+   CoFo Sans Pro Arabic from its tokens.json. */
+@import 'tailwindcss' source(none);
+@import '@fox-drop/design-tokens/tokens.css';
+@import '@fox-drop/design-tokens/tailwind.css';
+@source '../src/**/*.tsx';
+@source not '../src/**/*.stories.tsx';
+@source not '../src/**/*.test.tsx';

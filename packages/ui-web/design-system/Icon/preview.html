@@ -1,0 +1,55 @@
+<!-- @dsCard group="Icons" height=560 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+    color: var(--fd-color-on-surface);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: 0 0 var(--fd-space-sm);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: var(--fd-space-md);
+    margin-block-end: var(--fd-space-lg);
+  }
+  .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--fd-space-xs);
+    font-size: 11px;
+    direction: ltr;
+  }
+  .sizes {
+    display: flex;
+    align-items: center;
+    gap: var(--fd-space-lg);
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, Icon } = FoxDrop;
+  const h = React.createElement;
+  const names = __ICON_NAMES__;
+  const cells = names.map((name) =>
+    h('div', { className: 'cell', key: name }, h(Icon, { name, size: 'md' }), name),
+  );
+  const sizes = ['sm', 'md', 'lg'].map((size) =>
+    h('div', { className: 'cell', key: size }, h(Icon, { name: 'home', size }), size),
+  );
+  ReactDOM.createRoot(document.getElementById('root')).render([
+    h('h2', { key: 'a' }, 'Every icon, md'),
+    h('div', { className: 'grid', key: 'b' }, cells),
+    h('h2', { key: 'c' }, 'Sizes'),
+    h('div', { className: 'sizes', key: 'd' }, sizes),
+  ]);
+</script>

@@ -5,8 +5,9 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "types": ["node"],
+    "types": ["node", "vite/client"],
+    "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "include": ["test", "e2e", ".storybook", "vitest.config.ts", "playwright.config.ts"]
+  "include": ["test", "e2e", "scripts", ".storybook", "vitest.config.ts", "playwright.config.ts"]
 }
