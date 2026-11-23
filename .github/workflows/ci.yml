@@ -312,6 +312,39 @@ jobs:
 
       - run: node scripts/verify.mjs flutter --shard=${{ matrix.shard }}/3
 
+  # The core_ui goldens (R9, D.7), valid only from the Linux image that
+  # scripts/golden-docker.mjs builds (the pinned Ubuntu and .fvmrc Flutter),
+  # the same command as locally. Fails, never skips, without the fonts.
+  golden:
+    needs: changes
+    if: needs.changes.outputs.dart == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - name: Trust GitHub's SSH host keys
+        run: node scripts/github-known-hosts.mjs
+
+      - name: Fetch the licensed fonts
+        run: node scripts/fonts-fetch.mjs
+        env:
+          FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
+
+      - run: node scripts/golden-docker.mjs
+
+      # The expected, actual and diff images of a failed comparison.
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: golden-diff
+          path: packages/core_ui/test/golden/failures/*.png
+          if-no-files-found: ignore
+
   # The check main requires: every part passed, or was skipped for a change
   # of docs only, of no Dart or of nothing native.
   verify:
@@ -326,6 +359,7 @@ jobs:
         server,
         dart,
         flutter,
+        golden,
         android-release,
         windows-release,
         ios-release,

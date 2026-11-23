@@ -32,7 +32,7 @@ D.7 `packages/core_ui` (`docs/roadmap.md` Phase D): the theme from the tokens, w
 - [x] `core_ui` package and theme, with tests
 - [x] `FoxIcon` and the path parser, with tests
 - [x] `FoxButton`, with tests
-- [ ] Goldens: font loader, Docker script, baselines, CI `golden` job
+- [x] Goldens: font loader, Docker script, baselines, CI `golden` job
 - [ ] `apps/widgetbook` and the R3 coverage test
 - [ ] `fox_lints` (R2, R5) with tests, on in `core_ui`
 - [ ] Docs, sheets superseded, review, hand over to D.8
