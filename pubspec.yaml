@@ -22,6 +22,7 @@ workspace:
   - packages/core_time
   - packages/core_tokens
   - packages/core_ui
+  - packages/fox_lints
 
 dev_dependencies:
   lints: 6.1.0

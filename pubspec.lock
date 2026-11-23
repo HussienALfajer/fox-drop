@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.8.0"
+  analysis_server_plugin:
+    dependency: transitive
+    description:
+      name: analysis_server_plugin
+      sha256: c58b2a05b260a023eefd0848496ff6b113a318c6c95dad4215165a4bd54ae600
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.18"
   analyzer:
     dependency: transitive
     description:
@@ -33,6 +41,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "13.3.0"
+  analyzer_plugin:
+    dependency: transitive
+    description:
+      name: analyzer_plugin
+      sha256: c2a75baf1657171cc7872db96a12b07e385873cf7a73f2b4f7638e9d0701ee53
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.14.12"
+  analyzer_testing:
+    dependency: transitive
+    description:
+      name: analyzer_testing
+      sha256: "33ec8a3138134e9048969a70a670ac04a37e28337982c3ed6d04a3d28ac87665"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2"
   ansi_styles:
     dependency: transitive
     description:
@@ -1642,6 +1666,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.18"
+  test_reflective_loader:
+    dependency: transitive
+    description:
+      name: test_reflective_loader
+      sha256: "9c4327839510a742171b9d37b37464d0d215ebee4d7701a272db337dbde3e17b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.0"
   timezone:
     dependency: transitive
     description:
