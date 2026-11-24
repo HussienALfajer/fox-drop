@@ -123,7 +123,7 @@ export function Banner({
           <span data-banner-text="" className="min-w-none flex-1">
             {children}
           </span>
-          {act && <ActionButton act={act} />}
+          {(act ?? second) && <ActionButton act={(act ?? second)!} />}
         </>
       )}
       {dismiss && (

@@ -113,6 +113,51 @@ describe('the Design System bundle', () => {
     container.remove();
   });
 
+  // Review of D.11: a card renders through FoxDrop.React even when the page
+  // has React 18, and the page's elements nested in objects (Tabs' content)
+  // or returned by function props (DataTable's cells) cross the bridge too.
+  it('renders through its own React beside a page React 18, and converts nested elements', async () => {
+    const page = window as unknown as Record<string, unknown>;
+    const api = page['FoxDrop'] as Record<string, unknown> & {
+      React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => unknown };
+      ReactDOM: {
+        createRoot: (el: Element) => { render: (node: unknown) => void; unmount: () => void };
+      };
+    };
+    expect((page['React'] as { version: string }).version).toBe('18.3.1');
+    const own = document.createElement('div');
+    document.body.append(own);
+    const ownRoot = api.ReactDOM.createRoot(own);
+    ownRoot.render(api.React.createElement(api['Banner'], { tone: 'info' }, 'وضع التجربة'));
+    await vi.waitFor(() => expect(own.textContent).toContain('وضع التجربة'));
+    ownRoot.unmount();
+    own.remove();
+
+    const host = page['React'] as {
+      createElement: (type: unknown, props: unknown, ...children: unknown[]) => unknown;
+    };
+    const hostDom = page['ReactDOM'] as {
+      createRoot: (el: Element) => { render: (node: unknown) => void; unmount: () => void };
+      flushSync: (fn: () => void) => void;
+    };
+    const container = document.createElement('div');
+    document.body.append(container);
+    const root = hostDom.createRoot(container);
+    hostDom.flushSync(() =>
+      root.render(
+        host.createElement(api['Tabs'], {
+          label: 'الطلبات',
+          items: [
+            { value: 'a', label: 'الجارية', content: host.createElement('p', null, 'محتوى') },
+          ],
+        }),
+      ),
+    );
+    await vi.waitFor(() => expect(container.textContent).toContain('محتوى'));
+    root.unmount();
+    container.remove();
+  });
+
   it('carries the --fd-* variables and the component classes, with no font and no style end', () => {
     expect(bundle.css).toContain('--fd-button-primary-background');
     expect(bundle.css).toContain('min-h-');

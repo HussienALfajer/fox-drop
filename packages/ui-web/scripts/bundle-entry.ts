@@ -112,9 +112,28 @@ function isHostElement(node: unknown): node is HostElement {
   );
 }
 
-/** The page's elements as the bundle's; anything else passes unchanged. */
+// A function prop (a table cell, a render prop) may return the page's
+// elements: its result crosses the bridge too. Cached, so it keeps its identity.
+const wrapped = new WeakMap<object, unknown>();
+
+function isPlainObject(node: unknown): node is Record<string, unknown> {
+  return (
+    typeof node === 'object' &&
+    node !== null &&
+    !('$$typeof' in node) &&
+    Object.getPrototypeOf(node) === Object.prototype
+  );
+}
+
+/** The page's elements as the bundle's, in arrays, plain objects and function results too. */
 function toInner(node: unknown): unknown {
   if (Array.isArray(node)) return node.map(toInner);
+  if (typeof node === 'function') {
+    const fn = node as (...args: unknown[]) => unknown;
+    if (!wrapped.has(fn)) wrapped.set(fn, (...args: unknown[]) => toInner(fn(...args)));
+    return wrapped.get(fn);
+  }
+  if (isPlainObject(node)) return innerProps(node);
   if (!isHostElement(node)) return node;
   const type =
     typeof node.type === 'string'
@@ -133,13 +152,35 @@ function innerProps(props: Record<string, unknown>): Record<string, unknown> {
   return out;
 }
 
+// Which React is calling a bridged component: the dispatcher of the bundle's
+// React answers a hook only while that React renders (between renders it keeps
+// one that throws; before the first render there is none). Asked first and on
+// every render by the bundle's React, so the hook order stays the same.
+const internals = (React as unknown as Record<string, { H?: unknown } | undefined>)[
+  '__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE'
+];
+
+function renderedByBundle(): boolean {
+  const dispatcher = internals?.H as { useRef?: (value: null) => unknown } | null | undefined;
+  if (!dispatcher?.useRef) return false;
+  try {
+    dispatcher.useRef(null);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function bridge<P extends object>(
   Inner: React.ComponentType<P>,
   name: string,
 ): React.ComponentType<P> {
   function Bridged(props: P) {
     const host = page['React'] as HostReact | undefined;
-    if (!host || (host as unknown) === React) return React.createElement(Inner, props);
+    // Rendered by the bundle's own React (FoxDrop.React, a card's preview):
+    // straight through, whatever React the page also carries.
+    if (!host || (host as unknown) === React || renderedByBundle())
+      return React.createElement(Inner, props);
     // Rendered by the page's React: only its hooks are allowed here.
     const slot = host.useRef<HTMLElement | null>(null);
     const root = host.useRef<ReactDOM.Root | null>(null);
