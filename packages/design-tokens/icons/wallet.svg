@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="7" width="17" height="13.5" rx="2.5"/>
-  <path d="M6 7l8.5-3.2a1.5 1.5 0 0 1 2 1.4V7"/>
-  <path d="M20 11.25h-3a2.25 2.25 0 0 0 0 4.5h3"/>
-  <circle cx="17" cy="13.5" r=".5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 9.25L21 7C21 5.94 21 5.41 20.67 5.08C20.34 4.75 19.81 4.75 18.75 4.75L7.1 4.75C4.93 4.75 3.85 4.75 3.17 5.42C2.5 6.1 2.5 7.18 2.5 9.35L2.5 15.65C2.5 17.82 2.5 18.9 3.17 19.58C3.85 20.25 4.93 20.25 7.1 20.25L18.38 20.25C19.61 20.25 20.23 20.25 20.62 19.87C21 19.48 21 18.86 21 17.63L21 15" data-role="body"/>
+  <path d="M17.4 9.25L19.6 9.25C20.73 9.25 21.3 9.25 21.65 9.6C22 9.95 22 10.52 22 11.65L22 12.6C22 13.73 22 14.3 21.65 14.65C21.3 15 20.73 15 19.6 15L17.4 15C16.27 15 15.7 15 15.35 14.65C15 14.3 15 13.73 15 12.6L15 11.65C15 10.52 15 9.95 15.35 9.6C15.7 9.25 16.27 9.25 17.4 9.25Z" data-role="body" data-accent="true" data-halo="true"/>
+  <path d="M18.25 12.13h.01" data-role="detail" data-knock="in"/>
+  <path d="M6.5 8.75L10.75 8.75" data-role="detail" data-knock="in"/>
 </svg>

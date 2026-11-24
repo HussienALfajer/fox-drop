@@ -1,6 +1,6 @@
 # D.5b Madar icon set v4
 
-Status: Planned · Tier: T2 · Branch: `feat/madar-icons`
+Status: Done · Tier: T2 · Branch: `feat/madar-icons`
 Spec: architecture §9.4 and §9.5 R8 (rewritten by this slice), §9.9 (the set approved by the owner on 2026-11-24), brand expression §10 · Definition of done: the D.5b line of `docs/roadmap.md` Phase D; the D.5 icon rules carried to v4, and the D.6 and D.7 Icon components given a style
 
 ## Goal
@@ -126,15 +126,25 @@ Risks:
 
 ## Stopped at
 
-Planned.
+Done: built, reviewed, synced; the pull request is open.
+
+## Decisions made while building
+
+- **Locked-test changes (owner, 2026-11-24):** `icon-bake.test.ts` measures lengths at CanvasKit resScale 100 (at 1 Skia measures curves only to about 0.3 on the 24 grid, so an exact 3.75 gap read 3.64 to 3.68), and checks the gap's centring along the line, by arc length (chords around the star's tip are not symmetric). On an open body the bite slides to the nearest point where a whole gap fits with a 1.5 stub at each end (`bell`, `restaurant`, `share`); §9.4 records the rule. `core_ui/test/icon_test.dart` sizes its restaurant card with `FoxSize.toast` instead of a literal 360, a lint (R2) fix only.
+- **The web prop is `variant`, not `style`:** the web lint refuses any JSX attribute named `style` (R1). Flutter keeps `style` (`FoxIconStyle`).
+- **Story state names** are camel case (`brandDuo`, `boldDuo`): the stories test turns a state into its story name by capitalising its first letter.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`: <summary line>
-- `pnpm test:golden` and the ui-web visual run after the baselines were updated, every diff looked at: <summary>
-- Storybook's six styles beside the sheet built from `template.html`, for `home`, `bell`, `wallet`, `car` and `offline` (outside the repository): <where>
-- Import fixes (`bell`, `route`, `restaurant`): <what moved>
-- Review: <reviewer findings fixed; deferred to the backlog>
+- `node scripts/verify.mjs --changed`: `verify: the checks of the change passed` (after the code changes; the later commits are images and docs).
+- `pnpm test:golden --update-goldens`: 75 tests passed, 66 baselines rewritten (stroke 2 → 1.5 everywhere, the Bold selected tab, the Bold favourite heart, the Brand Duo empty state) and two new sheets, `icon_styles_phone.png` and `icon_styles_captain.png`; the ones looked at match the intent.
+- `pnpm --filter @fox-drop/ui-web test:visual --update-snapshots`: 507 passed, one timeout under load (`topbar--emergency` on phone) that passed alone; 286 baselines, ten of them new (the five styles on phone and captain).
+- The repo's bake beside the sheet built from `template.html` (`home`, `bell`, `wallet`, `car`, `offline`, `cart`, `share`, `restaurant`, `star`, `retry`; screenshots in the session scratchpad, outside the repository): Linear, Duotone, Brand Duo, Bold and Bold Duo match; Broken differs only where the owner's sliding rule moves the bite (`bell`, `restaurant`, `share`).
+- Design System version 20 (icons, the changed Flutter cards, the Icon component with `variant`, tokens 0.9.0, the brand book's iconography) and Guide version 17 (Foundations, Shapes, tokens) published on 2026-11-24.
+- Import fixes, too small to see: `bell`'s clapper moved up from y 22.1 to 22; `route`'s pin moved 0.1 left so it ends at x 22; `restaurant`'s awning arcs `A2.375` written `A2.38`; `retry`'s arrowhead reached y 1.09, so both arms are shortened by the same factor (0.714) and the tip sits at y 2 (`M12.76 2L14.07 4.27L11.8 5.58`; owner, 2026-11-24).
+- Sizes: `generated/icons.ts` 12 → 130 KB, `icons.g.dart` 14 → 231 KB.
+- Review (`reviewer`, two rounds): the missing web screenshots (blocking) were committed; §9.4's body bounds and detail clearance were reworded to what the approved sheet draws (the test holds 2..22); "Stopped at" was updated. Nothing blocking remains. Not deferred: none.
+- `tokens.test.ts`'s exception test now allows `primary-subtle` as the ground of an orange pair: the Brand Duo accent in the empty state's drop.
 
 ## Before deploying
 

@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4.5 16.5H3V12l2-1 2.5-4h6.5l4 4 2.5.8a1 1 0 0 1 .5.9v3.8h-1.5"/>
-  <path d="M9.5 16.5h5"/>
-  <path d="M5 11h13"/>
-  <circle cx="7" cy="16.5" r="2.5"/>
-  <circle cx="17" cy="16.5" r="2.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 17.25L3.88 17.25C3.34 17.25 3.08 17.25 2.91 17.09C2.75 16.92 2.75 16.66 2.75 16.13L2.75 14.15C2.75 13.49 2.75 13.16 2.93 12.86C3.12 12.57 3.41 12.42 4 12.13L4 12.13C4.59 11.83 4.88 11.68 5.18 11.42C5.47 11.15 5.64 10.88 6 10.32L7.08 8.61C7.63 7.73 7.91 7.29 8.4 7.02C8.89 6.75 9.41 6.75 10.45 6.75L13.55 6.75C14.59 6.75 15.11 6.75 15.61 7.02C16.11 7.28 16.41 7.71 16.99 8.57L18.27 10.44C18.62 10.94 18.79 11.19 19.06 11.44C19.33 11.68 19.59 11.83 20.13 12.13L20.13 12.13C20.66 12.42 20.92 12.57 21.09 12.85C21.25 13.13 21.25 13.43 21.25 14.04L21.25 16.13C21.25 16.66 21.25 16.92 21.09 17.09C20.92 17.25 20.66 17.25 20.13 17.25L19 17.25" data-role="body"/>
+  <path d="M8.13 10.67L9.07 9.38C9.32 9.03 9.44 8.86 9.65 8.76C9.86 8.65 10.08 8.65 10.5 8.65L13.7 8.65C14.12 8.65 14.34 8.65 14.55 8.75C14.76 8.86 14.89 9.03 15.15 9.37L16.15 10.68C16.41 11.02 16.54 11.19 16.49 11.3C16.44 11.4 16.22 11.4 15.8 11.4L8.5 11.4C8.08 11.4 7.86 11.4 7.81 11.29C7.76 11.19 7.88 11.02 8.13 10.67Z" data-role="detail" data-knock="in"/>
+  <path d="M9.5 17.25L14.5 17.25" data-role="detail" data-knock="out"/>
+  <path d="M5 17.5A2.25 2.25 0 1 1 9.5 17.5A2.25 2.25 0 1 1 5 17.5Z" data-role="detail" data-knock="out" data-accent="true" data-fill="true" data-halo="true"/>
+  <path d="M14.5 17.5A2.25 2.25 0 1 1 19 17.5A2.25 2.25 0 1 1 14.5 17.5Z" data-role="detail" data-knock="out" data-accent="true" data-fill="true" data-halo="true"/>
 </svg>

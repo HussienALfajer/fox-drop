@@ -524,6 +524,11 @@ Widget _icons(String state) {
     'lg' => FoxIconSize.lg,
     _ => FoxIconSize.md,
   };
+  // A style state (§9.4) shows every icon in that style.
+  final style = FoxIconStyle.values.firstWhere(
+    (s) => s.name == state,
+    orElse: () => FoxIconStyle.linear,
+  );
   final icons = state == 'mirrored'
       ? [
           for (final icon in FoxIcons.all.values)
@@ -536,7 +541,12 @@ Widget _icons(String state) {
     children: [
       for (final MapEntry(:key, :value) in FoxIcons.all.entries)
         if (icons.contains(value))
-          FoxIcon(value, size: size, label: state == 'labelled' ? key : null),
+          FoxIcon(
+            value,
+            size: size,
+            style: style,
+            label: state == 'labelled' ? key : null,
+          ),
     ],
   );
 }

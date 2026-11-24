@@ -45,7 +45,7 @@ const TNUM = "font-feature-settings: 'tnum';";
 
 function svg(paths: string[], px: number, colour = 'currentColor', flip = false): string {
   const transform = flip ? '; transform: scaleX(-1)' : '';
-  return `<svg aria-hidden="true" width="${px}" height="${px}" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none${transform}">${paths.map((d) => `<path d="${d}"/>`).join('')}</svg>`;
+  return `<svg aria-hidden="true" width="${px}" height="${px}" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex: none${transform}">${paths.map((d) => `<path d="${d}"/>`).join('')}</svg>`;
 }
 
 const cell = (inner: string, caption = '') =>

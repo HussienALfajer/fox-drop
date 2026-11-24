@@ -1,4 +1,4 @@
-<!-- @dsCard group="Icons" height=710 -->
+<!-- @dsCard group="Icons" height=1000 -->
 <style>
   /* The card paints the apps' own ground and text, whatever the page around it. */
   :root {
@@ -44,6 +44,21 @@
     align-items: center;
     gap: var(--fd-space-lg);
   }
+  .styles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fd-space-md);
+  }
+  .style-row {
+    display: flex;
+    align-items: center;
+    gap: var(--fd-space-lg);
+  }
+  .style-name {
+    inline-size: 96px;
+    font-size: 11px;
+    direction: ltr;
+  }
 </style>
 <div id="root" dir="rtl" lang="ar"></div>
 <script>
@@ -56,10 +71,23 @@
   const sizes = ['sm', 'md', 'lg'].map((size) =>
     h('div', { className: 'cell', key: size }, h(Icon, { name: 'home', size }), size),
   );
+  // One row per style: its name, then the same five icons.
+  const styles = ['linear', 'duotone', 'brand-duo', 'broken', 'bold', 'bold-duo'].map((variant) =>
+    h(
+      'div',
+      { className: 'style-row', key: variant },
+      h('span', { className: 'style-name' }, variant),
+      ['home', 'bell', 'wallet', 'car', 'offline'].map((name) =>
+        h(Icon, { name, size: 'lg', variant, key: name }),
+      ),
+    ),
+  );
   ReactDOM.createRoot(document.getElementById('root')).render([
     h('h2', { key: 'a' }, 'Every icon, md'),
     h('div', { className: 'grid', key: 'b' }, cells),
     h('h2', { key: 'c' }, 'Sizes'),
     h('div', { className: 'sizes', key: 'd' }, sizes),
+    h('h2', { key: 'e' }, 'The six styles'),
+    h('div', { className: 'styles', key: 'f' }, styles),
   ]);
 </script>

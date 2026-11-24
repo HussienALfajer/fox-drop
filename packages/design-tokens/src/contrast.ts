@@ -98,6 +98,20 @@ const orangeBoundary = excepted(
   on(['primary'], 3, 'control boundary, checked control, icon in a control'),
   2.5,
 );
+// Icon set v4 Madar (D.5b, owner 2026-11-24): Brand Duo strokes an icon's
+// accent in `brand`, on the grounds and in the empty state's drop.
+const brandAccent = excepted(
+  [
+    ...on(['brand'], 3, 'icon accent (Brand Duo)'),
+    {
+      foreground: 'brand',
+      background: 'primary-subtle',
+      target: 3,
+      use: 'icon accent in the empty state (Brand Duo)',
+    },
+  ],
+  2.4,
+);
 // Alerts are read from across a room: the restaurant tablet, the panel (§6).
 const alerts: Pair[] = [
   { foreground: 'on-alert', background: 'alert', target: 7, use: 'alert' },
@@ -140,6 +154,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...orangeText,
     ...orangeFills,
     ...orangeBoundary,
+    ...brandAccent,
   ],
   panel: [
     ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
@@ -153,6 +168,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...orangeText,
     ...orangeFills,
     ...orangeBoundary,
+    ...brandAccent,
   ],
   // Text and numbers at 7:1 in near-black or blue; orange only on buttons and
   // headings, under the owner's exception (§6).
@@ -167,6 +183,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...orangeText,
     ...orangeFills,
     ...orangeBoundary,
+    ...brandAccent,
   ],
 };
 

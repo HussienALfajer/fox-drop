@@ -89,7 +89,9 @@ describe('contrast (R4, brand expression §6)', () => {
     for (const p of excepted) {
       expect(p.floor, `${p.foreground} on ${p.background}`).toBeGreaterThan(0);
       if (!ORANGE.has(p.foreground)) expect(p.foreground).toBe('on-primary');
-      if (!ORANGE.has(p.background)) expect(BACKGROUNDS).toContain(p.background);
+      // The grounds, and the empty state's drop under a Brand Duo icon (D.5b).
+      if (!ORANGE.has(p.background))
+        expect([...BACKGROUNDS, 'primary-subtle']).toContain(p.background);
     }
     const orange = {
       brand: '#FF6E31',

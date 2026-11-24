@@ -482,7 +482,7 @@
     },
     "icon-sm": {
       "$value": "16px",
-      "$description": "A small icon: inside chips, badges and dense rows; the stroke scales to 2/24 of it."
+      "$description": "A small icon: inside chips, badges and dense rows; the stroke scales to 1.5/24 of it."
     },
     "icon-md": {
       "$value": "24px",
@@ -521,6 +521,18 @@
       "$description": "The collapsed sidebar: icons only (D.10)."
     },
     "bar": { "$value": "64px", "$description": "The top bar and the phone back bar (D.10)." }
+  },
+  "icon-stroke": {
+    "$type": "number",
+    "$description": "The icon stroke on the 24 grid (architecture §9.4, set v4 Madar): every style but Bold and Bold Duo strokes at it, and those two are baked at each.",
+    "phone": {
+      "$value": 1.5,
+      "$description": "The customer and restaurant apps, the panel and the portal."
+    },
+    "captain": {
+      "$value": 1.75,
+      "$description": "The captain app: heavier, read at a glance on a moving motorcycle."
+    }
   },
   "border-width": {
     "$type": "dimension",

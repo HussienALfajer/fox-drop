@@ -21,7 +21,15 @@ import {
   type Board,
   type GuideConfig,
 } from './guide.ts';
-import { readIcons, type Icon } from './icons.ts';
+import {
+  bakeIcons,
+  readIcons,
+  STYLES,
+  styleMarkup,
+  type BakedIcon,
+  type Icon,
+  type IconStyle,
+} from './icons.ts';
 import { buttonSheet } from './button-sheet.ts';
 import { dataSheet } from './data-sheet.ts';
 import { overlaysSheet } from './overlays-sheet.ts';
@@ -96,7 +104,7 @@ const W = 1280;
 function svg(icon: Icon, size: number, colour: string, flip = false): string {
   const transform = flip ? ' style="transform: scaleX(-1)"' : '';
   const paths = icon.paths.map((d) => `<path d="${d}"/>`).join('');
-  return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${transform}>${paths}</svg>`;
+  return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"${transform}>${paths}</svg>`;
 }
 
 function tile(themes: Themes, icon: Icon): string {
@@ -139,8 +147,8 @@ function mirrored(themes: Themes, icons: Icon[]): string {
 function gridOverlay(themes: Themes, icons: Icon[]): string {
   const lines = Array.from({ length: 25 }, (_, i) => `M${i} 0V24M0 ${i}H24`).join('');
   const board = (icon: Icon) =>
-    `<div style="display: flex; flex-direction: column; align-items: center; gap: ${v(themes, 'space.xs')}"><svg aria-hidden="true" width="192" height="192" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" style="background: ${v(themes, 'color.surface')}"><path d="${lines}" stroke="${v(themes, 'color.border')}" stroke-width="0.04"/><rect x="2" y="2" width="20" height="20" stroke="${v(themes, 'color.primary')}" stroke-width="0.08" stroke-dasharray="0.4 0.3"/><g stroke="${v(themes, 'color.on-surface')}" stroke-width="2" opacity="0.85">${icon.paths.map((d) => `<path d="${d}"/>`).join('')}</g></svg>${label(themes, icon.name)}</div>`;
-  const title = `<h2 style="margin: 0; font-size: ${v(themes, 'type.phone.title.size')}; color: ${v(themes, 'color.heading')}">الشبكة ${label(themes, '24 × 24 · live area 2..22 (dashed) · stroke 2 · round caps and joins')}</h2>`;
+    `<div style="display: flex; flex-direction: column; align-items: center; gap: ${v(themes, 'space.xs')}"><svg aria-hidden="true" width="192" height="192" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" style="background: ${v(themes, 'color.surface')}"><path d="${lines}" stroke="${v(themes, 'color.border')}" stroke-width="0.04"/><rect x="2" y="2" width="20" height="20" stroke="${v(themes, 'color.primary')}" stroke-width="0.08" stroke-dasharray="0.4 0.3"/><g stroke="${v(themes, 'color.on-surface')}" stroke-width="1.5" opacity="0.85">${icon.paths.map((d) => `<path d="${d}"/>`).join('')}</g></svg>${label(themes, icon.name)}</div>`;
+  const title = `<h2 style="margin: 0; font-size: ${v(themes, 'type.phone.title.size')}; color: ${v(themes, 'color.heading')}">الشبكة ${label(themes, '24 × 24 · live area 2..22 (dashed) · stroke 1.5 · round caps and joins')}</h2>`;
   const shown = ['home', 'drop-pin', 'motorcycle'].map((name) =>
     icons.find((icon) => icon.name === name)!,
   );
@@ -150,13 +158,44 @@ function gridOverlay(themes: Themes, icons: Icon[]): string {
   );
 }
 
-export function sheet(themes: Themes, config: GuideConfig, icons: Icon[]): Board {
+/** The six styles' names on the sheet (§9.4), review copy only. */
+const STYLE_NAMES: Record<IconStyle, string> = {
+  linear: 'خطي · Linear',
+  duotone: 'ثنائي اللون · Duotone',
+  'brand-duo': 'ثنائي العلامة · Brand Duo',
+  broken: 'مقطوع · Broken',
+  bold: 'عريض · Bold',
+  'bold-duo': 'عريض ثنائي · Bold Duo',
+};
+
+/** Every icon in the six styles of set v4 Madar: one row per icon. */
+function styles(themes: Themes, icons: BakedIcon[]): string {
+  const ink = v(themes, 'color.on-surface');
+  const brand = v(themes, 'color.brand');
+  const cell = (inner: string) =>
+    `<span style="display: inline-flex; justify-content: center">${inner}</span>`;
+  const columns = `display: grid; grid-template-columns: 160px repeat(${STYLES.length}, minmax(0, 1fr)); align-items: center; gap: ${v(themes, 'space.sm')}`;
+  const head = `<div style="${columns}"><span></span>${STYLES.map((s) => cell(label(themes, STYLE_NAMES[s]))).join('')}</div>`;
+  const rows = icons.map(
+    (icon) =>
+      `<div style="${columns}">${label(themes, `«${esc(ARABIC[icon.name] ?? icon.name)}» ${icon.name}`)}${STYLES.map(
+        (s) =>
+          cell(
+            `<svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24">${styleMarkup(icon, s, ink, brand)}</svg>`,
+          ),
+      ).join('')}</div>`,
+  );
+  const title = `<h2 style="margin: 0; font-size: ${v(themes, 'type.phone.title.size')}; color: ${v(themes, 'color.heading')}">الأنماط الستة ${label(themes, 'set v4 Madar · stroke 1.5 · Bold and Broken baked into plain paths')}</h2>`;
+  return card(themes, `${title}${head}${rows.join('')}`);
+}
+
+export function sheet(themes: Themes, config: GuideConfig, icons: BakedIcon[]): Board {
   const groups = [...new Set(icons.map((icon) => icon.group))];
   const rows = groups.reduce(
     (sum, name) => sum + Math.ceil(icons.filter((icon) => icon.group === name).length / 4),
     0,
   );
-  const h = 200 + groups.length * 150 + rows * 150 + 330 + 380;
+  const h = 200 + groups.length * 150 + rows * 150 + 330 + 380 + 120 + icons.length * 48;
   const body = [
     heading(
       themes,
@@ -172,6 +211,7 @@ export function sheet(themes: Themes, config: GuideConfig, icons: Icon[]): Board
     ),
     mirrored(themes, icons),
     gridOverlay(themes, icons),
+    styles(themes, icons),
   ].join('\n');
   return page(themes, config, { file: 'Main.dc.html', title: 'Icons — batch 1', w: W, h }, body);
 }
@@ -181,7 +221,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   if (at === -1) throw new Error('Usage: icon-sheet --config <file>');
   const config = JSON.parse(readFileSync(process.argv[at + 1]!, 'utf8')) as GuideConfig;
   const themes = await resolveAll();
-  const icons = readIcons();
+  const icons = await bakeIcons(readIcons());
   const list = [
     sheet(themes, config, icons),
     buttonSheet(themes, config, icons),

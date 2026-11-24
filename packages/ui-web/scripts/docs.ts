@@ -21,6 +21,8 @@ interface IconProps {
   label?: string;
   /** Default 'md'. */
   size?: 'sm' | 'md' | 'lg';
+  /** The style of set v4 Madar; default 'linear'. 'bold' for a selected item, 'brand-duo' for an empty state. */
+  variant?: 'linear' | 'duotone' | 'brand-duo' | 'broken' | 'bold' | 'bold-duo';
 }
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';

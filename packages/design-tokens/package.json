@@ -1,6 +1,6 @@
 {
   "name": "@fox-drop/design-tokens",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "26.6.6",
+    "canvaskit-wasm": "0.42.0",
     "eslint": "10.14.0",
     "globals": "17.14.0",
     "style-dictionary": "5.8.0",

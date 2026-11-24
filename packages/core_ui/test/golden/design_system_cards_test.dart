@@ -191,7 +191,7 @@ Widget _icons() => _card([
         gap,
         FoxIcon(FoxIcons.home, size: FoxIconSize.lg),
         gap,
-        FoxIcon(FoxIcons.heart, size: FoxIconSize.lg, filled: true),
+        FoxIcon(FoxIcons.heart, size: FoxIconSize.lg, style: FoxIconStyle.bold),
       ],
     ),
   ),

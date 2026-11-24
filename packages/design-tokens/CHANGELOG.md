@@ -2,6 +2,12 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.9.0 (2026-11-24, slice D.5b: icon set v4 Madar)
+
+- The 47 icons redrawn as set v4 "Madar" (architecture §9.4, owner 2026-11-24): stroke 1.5, each element a `<path>` with its role as data attributes. The outputs carry six styles: the elements (Linear, Duotone, Brand Duo), `broken`, and `bold` and `boldDuo` fills baked with CanvasKit at 1.5 and 1.75 (`src/icon-bake.ts`). Dart `FoxIconData` gains `elements`, `broken`, `bold(weight)`, `boldDuo(weight)` and the enum `FoxIconWeight`; `paths` goes.
+- New group `icon-stroke.*` (number): `phone` 1.5 and `captain` 1.75.
+- New contrast pairs under the orange exception: `brand` on `surface`, `surface-raised` and `primary-subtle`, the Brand Duo accent.
+
 ## 0.8.0 (2026-11-24, slice D.10: overlays and navigation)
 
 - From the approved sheet «Overlays and navigation — batch 4»: `caution` (yellow 800) and `caution-subtle` (yellow 50), the yellow banner tone RA §6.3 and CA §6.3 name beside amber, with their pair at 4.5:1 (7:1 for the captain); `scrim` (neutral 900 at 48%) behind dialogs, sheets and drawers. New primitives yellow 50 and 800 and `shadow.scrim`.
