@@ -104,6 +104,9 @@ Drawn on the customer screens canvas (architecture §9.8; its link is in the own
   - **The captain's and restaurant's sign-in forms are not drawn now** (owner, 2026-11-24): removed from the canvas (the prototype's app switcher, the captain and restaurant boards, the staff hero, «لديّ رمز من العمليات», «انضم ككابتن», the operations code, the restaurant tablet, and their cells on the number and code boards). They are drawn when the captain's and restaurant's screen batches start. Open: what D.11's code does for those two apps' sign-in meanwhile (asked 2026-11-24).
   - Still as drawn, raised and not changed: the code screen's head (icon, title, number line) differs from the number screen's; «تعديل الرقم» appears twice on larger screens; the keyboard-up state of the code screen is not drawn.
 
+- **4 «أكمل بياناتك»: approved 2026-11-24 as drawn, no changes** (canvas version 60; every state and message on the board ««أكمل بياناتك» · كل الحالات والرسائل (17)»: arrival («خطوة أخيرة», «ليعرف المطعم والكابتن باسم مَن الطلب.»), all fields, required only, a birthday chosen, saving; after «حفظ» every field's error («اكتب من 2 إلى 30 حرفاً عربياً أو لاتينياً», «اختر الجنس», «يجب الموافقة على الشروط للمتابعة»); the terms opened from the screen and back; after saving back to the origin; 130% text). Changed in the drawing before review: «حفظ» uses the mark-filling loader with «جارٍ الحفظ…» (the project's one loader).
+  - Raised to the owner and approved as drawn: the screen scrolls on a small phone (measured on the local copy: +214 at rest, +283 with every error, +346 to +433 at 130% on 360 × 640; fits on 412 × 915 except +8 with every error, +81 at 130%), so the terms checkbox and the «who sees what» note sit below the fold on 360 × 640; no back or close control (Android back undecided); the fields are not locked while saving; the server's answer to the save (failure, no connection) and the date picker are not drawn. To settle when coding: Android back on this screen, the fields locked while saving (R14), and the save's failure message.
+
 #### Design-system audit of screen 2 (2026-11-24, canvas version 36)
 
 Checked mechanically over the screen's markup, styles and script: every `--fd-*` name is defined (tokens and bundle CSS), no hex, rgb, px or rem value, no physical direction, no icon-only button without a name, every target 48. Fixed in the drawing:
@@ -146,7 +149,7 @@ Tests to add when coding (red phase): the normalisation table above as a unit te
 
 ## Stopped at
 
-Screen review (step 7), one screen at a time: screens 1 (starting), 2 (phone number) and 3 (code) approved 2026-11-24; screen 4 («أكمل بياناتك») under review: its board ««أكمل بياناتك» · كل الحالات والرسائل (17)» drawn (canvas version 59; «حفظ» now uses the mark-filling loader), waiting for the owner's changes. The captain's and restaurant's forms are not drawn in this batch (screen 3's decisions). The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
+Screen review (step 7), one screen at a time: screens 1 (starting), 2 (phone number), 3 (code) and 4 («أكمل بياناتك») approved 2026-11-24; next, screen 5 (the terms). The captain's and restaurant's forms are not drawn in this batch (screen 3's decisions). The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
 
 ## Evidence
 
