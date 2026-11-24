@@ -29,6 +29,7 @@ import type { TextAreaProps } from '../src/text-area/text-area';
 import type { TextFieldProps } from '../src/text-field/text-field';
 import type { BannerProps } from '../src/banner/banner';
 import type { BannerStackProps } from '../src/banner-stack/banner-stack';
+import type { BlockingBannerProps } from '../src/blocking-banner/blocking-banner';
 import type { DialogProps } from '../src/dialog/dialog';
 import type { ConfirmDialogProps } from '../src/confirm-dialog/confirm-dialog';
 import type { DrawerProps } from '../src/drawer/drawer';
@@ -409,6 +410,12 @@ describe('the component docs', () => {
       lessLabel: true,
       density: true,
     } satisfies Record<Keys<BannerStackProps>, true>,
+    BlockingBannerProps: {
+      open: true,
+      text: true,
+      actionLabel: true,
+      onEnable: true,
+    } satisfies Record<Keys<BlockingBannerProps>, true>,
     DialogProps: {
       trigger: true,
       open: true,

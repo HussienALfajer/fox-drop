@@ -21,6 +21,7 @@ describe('stories cover every state (R3)', () => {
       'AmountsSummary',
       'Banner',
       'BannerStack',
+      'BlockingBanner',
       'Button',
       'Card',
       'Checkbox',

@@ -168,7 +168,16 @@ export function Toaster({ label, closeLabel, max = 3, children }: ToasterProps) 
     (options: ToastOptions) => {
       next.current += 1;
       const item = { ...options, id: next.current };
-      setItems((current) => [...current, item].slice(-max));
+      setItems((current) => {
+        const next = [...current, item];
+        // Over the limit, the oldest toast that leaves by itself goes first: a
+        // danger toast stays until it is closed.
+        while (next.length > max) {
+          const index = next.findIndex((entry) => entry.tone !== 'danger');
+          next.splice(index === -1 ? 0 : index, 1);
+        }
+        return next;
+      });
     },
     [max],
   );

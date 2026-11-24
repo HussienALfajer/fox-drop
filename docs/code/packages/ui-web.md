@@ -87,7 +87,7 @@ Drawn on «Data display — batch 3» (`packages/design-tokens/src/data-sheet.ts
 
 ## Overlays and navigation (D.10)
 
-Drawn on «Overlays and navigation — batch 4» (`packages/design-tokens/src/overlays-sheet.ts`), approved by the owner on 2026-11-24 (red banners solid and the rest tinted, the toast dark blue, the select unchanged, tokens 0.8.0: `caution`, `scrim`, `layer.*` and the overlay sizes). Eleven components, cards in the groups Overlays and Navigation:
+Drawn on «Overlays and navigation — batch 4» (`packages/design-tokens/src/overlays-sheet.ts`), approved by the owner on 2026-11-24 (red banners solid and the rest tinted, the toast dark blue, the select unchanged, tokens 0.8.0: `caution`, `scrim`, `layer.*` and the overlay sizes). Twelve components, cards in the groups Overlays and Navigation:
 
 - **Dialog:** the SDK's alert dialog (Escape, back, the ×, focus trap and return). `initialFocus="[data-cancel]"` starts on the safe action while the destructive one stays first (right in RTL). The Close parts take the Button's look through `buttonClasses(variant, density)`, exported from `button.tsx` for elements that must look like a Button.
 - **ConfirmDialog (AP §7.4):** its own open state; the reason is a `TextField`; «تأكيد» is a plain button with `aria-disabled` until a trimmed reason exists, so a press still explains (the error shows after a try) and focus never lands on a dead control; the Flutter twin does the same. `effect` takes an AmountsSummary, `notified` a list named by its title.
@@ -99,6 +99,8 @@ Drawn on «Overlays and navigation — batch 4» (`packages/design-tokens/src/ov
 - **Tabs:** the SDK's tabs; the underline indicator reads the SDK's physical `--active-tab-left`/`--active-tab-right` (the right one is the start in RTL); a count is a CountBadge read with the tab; the selected tab is scrolled into view on the first render too (the SDK does it on change).
 - **TopBar:** a `<header>` landmark with slots; icon actions are buttons with sr-only names and a CountBadge read with them.
 - **Sidebar:** plain links with `aria-current`; collapsed links carry `aria-label` and a Tooltip; a module without a batch-1 icon shows a dot (owner); `form="drawer"` wraps the links in the Drawer at the start side.
+- **BlockingBanner (AP §7.3):** an alert dialog that `dismissible={false}` keeps open: the scrim and a bar on `color.alert` at `layer.blocking`, focus on its button, `onEnable` runs inside the press so the browser lets audio start; the app closes it once sound plays. Its story opens with the page, by design.
+- **After review:** a failed `ConfirmDialog.onConfirm` keeps the dialog open with the reason (the app reports why), and nothing closes it while the command runs; the Toaster trims the oldest toast that leaves by itself, never a danger one; the Sidebar's props are a union, so `form="drawer"` needs `closeLabel`; the collapsed Sidebar puts a count on the link's corner, beside the icon.
 - **Test setup:** `test/setup.ts` stands in for the top layer (`showPopover` draws the element as a block), `ResizeObserver` and `scrollIntoView`; `e2e/overlays.spec.ts` checks the focus trap and return, the drawer sides and the menu's alignment in RTL, the tab overflow, the tooltip on focus, the sidebar's side and the toast under reduced motion.
 - **Not here:** the bottom sheet, the bottom navigation, the rail and pull to refresh are Flutter only; the restaurant's top bar too (its app is Flutter).
 

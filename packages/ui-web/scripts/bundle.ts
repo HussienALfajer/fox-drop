@@ -41,6 +41,7 @@ export const COMPONENTS = [
   'Toaster',
   'Banner',
   'BannerStack',
+  'BlockingBanner',
   'Menu',
   'Tooltip',
   'Tabs',

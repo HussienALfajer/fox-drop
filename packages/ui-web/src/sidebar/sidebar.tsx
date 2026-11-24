@@ -18,7 +18,7 @@ export interface SidebarItem {
   countLabel?: string;
 }
 
-export interface SidebarProps {
+interface SidebarBase {
   /** The navigation's name. */
   label: string;
   /** The modules this user may open (AP §7.1: each sees only theirs). */
@@ -31,13 +31,19 @@ export interface SidebarProps {
   onCollapsedChange?: (collapsed: boolean) => void;
   collapseLabel: string;
   expandLabel: string;
-  /** `rail` beside the page; `drawer` below the tablet width (AP §7.5). */
-  form?: 'rail' | 'drawer';
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  /** The drawer's ×. */
-  closeLabel?: string;
 }
+
+/** `rail` beside the page; `drawer` below the tablet width (AP §7.5), whose × needs its name. */
+export type SidebarProps = SidebarBase &
+  (
+    | { form?: 'rail'; open?: never; onOpenChange?: never; closeLabel?: never }
+    | {
+        form: 'drawer';
+        open?: boolean;
+        onOpenChange?: (open: boolean) => void;
+        closeLabel: string;
+      }
+  );
 
 // The approved sheet: the raised surface on the start side (right in RTL)
 // with a hairline at its end; links 40 high, the current one tinted with an
@@ -93,12 +99,12 @@ function Links(props: SidebarProps & { collapsed: boolean }) {
             {...(isCurrent && { 'aria-current': 'page' as const })}
             {...(collapsed && { 'aria-label': name })}
           >
-            {item.count !== undefined && collapsed ? (
-              <CountBadge count={item.count} label={name}>
-                {mark}
-              </CountBadge>
-            ) : (
-              mark
+            {mark}
+            {/* Collapsed, the count sits on the link's corner, beside the icon, not over it. */}
+            {item.count !== undefined && collapsed && (
+              <span className="absolute -top-2xs -end-2xs flex">
+                <CountBadge count={item.count} label={name} />
+              </span>
             )}
             {!collapsed && <span className="min-w-none flex-1 truncate">{item.label}</span>}
             {!collapsed && item.count !== undefined && (
@@ -128,12 +134,13 @@ function Links(props: SidebarProps & { collapsed: boolean }) {
  * and, below the tablet width, a drawer from the start side.
  */
 export function Sidebar(props: SidebarProps) {
-  const { label, brand, collapseLabel, expandLabel, onCollapsedChange, form = 'rail' } = props;
-  if (form === 'drawer')
+  const { label, brand, collapseLabel, expandLabel, onCollapsedChange } = props;
+  const form = props.form ?? 'rail';
+  if (props.form === 'drawer')
     return (
       <Drawer
         title={label}
-        closeLabel={props.closeLabel ?? ''}
+        closeLabel={props.closeLabel}
         side="start"
         {...(props.open !== undefined && { open: props.open })}
         {...(props.onOpenChange && { onOpenChange: props.onOpenChange })}

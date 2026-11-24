@@ -75,14 +75,25 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     setPending(true);
     try {
       await onConfirm(reason.trim());
+      setPending(false);
       setOpen(false);
-    } finally {
+    } catch {
+      // The command failed: the dialog stays open with the reason kept, and
+      // the app says why (a toast or a banner).
       setPending(false);
     }
   };
   const showError = tried && reason.trim() === '';
   return (
-    <AlertDialog open={open} onOpenChange={(next: boolean) => setOpen(next)}>
+    <AlertDialog
+      open={open}
+      // While the command runs nothing closes it, so it cannot settle twice.
+      dismissible={!pending}
+      onOpenChange={(next: boolean, details) => {
+        if (pending && !next) details.cancel();
+        else setOpen(next);
+      }}
+    >
       {trigger && <AlertDialogTrigger render={trigger} />}
       <AlertDialogBackdrop className={backdrop()} />
       <AlertDialogContent className={dialogPanel()} initialFocus="[data-reason] input">

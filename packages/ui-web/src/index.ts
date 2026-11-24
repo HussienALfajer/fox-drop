@@ -11,6 +11,7 @@ export {
   type BannerStackProps,
   type StackedBanner,
 } from './banner-stack/banner-stack';
+export { BlockingBanner, type BlockingBannerProps } from './blocking-banner/blocking-banner';
 export { Button, type ButtonProps, type ButtonVariant } from './button/button';
 export { Card, type CardProps } from './card/card';
 export { Checkbox, type CheckboxProps } from './checkbox/checkbox';

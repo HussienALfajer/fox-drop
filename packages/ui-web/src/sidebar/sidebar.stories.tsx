@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState, type ReactNode } from 'react';
+import { Button } from '../button/button';
 import { Sidebar, type SidebarItem } from './sidebar';
 
 // AP §7.1: the panel's sixteen modules; a module without an icon in batch 1
@@ -42,25 +44,55 @@ const portal: SidebarItem[] = [
   { href: '#support', label: 'الدعم', icon: 'chat' },
 ];
 
-const meta = {
-  title: 'Sidebar',
-  component: Sidebar,
-  args: {
-    label: 'التنقل الرئيسي',
-    items: modules,
-    current: '#operations',
-    collapseLabel: 'طيّ القائمة',
-    expandLabel: 'توسيع القائمة',
-    onCollapsedChange: () => undefined,
-  },
-  decorators: [(Story) => <div className="flex h-dvh">{Story()}</div>],
-} satisfies Meta<typeof Sidebar>;
-export default meta;
-type Story = StoryObj<typeof meta>;
+const base = {
+  label: 'التنقل الرئيسي',
+  items: modules,
+  current: '#operations',
+  collapseLabel: 'طيّ القائمة',
+  expandLabel: 'توسيع القائمة',
+  onCollapsedChange: () => undefined,
+};
 
-export const Default: Story = {};
-export const Collapsed: Story = { args: { collapsed: true } };
-export const Portal: Story = { args: { items: portal, current: '#menu' } };
+const frame = (children: ReactNode) => <div className="flex h-dvh">{children}</div>;
+
+// The props are a union (the drawer form needs its ×), so each story renders.
+const meta = { title: 'Sidebar', component: Sidebar } satisfies Meta<typeof Sidebar>;
+export default meta;
+type Story = StoryObj;
+
+export const Default: Story = { render: () => frame(<Sidebar {...base} />) };
+export const Collapsed: Story = { render: () => frame(<Sidebar {...base} collapsed />) };
+export const Portal: Story = {
+  render: () => frame(<Sidebar {...base} items={portal} current="#menu" />),
+};
+
+function PhoneDrawer() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button
+        variant="secondary"
+        density="compact"
+        icon="menu"
+        label="القائمة"
+        onClick={() => setOpen(true)}
+      />
+      <Sidebar
+        {...base}
+        items={modules.slice(0, 8)}
+        form="drawer"
+        open={open}
+        onOpenChange={setOpen}
+        closeLabel="إغلاق"
+      />
+    </>
+  );
+}
+
+// Below the tablet width: a popup never starts open, so the story presses the menu button.
 export const Drawer: Story = {
-  args: { form: 'drawer', open: true, closeLabel: 'إغلاق', items: modules.slice(0, 8) },
+  render: () => <PhoneDrawer />,
+  play: ({ canvasElement }) => {
+    canvasElement.querySelector<HTMLButtonElement>('button')?.click();
+  },
 };

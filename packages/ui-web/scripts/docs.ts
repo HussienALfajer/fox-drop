@@ -460,6 +460,15 @@ interface BannerStackProps {
   density?: Density;
 }
 
+interface BlockingBannerProps {
+  /** Shown until the sound plays; the app closes it then. */
+  open: boolean;
+  text: string;
+  actionLabel: string;
+  /** Runs inside the press, so the browser lets audio start. */
+  onEnable: () => void;
+}
+
 interface DialogProps {
   /** The element that opens it, usually a Button. */
   trigger?: ReactNode;
