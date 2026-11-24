@@ -136,6 +136,7 @@
   --color-on-primary-subtle: var(--fd-color-on-primary-subtle);
   --color-neutral: var(--fd-color-neutral);
   --color-neutral-subtle: var(--fd-color-neutral-subtle);
+  --color-nav-halo: var(--fd-color-nav-halo);
   --color-caution: var(--fd-color-caution);
   --color-caution-subtle: var(--fd-color-caution-subtle);
   --color-scrim: var(--fd-color-scrim);

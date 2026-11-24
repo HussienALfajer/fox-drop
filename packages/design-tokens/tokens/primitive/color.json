@@ -60,6 +60,7 @@
         "100": { "$value": "#F5EFE2" },
         "150": { "$value": "#EFE8DA", "$description": "The neutral status tint and the skeleton." },
         "200": { "$value": "#E8E1D2" },
+        "250": { "$value": "#E3DFD8", "$description": "The halo round the bottom bar." },
         "300": { "$value": "#D4CBBA" },
         "400": { "$value": "#ADA493" },
         "500": { "$value": "#857D6E" },
