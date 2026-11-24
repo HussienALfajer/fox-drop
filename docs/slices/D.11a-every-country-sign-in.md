@@ -1,6 +1,6 @@
 # D.11a Every country at sign-in, and the fields D.11's screens need
 
-Status: Planned · Tier: T0 (sign-in, a migration) · Branch: `feat/every-country-sign-in`
+Status: Done · Tier: T0 (sign-in, a migration) · Branch: `claude/clever-fermi-q9m9ot` (the session's branch, in place of `feat/every-country-sign-in`)
 Spec: CU U3, CU §4.2, §4.7, §5.2; RA §5; CA §5, C13; AP §9.12.1, §9.14, Appendix A (`otp.*`, `app.<app>.*`); architecture §8.3.3 item 2 · Definition of done: the D.11a line of `docs/roadmap.md`; it closes the server items 1 to 4 of D.11's «Code changes recorded for step 8» and the server parts of D.11's «Owner's answers» (b) and (d).
 
 ## Goal
@@ -84,12 +84,13 @@ Owner, 2026-11-24 (during the build): approved fixing two lines of locked tests 
 
 ## Stopped at
 
-Red phase written and locked (`.claude/state/locked-tests.txt`); next: checkpoint 2, every country and the masks.
+Done: built, checked, reviewed (two rounds each, no finding open) and sent for merge.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`: not run yet
-- Review: not yet
+- `node scripts/verify.mjs --changed` (checker): every step passed but the server's tests, where 14 files that start the test object storage (Garage) fail before any test runs: `dxflrs/garage:v2.5.0` exits 139 (a segfault) in this session's container, `ECONNREFUSED` on its port. None touches the slice's code; CI runs them. In that run: 237 files passed, 2778 tests passed.
+- Run by hand after the review fixes: the server's identity and customers tests (27 files, 398 tests passed); the slice's server tests (49 files, 1067 tests passed before the fixes); `tsc --noEmit` and ESLint clean; the panel's unit tests (77 files, 403 passed) and smoke tests (131 passed); the portal's unit tests (11 files, 59 passed) and smoke tests (6 passed); `core_auth`'s tests (39 passed), the customer's `my_account_test` and `delete_account_message_test` (6 passed); `dart analyze --fatal-infos` on the three apps and `core_auth`, `dart format` and Prettier clean; `pnpm generate:api` regenerated the contract.
+- Review: `reviewer` round 1 (1 blocking: a number with a national 0 after its calling code, `+9630944…`, passed as a second identity; 1 should-fix: the address's contact number widened without the owner; 3 minor), all fixed in round 2 with no new finding. `security-reviewer` round 1 (the same blocking finding; 3 non-blocking), round 2 clean: the emergency-code answer fixed, the abroad flood question and the nginx log of the selected point in `docs/backlog.md`.
 
 ## Before deploying
 
@@ -103,4 +104,4 @@ The `geo.offices.landmark` migration (0152, expand only: a nullable column and i
 ## Notes for the next session
 
 - Not in this slice: the clients' phone field, picker and normalisation (D.11 items 5 to 13, the components slice), including the panel's account form (`apps/admin/src/restaurant-drafts.ts` `phoneOf`, `accountBody`) and the owner portal's sign-in (`apps/merchant-portal/src/session.ts` `phoneOf`), which still take +963 and +90 only; `attempts_used`'s own words (D.11's code screen).
-- The address's contact number stays Syrian or Turkish (`syrianOrTurkishPhone`, review finding): the owner widened sign-in only. Widening it is the owner's decision (a captain calls it from Syria).
+- The address's contact number stays Syrian or Turkish (`syrianOrTurkishPhone`, review finding): the owner widened sign-in only. Widening it is the owner's decision (a captain calls it from Syria). D.11b moves the customer's checkout phone to the every-country field: until the owner decides, that field keeps Syria and Turkey there, or the server refuses a foreign contact number with `400`.
