@@ -126,7 +126,7 @@ Risks:
 
 ## Stopped at
 
-Checkpoints 1 to 4 built (docs, sources, bake, web, Flutter); goldens, screenshots, the Design System sync and the review next.
+Checkpoints 1 to 4 built and the goldens committed; the web screenshots, the Design System sync and the pull request next.
 
 ## Decisions made while building
 
