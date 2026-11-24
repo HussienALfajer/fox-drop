@@ -3,6 +3,7 @@
 ## Icon (D.6)
 
 - `src/icon/icon.tsx`: `<Icon name size="sm|md|lg" label?>` over `@fox-drop/design-tokens/icons`. Inline SVG, viewBox 24, `stroke="currentColor"`, width 2, round caps and joins, no fill; the size classes read `size.icon-*` as `size-(--fd-size-icon-md)`; a `mirror` icon gets `rtl:-scale-x-100`; no `label` means `aria-hidden="true"`, with it `role="img"` and `aria-label`. Exports `Icon`, `IconName`, `IconProps` and `STATES` (default, sm, md, lg, labelled, mirrored).
+- **Set v4 Madar (D.5b):** stroke 1.5 and the prop `variant` (`ICON_STYLES`: linear by default, duotone, brand-duo, broken, bold, bold-duo). It is `variant`, not the slice plan's `style`, because the web lint refuses any JSX attribute named `style` (R1). Duotone sets `opacity` 0.5 on the non-accent paths, Brand Duo strokes the accent in `var(--fd-color-brand)`, Broken draws `broken`, Bold and Bold Duo fill the baked layers in `currentColor` (`stroke="none"`, `fill-opacity` 0.5 on faded ones): no mask, no dash. `STATES` gains duotone, brandDuo, broken, bold, boldDuo (camel case, the stories' names). `EmptyState` draws Brand Duo; the sidebar stays Linear.
 - Stories: one per state, named by it (`Default`, `Sm`, `Mirrored` shows `back`). Tests: the paths, the hidden or named role, the size classes, the mirror class only on `back`, `motorcycle`, `car`.
 
 ## Button (D.6)

@@ -41,7 +41,7 @@ function element(attributes: Record<string, string>): Element {
   return {
     d: attributes.d!,
     role: attributes['data-role'] as Element['role'],
-    ...(attributes['data-knock'] ? { knock: attributes['data-knock'] as Element['knock'] } : {}),
+    ...(attributes['data-knock'] ? { knock: attributes['data-knock'] as 'in' | 'out' } : {}),
     accent: flag('accent'),
     fill: flag('fill'),
     open: flag('open'),
@@ -81,9 +81,7 @@ export function styleMarkup(icon: BakedIcon, style: IconStyle, ink: string, bran
       return line(icon.paths.map((d) => `<path d="${d}"/>`).join(''));
     case 'duotone':
       return line(
-        icon.elements
-          .map((e) => `<path d="${e.d}"${e.accent ? '' : ' opacity="0.5"'}/>`)
-          .join(''),
+        icon.elements.map((e) => `<path d="${e.d}"${e.accent ? '' : ' opacity="0.5"'}/>`).join(''),
       );
     case 'brand-duo':
       return line(
@@ -149,7 +147,8 @@ function call(indent: string, head: string, args: string[], tail: string): strin
 function list(indent: string, head: string, items: string[][], tail: string): string[] {
   const flat = items.every((item) => item.length === 1);
   if (flat) {
-    const one = `${indent}${head}[${items.map((item) => item[0]!.trim()).join(', ')}]${tail}`;
+    const bare = items.map((item) => item[0]!.trim().replace(/,$/, ''));
+    const one = `${indent}${head}[${bare.join(', ')}]${tail}`;
     if (one.length <= WIDTH) return [one];
   }
   return [`${indent}${head}[`, ...items.flat(), `${indent}]${tail}`];
@@ -175,7 +174,12 @@ export function dartIcons(icons: BakedIcon[]): string {
         i,
         'elements: ',
         icon.elements.map((e) =>
-          call(`${i}  `, 'FoxIconElement', [quote(e.d), ...(e.accent ? ['accent: true'] : [])], ','),
+          call(
+            `${i}  `,
+            'FoxIconElement',
+            [quote(e.d), ...(e.accent ? ['accent: true'] : [])],
+            ',',
+          ),
         ),
         ',',
       ),

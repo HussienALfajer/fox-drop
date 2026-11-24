@@ -209,7 +209,7 @@ void main() {
         await tester.pumpWidget(
           _app(
             SizedBox(
-              width: 360,
+              width: t.FoxSize.toast,
               child: FoxRestaurantCard(
                 name: 'كنافة أعزاز',
                 categories: 'حلويات',

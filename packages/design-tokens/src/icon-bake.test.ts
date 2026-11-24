@@ -31,17 +31,23 @@ const parse = (d: string) => {
   return path;
 };
 
-/** Each contour of a path: its length and a sampler of points along it. */
+/**
+ * Each contour of a path: its length and a sampler of points along it. At
+ * resScale 1 Skia measures curves only to about 0.3 on the 24 grid; 100 is
+ * exact enough for the 0.05 of the gap (owner, 2026-11-24).
+ */
 function contours(d: string) {
-  const iter = new ck.ContourMeasureIter(parse(d), false, 1);
+  const iter = new ck.ContourMeasureIter(parse(d), false, 100);
   const out: {
     length: number;
+    closed: boolean;
     at: (s: number) => { x: number; y: number; nx: number; ny: number };
   }[] = [];
   for (let c = iter.next(); c; c = iter.next()) {
     const measure = c;
     out.push({
       length: measure.length(),
+      closed: measure.isClosed(),
       at: (s) => {
         const [x, y, tx, ty] = measure.getPosTan(s);
         const n = Math.hypot(tx!, ty!) || 1;
@@ -69,21 +75,41 @@ describe('Broken: the bite (§9.4)', () => {
       });
       const [original] = contours(elements[index]!.d);
       const pieces = contours(cut[index]!);
-      expect(pieces).toHaveLength(1);
-      expect(original!.length - pieces[0]!.length).toBeCloseTo(3.75, 1);
-      // The point of the body nearest (22, 2) sits in the middle of the gap.
-      let near = original!.at(0);
-      for (let i = 0; i <= 4000; i++) {
-        const p = original!.at((original!.length * i) / 4000);
-        if (Math.hypot(p.x - 22, p.y - 2) < Math.hypot(near.x - 22, near.y - 2)) near = p;
-      }
-      const start = pieces[0]!.at(0);
-      const end = pieces[0]!.at(pieces[0]!.length);
-      const toStart = Math.hypot(start.x - near.x, start.y - near.y);
-      const toEnd = Math.hypot(end.x - near.x, end.y - near.y);
-      expect(toStart).toBeLessThanOrEqual(1.9);
-      expect(toEnd).toBeLessThanOrEqual(1.9);
-      expect(Math.abs(toStart - toEnd)).toBeLessThan(0.15);
+      // A closed body opens into one line; an open one splits in two, each
+      // stub at least 1.5 long (owner, 2026-11-24).
+      expect(pieces).toHaveLength(original!.closed ? 1 : 2);
+      const kept = pieces.reduce((sum, piece) => sum + piece.length, 0);
+      expect(original!.length - kept).toBeCloseTo(3.75, 1);
+      for (const piece of pieces) expect(piece.length).toBeGreaterThanOrEqual(1.45);
+      // The gap is centred on the point of the body nearest (22, 2) where a
+      // whole gap fits: anywhere on a closed body, on an open one at least
+      // 1.875 + 1.5 from either end.
+      // Centred along the line, by arc length: chords around a corner (the
+      // star's tip) are not symmetric.
+      const L = original!.length;
+      const margin = original!.closed ? 0 : 3.75 / 2 + 1.5;
+      const samples = Array.from({ length: 8001 }, (_, i) => {
+        const s = (L * i) / 8000;
+        return { s, ...original!.at(s) };
+      });
+      const dist = (p: { x: number; y: number }, x: number, y: number) =>
+        Math.hypot(p.x - x, p.y - y);
+      const near = samples
+        .filter((p) => p.s >= margin && p.s <= L - margin)
+        .reduce((a, p) => (dist(p, 22, 2) < dist(a, 22, 2) ? p : a));
+      /** Where a point of the cut line sits along the original body. */
+      const arc = (q: { x: number; y: number }) =>
+        samples.reduce((a, p) => (dist(p, q.x, q.y) < dist(a, q.x, q.y) ? p : a)).s;
+      const first = pieces[0]!;
+      const last = pieces[pieces.length - 1]!;
+      // The gap runs from the end of the first piece to the start of the last.
+      const from = arc(first.at(first.length));
+      const to = arc(original!.closed ? first.at(0) : last.at(0));
+      const wrap = (s: number) => ((s % L) + L) % L;
+      expect(wrap(to - from)).toBeCloseTo(3.75, 1);
+      const middle = wrap(from + wrap(to - from) / 2);
+      const off = Math.abs(middle - near.s);
+      expect(Math.min(off, L - off)).toBeLessThan(0.05);
     },
   );
 

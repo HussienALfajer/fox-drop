@@ -81,7 +81,7 @@ function look(themes: Themes, theme: Theme, variant: Variant): Look {
 
 function svg(icon: Icon, size: number, flip: boolean): string {
   const transform = flip ? ' style="transform: scaleX(-1)"' : '';
-  return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${transform}>${icon.paths.map((d) => `<path d="${d}"/>`).join('')}</svg>`;
+  return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"${transform}>${icon.paths.map((d) => `<path d="${d}"/>`).join('')}</svg>`;
 }
 
 interface Opts {

@@ -56,10 +56,26 @@
   const sizes = ['sm', 'md', 'lg'].map((size) =>
     h('div', { className: 'cell', key: size }, h(Icon, { name: 'home', size }), size),
   );
+  const styles = ['linear', 'duotone', 'brand-duo', 'broken', 'bold', 'bold-duo'].map((variant) =>
+    h(
+      'div',
+      { className: 'cell', key: variant },
+      h(
+        'div',
+        { className: 'sizes' },
+        ['home', 'bell', 'wallet', 'car', 'offline'].map((name) =>
+          h(Icon, { name, size: 'lg', variant, key: name }),
+        ),
+      ),
+      variant,
+    ),
+  );
   ReactDOM.createRoot(document.getElementById('root')).render([
     h('h2', { key: 'a' }, 'Every icon, md'),
     h('div', { className: 'grid', key: 'b' }, cells),
     h('h2', { key: 'c' }, 'Sizes'),
     h('div', { className: 'sizes', key: 'd' }, sizes),
+    h('h2', { key: 'e' }, 'The six styles'),
+    h('div', { className: 'grid', key: 'f' }, styles),
   ]);
 </script>

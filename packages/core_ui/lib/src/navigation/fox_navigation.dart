@@ -160,7 +160,12 @@ class _BarItem extends StatelessWidget {
                   : null,
             ),
             alignment: Alignment.center,
-            child: FoxIcon(item.icon, color: selected ? c.onPrimary : c.accent),
+            // The selected tab draws Bold (the Madar sheet, §9.4).
+            child: FoxIcon(
+              item.icon,
+              color: selected ? c.onPrimary : c.accent,
+              style: selected ? FoxIconStyle.bold : FoxIconStyle.linear,
+            ),
           ),
         );
       },

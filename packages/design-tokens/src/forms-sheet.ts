@@ -86,7 +86,7 @@ const height = (c: Ctx) => (c.surface === 'panel' ? 40 : 50);
 
 function svg(paths: string[], size: number, colour = 'currentColor', flip = false): string {
   const transform = flip ? '; transform: scaleX(-1)' : '';
-  return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none${transform}">${paths.map((d) => `<path d="${d}"/>`).join('')}</svg>`;
+  return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex: none${transform}">${paths.map((d) => `<path d="${d}"/>`).join('')}</svg>`;
 }
 
 const spinner = (size: number, colour: string) =>

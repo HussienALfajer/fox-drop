@@ -1,6 +1,6 @@
 # D.5b Madar icon set v4
 
-Status: Planned · Tier: T2 · Branch: `feat/madar-icons`
+Status: In progress · Tier: T2 · Branch: `feat/madar-icons`
 Spec: architecture §9.4 and §9.5 R8 (rewritten by this slice), §9.9 (the set approved by the owner on 2026-11-24), brand expression §10 · Definition of done: the D.5b line of `docs/roadmap.md` Phase D; the D.5 icon rules carried to v4, and the D.6 and D.7 Icon components given a style
 
 ## Goal
@@ -126,14 +126,21 @@ Risks:
 
 ## Stopped at
 
-Planned.
+Checkpoints 1 to 4 built (docs, sources, bake, web, Flutter); goldens, screenshots, the Design System sync and the review next.
+
+## Decisions made while building
+
+- **Locked-test changes (owner, 2026-11-24):** `icon-bake.test.ts` measures lengths at CanvasKit resScale 100 (at 1 Skia measures curves only to about 0.3 on the 24 grid, so an exact 3.75 gap read 3.64 to 3.68), and checks the gap's centring along the line, by arc length (chords around the star's tip are not symmetric). On an open body the bite slides to the nearest point where a whole gap fits with a 1.5 stub at each end (`bell`, `restaurant`, `share`); §9.4 records the rule. `core_ui/test/icon_test.dart` sizes its restaurant card with `FoxSize.toast` instead of a literal 360, a lint (R2) fix only.
+- **The web prop is `variant`, not `style`:** the web lint refuses any JSX attribute named `style` (R1). Flutter keeps `style` (`FoxIconStyle`).
+- **Story state names** are camel case (`brandDuo`, `boldDuo`): the stories test turns a state into its story name by capitalising its first letter.
 
 ## Evidence
 
 - `node scripts/verify.mjs --changed`: <summary line>
 - `pnpm test:golden` and the ui-web visual run after the baselines were updated, every diff looked at: <summary>
 - Storybook's six styles beside the sheet built from `template.html`, for `home`, `bell`, `wallet`, `car` and `offline` (outside the repository): <where>
-- Import fixes (`bell`, `route`, `restaurant`): <what moved>
+- Import fixes, too small to see: `bell`'s clapper moved up from y 22.1 to 22; `route`'s pin moved 0.1 left so it ends at x 22; `restaurant`'s awning arcs `A2.375` written `A2.38`; `retry`'s arrowhead reached y 1.09, so both arms are shortened by the same factor (0.714) and the tip sits at y 2 (`M12.76 2L14.07 4.27L11.8 5.58`; owner, 2026-11-24).
+- Sizes: `generated/icons.ts` 12 → 130 KB, `icons.g.dart` 14 → 231 KB.
 - Review: <reviewer findings fixed; deferred to the backlog>
 
 ## Before deploying

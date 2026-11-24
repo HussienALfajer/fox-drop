@@ -39,6 +39,8 @@ export const WEIGHTS = [1.5, 1.75] as const;
 const GAP = 2.25 + 1.5;
 /** The bite sits at the body's point nearest the top end corner of the grid. */
 const BITE = { x: 22, y: 2 };
+/** The shortest line an open body keeps beside its bite. */
+const STUB = 1.5;
 /** The clearance around a halo element, on each side. */
 const HALO = 1.25;
 /** A glyph without a body draws heavier in Bold, as on the Madar sheet. */
@@ -68,7 +70,7 @@ function svg(path: Path): string {
   const p = (x: number, y: number) => `${fixed(x)} ${fixed(y)}`;
   let x = 0;
   let y = 0;
-  for (let i = 0; i < cmds.length; ) {
+  for (let i = 0; i < cmds.length;) {
     const verb = cmds[i++]!;
     const n = (k: number) => cmds[i + k]!;
     switch (verb) {
@@ -139,17 +141,22 @@ function bite(ck: CanvasKit, d: string): string {
   const iter = new ck.ContourMeasureIter(parse(ck, d), false, 100);
   const contours = [];
   for (let c = iter.next(); c; c = iter.next()) contours.push(c);
-  // The point nearest the bite, over every contour of the body.
+  // The point nearest the bite, over every contour of the body. On an open
+  // line only where a whole gap fits with a stub of STUB at each end: the
+  // bite slides along the line (owner, 2026-11-24).
   let best = { contour: 0, at: 0, distance: Infinity };
   contours.forEach((contour, index) => {
     const length = contour.length();
+    const margin = contour.isClosed() ? 0 : GAP / 2 + STUB;
+    if (length < 2 * margin) return;
     for (let i = 0; i <= 4000; i++) {
-      const at = (length * i) / 4000;
+      const at = margin + ((length - 2 * margin) * i) / 4000;
       const [x, y] = contour.getPosTan(at);
       const distance = Math.hypot(x! - BITE.x, y! - BITE.y);
       if (distance < best.distance) best = { contour: index, at, distance };
     }
   });
+  if (best.distance === Infinity) throw new Error(`no room for the bite in ${d}`);
   return contours
     .map((contour, index) => {
       const length = contour.length();
@@ -157,11 +164,7 @@ function bite(ck: CanvasKit, d: string): string {
       if (index !== best.contour) return piece(0, length);
       const start = best.at - GAP / 2;
       const end = best.at + GAP / 2;
-      if (!contour.isClosed()) {
-        if (start <= 0) return piece(end, length);
-        if (end >= length) return piece(0, start);
-        return `${piece(0, start)} ${piece(end, length)}`;
-      }
+      if (!contour.isClosed()) return `${piece(0, start)} ${piece(end, length)}`;
       if (start < 0) return piece(end, length + start);
       if (end > length) return piece(end - length, start);
       // Round the start of the closed contour: one open line from the end of
@@ -179,7 +182,19 @@ export function strokeWeight(elements: Element[], weight: number): number {
 /** Bold: one opaque fill. */
 export function bold(ck: CanvasKit, elements: Element[], weight: number): Layer[] {
   const layers = fills(ck, elements, weight, false);
-  return [{ d: svg(clean(union(ck, layers.map((layer) => layer.path)))), faded: false }];
+  return [
+    {
+      d: svg(
+        clean(
+          union(
+            ck,
+            layers.map((layer) => layer.path),
+          ),
+        ),
+      ),
+      faded: false,
+    },
+  ];
 }
 
 /** Bold Duo: a fill per body, faded unless it is the accent, then the rest. */
@@ -249,10 +264,10 @@ function fills(
     layers.push({ path, faded: duo && !e.accent });
   }
   const rest = [
-    ...elements.filter((e) => e.role === 'body' && e.halo).map((e) => union(ck, [area(e), stroke(e, w)])),
     ...elements
-      .filter((e) => e.role === 'detail' && (duo || e.knock === 'out'))
-      .map(solid),
+      .filter((e) => e.role === 'body' && e.halo)
+      .map((e) => union(ck, [area(e), stroke(e, w)])),
+    ...elements.filter((e) => e.role === 'detail' && (duo || e.knock === 'out')).map(solid),
   ];
   if (rest.length) layers.push({ path: union(ck, rest), faded: false });
   return layers;

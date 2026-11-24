@@ -13,3 +13,9 @@ export const Lg: Story = { args: { name: 'cart', size: 'lg' } };
 export const Labelled: Story = { args: { name: 'cart', label: 'السلة' } };
 // `back` points to the start: right in RTL (§9.4).
 export const Mirrored: Story = { args: { name: 'back', label: 'رجوع' } };
+// The styles of set v4 Madar (§9.4), each on `bell` at the large size.
+export const Duotone: Story = { args: { name: 'bell', size: 'lg', variant: 'duotone' } };
+export const BrandDuo: Story = { args: { name: 'bell', size: 'lg', variant: 'brand-duo' } };
+export const Broken: Story = { args: { name: 'bell', size: 'lg', variant: 'broken' } };
+export const Bold: Story = { args: { name: 'bell', size: 'lg', variant: 'bold' } };
+export const BoldDuo: Story = { args: { name: 'wallet', size: 'lg', variant: 'bold-duo' } };

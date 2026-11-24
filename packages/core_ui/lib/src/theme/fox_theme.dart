@@ -239,6 +239,7 @@ final class FoxThemeData {
     t.ButtonTokens button,
     t.InputTokens input,
     t.TypeScale type,
+    this.iconWeight,
   ) : colors = FoxColorScheme(colors),
       button = FoxButtonTheme(button),
       input = FoxInputTheme(input),
@@ -250,6 +251,7 @@ final class FoxThemeData {
     t.FoxButton.light,
     t.FoxInput.light,
     t.FoxType.phone,
+    t.FoxIconWeight.phone,
   );
 
   /// The captain app: sunlight contrast and a larger scale (R7).
@@ -258,12 +260,17 @@ final class FoxThemeData {
     t.FoxButton.captainLight,
     t.FoxInput.captainLight,
     t.FoxType.captain,
+    t.FoxIconWeight.captain,
   );
 
   final FoxColorScheme colors;
   final FoxButtonTheme button;
   final FoxInputTheme input;
   final FoxTextTheme text;
+
+  /// The icon stroke (architecture §9.4): 1.5 on the phone, 1.75 for the
+  /// captain; Bold and Bold Duo use the fills baked at it.
+  final t.FoxIconWeight iconWeight;
   final FoxShadows shadows = FoxShadows();
 
   /// The standard easing curve of every transition.

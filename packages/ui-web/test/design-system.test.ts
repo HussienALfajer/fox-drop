@@ -110,7 +110,10 @@ describe('the component docs', () => {
     iconEnd: true,
     label: true,
   } satisfies Record<Keys<ButtonProps>, true>;
-  const iconProps = { name: true, label: true, size: true } satisfies Record<Keys<IconProps>, true>;
+  const iconProps = { name: true, label: true, size: true, variant: true } satisfies Record<
+    Keys<IconProps>,
+    true
+  >;
   const fieldProps = {
     label: true,
     optionalLabel: true,

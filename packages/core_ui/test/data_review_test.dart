@@ -118,7 +118,7 @@ void main() {
     final heart = tester.widget<FoxIcon>(
       find.byWidgetPredicate((w) => w is FoxIcon && w.icon == FoxIcons.heart),
     );
-    expect(heart.filled, isTrue);
+    expect(heart.style, FoxIconStyle.bold);
     for (final text in ['مغلق']) {
       expect(
         find.ancestor(of: find.text(text), matching: find.byType(Opacity)),

@@ -68,6 +68,7 @@ class FoxEmptyState extends StatelessWidget {
                     child: FoxIcon(
                       icon,
                       size: FoxIconSize.lg,
+                      style: FoxIconStyle.brandDuo,
                       color: c.onPrimarySubtle,
                     ),
                   ),

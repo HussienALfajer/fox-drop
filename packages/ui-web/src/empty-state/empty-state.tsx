@@ -45,7 +45,7 @@ export function EmptyState(props: EmptyStateProps) {
           <path d={DROP} className="fill-primary-subtle stroke-primary" strokeWidth={0.6} />
         </svg>
         <span className="relative -mt-md">
-          <Icon name={icon} size="lg" />
+          <Icon name={icon} size="lg" variant="brand-duo" />
         </span>
       </span>
       <h2 className={title({ tone, density })}>{props.title}</h2>

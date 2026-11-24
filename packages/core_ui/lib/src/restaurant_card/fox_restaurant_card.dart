@@ -107,12 +107,12 @@ class FoxRestaurantCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            // A favourite is a filled red heart, not colour alone (R4; the
-            // owner's one exception to the line icons, 2026-11-24).
+            // A favourite is a Bold red heart, not colour alone (R4; the
+            // Madar sheet, §9.4).
             child: FoxIcon(
               t.FoxIcons.heart,
               color: favourite ? c.danger : c.onSurface,
-              filled: favourite,
+              style: favourite ? FoxIconStyle.bold : FoxIconStyle.linear,
             ),
           ),
         ),
