@@ -85,6 +85,23 @@ Drawn on «Data display — batch 3» (`packages/design-tokens/src/data-sheet.ts
 - **After review:** a pressable `ListRow` is described by its second line and its end slot (wrapped in a span with an id), so it holds a value or a chip, never a control; `OrderCard.onOpen` turns the number into the button that opens the detail (the card holds its own action, so it cannot be one button); `CountBadge` at zero keeps what it wraps; the `Skeleton` region carries its label as sr-only text, since a live region announces text, not names; `DataTable` opens a row on Enter only when the row itself has focus; a late pressable `Card` keeps its tint under the pointer.
 - **Not here:** the restaurant and dish cards, the customer's order row and the captain's countdown ring are Flutter only (no web surface shows them in V1).
 
+## Overlays and navigation (D.10)
+
+Drawn on «Overlays and navigation — batch 4» (`packages/design-tokens/src/overlays-sheet.ts`), approved by the owner on 2026-11-24 (red banners solid and the rest tinted, the toast dark blue, the select unchanged, tokens 0.8.0: `caution`, `scrim`, `layer.*` and the overlay sizes). Eleven components, cards in the groups Overlays and Navigation:
+
+- **Dialog:** the SDK's alert dialog (Escape, back, the ×, focus trap and return). `initialFocus="[data-cancel]"` starts on the safe action while the destructive one stays first (right in RTL). The Close parts take the Button's look through `buttonClasses(variant, density)`, exported from `button.tsx` for elements that must look like a Button.
+- **ConfirmDialog (AP §7.4):** its own open state; the reason is a `TextField`; «تأكيد» is a plain button with `aria-disabled` until a trimmed reason exists, so a press still explains (the error shows after a try) and focus never lands on a dead control; the Flutter twin does the same. `effect` takes an AmountsSummary, `notified` a list named by its title.
+- **Drawer:** on the SDK's Dialog, not its Drawer: the Drawer is a touch sheet with drag physics that writes the physical `data-side`; ours keeps a logical `data-side` (`end` for a quick view, left in RTL; `start` for the sidebar on a phone) and slides with `translate-x` flipped under `rtl:`.
+- **Toaster and `useToast()`:** ours, not the SDK's toast (which announces through a shared announcer, so its region carries no `aria-live`). Two persistent lists, polite and assertive (danger), so a new toast lands in a live region that already exists. Durations in `TOAST_DURATION`; each toast keeps its remaining time across pauses (pointer over it, focus inside). Placed at the bottom end corner (`layer.toast`), at most `max` (3).
+- **Banner and BannerStack:** `role="alert"` for red, `status` for the rest; the stack keeps the first two and a counter with `aria-expanded` and `aria-controls`.
+- **Menu:** the SDK's menu; items carry `label` for type-ahead and `destructive` (`data-destructive`); content `side="bottom" align="start"`.
+- **Tooltip:** the SDK's tooltip as a description (`type="description"`, delay 500); the content is mounted only while open, so a closed tooltip leaves no description (the exit fade is lost); Escape on the trigger closes it.
+- **Tabs:** the SDK's tabs; the underline indicator reads the SDK's physical `--active-tab-left`/`--active-tab-right` (the right one is the start in RTL); a count is a CountBadge read with the tab; the selected tab is scrolled into view on the first render too (the SDK does it on change).
+- **TopBar:** a `<header>` landmark with slots; icon actions are buttons with sr-only names and a CountBadge read with them.
+- **Sidebar:** plain links with `aria-current`; collapsed links carry `aria-label` and a Tooltip; a module without a batch-1 icon shows a dot (owner); `form="drawer"` wraps the links in the Drawer at the start side.
+- **Test setup:** `test/setup.ts` stands in for the top layer (`showPopover` draws the element as a block), `ResizeObserver` and `scrollIntoView`; `e2e/overlays.spec.ts` checks the focus trap and return, the drawer sides and the menu's alignment in RTL, the tab overflow, the tooltip on focus, the sidebar's side and the toast under reduced motion.
+- **Not here:** the bottom sheet, the bottom navigation, the rail and pull to refresh are Flutter only; the restaurant's top bar too (its app is Flutter).
+
 ## The forms gate and bundle (D.8)
 
 - **Unit tests:** per component with Testing Library (names, descriptions by `aria-describedby`, keyboard, controlled value, disabled), plus `phone.test.ts`. `test/setup.ts` gives jsdom a `getAnimations` stub (the SDK's popups call it) and the select tests ask for hidden roles, since jsdom has no top layer; real keyboard and positioning are the e2e's.
