@@ -1,0 +1,40 @@
+<!-- @dsCard group="Navigation" height=460 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fd-space-md);
+    align-items: flex-start;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, Sidebar } = FoxDrop;
+  const h = React.createElement;
+  const app = h(Sidebar, {
+    label: 'التنقل الرئيسي',
+    current: '#operations',
+    collapseLabel: 'طيّ القائمة',
+    expandLabel: 'توسيع القائمة',
+    items: [
+      { href: '#dashboard', label: 'لوحة التحكم', icon: 'home' },
+      {
+        href: '#operations',
+        label: 'غرفة العمليات',
+        icon: 'orders',
+        count: 3,
+        countLabel: '3 تنبيهات',
+      },
+      { href: '#map', label: 'الخريطة الحية', icon: 'map' },
+      { href: '#zones', label: 'المناطق والتسعير' },
+    ],
+  });
+  ReactDOM.createRoot(document.getElementById('root')).render(app);
+</script>

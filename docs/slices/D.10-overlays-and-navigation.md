@@ -59,7 +59,6 @@ Tests written first (locked in the red phase), on both platforms unless marked; 
 4. Banners: (A) red solid, the other tones tinted.
 5. Tokens 0.8.0 as proposed (caution, scrim, layer.*). 6. Missing icons as proposed; `menu` added. 7. Toast (A) dark blue.
 
-
 Sheet «Overlays and navigation — batch 4» (`packages/design-tokens/src/overlays-sheet.ts`, board `Overlays.dc.html` on the Component proposals canvas at x 8400, 1680×11300, drawn by `pnpm --filter @fox-drop/design-tokens icon-sheet --config <file>`). The Figma API was rate limited (429), so the look used the renders of 2026-11-23 (home 49:2041, cart, the components page). Taken from the file: the floating blue bottom bar with ivory circles and the orange active circle, the S-curve tab of the dish block (here on the item sheet), the round back button with the orange title, the bell in a round chip with its dot.
 
 Drawn, with the questions the owner decides (the framed option is ours):

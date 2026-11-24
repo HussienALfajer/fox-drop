@@ -113,6 +113,18 @@ const button = buttonTv({
   defaultVariants: { variant: 'primary', density: 'comfortable' },
 });
 
+/**
+ * The Button's classes for another element that must look like it: an
+ * overlay's Close part (D.10), which is the SDK's own button.
+ */
+export function buttonClasses(
+  variant: ButtonVariant,
+  density: 'comfortable' | 'compact',
+  disabled = false,
+) {
+  return button({ variant, density, iconOnly: false, disabled, interactive: !disabled });
+}
+
 const content = tv({
   base: 'inline-flex items-center justify-center gap-(--fd-button-gap)',
   // opacity, not `invisible`: visibility hidden would take the label out of
@@ -162,6 +174,19 @@ interface IconOnlyButton {
 
 export type ButtonProps = ButtonBase & (TextButton | IconOnlyButton);
 
+const OWN = new Set([
+  'variant',
+  'density',
+  'loading',
+  'disabled',
+  'icon',
+  'iconEnd',
+  'children',
+  'label',
+  'type',
+  'onClick',
+]);
+
 /**
  * The button of every web app (architecture §9.5, §9.9), on the UI SDK's
  * Button. A `loading` button is disabled for presses but stays focusable.
@@ -169,10 +194,14 @@ export type ButtonProps = ButtonBase & (TextButton | IconOnlyButton);
 export function Button(props: ButtonProps) {
   const { variant = 'primary', density = 'comfortable', loading = false, disabled = false } = props;
   const { icon, iconEnd, children, label, type, onClick } = props;
+  // What an overlay's trigger merges in through the SDK's `render` (D.10): its
+  // ARIA state, ref and handlers. Our own props above win.
+  const forwarded = Object.fromEntries(Object.entries(props).filter(([key]) => !OWN.has(key)));
   const iconSize = density === 'compact' ? 'sm' : 'md';
   const iconOnly = children === undefined && icon !== undefined;
   return (
     <SdkButton
+      {...forwarded}
       {...(type && { type })}
       {...(onClick && { onClick })}
       {...(iconOnly && { 'aria-label': label })}

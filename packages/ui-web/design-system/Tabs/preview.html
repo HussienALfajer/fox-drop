@@ -1,0 +1,38 @@
+<!-- @dsCard group="Navigation" height=220 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fd-space-md);
+    align-items: flex-start;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, Tabs } = FoxDrop;
+  const h = React.createElement;
+  const panel = (text) => h('p', { style: { margin: 0 } }, text);
+  const app = h(Tabs, {
+    label: 'تفاصيل الطلب',
+    defaultValue: 'details',
+    items: [
+      { value: 'details', label: 'التفاصيل', content: panel('تفاصيل الطلب') },
+      { value: 'log', label: 'السجل', content: panel('سجل الحالات') },
+      {
+        value: 'notes',
+        label: 'الملاحظات',
+        count: 2,
+        countLabel: 'ملاحظتان',
+        content: panel('بلا بصل'),
+      },
+    ],
+  });
+  ReactDOM.createRoot(document.getElementById('root')).render(app);
+</script>
