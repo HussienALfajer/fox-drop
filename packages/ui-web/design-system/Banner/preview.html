@@ -1,0 +1,35 @@
+<!-- @dsCard group="Overlays" height=340 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fd-space-md);
+    align-items: flex-start;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, Banner } = FoxDrop;
+  const h = React.createElement;
+  const app = h(
+    'div',
+    { style: { display: 'flex', flexDirection: 'column', width: '100%' } },
+    h(Banner, { tone: 'danger', icon: 'offline' }, 'لا يوجد اتصال بالإنترنت'),
+    h(Banner, { tone: 'caution' }, 'فشل فحص الجهاز'),
+    h(Banner, { tone: 'warning' }, 'وضع الضغط مفعّل'),
+    h(Banner, { tone: 'info' }, 'وضع التجربة'),
+    h(
+      Banner,
+      { tone: 'neutral', action: { label: 'تحديث', onAction: () => undefined } },
+      'يتوفر تحديث للتطبيق',
+    ),
+  );
+  ReactDOM.createRoot(document.getElementById('root')).render(app);
+</script>

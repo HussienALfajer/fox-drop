@@ -35,6 +35,18 @@ export const COMPONENTS = [
   'Skeleton',
   'EmptyState',
   'DataTable',
+  'Dialog',
+  'ConfirmDialog',
+  'Drawer',
+  'Toaster',
+  'Banner',
+  'BannerStack',
+  'BlockingBanner',
+  'Menu',
+  'Tooltip',
+  'Tabs',
+  'TopBar',
+  'Sidebar',
 ] as const;
 
 export const MAX_JS = 6 * 1024 * 1024;

@@ -425,6 +425,211 @@ interface DataTableProps {
   /** An EmptyState shown inside the table. */
   empty?: ReactNode;
 }
+
+type BannerTone = 'danger' | 'caution' | 'warning' | 'info' | 'neutral';
+
+interface BannerAction {
+  label: string;
+  onAction: () => void;
+}
+
+interface BannerProps {
+  tone: BannerTone;
+  /** What happened, in words: the tone is never the only signal. */
+  children: ReactNode;
+  /** Another icon than the tone's, such as 'offline'. */
+  icon?: IconName;
+  action?: BannerAction;
+  density?: Density;
+}
+
+interface StackedBanner {
+  id: string;
+  tone: BannerTone;
+  text: string;
+  icon?: IconName;
+  action?: BannerAction;
+}
+
+interface BannerStackProps {
+  /** In the app's priority order, highest first. */
+  banners: StackedBanner[];
+  /** The counter's words for the hidden count. */
+  moreLabel: (hidden: number) => string;
+  lessLabel: string;
+  density?: Density;
+}
+
+interface BlockingBannerProps {
+  /** Shown until the sound plays; the app closes it then. */
+  open: boolean;
+  text: string;
+  actionLabel: string;
+  /** Runs inside the press, so the browser lets audio start. */
+  onEnable: () => void;
+}
+
+interface DialogProps {
+  /** The element that opens it, usually a Button. */
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  title: string;
+  description?: string;
+  children?: ReactNode;
+  confirmLabel: string;
+  cancelLabel: string;
+  closeLabel: string;
+  /** 'danger' for a destructive action; the safe action takes focus first. */
+  tone?: 'primary' | 'danger';
+  /** A Promise keeps it open, pending, until it settles. */
+  onConfirm?: () => unknown;
+  density?: Density;
+}
+
+interface ConfirmDialogProps {
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  title: string;
+  reasonLabel: string;
+  reasonPlaceholder?: string;
+  /** Shown after a try without a reason. */
+  reasonError: string;
+  /** The money-effect preview (an AmountsSummary). */
+  effect?: ReactNode;
+  effectTitle?: string;
+  notifyTitle: string;
+  notified: string[];
+  confirmLabel: string;
+  cancelLabel: string;
+  closeLabel: string;
+  /** Receives the reason, trimmed. */
+  onConfirm: (reason: string) => unknown;
+}
+
+interface DrawerProps {
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  title: string;
+  closeLabel: string;
+  /** 'end' (left in RTL) for a quick view; 'start' for the sidebar on a phone. */
+  side?: 'start' | 'end';
+  headerAction?: ReactNode;
+  children: ReactNode;
+}
+
+type ToastTone = 'success' | 'info' | 'warning' | 'danger';
+
+interface ToastOptions {
+  tone: ToastTone;
+  text: string;
+  action?: BannerAction;
+}
+
+/** Wrap the app once; show a toast with FoxDrop.useToast().show(options). */
+interface ToasterProps {
+  label: string;
+  closeLabel: string;
+  /** How many show at once. Default 3. */
+  max?: number;
+  children: ReactNode;
+}
+
+interface MenuAction {
+  label: string;
+  icon?: IconName;
+  destructive?: boolean;
+  disabled?: boolean;
+  onSelect: () => void;
+}
+
+interface MenuProps {
+  triggerLabel: string;
+  triggerStart?: ReactNode;
+  /** An icon-only trigger; triggerLabel is its name. */
+  triggerIcon?: IconName;
+  /** Actions and 'separator'. */
+  items: (MenuAction | 'separator')[];
+  density?: Density;
+}
+
+interface TooltipProps {
+  content: string;
+  /** A button or a link with a name of its own. */
+  children: ReactNode;
+  side?: 'top' | 'bottom' | 'start' | 'end';
+}
+
+interface TabItem {
+  value: string;
+  label: string;
+  count?: number;
+  countLabel?: string;
+  disabled?: boolean;
+  content: ReactNode;
+}
+
+interface TabsProps {
+  label: string;
+  items: TabItem[];
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  variant?: 'underline' | 'pill';
+  density?: Density;
+}
+
+interface TopBarAction {
+  icon: IconName;
+  label: string;
+  count?: number;
+  countLabel?: string;
+  onAction: () => void;
+}
+
+interface TopBarMenu {
+  label: string;
+  onMenu: () => void;
+}
+
+interface TopBarProps {
+  label: string;
+  title?: string;
+  /** The button that opens the sidebar drawer on a phone. */
+  menu?: TopBarMenu;
+  start?: ReactNode;
+  children?: ReactNode;
+  actions?: TopBarAction[];
+  end?: ReactNode;
+}
+
+interface SidebarItem {
+  href: string;
+  label: string;
+  /** Without one the item shows a dot. */
+  icon?: IconName;
+  count?: number;
+  countLabel?: string;
+}
+
+interface SidebarProps {
+  label: string;
+  items: SidebarItem[];
+  /** The current page's href. */
+  current: string;
+  brand?: ReactNode;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
+  collapseLabel: string;
+  expandLabel: string;
+  /** 'rail' beside the page, 'drawer' below the tablet width. */
+  form?: 'rail' | 'drawer';
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  closeLabel?: string;
+}
 `;
 }
 

@@ -48,6 +48,7 @@ class FoxButton extends StatefulWidget {
     this.icon,
     this.iconEnd,
     this.loading = false,
+    this.autofocus = false,
   }) : iconOnly = false;
 
   /// An icon alone in a circle; [label] is its accessible name.
@@ -58,6 +59,7 @@ class FoxButton extends StatefulWidget {
     required this.onPressed,
     this.variant = FoxButtonVariant.primary,
     this.loading = false,
+    this.autofocus = false,
   }) : iconOnly = true,
        iconEnd = null;
 
@@ -68,6 +70,9 @@ class FoxButton extends StatefulWidget {
   final t.FoxIconData? iconEnd;
   final bool loading;
   final bool iconOnly;
+
+  /// Takes focus when it first builds: a dialog's safe action (D.10).
+  final bool autofocus;
 
   @override
   State<FoxButton> createState() => _FoxButtonState();
@@ -209,6 +214,7 @@ class _FoxButtonState extends State<FoxButton> {
       child: FocusableActionDetector(
         focusNode: _node,
         enabled: !_disabled,
+        autofocus: widget.autofocus,
         includeFocusSemantics: false,
         shortcuts: _shortcuts,
         actions: _actions,
@@ -223,6 +229,9 @@ class _FoxButtonState extends State<FoxButton> {
           onExit: (_) => setState(() => _hovered = false),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
+            // The Semantics above carries the tap; a second one here split
+            // off an unnamed tap node in a dialog (D.10 review).
+            excludeFromSemantics: true,
             onTapDown: _interactive ? (_) => _setPressed(true) : null,
             onTapUp: _interactive ? (_) => _setPressed(false) : null,
             onTapCancel: _interactive ? () => _setPressed(false) : null,

@@ -2,6 +2,13 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.8.0 (2026-11-24, slice D.10: overlays and navigation)
+
+- From the approved sheet «Overlays and navigation — batch 4»: `caution` (yellow 800) and `caution-subtle` (yellow 50), the yellow banner tone RA §6.3 and CA §6.3 name beside amber, with their pair at 4.5:1 (7:1 for the captain); `scrim` (neutral 900 at 48%) behind dialogs, sheets and drawers. New primitives yellow 50 and 800 and `shadow.scrim`.
+- New group `layer.*` (number): the stacking order sticky 10, banner 20, overlay 30, menu 40, toast 50, tooltip 60, blocking 70, as CSS variables for the web.
+- New sizes for the overlays and bars: `size.dialog` 460, `size.drawer` 440, `size.toast` 360, `size.tooltip` 240, `size.sidebar` 248, `size.sidebar-collapsed` 72, `size.bar` 64.
+- New icon `menu` (three lines), for the sidebar's phone form.
+
 ## 0.7.0 (2026-11-24, slice D.9: data display)
 
 - From the approved sheet «Data display — batch 3»: the status tints `success-subtle`, `warning-subtle`, `danger-subtle`, `info-subtle`, `primary-subtle` and `neutral-subtle`, with `neutral` (inactive status text, neutral 700) and `on-primary-subtle` (orange 600; blue 500 in the captain app, which has no orange text). New primitives green, amber and red 50, orange 75 and neutral 150.

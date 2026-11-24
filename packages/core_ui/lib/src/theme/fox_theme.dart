@@ -47,6 +47,9 @@ final class FoxColorScheme {
   Color get onPrimarySubtle => Color(_tokens.onPrimarySubtle);
   Color get neutral => Color(_tokens.neutral);
   Color get neutralSubtle => Color(_tokens.neutralSubtle);
+  Color get caution => Color(_tokens.caution);
+  Color get cautionSubtle => Color(_tokens.cautionSubtle);
+  Color get scrim => Color(_tokens.scrim);
   Color get alert => Color(_tokens.alert);
   Color get onAlert => Color(_tokens.onAlert);
   Color get disabled => Color(_tokens.disabled);

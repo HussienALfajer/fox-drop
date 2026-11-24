@@ -49,7 +49,7 @@ describe("the Design System's files (architecture §9.8)", () => {
   });
 
   it('uploads the logo, app icon and line icon SVGs within the caps, the broken-edges icons left out', () => {
-    expect([...uploads.keys()].filter((key) => key.startsWith('Icons/'))).toHaveLength(46);
+    expect([...uploads.keys()].filter((key) => key.startsWith('Icons/'))).toHaveLength(47);
     for (const [key, bytes] of uploads) {
       expect(key).toMatch(/^(Logos|App icon|Icons)\/[\w.-]+\.svg$/);
       expect(key).not.toMatch(/broken-edges/);

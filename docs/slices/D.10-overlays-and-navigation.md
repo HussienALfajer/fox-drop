@@ -1,6 +1,6 @@
 # D.10 Overlays and navigation
 
-Status: Planned · Tier: T2 · Branch: `feat/components-overlays-navigation`
+Status: Done · Tier: T2 · Branch: `feat/components-overlays-navigation`
 Spec: architecture §9.5 (R1 to R10), §9.7, §9.9 (the component cycle), §9.10; brand expression §2 (the S-curve tab) and the motion language; AP §7.1 (the sidebar), §7.2 (the top bar), §7.3 (the blocking sound banner), §7.4 (confirmation dialog with reason, money-effect preview and who is notified; side drawers; detail-page tabs), §7.5 (devices), §9.4 (map tooltips); RA §4.7, §6.2 (top bar with status pill and connection dot, phone bottom navigation, the tablet and Windows rail), §6.3 (banners), §7.2 (the status sheet), §17 (the owner web portal); CA §4.6, §6.2, §6.3; CU §6.1 (bottom bar), §6.2 (banners), §8 (pull to refresh), §9 (the item sheet) · Definition of done: the D.10 line of `docs/roadmap.md` Phase D
 
 ## Goal
@@ -49,15 +49,52 @@ Tests written first (locked in the red phase), on both platforms unless marked; 
 - Navigation rail (Flutter): the same items on the start side, keyboard traversal on Windows.
 - Pull to refresh (Flutter): the callback runs once per pull, the indicator holds until it completes, a semantics action refreshes without a gesture.
 
+## Design (checkpoint 0, approved 2026-11-24)
+
+**Owner approval (2026-11-24, in comments on the sheet and in chat):**
+
+1. Bottom navigation: exactly the Figma file's floating bar, icons only (B), **in all three apps** (customer, captain, restaurant), the captain's in its own theme. Names live in semantics. Items: the owner asked for the best for a delivery customer; ours, kept: the four of CU §6.1 (home, search, my orders, my account) with the floating cart button (it shows the count and value; search matters with many restaurants; favourites stay under «حسابي»), so the spec does not change.
+2. Pull to refresh: (B) the logo's drop filling as you pull, pulsing while it loads, still under reduced motion.
+3. D.8's select: (B) stays the menu under the field everywhere.
+4. Banners: (A) red solid, the other tones tinted.
+5. Tokens 0.8.0 as proposed (caution, scrim, layer.*). 6. Missing icons as proposed; `menu` added. 7. Toast (A) dark blue.
+
+Sheet «Overlays and navigation — batch 4» (`packages/design-tokens/src/overlays-sheet.ts`, board `Overlays.dc.html` on the Component proposals canvas at x 8400, 1680×11300, drawn by `pnpm --filter @fox-drop/design-tokens icon-sheet --config <file>`). The Figma API was rate limited (429), so the look used the renders of 2026-11-23 (home 49:2041, cart, the components page). Taken from the file: the floating blue bottom bar with ivory circles and the orange active circle, the S-curve tab of the dish block (here on the item sheet), the round back button with the orange title, the bell in a round chip with its dot.
+
+Drawn, with the questions the owner decides (the framed option is ours):
+
+1. **Customer bottom navigation:** (A, ours) the file's floating pill with the names under the circles; (B) icons only, as the file. Captain and restaurant: a flat bar on the raised surface, names always.
+2. **Pull to refresh:** (A, ours) Material's indicator themed orange; (B) the logo's drop filling.
+3. **D.8's select on a phone:** (A, ours) opens as a bottom sheet below 600 dp behind the same API; (B) stays a menu.
+4. **Banners:** (A, ours) red solid, the other tones tinted; (B) all tinted; (C) all solid. The stack: two shown, «+N» opens the rest in place.
+5. **New tokens 0.8.0:** `color.caution` #5C4A00 on `color.caution-subtle` #FFF5BF (7.8:1) for the yellow tone RA §6.3 and CA §6.3 name; `color.scrim` (neutral 900 at 48%); `layer.*` z-order (sticky 10, banner 20, overlay 30, menu 40, toast 50, tooltip 60, blocking 70).
+6. **Missing icons:** the panel opens with the sidebar expanded and modules without a batch-1 icon show a dot until the panel's icon batch; only «menu» (three lines) is added now.
+7. **Toast:** (A, ours) dark blue with a tone icon; (B) tinted. «تسجيل الخروج» without an icon until the panel batch.
+
+Also drawn without a question: the dialog (safe action focused first, captain dialog in the thumb zone), the AP §7.4 confirmation form (required reason, money-effect preview from the amounts summary, who is notified; confirm disabled until a reason), the customer item sheet and the restaurant status sheet, the web side drawer from the end side and the sidebar's phone form from the start side, toast places (above the bottom bar; the web's bottom end corner), the offline banners, the blocking sound banner (AP §7.3, `color.alert`), the menu, the tooltip (500 ms on hover, at once on focus), tabs per surface, the top bars (panel slots, restaurant, phone back bar), the sidebar (panel 16 modules, collapsed, portal), the restaurant rail, and the motion table (existing duration and easing tokens; fades under reduced motion).
+
+## Built
+
+- **Tokens 0.8.0:** `caution` and `caution-subtle` (yellow 800 on yellow 50, 7.8:1), `scrim` (neutral 900 at 48%), `layer.*` (sticky 10 to blocking 70), the sizes `dialog` 460, `drawer` 440, `toast` 360, `tooltip` 240, `sidebar` 248, `sidebar-collapsed` 72, `bar` 64, and the `menu` icon.
+- **Web (`ui-web`, 12):** Dialog, ConfirmDialog (AP §7.4), Drawer, Toaster with `useToast`, Banner, BannerStack, BlockingBanner (AP §7.3), Menu, Tooltip, Tabs, TopBar and Sidebar, each with its stories, Design System card (groups Overlays and Navigation) and documented props; the Button forwards what an overlay trigger merges in.
+- **Flutter (`core_ui`):** FoxDialog and FoxConfirmDialog, FoxBottomSheet (plain or the S-curve tab), FoxToast and FoxToaster, FoxBanner and FoxBannerStack, FoxMenu, FoxTabs, FoxTopBar and FoxRestaurantBar, FoxBottomNavigation (the Figma bar, icons only, all three apps), FoxNavigationRail and FoxPullToRefresh (the logo's drop), with widgetbook use cases and goldens. Built in parallel on `feat/components-overlays-navigation-flutter` and merged here.
+- **Owner decisions during the build (2026-11-24):** the bottom bar exactly as the Figma file in all three apps; the customer's four items of CU §6.1 with the floating cart kept (ours, asked); an unused import removed from a locked web test. Two Flutter locked tests were corrected without changing what they test (a missing import, token spacing, typed callbacks), recorded by the builder.
+- **Differences from the drawing, explained:** the confirm action stays pressable (`aria-disabled` on the web) and explains a missing reason instead of being inert; the web side drawer is the SDK's Dialog, not its Drawer (logical sides); a closed web tooltip unmounts, so it has no exit fade; the S-curve sheet has no ×; Flutter goldens draw a soft elevation as a band (`debugDisableShadows`).
+- **Review (reviewer agent, one round):** one blocking finding (pull to refresh never ran on iOS) and five should-fix (the blocking sound banner missing on the web, unnamed scrims, the drawer's unnamed ×, a failed confirm, Android back with a menu open), plus four minor (a toast read twice, a danger toast trimmed, a dot badge without words, a story starting open); all fixed with tests (`ui-web/src/overlays-review.test.tsx`, `blocking-banner.test.tsx`, `core_ui/test/overlays_review_test.dart`). Found on the way: every FoxButton left an unnamed tap node (fixed), and the collapsed sidebar's count covered its icon (fixed).
+
 ## Stopped at
 
-Planned and approved (2026-11-24); not started.
+Done: the pull request is opened with auto-merge.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`: <summary line>
-- Screenshots or recordings (outside the repository): <where>
-- Review: <reviewer findings fixed; deferred to the backlog>
+- `node scripts/verify.mjs --changed` (checker): «verify: the checks of the change passed» on the final tree (design-tokens, ui-web, core_ui, widgetbook)
+- `ui-web`: `vitest run` 363 tests passed; `playwright test --project=functional` 414 passed (RTL, keyboard, axe on every story, 130% text, `e2e/overlays.spec.ts`); `test:visual` in Docker 498 passed, 98 new baselines (phone and captain), none changed.
+- `core_ui`: `flutter test` 284 passed (overlays 41, navigation 22, review 8); widgetbook coverage 3 passed; `node scripts/verify.mjs flutter` passed; goldens in Docker: six new (`overlays_phone`, `overlays_captain`, `overlays_phone_text_130`, `navigation_phone`, `navigation_captain`, `navigation_restaurant_tablet`), `icons.png` redrawn with the menu icon.
+- `design-tokens`: 237 passed.
+- Compared with the approved sheet: the Storybook screenshots and goldens match it; the differences are under «Built». Screenshots outside the repository: the session scratchpad's `sb/`.
+- Design System synced (version 16: tokens 0.8.0, the menu icon, the twelve web cards), the Guide redrawn (version 15), the sheet marked superseded (proposals canvas version 24).
+- **What the owner can try:** Storybook (`pnpm --filter @fox-drop/ui-web storybook`): the twelve components in Arabic, phone and captain; widgetbook (`apps/widgetbook`, `flutter run -d windows`): the Flutter overlays and navigation in every state; the Design System's Overlays and Navigation cards.
 
 ## Before deploying
 
@@ -69,4 +106,4 @@ Nothing new.
 
 ## Notes for the next session
 
-After D.10: the screens' slice plans (`docs/roadmap.md`), then L.2 The permission matrix (see the D.9 slice file's notes). The active-order bar and the floating cart button belong to the customer and captain screen slices (owner, 2026-11-24).
+After D.10: the screens' slice plans (the active-order bar and the floating cart button with them) (`docs/roadmap.md`), then L.2 The permission matrix (see the D.9 slice file's notes). The active-order bar and the floating cart button belong to the customer and captain screen slices (owner, 2026-11-24).

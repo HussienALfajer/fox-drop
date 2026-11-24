@@ -41,6 +41,21 @@ final _states = <String, (List<String>, List<String>)>{
   'FoxSkeleton': ([''], skeletonStates),
   'FoxSkeletonBlock': ([''], skeletonBlockStates),
   'FoxEmptyState': ([''], emptyStateStates),
+  'FoxDialog': ([''], dialogStates),
+  'FoxConfirmDialog': ([''], confirmDialogStates),
+  'FoxBottomSheet': ([''], bottomSheetStates),
+  'FoxToast': ([''], toastStates),
+  'FoxToaster': ([''], toasterStates),
+  'FoxBanner': ([''], bannerStates),
+  'FoxBannerStack': ([''], bannerStackStates),
+  'FoxMenu': ([''], menuStates),
+  'FoxTabs': ([''], tabsStates),
+  'FoxTopBar': ([''], topBarStates),
+  'FoxRestaurantBar': ([''], restaurantBarStates),
+  'FoxBottomNavigation': ([''], bottomNavigationStates),
+  'FoxNavigationRail': ([''], navigationRailStates),
+  'FoxPullToRefresh': ([''], pullToRefreshStates),
+  'FoxRefreshDrop': ([''], refreshDropStates),
 };
 
 void main() {

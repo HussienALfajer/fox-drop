@@ -27,6 +27,18 @@ import type { SelectProps } from '../src/select/select';
 import type { SwitchProps } from '../src/switch/switch';
 import type { TextAreaProps } from '../src/text-area/text-area';
 import type { TextFieldProps } from '../src/text-field/text-field';
+import type { BannerProps } from '../src/banner/banner';
+import type { BannerStackProps } from '../src/banner-stack/banner-stack';
+import type { BlockingBannerProps } from '../src/blocking-banner/blocking-banner';
+import type { DialogProps } from '../src/dialog/dialog';
+import type { ConfirmDialogProps } from '../src/confirm-dialog/confirm-dialog';
+import type { DrawerProps } from '../src/drawer/drawer';
+import type { ToasterProps } from '../src/toaster/toaster';
+import type { MenuProps } from '../src/menu/menu';
+import type { TooltipProps } from '../src/tooltip/tooltip';
+import type { TabsProps } from '../src/tabs/tabs';
+import type { TopBarProps } from '../src/top-bar/top-bar';
+import type { SidebarProps } from '../src/sidebar/sidebar';
 
 describe('the Design System bundle', () => {
   let bundle: { js: string; css: string };
@@ -380,6 +392,126 @@ describe('the component docs', () => {
   it('documents exactly the props of the data display components', () => {
     const types = typesDoc();
     for (const [name, props] of Object.entries(data))
+      expect(documented(types, [name]), name).toEqual(Object.keys(props).sort());
+  });
+
+  // D.10: overlays and navigation.
+  const overlays = {
+    BannerProps: {
+      tone: true,
+      children: true,
+      icon: true,
+      action: true,
+      density: true,
+    } satisfies Record<Keys<BannerProps>, true>,
+    BannerStackProps: {
+      banners: true,
+      moreLabel: true,
+      lessLabel: true,
+      density: true,
+    } satisfies Record<Keys<BannerStackProps>, true>,
+    BlockingBannerProps: {
+      open: true,
+      text: true,
+      actionLabel: true,
+      onEnable: true,
+    } satisfies Record<Keys<BlockingBannerProps>, true>,
+    DialogProps: {
+      trigger: true,
+      open: true,
+      onOpenChange: true,
+      title: true,
+      description: true,
+      children: true,
+      confirmLabel: true,
+      cancelLabel: true,
+      closeLabel: true,
+      tone: true,
+      onConfirm: true,
+      density: true,
+    } satisfies Record<Keys<DialogProps>, true>,
+    ConfirmDialogProps: {
+      trigger: true,
+      open: true,
+      onOpenChange: true,
+      title: true,
+      reasonLabel: true,
+      reasonPlaceholder: true,
+      reasonError: true,
+      effect: true,
+      effectTitle: true,
+      notifyTitle: true,
+      notified: true,
+      confirmLabel: true,
+      cancelLabel: true,
+      closeLabel: true,
+      onConfirm: true,
+    } satisfies Record<Keys<ConfirmDialogProps>, true>,
+    DrawerProps: {
+      trigger: true,
+      open: true,
+      onOpenChange: true,
+      title: true,
+      closeLabel: true,
+      side: true,
+      headerAction: true,
+      children: true,
+    } satisfies Record<Keys<DrawerProps>, true>,
+    ToasterProps: {
+      label: true,
+      closeLabel: true,
+      max: true,
+      children: true,
+    } satisfies Record<Keys<ToasterProps>, true>,
+    MenuProps: {
+      triggerLabel: true,
+      triggerStart: true,
+      triggerIcon: true,
+      items: true,
+      density: true,
+    } satisfies Record<Keys<MenuProps>, true>,
+    TooltipProps: {
+      content: true,
+      children: true,
+      side: true,
+    } satisfies Record<Keys<TooltipProps>, true>,
+    TabsProps: {
+      label: true,
+      items: true,
+      value: true,
+      defaultValue: true,
+      onValueChange: true,
+      variant: true,
+      density: true,
+    } satisfies Record<Keys<TabsProps>, true>,
+    TopBarProps: {
+      label: true,
+      title: true,
+      menu: true,
+      start: true,
+      children: true,
+      actions: true,
+      end: true,
+    } satisfies Record<Keys<TopBarProps>, true>,
+    SidebarProps: {
+      label: true,
+      items: true,
+      current: true,
+      brand: true,
+      collapsed: true,
+      onCollapsedChange: true,
+      collapseLabel: true,
+      expandLabel: true,
+      form: true,
+      open: true,
+      onOpenChange: true,
+      closeLabel: true,
+    } satisfies Record<Keys<SidebarProps>, true>,
+  };
+
+  it('documents exactly the props of the overlays and navigation', () => {
+    const types = typesDoc();
+    for (const [name, props] of Object.entries(overlays))
       expect(documented(types, [name]), name).toEqual(Object.keys(props).sort());
   });
 

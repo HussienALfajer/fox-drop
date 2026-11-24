@@ -106,6 +106,23 @@
       "$description": "A signature moment, never more."
     }
   },
+  "layer": {
+    "$type": "number",
+    "$description": "The stacking order of overlays (D.10): a CSS z-index; Flutter stacks by Overlay order.",
+    "sticky": {
+      "$value": 10,
+      "$description": "Top bar, bottom navigation, rail, a sticky table header."
+    },
+    "banner": { "$value": 20, "$description": "Banners under the top bar." },
+    "overlay": { "$value": 30, "$description": "Scrim, dialog, bottom sheet, side drawer." },
+    "menu": { "$value": 40, "$description": "Menu and select list, also inside a dialog." },
+    "toast": { "$value": 50, "$description": "Toasts, above an open sheet." },
+    "tooltip": { "$value": 60, "$description": "Tooltips." },
+    "blocking": {
+      "$value": 70,
+      "$description": "The blocking sound banner (AP §7.3), above everything."
+    }
+  },
   "easing": {
     "$type": "cubicBezier",
     "standard": {
@@ -490,7 +507,20 @@
     "switch-height": {
       "$value": "32px",
       "$description": "The switch track's height."
-    }
+    },
+    "dialog": {
+      "$value": "460px",
+      "$description": "A dialog's width; less the margins on a phone (D.10)."
+    },
+    "drawer": { "$value": "440px", "$description": "The web side drawer's width (D.10)." },
+    "toast": { "$value": "360px", "$description": "A toast's width on the web (D.10)." },
+    "tooltip": { "$value": "240px", "$description": "A tooltip's widest line (D.10)." },
+    "sidebar": { "$value": "248px", "$description": "The panel and portal sidebar (D.10)." },
+    "sidebar-collapsed": {
+      "$value": "72px",
+      "$description": "The collapsed sidebar: icons only (D.10)."
+    },
+    "bar": { "$value": "64px", "$description": "The top bar and the phone back bar (D.10)." }
   },
   "border-width": {
     "$type": "dimension",

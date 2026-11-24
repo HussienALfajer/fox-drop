@@ -18,8 +18,7 @@ final class MenuItem<T> {
 /// A menu that opens under [child] (the select and the phone's country
 /// chip, D.8): as wide as [child], on the overlay, closed by a tap outside,
 /// Escape or a choice. Arrow keys move through the rows, Enter or Space
-/// picks. D.10 may switch the select to the bottom sheet behind the same
-/// API. Not exported.
+/// picks; it stays a menu on phones too (owner, D.10). Not exported.
 class AnchoredMenu<T> extends StatefulWidget {
   const AnchoredMenu({
     super.key,
@@ -38,7 +37,7 @@ class AnchoredMenu<T> extends StatefulWidget {
   final T? selected;
   final ValueChanged<T> onSelected;
 
-  /// The menu left without a choice (a tap outside or Escape).
+  /// The menu left without a choice (a tap outside, Escape or back).
   final VoidCallback onClosed;
 
   /// The list's accessible name.
@@ -52,12 +51,19 @@ class _AnchoredMenuState<T> extends State<AnchoredMenu<T>> {
   final LayerLink _link = LayerLink();
 
   @override
-  Widget build(BuildContext context) => CompositedTransformTarget(
-    link: _link,
-    child: OverlayPortal(
-      controller: widget.controller,
-      overlayChildBuilder: _overlay,
-      child: widget.child,
+  Widget build(BuildContext context) => PopScope(
+    // Android back closes an open menu before it leaves the page (D.10).
+    canPop: !widget.controller.isShowing,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop && widget.controller.isShowing) widget.onClosed();
+    },
+    child: CompositedTransformTarget(
+      link: _link,
+      child: OverlayPortal(
+        controller: widget.controller,
+        overlayChildBuilder: _overlay,
+        child: widget.child,
+      ),
     ),
   );
 

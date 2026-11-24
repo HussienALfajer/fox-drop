@@ -24,6 +24,13 @@
   --fd-duration-base: 200ms;
   --fd-duration-slow: 300ms;
   --fd-duration-moment: 1200ms;
+  --fd-layer-sticky: 10;
+  --fd-layer-banner: 20;
+  --fd-layer-overlay: 30;
+  --fd-layer-menu: 40;
+  --fd-layer-toast: 50;
+  --fd-layer-tooltip: 60;
+  --fd-layer-blocking: 70;
   --fd-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   --fd-font-family-sans: "CoFo Sans Pro Arabic", "Fox Lira", sans-serif;
   --fd-font-weight-regular: 400;
@@ -106,6 +113,13 @@
   --fd-size-step: 32px;
   --fd-size-switch-width: 52px;
   --fd-size-switch-height: 32px;
+  --fd-size-dialog: 460px;
+  --fd-size-drawer: 440px;
+  --fd-size-toast: 360px;
+  --fd-size-tooltip: 240px;
+  --fd-size-sidebar: 248px;
+  --fd-size-sidebar-collapsed: 72px;
+  --fd-size-bar: 64px;
   --fd-border-width-thin: 1px;
   --fd-border-width-thick: 2px;
   --fd-button-height: 50px;
@@ -228,6 +242,9 @@
   --fd-color-on-primary-subtle: #C2410C;
   --fd-color-neutral: #4D473D;
   --fd-color-neutral-subtle: #EFE8DA;
+  --fd-color-caution: #5C4A00;
+  --fd-color-caution-subtle: #FFF5BF;
+  --fd-color-scrim: #1F1C187A;
   --fd-color-alert: #8C1530;
   --fd-color-on-alert: #FFFFFF;
   --fd-color-disabled: #E8E1D2;
@@ -338,6 +355,9 @@
   --fd-color-on-primary-subtle: #C2410C;
   --fd-color-neutral: #4D473D;
   --fd-color-neutral-subtle: #EFE8DA;
+  --fd-color-caution: #5C4A00;
+  --fd-color-caution-subtle: #FFF5BF;
+  --fd-color-scrim: #1F1C187A;
   --fd-color-alert: #8C1530;
   --fd-color-on-alert: #FFFFFF;
   --fd-color-disabled: #E8E1D2;

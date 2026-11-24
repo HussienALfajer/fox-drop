@@ -24,6 +24,7 @@ import {
 import { readIcons, type Icon } from './icons.ts';
 import { buttonSheet } from './button-sheet.ts';
 import { dataSheet } from './data-sheet.ts';
+import { overlaysSheet } from './overlays-sheet.ts';
 import { formsSheet } from './forms-sheet.ts';
 import { stateSheet } from './state-sheet.ts';
 import { designSystem } from './design-system.ts';
@@ -52,6 +53,7 @@ export const ARABIC: Record<string, string> = {
   'chevron-down': 'فتح القائمة',
   calendar: 'التاريخ',
   more: 'المزيد',
+  menu: 'القائمة',
   filter: 'تصفية',
   add: 'إضافة',
   remove: 'إنقاص',
@@ -186,6 +188,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     stateSheet(themes, config, icons),
     formsSheet(themes, config, icons),
     dataSheet(themes, config, icons),
+    overlaysSheet(themes, config, icons),
   ];
   rmSync(OUT, { recursive: true, force: true });
   const files = new Map<string, string>([

@@ -43,6 +43,9 @@ final class ColorTokens {
     required this.onPrimarySubtle,
     required this.neutral,
     required this.neutralSubtle,
+    required this.caution,
+    required this.cautionSubtle,
+    required this.scrim,
     required this.alert,
     required this.onAlert,
     required this.disabled,
@@ -94,6 +97,9 @@ final class ColorTokens {
   final int onPrimarySubtle;
   final int neutral;
   final int neutralSubtle;
+  final int caution;
+  final int cautionSubtle;
+  final int scrim;
   final int alert;
   final int onAlert;
   final int disabled;
@@ -148,6 +154,9 @@ abstract final class FoxColors {
     onPrimarySubtle: 0xFFC2410C,
     neutral: 0xFF4D473D,
     neutralSubtle: 0xFFEFE8DA,
+    caution: 0xFF5C4A00,
+    cautionSubtle: 0xFFFFF5BF,
+    scrim: 0x7A1F1C18,
     alert: 0xFF8C1530,
     onAlert: 0xFFFFFFFF,
     disabled: 0xFFE8E1D2,
@@ -200,6 +209,9 @@ abstract final class FoxColors {
     onPrimarySubtle: 0xFFC2410C,
     neutral: 0xFF4D473D,
     neutralSubtle: 0xFFEFE8DA,
+    caution: 0xFF5C4A00,
+    cautionSubtle: 0xFFFFF5BF,
+    scrim: 0x7A1F1C18,
     alert: 0xFF8C1530,
     onAlert: 0xFFFFFFFF,
     disabled: 0xFFE8E1D2,
@@ -252,6 +264,9 @@ abstract final class FoxColors {
     onPrimarySubtle: 0xFF03428E,
     neutral: 0xFF4D473D,
     neutralSubtle: 0xFFEFE8DA,
+    caution: 0xFF5C4A00,
+    cautionSubtle: 0xFFFFF5BF,
+    scrim: 0x7A1F1C18,
     alert: 0xFF8C1530,
     onAlert: 0xFFFFFFFF,
     disabled: 0xFFE8E1D2,
@@ -304,6 +319,9 @@ abstract final class FoxColors {
     onPrimarySubtle: 0xFF03428E,
     neutral: 0xFF4D473D,
     neutralSubtle: 0xFFEFE8DA,
+    caution: 0xFF5C4A00,
+    cautionSubtle: 0xFFFFF5BF,
+    scrim: 0x7A1F1C18,
     alert: 0xFF8C1530,
     onAlert: 0xFFFFFFFF,
     disabled: 0xFFE8E1D2,
@@ -1022,4 +1040,11 @@ abstract final class FoxSize {
   static const double step = 32.0;
   static const double switchWidth = 52.0;
   static const double switchHeight = 32.0;
+  static const double dialog = 460.0;
+  static const double drawer = 440.0;
+  static const double toast = 360.0;
+  static const double tooltip = 240.0;
+  static const double sidebar = 248.0;
+  static const double sidebarCollapsed = 72.0;
+  static const double bar = 64.0;
 }

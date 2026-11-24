@@ -1,0 +1,31 @@
+<!-- @dsCard group="Navigation" height=300 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fd-space-md);
+    align-items: flex-start;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, Menu } = FoxDrop;
+  const h = React.createElement;
+  const app = h(Menu, {
+    triggerLabel: 'سارة م.',
+    items: [
+      { label: 'الملف الشخصي', icon: 'account', onSelect: () => undefined },
+      { label: 'الجلسات', icon: 'settings', onSelect: () => undefined },
+      'separator',
+      { label: 'تسجيل الخروج', destructive: true, onSelect: () => undefined },
+    ],
+  });
+  ReactDOM.createRoot(document.getElementById('root')).render(app);
+</script>

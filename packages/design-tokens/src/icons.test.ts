@@ -123,11 +123,11 @@ describe('the icon manifest', () => {
     expect(mirrored.sort()).toEqual(['back', 'car', 'motorcycle']);
   });
 
-  it('holds the 44 icons of the first set and the forms pair (D.8) in its six groups (brand expression §10)', () => {
+  it('holds the 44 icons of the first set, the forms pair (D.8) and menu (D.10) in its six groups (brand expression §10)', () => {
     const counts: Record<string, number> = {};
     for (const entry of manifest) counts[entry.group] = (counts[entry.group] ?? 0) + 1;
     expect(counts).toEqual({
-      Navigation: 11,
+      Navigation: 12,
       Actions: 9,
       States: 8,
       'Place and delivery': 8,

@@ -13,13 +13,12 @@ The web components of FOX DROP (architecture §9.5, §9.6, §9.8): Tailwind 4 an
 - **Code a component only after its drawing is approved** (§9.9). **CSP:** no inline script or style, no `data:` URL; icons are inline SVG.
 - **Forms (D.8):** the theme has named spacing only (`gap-2xs`, `w-2xl`; `min-w-0` makes no CSS, use `min-w-none`). A string or template in a JSX `{}` is text: build it above the `return`. Stack states as `group-hover/row:data-checked:`; the SDK sets `data-checked`, `data-unchecked`, `data-indeterminate`, `data-open`.
 - **Shared classes** live in `src/field/styles.ts` (`formTv`, `box`; the bundle sources it). Fields use `@ui-sdk` Field, so give a second control inside one (the phone chip) its own `<Field>`.
-- **A popup never starts open** (`defaultOpen` is placed before its size is known): a story opens it with `play`.
+- **Popups (D.10):** none starts open (a story opens it with `play`); a trigger is our Button through the SDK's `render`; the side drawer is the SDK's Dialog (its Drawer writes physical sides).
 
 ## Commands
 
-- `pnpm --filter @fox-drop/ui-web storybook`: Storybook on http://localhost:6006.
-- `pnpm --filter @fox-drop/ui-web build`: the static Storybook in `dist/storybook`.
+- `pnpm --filter @fox-drop/ui-web storybook` (port 6006), `build` (static, `dist/storybook`).
 - `pnpm --filter @fox-drop/ui-web lint`, `typecheck`, `test`: the checks (`pnpm verify` runs them through Turborepo).
 - `pnpm --filter @fox-drop/ui-web design-system`: the Design System's component files (bundle, `index.d.ts`, each `design-system/<Name>/` README and preview) into `packages/design-tokens/.design-system/system/project/components/`; run it after the design-tokens `design-system` (which empties the folder), then publish (`packages/design-tokens/CLAUDE.md` «Sync»). A new component joins `COMPONENTS` in `scripts/bundle.ts`, `bundle-entry.ts` and the types in `docs.ts`.
-- `... test:e2e`: the functional gate (RTL, keyboard, axe, 130% text; `e2e/rtl.spec.ts`, `forms.spec.ts`) over `dist/storybook`; build first; any OS.
+- `... test:e2e`: the functional gate (RTL, keyboard, axe, 130% text; the `rtl`, `forms`, `overlays` specs) over `dist/storybook`; build first; any OS.
 - `... test:visual`: screenshots of every story in Docker (`scripts/visual-docker.mjs`; needs Docker, the built Storybook and `.fonts/`). Baselines in `e2e/__screenshots__/` are valid only from that image: after a look change or a new story run `pnpm --filter @fox-drop/ui-web test:visual --update-snapshots` and commit the PNGs. The `visual` CI job fails without the fonts.

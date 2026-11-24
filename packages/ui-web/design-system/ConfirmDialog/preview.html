@@ -1,0 +1,35 @@
+<!-- @dsCard group="Overlays" height=220 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fd-space-md);
+    align-items: flex-start;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, ConfirmDialog, Button } = FoxDrop;
+  const h = React.createElement;
+  const app = h(ConfirmDialog, {
+    trigger: h(Button, { variant: 'danger', density: 'compact' }, 'إلغاء الطلب'),
+    title: 'إلغاء الطلب #10423',
+    reasonLabel: 'السبب',
+    reasonPlaceholder: 'اكتب سبب الإلغاء',
+    reasonError: 'السبب مطلوب',
+    notifyTitle: 'سيُبلَّغ',
+    notified: ['الزبون', 'المطعم', 'الكابتن'],
+    confirmLabel: 'تأكيد الإلغاء',
+    cancelLabel: 'تراجع',
+    closeLabel: 'إغلاق',
+    onConfirm: () => undefined,
+  });
+  ReactDOM.createRoot(document.getElementById('root')).render(app);
+</script>

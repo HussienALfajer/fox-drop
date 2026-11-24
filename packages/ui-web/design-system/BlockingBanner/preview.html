@@ -1,0 +1,24 @@
+<!-- @dsCard group="Overlays" height=200 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, BlockingBanner } = FoxDrop;
+  const h = React.createElement;
+  function App() {
+    const [open, setOpen] = React.useState(true);
+    return h(BlockingBanner, {
+      open,
+      text: 'اضغط لتفعيل صوت التنبيهات',
+      actionLabel: 'تفعيل الصوت',
+      onEnable: () => setOpen(false),
+    });
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
