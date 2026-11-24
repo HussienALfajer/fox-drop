@@ -18,8 +18,7 @@ final class MenuItem<T> {
 /// A menu that opens under [child] (the select and the phone's country
 /// chip, D.8): as wide as [child], on the overlay, closed by a tap outside,
 /// Escape or a choice. Arrow keys move through the rows, Enter or Space
-/// picks. D.10 may switch the select to the bottom sheet behind the same
-/// API. Not exported.
+/// picks; it stays a menu on phones too (owner, D.10). Not exported.
 class AnchoredMenu<T> extends StatefulWidget {
   const AnchoredMenu({
     super.key,

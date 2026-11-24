@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:widgetbook/widgetbook.dart';
 
 import 'data_catalogue.dart';
+import 'overlays_catalogue.dart';
 
 /// Every core_ui component with a use case per state (R3): the same names
 /// as the web's stories and the goldens. Hover, focus and pressed are live
@@ -205,6 +206,7 @@ final List<WidgetbookNode> catalogue = [
     ],
   ),
   ...dataCatalogue,
+  ...overlaysCatalogue,
 ];
 
 const _countryNames = {

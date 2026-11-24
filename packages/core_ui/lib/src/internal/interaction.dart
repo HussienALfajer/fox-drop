@@ -41,6 +41,8 @@ class Interaction extends StatefulWidget {
     this.enterActivates = true,
     this.excludeBody = true,
     this.expanded,
+    this.selected,
+    this.enabledState = true,
   });
 
   final Widget Function(BuildContext context, InteractionState state) builder;
@@ -60,6 +62,13 @@ class Interaction extends StatefulWidget {
   final bool enterActivates;
   final bool excludeBody;
   final bool? expanded;
+
+  /// A selected tab or destination (D.10).
+  final bool? selected;
+
+  /// False leaves the enabled flags out: a destination that is never
+  /// disabled, read as the web's tab or link (D.10).
+  final bool enabledState;
 
   @override
   State<Interaction> createState() => _InteractionState();
@@ -125,7 +134,7 @@ class _InteractionState extends State<Interaction> {
     return Semantics(
       container: true,
       button: widget.isButton ? true : null,
-      enabled: widget.enabled,
+      enabled: widget.enabledState ? widget.enabled : null,
       focusable: widget.enabled ? true : null,
       focused: widget.enabled ? _node.hasFocus : null,
       label: widget.label,
@@ -136,6 +145,7 @@ class _InteractionState extends State<Interaction> {
       toggled: widget.toggled,
       inMutuallyExclusiveGroup: widget.inGroup ? true : null,
       expanded: widget.expanded,
+      selected: widget.selected,
       onTap: _active ? _activate : null,
       onFocus: widget.enabled ? _node.requestFocus : null,
       child: FocusableActionDetector(
