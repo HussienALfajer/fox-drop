@@ -461,6 +461,8 @@ describe('the component docs', () => {
       children: true,
       icon: true,
       action: true,
+      secondaryAction: true,
+      dismiss: true,
       density: true,
     } satisfies Record<Keys<BannerProps>, true>,
     BannerStackProps: {

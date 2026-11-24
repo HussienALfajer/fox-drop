@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { BannerStack } from './banner-stack';
 
 // D.10, RA §6.3: when several banners apply, up to two show and the rest are
@@ -38,6 +38,36 @@ describe('BannerStack', () => {
     expect(less).toHaveAttribute('aria-expanded', 'true');
     await userEvent.click(less);
     expect(screen.getAllByText(/./, { selector: '[data-banner-text]' })).toHaveLength(2);
+  });
+
+  it("passes a banner's close button and second action through", async () => {
+    const onDismiss = vi.fn();
+    const whatsapp = vi.fn();
+    render(
+      <BannerStack
+        banners={[
+          {
+            id: 'update',
+            tone: 'info',
+            text: 'يتوفر إصدار أحدث من التطبيق.',
+            dismiss: { label: 'إغلاق', onDismiss },
+          },
+          {
+            id: 'review',
+            tone: 'danger',
+            text: 'حسابك موقوف حتى مراجعة فريق الدعم',
+            action: { label: 'اتصال', onAction: () => undefined },
+            secondaryAction: { label: 'واتساب', onAction: whatsapp },
+          },
+        ]}
+        moreLabel={more}
+        lessLabel="إخفاء"
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'إغلاق' }));
+    await userEvent.click(screen.getByRole('button', { name: 'واتساب' }));
+    expect(onDismiss).toHaveBeenCalledOnce();
+    expect(whatsapp).toHaveBeenCalledOnce();
   });
 
   it('has no counter with two banners or fewer, and nothing with none', () => {

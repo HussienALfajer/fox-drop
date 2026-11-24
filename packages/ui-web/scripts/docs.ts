@@ -433,6 +433,14 @@ type BannerTone = 'danger' | 'caution' | 'warning' | 'info' | 'neutral';
 interface BannerAction {
   label: string;
   onAction: () => void;
+  /** An icon before the words, when the action names a channel (a call, WhatsApp). */
+  icon?: IconName;
+}
+
+interface BannerDismiss {
+  /** The close control's name, read by screen readers: «إغلاق». */
+  label: string;
+  onDismiss: () => void;
 }
 
 interface BannerProps {
@@ -442,6 +450,10 @@ interface BannerProps {
   /** Another icon than the tone's, such as 'offline'. */
   icon?: IconName;
   action?: BannerAction;
+  /** A second action; with two, both move to a line under the words. */
+  secondaryAction?: BannerAction;
+  /** A banner the user may put away for now, such as an update on offer. */
+  dismiss?: BannerDismiss;
   density?: Density;
 }
 
@@ -451,6 +463,8 @@ interface StackedBanner {
   text: string;
   icon?: IconName;
   action?: BannerAction;
+  secondaryAction?: BannerAction;
+  dismiss?: BannerDismiss;
 }
 
 interface BannerStackProps {

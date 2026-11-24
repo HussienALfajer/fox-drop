@@ -1,4 +1,4 @@
-<!-- @dsCard group="Overlays" height=340 -->
+<!-- @dsCard group="Overlays" height=520 -->
 <style>
   /* The card paints the apps' own ground and text, whatever the page around it. */
   :root {
@@ -39,6 +39,26 @@
       Banner,
       { tone: 'neutral', action: { label: 'تحديث', onAction: () => undefined } },
       'يتوفر تحديث للتطبيق',
+    ),
+    h(
+      Banner,
+      {
+        tone: 'info',
+        icon: 'retry',
+        action: { label: 'تحديث', onAction: () => undefined },
+        dismiss: { label: 'إغلاق', onDismiss: () => undefined },
+      },
+      'يتوفر إصدار أحدث من التطبيق.',
+    ),
+    h(
+      Banner,
+      {
+        tone: 'danger',
+        icon: 'warning',
+        action: { label: 'اتصال', icon: 'phone', onAction: () => undefined },
+        secondaryAction: { label: 'واتساب', icon: 'chat', onAction: () => undefined },
+      },
+      'حسابك موقوف حتى مراجعة فريق الدعم',
     ),
   );
   ReactDOM.createRoot(document.getElementById('root')).render(app);
