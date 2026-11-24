@@ -42,7 +42,7 @@ describe('the change classifier', () => {
       'docs/brand/logo/mark/mark-orange.svg',
       'docs/brand/app-icon/svg/app-icon-08.svg',
     ])
-      assert.equal(flags([file]), 'code typescript', file);
+      assert.equal(flags([file]), 'code typescript tokenDocs', file);
     assert.equal(flags(['docs/brand/expression.md']), '');
   });
 
@@ -146,7 +146,7 @@ describe('the change classifier', () => {
   });
 
   it('runs the goldens for the fonts and the scripts that fetch them', () => {
-    assert.equal(flags(['docs/brand/fonts-manifest.json']), 'code dart typescript');
+    assert.equal(flags(['docs/brand/fonts-manifest.json']), 'code dart typescript tokenDocs');
     for (const file of [
       'scripts/fonts.mjs',
       'scripts/fonts-fetch.mjs',

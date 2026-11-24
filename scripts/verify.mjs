@@ -300,8 +300,12 @@ function verifyChanged(since) {
 
   if (touched.contract) checkApiContract();
   if (touched.typescript) {
-    // The changed packages and every package that depends on one, committed or not.
-    const affected = `--filter="...[${base}]"`;
+    // The changed packages and every package that depends on one, committed or
+    // not. A doc the design tokens' tests read lies outside every package, so
+    // Turborepo sees no change: name the package and its dependents (PR 274,
+    // a §9.5 change that passed here and failed the guide test in CI).
+    const tokenDocs = touched.tokenDocs ? ' --filter="...@fox-drop/design-tokens"' : '';
+    const affected = `--filter="...[${base}]"${tokenDocs}`;
     step('Playwright browser', PLAYWRIGHT_INSTALL);
     step(
       'Lint, type check, build and smoke test, affected packages (Turborepo)',
