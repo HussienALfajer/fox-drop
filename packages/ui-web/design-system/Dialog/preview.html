@@ -1,4 +1,4 @@
-<!-- @dsCard group="Overlays" height=220 -->
+<!-- @dsCard group="Overlays" height=360 -->
 <style>
   html,
   body {
@@ -28,4 +28,6 @@
     tone: 'danger',
   });
   ReactDOM.createRoot(document.getElementById('root')).render(app);
+  // The card shows the overlay itself: it opens once the page has laid out.
+  setTimeout(() => document.querySelector('#root button')?.click(), 150);
 </script>

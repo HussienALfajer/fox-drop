@@ -20,5 +20,10 @@
       onEnable: () => setOpen(false),
     });
   }
-  ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { style: { padding: '72px 24px 0', color: 'var(--fd-color-on-surface)' } }, [
+      h('p', { key: 'p', style: { margin: 0 } }, 'غرفة العمليات: الصفحة خلف الشريط'),
+      h(App, { key: 'a' }),
+    ]),
+  );
 </script>

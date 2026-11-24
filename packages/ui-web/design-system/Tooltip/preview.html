@@ -1,4 +1,4 @@
-<!-- @dsCard group="Navigation" height=200 -->
+<!-- @dsCard group="Navigation" height=180 -->
 <style>
   html,
   body {
@@ -24,4 +24,22 @@
     h(Button, { variant: 'secondary', density: 'compact' }, 'التنبيهات'),
   );
   ReactDOM.createRoot(document.getElementById('root')).render(app);
+  // The card shows it as a pointer resting on the button does.
+  setTimeout(() => {
+    const target = document.querySelector('#root button');
+    for (const type of [
+      'pointerover',
+      'pointerenter',
+      'pointermove',
+      'mouseover',
+      'mouseenter',
+      'mousemove',
+    ])
+      target?.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: type !== 'pointerenter' && type !== 'mouseenter',
+          pointerType: 'mouse',
+        }),
+      );
+  }, 150);
 </script>

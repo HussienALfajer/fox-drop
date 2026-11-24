@@ -20,8 +20,14 @@ const badge = formTv({
       accent: 'bg-accent text-on-accent',
     },
     dot: { true: 'size-xs', false: 'min-h-md min-w-md px-2xs' },
-    corner: { true: 'absolute -top-2xs -end-2xs', false: '' },
+    corner: { true: 'absolute', false: '' },
   },
+  // A number sits half off the icon's corner so the icon still reads; the dot
+  // stays tucked on the corner.
+  compoundVariants: [
+    { corner: true, dot: false, class: '-top-xs -end-xs' },
+    { corner: true, dot: true, class: '-top-2xs -end-2xs' },
+  ],
   defaultVariants: { tone: 'danger' },
 });
 
