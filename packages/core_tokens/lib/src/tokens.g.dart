@@ -43,6 +43,7 @@ final class ColorTokens {
     required this.onPrimarySubtle,
     required this.neutral,
     required this.neutralSubtle,
+    required this.navHalo,
     required this.caution,
     required this.cautionSubtle,
     required this.scrim,
@@ -97,6 +98,7 @@ final class ColorTokens {
   final int onPrimarySubtle;
   final int neutral;
   final int neutralSubtle;
+  final int navHalo;
   final int caution;
   final int cautionSubtle;
   final int scrim;
@@ -154,6 +156,7 @@ abstract final class FoxColors {
     onPrimarySubtle: 0xFFC2410C,
     neutral: 0xFF4D473D,
     neutralSubtle: 0xFFEFE8DA,
+    navHalo: 0xFFE3DFD8,
     caution: 0xFF5C4A00,
     cautionSubtle: 0xFFFFF5BF,
     scrim: 0x7A1F1C18,
@@ -209,6 +212,7 @@ abstract final class FoxColors {
     onPrimarySubtle: 0xFFC2410C,
     neutral: 0xFF4D473D,
     neutralSubtle: 0xFFEFE8DA,
+    navHalo: 0xFFE3DFD8,
     caution: 0xFF5C4A00,
     cautionSubtle: 0xFFFFF5BF,
     scrim: 0x7A1F1C18,
@@ -264,6 +268,7 @@ abstract final class FoxColors {
     onPrimarySubtle: 0xFF03428E,
     neutral: 0xFF4D473D,
     neutralSubtle: 0xFFEFE8DA,
+    navHalo: 0xFFE3DFD8,
     caution: 0xFF5C4A00,
     cautionSubtle: 0xFFFFF5BF,
     scrim: 0x7A1F1C18,
@@ -319,6 +324,7 @@ abstract final class FoxColors {
     onPrimarySubtle: 0xFF03428E,
     neutral: 0xFF4D473D,
     neutralSubtle: 0xFFEFE8DA,
+    navHalo: 0xFFE3DFD8,
     caution: 0xFF5C4A00,
     cautionSubtle: 0xFFFFF5BF,
     scrim: 0x7A1F1C18,

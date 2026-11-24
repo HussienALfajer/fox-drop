@@ -16,6 +16,8 @@ export interface StackedBanner {
   text: string;
   icon?: BannerProps['icon'];
   action?: BannerProps['action'];
+  secondaryAction?: BannerProps['secondaryAction'];
+  dismiss?: BannerProps['dismiss'];
 }
 
 export interface BannerStackProps {
@@ -64,6 +66,8 @@ export function BannerStack({ banners, moreLabel, lessLabel, density }: BannerSt
             tone={b.tone}
             {...(b.icon && { icon: b.icon })}
             {...(b.action && { action: b.action })}
+            {...(b.secondaryAction && { secondaryAction: b.secondaryAction })}
+            {...(b.dismiss && { dismiss: b.dismiss })}
             {...(density && { density })}
           >
             {b.text}

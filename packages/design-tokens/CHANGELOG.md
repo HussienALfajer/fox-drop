@@ -2,6 +2,10 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.10.0 (2026-11-24, slice D.11: customer frame and sign-in)
+
+- New semantic `nav-halo` (new primitive neutral 250, `#E3DFD8`): the soft halo round the floating bottom bar's outline, taken from the owner's Figma file (home) when the bar was redrawn in its shape (owner, 2026-11-24). Decoration only, so it has no contrast pair.
+
 ## 0.9.0 (2026-11-24, slice D.5b: icon set v4 Madar)
 
 - The 47 icons redrawn as set v4 "Madar" (architecture §9.4, owner 2026-11-24): stroke 1.5, each element a `<path>` with its role as data attributes. The outputs carry six styles: the elements (Linear, Duotone, Brand Duo), `broken`, and `bold` and `boldDuo` fills baked with CanvasKit at 1.5 and 1.75 (`src/icon-bake.ts`). Dart `FoxIconData` gains `elements`, `broken`, `bold(weight)`, `boldDuo(weight)` and the enum `FoxIconWeight`; `paths` goes.

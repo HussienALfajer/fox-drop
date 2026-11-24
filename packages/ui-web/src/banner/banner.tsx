@@ -11,6 +11,8 @@ export const STATES = [
   'neutral',
   'action',
   'compact',
+  'dismissible',
+  'paired',
 ] as const;
 
 /** The tones the specs name (RA §6.3, CA §6.3): red, yellow, amber, blue, grey. */
@@ -47,8 +49,21 @@ const banner = formTv({
 });
 
 const action = formTv({
-  base: `shrink-0 cursor-pointer rounded-sm font-bold underline underline-offset-4 ${keyboardRing}`,
+  base: `inline-flex shrink-0 cursor-pointer items-center gap-2xs rounded-sm font-bold underline underline-offset-4 ${keyboardRing}`,
 });
+
+// The close control fills the bar's height and stays a 48 target (R13); it
+// has no fill of its own, so it reads as part of the bar in every tone.
+const dismissButton = formTv({
+  base: `-my-xs -me-xs flex size-(--fd-size-touch-target) shrink-0 cursor-pointer items-center justify-center rounded-full ${keyboardRing}`,
+});
+
+/** One of the banner's actions: words first, an icon when it names a channel. */
+export interface BannerAction {
+  label: string;
+  onAction: () => void;
+  icon?: IconName;
+}
 
 export interface BannerProps {
   tone: BannerTone;
@@ -56,28 +71,69 @@ export interface BannerProps {
   children: ReactNode;
   /** Another icon than the tone's, such as `offline`. */
   icon?: IconName;
-  action?: { label: string; onAction: () => void };
+  action?: BannerAction;
+  /** A second way out, such as a call beside WhatsApp; both move under the words. */
+  secondaryAction?: BannerAction;
+  /** A banner the user may put away for now (an update on offer): its close control's name. */
+  dismiss?: { label: string; onDismiss: () => void };
   density?: 'comfortable' | 'compact';
+}
+
+function ActionButton({ act }: { act: BannerAction }) {
+  return (
+    <button type="button" className={action()} onClick={act.onAction}>
+      {act.icon && <Icon name={act.icon} size="sm" />}
+      {act.label}
+    </button>
+  );
 }
 
 /**
  * A full-width bar under the top bar: no connection, emergency stop, test
- * mode, an update. Red is an alert; the rest are a status.
+ * mode, an update. Red is an alert; the rest are a status. With two actions,
+ * the actions take their own line under the words so neither is squeezed.
  */
-export function Banner({ tone, children, icon, action: act, density }: BannerProps) {
+export function Banner({
+  tone,
+  children,
+  icon,
+  action: act,
+  secondaryAction: second,
+  dismiss,
+  density,
+}: BannerProps) {
+  const stacked = Boolean(act && second);
   return (
     <div
       role={tone === 'danger' ? 'alert' : 'status'}
       data-tone={tone}
-      className={banner({ tone, density })}
+      className={banner({ tone, density, class: stacked ? 'items-start py-sm' : '' })}
     >
       <Icon name={icon ?? ICON[tone]} />
-      <span data-banner-text="" className="min-w-none flex-1">
-        {children}
-      </span>
-      {act && (
-        <button type="button" className={action()} onClick={act.onAction}>
-          {act.label}
+      {stacked ? (
+        <div className="flex min-w-none flex-1 flex-col gap-xs">
+          <span data-banner-text="">{children}</span>
+          <div className="flex flex-wrap gap-x-lg gap-y-xs">
+            {act && <ActionButton act={act} />}
+            {second && <ActionButton act={second} />}
+          </div>
+        </div>
+      ) : (
+        <>
+          <span data-banner-text="" className="min-w-none flex-1">
+            {children}
+          </span>
+          {(act ?? second) && <ActionButton act={(act ?? second)!} />}
+        </>
+      )}
+      {dismiss && (
+        <button
+          type="button"
+          aria-label={dismiss.label}
+          className={dismissButton({ class: stacked ? 'my-none' : '' })}
+          onClick={dismiss.onDismiss}
+        >
+          <Icon name="close" />
         </button>
       )}
     </div>

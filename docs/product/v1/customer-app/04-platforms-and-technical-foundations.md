@@ -18,7 +18,7 @@
 - **iPhone:** the App Store. FOX DROP's Apple Developer account is available (technology-stack T3).
 - **Version check:** at launch and on every reconnect, the app compares its version with `app.customer.min_version` and `app.customer.latest_version` (AP §9.14).
   - Below the minimum, a blocking update screen appears with `app.customer.update_message`. An active order's status screen stays readable, so the customer can follow it.
-  - Below the latest, a dismissible banner appears.
+  - Below the latest, a dismissible banner appears; dismissed, it returns at the next launch (owner, 2026-11-24).
 
 ## 4.3 Real time and push
 

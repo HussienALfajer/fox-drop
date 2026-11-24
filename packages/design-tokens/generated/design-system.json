@@ -412,6 +412,16 @@
         "usage": "The tint behind neutral text, and the skeleton's blocks."
       },
       {
+        "name": "nav-halo",
+        "value": {
+          "light": "#E3DFD8",
+          "dark": "#E3DFD8",
+          "captain-light": "#E3DFD8",
+          "captain-dark": "#E3DFD8"
+        },
+        "usage": "The soft halo round the floating bottom bar's outline (the Figma file's home, D.11); decoration, never text or a boundary."
+      },
+      {
         "name": "caution",
         "value": {
           "light": "#5C4A00",
@@ -909,7 +919,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.9.0",
+    "version": "0.10.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

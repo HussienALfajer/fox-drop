@@ -14,6 +14,7 @@
 - **Sign-in is asked for** when the guest:
   - taps «تأكيد الطلب» at checkout (U2)
   - or opens «طلباتي», addresses, «أكوادي», favourites, notifications, a report, or «أبلغ عن سعر مختلف»
+  - «طلباتي» and «حسابي» are tabs: a guest stays in the tab and sees an invitation with «تسجيل الدخول» rather than being sent to sign-in; «حسابي» still shows the terms and help without an account (owner, 2026-11-24)
 - **After sign-in** the customer returns to where they were:
   - the cart stays as it was
   - the address they filled is kept, and saved if they ticked «احفظ هذا العنوان»

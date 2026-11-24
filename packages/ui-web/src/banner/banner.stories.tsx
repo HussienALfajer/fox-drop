@@ -35,6 +35,26 @@ export const Action: Story = {
     action: { label: 'تحديث', onAction: () => undefined },
   },
 };
+// CU §4.2 and §5.5 (D.11): an update on offer closes; the review stop
+// offers a call and WhatsApp.
+export const Dismissible: Story = {
+  args: {
+    tone: 'info',
+    icon: 'retry',
+    children: 'يتوفر إصدار أحدث من التطبيق.',
+    action: { label: 'تحديث', onAction: () => undefined },
+    dismiss: { label: 'إغلاق', onDismiss: () => undefined },
+  },
+};
+export const Paired: Story = {
+  args: {
+    tone: 'danger',
+    icon: 'warning',
+    children: 'حسابك موقوف حتى مراجعة فريق الدعم',
+    action: { label: 'اتصال', icon: 'phone', onAction: () => undefined },
+    secondaryAction: { label: 'واتساب', icon: 'chat', onAction: () => undefined },
+  },
+};
 export const Compact: Story = {
   args: { tone: 'warning', children: 'التسوية متأخرة 3 أيام', density: 'compact' },
 };

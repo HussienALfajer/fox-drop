@@ -38,4 +38,37 @@ describe('Banner', () => {
     await userEvent.click(screen.getByRole('button', { name: 'تحديث' }));
     expect(onAction).toHaveBeenCalledOnce();
   });
+
+  // D.11 (owner, 2026-11-24): «يتوفر إصدار أحدث» closes (CU §4.2), and the
+  // review stop offers a call and WhatsApp (CU §5.5).
+  it('closes by its named close button', async () => {
+    const onDismiss = vi.fn();
+    render(
+      <Banner tone="info" dismiss={{ label: 'إغلاق', onDismiss }}>
+        يتوفر إصدار أحدث من التطبيق.
+      </Banner>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'إغلاق' }));
+    expect(onDismiss).toHaveBeenCalledOnce();
+  });
+
+  it('runs a second action beside the first, each with its icon', async () => {
+    const call = vi.fn();
+    const whatsapp = vi.fn();
+    const { container } = render(
+      <Banner
+        tone="danger"
+        action={{ label: 'اتصال', icon: 'phone', onAction: call }}
+        secondaryAction={{ label: 'واتساب', icon: 'chat', onAction: whatsapp }}
+      >
+        حسابك موقوف حتى مراجعة فريق الدعم
+      </Banner>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'اتصال' }));
+    await userEvent.click(screen.getByRole('button', { name: 'واتساب' }));
+    expect(call).toHaveBeenCalledOnce();
+    expect(whatsapp).toHaveBeenCalledOnce();
+    // The tone's icon and one per action.
+    expect(container.querySelectorAll('svg')).toHaveLength(3);
+  });
 });

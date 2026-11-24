@@ -157,6 +157,10 @@
       "$value": "{primitive.color.neutral.150}",
       "$description": "The tint behind neutral text, and the skeleton's blocks."
     },
+    "nav-halo": {
+      "$value": "{primitive.color.neutral.250}",
+      "$description": "The soft halo round the floating bottom bar's outline (the Figma file's home, D.11); decoration, never text or a boundary."
+    },
     "caution": {
       "$value": "{primitive.color.yellow.800}",
       "$description": "The yellow tone of a banner (a failed device check), apart from amber's warning (D.10)."

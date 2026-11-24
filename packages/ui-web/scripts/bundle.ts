@@ -88,6 +88,10 @@ export async function buildBundle(): Promise<{ js: string; css: string }> {
   const result = await build({
     root: PACKAGE_DIR,
     configFile: false,
+    // The production JSX runtime: under Vitest (NODE_ENV test) the transform
+    // would compile jsxDEV calls that the bundled production React lacks.
+    mode: 'production',
+    oxc: { jsx: { development: false } },
     logLevel: 'silent',
     plugins: [tailwindcss()],
     define: { 'process.env.NODE_ENV': '"production"' },

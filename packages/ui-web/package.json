@@ -40,6 +40,8 @@
     "@vitejs/plugin-react": "6.2.1",
     "eslint": "10.14.0",
     "jsdom": "31.0.1",
+    "react-18": "npm:react@18.3.1",
+    "react-dom-18": "npm:react-dom@18.3.1",
     "storybook": "10.6.8",
     "tailwindcss": "4.3.5",
     "typescript": "6.0.3",
