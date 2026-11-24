@@ -79,7 +79,7 @@ function OfficeView({ office, city }: { office: CityOffice; city: City }) {
                 longitude: current.location.longitude,
               })}
             </li>
-            {current.landmark !== null && (
+            {current.landmark && (
               <li>{t('office.landmarkLine', { landmark: current.landmark })}</li>
             )}
             {officeDays.map((day) => {
