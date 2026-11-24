@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { buildBundle, checkJs, COMPONENTS, ICON_NAMES, PACKAGE_DIR } from '../scripts/bundle.ts';
 import { preview, typesDoc } from '../scripts/docs.ts';
 import type { AmountsSummaryProps } from '../src/amounts-summary/amounts-summary';
@@ -60,6 +60,57 @@ describe('the Design System bundle', () => {
     expect(Object.keys(api)).toEqual(expect.arrayContaining([...COMPONENTS, 'React', 'ReactDOM']));
     for (const name of COMPONENTS) expect(typeof api[name], name).toBe('function');
     expect((window as unknown as { React: unknown }).React).toBe(api['React']);
+  });
+
+  // The Design canvas renders with its own React 18 (window.React) and the
+  // components need React 19: the bundle bridges them (scripts/bundle-entry.ts).
+  it('renders its components under a page that runs React 18', async () => {
+    const page = window as unknown as Record<string, unknown>;
+    const umd = (file: string) =>
+      readFileSync(path.join(PACKAGE_DIR, 'node_modules', file), 'utf8');
+    window.eval(umd('react-18/umd/react.production.min.js'));
+    window.eval(umd('react-dom-18/umd/react-dom.production.min.js'));
+    const host = page['React'] as {
+      version: string;
+      createElement: (type: unknown, props: unknown, ...children: unknown[]) => unknown;
+    };
+    const hostDom = page['ReactDOM'] as {
+      createRoot: (el: Element) => { render: (node: unknown) => void; unmount: () => void };
+      flushSync: (fn: () => void) => void;
+    };
+    expect(host.version).toBe('18.3.1');
+    window.eval(bundle.js);
+    expect(page['React']).toBe(host);
+    const api = page['FoxDrop'] as Record<string, { Block?: unknown }>;
+    const container = document.createElement('div');
+    document.body.append(container);
+    const root = hostDom.createRoot(container);
+    hostDom.flushSync(() =>
+      root.render(
+        host.createElement(
+          'div',
+          null,
+          host.createElement(
+            api['Button'],
+            { variant: 'primary' },
+            host.createElement('span', null, 'تأكيد'),
+          ),
+          host.createElement(
+            api['Skeleton'],
+            { label: 'جارٍ التحميل' },
+            host.createElement(api['Skeleton']!.Block, { shape: 'line' }),
+          ),
+        ),
+      ),
+    );
+    await vi.waitFor(() => {
+      expect(container.querySelector('button')?.textContent).toContain('تأكيد');
+      expect(
+        container.querySelector('[aria-label="جارٍ التحميل"], [role="status"]'),
+      ).not.toBeNull();
+    });
+    root.unmount();
+    container.remove();
   });
 
   it('carries the --fd-* variables and the component classes, with no font and no style end', () => {

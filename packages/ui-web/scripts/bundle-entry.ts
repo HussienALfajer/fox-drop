@@ -43,7 +43,7 @@ import {
 } from '../src/index.ts';
 import './bundle.css';
 
-const api = {
+const components = {
   Button,
   Icon,
   Field,
@@ -80,13 +80,110 @@ const api = {
   Tabs,
   TopBar,
   Sidebar,
-  useToast,
-  React,
-  ReactDOM,
 };
 
-// A page that already loaded its own React keeps it.
+// The bridge to a page that renders with another React (the Design canvas
+// runs React 18; the components need 19, as the UI SDK does). Each export
+// checks who renders it: under the bundle's own React it renders the real
+// component directly; under the page's React it renders an empty host element
+// and mounts the real component in it with the bundle's ReactDOM, turning the
+// page's elements in its props and children into the bundle's.
 const page = window as unknown as Record<string, unknown>;
+const HOST_ELEMENT = Symbol.for('react.element');
+const HOST_FRAGMENT = Symbol.for('react.fragment');
+const innerOf = new WeakMap<object, React.ElementType>();
+
+interface HostElement {
+  $$typeof: symbol;
+  type: unknown;
+  key: string | null;
+  props: Record<string, unknown>;
+}
+
+type HostReact = {
+  createElement: (type: string, props: Record<string, unknown>) => unknown;
+  useRef: <T>(value: T) => { current: T };
+  useLayoutEffect: (effect: () => void | (() => void), deps?: unknown[]) => void;
+};
+
+function isHostElement(node: unknown): node is HostElement {
+  return (
+    typeof node === 'object' && node !== null && (node as HostElement).$$typeof === HOST_ELEMENT
+  );
+}
+
+/** The page's elements as the bundle's; anything else passes unchanged. */
+function toInner(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(toInner);
+  if (!isHostElement(node)) return node;
+  const type =
+    typeof node.type === 'string'
+      ? node.type
+      : node.type === HOST_FRAGMENT
+        ? React.Fragment
+        : innerOf.get(node.type as object);
+  // A component of the page alone cannot cross into the bundle's tree.
+  if (type === undefined) return null;
+  return React.createElement(type, { ...innerProps(node.props), key: node.key ?? undefined });
+}
+
+function innerProps(props: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(props)) out[name] = toInner(value);
+  return out;
+}
+
+function bridge<P extends object>(
+  Inner: React.ComponentType<P>,
+  name: string,
+): React.ComponentType<P> {
+  function Bridged(props: P) {
+    const host = page['React'] as HostReact | undefined;
+    if (!host || (host as unknown) === React) return React.createElement(Inner, props);
+    // Rendered by the page's React: only its hooks are allowed here.
+    const slot = host.useRef<HTMLElement | null>(null);
+    const root = host.useRef<ReactDOM.Root | null>(null);
+    host.useLayoutEffect(() => {
+      const mounted = ReactDOM.createRoot(slot.current!);
+      root.current = mounted;
+      return () => {
+        root.current = null;
+        setTimeout(() => mounted.unmount());
+      };
+    }, []);
+    host.useLayoutEffect(() => {
+      root.current?.render(
+        React.createElement(Inner, innerProps(props as Record<string, unknown>) as P),
+      );
+    });
+    return host.createElement('div', {
+      ref: slot,
+      style: { display: 'contents' },
+    }) as React.ReactElement;
+  }
+  Bridged.displayName = name;
+  innerOf.set(Bridged, Inner);
+  // Parts such as Skeleton.Block cross the bridge too.
+  for (const [part, value] of Object.entries(Inner).filter(([key]) => /^[A-Z]/.test(key))) {
+    if (
+      typeof value === 'function' ||
+      (typeof value === 'object' && value !== null && '$$typeof' in value)
+    ) {
+      (Bridged as unknown as Record<string, unknown>)[part] = bridge(
+        value as React.ComponentType<object>,
+        `${name}.${part}`,
+      );
+    }
+  }
+  return Bridged;
+}
+
+const api: Record<string, unknown> = { useToast, React, ReactDOM };
+for (const [name, component] of Object.entries(components)) {
+  api[name] = bridge(component as React.ComponentType<object>, name);
+}
+
+// A page that already loaded its own React keeps it.
 page['React'] ??= React;
 page['ReactDOM'] ??= ReactDOM;
 page['FoxDrop'] = api;
