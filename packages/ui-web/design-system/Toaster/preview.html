@@ -1,4 +1,4 @@
-<!-- @dsCard group="Overlays" height=260 -->
+<!-- @dsCard group="Overlays" height=300 -->
 <style>
   html,
   body {
@@ -8,27 +8,41 @@
   }
   #root {
     padding: var(--fd-space-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--fd-space-md);
-    align-items: flex-start;
   }
 </style>
 <div id="root" dir="rtl" lang="ar"></div>
 <script>
   const { React, ReactDOM, Toaster, useToast, Button } = FoxDrop;
   const h = React.createElement;
+  const passing = [
+    { tone: 'info', text: 'نُسخ رقم الطلب' },
+    {
+      tone: 'success',
+      text: 'أُضيف إلى السلة',
+      action: { label: 'عرض السلة', onAction: () => undefined },
+    },
+  ];
   function Show() {
     const toast = useToast();
+    React.useEffect(() => {
+      // A danger toast stays until it is closed; the others leave by
+      // themselves, so the card shows them again.
+      toast.show({
+        tone: 'danger',
+        text: 'تعذّر الحفظ',
+        action: { label: 'أعد المحاولة', onAction: () => undefined },
+      });
+      passing.forEach((options) => toast.show(options));
+      const timer = setInterval(() => passing.forEach((options) => toast.show(options)), 8500);
+      return () => clearInterval(timer);
+    }, [toast]);
     return h(
       Button,
-      {
-        variant: 'secondary',
-        onClick: () => toast.show({ tone: 'success', text: 'حُفظت التغييرات' }),
-      },
+      { variant: 'secondary', onClick: () => toast.show(passing[1]) },
       'أظهر الإشعار',
     );
   }
-  const app = h(Toaster, { label: 'الإشعارات', closeLabel: 'إغلاق' }, h(Show));
-  ReactDOM.createRoot(document.getElementById('root')).render(app);
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h(Toaster, { label: 'الإشعارات', closeLabel: 'إغلاق' }, h(Show)),
+  );
 </script>

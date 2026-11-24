@@ -1,0 +1,19 @@
+/* The theme extensions the components use beyond the tokens. Imported by
+   styles.css (Storybook, the apps) and scripts/bundle.css (the Design System),
+   so a card draws what a story draws. */
+
+/* The skeleton's calm pulse (D.9, owner 2026-11-24): opacity 1 → 0.55 → 1
+   over duration.moment; `motion-safe:` keeps it still under reduced motion. */
+@theme {
+  --animate-skeleton: skeleton-pulse var(--fd-duration-moment) var(--fd-easing-standard) infinite;
+  /* The fixed photo ratios of brand expression §5 (R7): a restaurant cover
+     16:9, a dish 1:1. The token theme resets Tailwind's own `aspect-video`. */
+  --aspect-cover: 16 / 9;
+  --aspect-dish: 1 / 1;
+
+  @keyframes skeleton-pulse {
+    50% {
+      opacity: 0.55;
+    }
+  }
+}

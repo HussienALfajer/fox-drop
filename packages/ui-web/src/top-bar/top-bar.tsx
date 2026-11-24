@@ -65,12 +65,12 @@ export function TopBar({ label, title, menu, start, children, actions, end }: To
       {actions?.map((action) => (
         <button key={action.label} type="button" className={iconButton()} onClick={action.onAction}>
           <span className="sr-only">{action.label}</span>
-          {action.count === undefined ? (
-            <Icon name={action.icon} />
-          ) : (
-            <CountBadge count={action.count} label={action.countLabel ?? String(action.count)}>
-              <Icon name={action.icon} />
-            </CountBadge>
+          <Icon name={action.icon} />
+          {/* The count sits on the round button's corner, clear of the icon. */}
+          {action.count !== undefined && (
+            <span className="absolute -top-2xs -end-2xs flex">
+              <CountBadge count={action.count} label={action.countLabel ?? String(action.count)} />
+            </span>
           )}
         </button>
       ))}

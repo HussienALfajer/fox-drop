@@ -4,7 +4,9 @@
 @import 'tailwindcss' source(none);
 @import '@fox-drop/design-tokens/tokens.css';
 @import '@fox-drop/design-tokens/tailwind.css';
+@import '../src/theme.css';
 @source '../src/**/*.tsx';
-@source '../src/field/styles.ts';
+@source '../src/**/*.ts';
 @source not '../src/**/*.stories.tsx';
 @source not '../src/**/*.test.tsx';
+@source not '../src/**/*.test.ts';

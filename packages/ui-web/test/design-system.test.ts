@@ -68,6 +68,11 @@ describe('the Design System bundle', () => {
     // the form components: the classes of src/field/styles.ts and the input tokens
     expect(bundle.css).toContain('--fd-input-color-border-focus');
     expect(bundle.css).toContain('inset-ring');
+    // the theme extensions of src/theme.css: the skeleton's pulse, the photo ratios
+    expect(bundle.css).toContain('skeleton-pulse');
+    expect(bundle.css).toContain('--aspect-cover');
+    // shared classes in a .ts module, such as the overlays' (src/overlay/styles.ts)
+    expect(bundle.css).toContain(String.raw`max-w-\(--fd-size-dialog\)`);
     expect(bundle.css.toLowerCase()).not.toContain('</style');
     expect(bundle.css).not.toContain('@font-face');
     expect(bundle.css).not.toContain('.fonts');

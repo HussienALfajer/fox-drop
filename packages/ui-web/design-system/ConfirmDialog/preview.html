@@ -1,4 +1,4 @@
-<!-- @dsCard group="Overlays" height=220 -->
+<!-- @dsCard group="Overlays" height=760 -->
 <style>
   html,
   body {
@@ -16,7 +16,7 @@
 </style>
 <div id="root" dir="rtl" lang="ar"></div>
 <script>
-  const { React, ReactDOM, ConfirmDialog, Button } = FoxDrop;
+  const { React, ReactDOM, ConfirmDialog, Button, AmountsSummary } = FoxDrop;
   const h = React.createElement;
   const app = h(ConfirmDialog, {
     trigger: h(Button, { variant: 'danger', density: 'compact' }, 'إلغاء الطلب'),
@@ -24,6 +24,17 @@
     reasonLabel: 'السبب',
     reasonPlaceholder: 'اكتب سبب الإلغاء',
     reasonError: 'السبب مطلوب',
+    effectTitle: 'أثره على الأرصدة',
+    effect: h(AmountsSummary, {
+      density: 'compact',
+      symbol: '₺',
+      lines: [
+        { label: 'يُعاد للزبون', amount: '47000', tone: 'success' },
+        { label: 'يُخصم من المطعم', amount: '-42000', tone: 'danger' },
+        { label: 'عمولة المنصة', amount: '-5000', tone: 'danger' },
+      ],
+      total: { label: 'صافي الأثر', amount: '0' },
+    }),
     notifyTitle: 'سيُبلَّغ',
     notified: ['الزبون', 'المطعم', 'الكابتن'],
     confirmLabel: 'تأكيد الإلغاء',
@@ -32,4 +43,6 @@
     onConfirm: () => undefined,
   });
   ReactDOM.createRoot(document.getElementById('root')).render(app);
+  // The card shows the overlay itself: it opens once the page has laid out.
+  setTimeout(() => document.querySelector('#root button')?.click(), 150);
 </script>
