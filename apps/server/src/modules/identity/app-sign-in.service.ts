@@ -478,7 +478,10 @@ export class AppSignInService {
       (row.issuedBy !== null || row.portal === (request.portal === true));
     if (!code) {
       // Slice D.11a: the device's latest code, ended by its wrong attempts,
-      // says so; the attempt that ended it answered the same.
+      // says so; the attempt that ended it answered the same. Only a code
+      // this device asked for: a used-up emergency code (no device) answers
+      // code_expired to every later device, so its end tells no one that
+      // the number has an account (architecture §8.3.2).
       const [latest] = await tx
         .select({
           deviceId: appSignInCodes.deviceId,
@@ -493,7 +496,10 @@ export class AppSignInService {
         .orderBy(desc(appSignInCodes.createdAt))
         .limit(1);
       return new SignInCodeRefusedError(
-        latest && ours(latest) && latest.endReason === 'attempts_exhausted'
+        latest &&
+          latest.deviceId === request.deviceId &&
+          ours(latest) &&
+          latest.endReason === 'attempts_exhausted'
           ? 'attempts_used'
           : 'code_expired',
         0,

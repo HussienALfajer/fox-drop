@@ -6,6 +6,9 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 
 ## Waiting for the owner
 
+- **Codes abroad while App Check is off** (D.11a security review): `otp.number_daily_max_abroad` limits one number, not a script that sends one code to each of many foreign numbers (held only by `otp.ip_hourly_max` and a client-chosen device id) while `otp.app_check_required` is off. Options: refuse numbers abroad until App Check is on, or a global daily cap on codes sent abroad. The apps offer foreign numbers only from D.11's components slice.
+- **The address's contact number abroad** (D.11a review): it stays Syrian or Turkish (`syrianOrTurkishPhone`); the owner widened sign-in only (U3). Widen it too? A captain calls it from Syria.
+
 - **A discount above the clearing account** (`test/money-properties`, PR 246): what an outcome posts when a restaurant-funded discount exceeds what the clearing account holds (`outcomeEntries` throws today; the property skips that case).
 - **`FONTS_DEPLOY_KEY`** (D.1): the private half of a read-only deploy key on `fox-drop-fonts`, no expiry, in the repository's Actions secrets (commands in the D.1 pull request thread); the `visual` (D.6) and `golden` (D.7) CI jobs fail without it. Also the meaning of the `broken-edges` icon SVGs and of the `variant-b/c` icons.
 - **Choices decided by us, to confirm:** D.3, D.4, D.6, D.7 and L.1c, each under «Decided by us» in its section of `slice-notes.md`; D.8 under «Notes for the next session» in [`slices/D.8-inputs-and-forms.md`](slices/D.8-inputs-and-forms.md). D.4: open both design artifacts. D.7: run widgetbook.
@@ -14,6 +17,8 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 - **Two plugins off** (archive `claude-code-workflow.md`, phase 3): the `marketing` and `social-media-skills` plugins, off only in the app's settings (start goal under 45K tokens; was 75.7K).
 
 ## Follow-ups
+
+- **The selected point in nginx's logs** (D.11a security review): public customer routes take the point in the query string (`GET platform`, `account-state`, browsing, search, favourites, codes, the emergency stop), and nginx's combined log writes the request line with the IP (`infra/nginx/server.conf.template`). A log format without the query string for `/v1`.
 
 - **The bridge test stands alone** (D.11 design checkpoint review, round 2): the test «renders through its own React beside a page React 18, and converts nested elements» in `ui-web/test/design-system.test.ts` relies on the test before it having loaded React 18 and the bundle; load both in it (or in a shared `beforeAll`) and cover `DataTable`'s function props (a `cell` returning a page element) beside `Tabs`.
 - **A server test under load** (D.11 design checkpoint): `apps/server` `otp-sender.test.ts` «delivers a customer code over WhatsApp…» answered 500 once during a full local `--changed` run and passed alone (35/35); watch it in CI and fix its cause if it repeats.

@@ -19,7 +19,7 @@ part 'customer_new_address_dto.g.dart';
 /// * [street] - «الشارع والبناء».
 /// * [floor] - «الطابق والشقة», optional.
 /// * [landmark] - «بالقرب من».
-/// * [contactPhone] - The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
+/// * [contactPhone] - A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [recipientName] - «اسم المستلم», needed with another contact number (Q5).
 /// * [directions] - «توجيهات للكابتن», optional.
 /// * [isDefault] - Make it the default; the first address always is.
@@ -50,7 +50,7 @@ abstract class CustomerNewAddressDto
   @BuiltValueField(wireName: r'landmark')
   String get landmark;
 
-  /// The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
+  /// A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
   @BuiltValueField(wireName: r'contactPhone')
   String? get contactPhone;
 

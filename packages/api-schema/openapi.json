@@ -38458,8 +38458,8 @@
                   "anyOf": [
                     {
                       "type": "string",
-                      "pattern": "^\\+[1-9]\\d{7,14}$",
-                      "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
+                      "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                      "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
                     },
                     {
                       "type": "null"
@@ -38607,8 +38607,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^\\+[1-9]\\d{7,14}$",
-                "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
+                "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
               },
               {
                 "type": "null"
@@ -38736,8 +38736,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^\\+[1-9]\\d{7,14}$",
-                "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
+                "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
               },
               {
                 "type": "null"
@@ -38878,8 +38878,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^\\+[1-9]\\d{7,14}$",
-                "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
+                "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
               },
               {
                 "type": "null"
@@ -51046,8 +51046,8 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "pattern": "^\\+[1-9]\\d{7,14}$",
-                        "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
+                        "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                        "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
                       },
                       {
                         "type": "null"
