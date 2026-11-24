@@ -129,7 +129,7 @@ export function Tabs(props: TabsProps) {
         {variant === 'underline' && <TabsIndicator className={indicator()} />}
       </TabsList>
       {items.map((item) => (
-        <TabsPanel key={item.value} value={item.value} className="outline-hidden">
+        <TabsPanel key={item.value} value={item.value} className="text-on-surface outline-hidden">
           {item.content}
         </TabsPanel>
       ))}
