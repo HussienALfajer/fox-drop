@@ -1040,4 +1040,11 @@ abstract final class FoxSize {
   static const double step = 32.0;
   static const double switchWidth = 52.0;
   static const double switchHeight = 32.0;
+  static const double dialog = 460.0;
+  static const double drawer = 440.0;
+  static const double toast = 360.0;
+  static const double tooltip = 240.0;
+  static const double sidebar = 248.0;
+  static const double sidebarCollapsed = 72.0;
+  static const double bar = 64.0;
 }

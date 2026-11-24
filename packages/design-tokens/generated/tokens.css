@@ -113,6 +113,13 @@
   --fd-size-step: 32px;
   --fd-size-switch-width: 52px;
   --fd-size-switch-height: 32px;
+  --fd-size-dialog: 460px;
+  --fd-size-drawer: 440px;
+  --fd-size-toast: 360px;
+  --fd-size-tooltip: 240px;
+  --fd-size-sidebar: 248px;
+  --fd-size-sidebar-collapsed: 72px;
+  --fd-size-bar: 64px;
   --fd-border-width-thin: 1px;
   --fd-border-width-thick: 2px;
   --fd-button-height: 50px;

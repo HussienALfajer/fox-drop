@@ -507,7 +507,20 @@
     "switch-height": {
       "$value": "32px",
       "$description": "The switch track's height."
-    }
+    },
+    "dialog": {
+      "$value": "460px",
+      "$description": "A dialog's width; less the margins on a phone (D.10)."
+    },
+    "drawer": { "$value": "440px", "$description": "The web side drawer's width (D.10)." },
+    "toast": { "$value": "360px", "$description": "A toast's width on the web (D.10)." },
+    "tooltip": { "$value": "240px", "$description": "A tooltip's widest line (D.10)." },
+    "sidebar": { "$value": "248px", "$description": "The panel and portal sidebar (D.10)." },
+    "sidebar-collapsed": {
+      "$value": "72px",
+      "$description": "The collapsed sidebar: icons only (D.10)."
+    },
+    "bar": { "$value": "64px", "$description": "The top bar and the phone back bar (D.10)." }
   },
   "border-width": {
     "$type": "dimension",

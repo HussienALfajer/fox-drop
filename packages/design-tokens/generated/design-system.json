@@ -867,6 +867,41 @@
         "name": "size-switch-height",
         "value": "32px",
         "usage": "The switch track's height."
+      },
+      {
+        "name": "size-dialog",
+        "value": "460px",
+        "usage": "A dialog's width; less the margins on a phone (D.10)."
+      },
+      {
+        "name": "size-drawer",
+        "value": "440px",
+        "usage": "The web side drawer's width (D.10)."
+      },
+      {
+        "name": "size-toast",
+        "value": "360px",
+        "usage": "A toast's width on the web (D.10)."
+      },
+      {
+        "name": "size-tooltip",
+        "value": "240px",
+        "usage": "A tooltip's widest line (D.10)."
+      },
+      {
+        "name": "size-sidebar",
+        "value": "248px",
+        "usage": "The panel and portal sidebar (D.10)."
+      },
+      {
+        "name": "size-sidebar-collapsed",
+        "value": "72px",
+        "usage": "The collapsed sidebar: icons only (D.10)."
+      },
+      {
+        "name": "size-bar",
+        "value": "64px",
+        "usage": "The top bar and the phone back bar (D.10)."
       }
     ]
   },
