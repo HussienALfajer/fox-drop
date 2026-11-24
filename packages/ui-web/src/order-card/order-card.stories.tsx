@@ -47,3 +47,5 @@ export const Late: Story = {
 };
 // The owner's portal shows live orders read-only (RA R15).
 export const ReadOnly: Story = {};
+// The number opens the order detail, in the app and in the portal.
+export const Open: Story = { args: { onOpen: () => undefined } };

@@ -45,11 +45,17 @@ Drawn, with the options the owner decides:
 
 ## Stopped at
 
-Done: the pull request is open with auto-merge.
+Done: the pull request is opened with auto-merge.
 
 ## Evidence
 
-<filled when the slice's pull request is opened>
+- `node scripts/verify.mjs --changed` (checker): «verify: the checks of the change passed» (`core_ui` +206, widgetbook +3), and again on the final tree before the pull request.
+- `ui-web`: `vitest run` 29 files, 286 tests passed; `playwright test --project=functional` 356 passed (RTL, keyboard, axe on every story, 130% text); `test:visual` in Docker 400 passed, 130 new baselines (the eleven components on phone and captain).
+- `core_ui`: `flutter test` 213 passed; `pnpm test:golden` in Docker: 24 passed, five new goldens (`data_phone_basics`, `data_phone_cards`, `data_captain_basics`, `data_captain_cards`, `data_phone_text_130`), no existing golden changed; widgetbook coverage 3 passed.
+- `design-tokens`: 233 tests passed; the contrast report shows every new tint pair at 4.56:1 to 8.73:1 (7.24:1 at least for the captain). `node --test scripts/fonts.test.mjs`: 10 passed.
+- Compared with the approved sheet: the screenshots and goldens match it; the two differences are under «Built».
+- Design System synced (version 13: tokens 0.7.0 and the eleven Data cards), the Guide redrawn (version 13), the sheet marked superseded (proposals canvas version 20). Screenshots outside the repository: the scratchpad's `sb/` and `data-*.png`.
+- **What the owner can try:** Storybook (`pnpm --filter @fox-drop/ui-web storybook`): the eleven components under their names, in Arabic, phone and captain; widgetbook (`apps/widgetbook`, `flutter run -d windows`): the sixteen data widgets in every state, both themes, text scale up to 2; the Design System's Data cards.
 
 ## Before deploying
 

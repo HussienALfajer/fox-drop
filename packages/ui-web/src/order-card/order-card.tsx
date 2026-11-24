@@ -4,7 +4,7 @@ import { formTv, keyboardRing } from '../field/styles';
 import { Icon } from '../icon/icon';
 
 /** The states the stories show (R3). */
-export const STATES = ['default', 'preparing', 'late', 'readOnly'] as const;
+export const STATES = ['default', 'preparing', 'late', 'readOnly', 'open'] as const;
 
 const card = formTv({
   base: 'flex flex-col gap-sm rounded-lg bg-surface-raised p-md text-on-surface',
