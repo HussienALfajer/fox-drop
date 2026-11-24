@@ -146,7 +146,7 @@ Tests to add when coding (red phase): the normalisation table above as a unit te
 
 ## Stopped at
 
-Screen review (step 7), one screen at a time: screens 1 (starting), 2 (phone number) and 3 (code) approved 2026-11-24; next, screen 4 («أكمل بياناتك»). The captain's and restaurant's forms are not drawn in this batch (screen 3's decisions). The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
+Screen review (step 7), one screen at a time: screens 1 (starting), 2 (phone number) and 3 (code) approved 2026-11-24; screen 4 («أكمل بياناتك») under review: its board ««أكمل بياناتك» · كل الحالات والرسائل (17)» drawn (canvas version 59; «حفظ» now uses the mark-filling loader), waiting for the owner's changes. The captain's and restaurant's forms are not drawn in this batch (screen 3's decisions). The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
 
 ## Evidence
 
