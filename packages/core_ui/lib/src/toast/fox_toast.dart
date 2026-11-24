@@ -185,7 +185,8 @@ class _CloseAction extends StatelessWidget {
 
 /// Shows toasts over [child], one at a time: a new one replaces the old.
 /// They sit [bottomInset] above the bottom edge (above the bottom
-/// navigation), centred on phones. Announced in a polite live region,
+/// navigation), centred on phones. Announced once (not also as a live
+/// region, which TalkBack would read again), politely,
 /// assertively for danger; the timer pauses while a mouse is over the toast
 /// or focus is inside it. Fades and rises 8 px over `duration.base`; a fade
 /// only under reduced motion.
@@ -332,7 +333,6 @@ class FoxToasterState extends State<FoxToaster> {
                     child: Center(
                       child: Semantics(
                         container: true,
-                        liveRegion: true,
                         child: MouseRegion(
                           onEnter: (_) {
                             _hovered = true;

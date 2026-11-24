@@ -216,7 +216,12 @@ const _customer = [
 const _captain = [
   FoxNavItem(icon: FoxIcons.home, label: 'الرئيسية'),
   FoxNavItem(icon: FoxIcons.wallet, label: 'أرباحي'),
-  FoxNavItem(icon: FoxIcons.cash, label: 'عهدتي', dot: true),
+  FoxNavItem(
+    icon: FoxIcons.cash,
+    label: 'عهدتي',
+    dot: true,
+    badgeLabel: 'جديد',
+  ),
   FoxNavItem(icon: FoxIcons.more, label: 'المزيد'),
 ];
 
