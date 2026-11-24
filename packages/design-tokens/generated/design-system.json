@@ -412,6 +412,36 @@
         "usage": "The tint behind neutral text, and the skeleton's blocks."
       },
       {
+        "name": "caution",
+        "value": {
+          "light": "#5C4A00",
+          "dark": "#5C4A00",
+          "captain-light": "#5C4A00",
+          "captain-dark": "#5C4A00"
+        },
+        "usage": "The yellow tone of a banner (a failed device check), apart from amber's warning (D.10)."
+      },
+      {
+        "name": "caution-subtle",
+        "value": {
+          "light": "#FFF5BF",
+          "dark": "#FFF5BF",
+          "captain-light": "#FFF5BF",
+          "captain-dark": "#FFF5BF"
+        },
+        "usage": "The tint behind caution text."
+      },
+      {
+        "name": "scrim",
+        "value": {
+          "light": "#1F1C187A",
+          "dark": "#1F1C187A",
+          "captain-light": "#1F1C187A",
+          "captain-dark": "#1F1C187A"
+        },
+        "usage": "Behind dialogs, sheets and drawers (D.10)."
+      },
+      {
         "name": "alert",
         "value": {
           "light": "#8C1530",
@@ -844,7 +874,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

@@ -49,7 +49,16 @@ Tests written first (locked in the red phase), on both platforms unless marked; 
 - Navigation rail (Flutter): the same items on the start side, keyboard traversal on Windows.
 - Pull to refresh (Flutter): the callback runs once per pull, the indicator holds until it completes, a semantics action refreshes without a gesture.
 
-## Design (checkpoint 0, waiting for the owner)
+## Design (checkpoint 0, approved 2026-11-24)
+
+**Owner approval (2026-11-24, in comments on the sheet and in chat):**
+
+1. Bottom navigation: exactly the Figma file's floating bar, icons only (B), **in all three apps** (customer, captain, restaurant), the captain's in its own theme. Names live in semantics. Items: the owner asked for the best for a delivery customer; ours, kept: the four of CU §6.1 (home, search, my orders, my account) with the floating cart button (it shows the count and value; search matters with many restaurants; favourites stay under «حسابي»), so the spec does not change.
+2. Pull to refresh: (B) the logo's drop filling as you pull, pulsing while it loads, still under reduced motion.
+3. D.8's select: (B) stays the menu under the field everywhere.
+4. Banners: (A) red solid, the other tones tinted.
+5. Tokens 0.8.0 as proposed (caution, scrim, layer.*). 6. Missing icons as proposed; `menu` added. 7. Toast (A) dark blue.
+
 
 Sheet «Overlays and navigation — batch 4» (`packages/design-tokens/src/overlays-sheet.ts`, board `Overlays.dc.html` on the Component proposals canvas at x 8400, 1680×11300, drawn by `pnpm --filter @fox-drop/design-tokens icon-sheet --config <file>`). The Figma API was rate limited (429), so the look used the renders of 2026-11-23 (home 49:2041, cart, the components page). Taken from the file: the floating blue bottom bar with ivory circles and the orange active circle, the S-curve tab of the dish block (here on the item sheet), the round back button with the orange title, the bell in a round chip with its dot.
 
@@ -67,7 +76,7 @@ Also drawn without a question: the dialog (safe action focused first, captain di
 
 ## Stopped at
 
-Checkpoint 0: the sheet is on the Component proposals canvas, waiting for the owner's approval (2026-11-24). No component code yet.
+Checkpoint 0 approved (2026-11-24). Tokens 0.8.0 (caution, scrim, layer.*, the menu icon) done; next: the red phase of checkpoint A.
 
 ## Evidence
 

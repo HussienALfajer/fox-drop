@@ -81,6 +81,10 @@
         "700": { "$value": "#8A5A00" },
         "800": { "$value": "#6B4500" }
       },
+      "yellow": {
+        "50": { "$value": "#FFF5BF", "$description": "The caution tint (D.10)." },
+        "800": { "$value": "#5C4A00" }
+      },
       "green": {
         "50": { "$value": "#E3F3EA", "$description": "The success status tint." },
         "700": { "$value": "#067647" },
@@ -93,7 +97,8 @@
       "shadow": {
         "soft": { "$value": "#1F1C1814" },
         "medium": { "$value": "#1F1C181F" },
-        "strong": { "$value": "#1F1C182E" }
+        "strong": { "$value": "#1F1C182E" },
+        "scrim": { "$value": "#1F1C187A", "$description": "Neutral 900 at 48%." }
       }
     }
   }

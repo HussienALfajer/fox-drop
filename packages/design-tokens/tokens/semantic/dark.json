@@ -125,6 +125,15 @@
     "neutral-subtle": {
       "$value": "{primitive.color.neutral.150}"
     },
+    "caution": {
+      "$value": "{primitive.color.yellow.800}"
+    },
+    "caution-subtle": {
+      "$value": "{primitive.color.yellow.50}"
+    },
+    "scrim": {
+      "$value": "{primitive.color.shadow.scrim}"
+    },
     "alert": {
       "$value": "{primitive.color.red.800}",
       "$description": "Alerts read from across a room: 7:1."

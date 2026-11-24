@@ -60,6 +60,12 @@
     "description": "More actions: three dots in a row."
   },
   {
+    "name": "menu",
+    "group": "Navigation",
+    "mirror": false,
+    "description": "Opens the sidebar on a phone: three equal lines (D.10)."
+  },
+  {
     "name": "filter",
     "group": "Navigation",
     "mirror": false,

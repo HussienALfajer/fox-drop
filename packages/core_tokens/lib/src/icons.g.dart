@@ -73,6 +73,9 @@ abstract final class FoxIcons {
     'M17.25 12A1.25 1.25 0 1 0 19.75 12A1.25 1.25 0 1 0 17.25 12Z',
   ]);
 
+  /// Opens the sidebar on a phone: three equal lines (D.10).
+  static const menu = FoxIconData(['M4 6h16', 'M4 12h16', 'M4 18h16']);
+
   /// Filter and sort: two sliders with knobs.
   static const filter = FoxIconData([
     'M4 8h7',
@@ -347,6 +350,7 @@ abstract final class FoxIcons {
     'close': close,
     'chevron-down': chevronDown,
     'more': more,
+    'menu': menu,
     'filter': filter,
     'add': add,
     'remove': remove,

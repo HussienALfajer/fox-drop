@@ -113,6 +113,7 @@ const TINTS: [string, string][] = [
   ['danger', 'danger-subtle'],
   ['info', 'info-subtle'],
   ['neutral', 'neutral-subtle'],
+  ['caution', 'caution-subtle'],
   ['on-primary-subtle', 'primary-subtle'],
   ['on-surface', 'info-subtle'],
   ['on-surface', 'primary-subtle'],

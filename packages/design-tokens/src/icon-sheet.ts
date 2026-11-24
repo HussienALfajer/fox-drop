@@ -53,6 +53,7 @@ export const ARABIC: Record<string, string> = {
   'chevron-down': 'فتح القائمة',
   calendar: 'التاريخ',
   more: 'المزيد',
+  menu: 'القائمة',
   filter: 'تصفية',
   add: 'إضافة',
   remove: 'إنقاص',

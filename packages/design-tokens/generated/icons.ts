@@ -54,6 +54,11 @@ export const icons = {
     d: ['M4.25 12A1.25 1.25 0 1 0 6.75 12A1.25 1.25 0 1 0 4.25 12Z', 'M10.75 12A1.25 1.25 0 1 0 13.25 12A1.25 1.25 0 1 0 10.75 12Z', 'M17.25 12A1.25 1.25 0 1 0 19.75 12A1.25 1.25 0 1 0 17.25 12Z'],
     mirror: false,
   },
+  /** Opens the sidebar on a phone: three equal lines (D.10). */
+  'menu': {
+    d: ['M4 6h16', 'M4 12h16', 'M4 18h16'],
+    mirror: false,
+  },
   /** Filter and sort: two sliders with knobs. */
   'filter': {
     d: ['M4 8h7', 'M15 8h5', 'M11 8A2 2 0 1 0 15 8A2 2 0 1 0 11 8Z', 'M4 16h3', 'M11 16h9', 'M7 16A2 2 0 1 0 11 16A2 2 0 1 0 7 16Z'],

@@ -138,7 +138,7 @@ describe('contrast (R4, brand expression §6)', () => {
     const allowed = new Set(
       [...primitives.values()]
         .filter((t) =>
-          /^primitive\.color\.(neutral\.[789]00|blue\.\d+|(green|amber|red)\.800)$/.test(
+          /^primitive\.color\.(neutral\.[789]00|blue\.\d+|(green|amber|red|yellow)\.800)$/.test(
             t.path.join('.'),
           ),
         )

@@ -106,6 +106,23 @@
       "$description": "A signature moment, never more."
     }
   },
+  "layer": {
+    "$type": "number",
+    "$description": "The stacking order of overlays (D.10): a CSS z-index; Flutter stacks by Overlay order.",
+    "sticky": {
+      "$value": 10,
+      "$description": "Top bar, bottom navigation, rail, a sticky table header."
+    },
+    "banner": { "$value": 20, "$description": "Banners under the top bar." },
+    "overlay": { "$value": 30, "$description": "Scrim, dialog, bottom sheet, side drawer." },
+    "menu": { "$value": 40, "$description": "Menu and select list, also inside a dialog." },
+    "toast": { "$value": 50, "$description": "Toasts, above an open sheet." },
+    "tooltip": { "$value": 60, "$description": "Tooltips." },
+    "blocking": {
+      "$value": 70,
+      "$description": "The blocking sound banner (AP §7.3), above everything."
+    }
+  },
   "easing": {
     "$type": "cubicBezier",
     "standard": {
