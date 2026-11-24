@@ -9,7 +9,7 @@ The customer app's first styled batch: the frame every later screen sits in (the
 
 ## Before the design checkpoint
 
-- **The designer pass (§9.9 step 6) is not decided yet.** The owner discusses it after this planning and before any batch starts (owner, 2026-11-24: the plan, the seat and the Figma file). Do not start step 2 until it is settled and recorded here.
+- **No designer pass in this batch (owner, 2026-11-24).** The designer works in Figma, and the Figma slices are planned and built after D.11 (`docs/roadmap.md`, Phase D). Step 6 is skipped here: the owner approves the prototype directly, and these screens go to the designer once the Figma slices land; a change the designer makes then comes back through a screen change (§9.9, later changes).
 - **R12 uses an emulator** limited to 2 GB of memory (owner, 2026-11-24), not a real phone; L.9 still runs the real-device lab.
 
 ## Screen inventory (§9.9 step 1)
@@ -41,7 +41,7 @@ Sizes for every screen: an Arabic phone at 360 × 640 and 412 × 915, and both a
 2. **Draw** (§9.9 step 2): create the customer app's screens canvas (architecture §9.8, its link kept out of the repository, in the owner's memory file of design artifacts) and draw this batch with the Fox Drop Design System installed; the shared screens also in the captain's and restaurant's themes. Check the artboards for literal colours, unknown tokens and hand-drawn copies of components; write the result here.
 3. **Prototype** (step 3): every artboard interactive, every state above reachable by its action or a labelled switcher; no real API.
 4. **Analysis** (step 4), written here and shown with the drawings: (a) every route, response field and error code above, where each is shown or why not; (b) API gaps, fixed in the server in this slice or a small slice before it (T1); (c) spec gaps to the owner; (d) improvements for Azaz with their cost; (e) missing components, drawn on their own sheet (step 5).
-5. **Designer pass** (step 6), as the owner decides before this slice starts.
+5. **Designer pass** (step 6): skipped in this batch (see «Before the design checkpoint»).
 6. **Approval** (step 7): the owner tests the prototype and approves. Nothing in the batch is coded before.
 7. **Code** (step 8): the screens on `core_ui` only; the frame as a go_router shell route; the shared screens in `core_auth` and `core_platform`, which join the lint; goldens and the comparison with the drawing, each difference fixed or explained here. One commit per step, `checker` once per checkpoint.
 8. **Store review (R18):** the sign-up's terms and privacy links, the WhatsApp code text, no age gate (CU §5.3); record the checklist here.
@@ -57,7 +57,7 @@ Tests written first (locked in the red phase):
 
 ## Stopped at
 
-Planned (2026-11-24); waits for the designer-pass decision.
+Planned (2026-11-24); ready to build.
 
 ## Evidence
 
