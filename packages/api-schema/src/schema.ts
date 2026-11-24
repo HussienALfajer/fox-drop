@@ -996,22 +996,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/customer/platform": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["customerPlatformGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/merchant/platform": {
         parameters: {
             query?: never;
@@ -4852,6 +4836,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerPlatformGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customer/orders/active": {
         parameters: {
             query?: never;
@@ -8081,7 +8081,7 @@ export interface components {
             }[];
         };
         CustomerCodeRequestDto: {
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /**
              * Format: uuid
@@ -8101,7 +8101,7 @@ export interface components {
             expiresAt: string;
         };
         CustomerSignInDto: {
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /**
              * Format: uuid
@@ -8144,7 +8144,7 @@ export interface components {
             status: "signed_out";
         };
         MerchantCodeRequestDto: {
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /**
              * Format: uuid
@@ -8176,7 +8176,7 @@ export interface components {
             expiresAt: string;
         };
         MerchantSignInDto: {
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /**
              * Format: uuid
@@ -8266,7 +8266,7 @@ export interface components {
             status: "signed_out";
         };
         MerchantPortalCodeRequestDto: {
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /**
              * Format: uuid
@@ -8286,7 +8286,7 @@ export interface components {
             expiresAt: string;
         };
         MerchantPortalSignInDto: {
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /**
              * Format: uuid
@@ -8321,7 +8321,7 @@ export interface components {
             status: "signed_out";
         };
         CaptainCodeRequestDto: {
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /**
              * Format: uuid
@@ -8343,7 +8343,7 @@ export interface components {
             expiresAt: string;
         };
         CaptainSignInDto: {
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /**
              * Format: uuid
@@ -8446,7 +8446,7 @@ export interface components {
              * @enum {string}
              */
             party: "captain" | "merchant";
-            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            /** @description The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused. */
             phone: string;
             /** @description Why, kept in the audit log (owner decision 2026-11-07). */
             reason: string;
@@ -8503,7 +8503,7 @@ export interface components {
             /** @enum {string} */
             role: "owner" | "cashier";
             name: string;
-            /** @description A Syrian or Turkish mobile in E.164, as at sign-in. */
+            /** @description A mobile of any country in E.164, as at sign-in. */
             phone: string;
         };
         MerchantDeviceCheck_Output: {
@@ -8562,7 +8562,7 @@ export interface components {
         };
         MerchantNewCashierDto: {
             name: string;
-            /** @description A Syrian or Turkish mobile in E.164, as at sign-in. */
+            /** @description A mobile of any country in E.164, as at sign-in. */
             phone: string;
         };
         MerchantDevicesDto_Output: {
@@ -8701,12 +8701,26 @@ export interface components {
              * @enum {string}
              */
             updateNeed: "required" | "suggested" | "none";
+            /** @description The min_version setting of the app, when set: the version the update screen names. */
+            minVersion?: string;
             /** @description The update_message setting of the app, when set. */
             updateMessage?: string;
             /** @description The maintenance setting of the app: the blocking maintenance screen. */
             maintenance: boolean;
             /** @description The maintenance message, when set. */
             maintenanceMessage?: string;
+            /**
+             * Format: date-time
+             * @description When maintenance is expected to end, while maintenance is on and the time is still ahead.
+             */
+            maintenanceReturnsAt?: string;
+            /** @description The customer app only, given a point: the platform hours of the point's city (CU §4.7). */
+            hours?: {
+                /** @description Whether the platform takes orders now (platform.hours). */
+                open: boolean;
+                /** @description While closed, the next opening; null when open or when none is scheduled. */
+                opensAt: string | null;
+            };
         };
         MerchantRestaurantDto_Output: {
             /** Format: uuid */
@@ -10142,6 +10156,8 @@ export interface components {
                     latitude: number;
                     longitude: number;
                 };
+                /** @description «وصف المكان», such as «بجانب جامع …», shown to customers and captains (slice D.11a); null for none. */
+                landmark: string | null;
                 /** @description One period per weekday at most; none is closed. */
                 hours: {
                     /** @description 0 Sunday to 6 Saturday. */
@@ -10173,6 +10189,8 @@ export interface components {
                 /** @description Minutes after midnight; at or before the opening it runs past midnight. */
                 closesAt: number;
             }[];
+            /** @description Trimmed; empty or absent is none. */
+            landmark?: string | null;
         };
         AdminNewUploadDto: {
             /**
@@ -10890,6 +10908,8 @@ export interface components {
             office: {
                 latitude: number;
                 longitude: number;
+                /** @description «وصف المكان», such as «بجانب جامع …» (CA C13, slice D.11a); null for none. */
+                landmark: string | null;
                 /** @description The desk hours per weekday; a weekday not listed is closed. */
                 hours: {
                     /** @description 0 Sunday to 6 Saturday. */
@@ -10957,6 +10977,8 @@ export interface components {
             office: {
                 latitude: number;
                 longitude: number;
+                /** @description «وصف المكان», such as «بجانب جامع …» (CA C13, slice D.11a); null for none. */
+                landmark: string | null;
                 /** @description The desk hours per weekday; a weekday not listed is closed. */
                 hours: {
                     /** @description 0 Sunday to 6 Saturday. */
@@ -12073,6 +12095,8 @@ export interface components {
             office: {
                 latitude: number;
                 longitude: number;
+                /** @description «وصف المكان», such as «بجانب جامع …» (slice D.11a); null for none. */
+                landmark: string | null;
                 /** @description The desk hours per weekday; a weekday not listed is closed. */
                 hours: {
                     /** @description 0 Sunday to 6 Saturday. */
@@ -24559,29 +24583,6 @@ export interface operations {
             };
         };
     };
-    customerPlatformGet: {
-        parameters: {
-            query: {
-                /** @description The app version, such as 1.4.0. */
-                version: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlatformDto_Output"];
-                };
-            };
-        };
-    };
     merchantPlatformGet: {
         parameters: {
             query: {
@@ -30836,6 +30837,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerQuoteDto_Output"];
+                };
+            };
+        };
+    };
+    customerPlatformGet: {
+        parameters: {
+            query: {
+                /** @description The app version, such as 1.4.0. */
+                version: string;
+                /** @description The selected point (CU §7.1), with longitude: the platform hours of its city. */
+                latitude?: string;
+                longitude?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformDto_Output"];
                 };
             };
         };

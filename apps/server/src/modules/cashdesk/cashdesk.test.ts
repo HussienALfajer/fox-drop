@@ -1069,6 +1069,17 @@ describe('the office routes (AP §9.12.1; owner decision 2026-11-12)', () => {
     expect((await owner.get(unknown)).statusCode).toBe(404);
   });
 
+  it('save and read the landmark, none when empty, refused over 120 characters (slice D.11a)', async () => {
+    const owner = await admin(['OWN']);
+    const url = `/v1/admin/cities/${azaz}/office`;
+    const saved = await owner.put(url, { ...body, landmark: 'بجانب جامع الفاروق' });
+    expect(saved.statusCode).toBe(200);
+    expect(saved.json().office).toMatchObject({ landmark: 'بجانب جامع الفاروق' });
+    expect((await owner.get(url)).json().office.landmark).toBe('بجانب جامع الفاروق');
+    expect((await owner.put(url, { ...body, landmark: '' })).json().office.landmark).toBeNull();
+    expect((await owner.put(url, { ...body, landmark: 'م'.repeat(121) })).statusCode).toBe(400);
+  });
+
   it('let operations read it and only the owner save it', async () => {
     const ops = await admin(['OPS']);
     const url = `/v1/admin/cities/${azaz}/office`;

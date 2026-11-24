@@ -6,6 +6,7 @@ vi.mock('./api.js', () => ({ api: {} }));
 // AP §9.12.1, CA C13 «المكتب»: the form and the body it saves.
 const office = {
   location: { latitude: 36.5862, longitude: 37.0471 },
+  landmark: 'بجانب جامع الفاروق',
   hours: [
     { weekday: 6, opensAt: 540, closesAt: 1380 },
     { weekday: 4, opensAt: 1200, closesAt: 1440 },
@@ -40,8 +41,21 @@ describe('officeRequestOf', () => {
           { weekday: 6, opensAt: 540, closesAt: 1380 },
           { weekday: 4, opensAt: 1200, closesAt: 1440 },
         ],
+        landmark: 'بجانب جامع الفاروق',
       },
     });
+  });
+
+  // Slice D.11a: «وصف المكان», trimmed; an empty one is none.
+  it('sends the landmark trimmed, and none for an empty one', () => {
+    const form = officeFormOf(office);
+    expect(officeRequestOf({ ...form, landmark: '  قرب الدوار ' })).toMatchObject({
+      body: { landmark: 'قرب الدوار' },
+    });
+    expect(officeRequestOf({ ...form, landmark: '   ' })).toMatchObject({
+      body: { landmark: null },
+    });
+    expect(officeFormOf(null).landmark).toBe('');
   });
 
   it('saves 00:00 to 00:00 as the whole day, and reads it back', () => {

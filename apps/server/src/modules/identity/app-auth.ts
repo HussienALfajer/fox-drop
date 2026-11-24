@@ -11,16 +11,15 @@ import { ApiHeader } from '@nestjs/swagger';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { APP_CHECK_HEADER } from './app-check.js';
-import { APP_PHONE_PATTERN } from './app-phone.js';
+import { appPhone } from './app-phone.js';
 import type { AppTokens } from './app-sessions.service.js';
 import { CodeRequestRefusedError } from './app-sign-in.service.js';
 
 // The request and answer parts every app's sign-in routes share.
 
-export const phone = z
-  .string()
-  .regex(APP_PHONE_PATTERN)
-  .describe('The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.');
+export const phone = appPhone.describe(
+  'The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.',
+);
 
 export const deviceId = z
   .uuid()

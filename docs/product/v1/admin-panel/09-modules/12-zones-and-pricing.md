@@ -10,7 +10,7 @@
   - **base currency** (D25; locked after the first order)
   - accepted currencies, with their rates and rounding (§8.6)
   - business-day cutoff
-  - office location (a map pin) and desk hours, shown to captains (captain-app spec C13) and to customers blocked for dues (customer-app spec Q21)
+  - office location (a map pin), its landmark «وصف المكان» (one line, 120 characters at most, such as «بجانب جامع …»; owner decision 2026-11-24) and desk hours, shown to captains (captain-app spec C13) and to customers blocked for dues (customer-app spec Q21)
   - platform hours (`platform.hours`, default 24/7, D9)
   - status (active or not)
 

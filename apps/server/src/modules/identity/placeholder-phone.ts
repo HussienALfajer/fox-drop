@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { AuditService } from '../audit/index.js';
-import { APP_PHONE_PATTERN } from './app-phone.js';
+import { isAppMobile } from './app-phone.js';
 import { captainAccounts, merchantAccounts } from './schema.js';
 import type { IdentitySecrets } from './secrets.js';
 
@@ -41,10 +41,10 @@ export async function changePlaceholderPhone(
       'only development and staging change numbers by command',
     );
   }
-  if (!APP_PHONE_PATTERN.test(change.from) || !APP_PHONE_PATTERN.test(change.to)) {
+  if (!isAppMobile(change.from) || !isAppMobile(change.to)) {
     throw new PlaceholderPhoneRefusedError(
       'invalid_phone',
-      'both numbers must be Syrian or Turkish mobiles in E.164 (+9639xxxxxxxx or +905xxxxxxxxx)',
+      'both numbers must be mobiles in E.164, such as +963944123456',
     );
   }
   const fromHash = secrets.phoneHash(change.from);

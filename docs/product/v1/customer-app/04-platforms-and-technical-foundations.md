@@ -17,7 +17,7 @@
 - **Android:** Google Play, and a signed APK on the FOX DROP website for phones without Play, with the same signing certificate (as RA §4.2).
 - **iPhone:** the App Store. FOX DROP's Apple Developer account is available (technology-stack T3).
 - **Version check:** at launch and on every reconnect, the app compares its version with `app.customer.min_version` and `app.customer.latest_version` (AP §9.14).
-  - Below the minimum, a blocking update screen appears with `app.customer.update_message`. An active order's status screen stays readable, so the customer can follow it.
+  - Below the minimum, a blocking update screen appears with `app.customer.update_message` and the required version (`minVersion` of `GET /v1/customer/platform`). An active order's status screen stays readable, so the customer can follow it.
   - Below the latest, a dismissible banner appears; dismissed, it returns at the next launch (owner, 2026-11-24).
 
 ## 4.3 Real time and push
@@ -61,9 +61,9 @@ Distances show as «850 م» below 1 km and «2.4 كم» above. The app SHOULD s
 
 ## 4.7 Maintenance, terms, platform hours and the emergency stop
 
-- **Maintenance:** when `app.customer.maintenance` is on, a blocking screen shows the message. An active order's status screen stays readable.
+- **Maintenance:** when `app.customer.maintenance` is on, a blocking screen shows the message and, when OWN set one and it is still ahead, the expected return time. An active order's status screen stays readable.
 - **Terms:** a new version of the customer terms (AP §9.13) is shown on the next open. Browsing continues, but ordering waits until the customer accepts it.
-- **Platform hours:** outside `platform.hours` (24/7 by default, AP D9), browsing continues. The order button is disabled with «FOX DROP يستقبل الطلبات من الساعة {الساعة}».
+- **Platform hours:** outside `platform.hours` (24/7 by default, AP D9), browsing continues. The order button is disabled with «FOX DROP يستقبل الطلبات من الساعة {الساعة}». The app reads the hours of the selected point's city from `GET /v1/customer/platform` (with the point) as well as from checkout's quote.
 - **Emergency stop (AP §9.1.6):**
   - Browsing continues. The order button is disabled, and a banner shows the browsing message. A customer who opens checkout during the stop counts once per stop as an attempt (AP §9.1.6).
   - Customers with an active order get a push and a banner on the order screen with the delay notice.

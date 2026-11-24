@@ -4,7 +4,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { CaptainsService } from '../captains/index.js';
-import { APP_PHONE_PATTERN } from './app-phone.js';
+import { isAppMobile } from './app-phone.js';
 import { appSessions, captainAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
@@ -65,10 +65,10 @@ export class CaptainAccountsService {
     change: { actor: AuditActor; context: AuditRequestContext },
     now = new Date(),
   ): Promise<string> {
-    if (!APP_PHONE_PATTERN.test(phone)) {
+    if (!isAppMobile(phone)) {
       throw new CaptainAccountRefusedError(
         'invalid_account',
-        'a captain signs in with a Syrian or Turkish mobile in E.164',
+        'a captain signs in with a mobile in E.164',
       );
     }
     const captain = await this.captains.captain(captainId, now);

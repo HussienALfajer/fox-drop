@@ -266,6 +266,18 @@ describe('the wizard routes past the draft', () => {
     );
     // The add's answer and the read.
     expect(rows[0].views).toBe(2);
+    // Slice D.11a: a number of another country, masked with its own code.
+    const added = await accountsOf(ops, id, '', {
+      role: 'cashier',
+      name: 'كاشير',
+      phone: '+447911123123',
+    });
+    expect(added.statusCode).toBe(200);
+    expect(
+      (await accountsOf(support, id))
+        .json()
+        .accounts.map((account: { phone: string }) => account.phone),
+    ).toContain('+44 ••• 123');
     expect((await accountsOf(ops, randomUUID())).json()).toMatchObject({
       statusCode: 404,
       error: 'unknown_restaurant',

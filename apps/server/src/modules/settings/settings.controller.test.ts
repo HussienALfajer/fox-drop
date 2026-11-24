@@ -351,6 +351,7 @@ describe("the apps' platform read (CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, 
 
     expect((await read('captain', '1.3.9')).json()).toEqual({
       updateNeed: 'required',
+      minVersion: '1.4.0',
       updateMessage: 'حدّث التطبيق',
       maintenance: false,
     });

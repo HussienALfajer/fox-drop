@@ -13,6 +13,8 @@ class _$CustomerAccountStateDtoOutputOffice
   @override
   final num longitude;
   @override
+  final String? landmark;
+  @override
   final BuiltList<CaptainAvailabilityDtoOutputOfficeHoursInner> hours;
   @override
   final String timeZone;
@@ -31,6 +33,7 @@ class _$CustomerAccountStateDtoOutputOffice
   _$CustomerAccountStateDtoOutputOffice._({
     required this.latitude,
     required this.longitude,
+    this.landmark,
     required this.hours,
     required this.timeZone,
     required this.open,
@@ -52,6 +55,7 @@ class _$CustomerAccountStateDtoOutputOffice
     return other is CustomerAccountStateDtoOutputOffice &&
         latitude == other.latitude &&
         longitude == other.longitude &&
+        landmark == other.landmark &&
         hours == other.hours &&
         timeZone == other.timeZone &&
         open == other.open &&
@@ -64,6 +68,7 @@ class _$CustomerAccountStateDtoOutputOffice
     var _$hash = 0;
     _$hash = $jc(_$hash, latitude.hashCode);
     _$hash = $jc(_$hash, longitude.hashCode);
+    _$hash = $jc(_$hash, landmark.hashCode);
     _$hash = $jc(_$hash, hours.hashCode);
     _$hash = $jc(_$hash, timeZone.hashCode);
     _$hash = $jc(_$hash, open.hashCode);
@@ -78,6 +83,7 @@ class _$CustomerAccountStateDtoOutputOffice
     return (newBuiltValueToStringHelper(r'CustomerAccountStateDtoOutputOffice')
           ..add('latitude', latitude)
           ..add('longitude', longitude)
+          ..add('landmark', landmark)
           ..add('hours', hours)
           ..add('timeZone', timeZone)
           ..add('open', open)
@@ -102,6 +108,10 @@ class CustomerAccountStateDtoOutputOfficeBuilder
   num? _longitude;
   num? get longitude => _$this._longitude;
   set longitude(num? longitude) => _$this._longitude = longitude;
+
+  String? _landmark;
+  String? get landmark => _$this._landmark;
+  set landmark(String? landmark) => _$this._landmark = landmark;
 
   ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>? _hours;
   ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner> get hours =>
@@ -135,6 +145,7 @@ class CustomerAccountStateDtoOutputOfficeBuilder
     if ($v != null) {
       _latitude = $v.latitude;
       _longitude = $v.longitude;
+      _landmark = $v.landmark;
       _hours = $v.hours.toBuilder();
       _timeZone = $v.timeZone;
       _open = $v.open;
@@ -176,6 +187,7 @@ class CustomerAccountStateDtoOutputOfficeBuilder
               r'CustomerAccountStateDtoOutputOffice',
               'longitude',
             ),
+            landmark: landmark,
             hours: hours.build(),
             timeZone: BuiltValueNullFieldError.checkNotNull(
               timeZone,

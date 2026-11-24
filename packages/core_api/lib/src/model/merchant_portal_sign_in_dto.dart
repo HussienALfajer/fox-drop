@@ -11,13 +11,13 @@ part 'merchant_portal_sign_in_dto.g.dart';
 /// MerchantPortalSignInDto
 ///
 /// Properties:
-/// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+/// * [phone] - The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
 /// * [browserId] - The browser: a random id the portal keeps, which the code is bound to.
 /// * [code]
 @BuiltValue()
 abstract class MerchantPortalSignInDto
     implements Built<MerchantPortalSignInDto, MerchantPortalSignInDtoBuilder> {
-  /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+  /// The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

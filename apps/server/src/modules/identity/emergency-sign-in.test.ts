@@ -297,7 +297,11 @@ describe('emergency sign-in codes (W4, architecture §22 item 1)', () => {
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
       await signIn('captain', phone, wrong);
     }
-    expect((await signIn('captain', phone, issued.code)).statusCode).toBe(400);
+    const after = await signIn('captain', phone, issued.code);
+    expect(after.statusCode).toBe(400);
+    // Slice D.11a review: a used-up emergency code says code_expired to a
+    // later device, as for a number with no account (architecture §8.3.2).
+    expect(after.json()).toMatchObject({ error: 'code_expired' });
   });
 
   it('sign a restaurant owner in, and refuse a number that cannot sign in', async () => {

@@ -107,3 +107,8 @@ Cities (AP §9.12.1), distances (architecture §7.1), service zones and the deli
 - Adding a city (owner decision 2026-11-19: with a second city).
   The fee screen and its calculator are ordering's routes (`admin-delivery-fees.controller.ts`), since they read the restaurants and the editors' names.
 - `deliveryFee` reads through the pool: placing an order re-runs the quote before its transaction (`apps/server/src/modules/ordering/CLAUDE.md`).
+
+## The office landmark (slice D.11a, owner decision 2026-11-24)
+
+- `geo.offices.landmark` (migration 0152, nullable, checked: trimmed and 1 to 120 characters) is «وصف المكان».
+  `setOffice` takes it optional (absent or blank is none) into the new version and the `city.office` audit; `office()` answers it, and so do the admin office route, `account-state`'s office and the captain's office (CA C13).

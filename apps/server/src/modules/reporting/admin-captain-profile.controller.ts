@@ -22,6 +22,7 @@ import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '..
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
+import { maskedPhone } from '../../phone/masked-phone.js';
 import { AuditService } from '../audit/index.js';
 import {
   ApplicationPipelineService,
@@ -301,11 +302,6 @@ const windowOf = (each: EarningsWindow) => ({
   orders: each.orders,
   onlineMinutes: each.onlineMinutes,
 });
-
-function maskedPhone(phone: string): string {
-  const code = phone.startsWith('+90') ? '+90' : phone.startsWith('+963') ? '+963' : '+';
-  return `${code} ••• ${phone.slice(-3)}`;
-}
 
 // AP §9.7.3 «الكباتن» (slice 2.36a): the city's captains with the list's
 // columns. A read sent as a POST, so a number searched never sits in a URL

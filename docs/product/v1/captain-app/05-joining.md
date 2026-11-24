@@ -25,7 +25,7 @@ Both start with the phone number and a code (§4.9). After the code is verified:
 | 4. Terms           | The captain terms and the work rules, with a required checkbox                                                                                                                                               |
 | 5. Review and send | A summary, then «إرسال الطلب»                                                                                                                                                                                |
 
-- Phone numbers are validated as Syrian or Turkish mobile numbers.
+- Phone numbers are validated as mobile numbers of any country, as the customer app takes them (CU U3, §5.2 item 1; owner decision 2026-11-24).
 - The server runs the duplicate check on the ID number, phone and plate (AP §9.7.1). The applicant does not see the result.
 
 ## 5.3 Documents (AP D24)

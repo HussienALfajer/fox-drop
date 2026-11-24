@@ -176,15 +176,17 @@ describe('the availability routes (CA §7)', () => {
     const hours = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, opensAt: 0, closesAt: 1440 }));
     await geo.setOffice(
       azaz,
-      { location, hours },
+      { location, hours, landmark: 'بجانب جامع الفاروق' },
       {
         actor: { type: 'system', id: null, role: null },
         context: { ipAddress: null, device: null },
       },
     );
     const state = (await call(headers, 'GET', '/v1/captain/availability')).json();
+    // Slice D.11a: the landmark too (CA C13; owner 2026-11-24).
     expect(state.office).toEqual({
       ...location,
+      landmark: 'بجانب جامع الفاروق',
       hours,
       timeZone: 'Asia/Damascus',
       open: true,

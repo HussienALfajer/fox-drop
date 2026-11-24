@@ -39,6 +39,10 @@ class CustomerAccountStateDto extends createZodDto(
       .object({
         latitude: z.number(),
         longitude: z.number(),
+        landmark: z
+          .string()
+          .nullable()
+          .describe('«وصف المكان», such as «بجانب جامع …» (slice D.11a); null for none.'),
         hours: z
           .array(
             z.object({
@@ -106,6 +110,7 @@ export class CustomerAccountStateController {
       office: office && {
         latitude: office.location.latitude,
         longitude: office.location.longitude,
+        landmark: office.landmark,
         hours: office.hours,
         timeZone: office.timeZone,
         open: office.open,

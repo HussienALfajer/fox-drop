@@ -16,7 +16,7 @@ part 'customer_place_order_dto_unsaved_address.g.dart';
 /// * [street] - «الشارع والبناء».
 /// * [floor] - «الطابق والشقة», optional.
 /// * [landmark] - «بالقرب من».
-/// * [contactPhone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+/// * [contactPhone] - A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [recipientName] - «اسم المستلم», needed with another contact number (Q5).
 /// * [directions] - «توجيهات للكابتن», optional.
 @BuiltValue()
@@ -41,7 +41,7 @@ abstract class CustomerPlaceOrderDtoUnsavedAddress
   @BuiltValueField(wireName: r'landmark')
   String get landmark;
 
-  /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+  /// A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
   @BuiltValueField(wireName: r'contactPhone')
   String? get contactPhone;
 

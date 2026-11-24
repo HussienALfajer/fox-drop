@@ -16,6 +16,7 @@ part 'admin_set_city_office_dto.g.dart';
 /// Properties:
 /// * [location]
 /// * [hours]
+/// * [landmark] - Trimmed; empty or absent is none.
 @BuiltValue()
 abstract class AdminSetCityOfficeDto
     implements Built<AdminSetCityOfficeDto, AdminSetCityOfficeDtoBuilder> {
@@ -24,6 +25,10 @@ abstract class AdminSetCityOfficeDto
 
   @BuiltValueField(wireName: r'hours')
   BuiltList<AdminSetCityOfficeDtoHoursInner> get hours;
+
+  /// Trimmed; empty or absent is none.
+  @BuiltValueField(wireName: r'landmark')
+  String? get landmark;
 
   AdminSetCityOfficeDto._();
 
@@ -67,6 +72,13 @@ class _$AdminSetCityOfficeDtoSerializer
         FullType(AdminSetCityOfficeDtoHoursInner),
       ]),
     );
+    if (object.landmark != null) {
+      yield r'landmark';
+      yield serializers.serialize(
+        object.landmark,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
   }
 
   @override
@@ -115,6 +127,16 @@ class _$AdminSetCityOfficeDtoSerializer
                   )
                   as BuiltList<AdminSetCityOfficeDtoHoursInner>;
           result.hours.replace(valueDes);
+          break;
+        case r'landmark':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.landmark = valueDes;
           break;
         default:
           unhandled.add(key);

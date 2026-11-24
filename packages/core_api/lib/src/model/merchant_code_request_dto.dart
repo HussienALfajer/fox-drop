@@ -13,14 +13,14 @@ part 'merchant_code_request_dto.g.dart';
 /// MerchantCodeRequestDto
 ///
 /// Properties:
-/// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+/// * [phone] - The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
 /// * [deviceId] - The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
 /// * [platform] - Windows sends no App Check token (owner decision 2026-11-07).
 /// * [deviceSignature]
 @BuiltValue()
 abstract class MerchantCodeRequestDto
     implements Built<MerchantCodeRequestDto, MerchantCodeRequestDtoBuilder> {
-  /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+  /// The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

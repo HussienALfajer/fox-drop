@@ -52,6 +52,9 @@ test("saves an app's minimum version and maintenance", async ({ page }) => {
   await expect(captain.getByRole('status')).toHaveText('حُفظ');
   expect(sent).toEqual({
     'app.captain.min_version': { value: '1.4.0', reason: null },
-    'app.captain.maintenance': { value: { enabled: true, message: null }, reason: null },
+    'app.captain.maintenance': {
+      value: { enabled: true, message: null, returnsAt: null },
+      reason: null,
+    },
   });
 });

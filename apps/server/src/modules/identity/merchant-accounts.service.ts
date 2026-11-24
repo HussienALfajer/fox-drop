@@ -4,7 +4,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { type AccountStatus, MerchantsService } from '../merchants/index.js';
-import { APP_PHONE_PATTERN } from './app-phone.js';
+import { isAppMobile } from './app-phone.js';
 import { appSessions, merchantAccounts, merchantPortalSessions, merchantRoles } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
@@ -105,10 +105,10 @@ export class MerchantAccountsService implements OnModuleInit {
     { notTerminated = false }: { notTerminated?: boolean } = {},
   ): Promise<string> {
     const name = account.name.trim();
-    if (name.length === 0 || !APP_PHONE_PATTERN.test(account.phone)) {
+    if (name.length === 0 || !isAppMobile(account.phone)) {
       throw new MerchantAccountRefusedError(
         'invalid_account',
-        'an account needs a name and a Syrian or Turkish mobile in E.164',
+        'an account needs a name and a mobile in E.164',
       );
     }
     const restaurant = await this.merchants.cityAndStatus(restaurantId);

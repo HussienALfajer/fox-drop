@@ -23,16 +23,16 @@
 ## 5.2 Sign-in (U3, Q4)
 
 1. **Phone number:**
-   - A country picker offers «سوريا +963» and «تركيا +90». The default is `customer.phone_default_country`.
-   - Syrian mobiles have 9 digits after +963 and start with 9. The app accepts `09xxxxxxxx` and `9xxxxxxxx`.
-   - Turkish mobiles have 10 digits after +90 and start with 5. The app accepts `05xxxxxxxxx` and `5xxxxxxxxx`.
-   - The number is stored in E.164 format.
+   - A mobile of any country (U3). A searchable country picker (Arabic name, English name or calling code, no flags) pins «سوريا +963» and «تركيا +90» first, then the last one used, then the rest in Arabic order. The default is `customer.phone_default_country` (SY or TR).
+   - The field reads a national number with or without its leading 0, a number typed or pasted with `+`, `00` or its calling code (which switches the country), and Arabic-Indic digits; it refuses a landline, a number too short or too long, with the fix in its message. The field's full rules are D.11's (`docs/slices/D.11-customer-frame-and-sign-in.md`, items 5 and 6).
+   - Syrian mobiles have 9 digits after +963 and start with 9; Turkish mobiles have 10 digits after +90 and start with 5.
+   - The number is sent and stored in E.164 format; the server refuses anything that is not a mobile.
 2. **Code:**
    - 6 digits (fixed), sent over WhatsApp, the only channel in V1 (`otp.channel_order`, technology-stack §8.3). There is no SMS or voice code.
    - A number without WhatsApp gets «هذا الرقم غير مسجّل على واتساب» and no code is sent.
    - The screen says where the code was sent: «أرسلنا الرمز إلى واتساب على الرقم {الرقم}».
    - After `otp.resend_after_sec` (60) seconds, it offers «إعادة الإرسال».
-   - Validity and attempts follow `otp.validity_min` and `otp.max_attempts`. The server limits requests per number, per device and per IP address (AP Appendix A, `otp.*`). Past the daily limit: «تجاوزت عدد المحاولات المسموح، حاول غداً أو تواصل مع الدعم».
+   - Validity and attempts follow `otp.validity_min` and `otp.max_attempts`; the server tells a code whose attempts are used up (`attempts_used`) from an expired one (`code_expired`), and both ask for a new code. The server limits requests per number, per device and per IP address (AP Appendix A, `otp.*`). Past the daily limit: «تجاوزت عدد المحاولات المسموح، حاول غداً أو تواصل مع الدعم».
    - The code field accepts paste. On Android the app offers to paste a 6-digit code it finds on the clipboard. SMS auto-fill does not apply to WhatsApp messages.
    - «تعديل الرقم» goes back to step 1.
 3. **Existing account:** signed in, and back to where the customer was.

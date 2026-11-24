@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { phone } from '../identity/index.js';
+import { syrianOrTurkishPhone } from '../identity/index.js';
 import { addressLabels } from './schema.js';
 
 // CU §5.3: Arabic or Latin letters, with spaces and «-»; Arabic marks such
@@ -29,7 +29,11 @@ export const addressFields = z.object({
   street: text(3, 100).describe('«الشارع والبناء».'),
   floor: text(1, 100).nullable().describe('«الطابق والشقة», optional.'),
   landmark: text(3, 100).describe('«بالقرب من».'),
-  contactPhone: phone.nullable().describe("«رقم التواصل»; null is the account's own number."),
+  // Slice D.11a: still a Syrian or Turkish mobile; the owner widened sign-in
+  // only (U3).
+  contactPhone: syrianOrTurkishPhone
+    .nullable()
+    .describe("«رقم التواصل»; null is the account's own number."),
   recipientName: personName(60)
     .nullable()
     .describe('«اسم المستلم», needed with another contact number (Q5).'),

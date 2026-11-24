@@ -2640,6 +2640,8 @@ class CustomerApi {
   ///
   /// Parameters:
   /// * [version] - The app version, such as 1.4.0.
+  /// * [latitude] - The selected point (CU §7.1), with longitude: the platform hours of its city.
+  /// * [longitude]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2651,6 +2653,8 @@ class CustomerApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<PlatformDtoOutput>> customerPlatformGet({
     required String version,
+    String? latitude,
+    String? longitude,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2672,6 +2676,18 @@ class CustomerApi {
         version,
         const FullType(String),
       ),
+      if (latitude != null)
+        r'latitude': encodeQueryParameter(
+          _serializers,
+          latitude,
+          const FullType(String),
+        ),
+      if (longitude != null)
+        r'longitude': encodeQueryParameter(
+          _serializers,
+          longitude,
+          const FullType(String),
+        ),
     };
 
     final _response = await _dio.request<Object>(

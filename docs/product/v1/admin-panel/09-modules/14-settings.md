@@ -7,7 +7,7 @@
   - minimum version: older versions are forced to update
   - latest version: suggest updating
   - update message
-  - maintenance mode with its message, per app
+  - maintenance mode with its message and an optional return time (on the city's clock; the apps show it only while it is ahead), per app
 - **OTP and messaging:**
   - channel for app sign-in codes: WhatsApp only in V1 (technology-stack T4, T5). SMS and voice are not offered. Codes have 6 digits in every app (fixed, customer-app spec Q4).
   - OTP validity, attempts and resend wait, and the request and sending limits (Appendix A)

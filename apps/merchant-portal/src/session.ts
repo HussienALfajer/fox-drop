@@ -121,18 +121,27 @@ export function useSignIn() {
         await queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey });
         return { status: 'signed_in' };
       }
-      const answer = error as { error?: unknown; attemptsLeft?: number } | undefined;
-      if (answer?.error === 'wrong_code') {
-        return { status: 'wrong_code', attemptsLeft: answer.attemptsLeft ?? 0 };
-      }
-      if (answer?.error === 'code_expired') return { status: 'code_expired' };
-      const refusal = refusalOf(answer?.error);
-      if (refusal) return { status: 'refused', refusal };
-      // A code that is not 6 digits never reaches a code.
-      if (response.status === 400) return { status: 'wrong_code', attemptsLeft: 0 };
-      throw new Error(`The sign-in failed (${response.status}).`);
+      return signInResultOf(error as SignInRefusal | undefined, response.status);
     },
   });
+}
+
+type SignInRefusal = { error?: unknown; attemptsLeft?: number };
+
+// A refused sign-in as the page explains it. Slice D.11a: used-up attempts
+// read as an expired code until D.11 gives them words of their own.
+export function signInResultOf(answer: SignInRefusal | undefined, status: number): SignInResult {
+  if (answer?.error === 'wrong_code') {
+    return { status: 'wrong_code', attemptsLeft: answer.attemptsLeft ?? 0 };
+  }
+  if (answer?.error === 'code_expired' || answer?.error === 'attempts_used') {
+    return { status: 'code_expired' };
+  }
+  const refusal = refusalOf(answer?.error);
+  if (refusal) return { status: 'refused', refusal };
+  // A code that is not 6 digits never reaches a code.
+  if (status === 400) return { status: 'wrong_code', attemptsLeft: 0 };
+  throw new Error(`The sign-in failed (${status}).`);
 }
 
 export function useSignOut() {

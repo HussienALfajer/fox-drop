@@ -15,6 +15,7 @@ part 'admin_city_office_dto_output_office.g.dart';
 ///
 /// Properties:
 /// * [location]
+/// * [landmark] - «وصف المكان», such as «بجانب جامع …», shown to customers and captains (slice D.11a); null for none.
 /// * [hours] - One period per weekday at most; none is closed.
 /// * [open] - Whether the desk is open now.
 /// * [closesAt] - While open: when it closes.
@@ -28,6 +29,10 @@ abstract class AdminCityOfficeDtoOutputOffice
         > {
   @BuiltValueField(wireName: r'location')
   AdminCityOfficeDtoOutputOfficeLocation get location;
+
+  /// «وصف المكان», such as «بجانب جامع …», shown to customers and captains (slice D.11a); null for none.
+  @BuiltValueField(wireName: r'landmark')
+  String? get landmark;
 
   /// One period per weekday at most; none is closed.
   @BuiltValueField(wireName: r'hours')
@@ -80,6 +85,13 @@ class _$AdminCityOfficeDtoOutputOfficeSerializer
       object.location,
       specifiedType: const FullType(AdminCityOfficeDtoOutputOfficeLocation),
     );
+    yield r'landmark';
+    yield object.landmark == null
+        ? null
+        : serializers.serialize(
+            object.landmark,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'hours';
     yield serializers.serialize(
       object.hours,
@@ -143,6 +155,16 @@ class _$AdminCityOfficeDtoOutputOfficeSerializer
                   )
                   as AdminCityOfficeDtoOutputOfficeLocation;
           result.location.replace(valueDes);
+          break;
+        case r'landmark':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.landmark = valueDes;
           break;
         case r'hours':
           final valueDes =

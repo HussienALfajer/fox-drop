@@ -212,31 +212,43 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     await controller.submitCode(_code.text);
   }
 
-  String _message(AppLocalizations l10n, AuthRefusal refusal) {
-    final merchant = ref.read(_scope.party) is MerchantAuth;
-    return switch (refusal.error) {
-      'not_on_whatsapp' => l10n.signInNotOnWhatsapp,
-      'unavailable' =>
-        _scope.offersOperationsCode
-            ? l10n.signInUnavailableOperations
-            : l10n.signInUnavailable,
-      'daily_limit' => l10n.signInDailyLimit,
-      'hourly_limit' || 'ip_limit' => l10n.signInTryLater(
-        ((refusal.retryAfterSec ?? 3600) / 60).ceil(),
-      ),
-      'resend_wait' => l10n.signInResendWait(refusal.retryAfterSec ?? 60),
-      'wrong_code' => l10n.signInWrongCode(refusal.attemptsLeft ?? 0),
-      'code_expired' => l10n.signInCodeExpired,
-      'not_registered' =>
-        merchant ? l10n.merchantNotRegistered : l10n.captainNotRegistered,
-      'restaurant_draft' => l10n.merchantRestaurantDraft,
-      'restaurant_terminated' => l10n.merchantRestaurantTerminated,
-      'contract_ended' => l10n.captainContractEnded,
-      'active_order_elsewhere' => l10n.captainActiveOrderElsewhere,
-      _ => l10n.signInError,
-    };
-  }
+  String _message(AppLocalizations l10n, AuthRefusal refusal) => signInMessage(
+    l10n,
+    refusal,
+    merchant: ref.read(_scope.party) is MerchantAuth,
+    offersOperationsCode: _scope.offersOperationsCode,
+  );
 }
+
+/// The sentence for a refused code request or sign-in. `attempts_used`
+/// (slice D.11a) reads as an expired code until D.11's code screen gives it
+/// words of its own.
+String signInMessage(
+  AppLocalizations l10n,
+  AuthRefusal refusal, {
+  required bool merchant,
+  required bool offersOperationsCode,
+}) => switch (refusal.error) {
+  'not_on_whatsapp' => l10n.signInNotOnWhatsapp,
+  'unavailable' =>
+    offersOperationsCode
+        ? l10n.signInUnavailableOperations
+        : l10n.signInUnavailable,
+  'daily_limit' => l10n.signInDailyLimit,
+  'hourly_limit' || 'ip_limit' => l10n.signInTryLater(
+    ((refusal.retryAfterSec ?? 3600) / 60).ceil(),
+  ),
+  'resend_wait' => l10n.signInResendWait(refusal.retryAfterSec ?? 60),
+  'wrong_code' => l10n.signInWrongCode(refusal.attemptsLeft ?? 0),
+  'code_expired' || 'attempts_used' => l10n.signInCodeExpired,
+  'not_registered' =>
+    merchant ? l10n.merchantNotRegistered : l10n.captainNotRegistered,
+  'restaurant_draft' => l10n.merchantRestaurantDraft,
+  'restaurant_terminated' => l10n.merchantRestaurantTerminated,
+  'contract_ended' => l10n.captainContractEnded,
+  'active_order_elsewhere' => l10n.captainActiveOrderElsewhere,
+  _ => l10n.signInError,
+};
 
 /// «اتصال بالعمليات», and «واتساب العمليات» when [whatsapp], from the
 /// support numbers (AP §9.13); a missing number hides its button.

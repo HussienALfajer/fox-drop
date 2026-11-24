@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/platform_dto_output_hours.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -13,9 +14,12 @@ part 'platform_dto_output.g.dart';
 ///
 /// Properties:
 /// * [updateNeed] - required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner.
+/// * [minVersion] - The min_version setting of the app, when set: the version the update screen names.
 /// * [updateMessage] - The update_message setting of the app, when set.
 /// * [maintenance] - The maintenance setting of the app: the blocking maintenance screen.
 /// * [maintenanceMessage] - The maintenance message, when set.
+/// * [maintenanceReturnsAt] - When maintenance is expected to end, while maintenance is on and the time is still ahead.
+/// * [hours]
 @BuiltValue()
 abstract class PlatformDtoOutput
     implements Built<PlatformDtoOutput, PlatformDtoOutputBuilder> {
@@ -23,6 +27,10 @@ abstract class PlatformDtoOutput
   @BuiltValueField(wireName: r'updateNeed')
   PlatformDtoOutputUpdateNeedEnum get updateNeed;
   // enum updateNeedEnum {  required,  suggested,  none,  };
+
+  /// The min_version setting of the app, when set: the version the update screen names.
+  @BuiltValueField(wireName: r'minVersion')
+  String? get minVersion;
 
   /// The update_message setting of the app, when set.
   @BuiltValueField(wireName: r'updateMessage')
@@ -35,6 +43,13 @@ abstract class PlatformDtoOutput
   /// The maintenance message, when set.
   @BuiltValueField(wireName: r'maintenanceMessage')
   String? get maintenanceMessage;
+
+  /// When maintenance is expected to end, while maintenance is on and the time is still ahead.
+  @BuiltValueField(wireName: r'maintenanceReturnsAt')
+  DateTime? get maintenanceReturnsAt;
+
+  @BuiltValueField(wireName: r'hours')
+  PlatformDtoOutputHours? get hours;
 
   PlatformDtoOutput._();
 
@@ -67,6 +82,13 @@ class _$PlatformDtoOutputSerializer
       object.updateNeed,
       specifiedType: const FullType(PlatformDtoOutputUpdateNeedEnum),
     );
+    if (object.minVersion != null) {
+      yield r'minVersion';
+      yield serializers.serialize(
+        object.minVersion,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.updateMessage != null) {
       yield r'updateMessage';
       yield serializers.serialize(
@@ -84,6 +106,20 @@ class _$PlatformDtoOutputSerializer
       yield serializers.serialize(
         object.maintenanceMessage,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.maintenanceReturnsAt != null) {
+      yield r'maintenanceReturnsAt';
+      yield serializers.serialize(
+        object.maintenanceReturnsAt,
+        specifiedType: const FullType(DateTime),
+      );
+    }
+    if (object.hours != null) {
+      yield r'hours';
+      yield serializers.serialize(
+        object.hours,
+        specifiedType: const FullType(PlatformDtoOutputHours),
       );
     }
   }
@@ -124,6 +160,16 @@ class _$PlatformDtoOutputSerializer
                   as PlatformDtoOutputUpdateNeedEnum;
           result.updateNeed = valueDes;
           break;
+        case r'minVersion':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.minVersion = valueDes;
+          break;
         case r'updateMessage':
           final valueDes =
               serializers.deserialize(
@@ -152,6 +198,28 @@ class _$PlatformDtoOutputSerializer
                   as String?;
           if (valueDes == null) continue;
           result.maintenanceMessage = valueDes;
+          break;
+        case r'maintenanceReturnsAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.maintenanceReturnsAt = valueDes;
+          break;
+        case r'hours':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      PlatformDtoOutputHours,
+                    ),
+                  )
+                  as PlatformDtoOutputHours?;
+          if (valueDes == null) continue;
+          result.hours.replace(valueDes);
           break;
         default:
           unhandled.add(key);

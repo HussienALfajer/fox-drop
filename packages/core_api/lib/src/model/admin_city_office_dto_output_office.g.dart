@@ -10,6 +10,8 @@ class _$AdminCityOfficeDtoOutputOffice extends AdminCityOfficeDtoOutputOffice {
   @override
   final AdminCityOfficeDtoOutputOfficeLocation location;
   @override
+  final String? landmark;
+  @override
   final BuiltList<AdminCityOfficeDtoOutputOfficeHoursInner> hours;
   @override
   final bool open;
@@ -24,6 +26,7 @@ class _$AdminCityOfficeDtoOutputOffice extends AdminCityOfficeDtoOutputOffice {
 
   _$AdminCityOfficeDtoOutputOffice._({
     required this.location,
+    this.landmark,
     required this.hours,
     required this.open,
     this.closesAt,
@@ -43,6 +46,7 @@ class _$AdminCityOfficeDtoOutputOffice extends AdminCityOfficeDtoOutputOffice {
     if (identical(other, this)) return true;
     return other is AdminCityOfficeDtoOutputOffice &&
         location == other.location &&
+        landmark == other.landmark &&
         hours == other.hours &&
         open == other.open &&
         closesAt == other.closesAt &&
@@ -53,6 +57,7 @@ class _$AdminCityOfficeDtoOutputOffice extends AdminCityOfficeDtoOutputOffice {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, location.hashCode);
+    _$hash = $jc(_$hash, landmark.hashCode);
     _$hash = $jc(_$hash, hours.hashCode);
     _$hash = $jc(_$hash, open.hashCode);
     _$hash = $jc(_$hash, closesAt.hashCode);
@@ -65,6 +70,7 @@ class _$AdminCityOfficeDtoOutputOffice extends AdminCityOfficeDtoOutputOffice {
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminCityOfficeDtoOutputOffice')
           ..add('location', location)
+          ..add('landmark', landmark)
           ..add('hours', hours)
           ..add('open', open)
           ..add('closesAt', closesAt)
@@ -86,6 +92,10 @@ class AdminCityOfficeDtoOutputOfficeBuilder
       _$this._location ??= AdminCityOfficeDtoOutputOfficeLocationBuilder();
   set location(AdminCityOfficeDtoOutputOfficeLocationBuilder? location) =>
       _$this._location = location;
+
+  String? _landmark;
+  String? get landmark => _$this._landmark;
+  set landmark(String? landmark) => _$this._landmark = landmark;
 
   ListBuilder<AdminCityOfficeDtoOutputOfficeHoursInner>? _hours;
   ListBuilder<AdminCityOfficeDtoOutputOfficeHoursInner> get hours =>
@@ -113,6 +123,7 @@ class AdminCityOfficeDtoOutputOfficeBuilder
     final $v = _$v;
     if ($v != null) {
       _location = $v.location.toBuilder();
+      _landmark = $v.landmark;
       _hours = $v.hours.toBuilder();
       _open = $v.open;
       _closesAt = $v.closesAt;
@@ -142,6 +153,7 @@ class AdminCityOfficeDtoOutputOfficeBuilder
           _$v ??
           _$AdminCityOfficeDtoOutputOffice._(
             location: location.build(),
+            landmark: landmark,
             hours: hours.build(),
             open: BuiltValueNullFieldError.checkNotNull(
               open,
@@ -156,6 +168,7 @@ class AdminCityOfficeDtoOutputOfficeBuilder
       try {
         _$failedField = 'location';
         location.build();
+
         _$failedField = 'hours';
         hours.build();
       } catch (e) {

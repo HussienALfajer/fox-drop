@@ -14,7 +14,7 @@ part 'admin_new_restaurant_account_dto.g.dart';
 /// Properties:
 /// * [role]
 /// * [name]
-/// * [phone] - A Syrian or Turkish mobile in E.164, as at sign-in.
+/// * [phone] - A mobile of any country in E.164, as at sign-in.
 @BuiltValue()
 abstract class AdminNewRestaurantAccountDto
     implements
@@ -29,7 +29,7 @@ abstract class AdminNewRestaurantAccountDto
   @BuiltValueField(wireName: r'name')
   String get name;
 
-  /// A Syrian or Turkish mobile in E.164, as at sign-in.
+  /// A mobile of any country in E.164, as at sign-in.
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

@@ -125,8 +125,13 @@ export interface FeeRuleVersion {
 // AP §9.12.1, CA C13: the city's office and its desk hours, with whether the
 // desk is open at the moment asked: open, until when today (CA §7.5 «المكتب
 // مفتوح حتى {الساعة}»); closed, when it opens next (null with no hours).
+// The office's «وصف المكان», in characters (the column's check too).
+export const OFFICE_LANDMARK_MAX = 120;
+
 export interface Office {
   location: Point;
+  // «وصف المكان» (slice D.11a), such as «بجانب جامع …»; null for none.
+  landmark: string | null;
   hours: OpeningPeriod[];
   timeZone: string;
   open: boolean;
@@ -317,6 +322,7 @@ export class GeoService implements OnModuleInit {
         id: offices.id,
         latitude: offices.latitude,
         longitude: offices.longitude,
+        landmark: offices.landmark,
         timeZone: cities.timeZone,
       })
       .from(offices)
@@ -329,6 +335,7 @@ export class GeoService implements OnModuleInit {
     const period = currentPeriod(hours, now, row.timeZone);
     return {
       location: { latitude: row.latitude, longitude: row.longitude },
+      landmark: row.landmark,
       hours,
       timeZone: row.timeZone,
       open: period !== null,
@@ -343,10 +350,18 @@ export class GeoService implements OnModuleInit {
   // one may cross midnight). Audited city.office with the version before.
   async setOffice(
     cityId: string,
-    office: { location: Point; hours: OpeningPeriod[] },
+    office: { location: Point; hours: OpeningPeriod[]; landmark?: string | null | undefined },
     change: GeoChange,
   ): Promise<void> {
     const { latitude, longitude } = office.location;
+    // Slice D.11a: trimmed, an empty one is none.
+    const landmark = office.landmark?.trim() || null;
+    if (landmark !== null && landmark.length > OFFICE_LANDMARK_MAX) {
+      throw new GeoRefusedError(
+        'invalid_office',
+        `the landmark is ${OFFICE_LANDMARK_MAX} characters at most`,
+      );
+    }
     if (
       !Number.isFinite(latitude) ||
       !Number.isFinite(longitude) ||
@@ -371,7 +386,12 @@ export class GeoService implements OnModuleInit {
         .for('update');
       if (!city) throw new GeoRefusedError('unknown_city', 'no such city');
       const [before] = await tx
-        .select({ id: offices.id, latitude: offices.latitude, longitude: offices.longitude })
+        .select({
+          id: offices.id,
+          latitude: offices.latitude,
+          longitude: offices.longitude,
+          landmark: offices.landmark,
+        })
         .from(offices)
         .where(eq(offices.cityId, cityId))
         .orderBy(desc(offices.id))
@@ -382,6 +402,7 @@ export class GeoService implements OnModuleInit {
           cityId,
           latitude,
           longitude,
+          landmark,
           editorId: change.actor.type === 'admin' ? change.actor.id : null,
         })
         .returning({ id: offices.id })) as [{ id: string }];
@@ -398,10 +419,11 @@ export class GeoService implements OnModuleInit {
           before: before
             ? {
                 location: { latitude: before.latitude, longitude: before.longitude },
+                landmark: before.landmark,
                 hours: await this.officeHours(tx, before.id),
               }
             : null,
-          after: { location: { latitude, longitude }, hours },
+          after: { location: { latitude, longitude }, landmark, hours },
           reason: change.reason ?? null,
         },
         tx,

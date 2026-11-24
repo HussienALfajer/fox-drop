@@ -2084,6 +2084,7 @@ Serializers _$serializers =
           ..add(MerchantWindowsRegistrationDto.serializer)
           ..add(OrderContactDtoOutput.serializer)
           ..add(PlatformDtoOutput.serializer)
+          ..add(PlatformDtoOutputHours.serializer)
           ..add(PlatformDtoOutputUpdateNeedEnum.serializer)
           ..add(PushTokenDto.serializer)
           ..add(PushTokenDtoPlatformEnum.serializer)
