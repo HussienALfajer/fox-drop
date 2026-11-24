@@ -1,0 +1,100 @@
+# D.11b The components of D.11's screens
+
+Status: Planned · Tier: T2 · Branch: `feat/sign-in-frame-components`
+Spec: architecture §9.4, §9.5 (R1 to R10), §9.7, §9.9 (the component cycle), §9.10; brand expression §2 (the mark, the filling drop), §3 (motion), §9 (device budgets); CU §4.2, §5.2, §5.5, §6.1, §6.2; D.11's slice file: «Owner's answers» (e), the screen review (screens 2, 3, 6, 7, 8), «Design-system audit of screen 2» and «Code changes recorded for step 8» items 5, 6, 7, 11 and 12 (the components' part) · Definition of done: the D.11b line of `docs/roadmap.md`; D.11's screens can then be coded on `core_ui` only.
+
+## Goal
+
+Every component D.11's approved screens draw exists in code, with its states, stories or widgetbook use cases and goldens: the mark-filling loader (the project's one loader) in `Button`, the search fields and pull to refresh; the sign-in hero and the WhatsApp code preview; the text link; a phone field for every country with its searchable country list; the bottom navigation in the Figma shape; `FoxBanner`'s close and second action; the blocking screens' heads; and the two motion tokens they move by. The owner sees them in Storybook and widgetbook. The only screens that change are the three that take a phone number today (owner's answer 1), and only their number field; D.11 wires the rest.
+
+Runs in parallel with D.11a (the server): nothing here calls a new field of the API. Both touch `core_auth`'s `sign_in_screen.dart` (D.11a reads `attempts_used` as `code_expired`; this slice changes the number field), so whichever merges second rebases on the other.
+
+## Owner decisions this plan builds on
+
+All from D.11's slice file (2026-11-24): the components were drawn on the components sheet of the customer screens canvas (link in the owner's memory file of design artifacts, never here) and approved with the screens (analysis (e)). The loader replaces the 270° arc everywhere and lists keep `Skeleton` (audit of screen 2). The phone field's behaviour and messages are the normalisation table approved at screen 2. The bottom bar takes the Figma shape in the three apps (screen 6; D.10 put one bar in all three). `ui-web`'s `Banner` and `BannerStack` already have the close and second action (merged with #279); only `core_ui` follows.
+
+## Decisions taken in this plan (technical, told to the owner)
+
+- **The hero, the code preview, the tracking steps and the blocking heads live in `core_ui`**, not in `core_auth` and `core_platform` as D.11's notes say: those two packages do not depend on `core_ui` today, and `core_ui` is where widgetbook, the coverage test and the goldens are. They take their data and words as props (the `core_ui` rule); choosing the origin from the route, the cart summary and the active order stays in D.11's screens. The tracking strip is one component, `FoxTrackingSteps`, used by the hero's «طلباتي» origin and the blocking screen's order head (and later by D.16).
+- **The phone rules on the web are `libphonenumber-js`**, the library and exact version D.11a pins on the server, so the browser and the server agree; `max` metadata, since telling a landline from a mobile («هذا رقم أرضي…») needs the number types. Measured against the web's first-load budget (expression §9: 350 KB compressed) and recorded.
+- **The phone rules in Flutter are a pure-Dart port of the same metadata** (candidate: `phone_numbers_parser`, MIT, pinned exactly; its size against the 30 MB download, expression §9, recorded in `docs/code/packages/core_ui.md`). If it cannot tell mobile from landline or give a country's mobile lengths, stop and say so before choosing another.
+- **One table of cases for both sides:** `packages/ui-web/src/phone-field/phone-cases.json` holds D.11's normalisation table, one row per case (input, picked country, expected country, E.164 or the problem). The Vitest test and `core_ui`'s Dart test both read it, so the two parsers cannot drift; `scripts/classify-changes.mjs` makes a change to it run the Dart tests too.
+- **Country names come from CLDR through Node's ICU** (`Intl.DisplayNames`, Arabic and English, on the Node pinned in `.node-version`), with the calling codes from `libphonenumber-js`: no download. `scripts/countries.mjs` writes `packages/ui-web/src/phone-field/countries.generated.ts` and `packages/core_l10n/lib/src/countries.g.dart` (names are user-facing words, so they live in `core_l10n`; `core_ui` takes the list as a prop). A test regenerates and compares (the drift check of the tokens). Every region the metadata knows (owner's answer 2).
+- **The motion tokens are numbers, not a curve:** `motion.pulse.*` (scale 1 → 1.7, opacity 0.7 → 0 over `duration.moment`; still 1.25 at 0.35 under reduced motion) and `motion.mark-fill.*` (rise over the first 0.70 of `duration.moment`, the wave's period 700 ms, the fade over the last 0.18; still half full under reduced motion), as W3C `number` and `duration` tokens in `semantic/base.json`, out to CSS variables and `core_tokens`. Design tokens 0.11.0.
+
+## Owner's answers to this plan (2026-11-25)
+
+1. **The old Syria-and-Turkey phone inputs move in this slice:** `core_auth`'s sign-in, the customer's checkout phone (`checkout.dart`) and the restaurant app's staff screen (`staff_screen.dart`) take the new field and parser here, so every country works in the three places as soon as this slice and D.11a are merged. Their screens keep their present look otherwise (D.11, D.15 and the restaurant batch restyle them).
+2. **The country list shows every region `libphonenumber-js` knows**, with CLDR's Arabic names as they are.
+3. **The selected tab's icon is Linear**, as drawn at screen 6: the larger orange circle alone marks it. This replaces D.5b's «the selected tab Bold».
+
+## Plan
+
+0. **Design checkpoint:** no new drawing; the components sheet and the boards of D.11's screens 1 to 8 are the approved reference (analysis (e)). Read them on the canvas, note any component state the sheet does not show (the loader inside each `Button` variant and density, the web phone field's country list, the loader in the search fields and pull to refresh) and draw it from the approved pieces in Storybook and widgetbook, for the owner to see there. The Figma look of the bottom bar (`.claude/skills/build-slice/figma-look.mjs`; if rate limited, D.10's renders). Read first: `packages/ui-web/CLAUDE.md`, `packages/core_ui/CLAUDE.md`; grep `docs/code/packages/ui-web.md` and `core_ui.md` for the button's loading, the phone field, the banner, the bottom navigation and pull to refresh.
+
+1. **Tokens** (`packages/design-tokens`): `motion.pulse.*` and `motion.mark-fill.*` as above; CSS variables and `core_tokens` (`FoxMotion`, re-exported by `core_ui` like `FoxDuration`); 0.11.0; the Design System's token output.
+
+2. **The loader** (checkpoint A):
+   - `ui-web` `DropLoader` and `core_ui` `FoxDropLoader(size, onPrimary, label?)`: the mark (drop and fox) faint at 35%; a liquid with a soft wave rises through it on `motion.mark-fill`, then the mark fades back; one cycle of `duration.moment` without a pause. Size `sm` (16) draws the drop alone with a flat surface. Orange mark with an ivory fox on light ground, ivory drop with an orange fox on orange (`onPrimary`). Reduced motion: half full and still. Named by its label, or «جارٍ التحميل» passed by the caller; a live region polite. The mark's geometry from the brand files (`docs/brand/`), never redrawn by hand.
+   - `Button(loading, loadingLabel?)` on both sides draws it in place of the arc and keeps its width; the label beside the loader when given (D.11's «جارٍ إرسال الرمز…»).
+   - `SearchField` (web) and the Flutter search field use it in place of the spinner; `FoxPullToRefresh` uses it in place of its drop (still pulsing while it waits, filling as you pull); `core_ui`'s `internal/spinner.dart` and the web arc go.
+3. **The phone field** (checkpoint B):
+   - `scripts/countries.mjs` and its two outputs; `phone-cases.json`; the classifier line.
+   - Web `phone.ts` and Flutter `fox_phone_field.dart`'s parser: every country by ISO code; D.11's rules (a national number with or without its 0; `+`, `00` or a bare calling code; a 0 after or before the code; Arabic-Indic and Persian digits; spaces, dashes, brackets, dots, direction marks U+200E, U+200F, U+202A–U+202E, U+2066–U+2069 and no-break spaces; a number inside pasted text; a mobile of another country switches the country; `+1` and `+7` resolved from the number). The result: the country, the national digits grouped as typed (`944 123 456`, left to right), the E.164 when complete and a mobile, or one problem: `empty`, `missingDigits(n)`, `tooLong`, `landline`, `notMobilePrefix(prefix)`, `unknownCode`; and `switchedFrom` when the country changed by itself.
+   - `PhoneField` (web) and `FoxPhoneField` (Flutter): the chip keeps today's look (ISO letters and the calling code, chevron, no fill) and opens the country list; the label never carries the code (the doubled-code bug); every calling code and number isolated left to right (`<bdi dir="ltr">`, `Directionality(ltr)`), fixing «963+»; the valid mark (the icon only; the outline keeps the field's own states); a clear button; the phone keyboard with the send action key (`TextInputAction.send`, `onSubmitted`); `AutofillHints.telephoneNumber`; locked while `busy` (R14). The problem's words come in as props, so the screen picks them from `core_l10n`. Semantics: the chip «الدولة: {الاسم}، {الرمز}. اضغط لتغييرها» and the number read digit by digit (strings passed in).
+   - The country list: web, a searchable popover in `PhoneField` on `@ui-sdk/react`'s autocomplete or combobox (read its `.d.ts` first); Flutter, new `FoxCountrySheet` on `FoxBottomSheet` with the search field and one radio group per section. Search by Arabic name, English name or calling code; Syria and Turkey pinned first, then the last used (a prop: the app stores it), then the rest in Arabic order; name and calling code only, no flags.
+   - The problem and switch messages of D.11 item 6 go into `core_l10n` (shared, no prefix) and the web's are passed by the apps when they use the field.
+   - **The three old inputs** (owner's answer 1): `core_auth` depends on `core_ui` and its sign-in screen's number uses `FoxPhoneField` with `FoxCountrySheet` (the default country stays `customer.phone_default_country`; the last used country is passed as null until D.11 stores it); `checkout.dart`'s phone and `staff_screen.dart` the same. `core_auth`'s `PhoneCountry` and `e164Phone` go (`westernDigits` stays for the code); `phone_test.dart`'s cases move to the shared file. Nothing else on those screens changes.
+4. **The rest, Flutter first** (checkpoint C):
+   - `FoxTextLink` (Flutter) and `TextLink` (web): inline underlined text, primary ink, a 48 target around it without moving the text; hover and pressed tokens (R10); a link role.
+   - `FoxTrackingSteps`: four equal columns with one connector each, sized by `size.touch-target`; done steps brand blue, the current step a flat orange circle with two soft rings on `motion.pulse` (still in reduced motion); icons `md`; step names as props.
+   - `FoxSignInHero(origin, …)`: `checkout` (the saved cart: restaurant, items, total, «سلّتك محفوظة كما هي»; amounts through the caller's formatter), `orders` (`FoxTrackingSteps` on a sample), `account` and the rest (what an account keeps, on `FoxCard` with the offset shadow). It gives way by its own height (`LayoutBuilder`): first the lead line, then the illustration, leaving the title; collapsed to the title while the keyboard is up (`MediaQuery.viewInsetsOf`).
+   - `FoxCodePreview(compact)`: the WhatsApp message as the real text with the code masked, no WhatsApp logo or green; read once as one sentence (prop).
+   - `FoxBottomNavigation` in the Figma shape: a smooth accent outline round each tab, the halo in `color.nav-halo`, the current tab a larger orange circle, `lg` Linear icons for every tab, the selected one included (owner's answer 3); names in semantics only; the same in the captain's theme and the restaurant's phone form.
+   - `FoxBanner` and `FoxBannerStack`: `dismiss` (a close control with its name) and `secondaryAction`, an optional icon on each action, the same API as `ui-web`'s.
+   - The blocking heads: `FoxVersionTicket` (perforation with two cut-outs, the installed version struck, the required one), `FoxShopSign` (a nail, two strings, an orange board on the pressed-orange offset, the return time line when given), and the order head as `FoxTrackingSteps` with the order's words.
+5. **Outputs and docs:** stories, Design System cards and the sync for the new and changed web components (`DropLoader`, `TextLink`, `PhoneField`, `Button`, `SearchField`); widgetbook use cases for every exported state; goldens and visual baselines; `docs/code/packages/ui-web.md`, `core_ui.md`, `design-tokens.md` and the folder `CLAUDE.md` rules where a rule changed (the phone rule moves from «Change the phone rule in `phone_number_test.dart` first» to the shared cases file); the selected tab's style in architecture §9.4, `docs/brand/expression.md` (icons) and `docs/slices/D.5b-madar-icon-set.md`'s notes (Linear, owner 2026-11-25); D.11's slice file points here.
+
+Tests written first (locked in the red phase), on both platforms unless marked; every component also passes RTL, 130% and 200% text without overflow, axe on the web, and has goldens or visual baselines in the customer and captain themes:
+
+- Tokens: `tokens.test.ts` finds `motion.pulse.*` and `motion.mark-fill.*` with their values in the CSS and Dart outputs.
+- Loader: names itself by its label; reduced motion shows the still half-full frame; size `sm` draws the drop alone; goldens at 0, 20, 45, 70, 85 and 97% of the cycle on light and on orange at 16, 24 and 48.
+- Button: `loading` keeps the width of the idle button in every variant and density, stays focusable, ignores presses, shows the loader and the loading label, and is announced busy.
+- Search field and pull to refresh: the loader replaces the spinner and the drop; pull to refresh still runs its callback once per pull.
+- Phone parser: every row of `phone-cases.json` (both sides); the country switch and `switchedFrom` on a typed or pasted code; `+1` and `+7` resolved from the number.
+- The three old inputs: `core_auth`'s sign-in screen test, the customer's checkout test and the restaurant's staff screen test each take a German mobile and refuse a landline with its message.
+- Phone field: the chip shows no doubled code and the code left to right; the clear button empties it; the valid mark appears only when complete; no problem shown while typing, then on blur or submit, then live until fixed; the send key submits; `busy` locks it; semantics of the chip and the digit-by-digit number.
+- Country list: search by Arabic, English and calling code; Syria and Turkey first, then the last used, then Arabic order; no flags; picking closes it and switches the chip; keyboard on the web (arrows, Enter, Escape returns focus).
+- Countries: the generated files match a fresh run of `scripts/countries.mjs`.
+- Text link: a 48 target, the link role, hover and pressed tokens, the focus ring for the keyboard only.
+- Tracking steps: done, current and later steps by colour and by semantics («تم», «الآن»), never colour alone; the pulse still under reduced motion.
+- Sign-in hero: each origin's content; the lead and then the illustration give way at the measured heights; the keyboard-up state shows the title only (goldens per origin and keyboard up at 360 × 640 and 412 × 915).
+- Code preview: the code masked; one semantics sentence.
+- Bottom navigation: four items, the selected one announced as selected with the larger circle and the Linear icon, 48 targets, a badge read with its item, the safe area kept; goldens in the three apps' themes.
+- Banner and stack (Flutter): the close control named and calling back; the second action with its icon; the stack passes both through; the order of the stack unchanged.
+- Blocking heads: the ticket strikes the installed version and shows the required one; the shop sign with and without the return time; both at 130% on 360 × 640.
+
+Checkpoints (one commit per step, `checker` once at each): (A) tokens and the loader with its users; (B) the phone parser, field and country list on both sides; (C) the Flutter components, the web text link, the outputs and docs; then `reviewer`. Web and Flutter can run in two sessions on this branch and a `-flutter` branch merged into it, as D.10 did, once the tokens are in (checkpoint A's first step).
+
+## Stopped at
+
+Planned 2026-11-25; the owner answered the plan's three questions the same day. Next: `/build-slice D.11b` in a fresh session.
+
+## Evidence
+
+- `node scripts/verify.mjs --changed`: not run yet
+- Storybook and widgetbook: —
+- Review: —
+
+## Before deploying
+
+Nothing for the server. New builds of the three apps carry the every-country field at sign-in (with checkout and the staff screen); without D.11a's server on staging the server refuses a number outside Syria and Turkey, so deploy D.11a first.
+
+## To check on staging
+
+The owner sees the components in Storybook and widgetbook (and the Design System after the sync); with D.11a deployed, signs in to the customer app with a number of another country, picked from the list and pasted in full.
+
+## Notes for the next session
+
+- Not in this slice: the screens and their wiring (D.11): the sign-in origin from the route, the Android phone number hint, the remembered number, the send button's words, the screens' strings other than the field's messages.
+- The starting screen's splash (D.11 screen 1) is its own drawing, not a component here.
