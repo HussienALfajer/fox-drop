@@ -169,7 +169,8 @@ describe('the captain app sign-in (CA §4.9)', () => {
       { name: 'كابتن', vehicle: 'walking', custodyLimit: { amount: 1_000n, currency: 'TRY' } },
       change,
     );
-    const phone = `+44791${randomInt(1_000_000).toString().padStart(6, '0')}`;
+    // A British mobile range the metadata takes whole.
+    const phone = `+447400${randomInt(1_000_000).toString().padStart(6, '0')}`;
     const accountId = await accounts.addAccount(captainId, phone, change);
     const answer = await signIn(phone);
     expect(answer.statusCode).toBe(200);

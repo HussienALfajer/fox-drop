@@ -13,7 +13,7 @@
 
 ## 5.2 Sign-in
 
-1. The user enters their phone number.
+1. The user enters their phone number: a mobile of any country, as the customer app takes it (CU U3, §5.2 item 1; owner decision 2026-11-24). The panel and the owners add users with such a number.
 2. The server sends a code over WhatsApp, the only channel in V1 (`otp.channel_order`, technology-stack §8.3), with `otp.validity_min` (5), `otp.max_attempts` (5) and `otp.resend_after_sec` (60) (AP Appendix A).
 3. If the number belongs to no restaurant: «هذا الرقم غير مسجّل لدى أي مطعم في FOX DROP» with call and WhatsApp buttons for the team. There is no self-signup.
 4. If the restaurant's account is `draft`: «حساب مطعمك قيد الإعداد. سنتواصل معك عند جاهزيته.»

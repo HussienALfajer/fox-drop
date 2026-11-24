@@ -779,3 +779,8 @@ So far the versioned quote of a cart (CU §10.1–10.6; AP §8.4, §8.6), placin
 - «طلباتي» reads the customer's orders by `orders_customer_status` and sorts every partition's rows by `placed_at` and id;
   an index on `(customer_account_id, placed_at, id)` when a customer's orders grow.
 - `idempotency_keys` gains a row per order and the application role cannot delete; purge keys older than 24 hours as the migration role before launch.
+
+## The customer's GET platform (slice D.11a)
+
+- `customer-platform.controller.ts` serves `GET /v1/customer/platform`: settings' `platformAnswer`, plus `hours` (`{open, opensAt}` by `platformOpening`) for the city `GeoService.locate` finds at the optional point (`latitude` and `longitude`, both or neither, else `400`).
+  No point or no city: no `hours`. It lives here because settings cannot read geo.

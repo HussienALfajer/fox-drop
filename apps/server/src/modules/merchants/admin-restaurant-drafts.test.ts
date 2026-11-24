@@ -260,6 +260,12 @@ describe('the wizard routes past the draft', () => {
       { id: expect.any(String), role: 'owner', name: 'مالك', phone: '+963 ••• 411' },
     ]);
     expect((await accountsOf(ops, id)).json().accounts[0].phone).toBe('+963944000411');
+    const { rows } = await sql.query(
+      "SELECT count(*)::int AS views FROM audit.events WHERE target_id = $1 AND action = 'merchant_accounts.view'",
+      [id],
+    );
+    // The add's answer and the read.
+    expect(rows[0].views).toBe(2);
     // Slice D.11a: a number of another country, masked with its own code.
     const added = await accountsOf(ops, id, '', {
       role: 'cashier',
@@ -272,12 +278,6 @@ describe('the wizard routes past the draft', () => {
         .json()
         .accounts.map((account: { phone: string }) => account.phone),
     ).toContain('+44 ••• 123');
-    const { rows } = await sql.query(
-      "SELECT count(*)::int AS views FROM audit.events WHERE target_id = $1 AND action = 'merchant_accounts.view'",
-      [id],
-    );
-    // The add's answer and the read.
-    expect(rows[0].views).toBe(2);
     expect((await accountsOf(ops, randomUUID())).json()).toMatchObject({
       statusCode: 404,
       error: 'unknown_restaurant',

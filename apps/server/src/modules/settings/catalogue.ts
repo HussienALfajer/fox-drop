@@ -503,6 +503,7 @@ export const catalogue = {
   }),
   'otp.number_hourly_max': count(3, 'global'),
   'otp.number_daily_max': count(6, 'global'),
+  'otp.number_daily_max_abroad': count(3, 'global'),
   'otp.device_daily_max': count(6, 'global'),
   'otp.ip_hourly_max': count(30, 'global'),
   'otp.sender_per_minute_max': count(12, 'global'),
@@ -637,8 +638,15 @@ export const catalogue = {
   'app.<app>.maintenance': define({
     type: 'boolean',
     scope: 'global',
-    schema: z.object({ enabled: z.boolean(), message: text.nullable() }),
-    default: { enabled: false, message: null },
+    // Slice D.11a: the optional return time defaults to none, so a value
+    // stored before it existed still reads, and maintenance that is on stays
+    // on.
+    schema: z.object({
+      enabled: z.boolean(),
+      message: text.nullable(),
+      returnsAt: z.iso.datetime().nullable().default(null),
+    }),
+    default: { enabled: false, message: null, returnsAt: null },
   }),
 } as const satisfies Record<string, SettingDefinition>;
 

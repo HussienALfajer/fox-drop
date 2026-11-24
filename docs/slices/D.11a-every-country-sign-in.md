@@ -75,6 +75,11 @@ Checked against the code before building; the plan stands with these corrections
 6. The masks in the customers blocks and the captain applications and profile tests stay Syrian: they now call the one `maskedPhone`, whose own test covers `+44`, `+1`, `+7`; the panel's restaurant accounts test adds a `+44` account.
 7. There is no `redact.test.ts`: it is new. It passes before any change, as the plan expected (proof, not red).
 8. The Flutter and portal message mappings are tested through small pure functions: `signInMessage` (extracted from the sign-in screen's private `_message`) and `signInResultOf` (from the portal's mutation).
+9. Found while building: `maskedPhone` lives in `src/phone/masked-phone.ts` (shared), re-exported by `identity/app-phone.ts`: captains and merchants import only types from identity, so loading identity's entry from them would make a cycle.
+10. Found while building: the address's contact number shares `app-auth.ts`'s `phone`, so it takes any country's mobile too; CU §7 says so now.
+11. The locked tests cover every checkpoint, so the type check stayed red until the last server layer: the server layers were built in one pass and checked together, then committed.
+
+Owner, 2026-11-24 (during the build): approved fixing two lines of locked tests the red phase got wrong: the captain test's British number (one digit short; now a range the metadata takes whole, `+447400…`) and the `otp.max_attempts` = 1 case of `app-sign-in.test.ts`, which now expects `attempts_used` as the plan says.
 
 ## Stopped at
 
@@ -87,7 +92,7 @@ Red phase written and locked (`.claude/state/locked-tests.txt`); next: checkpoin
 
 ## Before deploying
 
-The `geo.offices.landmark` migration; a server deploy (new dependency). No new variable. The apps need no rebuild: every new field is optional and the new refusal reads as today's message.
+The `geo.offices.landmark` migration (0152, expand only: a nullable column and its check); a server deploy (new dependency `libphonenumber-js`). No new variable. The new setting `otp.number_daily_max_abroad` reads its default (3) until OWN changes it. The apps need no rebuild: every new field is optional and the new refusal reads as today's message.
 
 ## To check on staging
 

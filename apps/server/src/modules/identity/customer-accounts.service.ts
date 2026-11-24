@@ -4,7 +4,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
-import { APP_PHONE_PATTERN } from './app-phone.js';
+import { isAppMobile } from './app-phone.js';
 import { AppSessionsService } from './app-sessions.service.js';
 import { AppSignInService, type CustomerRelinked } from './app-sign-in.service.js';
 import { appSessions, appSignInCodes, customerAccounts } from './schema.js';
@@ -366,8 +366,8 @@ export class CustomerAccountsService {
     change: { accountId: string; phone: string },
     now: Date,
   ): Promise<void> {
-    if (!APP_PHONE_PATTERN.test(change.phone)) {
-      throw new CustomerAccountRefusedError('invalid_phone', 'not a Syrian or Turkish mobile');
+    if (!isAppMobile(change.phone)) {
+      throw new CustomerAccountRefusedError('invalid_phone', 'not a mobile number');
     }
     const toHash = this.secrets.phoneHash(change.phone);
     let ended: string[];

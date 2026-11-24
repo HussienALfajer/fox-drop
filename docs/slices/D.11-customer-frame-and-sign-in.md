@@ -139,7 +139,7 @@ What is still drawn, and why: the number field (the proposed `PhoneField` change
 
 #### Code changes recorded for step 8 (screen 2; nothing coded yet)
 
-Server, first and on its own (T0, auth):
+Server, first and on its own (T0, auth): items 1 to 4 done by slice D.11a ([slice file](D.11a-every-country-sign-in.md)), with the server parts of the owner's answers (b) and (d).
 
 1. `apps/server/src/modules/identity/app-phone.ts`: replace `APP_PHONE_PATTERN` with validation from the standard phone metadata (`libphonenumber-js`, max metadata): any country, mobile numbers only, stored E.164. Applies to the customer, captain and restaurant sign-in routes and to `admin-restaurant-accounts.controller.ts` (a restaurant user's number follows the same rule).
 2. Every place that recognises only `+963` and `+90`: `logging/redact.ts` (mask any E.164 number in logs), the masked display in `customers/blocks.ts`, `identity/admin-restaurant-accounts.controller.ts`, `captains/admin-captain-applications.controller.ts` (show the real calling code), and their tests.

@@ -17,7 +17,13 @@ import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import { FxRefusedError, FxService } from '../fx/index.js';
 import type { AdminSession } from '../identity/index.js';
-import { type GeoChange, type Office, GeoRefusedError, GeoService } from './geo.service.js';
+import {
+  type GeoChange,
+  type Office,
+  GeoRefusedError,
+  GeoService,
+  OFFICE_LANDMARK_MAX,
+} from './geo.service.js';
 
 class AdminCitiesDto extends createZodDto(
   z.object({
@@ -54,8 +60,16 @@ const deskPeriod = z.object({
     .describe('Minutes after midnight; at or before the opening it runs past midnight.'),
 });
 
+const landmark = z
+  .string()
+  .nullable()
+  .describe(
+    '«وصف المكان», such as «بجانب جامع …», shown to customers and captains (slice D.11a); null for none.',
+  );
+
 const officeBody = z.object({
   location,
+  landmark,
   hours: z.array(deskPeriod).max(7).describe('One period per weekday at most; none is closed.'),
   open: z.boolean().describe('Whether the desk is open now.'),
   closesAt: z.iso.datetime().nullable().describe('While open: when it closes.'),
@@ -67,7 +81,16 @@ class AdminCityOfficeDto extends createZodDto(
 ) {}
 
 class AdminSetCityOfficeDto extends createZodDto(
-  z.object({ location, hours: z.array(deskPeriod).max(7) }),
+  z.object({
+    location,
+    hours: z.array(deskPeriod).max(7),
+    landmark: z
+      .string()
+      .trim()
+      .max(OFFICE_LANDMARK_MAX)
+      .nullish()
+      .describe('Trimmed; empty or absent is none.'),
+  }),
 ) {}
 
 const reason = z.string().trim().max(500).nullish().describe('Why, for the audit log; optional.');
@@ -222,6 +245,7 @@ async function refusalsAsHttp<T>(action: () => Promise<T>): Promise<T> {
 function officeView(office: Office) {
   return {
     location: office.location,
+    landmark: office.landmark,
     hours: office.hours,
     open: office.open,
     closesAt: office.closesAt?.toISOString() ?? null,

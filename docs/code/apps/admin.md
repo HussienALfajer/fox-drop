@@ -503,3 +503,8 @@ From the repository root, after `docker compose up --detach` and the server on p
 
 - `pnpm --filter @fox-drop/admin dev`: the panel on http://localhost:5173 (the portal: `@fox-drop/merchant-portal`, port 5174).
 - `pnpm --filter @fox-drop/admin test:e2e`: build first (`build`), then the smoke test. `pnpm verify` runs both for every app and installs Chromium once.
+
+## Slice D.11a
+
+- «التطبيقات»: the maintenance return time, a `datetime-local` on the first city's clock (the city the settings list is read for), empty for none (`formValues(form, timeZone)`).
+- «المكتب»: «وصف المكان», one line of 120 characters at most, trimmed, empty as none (`officeRequestOf`), shown in the office in force.

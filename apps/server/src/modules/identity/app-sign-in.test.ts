@@ -304,7 +304,8 @@ describe('the sign-in code (architecture §8.3.2)', () => {
         await refusal(
           signIn.signIn({ party: 'customer', phone, deviceId, code: wrong }, context, now),
         ),
-      ).toEqual({ refusal: 'wrong_code', attemptsLeft: 0 });
+        // Slice D.11a: the one attempt allowed used the code up.
+      ).toEqual({ refusal: 'attempts_used', attemptsLeft: 0 });
     } finally {
       await changeSetting('otp.validity_min', 5);
       await changeSetting('otp.max_attempts', 5);

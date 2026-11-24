@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { components } from '@fox-drop/api-schema';
 import { api } from './api.js';
 import { citiesQuery } from './cities.js';
+import { zonedToUtc } from './emergency-stop.js';
 
 // OWN's row of the AP §6.2 matrix; the server checks the Appendix A edit
 // roles of each key (OWN for app.<app>.*).
@@ -18,7 +19,8 @@ export interface AppValues {
   minVersion: string | null;
   latestVersion: string | null;
   updateMessage: string | null;
-  maintenance: { enabled: boolean; message: string | null };
+  // returnsAt (slice D.11a): the expected return, an instant; null for none.
+  maintenance: { enabled: boolean; message: string | null; returnsAt: string | null };
 }
 
 const fields = {
@@ -37,7 +39,8 @@ const text = (value: unknown): string | null =>
 export function appValues(settings: SettingEntry[], app: PlatformApp): AppValues {
   const value = (field: keyof AppValues) =>
     settings.find((entry) => entry.key === keyOf(app, field))?.value;
-  const maintenance = value('maintenance') as { enabled?: unknown; message?: unknown } | undefined;
+  const maintenance = value('maintenance') as
+    { enabled?: unknown; message?: unknown; returnsAt?: unknown } | undefined;
   return {
     minVersion: text(value('minVersion')),
     latestVersion: text(value('latestVersion')),
@@ -45,6 +48,7 @@ export function appValues(settings: SettingEntry[], app: PlatformApp): AppValues
     maintenance: {
       enabled: maintenance?.enabled === true,
       message: text(maintenance?.message),
+      returnsAt: text(maintenance?.returnsAt),
     },
   };
 }
@@ -52,8 +56,10 @@ export function appValues(settings: SettingEntry[], app: PlatformApp): AppValues
 const trimmed = (value: FormDataEntryValue | null): string | null =>
   text(typeof value === 'string' ? value.trim() : null);
 
-// The form's values: trimmed, empty as unset.
-export function formValues(form: FormData): AppValues {
+// The form's values: trimmed, empty as unset; the return time typed on the
+// city's clock.
+export function formValues(form: FormData, timeZone: string): AppValues {
+  const returnsAt = trimmed(form.get('maintenanceReturnsAt'));
   return {
     minVersion: trimmed(form.get('minVersion')),
     latestVersion: trimmed(form.get('latestVersion')),
@@ -61,6 +67,7 @@ export function formValues(form: FormData): AppValues {
     maintenance: {
       enabled: form.get('maintenance') === 'on',
       message: trimmed(form.get('maintenanceMessage')),
+      returnsAt: returnsAt === null ? null : zonedToUtc(returnsAt, timeZone),
     },
   };
 }
@@ -91,7 +98,8 @@ export function useAppSettings() {
         params: { query: { cityId: city.id } },
       });
       if (!data) throw new Error('settings unavailable');
-      return data.settings;
+      // The return time is typed on this city's clock.
+      return { settings: data.settings, timeZone: city.timeZone };
     },
   });
 }

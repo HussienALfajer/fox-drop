@@ -288,3 +288,14 @@ the apps' phone sign-in with a WhatsApp code, tokens and sessions, served to the
   No valid token answers `401`;
   an app route outside an app group `403`.
 - **Time:** services take `now` and never read the database clock, so tests move time by passing it.
+
+## Every country (slice D.11a, owner decision 2026-11-24)
+
+- **Any country's mobile:** `app-phone.ts` holds `isAppMobile` (E.164, then today's Syrian `+9639…` and Turkish `+905…` rule, else `libphonenumber-js/max` says `MOBILE` or `FIXED_LINE_OR_MOBILE`) and `appPhone`, the Zod string every app route, the panel's and owners' account forms and the address's contact number share (through `app-auth.ts`'s `phone`).
+  Today's Syrian and Turkish rule stays because the metadata refuses some numbers it took (`+96391…`, `+96392…`), so nothing taken before is refused.
+  The server takes E.164 only; the apps normalise what is typed (D.11's components slice).
+- **The daily limit abroad:** a number outside +963 and +90 (`signsInAbroad`) counts against `otp.number_daily_max_abroad` (3) instead of `otp.number_daily_max`, on the same Valkey key and window, refused as `daily_limit` (architecture §8.3.3 item 2).
+- **`attempts_used`:** the wrong attempt that reaches `otp.max_attempts` answers `attempts_used` (not `wrong_code` with 0 left); later attempts find no open code and read the number's latest code of the party: ended `attempts_exhausted` and this device's (or an emergency code), they answer `attempts_used`, else `code_expired`.
+  An open code whose attempts reach a lowered `otp.max_attempts` answers `attempts_used` too; a new code request opens a new code with its own attempts.
+  The routes pass the refusal through as `400` with `attemptsLeft: 0`; the clients read it as `code_expired` until D.11's code screen.
+- **Masks:** `maskedPhone` (`src/phone/masked-phone.ts`, re-exported here) shows the number's own calling code, such as «+44 ••• 123»; it replaced the four copies that knew only +963 and +90.

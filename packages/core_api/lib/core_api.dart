@@ -1234,6 +1234,7 @@ export 'package:core_api/src/model/merchant_windows_registered_dto_output.dart';
 export 'package:core_api/src/model/merchant_windows_registration_dto.dart';
 export 'package:core_api/src/model/order_contact_dto_output.dart';
 export 'package:core_api/src/model/platform_dto_output.dart';
+export 'package:core_api/src/model/platform_dto_output_hours.dart';
 export 'package:core_api/src/model/push_token_dto.dart';
 export 'package:core_api/src/model/push_token_registered_dto_output.dart';
 export 'package:core_api/src/model/realtime_token_dto_output.dart';

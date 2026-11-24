@@ -61,7 +61,4 @@ export function accountStatus(state: {
 
 // AP §9.8 «name and masked phone»: the country code and the last three
 // digits (decided by us), such as «+963 ••• 456».
-export function maskedPhone(phone: string): string {
-  const code = phone.startsWith('+90') ? '+90' : phone.startsWith('+963') ? '+963' : '+';
-  return `${code} ••• ${phone.slice(-3)}`;
-}
+export { maskedPhone } from '../../phone/masked-phone.js';

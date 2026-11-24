@@ -20,6 +20,7 @@ import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
+import { maskedPhone } from '../../phone/masked-phone.js';
 import { AuditService } from '../audit/index.js';
 import { FilesRefusedError } from '../files/index.js';
 import type { AdminSession } from '../identity/index.js';
@@ -681,10 +682,6 @@ function adminOf(session: AdminSession, request: FastifyRequest): PipelineAdmin 
 // architecture §15.3: a number is masked in the panel unless its holder must
 // act on it (who schedules the interview calls the applicant), its view
 // audited.
-function masked(phone: string): string {
-  const code = phone.startsWith('+90') ? '+90' : phone.startsWith('+963') ? '+963' : '+';
-  return `${code} ••• ${phone.slice(-3)}`;
-}
 
 function body(review: Review, session: AdminSession) {
   const iso = (at: Date | null) => at?.toISOString() ?? null;
@@ -693,7 +690,7 @@ function body(review: Review, session: AdminSession) {
     phone:
       review.phone === null || session.permissions.includes('captains.manage')
         ? review.phone
-        : masked(review.phone),
+        : maskedPhone(review.phone),
     submittedAt: iso(review.submittedAt),
     updatedAt: review.updatedAt.toISOString(),
     documents: review.documents.map((document) => ({

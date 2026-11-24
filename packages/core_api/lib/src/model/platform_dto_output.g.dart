@@ -83,11 +83,17 @@ class _$PlatformDtoOutput extends PlatformDtoOutput {
   @override
   final PlatformDtoOutputUpdateNeedEnum updateNeed;
   @override
+  final String? minVersion;
+  @override
   final String? updateMessage;
   @override
   final bool maintenance;
   @override
   final String? maintenanceMessage;
+  @override
+  final DateTime? maintenanceReturnsAt;
+  @override
+  final PlatformDtoOutputHours? hours;
 
   factory _$PlatformDtoOutput([
     void Function(PlatformDtoOutputBuilder)? updates,
@@ -95,9 +101,12 @@ class _$PlatformDtoOutput extends PlatformDtoOutput {
 
   _$PlatformDtoOutput._({
     required this.updateNeed,
+    this.minVersion,
     this.updateMessage,
     required this.maintenance,
     this.maintenanceMessage,
+    this.maintenanceReturnsAt,
+    this.hours,
   }) : super._();
   @override
   PlatformDtoOutput rebuild(void Function(PlatformDtoOutputBuilder) updates) =>
@@ -112,18 +121,24 @@ class _$PlatformDtoOutput extends PlatformDtoOutput {
     if (identical(other, this)) return true;
     return other is PlatformDtoOutput &&
         updateNeed == other.updateNeed &&
+        minVersion == other.minVersion &&
         updateMessage == other.updateMessage &&
         maintenance == other.maintenance &&
-        maintenanceMessage == other.maintenanceMessage;
+        maintenanceMessage == other.maintenanceMessage &&
+        maintenanceReturnsAt == other.maintenanceReturnsAt &&
+        hours == other.hours;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, updateNeed.hashCode);
+    _$hash = $jc(_$hash, minVersion.hashCode);
     _$hash = $jc(_$hash, updateMessage.hashCode);
     _$hash = $jc(_$hash, maintenance.hashCode);
     _$hash = $jc(_$hash, maintenanceMessage.hashCode);
+    _$hash = $jc(_$hash, maintenanceReturnsAt.hashCode);
+    _$hash = $jc(_$hash, hours.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -132,9 +147,12 @@ class _$PlatformDtoOutput extends PlatformDtoOutput {
   String toString() {
     return (newBuiltValueToStringHelper(r'PlatformDtoOutput')
           ..add('updateNeed', updateNeed)
+          ..add('minVersion', minVersion)
           ..add('updateMessage', updateMessage)
           ..add('maintenance', maintenance)
-          ..add('maintenanceMessage', maintenanceMessage))
+          ..add('maintenanceMessage', maintenanceMessage)
+          ..add('maintenanceReturnsAt', maintenanceReturnsAt)
+          ..add('hours', hours))
         .toString();
   }
 }
@@ -147,6 +165,10 @@ class PlatformDtoOutputBuilder
   PlatformDtoOutputUpdateNeedEnum? get updateNeed => _$this._updateNeed;
   set updateNeed(PlatformDtoOutputUpdateNeedEnum? updateNeed) =>
       _$this._updateNeed = updateNeed;
+
+  String? _minVersion;
+  String? get minVersion => _$this._minVersion;
+  set minVersion(String? minVersion) => _$this._minVersion = minVersion;
 
   String? _updateMessage;
   String? get updateMessage => _$this._updateMessage;
@@ -162,6 +184,16 @@ class PlatformDtoOutputBuilder
   set maintenanceMessage(String? maintenanceMessage) =>
       _$this._maintenanceMessage = maintenanceMessage;
 
+  DateTime? _maintenanceReturnsAt;
+  DateTime? get maintenanceReturnsAt => _$this._maintenanceReturnsAt;
+  set maintenanceReturnsAt(DateTime? maintenanceReturnsAt) =>
+      _$this._maintenanceReturnsAt = maintenanceReturnsAt;
+
+  PlatformDtoOutputHoursBuilder? _hours;
+  PlatformDtoOutputHoursBuilder get hours =>
+      _$this._hours ??= PlatformDtoOutputHoursBuilder();
+  set hours(PlatformDtoOutputHoursBuilder? hours) => _$this._hours = hours;
+
   PlatformDtoOutputBuilder() {
     PlatformDtoOutput._defaults(this);
   }
@@ -170,9 +202,12 @@ class PlatformDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _updateNeed = $v.updateNeed;
+      _minVersion = $v.minVersion;
       _updateMessage = $v.updateMessage;
       _maintenance = $v.maintenance;
       _maintenanceMessage = $v.maintenanceMessage;
+      _maintenanceReturnsAt = $v.maintenanceReturnsAt;
+      _hours = $v.hours?.toBuilder();
       _$v = null;
     }
     return this;
@@ -192,22 +227,41 @@ class PlatformDtoOutputBuilder
   PlatformDtoOutput build() => _build();
 
   _$PlatformDtoOutput _build() {
-    final _$result =
-        _$v ??
-        _$PlatformDtoOutput._(
-          updateNeed: BuiltValueNullFieldError.checkNotNull(
-            updateNeed,
-            r'PlatformDtoOutput',
-            'updateNeed',
-          ),
-          updateMessage: updateMessage,
-          maintenance: BuiltValueNullFieldError.checkNotNull(
-            maintenance,
-            r'PlatformDtoOutput',
-            'maintenance',
-          ),
-          maintenanceMessage: maintenanceMessage,
+    _$PlatformDtoOutput _$result;
+    try {
+      _$result =
+          _$v ??
+          _$PlatformDtoOutput._(
+            updateNeed: BuiltValueNullFieldError.checkNotNull(
+              updateNeed,
+              r'PlatformDtoOutput',
+              'updateNeed',
+            ),
+            minVersion: minVersion,
+            updateMessage: updateMessage,
+            maintenance: BuiltValueNullFieldError.checkNotNull(
+              maintenance,
+              r'PlatformDtoOutput',
+              'maintenance',
+            ),
+            maintenanceMessage: maintenanceMessage,
+            maintenanceReturnsAt: maintenanceReturnsAt,
+            hours: _hours?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'hours';
+        _hours?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'PlatformDtoOutput',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

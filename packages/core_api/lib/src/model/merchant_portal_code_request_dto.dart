@@ -11,7 +11,7 @@ part 'merchant_portal_code_request_dto.g.dart';
 /// MerchantPortalCodeRequestDto
 ///
 /// Properties:
-/// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+/// * [phone] - The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
 /// * [browserId] - The browser: a random id the portal keeps, which the code is bound to.
 @BuiltValue()
 abstract class MerchantPortalCodeRequestDto
@@ -20,7 +20,7 @@ abstract class MerchantPortalCodeRequestDto
           MerchantPortalCodeRequestDto,
           MerchantPortalCodeRequestDtoBuilder
         > {
-  /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+  /// The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

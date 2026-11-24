@@ -1,0 +1,2 @@
+ALTER TABLE "geo"."offices" ADD COLUMN "landmark" text;--> statement-breakpoint
+ALTER TABLE "geo"."offices" ADD CONSTRAINT "offices_landmark" CHECK ("geo"."offices"."landmark" IS NULL OR ("geo"."offices"."landmark" = btrim("geo"."offices"."landmark") AND char_length("geo"."offices"."landmark") BETWEEN 1 AND 120));

@@ -11,13 +11,18 @@ class _$AdminSetCityOfficeDto extends AdminSetCityOfficeDto {
   final AdminSetCityOfficeDtoLocation location;
   @override
   final BuiltList<AdminSetCityOfficeDtoHoursInner> hours;
+  @override
+  final String? landmark;
 
   factory _$AdminSetCityOfficeDto([
     void Function(AdminSetCityOfficeDtoBuilder)? updates,
   ]) => (AdminSetCityOfficeDtoBuilder()..update(updates))._build();
 
-  _$AdminSetCityOfficeDto._({required this.location, required this.hours})
-    : super._();
+  _$AdminSetCityOfficeDto._({
+    required this.location,
+    required this.hours,
+    this.landmark,
+  }) : super._();
   @override
   AdminSetCityOfficeDto rebuild(
     void Function(AdminSetCityOfficeDtoBuilder) updates,
@@ -32,7 +37,8 @@ class _$AdminSetCityOfficeDto extends AdminSetCityOfficeDto {
     if (identical(other, this)) return true;
     return other is AdminSetCityOfficeDto &&
         location == other.location &&
-        hours == other.hours;
+        hours == other.hours &&
+        landmark == other.landmark;
   }
 
   @override
@@ -40,6 +46,7 @@ class _$AdminSetCityOfficeDto extends AdminSetCityOfficeDto {
     var _$hash = 0;
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, hours.hashCode);
+    _$hash = $jc(_$hash, landmark.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -48,7 +55,8 @@ class _$AdminSetCityOfficeDto extends AdminSetCityOfficeDto {
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminSetCityOfficeDto')
           ..add('location', location)
-          ..add('hours', hours))
+          ..add('hours', hours)
+          ..add('landmark', landmark))
         .toString();
   }
 }
@@ -69,6 +77,10 @@ class AdminSetCityOfficeDtoBuilder
   set hours(ListBuilder<AdminSetCityOfficeDtoHoursInner>? hours) =>
       _$this._hours = hours;
 
+  String? _landmark;
+  String? get landmark => _$this._landmark;
+  set landmark(String? landmark) => _$this._landmark = landmark;
+
   AdminSetCityOfficeDtoBuilder() {
     AdminSetCityOfficeDto._defaults(this);
   }
@@ -78,6 +90,7 @@ class AdminSetCityOfficeDtoBuilder
     if ($v != null) {
       _location = $v.location.toBuilder();
       _hours = $v.hours.toBuilder();
+      _landmark = $v.landmark;
       _$v = null;
     }
     return this;
@@ -104,6 +117,7 @@ class AdminSetCityOfficeDtoBuilder
           _$AdminSetCityOfficeDto._(
             location: location.build(),
             hours: hours.build(),
+            landmark: landmark,
           );
     } catch (_) {
       late String _$failedField;

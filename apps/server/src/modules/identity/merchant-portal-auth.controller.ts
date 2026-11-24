@@ -105,7 +105,8 @@ export class MerchantPortalAuthController {
     }
   }
 
-  // 400 wrong_code with attemptsLeft or code_expired; 403 as the code request.
+  // 400 wrong_code with attemptsLeft, attempts_used or code_expired; 403 as
+  // the code request.
   @Post('sign-in')
   @Public()
   @HttpCode(200)

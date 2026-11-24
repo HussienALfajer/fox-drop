@@ -10,6 +10,7 @@ import {
   useAppSettings,
   useSaveAppSettings,
 } from './app-settings.js';
+import { utcToZoned } from './promo-codes.js';
 
 const appKeys = {
   customer: 'appSettings.app.customer',
@@ -19,8 +20,8 @@ const appKeys = {
 
 // AP §9.14 «التطبيقات»: for each app, the minimum version (older versions are
 // forced to update), the latest version (newer is suggested), the update
-// message and maintenance with its message. OWN only. Unstyled until the
-// design.
+// message and maintenance with its message and expected return time (slice
+// D.11a, on the first city's clock). OWN only. Unstyled until the design.
 export function AppSettingsPage() {
   const { t } = useTranslation();
   const settings = useAppSettings();
@@ -37,23 +38,38 @@ export function AppSettingsPage() {
         <p role="alert">{t('common.failed')}</p>
       ) : (
         platformApps.map((app) => {
-          const values = appValues(settings.data, app);
+          const values = appValues(settings.data.settings, app);
           // A new key after a save, so the form shows what the server holds.
           const formKey = app + ':' + JSON.stringify(values);
-          return <AppForm key={formKey} app={app} values={values} />;
+          return (
+            <AppForm key={formKey} app={app} values={values} timeZone={settings.data.timeZone} />
+          );
         })
       )}
     </main>
   );
 }
 
-function AppForm({ app, values }: { app: PlatformApp; values: AppValues }) {
+function AppForm({
+  app,
+  values,
+  timeZone,
+}: {
+  app: PlatformApp;
+  values: AppValues;
+  timeZone: string;
+}) {
   const { t } = useTranslation();
   const save = useSaveAppSettings();
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    save.mutate({ app, before: values, after: formValues(new FormData(event.currentTarget)) });
+    save.mutate({
+      app,
+      before: values,
+      after: formValues(new FormData(event.currentTarget), timeZone),
+    });
   }
+  const returnsAt = values.maintenance.returnsAt;
   const heading = 'app-settings-' + app;
   return (
     <section aria-labelledby={heading}>
@@ -86,6 +102,14 @@ function AppForm({ app, values }: { app: PlatformApp; values: AppValues }) {
               name="maintenanceMessage"
               defaultValue={values.maintenance.message ?? ''}
               maxLength={500}
+            />
+          </label>
+          <label>
+            {t('appSettings.maintenanceReturnsAt')}
+            <input
+              name="maintenanceReturnsAt"
+              type="datetime-local"
+              defaultValue={returnsAt === null ? '' : utcToZoned(returnsAt, timeZone)}
             />
           </label>
           <button type="submit">{t('appSettings.save')}</button>

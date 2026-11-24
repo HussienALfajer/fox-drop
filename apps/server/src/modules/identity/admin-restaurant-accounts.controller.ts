@@ -21,7 +21,7 @@ import { AuditService } from '../audit/index.js';
 import { merchantDeviceCheckSchema, MerchantsService } from '../merchants/index.js';
 import type { AdminSession } from './admin-sessions.service.js';
 import { AppSessionsService } from './app-sessions.service.js';
-import { APP_PHONE_PATTERN } from './app-phone.js';
+import { appPhone, maskedPhone } from './app-phone.js';
 import {
   MerchantAccountRefusedError,
   MerchantAccountsService,
@@ -60,19 +60,9 @@ class AdminNewRestaurantAccountDto extends createZodDto(
   z.object({
     role: z.enum(['owner', 'cashier']),
     name: z.string().trim().min(1).max(80),
-    phone: z
-      .string()
-      .regex(APP_PHONE_PATTERN)
-      .describe('A Syrian or Turkish mobile in E.164, as at sign-in.'),
+    phone: appPhone.describe('A mobile of any country in E.164, as at sign-in.'),
   }),
 ) {}
-
-// architecture §15.3: a number is masked in the panel unless its holder must
-// act on it.
-function masked(phone: string): string {
-  const code = phone.startsWith('+90') ? '+90' : phone.startsWith('+963') ? '+963' : '+';
-  return `${code} ••• ${phone.slice(-3)}`;
-}
 
 class AdminRestaurantDevicesDto extends createZodDto(
   z.object({
@@ -182,7 +172,8 @@ export class AdminRestaurantAccountsController {
     const accounts = await this.accounts.accountsWithPhones(restaurantId);
     if (!session.permissions.includes('restaurants.owner_accounts')) {
       return {
-        accounts: accounts.map((account) => ({ ...account, phone: masked(account.phone) })),
+        // Architecture §15.3: masked unless its holder must act on it.
+        accounts: accounts.map((account) => ({ ...account, phone: maskedPhone(account.phone) })),
       };
     }
     if (accounts.length > 0) {

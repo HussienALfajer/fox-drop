@@ -14,6 +14,7 @@ import {
   officeRequestOf,
   useCityOffice,
   useSaveOffice,
+  LANDMARK_MAX,
   ZONES_MANAGE,
 } from './office.js';
 import { timeOf } from './peak-bonus.js';
@@ -78,6 +79,9 @@ function OfficeView({ office, city }: { office: CityOffice; city: City }) {
                 longitude: current.location.longitude,
               })}
             </li>
+            {current.landmark !== null && (
+              <li>{t('office.landmarkLine', { landmark: current.landmark })}</li>
+            )}
             {officeDays.map((day) => {
               const period = current.hours.find((each) => each.weekday === day);
               return (
@@ -105,7 +109,13 @@ function OfficeView({ office, city }: { office: CityOffice; city: City }) {
       {can(session, ZONES_MANAGE) && (
         <OfficeFormSection
           // The form starts again from each saved version.
-          key={JSON.stringify(current && { location: current.location, hours: current.hours })}
+          key={JSON.stringify(
+            current && {
+              location: current.location,
+              landmark: current.landmark,
+              hours: current.hours,
+            },
+          )}
           initial={officeFormOf(current)}
           save={save}
         />
@@ -168,6 +178,15 @@ function OfficeFormSection({
           {problem && 'problem' in problem && problem.problem === 'location' && (
             <p role="alert">{t('office.problem.location')}</p>
           )}
+          <label>
+            {t('office.landmark')}
+            <input
+              value={form.landmark}
+              maxLength={LANDMARK_MAX}
+              placeholder={t('office.landmarkHint')}
+              onChange={(event) => setForm({ ...form, landmark: event.target.value })}
+            />
+          </label>
           <p>{t('office.hoursExplain')}</p>
           {officeDays.map((day) => (
             <fieldset key={day}>

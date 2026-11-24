@@ -1065,6 +1065,13 @@
       "when": 1795272714923,
       "tag": "0151_customers_address_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 152,
+      "version": "7",
+      "when": 1795557244838,
+      "tag": "0152_geo_office_landmark",
+      "breakpoints": true
     }
   ]
 }

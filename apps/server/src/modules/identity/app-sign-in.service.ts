@@ -16,6 +16,7 @@ import {
 } from './captain-accounts.service.js';
 import { type DevicePlatform } from '../merchants/index.js';
 import { APP_CHECK_VERIFIER, type AppCheckVerifier } from './app-check.js';
+import { signsInAbroad } from './app-phone.js';
 import { CODE_SENDER, type CodeSender } from './code-sender.js';
 import {
   type MerchantAccount,
@@ -61,12 +62,14 @@ export type CustomerRelinked = (
   link: { accountId: string; closedAccountId: string; now: Date },
 ) => Promise<void>;
 
-// wrong_code: attemptsLeft more tries of this code. code_expired: no usable
-// code for this number and device (none, used, expired, out of attempts, or
-// asked for by another device), so the app asks for a new one.
+// wrong_code: attemptsLeft more tries of this code. attempts_used (slice
+// D.11a): the device's latest code ended after otp.max_attempts wrong tries,
+// by this attempt or an earlier one. code_expired: no usable code for this
+// number and device otherwise (none, used, expired, or asked for by another
+// device). Either way the app asks for a new one.
 export class SignInCodeRefusedError extends Error {
   constructor(
-    readonly refusal: 'wrong_code' | 'code_expired',
+    readonly refusal: 'wrong_code' | 'attempts_used' | 'code_expired',
     readonly attemptsLeft: number,
   ) {
     super(`sign-in refused: ${refusal}`);
@@ -144,8 +147,13 @@ export class AppSignInService {
     const validityMin = await this.settings.get('otp.validity_min');
     const appCheckRequired = await this.settings.get('otp.app_check_required');
     const numberKey = `identity:otp:number:${phoneHash}`;
+    // Owner decision 2026-11-24: a number outside Syria and Turkey has a
+    // daily limit of its own, on the same key and window.
+    const numberDailyMax = await this.settings.get(
+      signsInAbroad(request.phone) ? 'otp.number_daily_max_abroad' : 'otp.number_daily_max',
+    );
     const requesterLimits: Limit[] = [
-      { key: numberKey, windowMs: DAY_MS, max: await this.settings.get('otp.number_daily_max') },
+      { key: numberKey, windowMs: DAY_MS, max: numberDailyMax },
       {
         key: `identity:otp:device:${request.deviceId}`,
         windowMs: DAY_MS,
@@ -462,18 +470,40 @@ export class AppSignInService {
       )
       .for('update');
     // An emergency code has no device (W4): the first device that enters
-    // it signs in.
-    if (
-      !code ||
-      (code.deviceId !== null && code.deviceId !== request.deviceId) ||
-      // RA §17 (slice 2.45a): a code the portal asked for, without App
-      // Check, never signs in to an app, nor an app's code to the portal.
-      (code.issuedBy === null && code.portal !== (request.portal === true)) ||
-      now.getTime() >= code.expiresAt.getTime() ||
-      code.attempts >= maxAttempts
-    ) {
+    // it signs in. RA §17 (slice 2.45a): a code the portal asked for,
+    // without App Check, never signs in to an app, nor an app's code to the
+    // portal.
+    const ours = (row: { deviceId: string | null; issuedBy: string | null; portal: boolean }) =>
+      (row.deviceId === null || row.deviceId === request.deviceId) &&
+      (row.issuedBy !== null || row.portal === (request.portal === true));
+    if (!code) {
+      // Slice D.11a: the device's latest code, ended by its wrong attempts,
+      // says so; the attempt that ended it answered the same.
+      const [latest] = await tx
+        .select({
+          deviceId: appSignInCodes.deviceId,
+          issuedBy: appSignInCodes.issuedBy,
+          portal: appSignInCodes.portal,
+          endReason: appSignInCodes.endReason,
+        })
+        .from(appSignInCodes)
+        .where(
+          and(eq(appSignInCodes.party, request.party), eq(appSignInCodes.phoneHash, phoneHash)),
+        )
+        .orderBy(desc(appSignInCodes.createdAt))
+        .limit(1);
+      return new SignInCodeRefusedError(
+        latest && ours(latest) && latest.endReason === 'attempts_exhausted'
+          ? 'attempts_used'
+          : 'code_expired',
+        0,
+      );
+    }
+    if (!ours(code) || now.getTime() >= code.expiresAt.getTime()) {
       return new SignInCodeRefusedError('code_expired', 0);
     }
+    // otp.max_attempts lowered since the code's wrong attempts.
+    if (code.attempts >= maxAttempts) return new SignInCodeRefusedError('attempts_used', 0);
     const given = Buffer.from(this.secrets.signInCodeHash(request.phone, request.code), 'hex');
     const stored = Buffer.from(code.codeHash, 'hex');
     if (given.length !== stored.length || !timingSafeEqual(given, stored)) {
@@ -487,7 +517,9 @@ export class AppSignInService {
             : { attempts },
         )
         .where(eq(appSignInCodes.id, code.id));
-      return new SignInCodeRefusedError('wrong_code', Math.max(0, maxAttempts - attempts));
+      return attempts >= maxAttempts
+        ? new SignInCodeRefusedError('attempts_used', 0)
+        : new SignInCodeRefusedError('wrong_code', maxAttempts - attempts);
     }
     await tx
       .update(appSignInCodes)
