@@ -79,9 +79,63 @@ Drawn on the customer screens canvas (architecture §9.8; its link is in the own
 
 **R18 draft:** terms and privacy linked from «أكمل بياناتك» and readable without an account; the code text names WhatsApp and the app never reads messages, the clipboard offer shows itself; no age gate, birthday optional; no notification permission in this batch (first order, Q11).
 
+### Screen review (step 7, one screen at a time)
+
+- **1 Starting:** skipped for now; the owner returns to it later (2026-11-24).
+- **2 Phone number: approved 2026-11-24** (canvas version 44; every state and message on the board «رقم الهاتف · كل الحالات والرسائل (32)»). Owner decisions:
+  - The customer's close control is the underlined text link «ليس الآن» instead of the `X`.
+  - The orbit hero is rejected. Six hero ideas were analysed in chat (by origin, the route to your door, the WhatsApp code preview, the Azaz street scene, a large type headline, Azaz dishes); the owner picked ideas 1 and 3.
+  - Fix the duplicated dial code in the country list (the prototype passes «سوريا +963» and `PhoneField` appends the code again) and the reversed «963+» (isolate every dial code and number left to right, web and Flutter).
+  - **Every country, in all three apps** (owner, 2026-11-24). This changes U3, CU §5.2, RA §5 and CA §5 and the server's `APP_PHONE_PATTERN`, and every place that masks or formats a number (`redact.ts`, `blocks.ts` and the like). The server validates with the standard phone-number metadata (libphonenumber); it is a T0 change (auth) of its own before the screens are coded. Open with it: a lower daily code limit outside Syria and Turkey (sender-ban risk, architecture §8.3).
+  - Country picker: a searchable bottom sheet (Arabic name, English name or dial code); Syria and Turkey pinned first, then the last one used, then the rest in Arabic order; **name and dial code only, no flags**.
+  - One smart field: the chip opens the picker; text starting with `+` or `00` is read as a dial code and switches the chip as soon as it is recognised; a pasted full number is split into country and national number. An unknown code says «رمز الدولة غير معروف»; a code shared by several countries (`+1`, `+7`) is resolved from the number itself.
+  - Normalisation, every case accepted (owner approved the whole table): a national number with or without its leading 0; `+`, `00`, or the bare dial code; a 0 after the dial code (`+9630944…`) or before it; Arabic-Indic and Persian digits; spaces, dashes, brackets, hidden direction marks and no-break spaces from a contact; a number inside pasted text; a mobile of another country switches the chip. Refused with the fix in the message: a missing digit («ينقص رقم واحد»), a digit too many, a landline («هذا رقم أرضي…»), a prefix that is not a mobile. No error while typing: on send or on leaving the field, then live until fixed.
+  - Approved improvements: Android's phone number hint (one tap, no permission; it offers the SIM numbers, so its prompt asks for the number that has WhatsApp); grouping as typed (`944 123 456`, Western digits, left to right); a check mark when the number is complete and valid; the number in the button («إرسال الرمز إلى +963 944 123 456»); the phone keyboard whose action key sends; a clear button; the last number remembered after sign-out («ادخل بـ +963 944 ••• 456؟», stored masked); the field locked while sending (R14); the screen reader reads the number digit by digit and the country by name.
+  - Rejected: a default country from the SIM's network; the default stays `customer.phone_default_country`.
+  - **Hero: ideas 1 and 3 together** (owner, 2026-11-24). The hero says why the number is asked, by origin: from «تأكيد الطلب» the saved cart (restaurant, items, total, «سلّتك محفوظة كما هي»); from «طلباتي» how tracking looks (four steps, a sample, never a made-up order; done steps in brand blue, the current step a flat orange circle, no shadow, with two soft rings pulsing out from it, still in reduced motion; icons at `md`; owner, 2026-11-24); from «حسابي» and every other origin what an account keeps (addresses, codes, favourites). It shrinks to the title alone while the keyboard is up. Under the button, the WhatsApp code preview (the real message text, the code masked, no WhatsApp logo or green). The captain and restaurant get the mark in its tint circle and the same preview until their own screens (11, 12) are reviewed.
+  - Drawn on the canvas 2026-11-24 (version 23): `Main` (new switcher entries: sign-in origin, Android hint, remembered number, keyboard up), and the boards «منتقي الدول», «اقتراح رقم الجهاز», «لوحة المفاتيح ظاهرة» and «رقم محفوظ بعد الخروج» at 360 × 640; the components sheet replaces `FoxOrbitHero` with `FoxSignInHero` and `FoxCodePreview` and adds the `PhoneField` change and `FoxCountrySheet`.
+
+#### Design-system audit of screen 2 (2026-11-24, canvas version 36)
+
+Checked mechanically over the screen's markup, styles and script: every `--fd-*` name is defined (tokens and bundle CSS), no hex, rgb, px or rem value, no physical direction, no icon-only button without a name, every target 48. Fixed in the drawing:
+
+- Hand-drawn pieces replaced by the bundle's components: the remembered number is a `Banner` with its action; the country list is `RadioGroup` (one group per section, one choice, 48 rows); the SIM numbers are `ListRow`; the account perks are `Card`.
+- The hero cards keep `Card` with the offset shadow (owner, 2026-11-24, after the audit had outlined them).
+- **One loading indicator for the whole project: the filling drop** (owner, 2026-11-24; brand expression §2). It fills and empties in one continuous cycle (`duration.moment`), works at 16, 24, 32 and 48, ivory on orange and orange elsewhere, with an optional label beside it («جارٍ إرسال الرمز…»); reduced motion shows it half full and still. It replaces the 270° arc of `Button` (web and Flutter) and of the search fields, and is the same drop as pull to refresh (D.10) and the starting screen. Lists keep `Skeleton`. Drawn on the components sheet (section 1) and in the send button. Code, before the batch's screens: `FoxDropLoader(size, onPrimary, label?)` in `core_ui` and `ui-web`; `Button(loading, loadingLabel?)` draws it and keeps its width; `SearchField`, `FoxPullToRefresh` and the starting screen use it; goldens and stories updated; the Design System synced.
+- **The number screen never scrolls** (owner, 2026-11-24). The sheet (field, button, preview) keeps its size; the hero takes only the space left above it and gives way in order: first the lead line, then the illustration (card, track, perks or mark), leaving the title. In code: a `LayoutBuilder` on the hero measures its height against the illustration's; the prototype approximates it with container queries (lead hidden under 300, illustration under 210 at 100% text; 380 and 270 at 130%).- The tracking steps are equal columns with one connector each, sized by `size.touch-target` only (no multipliers or percentages).
+- No spacing token used as letter spacing; no small text in heading orange (that exception is for titles); the field's outline follows the field states (blue hover, orange 2 focus, red 2 invalid; no green).
+
+What is still drawn, and why: the number field (the proposed `PhoneField` change), the code preview (`FoxCodePreview`, new), the tracking strip and dish stack (inside the new `FoxSignInHero`), the country sheet frame (core_ui's `FoxBottomSheet`, Flutter only), the keyboard and Android's hint sheet (system UI, shown for context). **Missing token named to the owner:** the pulse of a current step (scale 1 → 1.7, opacity 0.7 → 0 over `duration.moment`; 1.25 at 0.35 still in reduced motion) has no motion token; proposed `motion.pulse` in design-tokens before code.
+
+#### Code changes recorded for step 8 (screen 2; nothing coded yet)
+
+Server, first and on its own (T0, auth):
+
+1. `apps/server/src/modules/identity/app-phone.ts`: replace `APP_PHONE_PATTERN` with validation from the standard phone metadata (`libphonenumber-js`, max metadata): any country, mobile numbers only, stored E.164. Applies to the customer, captain and restaurant sign-in routes and to `admin-restaurant-accounts.controller.ts` (a restaurant user's number follows the same rule).
+2. Every place that recognises only `+963` and `+90`: `logging/redact.ts` (mask any E.164 number in logs), the masked display in `customers/blocks.ts`, `identity/admin-restaurant-accounts.controller.ts`, `captains/admin-captain-applications.controller.ts` (show the real calling code), and their tests.
+3. A lower daily code limit for numbers outside Syria and Turkey: an `otp.*` setting, after the owner sets its value.
+4. Spec text: U3, CU §5.2, RA §5, CA §5 and the API description of `phone` (`app-auth.ts`).
+
+`ui-web` (the panel and the restaurant portal take numbers too):
+
+5. `PhoneField`: every country from the same metadata; the chip keeps today's look (plain text and chevron, no fill; owner, 2026-11-24), shows the ISO letters and the calling code and opens a searchable list (name in Arabic and English, calling code; Syria and Turkey pinned, then the last used, then all in Arabic order; no flags); fix the doubled code (the label must not carry the code) and isolate each calling code left to right (`<bdi dir="ltr">`), since today the menu shows «963+»; read `+`/`00`/a pasted full number and switch the country; group the digits; a valid mark (the icon only: the outline keeps the field's own states, rest `input.color.border`, hover `border-hover` blue, focus 2 `border-focus` orange, invalid 2 `border-invalid`; no green outline); a clear button; errors that say the fix.
+
+Flutter (`core_ui`, `core_auth`):
+
+6. `fox_phone_field.dart` and `core_auth/lib/src/phone.dart`: the same behaviour as item 5 with a Dart phone-metadata package (choose one whose size fits the device budget, `docs/brand/expression.md` §9; record the size). Normalise Arabic-Indic and Persian digits, spaces, dashes, brackets, dots, direction marks (U+200E, U+200F, U+202A–U+202E, U+2066–U+2069) and no-break spaces; take the number out of pasted text; accept a 0 before or after the calling code. `keyboardType: TextInputType.phone`, the keyboard's action key sends. Errors: «أدخل رقم هاتفك.», «ينقص رقم واحد.» / «ينقص رقمان.» / «ينقص {n} أرقام.», «الرقم أطول من المعتاد. تأكّد منه.», «هذا رقم أرضي. أدخل رقم جوال عليه واتساب.», «أدخل رقم جوال يبدأ بـ {بادئة}.», «رمز الدولة غير معروف.»; a switched country says «هذا رقم تركي، فغيّرنا الدولة إلى تركيا.» or «عرفنا الدولة من رمزها: {الدولة}.». Shown on send or on leaving the field, then live.
+7. New `FoxCountrySheet` (the bottom sheet with `FoxSearchField`).
+8. Android phone number hint (Google Identity `GetPhoneNumberHintIntentRequest`, no permission) on the first focus of an empty field; our prompt above the field says «اختر الرقم الذي عليه واتساب». iOS: the keyboard's number suggestion (`AutofillHints.telephoneNumber`).
+9. The last number, kept masked on the device after sign-out (secure storage), offered as «ادخل بالرقم السابق؟ +963 900 ••• 233» with «متابعة».
+10. The send button reads «إرسال الرمز إلى {الرقم}» once the number is valid (the number isolated left to right); the field is locked while sending (R14).
+11. Semantics: the chip «الدولة: {الاسم}، {الرمز}. اضغط لتغييرها»; the number read digit by digit (spell-out semantics); the preview read once as «يصلك الرمز في رسالة واتساب من FOX DROP».
+12. New `FoxSignInHero(origin)` and `FoxCodePreview(compact)` in `core_auth`; `SignInScreen` takes the origin (`checkout`, `orders`, `account`, other) from the route's `from`, and the cart summary when it is `checkout`. The customer's close control is the underlined text link «ليس الآن» (`FoxTextLink`, a 48 target; owner, 2026-11-24). The hero collapses while the keyboard is up (`MediaQuery.viewInsets`).
+13. Strings in `core_l10n`; the old orbit chips' strings are dropped.
+
+Tests to add when coding (red phase): the normalisation table above as a unit test on both sides (server and Dart), one case per row; the country switch on a typed or pasted code; the error per case; the hint and the remembered number in widget tests; goldens for each hero origin and the keyboard-up state.
+
 ## Stopped at
 
-Design checkpoint drawn (2026-11-24): canvas, prototype, analysis and missing components ready for the owner. Waiting for the owner's answers to (b) to (e) and the approval of the screens (step 7); nothing coded. Step 1 (foundations) not started.
+Screen review (step 7), one screen at a time: screen 2 (phone number) approved 2026-11-24; screen 1 (starting) deferred by the owner; next, screen 3 (code). The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
 
 ## Evidence
 
