@@ -157,5 +157,8 @@ The owner installs the customer app fresh, opens each tab as a guest, signs in w
 
 ## Notes for the next session
 
+- The review goes one screen at a time (order in «Screen review»): the owner tries a screen on the canvas, sends changes (in chat or as canvas comments sent to Claude), the drawing is changed with the design system only, a missing token or component is named, and on approval the screen's line here is updated, committed and pushed. Each approved screen also gets a sheet of all its states and messages (as «رقم الهاتف · كل الحالات والرسائل» and «شاشة البدء · كل الحالات والرسائل»).
+- Canvas mechanics: the page rewrites `Main.dc.html` when it saves, so read it again before each edit; a CSS rule loses to a more specific one (per-element delays need the same or higher specificity than the shorthand); inline styles beat class rules. Drawings with motion are checked frame by frame on a local copy (a static HTML built from `Main`'s markup and `renderVals`, served from a local folder excluded from git, animations paused at set times).
+
 - The sign-in screen is one for the three apps (owner, 2026-11-24). The captain's and restaurant's other screens stay unstyled until their own batches.
 - `checkout_screen.dart` (749 lines) and `order_screen.dart` (513) are split by D.15 and D.16 when they join the lint.
