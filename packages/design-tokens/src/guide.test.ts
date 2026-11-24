@@ -44,7 +44,7 @@ describe('the Fox Drop Guide (architecture §9.8)', () => {
     expect(html).toContain('owner exception');
   });
 
-  it('lists the ten rules of §9.5', () => {
+  it('lists the twenty rules of §9.5', () => {
     expect(rules().map((r) => r.id)).toEqual([
       'R1',
       'R2',
@@ -56,6 +56,16 @@ describe('the Fox Drop Guide (architecture §9.8)', () => {
       'R8',
       'R9',
       'R10',
+      'R11',
+      'R12',
+      'R13',
+      'R14',
+      'R15',
+      'R16',
+      'R17',
+      'R18',
+      'R19',
+      'R20',
     ]);
   });
 

@@ -87,7 +87,9 @@ const SERVER_SOURCE = /^apps\/server\/src\/.*\.ts$/;
  *   phase 5): the checks, the Dart checks, the native release builds of a
  *   pull request, the images and the staging builds and deploy.
  * - typescript: Turborepo's affected packages; server: the server's tests;
- *   contract: regenerate the API contract; dartScope: null, 'changed' or 'all'.
+ *   contract: regenerate the API contract; tokenDocs: a doc the design tokens'
+ *   tests read changed, so they run though no package file did; dartScope:
+ *   null, 'changed' or 'all'.
  */
 export function classify(files, read = readText) {
   const specRead = files.some(
@@ -121,6 +123,7 @@ export function classify(files, read = readText) {
     typescript,
     server,
     contract,
+    tokenDocs: files.some(readByTokenTests),
     dartScope: dartScope(files),
   };
 }

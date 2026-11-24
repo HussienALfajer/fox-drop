@@ -21,6 +21,7 @@ When the slice builds components or screens:
 
 - **Look at the Figma file** (owner, 2026-11-23): inspiration, not rules, so each component comes out professional, creative and fitted to its surface. Render it with `node .claude/skills/build-slice/figma-look.mjs <scratchpad folder> [node id ...]` (the owner's token in `~/.figma-token`; the main screens are `49:2041` home, `49:1765` dish, `49:1557` cart, the rest of page `1:3` its rough components) and Read the PNGs. Say in the slice file which ideas the slice takes from it. The images and the file's link never enter the repository (architecture §9.8).
 - **Design approval** (architecture §9.9): no component or screen code before the owner approved its sheet or drawing. That approval is the slice's first checkpoint; record it in the slice file.
+- **A UI batch** follows the screen cycle of §9.9 in order: inventory, drawing with the design system only (checked for literal values before it is shown), interactive prototype, the analysis (route-and-field table, API and spec gaps, improvements with cost, missing components), the designer's Figma pass, the owner's test in Play and approval. An API gap is fixed in the server, never in the app. The screens then meet R11–R20 of §9.5.
 
 ## 3. Red phase: the tests first
 

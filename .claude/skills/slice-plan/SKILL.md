@@ -25,7 +25,7 @@ A slice is one pull request that one session can finish. It:
 - states how it is verified: the tests and, for screens, what the owner can try;
 - leaves `main` working.
 
-Order the slices by dependency, then by risk: the money flows, the order state machine, timers and dispatch come before screens that only display data. Schema and API-contract changes are serialised. A slice with components or screens starts with a design checkpoint: the Figma look and the owner's approval of its sheet or drawing (architecture §9.9).
+Order the slices by dependency, then by risk: the money flows, the order state machine, timers and dispatch come before screens that only display data. Schema and API-contract changes are serialised. A slice with components starts with a design checkpoint: the Figma look and the owner's approval of its sheet (architecture §9.9). Screens come in UI batches after the API they use; a batch's slice file holds the screen inventory, and its first checkpoint is the screen cycle of §9.9: draw, prototype, analysis, designer pass, owner approval.
 
 Give each slice a tier (`docs/process/development-workflow.md` §2): **T0** money, ledger, order states and timers, auth, migrations, secrets, deploy and CI; **T1** domain services, routes, contracts; **T2** UI, docs, tests.
 
