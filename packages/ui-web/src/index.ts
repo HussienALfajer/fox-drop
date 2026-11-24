@@ -21,6 +21,7 @@ export { CountBadge, type CountBadgeProps } from './count-badge/count-badge';
 export { DataTable, type Column, type DataTableProps, type Sort } from './data-table/data-table';
 export { Dialog, type DialogProps } from './dialog/dialog';
 export { Drawer, type DrawerProps } from './drawer/drawer';
+export { DropLoader, type DropLoaderProps } from './drop-loader/drop-loader';
 export { EmptyState, type EmptyStateProps } from './empty-state/empty-state';
 export { Field, type FieldProps } from './field/field';
 export { Icon, type IconName, type IconProps } from './icon/icon';

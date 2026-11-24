@@ -3,6 +3,7 @@ import type { MouseEvent, ReactNode } from 'react';
 import { tv } from 'tailwind-variants';
 import { createTV } from 'tailwind-variants/config';
 import { SIZES } from '../field/styles';
+import { DropLoader } from '../drop-loader/drop-loader';
 import { Icon, type IconName } from '../icon/icon';
 
 /**
@@ -132,23 +133,15 @@ const content = tv({
   variants: { loading: { true: 'opacity-0' } },
 });
 
-const spinner = tv({
-  base: 'animate-spin motion-reduce:animate-none',
-  variants: {
-    density: {
-      comfortable: 'size-(--fd-size-icon-md)',
-      compact: 'size-(--fd-size-icon-sm)',
-    },
-  },
-});
-
 interface ButtonBase {
   /** The look: `primary` by default. */
   variant?: ButtonVariant;
   /** `comfortable` is 50 high (phones); `compact` is 40, for the admin panel and the restaurant portal. */
   density?: 'comfortable' | 'compact';
-  /** Shows a spinner over the hidden label, keeps the width and ignores presses. */
+  /** Shows the drop loader over the hidden label, keeps the width and ignores presses. */
   loading?: boolean;
+  /** Shown beside the loader while loading, and the button's name then: «جارٍ إرسال الرمز…». */
+  loadingLabel?: string;
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
   onClick?: (event: MouseEvent<HTMLElement>) => void;
@@ -177,6 +170,7 @@ const OWN = new Set([
   'variant',
   'density',
   'loading',
+  'loadingLabel',
   'disabled',
   'icon',
   'iconEnd',
@@ -192,7 +186,7 @@ const OWN = new Set([
  */
 export function Button(props: ButtonProps) {
   const { variant = 'primary', density = 'comfortable', loading = false, disabled = false } = props;
-  const { icon, iconEnd, children, label, type, onClick } = props;
+  const { icon, iconEnd, children, label, type, onClick, loadingLabel } = props;
   // What an overlay's trigger merges in through the SDK's `render` (D.10): its
   // ARIA state, ref and handlers. Our own props above win.
   const forwarded = Object.fromEntries(Object.entries(props).filter(([key]) => !OWN.has(key)));
@@ -204,6 +198,7 @@ export function Button(props: ButtonProps) {
       {...(type && { type })}
       {...(onClick && { onClick })}
       {...(iconOnly && { 'aria-label': label })}
+      {...(loading && loadingLabel !== undefined && { 'aria-label': loadingLabel })}
       {...(loading && { 'aria-busy': true })}
       disabled={disabled || loading}
       focusableWhenDisabled={loading && !disabled}
@@ -221,18 +216,12 @@ export function Button(props: ButtonProps) {
         {iconEnd && <Icon name={iconEnd} size={iconSize} />}
       </span>
       {loading && (
-        <span className="absolute inset-none flex items-center justify-center">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            aria-hidden="true"
-            className={spinner({ density })}
-          >
-            <path d="M12 3a9 9 0 1 0 9 9" />
-          </svg>
+        <span className="absolute inset-none flex items-center justify-center gap-(--fd-button-gap)">
+          <DropLoader
+            size={density === 'compact' ? 'sm' : 'md'}
+            onPrimary={variant === 'primary' || variant === 'danger'}
+          />
+          {loadingLabel}
         </span>
       )}
     </SdkButton>

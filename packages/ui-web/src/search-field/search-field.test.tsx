@@ -26,6 +26,8 @@ describe('SearchField', () => {
     render(<SearchField {...props} defaultValue="شاورما" loading />);
     expect(screen.getByRole('searchbox')).toHaveAttribute('aria-busy', 'true');
     expect(screen.queryByRole('button', { name: 'مسح' })).not.toBeInTheDocument();
+    expect(document.querySelector('[data-drop-loader]')).not.toBeNull();
+    expect(document.querySelector('.animate-spin')).toBeNull();
   });
 
   it('is disabled as a whole', () => {

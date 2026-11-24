@@ -31,6 +31,7 @@ describe('stories cover every state (R3)', () => {
       'DataTable',
       'Dialog',
       'Drawer',
+      'DropLoader',
       'EmptyState',
       'Field',
       'Icon',
