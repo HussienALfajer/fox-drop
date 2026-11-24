@@ -77,6 +77,14 @@ Drawn on the customer screens canvas (architecture §9.8; its link is in the own
 
 (e) **Missing components** (their own artboard, approved with the screens): `FoxDropLoader` (the filling drop), `FoxOrbitHero` (the sign-in orbit), `Banner` with `onDismiss` and a second action (CU §4.2 and §5.5), `FoxTextLink` (inline underlined link with a 48 target), `FoxBrandStatus` (the blocking screens' head).
 
+**Owner's answers (2026-11-24, after the screen review):**
+
+- (b) Server gaps, both fixed in the server before the screens are coded (T1): `GET /v1/customer/platform` gains `hours: {open, opensAt}`, so «FOX DROP يستقبل الطلبات من الساعة…» has a source outside checkout; sign-in answers `attempts_used` when the attempts are spent, apart from `code_expired`.
+- (c) A guest's «طلباتي» and «حسابي» stay in the tab with an invitation (CU §5.1 updated); terms and help readable without an account; a dismissed update banner returns at the next launch (CU §4.2 updated); terms and privacy stay one page; a new terms version opens the terms screen once at the next launch, then the banner stays until accepted (as CU §4.7 says; the drawing showed the banner only).
+- (d) Improvements taken, in the server (T1): `minVersion` on `GET platform` (the update ticket shows the real versions; the installed one is the app's own); a landmark description of the office (a field in the panel's office settings and in `account-state`); a new optional maintenance return time set by the owner, written on the «نعود قريباً» sign.
+- (e) The new and changed components are built first, in a components slice of their own (one pull request), then the screens: `FoxDropLoader` (the mark filling) and `Button(loading)` with it, `FoxSignInHero` and `FoxCodePreview`, `FoxTextLink`, `FoxCountrySheet` and the `PhoneField` change, `FoxBottomNavigation` in the Figma shape, `FoxBanner`'s close and second action in `core_ui`, and the blocking heads (version ticket, shop sign).
+- Still open: what the shared sign-in does for the captain and restaurant apps until their screens are drawn (asked 2026-11-24).
+
 **R18 draft:** terms and privacy linked from «أكمل بياناتك» and readable without an account; the code text names WhatsApp and the app never reads messages, the clipboard offer shows itself; no age gate, birthday optional; no notification permission in this batch (first order, Q11).
 
 ### Screen review (step 7, one screen at a time)
@@ -157,7 +165,7 @@ Tests to add when coding (red phase): the normalisation table above as a unit te
 
 ## Stopped at
 
-Screen review (step 7), one screen at a time: screens 1 (starting), 2 (phone number), 3 (code), 4 («أكمل بياناتك»), 5 (terms) and 6 (frame) approved 2026-11-24; screens 7 (banners and the dues sheet) and 8 (the blocking screen) approved 2026-11-24 (canvas version 71). Every screen of the batch is approved; next, the owner's answers to analysis (b) to (e), then step 1 (foundations) and the server change for every country (T0). The captain's and restaurant's forms are not drawn in this batch (screen 3's decisions). The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
+Screen review (step 7), one screen at a time: screens 1 (starting), 2 (phone number), 3 (code), 4 («أكمل بياناتك»), 5 (terms) and 6 (frame) approved 2026-11-24; screens 7 (banners and the dues sheet) and 8 (the blocking screen) approved 2026-11-24 (canvas version 71). Every screen of the batch is approved and the owner answered analysis (b) to (e) (see «Owner's answers»). Before this slice's screens are coded, in order: the server change for every country (T0); the server fields of (b) and (d) (T1); the components slice (e); then this slice's step 1 (foundations) and the screens. Each of the first three needs its slice file (`/slice-plan`). The captain's and restaurant's forms are not drawn in this batch (screen 3's decisions). The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
 
 ## Evidence
 
