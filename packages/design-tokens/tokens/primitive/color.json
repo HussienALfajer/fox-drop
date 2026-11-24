@@ -6,6 +6,10 @@
       "white": { "$value": "#FFFFFF" },
       "orange": {
         "50": { "$value": "#FFF4ED" },
+        "75": {
+          "$value": "#FFEDE3",
+          "$description": "The primary status tint and a selected table row."
+        },
         "100": { "$value": "#FFE4D1" },
         "200": { "$value": "#FFC7A3" },
         "300": { "$value": "#FFA06B" },
@@ -54,6 +58,7 @@
         "50": { "$value": "#FFFAED", "$description": "The brand ivory." },
         "75": { "$value": "#FBF2E7", "$description": "The Figma file's screen ground." },
         "100": { "$value": "#F5EFE2" },
+        "150": { "$value": "#EFE8DA", "$description": "The neutral status tint and the skeleton." },
         "200": { "$value": "#E8E1D2" },
         "300": { "$value": "#D4CBBA" },
         "400": { "$value": "#ADA493" },
@@ -64,6 +69,7 @@
         "900": { "$value": "#1F1C18" }
       },
       "red": {
+        "50": { "$value": "#FBE9E9", "$description": "The danger status tint." },
         "600": { "$value": "#BF2929", "$description": "The Figma file's error red." },
         "700": { "$value": "#9B1B2E", "$description": "The danger hover (R10)." },
         "800": { "$value": "#8C1530" },
@@ -71,10 +77,12 @@
         "950": { "$value": "#521020", "$description": "The captain's danger pressed (R10)." }
       },
       "amber": {
+        "50": { "$value": "#FBEFD5", "$description": "The warning status tint." },
         "700": { "$value": "#8A5A00" },
         "800": { "$value": "#6B4500" }
       },
       "green": {
+        "50": { "$value": "#E3F3EA", "$description": "The success status tint." },
         "700": { "$value": "#067647" },
         "800": { "$value": "#055A37" }
       },

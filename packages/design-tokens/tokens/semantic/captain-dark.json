@@ -22,6 +22,9 @@
     },
     "surface-raised-pressed": {
       "$value": "{primitive.color.blue.100}"
+    },
+    "on-primary-subtle": {
+      "$value": "{primitive.color.blue.500}"
     }
   }
 }

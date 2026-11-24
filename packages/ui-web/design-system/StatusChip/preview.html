@@ -1,0 +1,53 @@
+<!-- @dsCard group="Data" height=300 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: var(--fd-space-lg) 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fd-space-xs);
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, StatusChip } = FoxDrop;
+  const h = React.createElement;
+  const states = [
+    ['placed', 'بانتظار المطعم'],
+    ['accepted', 'قيد التحضير'],
+    ['ready', 'جاهز'],
+    ['picked_up', 'مع الكابتن'],
+    ['arrived', 'الكابتن وصل'],
+    ['delivered', 'تم التسليم'],
+    ['rejected', 'مرفوض'],
+    ['cancelled', 'ملغى'],
+    ['failed', 'فشل التسليم'],
+  ];
+  const row = (title, density) => [
+    h('h2', { key: title }, title),
+    h(
+      'div',
+      { className: 'row', key: title + 'row' },
+      states.map(([status, label]) => h(StatusChip, { key: status, status, label, density })),
+    ),
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render([
+    ...row('The nine order states', 'comfortable'),
+    ...row('Compact, for the panel', 'compact'),
+    h('h2', { key: 'tone' }, 'A free tone'),
+    h(StatusChip, { key: 'busy', tone: 'warning', icon: 'clock', label: 'مشغول' }),
+  ]);
+</script>

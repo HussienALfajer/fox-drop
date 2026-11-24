@@ -31,6 +31,22 @@ Future<void> loadFoxFonts() async {
     );
   }
   await loader.load();
+  await _loadLira(folder.parent.parent);
+}
+
+/// Fox Lira, the ₺ fallback, is committed in `core_ui` (D.9); a test loads it
+/// under the name a package font has in an app.
+Future<void> _loadLira(Directory root) async {
+  final loader = FontLoader('packages/core_ui/Fox Lira');
+  for (final style in ['Regular', 'Medium', 'Bold']) {
+    final file = File(
+      '${root.path}/packages/core_ui/assets/fonts/fox-lira/FoxLira-$style.ttf',
+    );
+    loader.addFont(
+      file.readAsBytes().then((bytes) => ByteData.sublistView(bytes)),
+    );
+  }
+  await loader.load();
 }
 
 Directory _fontFolder() {

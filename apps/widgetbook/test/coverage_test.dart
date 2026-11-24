@@ -25,6 +25,22 @@ final _states = <String, (List<String>, List<String>)>{
   'FoxQuantityStepper': ([''], quantityStepperStates),
   'FoxDateField': ([''], dateFieldStates),
   'FoxTimeField': ([''], timeFieldStates),
+  'FoxMoney': ([''], moneyStates),
+  'FoxStatusChip': ([''], statusChipStates),
+  'FoxCountBadge': ([''], countBadgeStates),
+  'FoxCard': ([''], cardStates),
+  'FoxListRow': ([''], listRowStates),
+  'FoxTimer': ([''], timerStates),
+  'FoxCountdownRing': ([''], countdownRingStates),
+  'FoxOrderCard': ([''], orderCardStates),
+  'FoxOrderRow': ([''], orderRowStates),
+  'FoxLogo': ([''], logoStates),
+  'FoxAmountsSummary': ([''], amountsSummaryStates),
+  'FoxRestaurantCard': ([''], restaurantCardStates),
+  'FoxDishCard': ([''], dishCardStates),
+  'FoxSkeleton': ([''], skeletonStates),
+  'FoxSkeletonBlock': ([''], skeletonBlockStates),
+  'FoxEmptyState': ([''], emptyStateStates),
 };
 
 void main() {

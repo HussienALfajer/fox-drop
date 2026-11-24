@@ -1,0 +1,39 @@
+<!-- @dsCard group="Data" height=420 -->
+<style>
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--fd-space-xl);
+  }
+  #root > * {
+    width: 340px;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, AmountsSummary } = FoxDrop;
+  const h = React.createElement;
+  const props = {
+    lines: [
+      { label: 'قيمة الأصناف', amount: '45200' },
+      { label: 'رسوم التوصيل', amount: '4500' },
+      { label: 'الخصم (FOX25)', amount: '-2500', tone: 'success' },
+      { label: 'تقريب', amount: '-200' },
+    ],
+    total: { label: 'المجموع', amount: '47000' },
+    symbol: '₺',
+    equivalents: 'أو 11.50 $ · 3,300,000 ل.س',
+  };
+  ReactDOM.createRoot(document.getElementById('root')).render([
+    h('div', { key: 1 }, h(AmountsSummary, { ...props, variant: 'prominent' })),
+    h('div', { key: 2 }, h(AmountsSummary, props)),
+  ]);
+</script>

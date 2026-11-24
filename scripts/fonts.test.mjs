@@ -6,6 +6,7 @@ import {
   mkdirSync,
   mkdtempSync,
   openSync,
+  readFileSync,
   readSync,
   rmSync,
   writeFileSync,
@@ -14,7 +15,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
 
-import { fontFiles, hasFontSignature, missingOrChanged, readManifest } from './fonts.mjs';
+import {
+  ALLOWED_FONTS,
+  fontFiles,
+  hasFontSignature,
+  isAllowedFont,
+  missingOrChanged,
+  readManifest,
+} from './fonts.mjs';
 
 const scratch = mkdtempSync(path.join(os.tmpdir(), 'fonts-test-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
@@ -55,6 +63,7 @@ describe('the font guard (architecture §9.3: the licensed fonts stay out of thi
             file,
           ),
       )
+      .filter((file) => !isAllowedFont(file))
       .filter((file) => {
         let fd;
         try {
@@ -80,6 +89,59 @@ describe('the font guard (architecture §9.3: the licensed fonts stay out of thi
     );
     assert.equal(added.status, 0, added.stderr);
     assert.deepEqual(fontFiles(added.stdout.split('\n').filter(Boolean)), []);
+  });
+
+  it('allows only Fox Lira, under its open licence, with its pinned bytes', () => {
+    const paths = Object.keys(ALLOWED_FONTS);
+    assert.equal(paths.length, 6);
+    for (const file of paths) {
+      assert.match(file, /\/fox-lira\/FoxLira-(Regular|Medium|Bold)\.ttf$/);
+      assert.ok(isAllowedFont(file), `${file} is missing or its bytes changed`);
+      const licence = readFileSync(path.join(path.dirname(file), 'OFL.txt'), 'utf8');
+      assert.match(licence, /SIL Open Font License/);
+    }
+    // The same name elsewhere, or another font beside it, is still a font.
+    assert.deepEqual(fontFiles(['packages/ui-web/fonts/FoxLira-Regular.ttf']), [
+      'packages/ui-web/fonts/FoxLira-Regular.ttf',
+    ]);
+    assert.deepEqual(fontFiles(['packages/ui-web/fonts/fox-lira/CoFo.ttf']), [
+      'packages/ui-web/fonts/fox-lira/CoFo.ttf',
+    ]);
+  });
+
+  it('finds no other bytes ever committed under an allowed font path', () => {
+    // The working tree is not enough: one commit could add a licensed font at
+    // an allowed path and a later one overwrite it with the pinned bytes.
+    const base = spawnSync('git', ['merge-base', 'origin/main', 'HEAD'], { encoding: 'utf8' });
+    if (base.status !== 0) return; // no origin/main here (a shallow clone); CI fetches the history
+    const log = spawnSync(
+      'git',
+      [
+        'log',
+        '--diff-filter=AM',
+        '--raw',
+        '--no-abbrev',
+        '--format=',
+        `${base.stdout.trim()}..HEAD`,
+        '--',
+        ...Object.keys(ALLOWED_FONTS),
+      ],
+      { encoding: 'utf8' },
+    );
+    assert.equal(log.status, 0, log.stderr);
+    const wrong = log.stdout
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        const [meta, file] = line.split('\t');
+        return { blob: meta.split(' ')[3], file };
+      })
+      .filter(({ blob, file }) => {
+        const bytes = spawnSync('git', ['cat-file', 'blob', blob], { encoding: 'buffer' }).stdout;
+        return createHash('sha256').update(bytes).digest('hex') !== ALLOWED_FONTS[file];
+      })
+      .map(({ blob, file }) => `${file} ${blob}`);
+    assert.deepEqual(wrong, []);
   });
 
   it('ignores the folder the fetch writes to', () => {

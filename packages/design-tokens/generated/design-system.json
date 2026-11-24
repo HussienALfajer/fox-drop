@@ -332,6 +332,86 @@
         "usage": "Labels and icons on info."
       },
       {
+        "name": "success-subtle",
+        "value": {
+          "light": "#E3F3EA",
+          "dark": "#E3F3EA",
+          "captain-light": "#E3F3EA",
+          "captain-dark": "#E3F3EA"
+        },
+        "usage": "The tint behind success text: a status chip, a free fee (D.9)."
+      },
+      {
+        "name": "warning-subtle",
+        "value": {
+          "light": "#FBEFD5",
+          "dark": "#FBEFD5",
+          "captain-light": "#FBEFD5",
+          "captain-dark": "#FBEFD5"
+        },
+        "usage": "The tint behind warning text: a waiting status, a timer about to run out."
+      },
+      {
+        "name": "danger-subtle",
+        "value": {
+          "light": "#FBE9E9",
+          "dark": "#FBE9E9",
+          "captain-light": "#FBE9E9",
+          "captain-dark": "#FBE9E9"
+        },
+        "usage": "The tint behind danger text: a refused or failed status, a late card."
+      },
+      {
+        "name": "info-subtle",
+        "value": {
+          "light": "#EEF4FC",
+          "dark": "#EEF4FC",
+          "captain-light": "#EEF4FC",
+          "captain-dark": "#EEF4FC"
+        },
+        "usage": "The tint behind info text and a running timer."
+      },
+      {
+        "name": "primary-subtle",
+        "value": {
+          "light": "#FFEDE3",
+          "dark": "#FFEDE3",
+          "captain-light": "#FFEDE3",
+          "captain-dark": "#FFEDE3"
+        },
+        "usage": "The tint behind orange status text (primary-pressed), a selected table row, a missing cover."
+      },
+      {
+        "name": "on-primary-subtle",
+        "value": {
+          "light": "#C2410C",
+          "dark": "#C2410C",
+          "captain-light": "#03428E",
+          "captain-dark": "#03428E"
+        },
+        "usage": "Orange status text on its tint («مع الكابتن»): the deepest orange step; blue in the captain app."
+      },
+      {
+        "name": "neutral",
+        "value": {
+          "light": "#4D473D",
+          "dark": "#4D473D",
+          "captain-light": "#4D473D",
+          "captain-dark": "#4D473D"
+        },
+        "usage": "Text and icons of an inactive status: a cancelled order, a closed restaurant."
+      },
+      {
+        "name": "neutral-subtle",
+        "value": {
+          "light": "#EFE8DA",
+          "dark": "#EFE8DA",
+          "captain-light": "#EFE8DA",
+          "captain-dark": "#EFE8DA"
+        },
+        "usage": "The tint behind neutral text, and the skeleton's blocks."
+      },
+      {
         "name": "alert",
         "value": {
           "light": "#8C1530",
@@ -455,7 +535,7 @@
       }
     ],
     "families": {
-      "sans": "\"CoFo Sans Pro Arabic\", sans-serif"
+      "sans": "\"CoFo Sans Pro Arabic\", \"Fox Lira\", sans-serif"
     },
     "groups": [
       {
@@ -764,7 +844,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

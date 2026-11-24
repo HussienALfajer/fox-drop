@@ -104,12 +104,33 @@ const alerts: Pair[] = [
   ...on(['alert'], 7, 'alert'),
 ];
 const statusText = ['success', 'warning', 'danger', 'info'];
+// Data display (D.9, owner 2026-11-24): a status chip, a timer and a state
+// badge put their tone's text on its own tint; running timers and a selected
+// table row put on-surface on the info and primary tints.
+const TINTS: [string, string][] = [
+  ['success', 'success-subtle'],
+  ['warning', 'warning-subtle'],
+  ['danger', 'danger-subtle'],
+  ['info', 'info-subtle'],
+  ['neutral', 'neutral-subtle'],
+  ['on-primary-subtle', 'primary-subtle'],
+  ['on-surface', 'info-subtle'],
+  ['on-surface', 'primary-subtle'],
+];
+const tints = (target: number): Pair[] =>
+  TINTS.map(([foreground, background]) => ({
+    foreground,
+    background,
+    target,
+    use: 'status text on its tint',
+  }));
 
 /** The required pairs of each surface; the colour names are under `color.`. */
 export const PAIRS: Record<Surface, Pair[]> = {
   phone: [
     ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
     ...on(statusText, 4.5, 'status text'),
+    ...tints(4.5),
     ...fills,
     ...dangerButton,
     ...states(4.5),
@@ -122,6 +143,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
   panel: [
     ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
     ...on(statusText, 4.5, 'status text'),
+    ...tints(4.5),
     ...fills,
     ...dangerButton,
     ...states(4.5),
@@ -136,6 +158,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
   captain: [
     ...on(['on-surface', 'on-surface-muted', 'accent'], 7, 'text and numbers'),
     ...on(statusText, 7, 'status text'),
+    ...tints(7),
     ...fills,
     ...captainDangerButton,
     ...states(7),

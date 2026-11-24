@@ -35,6 +35,14 @@ final class ColorTokens {
     required this.onDanger,
     required this.info,
     required this.onInfo,
+    required this.successSubtle,
+    required this.warningSubtle,
+    required this.dangerSubtle,
+    required this.infoSubtle,
+    required this.primarySubtle,
+    required this.onPrimarySubtle,
+    required this.neutral,
+    required this.neutralSubtle,
     required this.alert,
     required this.onAlert,
     required this.disabled,
@@ -78,6 +86,14 @@ final class ColorTokens {
   final int onDanger;
   final int info;
   final int onInfo;
+  final int successSubtle;
+  final int warningSubtle;
+  final int dangerSubtle;
+  final int infoSubtle;
+  final int primarySubtle;
+  final int onPrimarySubtle;
+  final int neutral;
+  final int neutralSubtle;
   final int alert;
   final int onAlert;
   final int disabled;
@@ -124,6 +140,14 @@ abstract final class FoxColors {
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
+    successSubtle: 0xFFE3F3EA,
+    warningSubtle: 0xFFFBEFD5,
+    dangerSubtle: 0xFFFBE9E9,
+    infoSubtle: 0xFFEEF4FC,
+    primarySubtle: 0xFFFFEDE3,
+    onPrimarySubtle: 0xFFC2410C,
+    neutral: 0xFF4D473D,
+    neutralSubtle: 0xFFEFE8DA,
     alert: 0xFF8C1530,
     onAlert: 0xFFFFFFFF,
     disabled: 0xFFE8E1D2,
@@ -168,6 +192,14 @@ abstract final class FoxColors {
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
+    successSubtle: 0xFFE3F3EA,
+    warningSubtle: 0xFFFBEFD5,
+    dangerSubtle: 0xFFFBE9E9,
+    infoSubtle: 0xFFEEF4FC,
+    primarySubtle: 0xFFFFEDE3,
+    onPrimarySubtle: 0xFFC2410C,
+    neutral: 0xFF4D473D,
+    neutralSubtle: 0xFFEFE8DA,
     alert: 0xFF8C1530,
     onAlert: 0xFFFFFFFF,
     disabled: 0xFFE8E1D2,
@@ -212,6 +244,14 @@ abstract final class FoxColors {
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
+    successSubtle: 0xFFE3F3EA,
+    warningSubtle: 0xFFFBEFD5,
+    dangerSubtle: 0xFFFBE9E9,
+    infoSubtle: 0xFFEEF4FC,
+    primarySubtle: 0xFFFFEDE3,
+    onPrimarySubtle: 0xFF03428E,
+    neutral: 0xFF4D473D,
+    neutralSubtle: 0xFFEFE8DA,
     alert: 0xFF8C1530,
     onAlert: 0xFFFFFFFF,
     disabled: 0xFFE8E1D2,
@@ -256,6 +296,14 @@ abstract final class FoxColors {
     onDanger: 0xFFFFFFFF,
     info: 0xFF03428E,
     onInfo: 0xFFFFFFFF,
+    successSubtle: 0xFFE3F3EA,
+    warningSubtle: 0xFFFBEFD5,
+    dangerSubtle: 0xFFFBE9E9,
+    infoSubtle: 0xFFEEF4FC,
+    primarySubtle: 0xFFFFEDE3,
+    onPrimarySubtle: 0xFF03428E,
+    neutral: 0xFF4D473D,
+    neutralSubtle: 0xFFEFE8DA,
     alert: 0xFF8C1530,
     onAlert: 0xFFFFFFFF,
     disabled: 0xFFE8E1D2,

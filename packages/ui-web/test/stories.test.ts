@@ -18,19 +18,30 @@ const components = Object.entries(library).filter(
 describe('stories cover every state (R3)', () => {
   it('finds the components', () => {
     expect(components.map(([name]) => name).sort()).toEqual([
+      'AmountsSummary',
       'Button',
+      'Card',
       'Checkbox',
       'CodeField',
+      'CountBadge',
+      'DataTable',
+      'EmptyState',
       'Field',
       'Icon',
+      'ListRow',
+      'Money',
+      'OrderCard',
       'PhoneField',
       'QuantityStepper',
       'RadioGroup',
       'SearchField',
       'Select',
+      'Skeleton',
+      'StatusChip',
       'Switch',
       'TextArea',
       'TextField',
+      'Timer',
     ]);
   });
 

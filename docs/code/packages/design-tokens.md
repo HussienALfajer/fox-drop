@@ -55,6 +55,13 @@ Version 0.5.0 (owner, 2026-11-24). The 0.4.0 hover, a mix of fill and pressed, m
 - **Contrast:** the state grounds (`STATE_BACKGROUNDS`) need only `on-surface` (4.5, captain 7) and the focus ring, since they are transient; `surface-pressed` therefore left `BACKGROUNDS`, and a selected item is designed with accent. `on-danger` on `danger-hover` and `danger-pressed`; `on-primary` on `primary-hover` under the orange exception (`ORANGE`).
 - **Changed values:** `primary-pressed` orange 500 → 600; `surface-pressed` neutral 100 → blue 100; `button.danger.background-pressed` is `danger-pressed`, no longer `alert`, so the captain's pressed danger now shows a step.
 
+## Data display (D.9)
+
+Version 0.7.0 (owner, 2026-11-24, sheet «Data display — batch 3», `src/data-sheet.ts`, drawn by `icon-sheet` beside the other boards).
+
+- **Tints:** `success-subtle` (green 50), `warning-subtle` (amber 50), `danger-subtle` (red 50), `info-subtle` (blue 50), `primary-subtle` (orange 75), `neutral-subtle` (neutral 150, also the skeleton), with `neutral` (neutral 700) and `on-primary-subtle` (orange 600; the captain overrides it with blue 500, since its app has no orange text and the 4.56:1 orange misses 7:1). `TINTS` in `src/contrast.ts` checks each tone's text on its tint at 4.5:1 (7:1 for the captain) and `on-surface` on the info and primary tints (a running timer, a selected table row). Measured: 4.56 to 8.73 on phone and panel, 7.24 to 8.73 for the captain.
+- **Fox Lira:** `font.family.sans` is CoFo, then «Fox Lira», then sans-serif. `scripts/lira-font.py <NotoSans[wdth,wght].ttf>` (fontTools; Noto Sans from `github.com/google/fonts`, `ofl/notosans`, downloaded with the owner's leave) instances weights 400, 500 and 700, keeps U+20BA only, renames the family and writes about 1.9 KB per weight with `OFL.txt` to `ui-web/fonts/fox-lira` and `core_ui/assets/fonts/fox-lira`. Rerun it to change the glyph; never hand-edit the files.
+
 ## Left out
 
 The `tnum` feature as a token (D.6 and D.7 set `font-variant-numeric: tabular-nums` or `FontFeature.tabularFigures()` on the number role and on money, timer and table text); real dark values; wiring the theme into the web apps (D.6) and Flutter (D.7); components in the Design System (D.6); publishing the artifacts from CI; font subsetting and size budgets; map style tokens (D.3); densities (the panel scale covers the compact one for now). Icons: the `Icon` components (D.6 `ui-web`, D.7 `core_ui`); the second batch (expression §10); filled or duotone variants and the Figma file's orange accent layer (the bell's dot, filled stars), which R8 forbids today and waits for the owner; an icon font.

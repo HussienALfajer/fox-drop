@@ -33,12 +33,18 @@ class FoxIcon extends StatelessWidget {
     this.size = FoxIconSize.md,
     this.label,
     this.color,
+    this.filled = false,
   });
 
   final t.FoxIconData icon;
   final FoxIconSize size;
   final String? label;
   final Color? color;
+
+  /// Fills the outline as well as stroking it. The one exception to the
+  /// line-only set (R8; owner, 2026-11-24): a chosen favourite's heart, so
+  /// the state is not colour alone. Only for a closed shape such as `heart`.
+  final bool filled;
 
   /// Parsed outlines by path data, shared by every icon.
   static final Map<String, Path> _paths = {};
@@ -60,6 +66,7 @@ class FoxIcon extends StatelessWidget {
         [for (final d in icon.paths) _path(d)],
         paint,
         mirrored: mirrored,
+        filled: filled,
       ),
     );
     final name = label;
@@ -69,11 +76,17 @@ class FoxIcon extends StatelessWidget {
 }
 
 class _IconPainter extends CustomPainter {
-  _IconPainter(this.paths, this.color, {required this.mirrored});
+  _IconPainter(
+    this.paths,
+    this.color, {
+    required this.mirrored,
+    this.filled = false,
+  });
 
   final List<Path> paths;
   final Color color;
   final bool mirrored;
+  final bool filled;
 
   static const _grid = 24.0;
 
@@ -93,7 +106,11 @@ class _IconPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..isAntiAlias = true;
+    final fill = Paint()
+      ..color = color
+      ..isAntiAlias = true;
     for (final path in paths) {
+      if (filled) canvas.drawPath(path, fill);
       canvas.drawPath(path, stroke);
     }
     canvas.restore();
@@ -101,5 +118,8 @@ class _IconPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_IconPainter old) =>
-      old.color != color || old.mirrored != mirrored || old.paths != paths;
+      old.color != color ||
+      old.mirrored != mirrored ||
+      old.paths != paths ||
+      old.filled != filled;
 }
