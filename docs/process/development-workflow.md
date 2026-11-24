@@ -12,7 +12,7 @@ How FOX DROP is built: almost all code is written by Claude Code (Opus 5.5) unde
 4. **Small slices.** One slice per session, one slice per pull request.
 5. **Independent review.** The session that wrote the code never approves it: a fresh-context `reviewer` checks it against the slice file and the specs.
 6. **Compounding.** A correction made twice becomes a rule, a skill, a hook or a test. A bug found after a merge becomes a `REVIEW.md` item or a test in its fix's pull request.
-7. **Design before code.** A component or screen is coded only after the owner approved its sheet or drawing (architecture §9.9).
+7. **Design before code.** A component or screen is coded only after the owner approved its sheet or drawing (architecture §9.9). Screens come in UI batches after their API, drawn as working prototypes with an analysis and tested by the owner in Play before approval (T13).
 
 ## 2. Risk tiers
 
