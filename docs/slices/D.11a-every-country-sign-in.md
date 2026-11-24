@@ -65,7 +65,7 @@ Checkpoints (one commit and `checker` each): (1) red phase; (2) every country an
 
 ## Stopped at
 
-Planned 2026-11-24; waiting for the owner's approval and the plan critique (T0).
+Planned and approved by the owner 2026-11-24; waiting for the plan critique of a fresh session (T0).
 
 ## Evidence
 
