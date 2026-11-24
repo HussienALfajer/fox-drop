@@ -103,7 +103,12 @@ export function Tabs(props: TabsProps) {
         },
       })}
     >
-      <TabsList ref={listRef} aria-label={label} data-variant={variant} className={list({ variant })}>
+      <TabsList
+        ref={listRef}
+        aria-label={label}
+        data-variant={variant}
+        className={list({ variant })}
+      >
         {items.map((item) => (
           <TabsTab
             key={item.value}
