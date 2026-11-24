@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4.5 6.5h15"/>
-  <path d="M9.5 6.5V5A1.5 1.5 0 0 1 11 3.5h2A1.5 1.5 0 0 1 14.5 5v1.5"/>
-  <path d="m6 6.5.8 12.2a2.5 2.5 0 0 0 2.5 2.3h5.4a2.5 2.5 0 0 0 2.5-2.3L18 6.5"/>
-  <path d="M9.5 10.5v6"/>
-  <path d="M12 10.5v6"/>
-  <path d="M14.5 10.5v6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3.25 6L20.75 6" data-role="detail" data-knock="out"/>
+  <path d="M8.75 6V5.25A2.5 2.5 0 0 1 11.25 2.75H12.75A2.5 2.5 0 0 1 15.25 5.25V6" data-role="detail" data-knock="out" data-accent="true"/>
+  <path d="M5.65 8.75L18.35 8.75C18.54 8.75 18.63 8.75 18.69 8.81C18.74 8.87 18.73 8.96 18.72 9.15L18.02 17.86C17.89 19.46 17.83 20.26 17.29 20.75C16.75 21.25 15.95 21.25 14.35 21.25L9.65 21.25C8.05 21.25 7.25 21.25 6.71 20.75C6.17 20.26 6.11 19.46 5.98 17.86L5.28 9.15C5.27 8.96 5.26 8.87 5.31 8.81C5.37 8.75 5.46 8.75 5.65 8.75Z" data-role="body"/>
+  <path d="M10 12L10.25 17.5" data-role="detail" data-knock="in"/>
+  <path d="M14 12L13.75 17.5" data-role="detail" data-knock="in"/>
 </svg>

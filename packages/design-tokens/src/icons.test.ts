@@ -6,8 +6,8 @@ import { ARABIC } from './icon-sheet.ts';
 import { readIcons } from './icons.ts';
 import { PACKAGE_DIR } from './resolve.ts';
 
-// The icon grid (architecture §9.4, §9.5 R8; owner, 2026-11-23) and the first
-// set (brand expression §10).
+// The icon grid of set v4 "Madar" (architecture §9.4, §9.5 R8; owner,
+// 2026-11-24) and the first set (brand expression §10).
 const ICONS_DIR = path.join(PACKAGE_DIR, 'icons');
 
 interface Entry {
@@ -31,31 +31,17 @@ const ROOT = {
   viewBox: '0 0 24 24',
   fill: 'none',
   stroke: 'currentColor',
-  'stroke-width': '2',
+  'stroke-width': '1.5',
   'stroke-linecap': 'round',
   'stroke-linejoin': 'round',
 };
 
-/** The attributes each shape must carry: a missing one would default to 0. */
-const REQUIRED: Record<string, string[]> = {
-  path: ['d'],
-  circle: ['cx', 'cy', 'r'],
-  ellipse: ['cx', 'cy', 'rx', 'ry'],
-  line: ['x1', 'y1', 'x2', 'y2'],
-  polyline: ['points'],
-  polygon: ['points'],
-  rect: ['x', 'y', 'width', 'height'],
-};
-
-const GEOMETRY: Record<string, string[]> = {
-  path: ['d'],
-  circle: ['cx', 'cy', 'r'],
-  ellipse: ['cx', 'cy', 'rx', 'ry'],
-  line: ['x1', 'y1', 'x2', 'y2'],
-  polyline: ['points'],
-  polygon: ['points'],
-  rect: ['x', 'y', 'width', 'height', 'rx', 'ry'],
-};
+/** Each element is one path: its data and its role (§9.4). */
+const ROLES = ['body', 'detail'];
+const KNOCKS = ['in', 'out'];
+const FLAGS = ['data-accent', 'data-fill', 'data-open', 'data-halo'];
+/** The glyphs drawn without a body: a line or two on their own. */
+const BODILESS = ['back', 'close', 'chevron-down', 'menu', 'add', 'remove', 'confirm', 'retry'];
 
 const LIVE = { min: 2, max: 22 };
 const EPSILON = 1e-9;
@@ -65,19 +51,32 @@ describe('the icon grid (architecture §9.5 R8)', () => {
     expect(parseIcon(source).root).toEqual(ROOT);
   });
 
-  it.each(icons)('$name.svg draws with geometry only', ({ source }) => {
+  it.each(icons)('$name.svg draws paths only, each with its role', ({ source }) => {
     const { shapes } = parseIcon(source);
     expect(shapes.length).toBeGreaterThan(0);
-    for (const shape of shapes) {
-      const allowed = GEOMETRY[shape.name];
-      expect(allowed, `<${shape.name}> is not a shape element`).toBeDefined();
-      for (const key of Object.keys(shape.attributes))
-        expect(allowed, `<${shape.name}> may not carry ${key}`).toContain(key);
-      for (const key of REQUIRED[shape.name] ?? [])
-        expect(shape.attributes[key]?.trim(), `<${shape.name}> needs ${key}`).toBeTruthy();
+    for (const { name, attributes } of shapes) {
+      expect(name, `<${name}> is not a path`).toBe('path');
+      const { d, 'data-role': role, 'data-knock': knock, ...rest } = attributes;
+      expect(d?.trim(), 'a path needs d').toBeTruthy();
       // The outputs quote path data on one line.
-      expect(shape.attributes.d ?? '', `<${shape.name}> d spans lines`).not.toMatch(/[\r\n]/);
+      expect(d, 'd spans lines').not.toMatch(/[\r\n]/);
+
+      expect(ROLES, `data-role="${role}"`).toContain(role);
+      if (role === 'detail') expect(KNOCKS, `data-knock="${knock}"`).toContain(knock);
+      else expect(knock, 'a body is never knocked').toBeUndefined();
+      for (const [key, value] of Object.entries(rest)) {
+        expect(FLAGS, `${key} is not a role flag`).toContain(key);
+        expect(value, key).toBe('true');
+      }
     }
+  });
+
+  it.each(icons)('$name.svg has a body, unless a bare glyph, and an accent', ({ name, source }) => {
+    const { shapes } = parseIcon(source);
+    const bodies = shapes.filter((shape) => shape.attributes['data-role'] === 'body');
+    if (BODILESS.includes(name)) expect(bodies).toHaveLength(0);
+    else expect(bodies.length).toBeGreaterThan(0);
+    expect(shapes.some((shape) => shape.attributes['data-accent'] === 'true')).toBe(true);
   });
 
   it.each(icons)('$name.svg writes numbers with at most 2 decimals', ({ source }) => {
@@ -85,10 +84,8 @@ describe('the icon grid (architecture §9.5 R8)', () => {
       for (const [key, value] of Object.entries(attributes)) {
         for (const number of value.match(/\d*\.\d+/g) ?? [])
           expect(number.split('.')[1]!.length, number).toBeLessThanOrEqual(2);
-        // Shape attributes are plain numbers: no exponent, no unit.
-        if (key !== 'd')
-          for (const item of value.trim().split(/[\s,]+/))
-            expect(item, `<${name}> ${key}`).toMatch(/^-?\d*\.?\d{1,2}$|^-?\d+$/);
+        // Path data only: no exponent.
+        if (key === 'd') expect(value, `<${name}> d`).not.toMatch(/e/i);
       }
   });
 
@@ -147,7 +144,7 @@ describe('the icon sheet (architecture §9.9)', () => {
 
   it('draws every icon, normalised to paths that stay on the grid', () => {
     for (const icon of readIcons())
-      for (const d of icon.paths)
+      for (const { d } of icon.elements)
         for (const { x, y } of pathPoints(d)) {
           expect(Math.min(x, y), icon.name).toBeGreaterThanOrEqual(LIVE.min - EPSILON);
           expect(Math.max(x, y), icon.name).toBeLessThanOrEqual(LIVE.max + EPSILON);

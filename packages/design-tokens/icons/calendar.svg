@@ -1,6 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
-  <path d="M4 10h16"/>
-  <path d="M8 3v4"/>
-  <path d="M16 3v4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M8.75 4.5L15.25 4.5C18.08 4.5 19.49 4.5 20.37 5.38C21.25 6.26 21.25 7.67 21.25 10.5L21.25 15.25C21.25 18.08 21.25 19.49 20.37 20.37C19.49 21.25 18.08 21.25 15.25 21.25L8.75 21.25C5.92 21.25 4.51 21.25 3.63 20.37C2.75 19.49 2.75 18.08 2.75 15.25L2.75 10.5C2.75 7.67 2.75 6.26 3.63 5.38C4.51 4.5 5.92 4.5 8.75 4.5Z" data-role="body"/>
+  <path d="M7.75 2.5L7.75 6.25" data-role="detail" data-knock="out"/>
+  <path d="M16.25 2.5L16.25 6.25" data-role="detail" data-knock="out"/>
+  <path d="M3 9.75L21 9.75" data-role="detail" data-knock="in"/>
+  <path d="M7.75 13.75h.01" data-role="detail" data-knock="in"/>
+  <path d="M12 13.75h.01" data-role="detail" data-knock="in"/>
+  <path d="M16.25 13.75h.01" data-role="detail" data-knock="in"/>
+  <path d="M7.75 17.25h.01" data-role="detail" data-knock="in"/>
+  <path d="M12 17.25h.01" data-role="detail" data-knock="in"/>
+  <path d="M15.1 17.25A1.15 1.15 0 1 1 17.4 17.25A1.15 1.15 0 1 1 15.1 17.25Z" data-role="detail" data-knock="in" data-accent="true" data-fill="true"/>
 </svg>

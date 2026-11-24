@@ -31,17 +31,36 @@ void _expectRect(Rect actual, Rect expected) {
   }
 }
 
-Widget _app(Widget child, {TextDirection direction = TextDirection.rtl}) =>
-    FoxTheme(
-      data: FoxThemeData.phone(),
-      child: Directionality(textDirection: direction, child: child),
-    );
+Widget _app(
+  Widget child, {
+  TextDirection direction = TextDirection.rtl,
+  FoxThemeData? theme,
+}) => FoxTheme(
+  data: theme ?? FoxThemeData.phone(),
+  child: Directionality(textDirection: direction, child: child),
+);
+
+/// The painter of one FoxIcon, read dynamically: it is private.
+dynamic _painterOf(WidgetTester tester, Element icon) => tester
+    .widget<CustomPaint>(
+      find.descendant(
+        of: find.byElementPredicate((e) => e == icon),
+        matching: find.byType(CustomPaint),
+      ),
+    )
+    .painter;
+
+dynamic _painter(WidgetTester tester) =>
+    _painterOf(tester, find.byType(FoxIcon).evaluate().single);
 
 void main() {
   group('parseSvgPath', () {
     test('parses every icon of the set inside the safe area 2..22', () {
       for (final MapEntry(:key, :value) in t.FoxIcons.all.entries) {
-        for (final d in value.paths) {
+        for (final d in [
+          for (final e in value.elements) e.d,
+          ...value.broken,
+        ]) {
           final b = _bounds(d);
           expect(b.isFinite, isTrue, reason: key);
           for (final edge in [b.left, b.top, b.right, b.bottom]) {
@@ -141,6 +160,107 @@ void main() {
           );
         }
       }
+    });
+
+    testWidgets('paints each of the six styles of every icon', (tester) async {
+      expect(FoxIconStyle.values.map((s) => s.name), [
+        'linear',
+        'duotone',
+        'brandDuo',
+        'broken',
+        'bold',
+        'boldDuo',
+      ]);
+      for (final style in FoxIconStyle.values) {
+        await tester.pumpWidget(
+          _app(
+            Wrap(
+              children: [
+                for (final icon in t.FoxIcons.all.values)
+                  FoxIcon(icon, style: style),
+              ],
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull, reason: '$style');
+        for (final element in find.byType(FoxIcon).evaluate()) {
+          expect(_painterOf(tester, element).style, style);
+        }
+      }
+    });
+
+    testWidgets('strokes at 1.5 on the phone and 1.75 for the captain', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(FoxIcon(t.FoxIcons.home)));
+      expect(_painter(tester).weight, t.FoxIconWeight.phone);
+      expect(_painter(tester).weight.stroke, 1.5);
+      await tester.pumpWidget(
+        _app(FoxIcon(t.FoxIcons.home), theme: FoxThemeData.captain()),
+      );
+      expect(_painter(tester).weight, t.FoxIconWeight.captain);
+      expect(_painter(tester).weight.stroke, 1.75);
+    });
+
+    testWidgets('a chosen favourite draws its heart Bold, else Linear', (
+      tester,
+    ) async {
+      for (final favourite in [true, false]) {
+        await tester.pumpWidget(
+          _app(
+            SizedBox(
+              width: 360,
+              child: FoxRestaurantCard(
+                name: 'كنافة أعزاز',
+                categories: 'حلويات',
+                eta: '30–40 د',
+                fee: const SizedBox.shrink(),
+                favourite: favourite,
+                favouriteLabel: 'المفضلة',
+                onFavourite: () {},
+              ),
+            ),
+          ),
+        );
+        final heart = tester
+            .widgetList<FoxIcon>(find.byType(FoxIcon))
+            .singleWhere((icon) => icon.icon == t.FoxIcons.heart);
+        expect(
+          heart.style,
+          favourite ? FoxIconStyle.bold : FoxIconStyle.linear,
+        );
+      }
+    });
+
+    testWidgets('the selected tab draws Bold, the others Linear', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          FoxBottomNavigation(
+            items: [
+              FoxNavItem(icon: t.FoxIcons.home, label: 'الرئيسية'),
+              FoxNavItem(icon: t.FoxIcons.cart, label: 'السلة'),
+            ],
+            selected: 1,
+            onSelected: (_) {},
+          ),
+        ),
+      );
+      final styles = {
+        for (final icon in tester.widgetList<FoxIcon>(find.byType(FoxIcon)))
+          icon.icon: icon.style,
+      };
+      expect(styles[t.FoxIcons.cart], FoxIconStyle.bold);
+      expect(styles[t.FoxIcons.home], FoxIconStyle.linear);
+    });
+
+    testWidgets('the empty state draws Brand Duo', (tester) async {
+      await tester.pumpWidget(
+        _app(FoxEmptyState(icon: t.FoxIcons.cart, title: 'سلتك فارغة')),
+      );
+      final icon = tester.widget<FoxIcon>(find.byType(FoxIcon));
+      expect(icon.style, FoxIconStyle.brandDuo);
     });
 
     testWidgets('hides a decorative icon and names a labelled one', (
