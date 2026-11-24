@@ -63,9 +63,22 @@ Tests written first (locked in the red phase):
 
 Checkpoints (one commit and `checker` each): (1) red phase; (2) every country and the masks; (3) the abroad limit and the attempts; (4) `GET platform`; (5) the office migration and landmark; (6) the contract, the clients, the panel fields and the spec text; then `reviewer` and `security-reviewer`.
 
+## Plan critique (fresh build session, 2026-11-24)
+
+Checked against the code before building; the plan stands with these corrections:
+
+1. **`+96390…` is a Syrian mobile** in libphonenumber's `max` metadata (`+963900000001` parses as `MOBILE`), so the placeholder seed and the fixtures keep their numbers.
+2. **The metadata refuses `+96391…` and `+96392…`**, which today's pattern takes. To refuse nothing the apps take today, `isAppMobile` takes today's Syrian and Turkish pattern as well as any number the metadata calls a mobile (or fixed-or-mobile). The tests' random `+9639xxxxxxxx` numbers keep working. Whether `+96391`/`+96392` are real Syrian ranges is in «ما وجدته» of the report.
+3. **The daily refusal is `daily_limit`**, not `number_limit`: the abroad limit answers it, as the Syrian one does.
+4. **Settings cannot import geo** (geo imports settings), so the customer's `GET platform` with `hours` moves to the ordering module (which reads geo, settings and its own `platformOpening`); the shape and `PlatformDto` stay in settings and are exported from its entry. The captain and restaurant routes stay in settings.
+5. `setOffice` takes `landmark` as optional (absent is none), so its other callers stay as they are; the admin route always sends it.
+6. The masks in the customers blocks and the captain applications and profile tests stay Syrian: they now call the one `maskedPhone`, whose own test covers `+44`, `+1`, `+7`; the panel's restaurant accounts test adds a `+44` account.
+7. There is no `redact.test.ts`: it is new. It passes before any change, as the plan expected (proof, not red).
+8. The Flutter and portal message mappings are tested through small pure functions: `signInMessage` (extracted from the sign-in screen's private `_message`) and `signInResultOf` (from the portal's mutation).
+
 ## Stopped at
 
-Planned and approved by the owner 2026-11-24; waiting for the plan critique of a fresh session (T0).
+Red phase written and locked (`.claude/state/locked-tests.txt`); next: checkpoint 2, every country and the masks.
 
 ## Evidence
 

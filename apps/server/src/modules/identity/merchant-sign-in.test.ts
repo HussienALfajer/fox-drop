@@ -197,6 +197,43 @@ describe('who signs in to the restaurant app (RA §5.2, §5.5)', () => {
     expect(response.json()).toMatchObject({ error: 'restaurant_terminated' });
   });
 
+  it('signs in a restaurant user whose mobile is of another country (CU U3, slice D.11a)', async () => {
+    const phone = `+49151${randomInt(100_000_000).toString().padStart(8, '0')}`;
+    const accountId = await accounts.addAccount(
+      await restaurant('active'),
+      { role: 'owner', name: 'سامر', phone },
+      change,
+    );
+    const response = await signIn(phone);
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({ accountId });
+    await expect(
+      accounts.addAccount(
+        await restaurant('active'),
+        { role: 'cashier', name: 'x', phone: '+493012345678' },
+        change,
+      ),
+    ).rejects.toBeInstanceOf(MerchantAccountRefusedError);
+  });
+
+  it('answers the attempt that uses up the code with attempts_used (slice D.11a)', async () => {
+    const { phone } = await user(await restaurant('active'), 'cashier');
+    const deviceId = randomUUID();
+    expect((await requestCode(phone, deviceId)).statusCode).toBe(200);
+    const wrong = sender.lastCode(phone) === '000000' ? '000001' : '000000';
+    const errors = [];
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/v1/merchant/auth/sign-in',
+        payload: { phone, deviceId, code: wrong },
+      });
+      expect(response.statusCode).toBe(400);
+      errors.push(response.json().error);
+    }
+    expect(errors).toEqual([...Array(4).fill('wrong_code'), 'attempts_used', 'attempts_used']);
+  });
+
   it('lets a suspended restaurant sign in', async () => {
     const { phone } = await user(await restaurant('suspended'), 'cashier');
     expect((await signIn(phone)).statusCode).toBe(200);

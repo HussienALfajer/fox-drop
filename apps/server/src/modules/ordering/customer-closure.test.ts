@@ -159,6 +159,22 @@ describe('«حذف الحساب» in the app (CU §5.6)', () => {
     expect(current.blocks).toEqual([expect.objectContaining({ kind: 'dues' })]);
   });
 
+  it('answers the attempt that uses up the code with attempts_used (slice D.11a)', async () => {
+    const buyer = await customer();
+    await pastResendWait();
+    expect((await closeCode(buyer.headers)).statusCode).toBe(200);
+    const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(buyer.phone)!;
+    const wrong = code === '000000' ? '000001' : '000000';
+    const errors = [];
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const answer = await closeWith(buyer.headers, wrong);
+      expect(answer.statusCode).toBe(400);
+      errors.push(answer.json().error);
+    }
+    expect(errors).toEqual([...Array(4).fill('wrong_code'), 'attempts_used', 'attempts_used']);
+    expect(await profileStatus(buyer.headers)).toBe(200);
+  });
+
   it('is refused with an active order, before any code is sent', async () => {
     const buyer = await customer();
     expect((await place(buyer.headers)).statusCode).toBe(201);

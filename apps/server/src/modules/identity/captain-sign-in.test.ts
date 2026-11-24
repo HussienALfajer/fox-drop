@@ -132,7 +132,7 @@ describe('captain accounts (CA §4.9)', () => {
     await expect(accounts.addAccount(randomUUID(), newPhone(), change)).rejects.toBeInstanceOf(
       CaptainAccountRefusedError,
     );
-    await expect(accounts.addAccount(other, '+4915112345678', change)).rejects.toMatchObject({
+    await expect(accounts.addAccount(other, '+493012345678', change)).rejects.toMatchObject({
       refusal: 'invalid_account',
     });
     const { rows } = await sql.query(
@@ -161,6 +161,40 @@ describe('the captain app sign-in (CA §4.9)', () => {
     expect(answer.json()).toMatchObject({ accountId, captainId, accessToken: expect.any(String) });
     const current = await session(answer.json().accessToken);
     expect(current.json()).toMatchObject({ accountId, captainId });
+  });
+
+  it('signs in a captain whose mobile is of another country (CU U3, slice D.11a)', async () => {
+    const captainId = await captains.createCaptain(
+      azaz,
+      { name: 'كابتن', vehicle: 'walking', custodyLimit: { amount: 1_000n, currency: 'TRY' } },
+      change,
+    );
+    const phone = `+44791${randomInt(1_000_000).toString().padStart(6, '0')}`;
+    const accountId = await accounts.addAccount(captainId, phone, change);
+    const answer = await signIn(phone);
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json()).toMatchObject({ accountId, captainId });
+  });
+
+  it('answers the attempt that uses up the code with attempts_used (slice D.11a)', async () => {
+    const { phone } = await captain();
+    const deviceId = randomUUID();
+    expect((await requestCode(phone, deviceId)).statusCode).toBe(200);
+    const wrong = sender.lastCode(phone) === '000000' ? '000001' : '000000';
+    const answers = [];
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/v1/captain/auth/sign-in',
+        payload: { phone, deviceId, code: wrong },
+      });
+      answers.push([response.statusCode, response.json().error]);
+    }
+    expect(answers).toEqual([
+      ...Array.from({ length: 4 }, () => [400, 'wrong_code']),
+      [400, 'attempts_used'],
+      [400, 'attempts_used'],
+    ]);
   });
 
   it('answers a number of no captain as any other, and sends it nothing (owner decision 2026-11-06)', async () => {

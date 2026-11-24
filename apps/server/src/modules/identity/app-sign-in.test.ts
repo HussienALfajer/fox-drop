@@ -68,6 +68,11 @@ function newPhone(): string {
   return `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
 }
 
+// A German mobile no other test uses (CU U3: any country).
+function newGermanPhone(): string {
+  return `+49151${randomInt(100_000_000).toString().padStart(8, '0')}`;
+}
+
 async function changeSetting(key: SettingKey, value: number | boolean) {
   await settings.update(key, {}, value, {
     editor: { id: '0190f3a0-0000-7000-8000-000000000001', roles: ['OWN'] },
@@ -186,11 +191,59 @@ describe('the sign-in code (architecture §8.3.2)', () => {
         ),
       );
     }
-    expect(answers).toEqual(
-      [4, 3, 2, 1, 0].map((attemptsLeft) => ({ refusal: 'wrong_code', attemptsLeft })),
-    );
+    // Slice D.11a (owner's answer (b)): the attempt that reaches
+    // otp.max_attempts, and every one after, says the attempts are used up.
+    expect(answers).toEqual([
+      ...[4, 3, 2, 1].map((attemptsLeft) => ({ refusal: 'wrong_code', attemptsLeft })),
+      { refusal: 'attempts_used', attemptsLeft: 0 },
+    ]);
     expect(
       await refusal(signIn.signIn({ party: 'customer', phone, deviceId, code }, context, now)),
+    ).toEqual({ refusal: 'attempts_used', attemptsLeft: 0 });
+  });
+
+  it('opens a new code after the attempts are used up, with its own attempts', async () => {
+    const phone = newPhone();
+    const deviceId = randomUUID();
+    const now = new Date();
+    await request(phone, deviceId, now);
+    const wrongFor = (code: string) => (code === '000000' ? '000001' : '000000');
+    const first = sender.lastCode(phone)!;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await refusal(
+        signIn.signIn({ party: 'customer', phone, deviceId, code: wrongFor(first) }, context, now),
+      );
+    }
+    const later = new Date(now.getTime() + 2 * MINUTE);
+    await request(phone, deviceId, later);
+    const second = sender.lastCode(phone)!;
+    expect(
+      await refusal(
+        signIn.signIn(
+          { party: 'customer', phone, deviceId, code: wrongFor(second) },
+          context,
+          later,
+        ),
+      ),
+    ).toEqual({ refusal: 'wrong_code', attemptsLeft: 4 });
+  });
+
+  it('answers code_expired, not attempts_used, for a used-up code of another device', async () => {
+    const phone = newPhone();
+    const now = new Date();
+    const deviceId = randomUUID();
+    await request(phone, deviceId, now);
+    const code = sender.lastCode(phone)!;
+    const wrong = code === '000000' ? '000001' : '000000';
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await refusal(
+        signIn.signIn({ party: 'customer', phone, deviceId, code: wrong }, context, now),
+      );
+    }
+    expect(
+      await refusal(
+        signIn.signIn({ party: 'customer', phone, deviceId: randomUUID(), code }, context, now),
+      ),
     ).toEqual({ refusal: 'code_expired', attemptsLeft: 0 });
   });
 
@@ -293,6 +346,38 @@ describe('the request limits (architecture §8.3.3 item 2, AP Appendix A)', () =
     expect(await refusal(request(phone, randomUUID(), day))).toMatchObject({
       refusal: 'daily_limit',
     });
+  });
+
+  // Owner decision 2026-11-24: a number outside Syria and Turkey gets
+  // otp.number_daily_max_abroad codes a day.
+  it('allows otp.number_daily_max_abroad codes per day to a number abroad', async () => {
+    const abroad = newGermanPhone();
+    const syrian = newPhone();
+    const start = new Date();
+    for (let i = 0; i < 3; i += 1) {
+      const at = new Date(start.getTime() + i * 61 * MINUTE);
+      await request(abroad, randomUUID(), at);
+      await request(syrian, randomUUID(), at);
+    }
+    const fourth = new Date(start.getTime() + 3 * 61 * MINUTE);
+    expect(await refusal(request(abroad, randomUUID(), fourth))).toMatchObject({
+      refusal: 'daily_limit',
+    });
+    expect(await refusal(request(syrian, randomUUID(), fourth))).toBe('accepted');
+  });
+
+  it('reads otp.number_daily_max_abroad at each request', async () => {
+    const abroad = newGermanPhone();
+    const start = new Date();
+    await changeSetting('otp.number_daily_max_abroad', 1);
+    try {
+      await request(abroad, randomUUID(), start);
+      expect(
+        await refusal(request(abroad, randomUUID(), new Date(start.getTime() + 61 * MINUTE))),
+      ).toMatchObject({ refusal: 'daily_limit' });
+    } finally {
+      await changeSetting('otp.number_daily_max_abroad', 3);
+    }
   });
 
   it('allows otp.device_daily_max codes per device per day', async () => {
@@ -745,7 +830,7 @@ describe('the customer sign-in routes', () => {
     expect(after.statusCode).toBe(401);
   });
 
-  it('refuses a missing or malformed token, and a number outside Syria and Turkey', async () => {
+  it('refuses a missing or malformed token, and a number that is no mobile', async () => {
     const none = await app.inject({ method: 'GET', url: '/v1/customer/auth/session' });
     expect(none.statusCode).toBe(401);
     const junk = await app.inject({
@@ -754,7 +839,13 @@ describe('the customer sign-in routes', () => {
       headers: { authorization: 'Bearer junk' },
     });
     expect(junk.statusCode).toBe(401);
-    for (const phone of ['+4915112345678', '+963812345678', '0912345678', '+90412345678']) {
+    for (const phone of [
+      '+493012345678',
+      '+963812345678',
+      '+963112345678',
+      '0912345678',
+      '+90412345678',
+    ]) {
       const response = await app.inject({
         method: 'POST',
         url: '/v1/customer/auth/code',
@@ -762,6 +853,41 @@ describe('the customer sign-in routes', () => {
       });
       expect(response.statusCode).toBe(400);
     }
+  });
+
+  it('signs in a mobile of another country (CU U3)', async () => {
+    const phone = newGermanPhone();
+    const deviceId = randomUUID();
+    const code = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/auth/code',
+      payload: { phone, deviceId },
+    });
+    expect(code.statusCode).toBe(200);
+    const response = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/auth/sign-in',
+      payload: { phone, deviceId, code: sender.lastCode(phone) },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({ newAccount: true });
+  });
+
+  it('answers used-up attempts with 400 attempts_used', async () => {
+    const phone = newPhone();
+    const deviceId = randomUUID();
+    await request(phone, deviceId, new Date());
+    const wrong = sender.lastCode(phone) === '000000' ? '000001' : '000000';
+    let response;
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      response = await app.inject({
+        method: 'POST',
+        url: '/v1/customer/auth/sign-in',
+        payload: { phone, deviceId, code: wrong },
+      });
+    }
+    expect(response!.statusCode).toBe(400);
+    expect(response!.json()).toMatchObject({ error: 'attempts_used', attemptsLeft: 0 });
   });
 
   it('answers the daily limit with 429 and its refusal', async () => {
