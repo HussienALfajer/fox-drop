@@ -22,7 +22,10 @@ final class FoxNavItem {
     this.badgeCount,
     this.badgeLabel,
     this.dot = false,
-  });
+  }) : assert(
+         (badgeCount == null && !dot) || badgeLabel != null,
+         'A badge needs its words (badgeLabel): never colour alone.',
+       );
 
   final t.FoxIconData icon;
 

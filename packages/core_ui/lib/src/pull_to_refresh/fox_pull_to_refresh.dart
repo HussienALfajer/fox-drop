@@ -60,6 +60,9 @@ class _FoxPullToRefreshState extends State<FoxPullToRefresh> {
     }
   }
 
+  /// The pull is measured while the finger is down and judged when it
+  /// lets go: a bouncing list (iOS) springs back before its scroll ends, so
+  /// waiting for the end would see no pull at all.
   bool _onScroll(ScrollNotification n) {
     if (n.metrics.axis != Axis.vertical || n.depth != 0) return false;
     if (n is ScrollStartNotification) {
@@ -69,20 +72,29 @@ class _FoxPullToRefreshState extends State<FoxPullToRefresh> {
         setState(() => _pulled -= n.overscroll);
       }
     } else if (n is ScrollUpdateNotification) {
+      if (n.dragDetails == null) {
+        // The finger is up: the list now moves on its own.
+        if (_dragging) _release();
+        return false;
+      }
       final before = n.metrics.pixels - n.metrics.minScrollExtent;
-      if (_dragging && n.dragDetails != null && before < 0) {
+      if (before < 0) {
         // A bouncing list: the pull is how far it went past the top.
         setState(() => _pulled = -before);
       } else if (_pulled > 0 && (n.scrollDelta ?? 0) > 0) {
         setState(() => _pulled = math.max(0, _pulled - n.scrollDelta!));
       }
     } else if (n is ScrollEndNotification) {
-      final go = _pulled >= _threshold;
-      _dragging = false;
-      if (_pulled != 0) setState(() => _pulled = 0);
-      if (go) _refresh();
+      if (_dragging) _release();
     }
     return false;
+  }
+
+  void _release() {
+    _dragging = false;
+    final go = _pulled >= _threshold;
+    if (_pulled != 0) setState(() => _pulled = 0);
+    if (go) _refresh();
   }
 
   @override

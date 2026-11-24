@@ -37,7 +37,7 @@ class AnchoredMenu<T> extends StatefulWidget {
   final T? selected;
   final ValueChanged<T> onSelected;
 
-  /// The menu left without a choice (a tap outside or Escape).
+  /// The menu left without a choice (a tap outside, Escape or back).
   final VoidCallback onClosed;
 
   /// The list's accessible name.
@@ -51,12 +51,19 @@ class _AnchoredMenuState<T> extends State<AnchoredMenu<T>> {
   final LayerLink _link = LayerLink();
 
   @override
-  Widget build(BuildContext context) => CompositedTransformTarget(
-    link: _link,
-    child: OverlayPortal(
-      controller: widget.controller,
-      overlayChildBuilder: _overlay,
-      child: widget.child,
+  Widget build(BuildContext context) => PopScope(
+    // Android back closes an open menu before it leaves the page (D.10).
+    canPop: !widget.controller.isShowing,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop && widget.controller.isShowing) widget.onClosed();
+    },
+    child: CompositedTransformTarget(
+      link: _link,
+      child: OverlayPortal(
+        controller: widget.controller,
+        overlayChildBuilder: _overlay,
+        child: widget.child,
+      ),
     ),
   );
 

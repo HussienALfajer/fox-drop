@@ -41,7 +41,7 @@ Future<T?> showFoxDialog<T>(
   BuildContext context, {
   required WidgetBuilder builder,
   bool dismissible = true,
-  String dismissLabel = '',
+  String? dismissLabel,
   FoxDialogPlacement placement = FoxDialogPlacement.center,
 }) {
   final theme = FoxTheme.of(context);

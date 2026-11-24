@@ -102,12 +102,19 @@ class _FoxMenuState extends State<FoxMenu> {
   }
 
   @override
-  Widget build(BuildContext context) => CompositedTransformTarget(
-    link: _link,
-    child: OverlayPortal(
-      controller: _portal,
-      overlayChildBuilder: _overlay,
-      child: widget.builder(context, _open),
+  Widget build(BuildContext context) => PopScope(
+    // Android back closes an open menu before it leaves the page.
+    canPop: !_portal.isShowing,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop) _close();
+    },
+    child: CompositedTransformTarget(
+      link: _link,
+      child: OverlayPortal(
+        controller: _portal,
+        overlayChildBuilder: _overlay,
+        child: widget.builder(context, _open),
+      ),
     ),
   );
 

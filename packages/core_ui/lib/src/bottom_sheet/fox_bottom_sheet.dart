@@ -21,7 +21,7 @@ Future<T?> showFoxBottomSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
   bool dismissible = true,
-  String dismissLabel = '',
+  String? dismissLabel,
 }) {
   final theme = FoxTheme.of(context);
   return Navigator.of(context).push<T>(
@@ -45,7 +45,7 @@ class _SheetRoute<T> extends PopupRoute<T> {
   final FoxThemeData theme;
   final WidgetBuilder builder;
   final bool dismissible;
-  final String dismissLabel;
+  final String? dismissLabel;
 
   @override
   Color get barrierColor => theme.colors.scrim;
@@ -54,7 +54,7 @@ class _SheetRoute<T> extends PopupRoute<T> {
   bool get barrierDismissible => dismissible;
 
   @override
-  String get barrierLabel => dismissLabel;
+  String? get barrierLabel => dismissLabel;
 
   @override
   Duration get transitionDuration => t.FoxDuration.slow;

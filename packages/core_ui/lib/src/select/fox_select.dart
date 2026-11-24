@@ -29,8 +29,8 @@ final class FoxSelectOption<T> {
 /// A select (D.8): the pill shows the chosen label (or the [placeholder])
 /// and a chevron; a tap, Enter or Space opens a menu under it
 /// with the options, the chosen one marked. The arrow keys move, Enter picks,
-/// Escape closes and returns focus to the field. D.10 may open a bottom sheet
-/// instead, behind this API. A null [onChanged] disables it.
+/// Escape and Android back close it and return focus to the field. A null
+/// [onChanged] disables it.
 class FoxSelect<T> extends StatefulWidget {
   const FoxSelect({
     super.key,

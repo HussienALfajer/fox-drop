@@ -229,6 +229,9 @@ class _FoxButtonState extends State<FoxButton> {
           onExit: (_) => setState(() => _hovered = false),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
+            // The Semantics above carries the tap; a second one here split
+            // off an unnamed tap node in a dialog (D.10 review).
+            excludeFromSemantics: true,
             onTapDown: _interactive ? (_) => _setPressed(true) : null,
             onTapUp: _interactive ? (_) => _setPressed(false) : null,
             onTapCancel: _interactive ? () => _setPressed(false) : null,
