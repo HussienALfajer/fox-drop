@@ -43,6 +43,44 @@ describe('the generated outputs', () => {
   });
 });
 
+describe('the motion tokens (slice D.11b)', () => {
+  it('give the pulse and the mark fill to CSS and Dart with their values', () => {
+    const css = read(OUTPUTS.css);
+    for (const [name, value] of [
+      ['pulse-duration', '1200ms'],
+      ['pulse-scale-from', '1'],
+      ['pulse-scale-to', '1.7'],
+      ['pulse-opacity-from', '0.7'],
+      ['pulse-opacity-to', '0'],
+      ['pulse-still-scale', '1.25'],
+      ['pulse-still-opacity', '0.35'],
+      ['mark-fill-duration', '1200ms'],
+      ['mark-fill-rise', '0.7'],
+      ['mark-fill-fade', '0.18'],
+      ['mark-fill-wave-period', '700ms'],
+      ['mark-fill-faint-opacity', '0.35'],
+      ['mark-fill-still-level', '0.5'],
+    ])
+      expect(css).toContain(`--fd-motion-${name}: ${value};`);
+    const dart = read(OUTPUTS.dart);
+    for (const line of [
+      'static const Duration pulseDuration = Duration(milliseconds: 1200);',
+      'static const double pulseScaleTo = 1.7;',
+      'static const double pulseOpacityFrom = 0.7;',
+      'static const double pulseStillScale = 1.25;',
+      'static const double pulseStillOpacity = 0.35;',
+      'static const Duration markFillDuration = Duration(milliseconds: 1200);',
+      'static const double markFillRise = 0.7;',
+      'static const double markFillFade = 0.18;',
+      'static const Duration markFillWavePeriod = Duration(milliseconds: 700);',
+      'static const double markFillFaintOpacity = 0.35;',
+      'static const double markFillStillLevel = 0.5;',
+    ])
+      expect(dart).toContain(line);
+    expect(dart).toMatch(/abstract final class FoxMotion \{/);
+  });
+});
+
 describe('the dark slot (architecture §9.2)', () => {
   const leaves = (file: string) => {
     const paths: string[] = [];

@@ -902,6 +902,23 @@ abstract final class FoxDuration {
   static const Duration moment = Duration(milliseconds: 1200);
 }
 
+/// The looping motions as numbers (brand expression §3): the pulse and the mark fill.
+abstract final class FoxMotion {
+  static const Duration pulseDuration = Duration(milliseconds: 1200);
+  static const double pulseScaleFrom = 1.0;
+  static const double pulseScaleTo = 1.7;
+  static const double pulseOpacityFrom = 0.7;
+  static const double pulseOpacityTo = 0.0;
+  static const double pulseStillScale = 1.25;
+  static const double pulseStillOpacity = 0.35;
+  static const Duration markFillDuration = Duration(milliseconds: 1200);
+  static const double markFillRise = 0.7;
+  static const double markFillFade = 0.18;
+  static const Duration markFillWavePeriod = Duration(milliseconds: 700);
+  static const double markFillFaintOpacity = 0.35;
+  static const double markFillStillLevel = 0.5;
+}
+
 /// The calm easing, without bounce, as cubic Bézier control points.
 abstract final class FoxEasing {
   static const List<double> standard = [0.2, 0.0, 0.0, 1.0];

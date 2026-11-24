@@ -3,7 +3,14 @@
 library;
 
 export 'package:core_tokens/core_tokens.dart'
-    show FoxDuration, FoxIconData, FoxIcons, FoxRadius, FoxSize, FoxSpace;
+    show
+        FoxDuration,
+        FoxIconData,
+        FoxMotion,
+        FoxIcons,
+        FoxRadius,
+        FoxSize,
+        FoxSpace;
 
 export 'src/amounts_summary/fox_amounts_summary.dart';
 export 'src/banner/fox_banner.dart';

@@ -263,6 +263,15 @@ export function dart(themes: Record<Theme, Tokens>): string {
       (t) => `Duration(milliseconds: ${dimension(t.value)})`,
     ),
     '',
+    '/// The looping motions as numbers (brand expression §3): the pulse and the mark fill.',
+    'abstract final class FoxMotion {',
+    ...group('motion').map((token) =>
+      token.type === 'duration'
+        ? `  static const Duration ${camel(token.path.slice(1))} = Duration(milliseconds: ${dimension(token.value)});`
+        : `  static const double ${camel(token.path.slice(1))} = ${number(Number(token.value))};`,
+    ),
+    '}',
+    '',
     '/// The calm easing, without bounce, as cubic Bézier control points.',
     'abstract final class FoxEasing {',
     `  static const List<double> standard = [${easing}];`,
