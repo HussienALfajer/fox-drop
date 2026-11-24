@@ -1,6 +1,6 @@
 # D.11 Customer screens 1: the frame, sign-in and account details
 
-Status: Planned · Tier: T2 · Branch: `feat/customer-screens-sign-in`
+Status: In progress (design checkpoint) · Tier: T2 · Branch: `feat/customer-screens-sign-in`
 Spec: architecture §9.5 (R1 to R20), §9.9 (the screen cycle), T13; CU §4.2, §4.7 (blocking screens, terms, platform hours, emergency stop), §5.1 to §5.5, §6.1 (bottom bar), §6.2 (banners), §13 («الشروط والخصوصية»); RA §5 and CA §5 for the shared sign-in screen · Definition of done: the D.11 line of `docs/roadmap.md`; keeps CU §19 items 1 to 3, 26 and 27 passing
 
 ## Goal
@@ -55,9 +55,33 @@ Tests written first (locked in the red phase):
 - The banner stack shows the banners in §6.2's order and the counter of the rest.
 - The lint: an `Image.network`, a Material import or a 401-line file in an enforced path is reported; outside it, not.
 
+## Design checkpoint (steps 2 to 4, 2026-11-24)
+
+Drawn on the customer screens canvas (architecture §9.8; its link is in the owner's memory file of design artifacts, never here) with the Fox Drop Design System installed (`FoxDrop` bundle, version of 2026-11-24). Owner's brief: «creative, professional and distinctive», full latitude.
+
+- **Figma look (§2 of the build skill):** the file's API answered 429 (Starter rate limit) on 2026-11-24, so the ideas come from its recorded shape language (`docs/brand/expression.md` §2): the pill and circle, the offset shadow under the main action and the active tab, the floating accent bar, ivory ground with blue words and orange titles. The S-curve tab and cut-out dishes stay with home and the dish sheet (D.12, D.13).
+- **The idea: «مدار» (orbit).** The sign-in screen puts the fox mark in a tinted circle on a dashed orbit, with three chips that say what signing in means (customer: code on WhatsApp, no password, to your door; captain and restaurant their own), echoing the icon set's name. The form rises from the bottom as a raised sheet, so the number and «إرسال الرمز» sit in the thumb zone (R17). The blocking screens reuse the orbit with an orange badge on its offset shadow; the starting screen uses the brand's drop that fills (expression §2).
+- **Artboards:** one interactive prototype of the whole flow at 412 × 915 with a labelled state switcher beside the phone (screen, app, account state, the server's answers to the number and the code, blocking screen, the six banners of CU §6.2, active order, slow start, office closed, map failed, D.13 slots, 130% text); and, from the same drawing, 360 × 640 in normal and 130% text (number, code, details, frame with banners), the forced update over an active order, the dues office sheet, the captain's sign-in (captain theme and type scale) and the restaurant tablet (1280 × 800, brand pane and form).
+- **Literal-value check:** no literal colour; every `--fd-*` name used is defined in the bundle's CSS; lengths are tokens except device sizes, and the illustration geometry is multiples of size tokens. No hand-drawn copy of a component: buttons, fields, code cells, banners, banner stack, cards, chips, timer, skeleton, empty state, list rows, select and switch are the bundle's own. Drawn from core_ui tokens (Flutter-only, no web counterpart): the floating bottom navigation, the bottom sheet, the date field.
+- **Synthetic data (R19):** the drawings use one set (code 246810, `+963 900 112 233`, `+90 500 112 2334`, «سارة الخطيب», «مطعم الشام», «الحي الشمالي», dues 75000 TRY minor units); step 1 makes it the shared fixture file the goldens and tests read.
+
+### Analysis (step 4)
+
+(a) **Routes, fields and errors**, each placed: `auth/session` decides guest or signed in at start; `platform.updateNeed` (required: blocking screen; suggested: first banner), `updateMessage`, `maintenance`, `maintenanceMessage`; `emergency-stop.active`, `browseMessage` (second banner; `delayNotice` belongs to D.16, `startedAt` to the attempt count); `account-state.reviewStop`, `block.until`/`reason`, `dues`, `office` (sheet: map, open until / opens at, hours per weekday, null shows «لم يُحدَّد موقع المكتب بعد»); `contact.phone`/`whatsapp` (a missing number hides its button); `terms.version`, `body` (a paragraph per line), `publishedAt`, `pending` (fifth banner and «أوافق»); `profile.completed`, fields and `acceptTerms`; `auth/code.resendAfterSec` (the countdown), `channel`; refusals `not_on_whatsapp`, `daily_limit`, `hourly_limit`, `ip_limit`, `resend_wait`, `unavailable`, `not_registered`, `restaurant_draft`, `restaurant_terminated` in a banner inside the number sheet, `app_check_failed` as the generic failure; `auth/sign-in.newAccount`, `wrong_code` with `attemptsLeft`, `code_expired` under the cells. `expiresAt` is not shown.
+
+(b) **API gaps:** the platform hours are not sent to the app, so the «outside platform hours» banner has no source outside checkout (proposed: `hours: {open, opensAt}` on `GET /v1/customer/platform`, T1 small); `code_expired` also covers used-up attempts, two cases the customer cannot tell apart (proposed: `attempts_used`, or one message for both).
+
+(c) **Spec questions for the owner:** a guest's «طلباتي» and «حسابي» show an in-tab invitation with «تسجيل الدخول» instead of jumping to sign-in (CU §5.1); terms and help readable without an account from «حسابي» (store rules); how long a dismissed «يتوفر إصدار أحدث» stays hidden (drawn: until the next launch); terms and privacy are one `body`, drawn as one page that both links open.
+
+(d) **Improvements with cost:** the reason line by origin («سلّتك محفوظة كما هي» from checkout) and the rule in the phone error («10 أرقام تبدأ بـ 09», «11 رقماً تبدأ بـ 05»), strings only; auto-submit on the sixth digit and the clipboard offer, in the batch; a «who sees what» note under the details, one string; the installed and required versions on the update screen (needs `minVersion` on `GET platform`, T1 small); a landmark description of the office under its map (a panel field and an `account-state` field, T1 medium); «الاتصال بطيء، ما زلنا نحاول…» on a slow start, in the batch.
+
+(e) **Missing components** (their own artboard, approved with the screens): `FoxDropLoader` (the filling drop), `FoxOrbitHero` (the sign-in orbit), `Banner` with `onDismiss` and a second action (CU §4.2 and §5.5), `FoxTextLink` (inline underlined link with a 48 target), `FoxBrandStatus` (the blocking screens' head).
+
+**R18 draft:** terms and privacy linked from «أكمل بياناتك» and readable without an account; the code text names WhatsApp and the app never reads messages, the clipboard offer shows itself; no age gate, birthday optional; no notification permission in this batch (first order, Q11).
+
 ## Stopped at
 
-Planned (2026-11-24); ready to build.
+Design checkpoint drawn (2026-11-24): canvas, prototype, analysis and missing components ready for the owner. Waiting for the owner's answers to (b) to (e) and the approval of the screens (step 7); nothing coded. Step 1 (foundations) not started.
 
 ## Evidence
 
