@@ -138,7 +138,7 @@ Tests to add when coding (red phase): the normalisation table above as a unit te
 
 ## Stopped at
 
-Screen review (step 7), one screen at a time: screens 1 (starting) and 2 (phone number) approved 2026-11-24; next, screen 3 (code). The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
+Screen review (step 7), one screen at a time: screens 1 (starting) and 2 (phone number) approved 2026-11-24; screen 3 (code) under review: its board «شاشة الرمز · كل الحالات والرسائل (24)» drawn (canvas version 55; `Main` now passes the code to `CodeField` and no longer disables it once accepted, so the success fill shows), waiting for the owner's changes. The owner's answers to analysis (b) to (e) are asked after the last screen. Nothing coded; step 1 (foundations) not started. Before the batch's screens are coded: the server change for every country (T0) and the loader in `Button`, search fields and pull to refresh (see screen 2).
 
 ## Evidence
 
