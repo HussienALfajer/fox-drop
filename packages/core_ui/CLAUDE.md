@@ -11,7 +11,7 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 - **A component exports its states:** `const <name>States = [...]` (and `<name>Variants` when it has variants) beside the widget. `apps/widgetbook/test/coverage_test.dart` fails until every state has a use case (R3), so add them in `apps/widgetbook/lib/catalogue.dart` in the same change.
 - **States follow R10:** hover (a mouse) and pressed (touch) paint the component's own `-hover` and `-pressed` tokens; colours fade over `FoxDuration.base`, nothing moves; the focus ring shows for keyboard focus only. Disabled is `onPressed: null` and is not focusable; loading keeps the size and the name, stays focusable, ignores presses.
 - **RTL and text scale:** directional insets and alignment only; a test pumps each component in RTL and at text scale 1.3 and 2.0 without overflow.
-- **Goldens (R9)** live in `test/golden/`, tagged `golden`, skipped by plain `flutter test`; they run on Linux only: `pnpm test:golden` (Docker, `scripts/golden-docker.mjs`), `pnpm test:golden --update-goldens` after an intended change. They need the CoFo fonts in `.fonts/` (`pnpm fonts:fetch`); `loadFoxFonts` throws without them. Never update a baseline to make a failure pass without looking at `test/golden/failures/`. The run passes `--run-skipped`, which un-skips every test in the package, so never skip a test here with `skip:`.
+- **Goldens (R9)** live in `test/golden/`, tagged `golden`, skipped by plain `flutter test`; they run on Linux only: `pnpm test:golden` (Docker, `scripts/golden-docker.mjs`), `pnpm test:golden --update-goldens` after an intended change. They need `.fonts/` (`pnpm fonts:fetch`). Never update a baseline to make a failure pass without looking at `test/golden/failures/`. The run passes `--run-skipped`, which un-skips every test in the package, so never skip a test here with `skip:`.
 
 ## Inputs and forms (D.8)
 
@@ -19,9 +19,10 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 - **Name and describe a control once:** entries merge the label and error into the text field's node (`MergeSemantics`); select, date and time pass `namesControl: false`. Check with `tester.getSemantics`.
 - **Strings come in as props.** The only ones here are the Syriac months and «ص»/«م» in `FoxMaterialLocalizations` (AP §4.7), whose delegate must load synchronously.
 - **Mixed direction is explicit:** the phone pill and code cells sit under `Directionality(ltr)`, the label and error stay RTL; dates and times show LTR.
-- **A control is as small as its content** (`Align` with factors), so a stretched column does not widen it.
+- **A control is as small as its content** (`Align` with factors).
 - **The code field's `done` ignores reduced motion** (`FoxDuration.moment`); every other fade respects it.
-- Tests use `test/forms_harness.dart` (`expectNoOverflow`: both directions, themes, scales 1.0, 1.3, 2.0). Change the phone rule in `phone_number_test.dart` first.
+- Tests: `test/forms_harness.dart` (`expectNoOverflow`: directions, themes, scales); overlays use `test/overlays_harness.dart` (a WidgetsApp, for Escape and back). Change the phone rule in `phone_number_test.dart` first.
+- **Overlays (D.10):** `showFox*` push routes; the panels also render inline (widgetbook, goldens) and close through `Navigator.maybeOf`.
 
 ## More
 
