@@ -11,6 +11,15 @@ const meta = {
     actionLabel: 'تفعيل الصوت',
     onEnable: () => undefined,
   },
+  // The page it blocks: the banner itself sits in the top layer.
+  decorators: [
+    (Story) => (
+      <div className="p-lg pt-3xl text-panel-body text-on-surface">
+        <p className="m-none">غرفة العمليات</p>
+        {Story()}
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof BlockingBanner>;
 export default meta;
 type Story = StoryObj<typeof meta>;
