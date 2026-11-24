@@ -49,9 +49,25 @@ Tests written first (locked in the red phase), on both platforms unless marked; 
 - Navigation rail (Flutter): the same items on the start side, keyboard traversal on Windows.
 - Pull to refresh (Flutter): the callback runs once per pull, the indicator holds until it completes, a semantics action refreshes without a gesture.
 
+## Design (checkpoint 0, waiting for the owner)
+
+Sheet «Overlays and navigation — batch 4» (`packages/design-tokens/src/overlays-sheet.ts`, board `Overlays.dc.html` on the Component proposals canvas at x 8400, 1680×11300, drawn by `pnpm --filter @fox-drop/design-tokens icon-sheet --config <file>`). The Figma API was rate limited (429), so the look used the renders of 2026-11-23 (home 49:2041, cart, the components page). Taken from the file: the floating blue bottom bar with ivory circles and the orange active circle, the S-curve tab of the dish block (here on the item sheet), the round back button with the orange title, the bell in a round chip with its dot.
+
+Drawn, with the questions the owner decides (the framed option is ours):
+
+1. **Customer bottom navigation:** (A, ours) the file's floating pill with the names under the circles; (B) icons only, as the file. Captain and restaurant: a flat bar on the raised surface, names always.
+2. **Pull to refresh:** (A, ours) Material's indicator themed orange; (B) the logo's drop filling.
+3. **D.8's select on a phone:** (A, ours) opens as a bottom sheet below 600 dp behind the same API; (B) stays a menu.
+4. **Banners:** (A, ours) red solid, the other tones tinted; (B) all tinted; (C) all solid. The stack: two shown, «+N» opens the rest in place.
+5. **New tokens 0.8.0:** `color.caution` #5C4A00 on `color.caution-subtle` #FFF5BF (7.8:1) for the yellow tone RA §6.3 and CA §6.3 name; `color.scrim` (neutral 900 at 48%); `layer.*` z-order (sticky 10, banner 20, overlay 30, menu 40, toast 50, tooltip 60, blocking 70).
+6. **Missing icons:** the panel opens with the sidebar expanded and modules without a batch-1 icon show a dot until the panel's icon batch; only «menu» (three lines) is added now.
+7. **Toast:** (A, ours) dark blue with a tone icon; (B) tinted. «تسجيل الخروج» without an icon until the panel batch.
+
+Also drawn without a question: the dialog (safe action focused first, captain dialog in the thumb zone), the AP §7.4 confirmation form (required reason, money-effect preview from the amounts summary, who is notified; confirm disabled until a reason), the customer item sheet and the restaurant status sheet, the web side drawer from the end side and the sidebar's phone form from the start side, toast places (above the bottom bar; the web's bottom end corner), the offline banners, the blocking sound banner (AP §7.3, `color.alert`), the menu, the tooltip (500 ms on hover, at once on focus), tabs per surface, the top bars (panel slots, restaurant, phone back bar), the sidebar (panel 16 modules, collapsed, portal), the restaurant rail, and the motion table (existing duration and easing tokens; fades under reduced motion).
+
 ## Stopped at
 
-Planned and approved (2026-11-24); not started.
+Checkpoint 0: the sheet is on the Component proposals canvas, waiting for the owner's approval (2026-11-24). No component code yet.
 
 ## Evidence
 
