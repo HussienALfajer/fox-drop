@@ -1,27 +1,16 @@
 import { createTV } from 'tailwind-variants/config';
 
 // tailwind-merge does not know our `text-<surface>-<role>` font sizes and takes
-// them for colours (the Button found it): declare the ones the forms use.
+// them for colours, so a size beside a colour dropped the colour (the Timer
+// showed it on a dark Design System page): declare every size of every surface.
+export const SIZES = ['phone', 'panel', 'captain'].flatMap((surface) =>
+  ['caption', 'secondary', 'body', 'subtitle', 'title', 'large-title', 'number'].map(
+    (role) => `${surface}-${role}`,
+  ),
+);
+
 export const formTv = createTV({
-  twMergeConfig: {
-    extend: {
-      classGroups: {
-        'font-size': [
-          {
-            text: [
-              'phone-body',
-              'panel-body',
-              'phone-secondary',
-              'panel-secondary',
-              'phone-caption',
-              'panel-caption',
-              'phone-title',
-            ],
-          },
-        ],
-      },
-    },
-  },
+  twMergeConfig: { extend: { classGroups: { 'font-size': [{ text: SIZES }] } } },
 });
 
 export type Density = 'comfortable' | 'compact';

@@ -20,7 +20,7 @@ export interface Sort {
 }
 
 const cell = formTv({
-  base: 'h-(--fd-size-control-compact) border-t border-border px-sm text-panel-body whitespace-nowrap',
+  base: 'h-(--fd-size-control-compact) border-t border-border px-sm text-panel-body whitespace-nowrap text-on-surface',
   variants: { numeric: { true: 'text-end tabular-nums', false: 'text-start' } },
 });
 

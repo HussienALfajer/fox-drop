@@ -1,5 +1,15 @@
 <!-- @dsCard group="Navigation" height=220 -->
 <style>
+  /* The card paints the apps' own ground and text, whatever the page around it. */
+  :root {
+    color-scheme: light;
+  }
+  #root {
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+  }
   html,
   body {
     margin: 0;

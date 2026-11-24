@@ -2,6 +2,7 @@ import { Button as SdkButton } from '@ui-sdk/react/button';
 import type { MouseEvent, ReactNode } from 'react';
 import { tv } from 'tailwind-variants';
 import { createTV } from 'tailwind-variants/config';
+import { SIZES } from '../field/styles';
 import { Icon, type IconName } from '../icon/icon';
 
 /**
@@ -26,9 +27,7 @@ export type ButtonVariant = (typeof VARIANTS)[number];
 // them for colours: `text-(color:--fd-button-*)` then dropped the size (the 130%
 // text gate found the label at 16px). Declare the ones used here.
 const buttonTv = createTV({
-  twMergeConfig: {
-    extend: { classGroups: { 'font-size': [{ text: ['phone-subtitle', 'panel-subtitle'] }] } },
-  },
+  twMergeConfig: { extend: { classGroups: { 'font-size': [{ text: SIZES }] } } },
 });
 
 // The look drawn on the approved sheet (`button()` in design-tokens

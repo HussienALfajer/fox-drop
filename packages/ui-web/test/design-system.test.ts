@@ -524,6 +524,10 @@ describe('the component docs', () => {
     const html = preview(name);
     expect(html.split('\n')[0]).toMatch(/^<!-- @dsCard group="\w+" height=\d+ -->$/);
     expect(html).toContain('dir="rtl" lang="ar"');
+    // The card paints the apps' ground and text itself: the system page may be dark.
+    expect(html).toMatch(
+      /#root \{[^}]*background: var\(--fd-color-surface\);[^}]*color: var\(--fd-color-on-surface\)/,
+    );
     expect(html).not.toContain('<iframe');
     expect(html).not.toContain('__ICON_NAMES__');
     const readme = readFileSync(path.join(PACKAGE_DIR, 'design-system', name, 'README.md'), 'utf8');
