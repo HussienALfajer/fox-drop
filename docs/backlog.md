@@ -15,6 +15,8 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 
 ## Follow-ups
 
+- **The bridge test stands alone** (D.11 design checkpoint review, round 2): the test «renders through its own React beside a page React 18, and converts nested elements» in `ui-web/test/design-system.test.ts` relies on the test before it having loaded React 18 and the bundle; load both in it (or in a shared `beforeAll`) and cover `DataTable`'s function props (a `cell` returning a page element) beside `Tabs`.
+- **A server test under load** (D.11 design checkpoint): `apps/server` `otp-sender.test.ts` «delivers a customer code over WhatsApp…» answered 500 once during a full local `--changed` run and passed alone (35/35); watch it in CI and fix its cause if it repeats.
 - **`on-primary-subtle` in REVIEW item 13** (D.9 review; owner, 2026-11-24): the owner accepts it as an orange token (orange 600 on the primary tint; blue for the captain). Add it to item 13's list and to `ORANGE` in `src/contrast.ts` in a pull request of its own.
 - **One money format everywhere** (D.9 review): `formatAmount` and `foxFormatAmount` group thousands with a Western comma and use U+2212 (owner, 2026-11-24); `core_l10n` `formatMoney`, the server's `content/push-format.ts` and the panel's and portal's `format.ts` do not yet. Align them when a screen shows both.
 - **Fox Lira's licence in the apps** (D.9 review): each Flutter app adds the OFL text (`core_ui/assets/fonts/fox-lira/OFL.txt`) to `LicenseRegistry`, and each web app ships `ui-web/fonts/fox-lira` with its OFL, in its screen slice. The Design System bundle does not carry the font, so its previews draw the ₺ in the system font.
