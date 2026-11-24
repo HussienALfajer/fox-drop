@@ -1070,26 +1070,26 @@ ${toneRow('neutral', 'grey', 'يتوفر تحديث للتطبيق', 'تحديث
       layers,
   );
 
-  // 15. Questions.
+  // 15. What the owner approved.
   const questions = card(
     themes,
-    h2(themes, 'أسئلة للمالك', 'the framed option is ours') +
+    h2(themes, 'ما اعتمده المالك', '2026-11-24') +
       `<ol style="margin: 0; padding-inline-start: 24px; display: flex; flex-direction: column; gap: ${v(themes, 'space.xs')}; line-height: 1.7">
-<li>شريط الزبون السفلي: (أ) شريط الملف العائم مع الأسماء تحت الدوائر، أو (ب) أيقونات فقط كما في الملف.</li>
-<li>السحب للتحديث: (أ) حلقة برتقالية، أو (ب) قطرة الشعار تمتلئ.</li>
-<li>القائمة المنسدلة على الهاتف: (أ) تفتح ورقةً سفلية، أو (ب) تبقى قائمة تحت الحقل.</li>
-<li>الشرائط: (أ) الأحمر مصمت والبقية فاتحة، (ب) كلها فاتحة، (ج) كلها مصمتة.</li>
-<li>الرموز الجديدة: اللون الأصفر (caution) بجانب الكهرماني، وخلفية التعتيم (scrim)، وترتيب الطبقات (layer.*)، الإصدار 0.8.0.</li>
-<li>الأيقونات الناقصة: يُفتح الشريط الجانبي موسّعاً، وما لا أيقونة له يظهر بنقطة حتى دفعة أيقونات اللوحة؛ ونضيف الآن أيقونة «القائمة» (ثلاثة خطوط) فقط.</li>
-<li>الإشعار المؤقت: (أ) داكن أزرق، أو (ب) فاتح بلون الحالة. وفي قائمة المستخدم: «تسجيل الخروج» بلا أيقونة حتى دفعة اللوحة.</li>
+<li>الشريط السفلي: شريط الملف العائم كما هو تماماً، أيقونات فقط، في التطبيقات الثلاثة؛ عناصر الزبون الأربعة من المواصفة مع زر السلة العائم.</li>
+<li>السحب للتحديث: (ب) قطرة الشعار تمتلئ.</li>
+<li>القائمة المنسدلة على الهاتف: (ب) تبقى قائمة تحت الحقل.</li>
+<li>الشرائط: (أ) الأحمر مصمت والبقية فاتحة.</li>
+<li>الرموز 0.8.0: الأصفر (caution)، التعتيم (scrim)، ترتيب الطبقات (layer.*) ومقاسات الطبقات والأشرطة.</li>
+<li>الأيقونات الناقصة: نقطة حتى دفعة أيقونات اللوحة؛ أُضيفت أيقونة «القائمة».</li>
+<li>الإشعار المؤقت: (أ) داكن أزرق.</li>
 </ol>`,
   );
 
   const body = [
     heading(
       themes,
-      'الطبقات والتنقل — الدفعة الرابعة',
-      'Overlays and navigation — batch 4 (architecture §9.9 step 1, slice D.10). Dialog and the AP §7.4 confirmation form, bottom sheet, side drawer, toast, alert banner and the banner stack, menu, tooltip, tabs, top bar, sidebar, bottom navigation, the restaurant rail and pull to refresh; customer, captain, restaurant and panel, RTL, from the real tokens; options side by side where you decide. Every sample is review copy only. Ideas from the Figma file: the floating blue bar with the orange active circle, the S-curve tab on the item sheet, the round back button and orange title, the bell in a round chip.',
+      'الطبقات والتنقل — الدفعة الرابعة (مُستبدَلة)',
+      'Superseded (architecture §9.9 step 4): the record of the approval only; the components live in the Design System (ui-web) and core_ui (Flutter), slice D.10. Overlays and navigation — batch 4 (architecture §9.9 step 1, slice D.10). Dialog and the AP §7.4 confirmation form, bottom sheet, side drawer, toast, alert banner and the banner stack, menu, tooltip, tabs, top bar, sidebar, bottom navigation, the restaurant rail and pull to refresh; customer, captain, restaurant and panel, RTL, from the real tokens; options side by side where you decide. Every sample is review copy only. Ideas from the Figma file: the floating blue bar with the orange active circle, the S-curve tab on the item sheet, the round back button and orange title, the bell in a round chip.',
     ),
     dialogCard,
     sheetCard,
