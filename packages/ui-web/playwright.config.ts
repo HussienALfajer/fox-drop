@@ -7,11 +7,19 @@ import { defineConfig, devices } from '@playwright/test';
 //   Playwright image (`pnpm test:visual` runs it in Docker, which sets
 //   FD_VISUAL), so the project exists only there.
 const visual = process.env['FD_VISUAL'] === '1';
+// `pnpm baselines` reads the failed comparisons from a JSON report.
+const report = process.env['FD_VISUAL_REPORT'];
+const reporter = process.env['CI'] ? 'github' : 'list';
 
 export default defineConfig({
   testDir: 'e2e',
+  // Every test opens its own page on one story and shares nothing, so the
+  // tests of a file spread over the workers: rtl.spec.ts (axe over every
+  // story) alone held one worker for 5.4 of the 5.5 minutes, and the visual
+  // project is one file.
+  fullyParallel: true,
   forbidOnly: !!process.env['CI'],
-  reporter: process.env['CI'] ? 'github' : 'list',
+  reporter: report ? [[reporter], ['json', { outputFile: report }]] : reporter,
   snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
   // No trace: a trace archives every response, and Storybook serves the
   // licensed fonts. CI uploads only the PNGs of a failed comparison.
@@ -27,7 +35,16 @@ export default defineConfig({
           {
             name: 'visual',
             testMatch: 'visual.spec.ts',
-            use: { ...devices['Desktop Chrome'] },
+            use: {
+              ...devices['Desktop Chrome'],
+              // Chromium re-rasterizes only the changed part of a tile after
+              // an update (partial raster), and an anti-aliased edge crossing
+              // that part then differs by a level or two with the frames
+              // painted before: a field's rounded outline failed 13 of 2,400
+              // repeats, the pressed stepper 20 of 20 without a full repaint.
+              // Every tile drawn whole: 0 of 4,160.
+              launchOptions: { args: ['--disable-partial-raster'] },
+            },
           },
         ]
       : []),

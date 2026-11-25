@@ -35,6 +35,7 @@ import {
 import os from 'node:os';
 import path from 'node:path';
 
+import { imageStatus } from './baselines.mjs';
 import { changedFiles, classify, READ_BY_SERVER_TESTS } from './classify-changes.mjs';
 import { recordGreen, treeState } from './green-tree.mjs';
 import { serverTestScope } from './server-test-readers.mjs';
@@ -527,7 +528,7 @@ function checkInstructionSizes() {
 const SCRIPT_TESTS = {
   name: 'Claude Code hooks and scripts',
   command:
-    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/baselines.test.mjs',
 };
 
 function formatSteps(files) {
@@ -835,6 +836,21 @@ async function verifyChanged(since) {
         ? dartChanged(files, touched.dartScope)
         : skipped('Dart', 'no change it can break'),
   ]);
+  imageBaselines(files);
+}
+
+// The image baselines take minutes in Docker, so verify does not run them:
+// `pnpm baselines` does, and records the tree it checked. The table says
+// whether this tree's images are checked (CI's `visual` and `golden` jobs are
+// the gate).
+function imageBaselines(files) {
+  const status = imageStatus(files);
+  const result = !status.ok
+    ? 'UNCHECKED'
+    : status.line.startsWith('no change')
+      ? 'skipped'
+      : 'checked';
+  report({ name: `Image baselines: ${status.line}`, result });
 }
 
 async function dartChanged(files, dartScope) {
