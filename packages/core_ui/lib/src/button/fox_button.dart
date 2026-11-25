@@ -301,11 +301,12 @@ class _FoxButtonState extends State<FoxButton> {
 
   _Colors _colors(FoxButtonTheme b) {
     if (_disabled) {
-      return _Colors(
-        b.disabledBackground,
-        b.disabledLabel,
-        b.disabledBackground,
-      );
+      // The disabled ghost keeps its transparent ground (the approved sheet,
+      // `button()` in design-tokens).
+      final fill = widget.variant == FoxButtonVariant.ghost
+          ? b.ghostBackgroundHover.withValues(alpha: 0)
+          : b.disabledBackground;
+      return _Colors(fill, b.disabledLabel, fill);
     }
     // A loading button shows neither hover nor pressed (as on the web).
     final hover = _hovered && _interactive;

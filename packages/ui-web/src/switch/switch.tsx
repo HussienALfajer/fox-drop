@@ -23,7 +23,9 @@ const track = formTv({
     'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
     keyboardRing,
     'data-unchecked:bg-(--fd-input-switch-color-track) data-checked:bg-(--fd-input-switch-color-track-on)',
-    'data-disabled:bg-(--fd-input-color-disabled)',
+    // Two attributes outrank the one above: a lone `data-disabled:` lost to
+    // `data-unchecked:`, which drew the disabled track blue.
+    'data-disabled:data-unchecked:bg-(--fd-input-color-disabled) data-disabled:data-checked:bg-(--fd-input-color-disabled)',
   ],
   variants: {
     interactive: {

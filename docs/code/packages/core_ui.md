@@ -94,6 +94,10 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 
 `packages/fox_lints` (its own `CLAUDE.md`) runs its rules in the check through a standalone checker (`dart packages/fox_lints/tool/check.dart`, next to `dart analyze --fatal-infos --no-plugins`, since #291); the analyzer plugin declared in the root `analysis_options.yaml` stays for the editor only. It checks `core_ui` and `apps/widgetbook` only (`enforcedPackages`); `core_ui` may import Material (`materialPackages`). The theme mapping passes since it builds colours from token values, not literals.
 
+## Fix kept from PR 300 (its parity gate was removed by the owner, 2026-11-25)
+
+- A disabled ghost `FoxButton` painted `button.disabled.background`; the approved sheet keeps it transparent, as the web does.
+
 ## Left out
 
 Wiring into the apps and bundling CoFo there (each app's screen slice, which also adds the app to `enforcedPackages`); compact density in Flutter; dark mode; the fox scenes inside the empty state's drop; Cupertino localizations for the iOS text toolbar (apps provide them); a hosted widgetbook.
