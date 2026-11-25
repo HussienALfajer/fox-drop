@@ -20,10 +20,13 @@ Input: what to plan, such as "Phase D", "D.9" or a spec section like "RA §9 Men
 
 A slice is one pull request that one session can finish. It:
 
-- delivers one behaviour through every layer it touches (database, server module, API contract and generated clients, real-time events, each app screen that shows it, tests), so it can be tried end to end;
+- delivers one behaviour through every layer it touches (database, server module, API contract and generated clients, real-time events, each app screen that shows it, tests), so it can be tried end to end; a behaviour too big for one slice is split along the build order (the server and its contract first, then each client), each part tried at its own layer;
 - names the spec sections it implements and the definition-of-done items it closes;
 - states how it is verified: the tests and, for screens, what the owner can try;
-- leaves `main` working.
+- leaves `main` working;
+- fits the size of `docs/process/development-workflow.md` §3.1: at most about 25 hand-written files or two layers, a component batch's sheet, web side and Flutter side as separate slices.
+
+Estimate by counting: list in the plan, layer by layer, every file the slice creates or changes by hand (generated files, icons and image baselines apart), and write the count next to the plan. A slice over the limit is split now, before the owner approves it. No two slices in flight on the same package or dependency; a new dependency's version is pinned once, in the slice that adds it.
 
 Order the slices by dependency, then by risk: the money flows, the order state machine, timers and dispatch come before screens that only display data. Schema and API-contract changes are serialised. A slice with components starts with a design checkpoint: the Figma look and the owner's approval of its sheet (architecture §9.9). Screens come in UI batches after the API they use; a batch's slice file holds the screen inventory, and its first checkpoint is the screen cycle of §9.9: draw, prototype, analysis, designer pass, owner approval.
 
@@ -35,7 +38,7 @@ For each slice copy `docs/slices/_template.md` to `docs/slices/<id>-<kebab-title
 
 ## 4. Present and stop
 
-Show the owner, in Arabic: the slices in order (one line each: what it delivers, its tier, what the owner can try), the open items that need an answer, and the design checkpoints. Wait for approval or changes.
+Show the owner, in Arabic: the slices in order (one line each: what it delivers, its tier, its file count, what the owner can try), the open items that need an answer, and the design checkpoints. Wait for approval or changes.
 
 For a T0 slice, a second fresh session critiques the plan before it is built (its first message: `راجع خطة الشريحة <id> في docs/slices/... وانقدها قبل البناء`); its findings go into the slice file.
 

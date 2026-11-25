@@ -16,6 +16,8 @@ One or two sentences: what the owner or a user can do after this slice.
 4. Flutter: `core_ui`, the apps.
 5. End-to-end: the journey, and what the owner tries on staging.
 
+Files (hand-written count): <every file the slice creates or changes by hand, by layer, and their number; at most about 25 or two layers (workflow §3.1); generated files, icons and image baselines apart>.
+
 Tests written first (locked in the red phase): <test files and what each proves, mapped to the definition of done>.
 
 ## Stopped at
