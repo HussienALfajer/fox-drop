@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import { newWorkbook } from '../../workbooks/new-workbook.js';
 import { reportLabels as labels } from '../content/index.js';
 import { ROW_CODES } from './report-tables.js';
 import type { Report } from './reports.service.js';
@@ -22,7 +22,7 @@ export async function reportWorkbook(
   report: Report,
   decimalsOf: ReadonlyMap<string, number>,
 ): Promise<Buffer> {
-  const workbook = new ExcelJS.Workbook();
+  const workbook = await newWorkbook();
   workbook.creator = 'FOX DROP';
   const sheet = workbook.addWorksheet(labels.sheet, { views: [{ rightToLeft: true }] });
   sheet.addRow([labels.title[report.kind]]).font = { bold: true, size: 14 };

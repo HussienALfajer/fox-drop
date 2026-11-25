@@ -20,7 +20,8 @@ jobs:
   # (SPEC_FILES_READ_BY_TESTS), which set the checks (`code`) and still build
   # and deploy nothing (`build`). The Dart checks and tests run only for a
   # change to Dart code, a pubspec, the analysis or localization files, the
-  # pinned Flutter, this workflow or verify.mjs (a server route changes
+  # pinned Flutter, this workflow or the check engine (verify.mjs and the
+  # scripts it runs; a server route changes
   # packages/core_api, the committed client, and the contract job fails one
   # left stale). The native release builds of a pull request run only for a
   # native project, the lock file, a package with native code or the pinned
@@ -29,7 +30,8 @@ jobs:
   # The screenshot jobs run only for what can change their images: `visual`
   # for ui-web, the design tokens and what its Storybook and Playwright read,
   # `golden` for core_ui, its tokens and the Dart workspace; both for this
-  # workflow and the classifier.
+  # workflow and the classifier. A pull request of more than 25 hand-written
+  # files gets a warning, never a failure.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -51,6 +53,20 @@ jobs:
         # The classifier that `node scripts/verify.mjs --changed` uses too;
         # with no base commit (a new branch) everything counts as changed.
         run: node scripts/classify-changes.mjs "$BASE" >> "$GITHUB_OUTPUT"
+
+      # The slice size rule (docs/process/development-workflow.md): a notice,
+      # not a gate. Generated files, lock files, images and snapshots do not
+      # count (NOT_HAND_WRITTEN in the classifier).
+      - name: Pull request size
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          HAND_WRITTEN: ${{ steps.paths.outputs.hand_written }}
+        run: |
+          echo "Hand-written files changed: ${HAND_WRITTEN:-unknown}"
+          if [ "${HAND_WRITTEN:-0}" -gt 25 ]; then
+            echo "::warning title=Large pull request::$HAND_WRITTEN hand-written files changed, more than 25. Split the work into smaller slices: see the slice size rule in docs/process/development-workflow.md."
+          fi
 
   # The parts of pnpm verify run as parallel jobs (scripts/verify.mjs). The
   # `verify` job below is the one check main requires.
@@ -140,7 +156,11 @@ jobs:
         env:
           FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
 
-  typescript:
+  # The TypeScript part (`verify.mjs typescript`) in parallel jobs: `lint`
+  # (the root lint, lint, type check and the unit tests other than the
+  # server's) and `e2e`, one job per package with a build or smoke tests;
+  # `lint` plus every `e2e` package is `typescript`.
+  lint:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
@@ -157,22 +177,50 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # The web apps' smoke tests run in Chromium (architecture §18.2).
+      - run: node scripts/verify.mjs lint
+
+  # Each package's build and smoke tests. classify-changes.test.mjs fails when
+  # a workspace package with a build or test:e2e script is missing here.
+  e2e:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # The server has a build and no smoke tests.
+        package: [admin, merchant-portal, server, ui-web]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The web apps' smoke tests run in Chromium (architecture §18.2); verify
+      # installs the browser in every e2e job.
       - uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('pnpm-lock.yaml') }}
 
-      # Chromium's system libraries, once; verify installs the browser for each app.
-      - run: pnpm --filter @fox-drop/admin exec playwright install-deps chromium
+      # Chromium's system libraries, where a smoke test runs it.
+      - if: matrix.package != 'server'
+        run: pnpm --filter @fox-drop/admin exec playwright install-deps chromium
 
-      - run: node scripts/verify.mjs typescript
+      - run: node scripts/verify.mjs e2e --package=@fox-drop/${{ matrix.package }}
 
       # The traces of a failed smoke test (playwright.config.ts).
       - if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: playwright-results
+          name: playwright-results-${{ matrix.package }}
           # Not ui-web's: its Storybook serves the licensed fonts (no trace there either).
           path: apps/*/test-results/
           if-no-files-found: ignore
@@ -370,7 +418,8 @@ jobs:
         changes,
         contract,
         format,
-        typescript,
+        lint,
+        e2e,
         visual,
         server,
         dart,

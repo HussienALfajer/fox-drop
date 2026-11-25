@@ -26,7 +26,9 @@ describe('the test containers', () => {
       source: readFileSync(file, 'utf8'),
     }));
     const starting = files.filter(({ source }) => source.match(startsContainer));
-    expect(starting.map(({ file }) => file)).toContain('src/valkey/test-valkey.ts');
+    expect(starting.map(({ file }) => file)).toEqual(
+      expect.arrayContaining(['src/database/test-postgres.ts', 'src/valkey/test-valkey-slots.ts']),
+    );
     const unlabelled = starting
       .filter(
         ({ source }) =>
@@ -34,5 +36,17 @@ describe('the test containers', () => {
       )
       .map(({ file }) => file);
     expect(unlabelled).toEqual([]);
+  });
+
+  // Testcontainers takes about 0.2 s to load; only the global setup starts
+  // the PostGIS and the Valkeys, so the helpers nearly every test file
+  // imports leave it to src/database/test-postgres.ts and
+  // src/valkey/test-valkey-slots.ts.
+  it('stay out of the helpers every test file loads', () => {
+    for (const helper of ['src/database/test-database.ts', 'src/valkey/test-valkey.ts']) {
+      expect(readFileSync(path.join(serverRoot, helper), 'utf8')).not.toMatch(
+        /from '(@testcontainers\/[\w-]+|testcontainers)'/,
+      );
+    }
   });
 });

@@ -6,7 +6,9 @@ import { describe, it } from 'node:test';
 
 import {
   classify,
+  handWritten,
   NATIVE_PACKAGES,
+  NOT_HAND_WRITTEN,
   READ_BY_SERVER_TESTS,
   SPEC_FILES_READ_BY_TESTS,
 } from './classify-changes.mjs';
@@ -29,6 +31,14 @@ const flags = (files, read = plain) => {
 const images = (files) => {
   const result = classify(files, plain);
   return IMAGE_JOBS.filter((key) => result[key]).join(' ');
+};
+// A job of ci.yml, as text: its key, then every line indented deeper.
+const job = (name) => {
+  const lines = readFileSync('.github/workflows/ci.yml', 'utf8').split(/\r?\n/);
+  const start = lines.indexOf(`  ${name}:`);
+  assert.ok(start >= 0, `ci.yml has the ${name} job`);
+  const end = lines.findIndex((line, index) => index > start && /^ {0,2}\S/.test(line));
+  return lines.slice(start, end).join('\n');
 };
 
 describe('the change classifier', () => {
@@ -115,10 +125,12 @@ describe('the change classifier', () => {
   });
 
   it('sets TypeScript and Dart for the design tokens, which generate both outputs', () => {
+    // core_tokens' test reads the token sources: the local Dart checks run.
     assert.equal(
       flags(['packages/design-tokens/tokens/semantic/light.json']),
-      'code dart build typescript',
+      'code dart build typescript dartScope:all',
     );
+    assert.equal(flags(['packages/design-tokens/src/generate.ts']), 'code dart build typescript');
     // Generated Markdown and the font metrics are read by tests: they are code.
     assert.equal(
       flags(['packages/design-tokens/generated/contrast-report.md']),
@@ -154,11 +166,22 @@ describe('the change classifier', () => {
     assert.equal(flags(['apps/customer/android/README.md']), '');
   });
 
-  it('keeps what CI sets for its own workflow and verify.mjs, without local Dart checks', () => {
+  it('keeps what CI sets for its own workflow and the check engine, without local Dart checks', () => {
     // A change to the native jobs takes the native-builds label.
     assert.equal(flags(['.github/workflows/ci.yml']), 'code dart build typescript');
-    assert.equal(flags(['scripts/verify.mjs']), 'code dart build typescript');
-    assert.equal(flags(['scripts/verify-support.mjs']), 'code dart build typescript');
+    // verify.mjs and every script it runs or imports.
+    for (const file of [
+      'scripts/verify.mjs',
+      'scripts/verify-support.mjs',
+      'scripts/verify-watchdog.mjs',
+      'scripts/classify-changes.mjs',
+      'scripts/green-tree.mjs',
+      'scripts/server-test-readers.mjs',
+      'scripts/outside-reads.mjs',
+      'scripts/baselines.mjs',
+    ])
+      assert.equal(flags([file]), 'code dart build typescript', file);
+    assert.equal(flags(['scripts/verify-support.test.mjs']), 'code build typescript');
     // The golden job runs it.
     assert.equal(flags(['scripts/golden-docker.mjs']), 'code dart build typescript');
   });
@@ -273,7 +296,6 @@ describe('the change classifier', () => {
     }
     const isFile = (each) => known.has(each);
     const isDir = (each) => dirs.has(each);
-    const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');
     const rootScripts = JSON.parse(readFileSync('package.json', 'utf8')).scripts;
     const nodePackages = new Map(
       files
@@ -289,14 +311,6 @@ describe('the change classifier', () => {
         dir,
       ]),
     );
-    // A job's lines: its key, then every line indented deeper.
-    const job = (name) => {
-      const lines = workflow.split(/\r?\n/);
-      const start = lines.indexOf(`  ${name}:`);
-      assert.ok(start >= 0, `ci.yml has the ${name} job`);
-      const end = lines.findIndex((line, index) => index > start && /^ {0,2}\S/.test(line));
-      return lines.slice(start, end).join('\n');
-    };
     // The repository paths a text names, read from the root or from `from`.
     const named = (text, from, { fromRoot }) =>
       text
@@ -411,5 +425,88 @@ describe('the change classifier', () => {
   it('is in step with the server tests that read files outside the server', () => {
     const config = readFileSync('apps/server/vitest.config.ts', 'utf8');
     for (const file of READ_BY_SERVER_TESTS) assert.ok(config.includes(`'**/${file}'`), file);
+  });
+
+  it('runs the Dart jobs for every script the check engine imports or starts', () => {
+    const known = new Set(tracked());
+    const engine = new Set();
+    const visit = (file) => {
+      if (engine.has(file)) return;
+      engine.add(file);
+      for (const [, name] of readFileSync(file, 'utf8').matchAll(
+        /['"`](?:\.\/)?([\w-]+\.mjs)['"`]/g,
+      ))
+        if (known.has(`scripts/${name}`)) visit(`scripts/${name}`);
+    };
+    visit('scripts/verify.mjs');
+    assert.ok(engine.size > 4, [...engine].join(' '));
+    for (const file of engine) assert.ok(classify([file], plain).dart, file);
+  });
+});
+
+describe('the pull request size notice', () => {
+  it('counts only the files written by hand', () => {
+    assert.deepEqual(
+      handWritten([
+        'apps/admin/src/App.tsx',
+        'docs/slices/D.11b-sign-in.md',
+        'pnpm-lock.yaml',
+        'pubspec.lock',
+        'packages/core_api/lib/api.dart',
+        'packages/api-schema/openapi.json',
+        'packages/api-schema/src/schema.ts',
+        'packages/core_l10n/lib/src/generated/app_localizations.dart',
+        'packages/design-tokens/generated/contrast-report.md',
+        'packages/core_tokens/lib/src/tokens.g.dart',
+        'apps/server/migrations/meta/0042_snapshot.json',
+        'packages/design-tokens/icons/bell.svg',
+        'packages/ui-web/e2e/__screenshots__/button--default-phone.png',
+        'packages/core_ui/test/golden/goldens/icons.png',
+        'apps/admin/src/__snapshots__/app.test.tsx.snap',
+      ]),
+      ['apps/admin/src/App.tsx', 'docs/slices/D.11b-sign-in.md'],
+    );
+  });
+
+  it('leaves out every generated file the edit guard refuses', () => {
+    // Read, not imported: CI's scripts do not depend on .claude/.
+    const policy = readFileSync('.claude/hooks/lib/policy.mjs', 'utf8');
+    const list = /^const GENERATED = \[([\s\S]*?)^\];/m.exec(policy);
+    assert.ok(list, 'policy.mjs has its GENERATED list');
+    const guarded = [
+      ...list[1].replace(/^\s*\/\/.*$/gm, '').matchAll(/^\s*(\/.+\/[a-z]*),$/gm),
+    ].map((match) => match[1]);
+    assert.ok(guarded.length > 5, guarded.join(' '));
+    const mine = NOT_HAND_WRITTEN.map(String);
+    for (const each of guarded) assert.ok(mine.includes(each), each);
+  });
+});
+
+describe('the TypeScript jobs of ci.yml', () => {
+  it('build and smoke test every package with a build or smoke tests, and the gate needs them', () => {
+    const e2e = job('e2e');
+    assert.match(
+      e2e,
+      /node scripts\/verify\.mjs e2e --package=@fox-drop\/\$\{\{ matrix\.package \}\}/,
+    );
+    const matrix = /^ +package: \[([^\]]+)\]$/m.exec(e2e);
+    assert.ok(matrix, 'the e2e job has a package matrix');
+    const inMatrix = matrix[1].split(',').map((each) => `@fox-drop/${each.trim()}`);
+    const globs = [...readFileSync('pnpm-workspace.yaml', 'utf8').matchAll(/^ {2}- (\S+)$/gm)].map(
+      (match) => new RegExp(`^${match[1].replace('*', '[^/]+')}/package\\.json$`),
+    );
+    const withE2e = tracked()
+      .filter((file) => globs.some((glob) => glob.test(file)))
+      .map((file) => JSON.parse(readFileSync(file, 'utf8')))
+      .filter(({ scripts = {} }) => scripts.build || scripts['test:e2e'])
+      .map(({ name }) => name);
+    assert.ok(withE2e.length >= 3, withE2e.join(' '));
+    assert.deepEqual(inMatrix.sort(), withE2e.sort());
+    // The same condition as the jobs that need the TypeScript checks.
+    const gate = job('verify');
+    for (const name of ['lint', 'e2e']) {
+      assert.match(job(name), /^ {4}if: needs\.changes\.outputs\.code == 'true'$/m, name);
+      assert.match(gate, new RegExp(`^ +${name},$`, 'm'), `the gate needs ${name}`);
+    }
   });
 });

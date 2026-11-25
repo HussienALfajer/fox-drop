@@ -1,5 +1,6 @@
-/// The FOX DROP analyzer plugin (architecture §9.5, R2 and R5), run by
-/// `dart analyze`; declared in the workspace root's analysis_options.yaml.
+/// The FOX DROP analyzer plugin (architecture §9.5, R2 and R5) for the editor;
+/// declared in the workspace root's analysis_options.yaml. The check runs the
+/// same rules with `dart run fox_lints:check` (bin/check.dart).
 library;
 
 import 'package:analysis_server_plugin/plugin.dart';
@@ -15,12 +16,8 @@ class FoxLintsPlugin extends Plugin {
 
   @override
   void register(PluginRegistry registry) {
-    // Each rule checks only `enforcedPackages`; `materialPackages` may
-    // import Material (src/rules.dart).
-    registry
-      ..registerWarningRule(NoColorLiteral())
-      ..registerWarningRule(NoLiteralSpacing())
-      ..registerWarningRule(NoMaterialImport())
-      ..registerWarningRule(NoPhysicalDirection());
+    // The rules of `dart run fox_lints:check` too. Each checks only
+    // `enforcedPackages`; `materialPackages` may import Material.
+    foxRules().forEach(registry.registerWarningRule);
   }
 }

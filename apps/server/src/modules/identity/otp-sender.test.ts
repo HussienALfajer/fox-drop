@@ -121,6 +121,13 @@ class FakeWhatsApp {
   };
 }
 
+// What a stored identity ciphertext opens to; it throws for anything else,
+// a value stored in clear among them.
+function decrypted(stored: string): string {
+  expect(stored).toMatch(/^v1\.[\w-]+\.[\w-]+\.[\w-]*$/);
+  return secrets.decrypt(stored);
+}
+
 let database: TestDatabase;
 let cache: TestValkey;
 let sql: pg.Pool;
@@ -199,9 +206,12 @@ describe('without an otp-sender', () => {
     // list after its timeout.
     await until(async () => (await valkey.llen(SEND_REQUESTS_KEY)) === 1);
     const [request] = await valkey.lrange(SEND_REQUESTS_KEY, 0, -1);
-    expect(request).toBeDefined();
-    expect(request).not.toContain('482913');
-    expect(request).not.toContain(phone.slice(1));
+    // In clear only the id and the deadline; the number and code travel
+    // encrypted. (Six digits could appear by chance in the deadline's
+    // milliseconds or the ciphertext, so no substring check.)
+    const parsed = JSON.parse(request!) as { id: string; payload: string; deadline: number };
+    expect(Object.keys(parsed).sort()).toEqual(['deadline', 'id', 'payload']);
+    expect(JSON.parse(decrypted(parsed.payload))).toEqual({ phone, code: '482913' });
     expect(await answer).toBe('unavailable');
     await queued.onApplicationShutdown();
     await valkey.del(SEND_REQUESTS_KEY);
@@ -332,13 +342,20 @@ describe('the otp-sender', () => {
         'SELECT key, value_encrypted FROM identity.otp_sender_credentials WHERE number_id = $1 ORDER BY key',
         [numberId],
       );
-      expect(rows.map((row) => row.key)).toEqual(['creds', 'restored']);
-      expect(JSON.stringify(rows)).not.toContain('963900000001');
-      expect(JSON.stringify(rows)).not.toContain('yes');
+      // Encrypted, not merely scrambled: each value is an identity ciphertext
+      // that only the key opens (AES-GCM checks its tag), and it opens to the
+      // written value. A check that random ciphertext lacks the plaintext
+      // could fail by chance ("yes" once appeared in one).
+      expect(rows.map((row) => [row.key, decrypted(row.value_encrypted)])).toEqual([
+        ['creds', JSON.stringify({ phone: own })],
+        ['restored', 'yes'],
+      ]);
       const { rows: stored } = await sql.query<{ phone_encrypted: string; phone_hash: string }>(
-        'SELECT phone_encrypted, phone_hash FROM identity.otp_sender_numbers',
+        'SELECT phone_encrypted, phone_hash FROM identity.otp_sender_numbers WHERE id = $1',
+        [numberId],
       );
-      expect(JSON.stringify(stored)).not.toContain('963900000001');
+      expect(stored.map((row) => decrypted(row.phone_encrypted))).toEqual([own]);
+      expect(stored[0]?.phone_hash).toBe(secrets.phoneHash(own));
     });
 
     it('marks it connected for the API', async () => {
