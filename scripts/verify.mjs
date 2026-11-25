@@ -98,7 +98,9 @@ if (unknown.length > 0) usage(`unknown argument ${unknown.join(' ')}.`);
 if (shard !== undefined && !/^\d+\/\d+$/.test(shard)) usage(`unknown argument --shard=${shard}.`);
 if (changed && (named.length > 0 || shard !== undefined || e2ePackage !== undefined))
   usage('--changed takes no part, shard or package: it picks them from the change.');
-const parts = new Set(named.length > 0 ? named : changed ? [] : PARTS);
+// The whole check: every part but lint and e2e, which typescript covers.
+const ALL = PARTS.filter((part) => part !== 'lint' && part !== 'e2e');
+const parts = new Set(named.length > 0 ? named : changed ? [] : ALL);
 // A shard of one part: with any other part it would cut that one too.
 if (shard !== undefined && !(parts.size === 1 && (parts.has('server') || parts.has('flutter'))))
   usage('--shard needs exactly one of the parts server and flutter.');
@@ -555,13 +557,17 @@ function fingerprint(paths) {
   return hash.digest('hex');
 }
 
-/** A generator step, then a check that it changed none of the committed files under `paths`. */
-function generated(name, command, cwd, paths, stale) {
+/**
+ * A generator step, then a check that it changed none of the committed files
+ * under `paths`. The generator reads `inputs` (its outputs among them): with
+ * `--changed` it is skipped when they are unchanged since it passed.
+ */
+function generated(name, command, cwd, paths, stale, inputs) {
   let before;
   return [
     () => {
       before = fingerprint(paths);
-      return { name, command, cwd };
+      return { name, command, cwd, inputs };
     },
     () => ({
       name: `${name}: committed files current`,
@@ -582,6 +588,8 @@ const contractSteps = () =>
     'The committed OpenAPI document or a generated client was stale. It is regenerated' +
       ' now: review the changes in packages/api-schema and packages/core_api and commit them.' +
       ' A second run passes locally, but CI fails until they are committed.',
+    // 4 min on 2026-11-25 (the server's build, then the Java generator).
+    { paths: ['apps/server', 'packages/api-schema', 'packages/core_api', ...ROOT_FILES] },
   );
 
 // Architecture §11.2: the committed localizations must match the ARB files.
