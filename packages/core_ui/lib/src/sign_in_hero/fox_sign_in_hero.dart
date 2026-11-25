@@ -123,7 +123,11 @@ class FoxSignInHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final c = theme.colors;
-    final keyboardUp = MediaQuery.viewInsetsOf(context).bottom > 0;
+    // The view's own insets too: a resizing Scaffold removes the keyboard
+    // from its body's MediaQuery, so the body alone never sees it.
+    final keyboardUp =
+        MediaQuery.viewInsetsOf(context).bottom > 0 ||
+        (View.maybeOf(context)?.viewInsets.bottom ?? 0) > 0;
     if (keyboardUp) {
       return Padding(
         padding: const EdgeInsetsDirectional.symmetric(
@@ -427,7 +431,12 @@ class _RenderGiveWay extends RenderBox
     var y = (size.height - used) / 2;
     if (y < 0) y = 0;
     void place(RenderBox child, bool shown, double gapAfter) {
-      final data = child.parentData! as _GiveWayData..shown = shown;
+      final data = child.parentData! as _GiveWayData;
+      // A part that comes or goes changes what is read, not only what is drawn.
+      if (data.shown != shown) {
+        data.shown = shown;
+        markNeedsSemanticsUpdate();
+      }
       if (!shown) return;
       data.offset = Offset(0, y);
       y += child.size.height + gapAfter;

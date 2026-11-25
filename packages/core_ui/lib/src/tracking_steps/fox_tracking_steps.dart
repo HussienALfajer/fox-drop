@@ -304,7 +304,8 @@ class _Links extends CustomPainter {
       old.current != current ||
       old.done != done ||
       old.later != later ||
-      old.direction != direction;
+      old.direction != direction ||
+      old.width != width;
 }
 
 void _dashed(Canvas canvas, Offset from, Offset to, Paint paint) {
