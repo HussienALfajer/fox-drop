@@ -71,10 +71,19 @@ export function dart(list) {
     '',
     '/// Every region the phone metadata knows, in Arabic order (CLDR).',
     'const foxCountryNames = <FoxCountryName>[',
-    ...list.map(
-      (c) =>
-        `  (iso: '${c.iso}', code: '${c.code}', ar: ${dartString(c.ar)}, en: ${dartString(c.en)}),`,
-    ),
+    // As `dart format` writes it: one line up to 80 columns, else a field per line.
+    ...list.map((c) => {
+      const fields = [
+        `iso: '${c.iso}'`,
+        `code: '${c.code}'`,
+        `ar: ${dartString(c.ar)}`,
+        `en: ${dartString(c.en)}`,
+      ];
+      const line = `  (${fields.join(', ')}),`;
+      return line.length <= 80
+        ? line
+        : ['  (', ...fields.map((field) => `    ${field},`), '  ),'].join('\n');
+    }),
     '];',
     '',
   ].join('\n');
