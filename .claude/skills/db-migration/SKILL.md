@@ -45,7 +45,7 @@ Migrations run before the new version starts, while the old one still serves (ar
 
 ## 4. Test
 
-Extend `apps/server/src/database/migrations.test.ts` (Testcontainers, needs Docker) or the module's own database test: the new rows, constraints and what the application role is refused. Run it with `pnpm --filter @fox-drop/server test`, then let `checker` run `pnpm verify`.
+Extend `apps/server/src/database/migrations.test.ts` (Testcontainers, needs Docker) or the module's own database test: the new rows, constraints and what the application role is refused. Run it with `pnpm --filter @fox-drop/server test`, then run `node scripts/verify.mjs --changed` in the background (`run_in_background: true`, output in a log file).
 
 ## 5. Apply locally
 

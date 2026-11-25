@@ -12,11 +12,11 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 
 ## Commands
 
-Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes from `packageManager` in `package.json`. `fvm install` installs the pinned Flutter and links it at `.fvm/flutter_sdk` (a worktree without one uses the main checkout's), which `pnpm verify` and the format hook use before any Flutter on PATH.
+Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes from `packageManager` in `package.json`. `fvm install` installs the pinned Flutter and links it at `.fvm/flutter_sdk` (a worktree without one uses the main checkout's), which `pnpm verify`, the hooks and every Bash command (SessionStart hook) use, never `C:\flutter`.
 
 - `pnpm install`, then `dart pub get`: install the TypeScript and Dart dependencies (the pub workspace replaces `melos bootstrap`).
 - `pnpm verify`: the whole check. It first regenerates the API contract and clients and fails when the committed ones are stale (needs Java 11 or later); then Prettier, ESLint, type checks, tests, the web builds and their Playwright smoke tests through Turborepo, then Dart analyze, format and tests through Melos. The database tests start PostGIS with Testcontainers, so Docker must be running. CI runs its parts as parallel jobs (`node scripts/verify.mjs contract|format|typescript|server|dart|flutter`, the server's tests in four shards and the Flutter packages in three, `--shard=<i>/<n>`), skips all but Prettier and the instruction size check for a change of Markdown and `docs/` only (only the spec files a test reads count as code: `SPEC_FILES_READ_BY_TESTS` in `scripts/classify-changes.mjs`), skips the Dart and Flutter parts for a change without Dart, and runs native release builds only for a native change or the `native-builds` label.
-- `node scripts/verify.mjs --changed`: only what the change since origin/main can break, committed or not (classified by `scripts/classify-changes.mjs`, which CI uses too). The `checker` agent runs it; a passing run records the tree, so the Stop hook skips it. One check at a time in a folder (a lock; a second exits with 3). CI runs everything and stays the gate.
+- `node scripts/verify.mjs --changed`: only what the change since origin/main can break, committed or not (classified by `scripts/classify-changes.mjs`, which CI uses too). Run it with `run_in_background: true`, output to a log, once per finished layer. One check at a time in a folder (a second waits). CI runs everything and stays the gate.
 - `docker compose up --detach`: the local PostGIS, Valkey and Centrifugo, after copying `.env.example` to `.env`; then `pnpm --filter @fox-drop/server db:migrate`.
 - `docker compose run --rm osrm-build`, then `docker compose --profile osrm up --detach`: OSRM over Azaz (else straight line × 1.3).
 - `pnpm generate:api`: regenerate the OpenAPI document and the TypeScript and Dart clients after a route or schema change.
@@ -52,15 +52,15 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 
 - Branch from `main` as `feat/`, `fix/`, `docs/`, `chore/`, `refactor/` or `test/` plus a topic. Conventional Commits; the body says what changed and why.
 - Every change reaches `main` through a pull request, merged with squash. The body has `## Summary` and `## Test plan`, and `## Checks changed` when the change touches `ci.yml`, `scripts/verify.mjs` or `REVIEW.md`.
-- When a task's work is done, finish it in the same turn without asking: update the roadmap, the slice file and every doc the change made stale; check `git status` and `git diff --stat` for stray or secret files; `checker` green; review by tier; `gh pr create --base main`; then enable auto-merge (`gh pr merge --auto --squash --delete-branch`) and the app's Auto-fix. If CI fails, fix the cause on the branch and push.
+- When a task's work is done, finish it in the same turn without asking: update the roadmap, the slice file and every doc the change made stale; check `git status` and `git diff --stat` for stray or secret files; `--changed` green; review by tier; `gh pr create --base main`; then enable auto-merge (`gh pr merge --auto --squash --delete-branch`) and the app's Auto-fix. If CI fails, fix the cause on the branch and push.
 
 ## Enforced by hooks (`.claude/hooks/`)
 
 - Secret files (`.env*`, keys) are readable and editable; never commit them.
 - Edits are refused for generated files (`packages/core_api/lib/`, the OpenAPI document and its TypeScript types, `generated/` folders, `*.g.dart`, lockfiles, Drizzle's `migrations/meta/`), the read-only archives (`docs/archive/`, `docs/slice-notes.md`), migrations merged to `main` (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
 - Shell writes into `apps/`, `packages/`, `scripts/`, `infra/` and `.claude/` are refused: use Edit or Write so the format hook runs. The guard reads the command text, so it cannot see `cd apps && echo > x` or `cp` and `node -e` writes: do not use them.
-- `--no-verify`, force pushes, pushes to `main`, permission bypasses, run-time package fetches (`npx -y`, `dlx`, `bunx`) and installs outside pnpm are refused.
-- On stop, a session's own uncommitted code changes must pass `--changed`, unless `.claude/state/red-phase` exists or the tree already passed.
+- `--no-verify`, force pushes, pushes to `main`, permission bypasses, run-time package fetches (`npx -y`, `dlx`, `bunx`), installs outside pnpm and removing a worktree before its SDK link are refused.
+- On stop, the files the session edited must pass Prettier, `dart format` and ESLint (never tests), unless `.claude/state/red-phase` exists.
 - At session end, uncommitted work is reported.
 
 ## Language
