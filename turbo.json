@@ -22,7 +22,9 @@
       "outputs": []
     },
     "test": {
-      "cache": false,
+      "dependsOn": ["^transit"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": [],
       "passThroughEnv": [
         "DOCKER_HOST",
         "DOCKER_TLS_VERIFY",
@@ -32,12 +34,82 @@
       ]
     },
     "build": {
-      "cache": false,
+      "dependsOn": ["^transit"],
+      "inputs": ["$TURBO_DEFAULT$"],
       "outputs": ["dist/**"]
     },
     "test:e2e": {
-      "cache": false,
-      "dependsOn": ["build"]
+      "dependsOn": ["build", "^transit"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": []
+    },
+    "@fox-drop/server#test": {
+      "cache": false
+    },
+    "@fox-drop/server#build": {
+      "dependsOn": ["^transit"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/compose.yaml",
+        "$TURBO_ROOT$/infra/centrifugo/**",
+        "$TURBO_ROOT$/infra/storage/**"
+      ],
+      "outputs": ["dist/**"]
+    },
+    "@fox-drop/infra#test": {
+      "dependsOn": ["^transit"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/compose.yaml",
+        "$TURBO_ROOT$/apps/admin/src/media.ts",
+        "$TURBO_ROOT$/apps/customer/lib/src/media.dart",
+        "$TURBO_ROOT$/apps/server/src/modules/files/files.service.ts"
+      ],
+      "outputs": []
+    },
+    "@fox-drop/design-tokens#test": {
+      "dependsOn": ["^transit"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/docs/architecture/09-design-system.md",
+        "$TURBO_ROOT$/docs/brand/fonts-manifest.json",
+        "$TURBO_ROOT$/docs/brand/logo/**",
+        "$TURBO_ROOT$/docs/brand/app-icon/**",
+        "$TURBO_ROOT$/packages/core_tokens/lib/src/icons.g.dart",
+        "$TURBO_ROOT$/packages/core_tokens/lib/src/tokens.g.dart",
+        "$TURBO_ROOT$/packages/core_ui/design-system/**",
+        "$TURBO_ROOT$/packages/core_ui/test/golden/design_system_cards_test.dart",
+        "$TURBO_ROOT$/packages/core_ui/test/golden/goldens/design-system/**",
+        "$TURBO_ROOT$/.fonts/**"
+      ],
+      "outputs": []
+    },
+    "@fox-drop/ui-web#test": {
+      "dependsOn": ["^transit"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/docs/brand/logo/mark/mark-orange-on-ivory-drop.svg",
+        "$TURBO_ROOT$/scripts/countries.mjs",
+        "$TURBO_ROOT$/packages/core_l10n/lib/src/countries.g.dart",
+        "$TURBO_ROOT$/.fonts/**"
+      ],
+      "outputs": []
+    },
+    "@fox-drop/ui-web#build": {
+      "dependsOn": ["^transit"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.fonts/**"],
+      "outputs": ["dist/**"]
+    },
+    "@fox-drop/ui-web#test:e2e": {
+      "dependsOn": ["build", "^transit"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/docs/brand/logo/mark/mark-orange-on-ivory-drop.svg",
+        "$TURBO_ROOT$/scripts/countries.mjs",
+        "$TURBO_ROOT$/packages/core_l10n/lib/src/countries.g.dart",
+        "$TURBO_ROOT$/.fonts/**"
+      ],
+      "outputs": []
     }
   }
 }

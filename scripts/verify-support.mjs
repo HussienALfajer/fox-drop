@@ -1,7 +1,20 @@
 // What scripts/verify.mjs and the Claude Code hooks share: the lock that keeps
 // two checks from running at once in one folder, and the pinned Flutter SDK.
+// Also verify.mjs's own pieces that a test can reach: the record of the steps
+// that passed on unchanged inputs, the cut of a failing step's output, the
+// summary table and the end of a process tree.
 import { spawnSync } from 'node:child_process';
-import { existsSync, linkSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import {
+  existsSync,
+  linkSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 /** Whether a process with this id is running. */
@@ -101,4 +114,292 @@ export function pinnedFlutterBin(root, commonDirOf = gitCommonDir) {
   if (!commonDir) return null;
   const main = path.join(path.dirname(commonDir), '.fvm', 'flutter_sdk', 'bin');
   return existsSync(main) ? main : null;
+}
+
+/**
+ * The folders to put first on PATH for the pinned Flutter: its Dart SDK's bin
+ * (`dart.exe` there starts in 75 ms; Flutter's `bin/dart.bat` wrapper costs
+ * 1.1 s a call on Windows), then Flutter's own bin. Only the folders that exist.
+ */
+export function pinnedSdkPath(flutterBin) {
+  if (!flutterBin) return [];
+  const dart = path.join(flutterBin, 'cache', 'dart-sdk', 'bin');
+  return [dart, flutterBin].filter((dir) => existsSync(dir));
+}
+
+/**
+ * The folders `playwright install chromium` fills, from playwright-core's
+ * browsers.json: Chromium, its headless shell, FFmpeg and, on Windows, winldd.
+ */
+export function chromiumFolders(browsers, platform = process.platform) {
+  const wanted = ['chromium', 'chromium-headless-shell', 'ffmpeg'];
+  if (platform === 'win32') wanted.push('winldd');
+  return wanted.map((name) => {
+    const browser = browsers.browsers.find((each) => each.name === name);
+    return browser ? `${name.replaceAll('-', '_')}-${browser.revision}` : null;
+  });
+}
+
+/**
+ * Whether the Chromium that the Playwright of each package (folders with a
+ * package.json) installs is already complete in the shared browser cache, so
+ * the install step can be skipped. Anything unexpected answers false: the
+ * install runs.
+ */
+export function chromiumInstalled(
+  packageDirs,
+  { env = process.env, platform = process.platform } = {},
+) {
+  const home = env.USERPROFILE ?? env.HOME ?? '';
+  const cache =
+    env.PLAYWRIGHT_BROWSERS_PATH ??
+    (platform === 'win32'
+      ? path.join(env.LOCALAPPDATA ?? path.join(home, 'AppData', 'Local'), 'ms-playwright')
+      : platform === 'darwin'
+        ? path.join(home, 'Library', 'Caches', 'ms-playwright')
+        : path.join(env.XDG_CACHE_HOME ?? path.join(home, '.cache'), 'ms-playwright'));
+  if (cache === '0') return false;
+  try {
+    return packageDirs.every((dir) => {
+      const from = (file) => createRequire(path.resolve(file));
+      const test = from(path.join(dir, 'package.json')).resolve('@playwright/test/package.json');
+      const playwright = from(test).resolve('playwright/package.json');
+      const core = from(playwright).resolve('playwright-core/package.json');
+      const browsers = JSON.parse(
+        readFileSync(path.join(path.dirname(core), 'browsers.json'), 'utf8'),
+      );
+      return chromiumFolders(browsers, platform).every(
+        (folder) => folder && existsSync(path.join(cache, folder, 'INSTALLATION_COMPLETE')),
+      );
+    });
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Waits for the folder's lock: resolves to takeLock's answer once taken, or once
+ * `limitMs` passed (or at once without `wait`) with the holder. `onWait` hears
+ * each new holder once. A stale lock is taken over at the first try (takeLock).
+ */
+export async function waitForLock(
+  file,
+  {
+    command = '',
+    wait = true,
+    limitMs = 20 * 60 * 1000,
+    everyMs = 2000,
+    onWait = () => {},
+    take = takeLock,
+    now = Date.now,
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  } = {},
+) {
+  const start = now();
+  let told = null;
+  for (;;) {
+    const lock = take(file, { command });
+    if (lock.taken || !wait || now() - start >= limitMs) return lock;
+    const holder = JSON.stringify(lock.holder ?? null);
+    if (holder !== told) onWait(lock.holder);
+    told = holder;
+    await sleep(everyMs);
+  }
+}
+
+/**
+ * Ends a process and every process it started, at once: on Windows `taskkill
+ * /T /F` (a shell's children outlive it otherwise), elsewhere its process group
+ * (verify.mjs starts each step as a group of its own), else the process.
+ */
+export function killTree(pid, platform = process.platform) {
+  if (!pid) return;
+  if (platform === 'win32') {
+    spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' });
+    return;
+  }
+  for (const target of [-pid, pid]) {
+    try {
+      process.kill(target, 'SIGKILL');
+      return;
+    } catch {
+      // No such group: try the process alone.
+    }
+  }
+}
+
+/**
+ * A fingerprint of the files the `pathspecs` name in the repository at `root`:
+ * the index's entries (path, mode and blob), and the content of each file that
+ * differs from the index or is untracked and not ignored, or "deleted". Ignored
+ * folders that a check reads too (the licensed fonts in `.fonts/`) go in
+ * `ignoredDirs`, hashed file by file. Git compares the working tree with the
+ * index itself, so a line-ending-only change does not count.
+ */
+export function inputsFingerprint(root, pathspecs, { ignoredDirs = [] } = {}) {
+  const git = (args) => {
+    const result = spawnSync('git', ['-c', 'core.quotePath=false', ...args], {
+      cwd: root,
+      maxBuffer: 512 * 1024 * 1024,
+    });
+    if (result.status !== 0) throw new Error(`git ${args.join(' ')}: ${result.stderr}`);
+    return result.stdout;
+  };
+  const names = (buffer) => buffer.toString('utf8').split('\0').filter(Boolean);
+  const hash = createHash('sha256');
+  hash.update(git(['ls-files', '-s', '-z', '--', ...pathspecs]));
+  const differing = new Set([
+    ...names(git(['diff', '--name-only', '--no-renames', '-z', '--', ...pathspecs])),
+    ...names(git(['ls-files', '--others', '--exclude-standard', '-z', '--', ...pathspecs])),
+  ]);
+  for (const file of [...differing].sort()) {
+    hash.update(`\0file:${file}\0`);
+    const full = path.join(root, file);
+    hash.update(existsSync(full) ? readFileSync(full) : '\0deleted\0');
+  }
+  for (const dir of ignoredDirs) {
+    const full = path.join(root, dir);
+    hash.update(`\0dir:${dir}\0`);
+    if (!existsSync(full)) continue;
+    for (const file of readdirSync(full, { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => path.join(entry.parentPath, entry.name))
+      .sort()) {
+      hash.update(`\0${path.relative(root, file).replaceAll('\\', '/')}\0`);
+      hash.update(readFileSync(file));
+    }
+  }
+  return hash.digest('hex');
+}
+
+/** The key of one step's pass: what it ran, where, and the fingerprint of what it read. */
+export function passKey(fields) {
+  return createHash('sha256').update(JSON.stringify(fields)).digest('hex');
+}
+
+const PASSES_KEPT = 400;
+
+function readPasses(file) {
+  return parse(readText(file))?.passes ?? {};
+}
+
+/** Whether a step with this key passed before (scripts/verify.mjs's record in the git folder). */
+export function hasPassed(file, key) {
+  return Object.hasOwn(readPasses(file), key);
+}
+
+/** Records a step's pass; keeps the newest PASSES_KEPT. Written whole, then renamed. */
+export function recordStepPass(file, key, now = new Date()) {
+  const passes = { ...readPasses(file), [key]: now.toISOString() };
+  const newest = Object.entries(passes)
+    .sort((a, b) => b[1].localeCompare(a[1]))
+    .slice(0, PASSES_KEPT);
+  const pending = `${file}.${process.pid}`;
+  writeFileSync(pending, JSON.stringify({ passes: Object.fromEntries(newest) }));
+  renameSync(pending, file);
+}
+
+/** " (3 of 8 tasks replayed from the cache)" from Turborepo's summary, or ''. */
+export function turboNote(output) {
+  const match = /Cached:\s+(\d+) cached, (\d+) total/.exec(output.replace(COLOURS, ''));
+  return match ? ` (${match[1]} of ${match[2]} tasks replayed from the cache)` : '';
+}
+
+/** The names under a pubspec's dependencies and dev_dependencies. */
+export function pubspecDependencies(text) {
+  const names = [];
+  let section = null;
+  for (const line of text.split(/\r?\n/)) {
+    const top = /^([a-z_]+):/.exec(line);
+    if (top) section = top[1];
+    const entry = /^ {2}([a-z0-9_]+):/.exec(line);
+    if (entry && (section === 'dependencies' || section === 'dev_dependencies'))
+      names.push(entry[1]);
+  }
+  return names;
+}
+
+/**
+ * The named packages and every package of `workspace` ({ name, dependencies })
+ * that depends on one of them, directly or not.
+ */
+export function withDependents(workspace, names) {
+  const out = new Set(names);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const each of workspace) {
+      if (!out.has(each.name) && each.dependencies.some((name) => out.has(name))) {
+        out.add(each.name);
+        grew = true;
+      }
+    }
+  }
+  return out;
+}
+
+/** "0.4 s", "42 s", "3 min 05 s". */
+export function formatDuration(ms) {
+  if (ms < 10_000) return `${(ms / 1000).toFixed(1)} s`;
+  const seconds = Math.round(ms / 1000);
+  if (seconds < 60) return `${seconds} s`;
+  return `${Math.floor(seconds / 60)} min ${String(seconds % 60).padStart(2, '0')} s`;
+}
+
+/** One line of the progress and of the final table. */
+export function stepLine({ name, result, ms }) {
+  const time = ms === undefined ? '' : formatDuration(ms);
+  return `  ${result.padEnd(9)} ${time.padStart(10)}  ${name}`;
+}
+
+/** The final table: every step, its result and its time, and the total. */
+export function stepTable(rows, totalMs) {
+  return [
+    `  ${'result'.padEnd(9)} ${'time'.padStart(10)}  step`,
+    ...rows.map(stepLine),
+    `  ${''.padEnd(9)} ${formatDuration(totalMs).padStart(10)}  wall time`,
+  ].join('\n');
+}
+
+const ESC = String.fromCharCode(27);
+const COLOURS = new RegExp(`${ESC}\\[[0-9;?]*[A-Za-z]`, 'g');
+// A line that reports a failure, in the output of Vitest, Playwright, ESLint,
+// tsc, Turborepo, Prettier, the Dart analyzer and `dart test` / `flutter test`.
+const FAILED_LINE =
+  /\b(FAIL|FAILED|failed|Failed|Error|ERROR|ERR!|error|AssertionError|Expected|Received|Exception|TimeoutError)\b|✗|×|✘|❌|^\s*\d+\) |\[(E|warn)\]|Some tests failed|exited with code [1-9]|^\s*(info|warning|error) - /;
+const NOT_FAILED = /\b(0 failed|failed: 0|no errors?|0 errors?)\b|\[WebServer\]/i;
+
+/**
+ * A failing step's output cut to what failed: each failure line with a little
+ * context, then the last lines (the runner's summary), at most `limit` lines.
+ * Short output stays whole. The whole output stays in `savedTo`.
+ */
+export function cut(
+  text,
+  savedTo,
+  { whole = 120, limit = 300, before = 3, after = 12, tail = 40 } = {},
+) {
+  const lines = text.replace(COLOURS, '').replaceAll('\r', '').split('\n');
+  if (lines.length <= whole) return lines.join('\n');
+  const tailFrom = Math.max(0, lines.length - tail);
+  const kept = new Set();
+  for (let i = 0; i < tailFrom; i++) {
+    if (!FAILED_LINE.test(lines[i]) || NOT_FAILED.test(lines[i])) continue;
+    const end = Math.min(tailFrom - 1, i + after);
+    for (let j = Math.max(0, i - before); j <= end; j++) kept.add(j);
+  }
+  const body = [...kept].sort((a, b) => a - b).slice(0, limit - tail);
+  const shown = [
+    ...body,
+    ...Array.from({ length: lines.length - tailFrom }, (_, i) => tailFrom + i),
+  ];
+  const out = [];
+  let last = -1;
+  for (const i of shown) {
+    if (i > last + 1) out.push(`[… ${i - last - 1} lines …]`);
+    out.push(lines[i]);
+    last = i;
+  }
+  out.push(`[cut from ${lines.length} lines; the whole output is in ${savedTo}]`);
+  return out.join('\n');
 }
