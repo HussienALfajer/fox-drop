@@ -18,6 +18,9 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 
 ## Follow-ups
 
+- **Numeric classes outside D.W1's list** (D.W1 review): ui-web still writes `ring-1`, `ring-2`, `ring-offset-2` (button, card, count badge, data table), `underline-offset-4` and `z-10`; `fd/component-design` (`eslint.web.mjs`) checks only the plan's list. Add these utilities to `numericValue` with tokens of the same value (`border-width.*`, `layer.*`). Also the scale steps `scale-96` and `scale-100` in `overlay/styles.ts`.
+- **The D.W1 overnight decisions** (`slices/D.W1-component-token-pipeline.md`, «Decisions taken overnight»): 0 allowed on the web, a token's `sides`, the Flutter rule's scope and the seven new foundation tokens, for the owner to confirm.
+
 - **RadioGroup's disabled colours** (PR 300): `ui-web/src/radio-group/radio-group.tsx` uses a lone `data-disabled:` class, which loses to `data-unchecked:` and `data-checked:` as the Switch and Checkbox ones did; stack two attributes (`data-disabled:data-unchecked:`) and check the disabled stories.
 
 - **Dart analysis from a cold cache** (the checks' speed-up, 2026-11-25, pull requests 284 to 295): `dart analyze --no-plugins` over `core_ui` and its five dependents takes 12 to 30 s once the analyzer's cache holds the content, but 3 to 7 minutes the first time (a new worktree, a reinstalled SDK, after many merges), and the same one-comment edit took 180 s in one `--changed` run and 30 s in the next. CI's 4-vCPU Linux runner analyzes the whole workspace cold in 42 s; this machine took 221 s. The analyzer's own cache (`%LOCALAPPDATA%\.dartServer\.analysis-driver`) held 322 thousand files, 4.8 GB, the oldest from 2025-12. To find: whether results are lost when the process exits (the `fox_lints` check writes its cache synchronously for that reason) or the cache is keyed by path, and whether the analysis should run through that compiled check.

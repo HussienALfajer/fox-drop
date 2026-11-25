@@ -1,6 +1,6 @@
 # D.W1 The component token pipeline and the raw-value check
 
-Status: Planned · Tier: T2 · Branch: `feat/component-token-pipeline`
+Status: Done · Tier: T2 · Branch: `feat/component-token-pipeline`
 Spec: architecture §9.1, §9.2 (the component layer), §9.5 R1, R2, R9 · Definition of done: workflow §4 (UI items)
 
 ## The web-first plan (owner, 2026-11-26)
@@ -73,12 +73,15 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 
 ## Stopped at
 
-All layers built; `--changed`, baselines and review next.
+Done: pull request open with auto-merge.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- Review:
+- Red phase: each locked test failed for the missing feature (no `component-usage.ts`, the fixture component absent from the outputs, 12 new lint cases unreported, `NoLiteralDimension` undefined, `FoxThemeData.components` undefined).
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (36 files; Turborepo lint, types, build and smoke; tests; Dart analyze, `fox_lints rules`, format, Dart and Flutter tests). A first run failed on two things this slice caused and fixed: `tokens.g.dart` not as `dart format` writes a short constructor, and `turbo-inputs.test.mjs` asking for `core_ui/lib/src` and `ui-web/src` as inputs of `design-tokens#test` (added to `turbo.json`, a file outside the plan's list).
+- `dart packages/fox_lints/tool/check.dart`: «no issues found» (64 findings before the rule was limited to `lib/`, 9 in `lib/` before the fixes).
+- `pnpm baselines`: no moved image (see below).
+- Review (T2, `reviewer`, two rounds): round 1 found no blocking item, two should-fix (a nested class reported twice by `no_literal_dimension`; the Flutter usage scan counting `this.gap` as a read) and two minor (the changelog's list, a second `camel`); all fixed with tests in `bb967f79`; round 2 found nothing new. Its observation, numeric classes outside the plan's list (`ring-1`, `ring-2`, `ring-offset-2`, `underline-offset-4`, `z-10`), is in `docs/backlog.md`.
 
 ## Before deploying
 
