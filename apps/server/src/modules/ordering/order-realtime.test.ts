@@ -159,6 +159,7 @@ beforeAll(async () => {
     ).rows[0].n > 0
   ) {
     if (Date.now() > deadline) throw new Error('the state relay did not catch up');
+    // The poll interval of a wait for the relay, not a fixed wait.
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }, 300_000);
@@ -293,6 +294,7 @@ async function eventually(check: () => boolean, ms = 10_000): Promise<void> {
   const deadline = Date.now() + ms;
   while (!check()) {
     if (Date.now() > deadline) throw new Error('timed out');
+    // The poll interval of a wait for the condition, not a fixed wait.
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }
@@ -937,6 +939,7 @@ describe("the order's pushes (architecture §8.1, CU §14, RA §16, CA §14)", (
       const found = (await pushesOf(orderId)).find((row) => row.template_key === templateKey);
       if (found) return found;
       if (Date.now() > deadline) throw new Error(`no ${templateKey} for ${orderId}`);
+      // The poll interval of a wait for the push row, not a fixed wait.
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }

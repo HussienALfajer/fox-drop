@@ -336,13 +336,20 @@ describe('the location route (CA §4.3, architecture §7.3)', () => {
     await goOnline(headers);
     const onlineAt = new Date();
     await sendPoints(headers, [point(onlineAt)]);
-    await new Promise((resolve) => setTimeout(resolve, 20));
     await call(headers, 'POST', '/v1/captain/availability/offline');
     expect(await valkey.exists(`captains:position:${captainId}`)).toBe(0);
     expect(await valkey.zscore(`captains:online:${azaz}`, captainId)).toBeNull();
     // A point queued while online and sent after going offline is kept for
-    // the route, but never brings the live position back.
-    const late = await sendPoints(headers, [point(new Date(onlineAt.getTime() + 5))]);
+    // the route, but never brings the live position back. It is recorded at
+    // the period's last moment, the latest one still online.
+    const {
+      rows: [period],
+    } = await sql.query<{ ended_at: Date }>(
+      'SELECT ended_at FROM captains.online_periods WHERE captain_id = $1 ORDER BY started_at DESC LIMIT 1',
+      [captainId],
+    );
+    expect(period!.ended_at.getTime()).toBeGreaterThan(onlineAt.getTime());
+    const late = await sendPoints(headers, [point(period!.ended_at)]);
     expect(late.json()).toEqual({ accepted: 1 });
     expect(await valkey.exists(`captains:position:${captainId}`)).toBe(0);
     // A point recorded offline is not.

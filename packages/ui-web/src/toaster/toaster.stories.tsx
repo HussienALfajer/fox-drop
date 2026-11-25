@@ -27,7 +27,7 @@ const make = (toasts: ToastOptions[], shown = true): Story => ({
   ),
   ...(shown && {
     play: ({ canvasElement }) => {
-      canvasElement.querySelector<HTMLButtonElement>('button')?.click();
+      canvasElement.querySelector<HTMLButtonElement>('button')!.click();
     },
   }),
 });

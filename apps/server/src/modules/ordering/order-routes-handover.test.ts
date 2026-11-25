@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CaptainsService } from '../captains/index.js';
 import { RealtimePublisher } from '../notifications/index.js';
 import { app, besideThem, home, onlineCaptain, pickedUpOrder } from './handover-flow.fixture.js';
+import { OrderRoutes } from './order-routes.js';
 
 // CA §9.10.1, CU §11.3 (slice 2.29b): after a handover the second captain's
 // route and position, from the receipt only.
@@ -14,6 +15,12 @@ describe('the route and the position after a handover (CA §9.10.1, CU §11.3)',
     const publisher = app.get(RealtimePublisher);
     const enabled = vi.spyOn(publisher, 'enabled', 'get').mockReturnValue(true);
     const broadcast = vi.spyOn(publisher, 'broadcast').mockResolvedValue();
+    // The publications a point starts run after it, unawaited
+    // (CaptainsService.onLivePosition): wait for those started, not a time.
+    const publish = vi.spyOn(
+      app.get(OrderRoutes) as unknown as { publish: (...args: unknown[]) => Promise<void> },
+      'publish',
+    );
     try {
       const { order, first, ops } = await pickedUpOrder();
       const second = await onlineCaptain('باسل الثاني', besideThem);
@@ -33,7 +40,8 @@ describe('the route and the position after a handover (CA §9.10.1, CU §11.3)',
       });
       broadcast.mockClear();
       await captains.recordLocations(second.captainId, point(new Date()), new Date());
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(publish).toHaveBeenCalled();
+      await Promise.allSettled(publish.mock.results.map((result) => result.value));
       expect(sentTo()).toEqual([]);
 
       expect((await second.receive(order.id)).statusCode).toBe(200);
@@ -52,6 +60,7 @@ describe('the route and the position after a handover (CA §9.10.1, CU §11.3)',
         ]),
       );
     } finally {
+      publish.mockRestore();
       enabled.mockRestore();
       broadcast.mockRestore();
     }

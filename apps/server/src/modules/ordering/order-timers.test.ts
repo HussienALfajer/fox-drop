@@ -301,6 +301,7 @@ describe('the automatic cancellation (AP §8.3)', () => {
         );
       for (let attempt = 0; attempt < 60; attempt += 1) {
         if ((await orderOf(order.id)).status === 'cancelled') break;
+        // The poll interval of a wait for the worker's cancel, not a fixed wait.
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
       expect(await orderOf(order.id)).toMatchObject({

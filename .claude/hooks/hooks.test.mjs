@@ -20,6 +20,8 @@ import {
   checkEdit,
   checkFvmInWorktree,
   checkPinnedSdk,
+  imageCheckDecision,
+  pullRequestCommand,
   stripPayload,
   toRepoPath,
 } from './lib/policy.mjs';
@@ -484,6 +486,140 @@ describe('the pinned Flutter', () => {
     assert.equal(checkFvmInWorktree('fvm install', 'D:\\fox-drop'), null);
     assert.equal(checkFvmInWorktree('fvm list', tree), null);
     assert.equal(checkFvmInWorktree('fvm install', undefined), null);
+  });
+});
+
+describe('no pull request with unchecked images', () => {
+  it('finds gh pr create and gh pr ready, also after other commands and inside a shell string', () => {
+    for (const [cmd, what] of [
+      ['gh pr create --base main --title "fix: x" --body "y"', 'gh pr create'],
+      ['gh pr create --draft --fill', 'gh pr create'],
+      ['git push -u origin feat/x && gh pr create --fill', 'gh pr create'],
+      ['git push -u origin feat/x; gh.exe pr create --fill', 'gh pr create'],
+      ["gh pr create --title 'x' --body \"$(cat <<'EOF'\n## Summary\nEOF\n)\"", 'gh pr create'],
+      ['gh pr ready 292', 'gh pr ready'],
+      ['bash -c "gh pr create --fill"', 'gh pr create'],
+      ['cd D:/fox-drop; gh pr ready', 'gh pr ready'],
+    ])
+      assert.equal(pullRequestCommand(cmd), what, cmd);
+  });
+
+  it('ignores other gh commands and the text that only names one', () => {
+    for (const cmd of [
+      'gh pr view 292 --json state',
+      'gh pr merge --auto --squash --delete-branch',
+      'gh pr ready 292 --undo',
+      'gh pr create --help',
+      'gh pr list',
+      'git commit -m "docs: then run gh pr create"',
+      "cat <<'EOF' > /tmp/plan.md\nfinally gh pr create --base main\nand gh pr ready\nEOF",
+      'echo "gh pr create comes last"',
+      "grep -rn 'gh pr create' docs",
+      'gh issue create --title "gh pr create fails"',
+    ])
+      assert.equal(pullRequestCommand(cmd), null, cmd);
+  });
+
+  it('refuses on exit 1 with its line, allows on exit 0, warns when the status cannot run', () => {
+    const line =
+      'baselines: the ui-web screenshots of this tree are not checked: run `pnpm baselines`';
+    assert.deepEqual(
+      imageCheckDecision('gh pr create', { status: 0, stdout: 'baselines: ok\n' }),
+      {},
+    );
+    const refused = imageCheckDecision('gh pr create', { status: 1, stdout: `${line}\n` });
+    assert.equal(refused.warn, undefined);
+    assert.ok(refused.block.startsWith(line), refused.block);
+    assert.match(refused.block, /gh pr create waits/);
+    for (const result of [
+      // a crash: exit 1 with a stack and no status line
+      { status: 1, stdout: '', stderr: 'file:///x/baselines.mjs:9\nError: boom\n' },
+      { status: 2, stdout: '', stderr: 'baselines: unknown or mixed arguments\n' },
+      { status: null, error: 'ETIMEDOUT' },
+      { missing: true },
+    ]) {
+      const decision = imageCheckDecision('gh pr ready', result);
+      assert.equal(decision.block, undefined, JSON.stringify(result));
+      assert.match(decision.warn, /^gh pr ready: .*CI checks the images/, JSON.stringify(result));
+    }
+    assert.match(
+      imageCheckDecision('gh pr create', { status: 1, stderr: 'x\nError: boom' }).warn,
+      /could not run \(exit 1: x\)/,
+    );
+    assert.match(imageCheckDecision('gh pr create', { error: 'ETIMEDOUT' }).warn, /ETIMEDOUT/);
+  });
+
+  // A checkout whose scripts/baselines.mjs is a stub: `body` is its code; it records each run.
+  const checkout = (name, body) => {
+    const repo = path.join(scratch, name);
+    mkdirSync(path.join(repo, 'scripts'), { recursive: true });
+    spawnSync('git', ['init', '--quiet'], { cwd: repo });
+    if (body !== undefined)
+      writeFileSync(
+        path.join(repo, 'scripts', 'baselines.mjs'),
+        `import { appendFileSync } from 'node:fs';\nappendFileSync(new URL('../ran.txt', import.meta.url), process.argv.slice(2).join(' ') + '\\n');\n${body}\n`,
+      );
+    const guard = (command, tool = 'Bash') => {
+      const result = runScript(
+        'guard-bash.mjs',
+        { tool_name: tool, cwd: repo, tool_input: { command } },
+        { CLAUDE_PROJECT_DIR: repo },
+      );
+      const warn = result.stdout ? JSON.parse(result.stdout).systemMessage : undefined;
+      return { ...result, warn };
+    };
+    const runs = () =>
+      existsSync(path.join(repo, 'ran.txt'))
+        ? readFileSync(path.join(repo, 'ran.txt'), 'utf8')
+        : '';
+    return { guard, runs };
+  };
+
+  it('the guard allows a checked tree and runs the status only for the two commands', () => {
+    const { guard, runs } = checkout(
+      'images-checked',
+      "console.log('baselines: the ui-web screenshots of this tree are checked'); process.exit(0);",
+    );
+    for (const cmd of ['git status', 'gh pr view 1', "git commit -m 'gh pr create next'"]) {
+      const result = guard(cmd);
+      assert.equal(result.status, 0, result.stderr);
+    }
+    assert.equal(runs(), '');
+    const created = guard('git push -u origin feat/x && gh pr create --fill');
+    assert.equal(created.status, 0, created.stderr);
+    assert.equal(created.warn, undefined);
+    assert.equal(guard('gh pr ready 12', 'PowerShell').status, 0);
+    assert.equal(runs(), '--status\n--status\n');
+  });
+
+  it('the guard refuses an unchecked tree with the status line', () => {
+    const line =
+      'baselines: the ui-web screenshots of this tree are not checked: run `pnpm baselines` (updates and compares them; `--check` only compares)';
+    const { guard } = checkout(
+      'images-unchecked',
+      `console.log(${JSON.stringify(line)}); process.exit(1);`,
+    );
+    for (const [cmd, what] of [
+      ['gh pr create --base main --title "x" --body "y"', 'gh pr create'],
+      ['gh pr ready', 'gh pr ready'],
+    ]) {
+      const result = guard(cmd);
+      assert.equal(result.status, 2, cmd);
+      assert.ok(result.stderr.includes(line), result.stderr);
+      assert.match(result.stderr, new RegExp(`${what} waits`));
+    }
+    assert.equal(guard("cat <<'EOF' > /tmp/x.md\ngh pr create\nEOF").status, 0);
+  });
+
+  it('the guard warns and allows when the status crashes or is missing', () => {
+    const crashed = checkout('images-crash', "throw new Error('boom');").guard(
+      'gh pr create --fill',
+    );
+    assert.equal(crashed.status, 0, crashed.stderr);
+    assert.match(crashed.warn, /could not run \(exit 1: .*\).*CI checks the images/);
+    const missing = checkout('images-missing').guard('gh pr create --fill');
+    assert.equal(missing.status, 0, missing.stderr);
+    assert.match(missing.warn, /no scripts\/baselines\.mjs/);
   });
 });
 

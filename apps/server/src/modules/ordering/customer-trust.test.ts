@@ -265,7 +265,12 @@ describe('«تغيير الرقم» and «تسجيل الخروج من كل ال
     await settings.update('otp.resend_after_sec', {}, 1, bySystem);
     const phone = phoneNumber();
     const id = sub(await appSignIn('customer', phone));
-    await new Promise((resolve) => setTimeout(resolve, 1_100));
+    // The sign-in's code was sent 2 s ago, past the 1 s before another may be
+    // asked for, so no test waits for the clock.
+    await sql.query(
+      `UPDATE identity.app_sign_in_codes SET created_at = created_at - interval '2 seconds'
+       WHERE created_at = (SELECT max(created_at) FROM identity.app_sign_in_codes)`,
+    );
     const deviceId = randomUUID();
     const asked = await app.inject({
       method: 'POST',

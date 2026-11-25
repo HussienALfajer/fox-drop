@@ -188,6 +188,21 @@ const refusal = (promise: Promise<unknown>) =>
     (error: unknown) => (error instanceof CashDeskRefusedError ? error.refusal : error),
   );
 
+// Waits until a transaction of this test file's database waits for a lock
+// that another holds: the condition a test of a lock needs, not a time.
+async function waitingForALock(): Promise<void> {
+  await vi.waitFor(
+    async () => {
+      const { rows } = await sql.query<{ waiting: number }>(
+        `SELECT count(*)::int AS waiting FROM pg_stat_activity
+         WHERE datname = current_database() AND wait_event_type = 'Lock'`,
+      );
+      expect(rows[0]!.waiting).toBeGreaterThan(0);
+    },
+    { timeout: 10_000, interval: 20 },
+  );
+}
+
 const year = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Damascus', year: 'numeric' })
   .format(new Date())
   .slice(-4);
@@ -535,7 +550,7 @@ describe('the daily hand-in (AP §9.10.3 «تسليم النقد اليومي»,
     const close = desk
       .closeSession(cashier.user, session.id, counted, null, new Date())
       .then(() => (closed = true));
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await waitingForALock();
     expect(closed).toBe(false);
     await running.query('COMMIT');
     running.release();
@@ -556,7 +571,8 @@ describe('the daily hand-in (AP §9.10.3 «تسليم النقد اليومي»,
         new Date(),
       ),
     );
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    // The hand-in waits behind the close before the close commits.
+    await waitingForALock();
     await closing.query('COMMIT');
     closing.release();
     expect(await handIn).toBe('no_open_session');

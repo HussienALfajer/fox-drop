@@ -182,7 +182,9 @@ async function pay(user: DeskUser, restaurantId: string, amount: bigint) {
   );
 }
 
-// A moment between two transactions, by the database's clock.
+// A moment between two transactions, by the database's clock. The 2 ms pauses
+// are deliberate: times reach JavaScript cut to the millisecond, so they keep
+// the moment apart from the entries on either side (merchant-statements.test.ts).
 async function databaseNow(): Promise<Date> {
   await sql.query('SELECT pg_sleep(0.002)');
   const { rows } = await sql.query<{ now: Date }>('SELECT clock_timestamp() AS now');

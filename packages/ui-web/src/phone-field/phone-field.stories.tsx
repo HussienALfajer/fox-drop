@@ -50,7 +50,7 @@ const typeIn =
 export const Open: Story = {
   args: { lastUsedCountry: 'DE' },
   play: ({ canvasElement }) => {
-    canvasElement.querySelector<HTMLButtonElement>('button')?.click();
+    canvasElement.querySelector<HTMLButtonElement>('button')!.click();
   },
 };
 export const Filled = make({ defaultValue: '+963944123456' });

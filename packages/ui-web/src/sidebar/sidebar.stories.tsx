@@ -93,6 +93,6 @@ function PhoneDrawer() {
 export const Drawer: Story = {
   render: () => <PhoneDrawer />,
   play: ({ canvasElement }) => {
-    canvasElement.querySelector<HTMLButtonElement>('button')?.click();
+    canvasElement.querySelector<HTMLButtonElement>('button')!.click();
   },
 };

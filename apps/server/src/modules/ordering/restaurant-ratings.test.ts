@@ -61,6 +61,22 @@ async function ratedAt(orderId: string, stars: number, at: Date, testOrder = fal
   );
 }
 
+// `count` more delivered orders of the restaurant, copied from `orderId` with
+// new ids, in one statement: a rating needs an order, and the owners' read
+// never touches the orders (rating-pages.ts), so a page's worth of them needs
+// not be placed and delivered one by one (17 s against the test's 30).
+async function copiesOf(orderId: string, count: number): Promise<string[]> {
+  const { rows } = await sql.query<{ id: string }>(
+    `INSERT INTO ordering.orders
+     SELECT (jsonb_populate_record(o, jsonb_build_object('id', gen_random_uuid()))).*
+     FROM ordering.orders o, generate_series(1, $2::int)
+     WHERE o.id = $1
+     RETURNING id`,
+    [orderId, count],
+  );
+  return rows.map((row) => row.id);
+}
+
 describe('«التقييمات» of the restaurant', () => {
   it('shows its owners the ratings without the customer or the order', async () => {
     const owner = await user(restaurant, 'owner');
@@ -153,10 +169,12 @@ describe('«التقييمات» of the restaurant', () => {
     // Older than every rating before, so the two oldest are these.
     const start = Date.now() - 5 * DAY;
     const added = RATINGS_PAGE + 1 - before;
-    for (let each = 0; each < added; each += 1) {
-      const order = await deliveredOrder();
+    const delivered = await deliveredOrder();
+    const orders = [delivered.id, ...(await copiesOf(delivered.id, added - 1))];
+    expect(orders).toHaveLength(added);
+    for (const [each, id] of orders.entries()) {
       // The two oldest share their moment, on either side of the page's end.
-      await ratedAt(order.id, each < 2 ? 1 : 3, new Date(start + Math.max(each, 1) * 1000));
+      await ratedAt(id, each < 2 ? 1 : 3, new Date(start + Math.max(each, 1) * 1000));
     }
     const first = (await read(owner)).json();
     expect(first.count).toBe(RATINGS_PAGE + 1);

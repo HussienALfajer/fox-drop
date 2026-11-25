@@ -25,7 +25,7 @@ export const Focus = make();
 // open trigger, and a list that starts open is placed before its size is known.
 export const Open: Story = {
   play: ({ canvasElement }) => {
-    canvasElement.querySelector<HTMLButtonElement>('button[role="combobox"]')?.click();
+    canvasElement.querySelector<HTMLButtonElement>('button[role="combobox"]')!.click();
   },
 };
 export const Filled = make({ defaultValue: 'female' });

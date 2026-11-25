@@ -142,11 +142,13 @@ function newPhone(): string {
   return `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
 }
 
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
+// Waits for a condition, checked every 20 ms, for up to 10 s (a loaded machine
+// takes longer than the 2 s this once allowed).
 async function until(check: () => boolean | Promise<boolean>): Promise<void> {
-  for (let attempt = 0; attempt < 100 && !(await check()); attempt += 1) await pause(20);
-  expect(await check()).toBe(true);
+  await vi.waitFor(async () => expect(await check()).toBe(true), {
+    timeout: 10_000,
+    interval: 20,
+  });
 }
 
 // Pairs a number, as the pairing command does: its session names its phone.
@@ -276,6 +278,22 @@ describe('the otp-sender', () => {
       "UPDATE identity.otp_sender_numbers SET status = 'active', warmup_started_at = NULL WHERE id = $1",
       [numberId],
     );
+  }
+
+  // The sender's event handlers run unawaited (`void this.receipt(...)`), so
+  // a test spies on one and waits for every call it started, not for a time.
+  async function handling(name: 'answerIncoming' | 'receipt', events: () => void): Promise<void> {
+    const handler = vi.spyOn(
+      sender as unknown as Record<typeof name, (...args: unknown[]) => Promise<void>>,
+      name,
+    );
+    try {
+      events();
+      expect(handler).toHaveBeenCalled();
+      await Promise.allSettled(handler.mock.results.map((result) => result.value));
+    } finally {
+      handler.mockRestore();
+    }
   }
 
   async function connected(...numberIds: string[]): Promise<void> {
@@ -412,10 +430,10 @@ describe('the otp-sender', () => {
 
     it('replies once to someone who writes to the number', async () => {
       const chat = `${randomUUID()}@lid`;
-      fake.events?.incoming(chat);
-      fake.events?.incoming(chat);
-      await until(() => fake.replies.some((reply) => reply.chat === chat));
-      await pause(100);
+      await handling('answerIncoming', () => {
+        fake.events?.incoming(chat);
+        fake.events?.incoming(chat);
+      });
       expect(fake.replies.filter((reply) => reply.chat === chat)).toEqual([
         { chat, text: replyMessage('+963911000000') },
       ]);
@@ -432,8 +450,7 @@ describe('the otp-sender', () => {
     it('marks a logged-out number disconnected and sends nothing more', async () => {
       fake.events?.closed('logged_out');
       await until(() => sender.connectedNumbers().length === 0);
-      await pause(100);
-      expect(await statusOf(numberId)).toBe('disconnected');
+      await until(async () => (await statusOf(numberId)) === 'disconnected');
       expect(await valkey.get(connectedKey(numberId))).toBeNull();
       const connects = fake.connects;
       await sender.supervise();
@@ -571,8 +588,7 @@ describe('the otp-sender', () => {
       const [banned, other] = await activeNumbers(2);
       banned!.fake.events?.closed('banned');
       await until(() => !sender.connectedNumbers().includes(banned!.id));
-      await pause(100);
-      expect(await statusOf(banned!.id)).toBe('banned');
+      await until(async () => (await statusOf(banned!.id)) === 'banned');
       expect(await request(reachable())).toBe('sent');
       expect(other!.fake.sent).toHaveLength(1);
     });
@@ -592,13 +608,15 @@ describe('the otp-sender', () => {
       const [only] = await activeNumbers(1);
       expect(await request(reachable())).toBe('sent');
       const messageId = only!.fake.sent.at(-1)!.id;
-      only!.fake.events?.receipt(messageId, 'delivered');
-      only!.fake.events?.receipt(messageId, 'delivered');
-      await pause(100);
-      only!.fake.events?.receipt(messageId, 'read');
-      only!.fake.events?.receipt(messageId, 'read');
-      only!.fake.events?.receipt('unknown', 'read');
-      await pause(100);
+      await handling('receipt', () => {
+        only!.fake.events?.receipt(messageId, 'delivered');
+        only!.fake.events?.receipt(messageId, 'delivered');
+      });
+      await handling('receipt', () => {
+        only!.fake.events?.receipt(messageId, 'read');
+        only!.fake.events?.receipt(messageId, 'read');
+        only!.fake.events?.receipt('unknown', 'read');
+      });
       expect(await countsOf(only!.id)).toEqual({ sent: 1, failed: 0, delivered: 1, read: 1 });
     });
 
@@ -795,7 +813,7 @@ describe('the otp-sender', () => {
         await connected(id);
         whatsapp.number(phone).events?.closed('banned');
         await until(() => !sender.connectedNumbers().includes(id));
-        await pause(100);
+        await until(async () => (await statusOf(id)) === 'banned');
         const listed = await call('GET');
         expect(listed.json()).toMatchObject({
           numbers: [{ id, status: 'banned', connected: false }],

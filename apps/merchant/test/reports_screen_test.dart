@@ -283,9 +283,13 @@ void main() {
     expect(find.text('ملخص يوم 09/11/2026'), findsOneWidget);
     expect(_sent(app).last, {'day': '2026-11-09'});
     await tester.tap(find.byKey(const Key('summary-share')));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 200)),
-    );
+    // Rendering the image runs outside the test's fake clock: wait until it is
+    // shared, checking every 50 ms for up to 10 s, not for a fixed time.
+    await tester.runAsync(() async {
+      for (var i = 0; i < 200 && app.shared.isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    });
     await tester.pumpAndSettle();
     expect(app.shared, ['summary-2026-11-09.png']);
     await app.done(tester);
