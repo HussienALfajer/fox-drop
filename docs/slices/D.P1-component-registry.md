@@ -33,7 +33,10 @@ Each surface is one a spec section cites (CU customer, CA captain, RA restaurant
 
 - Pending cards sit under the web name (`project/components/DateField/`), not `Fox*`, so the live card replaces each in place; no `Fox*` card remains.
 - `flutterParts` (not in the plan) holds the other exported widgets of a component, so the test can require every public widget once: `FoxRadio`, `FoxToaster`, `FoxSkeletonBlock`, `FoxRefreshDrop`.
-- The card's group comes from the registry: DropLoader moved from Feedback to Data, Icon from Icons to Actions.
+- The card's group comes from the registry: DropLoader moved from Feedback to Data, Icon from Icons to Actions, Menu and Tooltip from Navigation to Overlays.
+- Overlays on a card with its golden (review): the body is the box of fixed overlays, so the toasts stay over the live part; Dialog and ConfirmDialog no longer open by themselves there (the top layer covers the whole card), their golden shows them open.
+- `turbo.json`: ui-web's test, build and e2e read the goldens folder and the registry; the design-tokens test reads `core_ui/lib` and ui-web's `bundle.ts` (`scripts/turbo-inputs.test.mjs`).
+- Toaster's five surfaces are provisional: no spec names a toast (architecture §22 item 11).
 - The ui-web `design-system` script takes `--blobs` too, run after the design-tokens `--blobs` pass.
 - The plan cites architecture §9.3 (typography): nothing there changed; the rule went into §9.1, §9.7, §9.8 and §9.9.
 

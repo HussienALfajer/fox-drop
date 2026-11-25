@@ -767,12 +767,23 @@ export function preview(component: string, image?: FlutterImage): string {
   if (!image || !flutter) return html;
   // The image is at most 720 wide; the card grows by its height and its heading.
   const grow = Math.ceil((image.height * 720) / image.width) + 72;
-  // The live part no longer fills the card, so the image follows it.
+  const live = Number(/height=(\d+) -->/.exec(html)![1]);
+  // The live part keeps its declared height. The transform makes the body,
+  // that height, the box of the fixed overlays (a dialog's scrim, the toasts),
+  // so they stay over the live part and the image sits below it.
   const section = `<style>
+  body {
+    position: relative;
+    height: ${live}px;
+    transform: translateZ(0);
+  }
   #root {
-    min-height: 0;
+    min-height: ${live}px;
   }
   .fd-flutter {
+    position: absolute;
+    inset-block-start: ${live}px;
+    inset-inline: 0;
     box-sizing: border-box;
     padding: 16px;
     background: var(--fd-color-surface);
@@ -797,7 +808,16 @@ export function preview(component: string, image?: FlutterImage): string {
   <img src="/_blob/${image.blob}" alt="${flutter} in core_ui, its states side by side" />
 </section>
 `;
-  return html
+  const card = html
     .replace(/height=(\d+) -->/, (_, h: string) => `height=${Number(h) + grow} -->`)
     .replace(/(<div id="root"[^>]*>(?:<\/div>)?\n)/, `$1${section}`);
+  // A modal sits in the browser's top layer, which no transform contains: it
+  // would cover the image, so here its trigger opens it on a press. A popover
+  // (the menu) stays in the live part and still opens by itself.
+  return MODALS.has(component)
+    ? card.replace(/\n *\/\/ The card shows the overlay itself[^\n]*\n *setTimeout\([^\n]*\n/, '\n')
+    : card;
 }
+
+/** The components whose open state is a modal in the top layer. */
+export const MODALS = new Set(['Dialog', 'ConfirmDialog']);
