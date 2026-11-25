@@ -48,8 +48,11 @@ const url = (where: TestPostgres, role: string, password: string, database: stri
 const adminUrl = (where: TestPostgres) => url(where, 'postgres', passwords.postgres, 'postgres');
 
 // The global setup's half (src/database/test-postgres.global-setup.ts).
-export async function startTestPostgres(): Promise<TestPostgres & { stop(): Promise<void> }> {
+export async function startTestPostgres(
+  labels: Record<string, string>,
+): Promise<TestPostgres & { stop(): Promise<void> }> {
   const container = await new PostgreSqlContainer(postgisImage)
+    .withLabels(labels)
     .withDatabase(TEMPLATE)
     .withUsername('postgres')
     .withPassword(passwords.postgres)
