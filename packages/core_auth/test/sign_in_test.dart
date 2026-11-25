@@ -52,6 +52,26 @@ void main() {
     expect(h.server.requests, isEmpty);
   });
 
+  test(
+    'takes a mobile of any country, read by the shared rules (D.11b)',
+    () async {
+      final h = _Harness();
+      addTearDown(h.container.dispose);
+      h.server.on(_code, [FakeAnswer(200, _sent())]);
+      await h.controller.requestCode('+49 151 23456789');
+      expect(h.state.phone, '+4915123456789');
+      expect(h.state.country, 'DE');
+    },
+  );
+
+  test('refuses a landline without a request (D.11b)', () async {
+    final h = _Harness();
+    addTearDown(h.container.dispose);
+    await h.controller.requestCode('0112345678');
+    expect(h.state.invalidPhone, isTrue);
+    expect(h.server.requests, isEmpty);
+  });
+
   test('sends the code, then signs in and starts the session', () async {
     final h = _Harness();
     addTearDown(h.container.dispose);

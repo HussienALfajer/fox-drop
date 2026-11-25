@@ -16,4 +16,42 @@
       opacity: 0.55;
     }
   }
+
+  /* The drop loader (D.11b, `motion.mark-fill.*`): the liquid rises from
+     below the mark to above it over the first `rise` (70%) of the cycle; the
+     full mark fades back over the last `fade` (18%: from 82%); the surface
+     sways one wavelength per `wave-period`. A keyframe cannot read a
+     variable, so the shares are written here and drop-loader.test.tsx keeps
+     them on the tokens. 870 is half the mark's box plus the wave's height, in
+     the brand file's units; 830 is one wavelength (drop-loader.tsx). */
+  --animate-mark-rise: mark-rise var(--fd-motion-mark-fill-duration) var(--fd-easing-standard)
+    infinite;
+  --animate-mark-fade: mark-fade var(--fd-motion-mark-fill-duration) linear infinite;
+  --animate-mark-wave: mark-wave var(--fd-motion-mark-fill-wave-period) linear infinite;
+
+  @keyframes mark-rise {
+    0% {
+      transform: translateY(870px);
+    }
+    70%,
+    100% {
+      transform: translateY(-870px);
+    }
+  }
+
+  @keyframes mark-fade {
+    0%,
+    82% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes mark-wave {
+    to {
+      transform: translateX(830px);
+    }
+  }
 }

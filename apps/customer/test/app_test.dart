@@ -53,9 +53,10 @@ void main() {
 
     await tester.tap(find.text('تسجيل الدخول'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('سوريا +963'));
+    // The chip opens the country list (D.11b).
+    await tester.tap(find.text('SY'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('تركيا +90').last);
+    await tester.tap(find.text('تركيا'));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const Key('sign-in-phone')),

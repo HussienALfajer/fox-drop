@@ -21,6 +21,7 @@ export { CountBadge, type CountBadgeProps } from './count-badge/count-badge';
 export { DataTable, type Column, type DataTableProps, type Sort } from './data-table/data-table';
 export { Dialog, type DialogProps } from './dialog/dialog';
 export { Drawer, type DrawerProps } from './drawer/drawer';
+export { DropLoader, type DropLoaderProps } from './drop-loader/drop-loader';
 export { EmptyState, type EmptyStateProps } from './empty-state/empty-state';
 export { Field, type FieldProps } from './field/field';
 export { Icon, type IconName, type IconProps } from './icon/icon';
@@ -38,7 +39,8 @@ export {
   type Tone,
 } from './status-chip/status-chip';
 export { formatDuration, Timer, type TimerProps, type TimerTone } from './timer/timer';
-export { PhoneField, type PhoneFieldProps, type PhoneCountry } from './phone-field/phone-field';
+export { PhoneField, type PhoneFieldProps, type PhoneMessages } from './phone-field/phone-field';
+export { readPhone, type PhoneProblem, type PhoneReading } from './phone-field/phone';
 export { QuantityStepper, type QuantityStepperProps } from './quantity-stepper/quantity-stepper';
 export { RadioGroup, type RadioGroupProps, type RadioOption } from './radio-group/radio-group';
 export { SearchField, type SearchFieldProps } from './search-field/search-field';

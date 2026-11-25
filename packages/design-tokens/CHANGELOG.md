@@ -2,6 +2,10 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.11.0 (2026-11-25, slice D.11b: sign-in and frame components)
+
+- New group `motion.*`: `motion.pulse.*` (the live dot's ring: scale 1 → 1.7, opacity 0.7 → 0 over `duration.moment`; still at 1.25 and 0.35 under reduced motion) and `motion.mark-fill.*` (the loader: the liquid rises over the first 0.7 of `duration.moment`, its surface sways every 700 ms, the full mark fades back over the last 0.18, the empty mark at 0.35; still half full under reduced motion), as `number` and `duration` tokens. CSS variables `--fd-motion-*` and Dart `FoxMotion`.
+
 ## 0.10.0 (2026-11-24, slice D.11: customer frame and sign-in)
 
 - New semantic `nav-halo` (new primitive neutral 250, `#E3DFD8`): the soft halo round the floating bottom bar's outline, taken from the owner's Figma file (home) when the bar was redrawn in its shape (owner, 2026-11-24). Decoration only, so it has no contrast pair.

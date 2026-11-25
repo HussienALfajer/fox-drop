@@ -113,13 +113,13 @@ class CheckoutForm {
     note: note ?? this.note,
   );
 
-  /// The contact number as E.164, null for the account's own; a Syrian or
-  /// Turkish mobile (U5).
+  /// The contact number as E.164, null for the account's own: a mobile of
+  /// any country, read by the shared rules with Syria for a national number
+  /// (D.11b; the field itself moves to `FoxPhoneField` with D.15's screen).
   String? get contactE164 {
     final value = contactPhone.trim();
     if (value.isEmpty) return null;
-    return e164Phone(PhoneCountry.syria, value) ??
-        e164Phone(PhoneCountry.turkey, value);
+    return e164Phone('SY', value);
   }
 }
 

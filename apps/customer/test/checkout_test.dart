@@ -2,6 +2,7 @@ import 'package:core_api/core_api.dart';
 import 'package:core_auth/testing.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:core_maps/core_maps.dart';
+import 'package:customer/src/checkout/checkout.dart' show CheckoutForm;
 import 'package:customer/src/checkout/problems.dart';
 import 'package:customer/src/location/pin.dart';
 import 'package:customer/src/location/position.dart';
@@ -314,6 +315,13 @@ void main() {
     await _confirm(tester);
     expect(app.bodyOf('/v1/customer/orders')['note'], 'اتصل بي عند الوصول');
     await app.done(tester);
+  });
+
+  test('the contact number takes a mobile of any country (D.11b)', () {
+    String? e164(String typed) => CheckoutForm(contactPhone: typed).contactE164;
+    expect(e164('0944 123 456'), '+963944123456');
+    expect(e164('+49 151 23456789'), '+4915123456789');
+    expect(e164('0112345678'), isNull, reason: 'a landline');
   });
 
   testWidgets('checks the address and the note before sending', (tester) async {

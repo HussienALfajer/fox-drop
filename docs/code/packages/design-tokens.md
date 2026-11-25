@@ -81,6 +81,10 @@ Version 0.7.0 (owner, 2026-11-24, sheet «Data display — batch 3», `src/data-
 
 The owner asked for every component in the Design System, the Flutter ones too. `core_ui`'s golden test `test/golden/design_system_cards_test.dart` draws one 720-wide image per component (`test/golden/goldens/design-system/Fox*.png`, phone theme on the apps' ground, the captain theme where it differs) and `packages/core_ui/design-system/cards.json` names each card, its group («Flutter · Forms» and so on), a summary and its web twin. `design-system-build.ts` uploads the images as the asset group Flutter; the `--blobs` pass also writes each card's README and a preview that shows its image, as tall as the image at 720. A changed component means a new golden (`pnpm test:golden --update-goldens`), a new upload and a new `--blobs` pass.
 
+## Motion tokens (0.11.0, D.11b)
+
+`motion.pulse.*` and `motion.mark-fill.*` are numbers and durations, not curves: the loader and the tracking pulse compute their frames from them (`FoxMotion` in Dart; `--fd-motion-*` in CSS, which the web's keyframes cannot read, so ui-web's test checks the shares written in `theme.css`). The Dart output writes a `duration` token as `Duration` and every other one as `double`.
+
 ## Left out
 
 The `tnum` feature as a token (D.6 and D.7 set `font-variant-numeric: tabular-nums` or `FontFeature.tabularFigures()` on the number role and on money, timer and table text); real dark values; wiring the theme into the web apps (D.6) and Flutter (D.7); components in the Design System (D.6); publishing the artifacts from CI; font subsetting and size budgets; map style tokens (D.3); densities (the panel scale covers the compact one for now). Icons: the `Icon` components (D.6 `ui-web`, D.7 `core_ui`); the second batch (expression §10); filled or duotone variants and the Figma file's orange accent layer (the bell's dot, filled stars), which R8 forbids today and waits for the owner; an icon font.

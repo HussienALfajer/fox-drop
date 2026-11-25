@@ -4,7 +4,7 @@ import 'package:core_tokens/core_tokens.dart' as t;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-import '../icon/path_data.dart';
+import '../drop_loader/fox_drop_loader.dart';
 import '../theme/fox_theme.dart';
 
 /// The states of the PullToRefresh use case (R3).
@@ -16,13 +16,10 @@ const refreshDropStates = ['empty', 'half', 'full', 'refreshing'];
 /// How far a pull goes before it refreshes.
 const double _threshold = t.FoxSpace.xxxl + t.FoxSpace.md;
 
-/// The logo's drop (brand expression §2), outline 24 × 24.
-const _dropPath = 'M12 23s9-8.4 9-14.5a9 9 0 0 0-18 0C3 14.6 12 23 12 23Z';
-
-/// Pull to refresh (D.10; owner, 2026-11-24: the logo's drop). Pulling the
-/// list down from its top fills the drop with the primary colour; past the
-/// threshold, letting go runs [onRefresh] once and the drop pulses until its
-/// future completes. Under reduced motion the drop stays still. Screen
+/// Pull to refresh (D.10; owner, 2026-11-24: the logo's drop; D.11b: the
+/// mark). Pulling the list down from its top fills the mark; past the
+/// threshold, letting go runs [onRefresh] once and the mark cycles as the
+/// drop loader until its future completes (still under reduced motion). Screen
 /// readers get the [refreshLabel] action, which refreshes without a
 /// gesture. [child] is the scrollable (give it `AlwaysScrollableScrollPhysics`
 /// so a short list can be pulled).
@@ -137,10 +134,9 @@ class _FoxPullToRefreshState extends State<FoxPullToRefresh> {
   }
 }
 
-/// The drop of pull to refresh: on a raised circle, filled from the bottom
-/// to [progress]; while [refreshing] it is full and pulses (still under
-/// reduced motion).
-class FoxRefreshDrop extends StatefulWidget {
+/// The drop of pull to refresh: the brand mark on a raised circle, filled
+/// from the bottom to [progress]; while [refreshing] it is the drop loader.
+class FoxRefreshDrop extends StatelessWidget {
   const FoxRefreshDrop({
     super.key,
     required this.progress,
@@ -149,46 +145,6 @@ class FoxRefreshDrop extends StatefulWidget {
 
   final double progress;
   final bool refreshing;
-
-  @override
-  State<FoxRefreshDrop> createState() => _FoxRefreshDropState();
-}
-
-class _FoxRefreshDropState extends State<FoxRefreshDrop>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulse = AnimationController(
-    vsync: this,
-    duration: t.FoxDuration.moment,
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(FoxRefreshDrop old) {
-    super.didUpdateWidget(old);
-    _sync();
-  }
-
-  void _sync() {
-    final still = MediaQuery.disableAnimationsOf(context);
-    if (widget.refreshing && !still) {
-      if (!_pulse.isAnimating) _pulse.repeat(reverse: true);
-    } else {
-      _pulse
-        ..stop()
-        ..value = 0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -203,55 +159,19 @@ class _FoxRefreshDropState extends State<FoxRefreshDrop>
         boxShadow: [theme.shadows.medium],
       ),
       alignment: Alignment.center,
-      child: FadeTransition(
-        opacity: Tween<double>(begin: 1, end: 0.45).animate(_pulse),
-        child: CustomPaint(
-          size: const Size.square(t.FoxSize.iconLg),
-          painter: _DropPainter(
-            progress: widget.progress.clamp(0.0, 1.0),
-            fill: c.primary,
-            empty: c.primarySubtle,
-          ),
+      // The project's one loader (D.11b): it fills as you pull, and cycles
+      // while the refresh runs (still, half full, under reduced motion).
+      child: SizedBox.square(
+        dimension: t.FoxSize.iconLg,
+        child: FittedBox(
+          child: refreshing
+              ? const FoxDropLoader(size: FoxDropLoaderSize.lg)
+              : FoxDropLoader(
+                  size: FoxDropLoaderSize.lg,
+                  level: progress.clamp(0.0, 1.0),
+                ),
         ),
       ),
     );
   }
-}
-
-class _DropPainter extends CustomPainter {
-  _DropPainter({
-    required this.progress,
-    required this.fill,
-    required this.empty,
-  });
-
-  final double progress;
-  final Color fill;
-  final Color empty;
-
-  static final Path _drop = parseSvgPath(_dropPath);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final scale = size.width / 24;
-    canvas.scale(scale);
-    final level = 2 + 21 * (1 - progress);
-    canvas
-      ..save()
-      ..clipPath(_drop)
-      ..drawRect(const Rect.fromLTRB(0, 0, 24, 24), Paint()..color = empty)
-      ..drawRect(Rect.fromLTRB(0, level, 24, 24), Paint()..color = fill)
-      ..restore()
-      ..drawPath(
-        _drop,
-        Paint()
-          ..color = fill
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2,
-      );
-  }
-
-  @override
-  bool shouldRepaint(_DropPainter old) =>
-      old.progress != progress || old.fill != fill || old.empty != empty;
 }

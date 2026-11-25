@@ -78,7 +78,7 @@ Checkpoints (one commit per step, `checker` once at each): (A) tokens and the lo
 
 ## Stopped at
 
-Planned 2026-11-25; the owner answered the plan's three questions the same day. Next: `/build-slice D.11b` in a fresh session.
+2026-11-25, end of the first build session (owner: finish B, then stop): checkpoints A (tokens 0.11.0 and the loader, both sides) and B (the shared phone rules, the country list generator, `PhoneField` on the web, `FoxPhoneField` and `FoxCountrySheet` in Flutter, the old inputs moved) went to `main` in their own pull request (#283, owner 2026-11-25: merge A and B now). Next: checkpoint C (plan step 4) on a new branch from `main` (`feat/sign-in-frame-components-c`), then step 5, the goldens and visual baselines (A and B's are not updated yet), review and the slice's second pull request.
 
 ## Evidence
 
@@ -95,6 +95,13 @@ Nothing for the server. New builds of the three apps carry the every-country fie
 The owner sees the components in Storybook and widgetbook (and the Design System after the sync); with D.11a deployed, signs in to the customer app with a number of another country, picked from the list and pasted in full.
 
 ## Notes for the next session
+
+- **Built (A, B), with their tests locked in `.claude/state/locked-tests.txt`:** what each does is in `docs/code/packages/core_ui.md`, `ui-web.md` and `design-tokens.md` («D.11b»). The loader has three sizes (16, 24, 48) as the plan says; the components sheet proposed a fourth (32), which pull to refresh gets by scaling 48.
+- **Deviation to tell the owner:** the customer's checkout contact number takes the new rules (any country, `CheckoutForm.contactE164`) but keeps its plain field: the form holds the number as text without a country, so `FoxPhoneField` there waits for D.15's checkout screen. The sign-in screen and the staff dialog use `FoxPhoneField`, inside a local `FoxTheme` (the three apps have none yet).
+- **Not done yet:** checkpoint C (plan step 4: `FoxTextLink`/`TextLink`, `FoxTrackingSteps`, `FoxSignInHero`, `FoxCodePreview`, `FoxBottomNavigation` in the Figma shape with Linear icons, `FoxBanner` close and second action, `FoxVersionTicket`, `FoxShopSign`) and step 5: stories and Design System cards for the new web parts (`DropLoader` README and preview, `COMPONENTS` in `scripts/bundle.ts`, `bundle-entry.ts`, `docs.ts`), the Flutter Design System cards (`design_system_cards_test.dart`: `FoxDropLoader`, `FoxCountrySheet`), the goldens (`pnpm test:golden --update-goldens`, Docker: the button, forms, overlays and new frame goldens changed) and the visual baselines (`pnpm --filter @fox-drop/ui-web test:visual --update-snapshots`), the Design System sync, architecture §9.4 and `docs/brand/expression.md` (the selected tab Linear), then the full `pnpm verify` (this slice changed `scripts/classify-changes.mjs`), review and the pull request.
+- **Fix first in the next session (found in the goldens, 2026-11-25):** the phone field's check mark takes a 48 box though it is not a control, so in a narrow field (the Design System card) the digits are cut. Make it as wide as its icon (Flutter: a `Padding` of `i.gap / 2` instead of the `SizedBox.square`; web: `px-2xs` instead of `size-(--fd-size-touch-target)` on `valid`), then update the goldens and the phone field's visual baselines and look at them.
+- **The drawings for C** are on the customer screens canvas (memory file of design artifacts): `Components.dc.html` sections 2, 4, 5; `Main.dc.html` holds the hero (lines near «The hero: why you are asked»), the tracking strip (`track` in its script: done steps `info` with Bold icons, the current a `primary` circle with two `fx-pulse` rings, later steps dashed), the bottom bar's outline path and tab styles, the version ticket and the shop sign (near «Blocking»).
+- **Speed (owner, 2026-11-25: the session took about four hours):** run `dart analyze --fatal-infos` and the package's own tests before the full `checker`; each failed `--changed` run costs 8 to 10 minutes. Writing through the Write and Edit tools turns `\uXXXX` into the character itself: build invisible characters from code points in code.
 
 - Not in this slice: the screens and their wiring (D.11): the sign-in origin from the route, the Android phone number hint, the remembered number, the send button's words, the screens' strings other than the field's messages.
 - The starting screen's splash (D.11 screen 1) is its own drawing, not a component here.

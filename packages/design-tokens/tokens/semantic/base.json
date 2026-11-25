@@ -129,6 +129,56 @@
       "$value": "{primitive.easing.calm}"
     }
   },
+  "motion": {
+    "$description": "Two looping motions as numbers, not curves (brand expression §3, slice D.11b): each loops on its own duration and has a still frame for reduced motion.",
+    "pulse": {
+      "$description": "The live dot's soft ring: it grows and fades, then starts again.",
+      "duration": { "$type": "duration", "$value": "{duration.moment}" },
+      "scale-from": { "$type": "number", "$value": 1 },
+      "scale-to": { "$type": "number", "$value": 1.7 },
+      "opacity-from": { "$type": "number", "$value": 0.7 },
+      "opacity-to": { "$type": "number", "$value": 0 },
+      "still-scale": {
+        "$type": "number",
+        "$value": 1.25,
+        "$description": "The ring under reduced motion."
+      },
+      "still-opacity": {
+        "$type": "number",
+        "$value": 0.35,
+        "$description": "The ring under reduced motion."
+      }
+    },
+    "mark-fill": {
+      "$description": "The loader: a liquid rises through the faint mark, then the mark fades back; one cycle, no pause.",
+      "duration": { "$type": "duration", "$value": "{duration.moment}" },
+      "rise": {
+        "$type": "number",
+        "$value": 0.7,
+        "$description": "The share of the cycle the liquid takes to fill the mark."
+      },
+      "fade": {
+        "$type": "number",
+        "$value": 0.18,
+        "$description": "The share of the cycle, at its end, the full mark takes to fade back."
+      },
+      "wave-period": {
+        "$type": "duration",
+        "$value": "700ms",
+        "$description": "One sway of the liquid's surface."
+      },
+      "faint-opacity": {
+        "$type": "number",
+        "$value": 0.35,
+        "$description": "The empty mark under the liquid."
+      },
+      "still-level": {
+        "$type": "number",
+        "$value": 0.5,
+        "$description": "The level shown under reduced motion: half full."
+      }
+    }
+  },
   "font": {
     "family": {
       "$type": "fontFamily",

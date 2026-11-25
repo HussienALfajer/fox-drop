@@ -10,6 +10,8 @@ resolution: workspace
 dependencies:
   core_api: any
   core_l10n: any
+  # The phone field for every country (D.11b).
+  core_ui: any
   core_storage: any
   dio: 5.11.1
   firebase_app_check: 0.5.1

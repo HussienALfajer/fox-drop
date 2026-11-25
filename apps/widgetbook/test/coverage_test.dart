@@ -56,6 +56,8 @@ final _states = <String, (List<String>, List<String>)>{
   'FoxNavigationRail': ([''], navigationRailStates),
   'FoxPullToRefresh': ([''], pullToRefreshStates),
   'FoxRefreshDrop': ([''], refreshDropStates),
+  'FoxDropLoader': ([''], dropLoaderStates),
+  'FoxCountrySheet': ([''], countrySheetStates),
 };
 
 void main() {

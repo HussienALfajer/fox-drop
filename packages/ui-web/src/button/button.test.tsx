@@ -49,9 +49,38 @@ describe('Button', () => {
     await userEvent.keyboard('{Enter}');
     await userEvent.keyboard(' ');
     expect(onClick).not.toHaveBeenCalled();
-    expect(
-      button.querySelector('svg[aria-hidden="true"] path[d="M12 3a9 9 0 1 0 9 9"]'),
-    ).not.toBeNull();
+    // The mark-filling loader replaced the 270° arc (D.11b).
+    expect(button.querySelector('[data-drop-loader]')).not.toBeNull();
+    expect(button.querySelector('path[d="M12 3a9 9 0 1 0 9 9"]')).toBeNull();
+  });
+
+  it('keeps its width while loading: the label stays in the flow, hidden', () => {
+    render(<Button loading>اطلب</Button>);
+    const label = screen.getByText('اطلب');
+    expect(label.closest('span')!.className).toMatch(/(^| )opacity-0( |$)/);
+  });
+
+  it('shows the loading label beside the loader, and is named by it', () => {
+    render(
+      <Button loading loadingLabel="جارٍ إرسال الرمز…">
+        أرسل الرمز
+      </Button>,
+    );
+    const button = screen.getByRole('button', { name: 'جارٍ إرسال الرمز…' });
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    const loading = screen.getByText('جارٍ إرسال الرمز…');
+    expect(loading.parentElement!.querySelector('[data-drop-loader]')).not.toBeNull();
+  });
+
+  it('draws the loader on orange inside the primary button only', () => {
+    const { rerender } = render(<Button loading>اطلب</Button>);
+    expect(document.querySelector('[data-drop-loader]')).toHaveAttribute('data-on-primary', '');
+    rerender(
+      <Button loading variant="secondary">
+        اطلب
+      </Button>,
+    );
+    expect(document.querySelector('[data-drop-loader]')).not.toHaveAttribute('data-on-primary');
   });
 
   it('does not submit a form by default, only with type submit', async () => {

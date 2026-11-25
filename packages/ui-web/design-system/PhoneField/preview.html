@@ -42,22 +42,46 @@
   const { React, ReactDOM, PhoneField } = FoxDrop;
   const base = {
     label: 'رقم الهاتف',
-    countryLabel: 'الدولة',
-    countryLabels: { sy: 'سوريا', tr: 'تركيا' },
+    chipLabel: (name, code) => 'الدولة: ' + name + '، ' + code + '. اضغط لتغييرها',
+    searchLabel: 'ابحث باسم الدولة أو رمزها',
+    pinnedLabel: 'الأكثر استعمالاً',
+    lastUsedLabel: 'آخر ما استعملته',
+    allLabel: 'كل الدول',
+    emptyLabel: 'لا دولة بهذا الاسم أو الرمز',
+    validLabel: 'الرقم صحيح',
+    clearLabel: 'مسح الرقم',
     placeholder: '9xx xxx xxx',
+    messages: {
+      empty: 'أدخل رقم هاتفك.',
+      missingDigits: (n) =>
+        n === 1 ? 'ينقص رقم واحد.' : n === 2 ? 'ينقص رقمان.' : 'ينقص ' + n + ' أرقام.',
+      tooLong: 'الرقم أطول من المعتاد. تأكّد منه.',
+      landline: 'هذا رقم أرضي. أدخل رقم جوال عليه واتساب.',
+      notMobilePrefix: (prefix) => 'أدخل رقم جوال يبدأ بـ ' + prefix + '.',
+      unknownCode: 'رمز الدولة غير معروف.',
+      switched: (name) => 'عرفنا الدولة من رمزها: ' + name + '.',
+    },
   };
   const sections = (section, h) => [
     ...section(
-      'Default and filled',
+      'Default and valid',
       h(PhoneField, { ...base, hint: 'سنرسل الرمز إلى واتساب' }),
-      h(PhoneField, { ...base, defaultValue: '+963912345678' }),
+      h(PhoneField, { ...base, defaultValue: '+963944123456' }),
     ),
     ...section(
-      'Turkey and invalid',
-      h(PhoneField, { ...base, defaultValue: '+905321234567', placeholder: '5xx xxx xx xx' }),
-      h(PhoneField, { ...base, defaultValue: '+963912345678', error: 'رقم غير صحيح' }),
+      'Another country and an error',
+      h(PhoneField, { ...base, defaultValue: '+4915123456789' }),
+      h(PhoneField, {
+        ...base,
+        defaultValue: '+963944123456',
+        error: 'هذا الرقم غير مسجّل على واتساب',
+      }),
     ),
-    ...section('Disabled', h(PhoneField, { ...base, disabled: true })),
+    ...section(
+      'Busy and disabled',
+      h(PhoneField, { ...base, busy: true, defaultValue: '+963944123456' }),
+      h(PhoneField, { ...base, disabled: true }),
+    ),
   ];
   const h = React.createElement;
   const section = (title, ...items) => [

@@ -8,13 +8,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart' as m;
 
 import 'forms_harness.dart';
+import 'phone_harness.dart';
 
 final _i = FoxThemeData.phone().input;
-
-const _names = {
-  FoxPhoneCountry.syria: 'سوريا',
-  FoxPhoneCountry.turkey: 'تركيا',
-};
 
 void _keyboard() {
   FocusManager.instance.highlightStrategy =
@@ -40,22 +36,15 @@ Border _outline(WidgetTester tester, Finder box) =>
 
 void main() {
   group('FoxPhoneField', () {
-    Widget phone({
-      FoxPhoneCountry country = FoxPhoneCountry.syria,
-      ValueChanged<String?>? onChanged,
-      ValueChanged<FoxPhoneCountry>? onCountry,
-      String? error,
-      bool open = false,
-    }) => formApp(
+    Widget phone({String? error}) => formApp(
       FoxPhoneField(
-        country: country,
-        onChanged: onChanged ?? (_) {},
-        onCountryChanged: onCountry ?? (_) {},
-        countryNames: _names,
-        countryLabel: 'رمز الدولة',
+        country: 'SY',
+        countries: testCountries,
+        strings: testPhoneStrings,
+        onChanged: (_) {},
+        onCountryChanged: (_) {},
         label: 'رقم الهاتف',
         error: error,
-        initiallyOpen: open,
       ),
     );
 
@@ -74,162 +63,18 @@ void main() {
       expect(label.dx, closeTo(box.dx, 1));
     });
 
-    testWidgets('reports E.164 for 09… and 9…, and null while incomplete', (
-      tester,
-    ) async {
-      final seen = <String?>[];
-      await tester.pumpWidget(phone(onChanged: seen.add));
-      await tester.enterText(find.byType(EditableText), '0912345678');
-      await tester.enterText(find.byType(EditableText), '912345678');
-      await tester.enterText(find.byType(EditableText), '09123');
-      expect(seen, ['+963912345678', '+963912345678', null]);
-    });
-
-    testWidgets('Turkish numbers use +90 and 05…', (tester) async {
-      final seen = <String?>[];
-      await tester.pumpWidget(
-        phone(country: FoxPhoneCountry.turkey, onChanged: seen.add),
-      );
-      expect(find.text('+90'), findsOneWidget);
-      await tester.enterText(find.byType(EditableText), '05321234567');
-      expect(seen, ['+905321234567']);
-    });
-
-    // The country is the app's state, as a screen holds it.
-    Widget live(
-      List<String?> seen,
-      List<FoxPhoneCountry> countries, {
-      FoxPhoneCountry country = FoxPhoneCountry.syria,
-    }) => formApp(
-      StatefulBuilder(
-        builder: (context, setState) => FoxPhoneField(
-          country: country,
-          onChanged: seen.add,
-          onCountryChanged: (c) => setState(() {
-            country = c;
-            countries.add(c);
-          }),
-          countryNames: _names,
-          countryLabel: 'رمز الدولة',
-        ),
-      ),
-    );
-
-    String shown(WidgetTester tester) =>
-        tester.widget<EditableText>(find.byType(EditableText)).controller.text;
-
-    testWidgets('a number with its own calling code switches the chip', (
-      tester,
-    ) async {
-      final seen = <String?>[];
-      final countries = <FoxPhoneCountry>[];
-      await tester.pumpWidget(live(seen, countries));
-      await tester.enterText(find.byType(EditableText), '+90 532 123 45 67');
-      await tester.pump();
-      expect(countries, [FoxPhoneCountry.turkey]);
-      expect(seen.last, '+905321234567');
-      expect(find.text('+90'), findsOneWidget);
-      expect(find.text('+963'), findsNothing);
-      expect(shown(tester), '5321234567');
-      // The bare calling code and `00` switch back.
-      await tester.enterText(find.byType(EditableText), '963912345678');
-      await tester.pump();
-      expect(countries, [FoxPhoneCountry.turkey, FoxPhoneCountry.syria]);
-      expect(seen.last, '+963912345678');
-      expect(find.text('+963'), findsOneWidget);
-      expect(shown(tester), '912345678');
-    });
-
-    testWidgets('after a country switch the caret is at the end', (
-      tester,
-    ) async {
-      final seen = <String?>[];
-      await tester.pumpWidget(live(seen, []));
-      await tester.enterText(find.byType(EditableText), '+905321234567');
-      await tester.pump();
-      final controller = tester
-          .widget<EditableText>(find.byType(EditableText))
-          .controller;
-      expect(controller.text, '5321234567');
-      expect(controller.selection, const TextSelection.collapsed(offset: 10));
-      // Backspace deletes the character before the caret: the last digit.
-      final caret = controller.selection.baseOffset;
-      await tester.enterText(
-        find.byType(EditableText),
-        controller.text.substring(0, caret - 1),
-      );
-      expect(shown(tester), '532123456');
-      expect(seen.last, isNull);
-    });
-
-    testWidgets('a calling code with a wrong rest is shown and refused', (
-      tester,
-    ) async {
-      final seen = <String?>[];
-      final countries = <FoxPhoneCountry>[];
-      await tester.pumpWidget(live(seen, countries));
-      await tester.enterText(find.byType(EditableText), '+90912345678');
-      await tester.pump();
-      expect(countries, isEmpty);
-      expect(seen.last, isNull);
-      expect(shown(tester), '+90912345678');
-      expect(find.text('+963'), findsOneWidget);
-    });
-
-    testWidgets('typing stops at the country length, a paste is never cut', (
-      tester,
-    ) async {
-      final seen = <String?>[];
-      await tester.pumpWidget(live(seen, []));
-      await tester.enterText(find.byType(EditableText), '0912345678');
-      expect(shown(tester), '0912345678');
-      // One more typed digit is dropped.
-      await tester.enterText(find.byType(EditableText), '09123456789');
-      expect(shown(tester), '0912345678');
-      expect(seen.last, '+963912345678');
-      // A longer paste shows whole and is refused.
-      await tester.enterText(find.byType(EditableText), '');
-      await tester.enterText(find.byType(EditableText), '09123456789999');
-      expect(shown(tester), '09123456789999');
-      expect(seen.last, isNull);
-    });
-
-    testWidgets('Arabic-Indic and Persian digits show as 0-9', (tester) async {
-      final seen = <String?>[];
-      await tester.pumpWidget(live(seen, []));
-      await tester.enterText(find.byType(EditableText), '٠٩١٢٣٤٥٦٧٨');
-      expect(shown(tester), '0912345678');
-      expect(seen.last, '+963912345678');
-      await tester.enterText(find.byType(EditableText), '');
-      await tester.enterText(find.byType(EditableText), '۰۹۱۲۳۴۵۶۷۸');
-      expect(shown(tester), '0912345678');
-      expect(seen.last, '+963912345678');
-    });
-
-    testWidgets('the chip opens a menu of two countries under the field', (
-      tester,
-    ) async {
-      final countries = <FoxPhoneCountry>[];
-      await tester.pumpWidget(phone(onCountry: countries.add));
-      await tester.tap(find.text('+963'));
-      await tester.pump();
-      expect(find.text('سوريا +963'), findsOneWidget);
-      expect(find.text('تركيا +90'), findsOneWidget);
-      final field = tester.getBottomLeft(find.byType(FieldBox));
-      final menu = tester.getTopLeft(find.text('سوريا +963'));
-      expect(menu.dy, greaterThan(field.dy));
-      await tester.tap(find.text('تركيا +90'));
-      await tester.pump();
-      expect(countries, [FoxPhoneCountry.turkey]);
-      expect(find.text('تركيا +90'), findsNothing);
-    });
+    // Reading, switching, the country list and every scale:
+    // phone_field_test.dart and phone_rules_test.dart (D.11b).
 
     testWidgets('names the chip and the field, and describes the error', (
       tester,
     ) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(phone(error: 'رقم غير صالح'));
-      expect(find.bySemanticsLabel('رمز الدولة'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('الدولة: سوريا، +963. اضغط لتغييرها'),
+        findsOneWidget,
+      );
       final node = tester.getSemantics(find.byType(EditableText));
       expect(node.label, 'رقم الهاتف');
       expect(node.hint, 'رقم غير صالح');
@@ -238,21 +83,6 @@ void main() {
         _i.borderInvalid,
       );
       semantics.dispose();
-    });
-
-    testWidgets('fits at every scale', (tester) async {
-      await expectNoOverflow(
-        tester,
-        () => FoxPhoneField(
-          country: FoxPhoneCountry.syria,
-          onChanged: (_) {},
-          onCountryChanged: (_) {},
-          countryNames: _names,
-          countryLabel: 'رمز الدولة',
-          label: 'رقم الهاتف',
-          hint: 'سنرسل لك رمز التحقق',
-        ),
-      );
     });
   });
 

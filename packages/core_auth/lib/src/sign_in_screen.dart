@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:core_l10n/core_l10n.dart';
+import 'package:core_ui/core_ui.dart'
+    show FoxPhoneField, FoxTheme, FoxThemeData;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,36 +91,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final refusal = state.refusal;
     return [
       if (widget.notice != null) Text(widget.notice!),
-      DropdownButton<PhoneCountry>(
-        value: state.country,
-        onChanged: state.busy
-            ? null
-            : (country) {
-                if (country != null) controller.selectCountry(country);
-              },
-        items: [
-          DropdownMenuItem(
-            value: PhoneCountry.syria,
-            child: Text(l10n.signInCountrySyria),
-          ),
-          DropdownMenuItem(
-            value: PhoneCountry.turkey,
-            child: Text(l10n.signInCountryTurkey),
-          ),
-        ],
-      ),
-      TextField(
-        key: const Key('sign-in-phone'),
-        controller: _phone,
-        keyboardType: TextInputType.phone,
-        textDirection: TextDirection.ltr,
-        enabled: !state.busy,
-        decoration: InputDecoration(
-          labelText: l10n.signInPhoneLabel,
-          errorText: state.invalidPhone ? l10n.signInInvalidPhone : null,
+      // The phone field for every country (D.11b). The screen stays
+      // unstyled until D.11; the field brings its own theme until then.
+      FoxTheme(
+        data: FoxThemeData.phone(),
+        child: FoxPhoneField(
+          key: const Key('sign-in-phone'),
+          controller: _phone,
+          country: state.country,
+          countries: foxCountryNames,
+          strings: phoneFieldStrings(l10n),
+          label: l10n.signInPhoneLabel,
+          busy: state.busy,
+          error: state.invalidPhone ? l10n.signInInvalidPhone : null,
+          onCountryChanged: controller.selectCountry,
+          onChanged: (_) {},
+          onSubmitted: (_) =>
+              controller.requestCode(_phone.text, join: widget.join),
         ),
-        onSubmitted: (input) =>
-            controller.requestCode(input, join: widget.join),
       ),
       FilledButton(
         onPressed: state.busy

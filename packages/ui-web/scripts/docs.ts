@@ -32,8 +32,10 @@ interface ButtonBase {
   variant?: ButtonVariant;
   /** 'comfortable' is 50 high (phones); 'compact' is 40, for the admin panel and the restaurant portal. */
   density?: 'comfortable' | 'compact';
-  /** Shows a spinner over the hidden label, keeps the width and ignores presses. */
+  /** Shows the drop loader over the hidden label, keeps the width and ignores presses. */
   loading?: boolean;
+  /** Shown beside the loader while loading, and the button's name then. */
+  loadingLabel?: string;
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
   onClick?: (event: unknown) => void;
@@ -129,28 +131,77 @@ interface SearchFieldProps {
   density?: Density;
 }
 
-type PhoneCountry = 'sy' | 'tr';
-type PhoneDetails = Record<'country', PhoneCountry>;
+/** Why a number is not a complete mobile yet. */
+type PhoneProblem =
+  | 'empty'
+  | 'missingDigits'
+  | 'tooLong'
+  | 'landline'
+  | 'notMobilePrefix'
+  | 'unknownCode';
+
+interface PhoneReading {
+  /** The ISO code of the country the number belongs to. */
+  country: string;
+  national: string;
+  /** The national digits in groups of three: '944 123 456'. */
+  grouped: string;
+  e164?: string;
+  problem?: PhoneProblem;
+  missing?: number;
+  prefix?: string;
+  switchedFrom?: string;
+}
+
+interface PhoneDetails {
+  country: string;
+  reading: PhoneReading;
+}
+
+/** The words of each problem. */
+interface PhoneMessages {
+  empty: string;
+  missingDigits: (count: number) => string;
+  tooLong: string;
+  landline: string;
+  notMobilePrefix: (prefix: string) => string;
+  unknownCode: string;
+  switched: (country: string) => string;
+}
 
 interface PhoneFieldProps {
   label: string;
   optionalLabel?: string;
   hint?: string;
+  /** An error of the screen's own; the field's problems come from messages. */
   error?: string;
-  /** The names in the country menu, shown before the calling code. */
-  countryLabels: Record<PhoneCountry, string>;
-  /** The accessible name of the country chip. */
-  countryLabel: string;
+  messages: PhoneMessages;
+  /** The chip's accessible name, from the country's Arabic name and calling code. */
+  chipLabel: (name: string, code: string) => string;
+  searchLabel: string;
+  pinnedLabel: string;
+  lastUsedLabel: string;
+  allLabel: string;
+  emptyLabel: string;
+  validLabel: string;
+  clearLabel: string;
   placeholder?: string;
   /** The number in E.164, or an empty string while it is not a complete mobile number. */
   value?: string;
   defaultValue?: string;
-  /** Called with the E.164 number once complete (09... or 9... for Syria, 05... or 5... for Turkey), else with an empty string. */
+  /** Called with the E.164 number once it is a complete mobile of any country, else with an empty string. */
   onValueChange?: (value: string, details: PhoneDetails) => void;
-  country?: PhoneCountry;
-  /** The picker starts on this country; 'sy' by default. */
-  defaultCountry?: PhoneCountry;
-  onCountryChange?: (country: PhoneCountry) => void;
+  /** Enter with a complete mobile; otherwise the problem shows. */
+  onSubmit?: (value: string) => void;
+  /** ISO code, such as 'SY'. */
+  country?: string;
+  /** The field starts on this country; 'SY' by default. */
+  defaultCountry?: string;
+  onCountryChange?: (country: string) => void;
+  /** Listed after Syria and Turkey. */
+  lastUsedCountry?: string;
+  /** Locked while the number is being sent. */
+  busy?: boolean;
   name?: string;
   required?: boolean;
   disabled?: boolean;

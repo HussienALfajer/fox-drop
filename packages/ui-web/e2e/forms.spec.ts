@@ -88,7 +88,7 @@ test.describe('phone field and code field read left to right inside a right to l
     page,
   }) => {
     await openStory(page, 'phonefield--default');
-    const chip = page.getByRole('combobox', { name: 'الدولة' });
+    const chip = page.getByRole('button', { name: /^الدولة:/ });
     const digits = page.getByRole('textbox');
     expect(await x(chip)).toBeLessThan(await x(digits));
     const direction = (locator: Locator) =>
@@ -281,6 +281,8 @@ test.describe('130% text', () => {
           [...document.querySelectorAll('#storybook-root *')].flatMap((element) => {
             // the hidden native control the UI SDK keeps for forms and autofill
             if (element.closest('[aria-hidden="true"]')) return [];
+            // text for screen readers only, clipped to one pixel on purpose
+            if (element.classList.contains('sr-only')) return [];
             const style = getComputedStyle(element);
             const cuts = style.overflowX !== 'visible' && style.textOverflow === 'ellipsis';
             // the select value and the search text may end in an ellipsis by design; a label may not

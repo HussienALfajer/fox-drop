@@ -1,132 +1,181 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { PhoneField } from './phone-field';
+import { PhoneField, type PhoneFieldProps } from './phone-field';
 
-const props = {
+const props: PhoneFieldProps = {
   label: 'رقم الهاتف',
-  countryLabel: 'الدولة',
-  countryLabels: { sy: 'سوريا', tr: 'تركيا' },
+  chipLabel: (name, code) => `الدولة: ${name}، ${code}. اضغط لتغييرها`,
+  searchLabel: 'ابحث باسم الدولة أو رمزها',
+  pinnedLabel: 'الأكثر استعمالاً',
+  lastUsedLabel: 'آخر ما استعملته',
+  allLabel: 'كل الدول',
+  emptyLabel: 'لا دولة بهذا الاسم أو الرمز',
+  validLabel: 'الرقم صحيح',
+  clearLabel: 'مسح الرقم',
+  messages: {
+    empty: 'أدخل رقم هاتفك.',
+    missingDigits: (n) => `ينقص ${n} أرقام.`,
+    tooLong: 'الرقم أطول من المعتاد. تأكّد منه.',
+    landline: 'هذا رقم أرضي. أدخل رقم جوال عليه واتساب.',
+    notMobilePrefix: (prefix) => `أدخل رقم جوال يبدأ بـ ${prefix}.`,
+    unknownCode: 'رمز الدولة غير معروف.',
+    switched: (name) => `عرفنا الدولة من رمزها: ${name}.`,
+  },
 };
 
+const number = () => screen.getByRole('textbox', { name: 'رقم الهاتف' });
+// The chip opens the list: a button that names the country.
+const chip = () => screen.getByRole('button', { name: /^الدولة:/ });
+
 describe('PhoneField', () => {
-  it('names the digits by the label and the chip by its own label', () => {
+  it('names the chip by the country, never doubling the code, and isolates the code ltr', () => {
     render(<PhoneField {...props} />);
-    expect(screen.getByRole('textbox', { name: 'رقم الهاتف' })).toHaveAttribute('type', 'tel');
-    const chip = screen.getByRole('combobox', { name: 'الدولة' });
-    expect(chip).toHaveTextContent('+963');
+    expect(chip()).toHaveAccessibleName('الدولة: سوريا، +963. اضغط لتغييرها');
+    expect(chip()).toHaveTextContent('SY');
+    // What the eye sees carries the code once (the doubled-code bug).
+    const shown = chip().querySelector('[aria-hidden="true"]')!;
+    expect(shown.textContent?.match(/\+963/g)).toHaveLength(1);
+    expect(chip().querySelector('bdi[dir="ltr"]')).toHaveTextContent('+963');
+    expect(number()).toHaveAttribute('type', 'tel');
+    expect(number()).toHaveAttribute('autocomplete', 'tel');
   });
 
-  it('is one pill holding an ltr island', () => {
-    const { container } = render(<PhoneField {...props} />);
-    const island = container.querySelector('[data-slot="input-group"]');
-    expect(island).toHaveAttribute('dir', 'ltr');
-    expect(island?.contains(screen.getByRole('combobox'))).toBe(true);
-    expect(island?.contains(screen.getByRole('textbox'))).toBe(true);
-  });
-
-  it.each(['0912345678', '912345678'])('reports E.164 for the Syrian number %s', async (typed) => {
+  it('reports the E.164 of a complete mobile, and the grouped digits in the box on blur', async () => {
     const onValueChange = vi.fn();
     render(<PhoneField {...props} onValueChange={onValueChange} />);
-    await userEvent.type(screen.getByRole('textbox'), typed);
-    expect(onValueChange).toHaveBeenLastCalledWith('+963912345678', { country: 'sy' });
-  });
-
-  it('reports an empty value while the number is not complete', async () => {
-    const onValueChange = vi.fn();
-    render(<PhoneField {...props} onValueChange={onValueChange} />);
-    await userEvent.type(screen.getByRole('textbox'), '09123');
-    expect(onValueChange).toHaveBeenLastCalledWith('', { country: 'sy' });
-  });
-
-  it.each(['05321234567', '5321234567'])(
-    'reports E.164 for the Turkish number %s',
-    async (typed) => {
-      const onValueChange = vi.fn();
-      render(<PhoneField {...props} defaultCountry="tr" onValueChange={onValueChange} />);
-      expect(screen.getByRole('combobox')).toHaveTextContent('+90');
-      await userEvent.type(screen.getByRole('textbox'), typed);
-      expect(onValueChange).toHaveBeenLastCalledWith('+905321234567', { country: 'tr' });
-    },
-  );
-
-  it('shows the national digits of a stored number and its country', () => {
-    render(<PhoneField {...props} defaultValue="+905321234567" />);
-    expect(screen.getByRole('textbox')).toHaveValue('5321234567');
-    expect(screen.getByRole('combobox')).toHaveTextContent('+90');
-  });
-
-  it('takes a pasted number with its calling code and shows Western digits', async () => {
-    const onValueChange = vi.fn();
-    render(<PhoneField {...props} onValueChange={onValueChange} />);
-    await userEvent.click(screen.getByRole('textbox'));
-    await userEvent.paste('+963 ٩١٢ ٣٤٥ ٦٧٨');
-    expect(screen.getByRole('textbox')).toHaveValue('912345678');
-    expect(onValueChange).toHaveBeenLastCalledWith('+963912345678', { country: 'sy' });
-  });
-
-  it('stops typing at the length of the country and never cuts digits', async () => {
-    const onValueChange = vi.fn();
-    render(<PhoneField {...props} onValueChange={onValueChange} />);
-    await userEvent.type(screen.getByRole('textbox'), '09123456789');
-    expect(screen.getByRole('textbox')).toHaveValue('0912345678');
-    expect(onValueChange).toHaveBeenLastCalledWith('+963912345678', { country: 'sy' });
-  });
-
-  it('shows a pasted number that is too long and reports no number', async () => {
-    const onValueChange = vi.fn();
-    render(<PhoneField {...props} onValueChange={onValueChange} />);
-    await userEvent.click(screen.getByRole('textbox'));
-    await userEvent.paste('09123456789');
-    expect(screen.getByRole('textbox')).toHaveValue('09123456789');
-    expect(onValueChange).toHaveBeenLastCalledWith('', { country: 'sy' });
-  });
-
-  it('lets a too-long pasted number be deleted one digit at a time until valid', async () => {
-    const onValueChange = vi.fn();
-    render(<PhoneField {...props} onValueChange={onValueChange} />);
-    await userEvent.click(screen.getByRole('textbox'));
-    await userEvent.paste('09123456789');
-    await userEvent.keyboard('{Backspace}');
-    expect(screen.getByRole('textbox')).toHaveValue('0912345678');
-    expect(onValueChange).toHaveBeenLastCalledWith('+963912345678', { country: 'sy' });
-  });
-
-  it('keeps the plus of a refused pasted number, so the next edit is read with its code', async () => {
-    const onValueChange = vi.fn();
-    render(<PhoneField {...props} onValueChange={onValueChange} />);
-    await userEvent.click(screen.getByRole('textbox'));
-    await userEvent.paste('+90912345678');
-    expect(screen.getByRole('textbox')).toHaveValue('+90912345678');
-    expect(onValueChange).toHaveBeenLastCalledWith('', { country: 'sy' });
-  });
-
-  it('switches the country to the one a pasted number names', async () => {
-    const onValueChange = vi.fn();
-    const onCountryChange = vi.fn();
-    render(
-      <PhoneField {...props} onValueChange={onValueChange} onCountryChange={onCountryChange} />,
+    await userEvent.type(number(), '0944123456');
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      '+963944123456',
+      expect.objectContaining({ country: 'SY' }),
     );
-    await userEvent.click(screen.getByRole('textbox'));
-    await userEvent.paste('+905321234567');
-    expect(onCountryChange).toHaveBeenCalledWith('tr');
-    expect(screen.getByRole('combobox')).toHaveTextContent('+90');
-    expect(screen.getByRole('textbox')).toHaveValue('5321234567');
-    expect(onValueChange).toHaveBeenLastCalledWith('+905321234567', { country: 'tr' });
+    await userEvent.tab();
+    expect(number()).toHaveValue('944 123 456');
   });
 
-  it('offers Syria and Turkey with their codes and switches country', async () => {
+  it('shows the valid mark only when the number is complete', async () => {
+    render(<PhoneField {...props} />);
+    await userEvent.type(number(), '094412345');
+    expect(screen.queryByRole('img', { name: 'الرقم صحيح' })).toBeNull();
+    await userEvent.type(number(), '6');
+    expect(screen.getByRole('img', { name: 'الرقم صحيح' })).toBeInTheDocument();
+  });
+
+  it('shows no problem while typing, then on blur, then live until fixed', async () => {
+    render(<PhoneField {...props} />);
+    await userEvent.type(number(), '094412345');
+    expect(screen.queryByText('ينقص 1 أرقام.')).toBeNull();
+    await userEvent.tab();
+    expect(screen.getByText('ينقص 1 أرقام.')).toBeInTheDocument();
+    expect(number()).toHaveAttribute('aria-invalid', 'true');
+    await userEvent.click(number());
+    await userEvent.type(number(), '6');
+    // The SDK's live announcer may still hold what it last read; the field
+    // itself no longer shows the problem.
+    expect(
+      screen.queryByText('ينقص 1 أرقام.', { ignore: '[data-ui-sdk-announcer], script, style' }),
+    ).toBeNull();
+    expect(number()).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('shows the problem on submit with the send key, and submits only a complete number', async () => {
+    const onSubmit = vi.fn();
+    render(<PhoneField {...props} onSubmit={onSubmit} />);
+    await userEvent.type(number(), '0112345678{Enter}');
+    expect(screen.getByText('هذا رقم أرضي. أدخل رقم جوال عليه واتساب.')).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+    await userEvent.clear(number());
+    await userEvent.type(number(), '0944123456{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('+963944123456');
+  });
+
+  it('switches the country by itself for a pasted number of another country, and says so', async () => {
     const onCountryChange = vi.fn();
     render(<PhoneField {...props} onCountryChange={onCountryChange} />);
-    await userEvent.click(screen.getByRole('combobox', { name: 'الدولة' }));
-    expect(screen.getByRole('option', { name: 'سوريا +963', hidden: true })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('option', { name: 'تركيا +90', hidden: true }));
-    expect(onCountryChange).toHaveBeenCalledWith('tr');
-    expect(screen.getByRole('combobox')).toHaveTextContent('+90');
+    await userEvent.click(number());
+    await userEvent.paste('+4915123456789');
+    expect(onCountryChange).toHaveBeenCalledWith('DE');
+    expect(chip()).toHaveTextContent('DE');
+    expect(number()).toHaveValue('151 234 567 89');
+    expect(screen.getByText('عرفنا الدولة من رمزها: ألمانيا.')).toBeInTheDocument();
   });
 
-  it('describes the digits by the error', () => {
-    render(<PhoneField {...props} error="رقم غير صحيح" />);
-    expect(screen.getByRole('textbox')).toHaveAccessibleDescription('رقم غير صحيح');
+  it('empties with the clear button', async () => {
+    const onValueChange = vi.fn();
+    render(<PhoneField {...props} onValueChange={onValueChange} />);
+    await userEvent.type(number(), '0944');
+    await userEvent.click(screen.getByRole('button', { name: 'مسح الرقم' }));
+    expect(number()).toHaveValue('');
+    expect(onValueChange).toHaveBeenLastCalledWith('', expect.objectContaining({ country: 'SY' }));
+  });
+
+  it('is locked while busy', () => {
+    render(<PhoneField {...props} busy defaultValue="+963944123456" />);
+    expect(number()).toBeDisabled();
+    expect(chip()).toBeDisabled();
+  });
+
+  it('shows a stored number in its country, grouped', () => {
+    render(<PhoneField {...props} defaultValue="+905321234567" />);
+    expect(number()).toHaveValue('532 123 4567');
+    expect(chip()).toHaveTextContent('TR');
+  });
+
+  describe('the country list', () => {
+    it('lists Syria and Turkey first, then the last used, then every country in Arabic order', async () => {
+      render(<PhoneField {...props} lastUsedCountry="DE" />);
+      await userEvent.click(chip());
+      for (const title of ['الأكثر استعمالاً', 'آخر ما استعملته', 'كل الدول'])
+        expect(screen.getByText(title)).toBeInTheDocument();
+      const options = screen.getAllByRole('option').map((o) => o.getAttribute('data-value'));
+      expect(options.slice(0, 3)).toEqual(['SY', 'TR', 'DE']);
+      expect(options.length).toBe(245);
+      // CLDR's Arabic order: «آيسلندا» before «إثيوبيا» before «أذربيجان».
+      expect(options.slice(3, 6)).toEqual(['IS', 'ET', 'AZ']);
+      expect(
+        within(screen.getAllByRole('option')[0]!).getByText('+963').closest('bdi'),
+      ).toHaveAttribute('dir', 'ltr');
+    });
+
+    it('searches by the Arabic name, the English name and the calling code', async () => {
+      render(<PhoneField {...props} />);
+      await userEvent.click(chip());
+      const search = screen.getByRole('combobox', { name: 'ابحث باسم الدولة أو رمزها' });
+      for (const [query, iso] of [
+        ['ألمان', 'DE'],
+        ['germ', 'DE'],
+        ['+49', 'DE'],
+        ['٤٩', 'DE'],
+      ] as const) {
+        await userEvent.clear(search);
+        await userEvent.type(search, query);
+        expect(screen.getAllByRole('option').map((o) => o.getAttribute('data-value'))).toContain(
+          iso,
+        );
+      }
+      await userEvent.clear(search);
+      await userEvent.type(search, 'zzzz');
+      expect(screen.getByText('لا دولة بهذا الاسم أو الرمز')).toBeInTheDocument();
+    });
+
+    it('picks with the keyboard, switches the chip and closes, giving focus back', async () => {
+      const onCountryChange = vi.fn();
+      render(<PhoneField {...props} onCountryChange={onCountryChange} />);
+      await userEvent.click(chip());
+      await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+      expect(onCountryChange).toHaveBeenCalledWith('TR');
+      expect(chip()).toHaveTextContent('TR');
+      expect(screen.queryByRole('listbox')).toBeNull();
+      await userEvent.click(chip());
+      await userEvent.keyboard('{Escape}');
+      expect(chip()).toHaveFocus();
+    });
+
+    it('draws no flags: names and codes only', async () => {
+      render(<PhoneField {...props} />);
+      await userEvent.click(chip());
+      for (const option of screen.getAllByRole('option').slice(0, 5))
+        expect(option.textContent).toMatch(/^[^\u{1F1E6}-\u{1F1FF}]+$/u);
+    });
   });
 });

@@ -1,9 +1,8 @@
-import 'dart:math' as math;
-
 import 'package:core_tokens/core_tokens.dart' as t;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../drop_loader/fox_drop_loader.dart';
 import '../icon/fox_icon.dart';
 import '../theme/fox_theme.dart';
 
@@ -37,8 +36,8 @@ const double _ringGap = 2;
 /// pressed tokens, fading over `duration.base`; nothing moves. The focus
 /// ring shows for keyboard focus only. A null [onPressed] disables the
 /// button: it is skipped by focus and ignores presses. [loading] keeps the
-/// width and the name, draws a spinner over the hidden label and ignores
-/// presses while staying focusable.
+/// width and the name (or takes [loadingLabel]), draws the drop loader over
+/// the hidden label and ignores presses while staying focusable.
 class FoxButton extends StatefulWidget {
   const FoxButton({
     super.key,
@@ -48,6 +47,7 @@ class FoxButton extends StatefulWidget {
     this.icon,
     this.iconEnd,
     this.loading = false,
+    this.loadingLabel,
     this.autofocus = false,
   }) : iconOnly = false;
 
@@ -61,7 +61,8 @@ class FoxButton extends StatefulWidget {
     this.loading = false,
     this.autofocus = false,
   }) : iconOnly = true,
-       iconEnd = null;
+       iconEnd = null,
+       loadingLabel = null;
 
   final String label;
   final VoidCallback? onPressed;
@@ -69,6 +70,10 @@ class FoxButton extends StatefulWidget {
   final t.FoxIconData? icon;
   final t.FoxIconData? iconEnd;
   final bool loading;
+
+  /// Shown beside the loader while [loading], and the button's name then:
+  /// «جارٍ إرسال الرمز…».
+  final String? loadingLabel;
   final bool iconOnly;
 
   /// Takes focus when it first builds: a dialog's safe action (D.10).
@@ -134,12 +139,34 @@ class _FoxButtonState extends State<FoxButton> {
         : BorderRadius.circular(theme.button.radius);
 
     final content = _content(theme, colors.label);
+    final loadingLabel = widget.loadingLabel;
+    final onPrimary =
+        widget.variant == FoxButtonVariant.primary ||
+        widget.variant == FoxButtonVariant.danger;
     final body = widget.loading
         ? Stack(
             alignment: Alignment.center,
             children: [
               Opacity(opacity: 0, child: content),
-              _Spinner(color: colors.label),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FoxDropLoader(onPrimary: onPrimary),
+                  if (loadingLabel != null) ...[
+                    SizedBox(width: theme.button.gap),
+                    Flexible(
+                      child: Text(
+                        loadingLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.text.subtitle.copyWith(
+                          color: colors.label,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           )
         : content;
@@ -208,7 +235,9 @@ class _FoxButtonState extends State<FoxButton> {
       // that can take focus.
       focusable: _disabled ? null : true,
       focused: _disabled ? null : _node.hasFocus,
-      label: widget.label,
+      label: widget.loading && widget.loadingLabel != null
+          ? widget.loadingLabel
+          : widget.label,
       onTap: _interactive ? _activate : null,
       onFocus: _disabled ? null : _node.requestFocus,
       child: FocusableActionDetector(
@@ -373,74 +402,4 @@ final class _Colors {
   final Color background;
   final Color label;
   final Color border;
-}
-
-/// A three-quarter ring turning once a second; still when the platform asks
-/// for no animations.
-class _Spinner extends StatefulWidget {
-  const _Spinner({required this.color});
-
-  final Color color;
-
-  @override
-  State<_Spinner> createState() => _SpinnerState();
-}
-
-class _SpinnerState extends State<_Spinner>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _turn = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 1),
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
-      _turn.stop();
-    } else if (!_turn.isAnimating) {
-      _turn.repeat();
-    }
-  }
-
-  @override
-  void dispose() {
-    _turn.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => CustomPaint(
-    size: Size.square(t.FoxSize.iconMd),
-    painter: _SpinnerPainter(_turn, widget.color),
-  );
-}
-
-class _SpinnerPainter extends CustomPainter {
-  _SpinnerPainter(this.turn, this.color) : super(repaint: turn);
-
-  final Animation<double> turn;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Stroked like an icon: 2 on the 24 grid, round caps.
-    final stroke = size.width / 12;
-    final rect = (Offset.zero & size).deflate(stroke);
-    canvas.drawArc(
-      rect,
-      turn.value * 2 * math.pi - math.pi / 2,
-      1.5 * math.pi,
-      false,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = stroke
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_SpinnerPainter old) =>
-      old.color != color || old.turn != turn;
 }

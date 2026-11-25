@@ -484,10 +484,21 @@ void main() {
     await tester.enterText(find.byKey(const Key('cashier-phone')), '123');
     await tester.tap(find.byKey(const Key('cashier-add')));
     await tester.pumpAndSettle();
-    expect(find.text('رقم الهاتف غير صحيح'), findsOneWidget);
+    expect(find.text('ينقص 6 أرقام.'), findsOneWidget);
+    // A landline is refused with its own words (D.11b).
     await tester.enterText(
       find.byKey(const Key('cashier-phone')),
-      '0912 345 678',
+      '0112345678',
+    );
+    await tester.tap(find.byKey(const Key('cashier-add')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('هذا رقم أرضي. أدخل رقم جوال عليه واتساب.'),
+      findsOneWidget,
+    );
+    await tester.enterText(
+      find.byKey(const Key('cashier-phone')),
+      '0944 345 678',
     );
     await tester.tap(find.byKey(const Key('cashier-add')));
     await tester.pumpAndSettle();
@@ -499,15 +510,16 @@ void main() {
         .to('/v1/merchant/staff')
         .where((r) => r.method == 'POST')
         .first;
-    expect(sent.data, {'name': 'سامر', 'phone': '+963912345678'});
+    expect(sent.data, {'name': 'سامر', 'phone': '+963944345678'});
     // A refused number changes nothing; another one is added.
     expect(find.text('سامر'), findsNothing);
     await tester.tap(find.byKey(const Key('add-cashier')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('cashier-name')), 'سامر');
+    // A mobile of another country, with its calling code (D.11b).
     await tester.enterText(
       find.byKey(const Key('cashier-phone')),
-      '0912345679',
+      '+49 151 23456789',
     );
     await tester.tap(find.byKey(const Key('cashier-add')));
     await tester.pumpAndSettle();

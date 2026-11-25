@@ -3,7 +3,14 @@
 library;
 
 export 'package:core_tokens/core_tokens.dart'
-    show FoxDuration, FoxIconData, FoxIcons, FoxRadius, FoxSize, FoxSpace;
+    show
+        FoxDuration,
+        FoxIconData,
+        FoxMotion,
+        FoxIcons,
+        FoxRadius,
+        FoxSize,
+        FoxSpace;
 
 export 'src/amounts_summary/fox_amounts_summary.dart';
 export 'src/banner/fox_banner.dart';
@@ -19,6 +26,7 @@ export 'src/date_field/fox_date_field.dart'
 export 'src/date_field/fox_time_field.dart';
 export 'src/field/fox_field.dart' show FoxField, fieldStates;
 export 'src/dish_card/fox_dish_card.dart';
+export 'src/drop_loader/fox_drop_loader.dart' hide MarkPainter, markFillAt;
 export 'src/empty_state/fox_empty_state.dart';
 export 'src/icon/fox_icon.dart';
 export 'src/list_row/fox_list_row.dart';
@@ -26,7 +34,9 @@ export 'src/menu/fox_menu.dart';
 export 'src/money/fox_money.dart';
 export 'src/navigation/fox_navigation.dart';
 export 'src/order_card/fox_order_card.dart';
+export 'src/phone_field/fox_country_sheet.dart';
 export 'src/phone_field/fox_phone_field.dart';
+export 'src/phone_field/phone_rules.dart';
 export 'src/pull_to_refresh/fox_pull_to_refresh.dart';
 export 'src/quantity_stepper/fox_quantity_stepper.dart';
 export 'src/radio/fox_radio.dart'

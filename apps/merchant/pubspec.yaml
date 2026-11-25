@@ -22,6 +22,8 @@ dependencies:
   core_realtime: any
   core_storage: any
   core_time: any
+  # The phone field for every country (D.11b), until the restaurant batch.
+  core_ui: any
   dio: 5.11.1
   flutter:
     sdk: flutter

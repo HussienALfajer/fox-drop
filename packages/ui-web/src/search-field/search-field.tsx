@@ -1,4 +1,5 @@
 import { Input, InputClear } from '@ui-sdk/react/input';
+import { DropLoader } from '../drop-loader/drop-loader';
 import { Icon } from '../icon/icon';
 import { InputBox } from '../field/input-box';
 import { formTv, inputClass, keyboardRing, type Density } from '../field/styles';
@@ -39,7 +40,7 @@ export interface SearchFieldProps {
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   name?: string;
-  /** A spinner replaces the clear button while results load; typing keeps working. */
+  /** The drop loader replaces the clear button while results load; typing keeps working. */
   loading?: boolean;
   disabled?: boolean;
   density?: Density;
@@ -64,17 +65,7 @@ export function SearchField(props: SearchFieldProps) {
       }
       end={
         loading ? (
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            aria-hidden="true"
-            className="size-(--fd-size-icon-md) shrink-0 animate-spin text-(color:--fd-input-color-accent) motion-reduce:animate-none"
-          >
-            <path d="M12 3a9 9 0 1 0 9 9" />
-          </svg>
+          <DropLoader size={iconSize} />
         ) : (
           <InputClear aria-label={clearLabel} className={clear()}>
             <Icon name="close" size="sm" />

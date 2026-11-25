@@ -21,7 +21,7 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 - **Mixed direction is explicit:** the phone pill and code cells sit under `Directionality(ltr)`, the label and error stay RTL; dates and times show LTR.
 - **A control is as small as its content** (`Align` with factors).
 - **The code field's `done` ignores reduced motion** (`FoxDuration.moment`); every other fade respects it.
-- Tests: `test/forms_harness.dart` (`expectNoOverflow`: directions, themes, scales); overlays use `test/overlays_harness.dart` (a WidgetsApp, for Escape and back). Change the phone rule in `phone_number_test.dart` first.
+- Tests: `test/forms_harness.dart` (`expectNoOverflow`: directions, themes, scales); overlays use `test/overlays_harness.dart` (a WidgetsApp, for Escape and back). Phone rules: add a row to ui-web's `phone-cases.json` first.
 - **Overlays (D.10):** `showFox*` push routes; the panels also render inline (widgetbook, goldens) and close through `Navigator.maybeOf`.
 
 ## More

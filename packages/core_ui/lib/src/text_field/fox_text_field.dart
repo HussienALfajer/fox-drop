@@ -6,7 +6,7 @@ import '../field/entry.dart';
 import '../field/fox_field.dart';
 import '../icon/fox_icon.dart';
 import '../internal/interaction.dart';
-import '../internal/spinner.dart';
+import '../drop_loader/fox_drop_loader.dart';
 import '../theme/fox_theme.dart';
 
 /// The states every text field use case and golden shows (R3), as the web's
@@ -194,7 +194,7 @@ class FoxTextArea extends StatelessWidget {
 
 /// The search pill of the home screen (D.8): an orange lens at the start
 /// (decoration: the [placeholder] names the field), a clear button at the end
-/// once something is typed, and a spinner in its place while [loading].
+/// once something is typed, and the drop loader in its place while [loading].
 class FoxSearchField extends StatelessWidget {
   const FoxSearchField({
     super.key,
@@ -234,11 +234,7 @@ class FoxSearchField extends StatelessWidget {
         builder: (context, _) {
           final Widget? end;
           if (loading) {
-            end = Semantics(
-              label: loadingLabel,
-              liveRegion: true,
-              child: Spinner(color: i.accent),
-            );
+            end = FoxDropLoader(label: loadingLabel);
           } else if (controller.text.isNotEmpty && enabled) {
             end = _ClearButton(
               label: clearLabel,
