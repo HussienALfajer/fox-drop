@@ -73,6 +73,11 @@ const _preview = FoxCodePreview(
   semanticLabel: 'يصلك الرمز في رسالة واتساب من FOX DROP',
 );
 
+/// The keyboard's height on a small phone, and the hero's room above the
+/// number on a 360 × 640 screen.
+const _keyboard = 280.0;
+const _heroHeight = 420.0;
+
 const _navItems = [
   FoxNavItem(icon: FoxIcons.home, label: 'الرئيسية'),
   FoxNavItem(icon: FoxIcons.search, label: 'البحث'),
@@ -284,7 +289,7 @@ void main() {
       await pumpHero(
         tester,
         _orders,
-        keyboard: const EdgeInsets.only(bottom: 280),
+        keyboard: const EdgeInsets.only(bottom: _keyboard),
       );
       expect(find.text('سجّل دخولك لتكمل طلبك'), findsOneWidget);
       expect(find.byType(FoxTrackingSteps), findsNothing);
@@ -295,7 +300,7 @@ void main() {
       for (final origin in [_checkout, _orders, _account]) {
         await expectNoOverflowInApp(
           tester,
-          () => SizedBox(height: 420, child: _hero(origin)),
+          () => SizedBox(height: _heroHeight, child: _hero(origin)),
           size: const Size(360, 640),
         );
       }

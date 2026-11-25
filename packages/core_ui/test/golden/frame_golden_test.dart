@@ -117,7 +117,7 @@ void main() {
         await pumpSheet(
           tester,
           FoxThemeData.phone(),
-          SizedBox(width: w, height: h * 0.5, child: _hero(origin)),
+          SizedBox(width: w, height: h / 2, child: _hero(origin)),
           size: Size(w, h * 0.5),
         );
         await expectLater(
@@ -138,10 +138,10 @@ void main() {
         builder: (context) => MediaQuery(
           data: MediaQuery.of(
             context,
-          ).copyWith(viewInsets: const EdgeInsets.only(bottom: 280)),
+          ).copyWith(viewInsets: const EdgeInsets.only(bottom: _keyboard)),
           child: SizedBox(
-            width: 360,
-            height: 120,
+            width: _small,
+            height: _titleOnly,
             child: _hero(_origins['orders']!),
           ),
         ),
@@ -159,7 +159,7 @@ void main() {
       tester,
       FoxThemeData.phone(),
       const SizedBox(
-        width: 360,
+        width: _small,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [_ticket, gap, _sign, gap, _signBack],
@@ -174,6 +174,13 @@ void main() {
     );
   });
 }
+
+/// A small phone's width, the keyboard's height, the room the hero keeps
+/// with the keyboard up, and the parts sheet's width.
+const _small = 360.0;
+const _keyboard = 280.0;
+const _titleOnly = 120.0;
+const _partsWidth = 600.0;
 
 const _steps = [
   FoxTrackingStep(icon: FoxIcons.receipt, label: 'استلام'),
@@ -235,7 +242,7 @@ const _signBack = FoxShopSign(
 );
 
 Widget _parts() => SizedBox(
-  width: 600,
+  width: _partsWidth,
   child: Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
