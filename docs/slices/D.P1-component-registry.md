@@ -1,6 +1,6 @@
 # D.P1 The component registry, the web-first rule and one card per component
 
-Status: Planned · Tier: T2 · Branch: `feat/component-registry`
+Status: Done · Tier: T2 · Branch: `feat/component-registry`
 Spec: architecture §9.3, §9.6–§9.9 (rewritten here); workflow §1 item 7, §3.1 · Definition of done: the owner decision of 2026-11-25 (web components are the single design reference) is written and checked by a test; the 51 separate «Flutter ·» cards are gone and each component with both sides has one card, the live web component with its Flutter golden beneath.
 
 ## Goal
@@ -42,13 +42,15 @@ Each surface is one a spec section cites (CU customer, CA captain, RA restaurant
 
 ## Stopped at
 
-Built and green locally; the Design System sync and the review are next.
+Done: built, reviewed, synced; the pull request is open.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- The published system checked card by card (screenshots outside the repository).
-- Review: `reviewer` at medium, short list.
+- Red phase: `vitest run src/components.test.ts src/design-system-build.test.ts` failed on the missing `./components.ts`; `test/design-system.test.ts` on the missing `components.json`. Green after: design-tokens 16 passed (1 skipped, the fonts check), ui-web 131 passed (with `test/design-system-cards.test.ts`).
+- `node scripts/verify.mjs --changed`: the first run failed `scripts/turbo-inputs.test.mjs` (ui-web's script reads the goldens folder; inputs declared in `turbo.json`); then every step passed (Dart analyze, format and Flutter tests over 6 packages, lint, types, builds and smoke tests, the tests), images left to `pnpm baselines`.
+- Cards rendered with Playwright as the system loads them (tokens, bundle, the golden in place of the blob), screenshots in the session scratchpad: Switch, DateField (pending), Toaster, Dialog, Menu, Sidebar, each card's declared height equal to its content.
+- The Design System synced (version 27): 55 cards under their web names, 51 old `Fox*` cards removed; no new upload (no golden changed).
+- Review: `reviewer` at medium, two rounds. Round 1: live overlays over the image (fixed), Toaster's surfaces without a spec (open item, architecture §22 item 11), the group moves in the docs (fixed), the widget scan (backlog), the roadmap (at close). Round 2: the menu lost its open state (fixed: only the two modals skip opening, `test/design-system-cards.test.ts`).
 
 ## Before deploying
 
