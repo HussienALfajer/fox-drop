@@ -84,7 +84,7 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 
 ## Lints (D.7, R2, R5)
 
-`packages/fox_lints` (its own `CLAUDE.md`) is an analyzer plugin declared in the root `analysis_options.yaml`. It checks `core_ui` and `apps/widgetbook` only (`enforcedPackages`); `core_ui` may import Material (`materialPackages`). The theme mapping passes since it builds colours from token values, not literals.
+`packages/fox_lints` (its own `CLAUDE.md`) runs its rules in the check through a standalone checker (`dart packages/fox_lints/tool/check.dart`, next to `dart analyze --fatal-infos --no-plugins`, since #291); the analyzer plugin declared in the root `analysis_options.yaml` stays for the editor only. It checks `core_ui` and `apps/widgetbook` only (`enforcedPackages`); `core_ui` may import Material (`materialPackages`). The theme mapping passes since it builds colours from token values, not literals.
 
 ## Left out
 
