@@ -3,8 +3,15 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { COMPONENT_GROUPS, readRegistry, SURFACES } from './components.ts';
-import { PACKAGE_DIR } from './resolve.ts';
+import {
+  ACTS,
+  COLOUR_METRICS,
+  COMPONENT_GROUPS,
+  DIMENSION_METRICS,
+  readRegistry,
+  SURFACES,
+} from './components.ts';
+import { PACKAGE_DIR, resolveTheme } from './resolve.ts';
 
 const ROOT = path.resolve(PACKAGE_DIR, '../..');
 const registry = readRegistry();
@@ -114,5 +121,56 @@ describe('the component registry (packages/design-tokens/components.json)', () =
       }
     }
     expect(named.sort()).toEqual(images.sort());
+  });
+});
+
+// The parity check (D.P2, architecture §9.8): ui-web's e2e/parity.spec.ts and
+// core_ui's test/parity_test.dart measure these states against these tokens.
+describe("the registry's parity metrics", () => {
+  const FIRST = ['Button', 'TextField', 'TextArea', 'SearchField', 'Checkbox', 'Switch'];
+  const measured = registry.components.filter((c) => c.metrics);
+
+  it('measures the Button and the form components with their own tokens', () => {
+    expect(measured.map((c) => c.name)).toEqual(expect.arrayContaining(FIRST));
+  });
+
+  it('names known metrics, acts and platforms, each state once', () => {
+    const metrics: string[] = [...DIMENSION_METRICS, ...COLOUR_METRICS];
+    for (const c of measured) {
+      const m = c.metrics!;
+      expect(m.web, c.name).not.toBe('');
+      expect(c.web ?? c.flutter, c.name).not.toBeNull();
+      const states = m.states.map((s) => s.state);
+      expect(new Set(states).size, `${c.name}: a state named twice`).toBe(states.length);
+      expect(states.length, c.name).toBeGreaterThan(0);
+      for (const s of m.states) {
+        const where = `${c.name}/${s.state}`;
+        expect(s.state, where).toMatch(/^[a-z][a-z0-9-]*$/);
+        for (const key of [...Object.keys(m.expect), ...Object.keys(s.expect)])
+          expect(metrics, `${where}: ${key}`).toContain(key);
+        if (s.act !== undefined) expect(ACTS, where).toContain(s.act);
+        if (s.only === 'web') expect(c.web, where).not.toBeNull();
+        if (s.only === 'flutter') expect(c.flutter, where).not.toBeNull();
+        const onWeb = s.only !== 'flutter' && c.web !== null;
+        if (onWeb)
+          expect(s.story, where).toMatch(new RegExp(`^${c.name.toLowerCase()}--[a-z0-9-]+$`));
+        else expect(s.story, where).toBeNull();
+      }
+    }
+  });
+
+  it('points every metric at a token of its kind, or `none` for a colour', async () => {
+    const tokens = await resolveTheme('light');
+    const dimensions: readonly string[] = DIMENSION_METRICS;
+    for (const c of measured)
+      for (const s of c.metrics!.states)
+        for (const [key, name] of Object.entries({ ...c.metrics!.expect, ...s.expect })) {
+          const where = `${c.name}/${s.state}: ${key}`;
+          if (name === 'none' && !dimensions.includes(key)) continue;
+          const token = tokens.get(name);
+          expect(token, `${where} names ${name}`).toBeDefined();
+          expect(token!.path[0], `${where}: a component token`).toBe(name.split('.')[0]);
+          expect(token!.type, where).toBe(dimensions.includes(key) ? 'dimension' : 'color');
+        }
   });
 });
