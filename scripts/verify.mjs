@@ -531,7 +531,7 @@ function checkInstructionSizes() {
 const SCRIPT_TESTS = {
   name: 'Claude Code hooks and scripts',
   command:
-    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/baselines.test.mjs scripts/dependency-pins.test.mjs',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/baselines.test.mjs scripts/dependency-pins.test.mjs scripts/parity.test.mjs',
 };
 
 function formatSteps(files) {

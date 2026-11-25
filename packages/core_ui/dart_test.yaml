@@ -3,3 +3,7 @@
 tags:
   golden:
     skip: 'Linux only: node scripts/golden-docker.mjs'
+  # The parity sheet's Flutter side (test/parity/): a review tool that writes
+  # .parity/flutter/, run only by `pnpm parity <Component>`, never by CI.
+  parity:
+    skip: 'A review tool: pnpm parity <Component>'

@@ -12,6 +12,7 @@
     "fonts:fetch": "node scripts/fonts-fetch.mjs",
     "test:golden": "node scripts/golden-docker.mjs",
     "baselines": "node scripts/baselines.mjs",
+    "parity": "node scripts/parity.mjs",
     "format": "prettier --write .",
     "lint:root": "eslint --ignore-pattern \"apps/**\" --ignore-pattern \"packages/**\" --ignore-pattern \"tools/**\" ."
   },

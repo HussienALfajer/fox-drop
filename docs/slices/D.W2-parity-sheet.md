@@ -1,6 +1,6 @@
 # D.W2 The parity sheet
 
-Status: Planned · Tier: T2 · Branch: `feat/parity-sheet`
+Status: Done · Tier: T2 · Branch: `feat/parity-sheet`
 Spec: architecture §9.1 (Flutter drawings are a visual reference), §9.5 R9, §9.7 · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Runs in parallel with D.W1: the two slices edit no file in common.
@@ -34,15 +34,35 @@ Tests written first (locked in the red phase):
 - `classify-changes.test.mjs` is unchanged and must stay green: `scripts/parity.mjs` and the `parity` tag run in no CI job (checked by reading `scripts/classify-changes.mjs`; a change to it is out of scope).
 - Evidence, not a locked test: `pnpm parity Button` on the host, the page opened in the browser pane and shown to the owner.
 
+## Decisions taken overnight (pending the owner)
+
+- **`--docker` left out.** The plan offered it for when the host's text rendering misleads. Running both sides in the baseline images means changing `scripts/golden-docker.mjs` (it hard-codes `--tags golden` and its output folders) and `packages/ui-web/scripts/visual-docker.mjs` (it hard-codes `--project=visual`), both outside this slice's files. The host render was faithful on Button's sheet (CoFo on both sides, same sizes). Backlog item added; build it the first time a sheet misleads.
+- **`scripts/parity.test.mjs` joins verify's script tests** (`SCRIPT_TESTS` in `scripts/verify.mjs`, one name added). Without it the locked test would run nowhere; the step takes seconds and runs in every `format` job.
+- **The frame has 16 pixels around the widget on both sides** (`FoxSpace.md`; on the web, `padding: 16px` on the story's root, whose Storybook body padding is removed). Flush against the frame, the focus ring was cut on both sides.
+- **The web ground is `--fd-color-surface`**, set on the story's root by the spec: Storybook leaves it white while the Flutter frame paints the theme's surface, and the plan asks for "the app's ground".
+- **Flutter ids built in a loop** (`'button--${variant.name}-$state'`) are read back from the shots the run wrote; the source scan still decides which components have cases and finds the literal ids. The plan's `rg` scan alone would have missed 24 of Button's 33 cases.
+- **No Flutter case** for the densities (`*-comfortable`, `*-compact`, `compact-with-icon`, `icon-only-compact`) and the three press-counting stories: FoxButton has one density, and the counter is a keyboard test. The sheet marks the 13 rows.
+
 ## Stopped at
 
-Not started.
+Done: pull request open with auto-merge.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- `pnpm parity Button`:
-- Review:
+- Red phase: `node --test scripts/parity.test.mjs` failed with `ERR_MODULE_NOT_FOUND` (no `scripts/parity.mjs`), then 6 of 6 passed.
+- `node scripts/verify.mjs --changed`: "the checks of the change passed" (Prettier, Dart analyze and format of 6 packages, fox_lints, Turborepo lint, type check, build and smoke test, Flutter tests, server tests, script tests, instruction file sizes). After the review fixes every step passed again except the server tests, which this branch does not touch (they run because `package.json` and `scripts/verify.mjs` changed): three runs, each a different test timing out at 5 s (`openapi.test.ts`, `app-sign-in.test.ts`, `captain-offboarding.test.ts`), 2,848 to 2,851 of 2,852 passing, while D.W1 ran its checks in parallel on the same machine and PostGIS. CI's server job is the gate.
+- `pnpm baselines`: all 268 stories and the core_ui goldens updated and compared, "no image changed".
+- `pnpm parity Button`: 66 Flutter cases and 92 web shots, `.parity/Button.html` with 92 rows (46 stories × 2 surfaces), 26 marked «no Flutter case» (the 13 stories in the decision above), every image 720 × 164 device pixels on both sides. `pnpm parity Button Icon` writes both sheets (Icon's 22 rows all «no Flutter case»: no twin yet).
+- `flutter test test/parity` in core_ui: all 66 cases skipped; `--tags golden --run-skipped`: no test matches (checked by the reviewer).
+- The sheet already shows a real difference: with both icons, Flutter's Button is about 12 logical pixels wider than the web one (backlog, for D.W3).
+- Review (`reviewer`, T2, medium): one should-fix (repeated `--name` flags are ANDed, so two components with Flutter cases stopped the run) and two minors (an unanchored name prefix; an argument array through the shell, unquoted). Fixed: one `flutter test` per component with `--name "^<prefix>--"`, each command one quoted line. The slice file's status and evidence filled in.
+- CI `flutter (3)` on PR 305 failed: 33 `setUpAll(loadFoxFonts)` of the skipped parity groups ran without `.fonts/` (CI has none). Locally the fonts exist, so it passed. The fonts now load inside the first case that runs. With `.fonts/` moved away, `flutter test test/parity` reports "All tests skipped" (66). With the fonts, `--tags parity --run-skipped` passes and draws CoFo.
+- The owner's look: Button's sheet published as a private artifact (its link is in the session's report, not here).
+
+## What the owner can try
+
+1. `pnpm fonts:fetch` once, then `pnpm parity Button` at the repository root (a few minutes the first time: it builds the Storybook).
+2. Open `.parity/Button.html` in a browser: each Button state, web on the right (start), Flutter on the left (end), phone then captain.
 
 ## Before deploying
 
