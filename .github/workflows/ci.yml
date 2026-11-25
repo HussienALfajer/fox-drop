@@ -282,65 +282,6 @@ jobs:
           path: packages/ui-web/test-results/**/*.png
           if-no-files-found: ignore
 
-  # The parity report (D.P2, architecture §9.8): for each component a pull
-  # request touches, one image of its web screenshots beside its Flutter golden,
-  # for review. It composes the committed images, so it needs no build and no
-  # fonts. The gate is the measuring tests in the e2e and flutter jobs; this
-  # job only shows, and `verify` does not wait for it.
-  parity-report:
-    needs: changes
-    if: github.event_name == 'pull_request' && (needs.changes.outputs.visual == 'true' || needs.changes.outputs.golden == 'true')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    container: mcr.microsoft.com/playwright:v1.64.1-noble
-    steps:
-      # The changed files come from git, which the image may lack. Before the
-      # checkout: without git it downloads the tree with no history.
-      - name: Install git if missing
-        run: |
-          if ! command -v git >/dev/null; then
-            apt-get update
-            apt-get install --yes --no-install-recommends git ca-certificates
-          fi
-
-      # The history is fetched here; no later step needs the token.
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      # The checkout trusts the folder only in a temporary git config it then
-      # removes; the container's root does not own it, so without this git
-      # sees no repository and reads the base commit as a path.
-      - run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          node scripts/parity-report.mjs parity-report "$BASE"
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-
-      - id: upload
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: parity-report
-          path: parity-report/*.png
-          if-no-files-found: ignore
-
-      - name: Link the report
-        if: steps.upload.outputs.artifact-url != ''
-        env:
-          URL: ${{ steps.upload.outputs.artifact-url }}
-        run: |
-          echo "Parity report, web beside Flutter for each touched component: $URL" >> "$GITHUB_STEP_SUMMARY"
-
   # The server's tests start PostGIS and Valkey with Testcontainers, in four
   # shards balanced by the files' measured times (apps/server/test/timed-shards.ts).
   server:

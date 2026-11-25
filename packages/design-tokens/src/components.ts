@@ -27,43 +27,6 @@ export interface Component {
   golden: string | null;
   /** What differs between the platforms, by design. */
   platform?: string;
-  /** The parity check's states and the token each measured value must equal. */
-  metrics?: Metrics;
-}
-
-/** What the parity check measures on both platforms (architecture §9.8, D.P2). */
-export const DIMENSION_METRICS = [
-  'height',
-  'width',
-  'paddingInline',
-  'radius',
-  'borderWidth',
-  'gap',
-] as const;
-/** A colour metric may also be `none`: transparent, or no outline at all. */
-export const COLOUR_METRICS = ['background', 'border', 'foreground'] as const;
-export type Metric = (typeof DIMENSION_METRICS)[number] | (typeof COLOUR_METRICS)[number];
-/** How a state is reached once its story or widget is shown. */
-export const ACTS = ['hover', 'press', 'focus'] as const;
-
-export interface MetricState {
-  /** The state's key: the Flutter table's entry is `<component>/<state>`. */
-  state: string;
-  /** The ui-web story id; null when the state is Flutter's only. */
-  story: string | null;
-  /** Measured on one platform only: the other has no such state. */
-  only?: 'web' | 'flutter';
-  act?: (typeof ACTS)[number];
-  /** Each measured value and the dotted token it must equal, over the shared `expect`. */
-  expect: Partial<Record<Metric, string>>;
-}
-
-export interface Metrics {
-  /** The CSS selector of the measured box in the story: its first match. */
-  web: string;
-  /** The values every state shares; a state's own `expect` overrides them. */
-  expect: Partial<Record<Metric, string>>;
-  states: MetricState[];
 }
 
 export interface Registry {

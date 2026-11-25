@@ -44,8 +44,6 @@ coverage/
 playwright-report/
 test-results/
 blob-report/
-# scripts/parity-report.mjs (CI's parity-report job uploads it)
-parity-report/
 
 # Local uploads and storage
 /storage/

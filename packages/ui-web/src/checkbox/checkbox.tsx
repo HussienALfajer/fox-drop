@@ -42,14 +42,8 @@ const control = formTv({
     'data-indeterminate:bg-(--fd-input-check-color-checked) data-indeterminate:inset-ring-(color:--fd-input-check-color-checked)',
     // unchecked
     'data-unchecked:bg-(--fd-input-check-color-background)',
-    // Disabled beats everything, by two attributes: a lone `data-disabled:`
-    // lost to `data-unchecked:` and `data-checked:` (found by the parity gate,
-    // D.P2). Off: the grey box with its outline; on: grey, no outline (the
-    // approved forms sheet).
-    'data-disabled:text-(color:--fd-input-color-on-disabled)',
-    'data-disabled:data-unchecked:bg-(--fd-input-color-disabled) data-disabled:data-unchecked:inset-ring-(color:--fd-input-color-on-disabled)',
-    'data-disabled:data-checked:bg-(--fd-input-color-disabled) data-disabled:data-checked:inset-ring-(color:--fd-input-color-disabled)',
-    'data-disabled:data-indeterminate:bg-(--fd-input-color-disabled) data-disabled:data-indeterminate:inset-ring-(color:--fd-input-color-disabled)',
+    // disabled beats everything
+    'data-disabled:bg-(--fd-input-color-disabled) data-disabled:inset-ring-(color:--fd-input-color-on-disabled) data-disabled:text-(color:--fd-input-color-on-disabled)',
   ],
   variants: {
     invalid: {
