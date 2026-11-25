@@ -3,7 +3,8 @@
 // both use it, so the two never disagree about what a path sets.
 //
 //   node scripts/classify-changes.mjs <base>   prints code=…, dart=…, native=…,
-//                                              build=… for $GITHUB_OUTPUT
+//                                              build=…, visual=…, golden=…
+//                                              for $GITHUB_OUTPUT
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -65,8 +66,8 @@ const DOCS = /^(?!packages\/design-tokens\/generated\/)(.*\.md$|docs\/)/;
 // packages/design-tokens generates the Dart tokens of packages/core_tokens.
 const DART =
   /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml|dart_test\.yaml)$|^(apps\/(customer|captain|merchant|widgetbook)|packages\/(core_[a-z0-9_]+|fox_lints)|packages\/design-tokens)\/|^\.fvmrc$|^\.github\/workflows\/ci\.yml$|^scripts\/(verify(-support)?|golden-docker)\.mjs$)/;
-// What the `golden` job (part of the Dart checks) reads besides Dart: the
-// fonts it fetches and the scripts it runs (D.7).
+// What the `golden` job reads besides Dart: the fonts it fetches and the
+// scripts it runs (D.7). They set the Dart checks too.
 const GOLDEN_INPUTS =
   /^(docs\/brand\/fonts-manifest\.json|scripts\/(fonts|fonts-fetch|github-known-hosts)\.mjs)$/;
 // What can break a native release build that the Dart tests cannot see: a
@@ -87,13 +88,33 @@ const DART_ONLY =
 const CONTRACT =
   /^(scripts\/generate-api\.mjs|openapitools\.json|apps\/server\/scripts\/write-openapi\.mjs|apps\/server\/src\/http\/|packages\/(api-schema|core_api)\/)|^apps\/server\/src\/.*\.controller\.ts$/;
 const SERVER_SOURCE = /^apps\/server\/src\/.*\.ts$/;
+// What CI's own image jobs depend on besides their inputs: the workflow and
+// this classifier, so a change to either runs both.
+const CI_ITSELF = /^(\.github\/workflows\/ci\.yml|scripts\/classify-changes\.mjs)$/;
+// What can change a ui-web screenshot (the `visual` job): ui-web itself (its
+// stories, Storybook, Playwright set-up and baselines), the design tokens it
+// reads, the root manifest, lock and workspace files (the Playwright and
+// Storybook versions, pnpm), the TypeScript base Vite reads, the Node it runs
+// on, the line endings it is checked out with, and the fonts it fetches (the
+// manifest, read with the token docs, and the scripts). A path's doubt goes to
+// true; classify-changes.test.mjs derives the job's inputs from ci.yml.
+const VISUAL =
+  /^(packages\/(ui-web|design-tokens)\/|(package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig\.base\.json|\.npmrc|\.node-version|\.gitattributes)$|scripts\/(fonts|fonts-fetch|github-known-hosts)\.mjs$)/;
+// What can change a core_ui golden (the `golden` job): core_ui and the tokens
+// it is generated from, every pubspec and the lock file (the job resolves the
+// whole workspace), the pinned Flutter, the files outside Dart its tests read
+// (READ_BY_DART_TESTS), the fonts and scripts it fetches them with
+// (GOLDEN_INPUTS), the image script and what Node and git hand it.
+const GOLDEN =
+  /^(packages\/(core_ui|core_tokens|design-tokens)\/|\.fvmrc$|\.node-version$|\.gitattributes$|scripts\/golden-docker\.mjs$)|(^|\/)pubspec\.(yaml|lock)$/;
 
 /**
  * What the changed `files` (repository-relative, forward slashes) set.
  * `read(file)` returns a file's text, or null when it was deleted.
- * - code, dart, native, build: CI's jobs (docs/archive/claude-code-workflow.md,
- *   phase 5): the checks, the Dart checks, the native release builds of a
- *   pull request, the images and the staging builds and deploy.
+ * - code, dart, native, build, visual, golden: CI's jobs
+ *   (docs/archive/claude-code-workflow.md, phase 5): the checks, the Dart
+ *   checks, the native release builds of a pull request, the images and the
+ *   staging builds and deploy, the ui-web screenshots, the core_ui goldens.
  * - typescript: Turborepo's affected packages; server: the server's tests;
  *   contract: regenerate the API contract; tokenDocs: a doc the design tokens'
  *   tests read changed, so they run though no package file did; dartScope:
@@ -126,11 +147,24 @@ export function classify(files, read = readText) {
       CONTRACT.test(file) ||
       (SERVER_SOURCE.test(file) && !file.endsWith('.test.ts') && declaresSchema(read(file))),
   );
+  const visual = files.some(
+    (file) =>
+      CI_ITSELF.test(file) || readByTokenTests(file) || (!DOCS.test(file) && VISUAL.test(file)),
+  );
+  const golden = files.some(
+    (file) =>
+      CI_ITSELF.test(file) ||
+      GOLDEN_INPUTS.test(file) ||
+      READ_BY_DART_TESTS.includes(file) ||
+      (!DOCS.test(file) && GOLDEN.test(file)),
+  );
   return {
     code,
     dart,
     native,
     build,
+    visual,
+    golden,
     typescript,
     server,
     contract,
@@ -185,7 +219,7 @@ export function changedFiles(base, { workingTree = true } = {}) {
 
 function main() {
   const base = process.argv[2];
-  const all = { code: true, dart: true, native: true, build: true };
+  const all = { code: true, dart: true, native: true, build: true, visual: true, golden: true };
   let flags = all;
   if (base && spawnSync('git', ['cat-file', '-e', `${base}^{commit}`]).status === 0) {
     const files = changedFiles(base, { workingTree: false });

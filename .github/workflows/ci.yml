@@ -26,6 +26,10 @@ jobs:
   # native project, the lock file, a package with native code or the pinned
   # Flutter (`native`), or with the native-builds label, which a change to
   # the native jobs below takes. Main builds Android only (staging-apks).
+  # The screenshot jobs run only for what can change their images: `visual`
+  # for ui-web, the design tokens and what its Storybook and Playwright read,
+  # `golden` for core_ui, its tokens and the Dart workspace; both for this
+  # workflow and the classifier.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -34,6 +38,8 @@ jobs:
       dart: ${{ steps.paths.outputs.dart }}
       native: ${{ steps.paths.outputs.native }}
       build: ${{ steps.paths.outputs.build }}
+      visual: ${{ steps.paths.outputs.visual }}
+      golden: ${{ steps.paths.outputs.golden }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -174,9 +180,10 @@ jobs:
   # The Storybook screenshots (architecture §9.5 R9) are valid only from the
   # Playwright image, so this job runs in it. It needs the licensed fonts: with
   # no FONTS_DEPLOY_KEY it fails on purpose, never skips (owner, 2026-11-23).
+  # It runs only for a change that can alter a screenshot (`visual`).
   visual:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.visual == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     container: mcr.microsoft.com/playwright:v1.64.1-noble
@@ -318,10 +325,11 @@ jobs:
 
   # The core_ui goldens (R9, D.7), valid only from the Linux image that
   # scripts/golden-docker.mjs builds (the pinned Ubuntu and .fvmrc Flutter),
-  # the same command as locally. Fails, never skips, without the fonts.
+  # the same command as locally. Fails, never skips, without the fonts. It
+  # runs only for a change that can alter a golden (`golden`).
   golden:
     needs: changes
-    if: needs.changes.outputs.dart == 'true'
+    if: needs.changes.outputs.golden == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -352,7 +360,9 @@ jobs:
           if-no-files-found: ignore
 
   # The check main requires: every part passed, or was skipped for a change
-  # of docs only, of no Dart or of nothing native.
+  # of docs only, of no Dart, of nothing native or of nothing a screenshot or
+  # golden reads. A part skipped because `changes` failed still fails here,
+  # through `changes`' own result.
   verify:
     if: always()
     needs:
