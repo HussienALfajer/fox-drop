@@ -324,6 +324,17 @@ describe('the record and --status', () => {
     recordStepPass(record, suiteKey('visual', repo));
     write(component, 'two');
     assert.equal(status().ok, false);
+
+    // Committing the checked tree keeps it checked: an update, a new image
+    // and a removed one.
+    write('packages/ui-web/e2e/__screenshots__/a--b-phone.png', 'png');
+    rmSync(path.join(repo, 'packages/core_ui/lib/b.dart'));
+    recordStepPass(record, suiteKey('visual', repo));
+    assert.equal(status().ok, true);
+    git(['add', '--all'], repo);
+    assert.equal(status().ok, true);
+    git(['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '--quiet', '-m', 'next'], repo);
+    assert.equal(status().ok, true);
   });
 
   it('needs nothing when no change can alter an image, everything without a base', () => {
@@ -332,6 +343,9 @@ describe('the record and --status', () => {
       unchecked: [],
       line: 'no change since origin/main can alter an image',
     });
+    // Without a base both suites count; the screenshots are recorded above.
+    assert.deepEqual(imageStatus(null, { root: repo, record }).unchecked, ['golden']);
+    rmSync(record);
     assert.deepEqual(imageStatus(null, { root: repo, record }).unchecked, ['visual', 'golden']);
   });
 

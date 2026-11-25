@@ -46,7 +46,6 @@ import {
   formatDuration,
   gitDir,
   hasPassed,
-  inputsFingerprint,
   passKey,
   recordStepPass,
   releaseLock,
@@ -242,7 +241,54 @@ export const recordFile = (dir) => path.join(dir, 'baselines-passes.json');
 /** The key of a suite's pass on this tree. */
 export function suiteKey(suite, root = ROOT) {
   const { paths, ignored } = SUITES[suite];
-  return passKey({ suite, inputs: inputsFingerprint(root, paths, { ignoredDirs: ignored }) });
+  return passKey({ suite, inputs: treeFingerprint(root, paths, { ignoredDirs: ignored }) });
+}
+
+/**
+ * A fingerprint of the files the `pathspecs` name as they are on disk: each
+ * path with the blob id git gives its content (clean filters applied, so a
+ * line-ending-only change does not count), and the files of `ignoredDirs`.
+ * Unlike verify-support's inputsFingerprint it does not see the index, so
+ * committing a checked tree keeps it checked.
+ */
+export function treeFingerprint(root, pathspecs, { ignoredDirs = [] } = {}) {
+  const git = (args, input) => {
+    const result = spawnSync('git', ['-c', 'core.quotePath=false', ...args], {
+      cwd: root,
+      input,
+      maxBuffer: 512 * 1024 * 1024,
+    });
+    if (result.status !== 0) throw new Error(`git ${args.join(' ')}: ${result.stderr}`);
+    return result.stdout.toString('utf8');
+  };
+  const blobs = new Map();
+  for (const entry of git(['ls-files', '-s', '-z', '--', ...pathspecs]).split('\0'))
+    if (entry) blobs.set(entry.slice(entry.indexOf('\t') + 1), entry.split(' ')[1]);
+  const differing = [
+    ...git(['diff', '--name-only', '--no-renames', '-z', '--', ...pathspecs]).split('\0'),
+    ...git(['ls-files', '--others', '--exclude-standard', '-z', '--', ...pathspecs]).split('\0'),
+  ].filter(Boolean);
+  const present = differing.filter((file) => existsSync(path.join(root, file)));
+  for (const file of differing) blobs.delete(file);
+  if (present.length > 0) {
+    const ids = git(['hash-object', '--stdin-paths'], present.join('\n')).trim().split(/\r?\n/);
+    present.forEach((file, i) => blobs.set(file, ids[i]));
+  }
+  const hash = createHash('sha256');
+  for (const file of [...blobs.keys()].sort()) hash.update(`${file}\0${blobs.get(file)}\0`);
+  for (const dir of ignoredDirs) {
+    const full = path.join(root, dir);
+    hash.update(`\0dir:${dir}\0`);
+    if (!existsSync(full)) continue;
+    for (const file of readdirSync(full, { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => path.join(entry.parentPath, entry.name))
+      .sort()) {
+      hash.update(`\0${path.relative(root, file).replaceAll('\\', '/')}\0`);
+      hash.update(readFileSync(file));
+    }
+  }
+  return hash.digest('hex');
 }
 
 /**
