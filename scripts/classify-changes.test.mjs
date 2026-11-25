@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
@@ -16,12 +17,18 @@ const tracked = () =>
     .filter(Boolean);
 
 const plain = () => '';
+// The image jobs have their own tests below.
+const IMAGE_JOBS = ['visual', 'golden'];
 const flags = (files, read = plain) => {
   const result = classify(files, read);
   return Object.keys(result)
-    .filter((key) => result[key])
+    .filter((key) => result[key] && !IMAGE_JOBS.includes(key))
     .map((key) => (result[key] === true ? key : `${key}:${result[key]}`))
     .join(' ');
+};
+const images = (files) => {
+  const result = classify(files, plain);
+  return IMAGE_JOBS.filter((key) => result[key]).join(' ');
 };
 
 describe('the change classifier', () => {
@@ -164,6 +171,215 @@ describe('the change classifier', () => {
       'scripts/github-known-hosts.mjs',
     ]) {
       assert.equal(flags([file]), 'code dart build typescript', file);
+    }
+  });
+
+  it('runs the ui-web screenshots only for what can change one', () => {
+    for (const file of [
+      'packages/ui-web/src/button/button.tsx',
+      'packages/ui-web/src/button/button.stories.tsx',
+      'packages/ui-web/.storybook/preview.tsx',
+      'packages/ui-web/playwright.config.ts',
+      'packages/ui-web/e2e/__screenshots__/button--default-phone.png',
+      'packages/ui-web/package.json',
+      // The Playwright and Storybook versions, pnpm and its workspace.
+      'package.json',
+      'pnpm-lock.yaml',
+      'pnpm-workspace.yaml',
+      // What Vite reads.
+      'tsconfig.base.json',
+      // The docs the design tokens read: in doubt, a screenshot can follow.
+      'docs/architecture/09-design-system.md',
+      'docs/brand/app-icon/svg/app-icon-08.svg',
+    ])
+      assert.equal(images([file]), 'visual', file);
+    // Generated Markdown is read; a component's notes are not.
+    assert.match(images(['packages/design-tokens/generated/contrast-report.md']), /visual/);
+    assert.equal(images(['packages/ui-web/CLAUDE.md']), '');
+    for (const file of [
+      'apps/server/src/modules/ledger/ledger.service.ts',
+      'apps/admin/src/App.tsx',
+      'apps/admin/src/locales/ar.json',
+      'apps/customer/lib/main.dart',
+      'packages/core_l10n/lib/l10n/app_ar.arb',
+      'scripts/verify.mjs',
+      'turbo.json',
+      'docs/roadmap.md',
+    ])
+      assert.equal(images([file]), '', file);
+  });
+
+  it('runs the core_ui goldens only for what can change one', () => {
+    for (const file of [
+      'packages/core_ui/lib/src/button/fox_button.dart',
+      'packages/core_ui/test/golden/goldens/icons.png',
+      'packages/core_ui/dart_test.yaml',
+      'packages/core_tokens/lib/core_tokens.dart',
+      // The job resolves the whole workspace.
+      'pubspec.yaml',
+      'pubspec.lock',
+      'apps/customer/pubspec.yaml',
+      '.fvmrc',
+      'scripts/golden-docker.mjs',
+    ])
+      assert.match(images([file]), /golden/, file);
+    for (const file of [
+      'apps/customer/lib/main.dart',
+      'apps/widgetbook/lib/catalogue.dart',
+      'packages/core_l10n/lib/l10n/app_ar.arb',
+      'packages/core_api/lib/api.dart',
+      'analysis_options.yaml',
+      'scripts/verify.mjs',
+      'docs/architecture/09-design-system.md',
+    ])
+      assert.doesNotMatch(images([file]), /golden/, file);
+  });
+
+  it('runs both image jobs for the tokens, the fonts and what core_ui’s tests read', () => {
+    for (const file of [
+      'packages/design-tokens/tokens/semantic/light.json',
+      'docs/brand/fonts-manifest.json',
+      'scripts/fonts.mjs',
+      'scripts/fonts-fetch.mjs',
+      'scripts/github-known-hosts.mjs',
+      // The Node both jobs run on, the line endings they check out with.
+      '.node-version',
+      '.gitattributes',
+      'packages/ui-web/src/phone-field/phone-cases.json',
+      'docs/brand/logo/mark/mark-orange-on-ivory-drop.svg',
+    ])
+      assert.equal(images([file]), 'visual golden', file);
+  });
+
+  it('runs both image jobs for a change to CI itself', () => {
+    assert.equal(images(['.github/workflows/ci.yml']), 'visual golden');
+    assert.equal(images(['scripts/classify-changes.mjs']), 'visual golden');
+    assert.equal(images(['scripts/classify-changes.test.mjs']), '');
+  });
+
+  it('sets an image job for every input its CI job and scripts name', () => {
+    // Named by a script the job runs, but read only by another job.
+    const NOT_READ = {
+      visual: ['packages/core_ui/assets/fonts/fox-lira'], // fonts.mjs: the format job's font guard
+      golden: ['packages/ui-web/fonts/fox-lira'], // the same
+    };
+    const files = tracked();
+    const known = new Set(files);
+    // Every tracked folder below the top level (`packages/ui-web`, not `packages`).
+    const dirs = new Set();
+    for (const file of files) {
+      const parts = file.split('/');
+      for (let end = 2; end < parts.length; end += 1) dirs.add(parts.slice(0, end).join('/'));
+    }
+    const isFile = (each) => known.has(each);
+    const isDir = (each) => dirs.has(each);
+    const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');
+    const rootScripts = JSON.parse(readFileSync('package.json', 'utf8')).scripts;
+    const nodePackages = new Map(
+      files
+        .filter((file) => /^(apps|packages)\/[^/]+\/package\.json$/.test(file))
+        .map((file) => [JSON.parse(readFileSync(file, 'utf8')).name, path.posix.dirname(file)]),
+    );
+    const dartMembers = [...readFileSync('pubspec.yaml', 'utf8').matchAll(/^ {2}- (\S+)$/gm)].map(
+      (match) => match[1],
+    );
+    const dartPackages = new Map(
+      dartMembers.map((dir) => [
+        /^name: (\S+)$/m.exec(readFileSync(`${dir}/pubspec.yaml`, 'utf8'))[1],
+        dir,
+      ]),
+    );
+    // A job's lines: its key, then every line indented deeper.
+    const job = (name) => {
+      const lines = workflow.split(/\r?\n/);
+      const start = lines.indexOf(`  ${name}:`);
+      assert.ok(start >= 0, `ci.yml has the ${name} job`);
+      const end = lines.findIndex((line, index) => index > start && /^ {0,2}\S/.test(line));
+      return lines.slice(start, end).join('\n');
+    };
+    // The repository paths a text names, read from the root or from `from`.
+    const named = (text, from, { fromRoot }) =>
+      text
+        .split(/[\s'"`(),;=]+/)
+        .flatMap((token) => [
+          ...(fromRoot ? [path.posix.normalize(token)] : []),
+          path.posix.join(from, token),
+        ])
+        .filter((each) => !each.startsWith('..') && (isFile(each) || isDir(each)));
+
+    const inputsOf = (name) => {
+      const inputs = new Set();
+      const scanned = new Set();
+      const add = (each) => {
+        assert.ok(each, `${name}: an input outside the workspace`);
+        if (inputs.has(each)) return;
+        inputs.add(each);
+        if (/\.(mjs|js|ts)$/.test(each) && !scanned.has(each)) {
+          scanned.add(each);
+          const text = readFileSync(each, 'utf8');
+          named(text, path.posix.dirname(each), { fromRoot: true }).forEach(add);
+        }
+        if (isFile(`${each}/package.json`)) addNodePackage(each);
+        if (isFile(`${each}/pubspec.yaml`)) addDartPackage(each);
+      };
+      const addNodePackage = (dir) => {
+        const manifest = JSON.parse(readFileSync(`${dir}/package.json`, 'utf8'));
+        const deps = { ...manifest.dependencies, ...manifest.devDependencies };
+        for (const [dep, version] of Object.entries(deps))
+          if (version.startsWith('workspace:')) add(nodePackages.get(dep));
+        // What the package's own build and Playwright set-up read outside it
+        // (not its unit tests, lint or scripts, which other jobs run).
+        for (const file of files.filter((each) => each.startsWith(`${dir}/`))) {
+          if (!/\.(ts|tsx|mjs|css)$/.test(file)) continue;
+          if (/\.test\.|\/scripts\/|\/(eslint|vitest)\.config\./.test(file)) continue;
+          const text = readFileSync(file, 'utf8');
+          for (const each of named(text, path.posix.dirname(file), { fromRoot: false }))
+            if (!each.startsWith(`${dir}/`)) add(each);
+        }
+        ['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'].forEach(add);
+      };
+      const addDartPackage = (dir) => {
+        const pubspec = readFileSync(`${dir}/pubspec.yaml`, 'utf8');
+        for (const [, dep] of pubspec.matchAll(/^ {2}([a-z0-9_]+):/gm))
+          if (dartPackages.has(dep)) add(dartPackages.get(dep));
+        // What its tests read outside it, from the package (flutter test's
+        // folder) or from the test file.
+        for (const file of files.filter((each) => each.startsWith(`${dir}/`))) {
+          if (!file.endsWith('.dart')) continue;
+          const text = readFileSync(file, 'utf8');
+          for (const each of [
+            ...named(text, dir, { fromRoot: false }),
+            ...named(text, path.posix.dirname(file), { fromRoot: false }),
+          ])
+            if (!each.startsWith(`${dir}/`)) add(each);
+        }
+        // `pub get` resolves the whole workspace.
+        [
+          'pubspec.yaml',
+          'pubspec.lock',
+          '.fvmrc',
+          ...dartMembers.map((each) => `${each}/pubspec.yaml`),
+        ].forEach(add);
+      };
+      const text = job(name);
+      for (const [, script] of text.matchAll(/\bpnpm ([\w:-]+)/g))
+        if (rootScripts[script]) named(rootScripts[script], '', { fromRoot: true }).forEach(add);
+      for (const [, dep] of text.matchAll(/--filter (\S+)/g)) add(nodePackages.get(dep));
+      named(text, '', { fromRoot: true }).forEach(add);
+      return inputs;
+    };
+
+    for (const name of IMAGE_JOBS) {
+      const inputs = inputsOf(name);
+      assert.ok(inputs.size > 5, `${name}: found its inputs`);
+      for (const input of inputs) {
+        if (NOT_READ[name].includes(input)) continue;
+        const covered = isDir(input)
+          ? files.filter((file) => file.startsWith(`${input}/`) && !file.endsWith('.md'))
+          : [input];
+        for (const file of covered)
+          assert.ok(classify([file], plain)[name], `${name} reads ${file} (through ${input})`);
+      }
     }
   });
 

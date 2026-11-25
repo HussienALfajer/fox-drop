@@ -4,6 +4,15 @@
   "timezone": "Asia/Damascus",
   "schedule": ["* 0-6 * * 1"],
   "rangeStrategy": "pin",
+  "description": [
+    "rebaseWhen: rebase a branch only when it conflicts with main. With the default (auto) Renovate rebased its open branches within minutes of every push to main: 41 CI runs in 52 hours, each of about 20 jobs, which queued the owner's runs behind them (2026-11-23..25). Before merging one that is behind, tick its rebase box to test it on today's main.",
+    "updateNotScheduled: false keeps every push to an existing branch inside the weekly schedule as well, so a conflicted branch is rebuilt on Monday morning and not in the middle of the week.",
+    "prConcurrentLimit: at most 5 open pull requests (and branches); prHourlyLimit: at most 1 new pull request an hour. Neither closes an open pull request: Renovate only stops opening new ones, security updates excepted."
+  ],
+  "rebaseWhen": "conflicted",
+  "updateNotScheduled": false,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 1,
   "lockFileMaintenance": {
     "enabled": true
   },
