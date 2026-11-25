@@ -213,19 +213,78 @@ export async function waitForLock(
  * (verify.mjs starts each step as a group of its own), else the process.
  */
 export function killTree(pid, platform = process.platform) {
-  if (!pid) return;
+  if (pid) killTrees([pid], platform);
+}
+
+/** killTree for several processes; on Windows in one taskkill (each call costs about a second). */
+export function killTrees(pids, platform = process.platform) {
+  if (pids.length === 0) return;
   if (platform === 'win32') {
-    spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' });
+    spawnSync('taskkill', [...pids.flatMap((pid) => ['/PID', String(pid)]), '/T', '/F'], {
+      stdio: 'ignore',
+    });
     return;
   }
-  for (const target of [-pid, pid]) {
-    try {
-      process.kill(target, 'SIGKILL');
-      return;
-    } catch {
-      // No such group: try the process alone.
+  for (const pid of pids) {
+    for (const target of [-pid, pid]) {
+      try {
+        process.kill(target, 'SIGKILL');
+        break;
+      } catch {
+        // No such group: try the process alone.
+      }
     }
   }
+}
+
+/**
+ * The processes of `table` ({ pid, ppid, created } in ms) that descend from
+ * one of the `roots` (pids) and started at or after `since`, the live roots
+ * included. A root may be gone already: its children still name it as their
+ * parent. The time guard keeps a reused process id out.
+ */
+export function descendants(table, roots, since) {
+  const fresh = table.filter((each) => each.created >= since);
+  const found = new Set(fresh.filter((each) => roots.includes(each.pid)).map((each) => each.pid));
+  const parents = new Set(roots);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const each of fresh) {
+      if (parents.has(each.ppid) && !found.has(each.pid)) {
+        found.add(each.pid);
+        parents.add(each.pid);
+        grew = true;
+      }
+    }
+  }
+  return [...found];
+}
+
+/** Every process on Windows: { pid, ppid, created } (ms since the epoch). */
+export function windowsProcessTable() {
+  const result = spawnSync(
+    'powershell.exe',
+    [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      'Get-CimInstance Win32_Process | ForEach-Object { "$($_.ProcessId) $($_.ParentProcessId) $($_.CreationDate.ToFileTimeUtc())" }',
+    ],
+    { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
+  );
+  return (
+    result.stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim().split(' ').map(Number))
+      .filter((fields) => fields.length === 3 && fields.every(Number.isFinite))
+      // A Windows file time counts 100 ns from 1601.
+      .map(([pid, ppid, fileTime]) => ({
+        pid,
+        ppid,
+        created: fileTime / 10_000 - 11_644_473_600_000,
+      }))
+  );
 }
 
 /**

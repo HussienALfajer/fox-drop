@@ -28,8 +28,10 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  writeFileSync,
   writeSync,
 } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import {
@@ -123,11 +125,32 @@ const lockFile = path.join(lockDir, 'verify.lock');
 // Every step runs as a process tree (a shell, pnpm, Vitest's workers, a
 // browser, a `vite preview`, the Dart analyzer). Whatever ends verify (a
 // failure, Ctrl+C, a closed terminal, its parent ending) ends those trees
-// too, and releases the lock. A hard kill of verify itself cannot be seen: its
-// lock goes stale and the next check takes it over.
+// too, and releases the lock. A hard kill of verify itself, which on Windows
+// is what a hard kill of a Node parent does to it, is left to the watchdog
+// (verify-watchdog.mjs): verify keeps its running steps' ids in `stateFile`.
 const children = new Set();
+const stateFile = path.join(lockDir, 'verify-steps.json');
+// A second early, against the rounding of the process table's start times.
+const startedAtProcess = Date.now() - process.uptime() * 1000 - 1000;
+function writeState() {
+  if (CI) return;
+  try {
+    writeFileSync(
+      stateFile,
+      JSON.stringify({
+        pid: process.pid,
+        started: startedAtProcess,
+        lock: lockFile,
+        steps: [...children].map((child) => child.pid),
+      }),
+    );
+  } catch {
+    // Only the watchdog reads it.
+  }
+}
 process.on('exit', () => {
   for (const child of children) killTree(child.pid);
+  if (!CI) rmSync(stateFile, { force: true });
   releaseLock(lockFile);
 });
 for (const [signal, code] of [
@@ -169,6 +192,19 @@ if (!lock.taken) {
   );
   process.exit(BUSY);
 }
+if (!CI) {
+  writeState();
+  spawn(
+    process.execPath,
+    [path.join(import.meta.dirname, 'verify-watchdog.mjs'), String(process.pid), stateFile],
+    {
+      detached: true,
+      stdio: 'ignore',
+      // Not in the checkout: a process whose folder is there keeps it from being removed.
+      cwd: os.tmpdir(),
+    },
+  ).unref();
+}
 
 // ---------------------------------------------------------------- the pinned Flutter
 
@@ -206,6 +242,17 @@ function newRunFolder() {
 
 const shown = (file) => file.replaceAll('\\', '/');
 
+/** Keeps a running step in `children` and in the watchdog's state file. */
+function track(child) {
+  children.add(child);
+  writeState();
+  const forget = () => {
+    if (children.delete(child)) writeState();
+  };
+  child.on('error', forget);
+  child.on('close', forget);
+}
+
 /**
  * Runs a shell command as its own process tree; resolves to its exit code.
  * After `timeoutMs` the tree is ended and the step fails (124), so a check
@@ -223,7 +270,7 @@ function spawnCommand(command, { cwd, env, stdio, timeoutMs }) {
       // A process group of its own on POSIX, so it can be ended whole.
       detached: process.platform !== 'win32',
     });
-    children.add(child);
+    track(child);
     let timedOut = false;
     const timer =
       timeoutMs &&
@@ -232,13 +279,11 @@ function spawnCommand(command, { cwd, env, stdio, timeoutMs }) {
         killTree(child.pid);
       }, timeoutMs);
     child.on('error', (error) => {
-      children.delete(child);
       clearTimeout(timer);
       say(error.stack);
       resolve(1);
     });
     child.on('close', (code) => {
-      children.delete(child);
       clearTimeout(timer);
       if (!timedOut) return resolve(code ?? 1);
       say(`verify: ended after ${timeoutMs / 60_000} min without finishing: \`${command}\`.`);
@@ -251,15 +296,13 @@ function spawnCommand(command, { cwd, env, stdio, timeoutMs }) {
 async function capture(command, env = process.env) {
   const result = await new Promise((resolve) => {
     const child = spawn(command, { shell: true, env, detached: process.platform !== 'win32' });
-    children.add(child);
+    track(child);
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (data) => (stdout += data));
     child.stderr.on('data', (data) => (stderr += data));
-    child.on('close', (code) => {
-      children.delete(child);
-      resolve({ status: code ?? 1, stdout, stderr });
-    });
+    child.on('error', (error) => resolve({ status: 1, stdout, stderr: String(error) }));
+    child.on('close', (code) => resolve({ status: code ?? 1, stdout, stderr }));
   });
   if (result.status !== 0)
     throw new StepFailure(`\`${command}\` failed:\n${result.stdout}${result.stderr}`);
@@ -556,7 +599,8 @@ const localizationSteps = () =>
 
 // Turborepo replays a task whose inputs did not change (turbo.json); CI and
 // --fresh run every task again.
-const TURBO = `pnpm exec turbo run${CI || fresh ? ' --force' : ''}`;
+// (`--force` alone would take the next task's name as its value.)
+const TURBO = `pnpm exec turbo run${CI || fresh ? ' --force=true' : ''}`;
 const LINT_TASKS = 'lint:root lint typecheck';
 const E2E_TASKS = 'build test:e2e';
 // The web apps' smoke tests run in Chromium; this downloads it once. One app
@@ -814,9 +858,10 @@ const scopeLabel = (scoped, workspace) =>
     ? 'all packages'
     : `${scoped.length} changed or dependent packages`;
 
-// One analyzer process over the changed packages and their dependents: 52 s
-// against 106 s over the workspace for core_ui's six (2026-11-25, warm, with
-// the fox_lints plugin). The plugin's rules apply to packages that do not
+// One analyzer process over the changed packages and their dependents: 49 s
+// against 84 s over the workspace for core_ui's six (2026-11-25, warm, with
+// the fox_lints plugin; 11 s against 23 s without it, so the plugin is most of
+// the time). The plugin's rules apply to packages that do not
 // depend on it (it is declared in the root analysis_options.yaml), so a change
 // to the plugin analyzes everything.
 function analyzeStep(files, scoped, workspace, inputs) {

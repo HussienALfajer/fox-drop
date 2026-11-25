@@ -10,6 +10,7 @@ import {
   chromiumFolders,
   chromiumInstalled,
   cut,
+  descendants,
   formatDuration,
   hasPassed,
   inputsFingerprint,
@@ -25,6 +26,7 @@ import {
   takeLock,
   turboNote,
   waitForLock,
+  windowsProcessTable,
   withDependents,
 } from './verify-support.mjs';
 
@@ -63,6 +65,26 @@ describe('waiting for the lock', () => {
     let tries = 0;
     await waitForLock('x', { take: () => (tries++, busy()), wait: false, ...clock() });
     assert.equal(tries, 1);
+  });
+});
+
+describe('the processes a dead run left', () => {
+  it('finds what its steps started, through a parent that is gone, and nothing older', () => {
+    const table = [
+      { pid: 10, ppid: 1, created: 1000 }, // verify's step, still alive
+      { pid: 11, ppid: 10, created: 1001 },
+      { pid: 21, ppid: 20, created: 1002 }, // the step 20 is gone; its child is not
+      { pid: 22, ppid: 21, created: 1003 },
+      { pid: 30, ppid: 20, created: 500 }, // an older process that reuses a parent id
+      { pid: 40, ppid: 1, created: 1004 }, // someone else's
+    ];
+    assert.deepEqual(descendants(table, [10, 20], 900).sort(), [10, 11, 21, 22]);
+  });
+
+  it('reads the Windows process table', { skip: process.platform !== 'win32' }, () => {
+    const me = windowsProcessTable().find((each) => each.pid === process.pid);
+    assert.equal(me.ppid, process.ppid);
+    assert.ok(Math.abs(me.created - (Date.now() - process.uptime() * 1000)) < 5000);
   });
 });
 
