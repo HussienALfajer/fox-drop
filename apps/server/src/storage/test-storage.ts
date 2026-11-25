@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { GenericContainer, Wait } from 'testcontainers';
+import { inject } from 'vitest';
 import { setUpStorage, type StorageKey } from './storage-setup.js';
 
 export interface TestStorage {
@@ -33,6 +34,7 @@ const hex = (bytes: number) => randomBytes(bytes).toString('hex');
 export async function startTestStorage(): Promise<TestStorage> {
   const adminToken = hex(16);
   const container = await new GenericContainer(garageImage)
+    .withLabels(inject('testRun'))
     .withEnvironment({ GARAGE_RPC_SECRET: hex(32), GARAGE_ADMIN_TOKEN: adminToken })
     .withCopyFilesToContainer([
       {

@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { GenericContainer, TestContainers, Wait } from 'testcontainers';
+import { inject } from 'vitest';
 
 export interface TestCentrifugo {
   // The variables the server reads (realtime-config.ts in notifications).
@@ -47,6 +48,7 @@ export async function startTestCentrifugo(
     http: { static_headers: { 'X-Centrifugo-Proxy-Secret': proxySecret } },
   });
   const container = await new GenericContainer(centrifugoImage)
+    .withLabels(inject('testRun'))
     .withCopyFilesToContainer([{ source: configFile, target: '/centrifugo/config.yaml' }])
     .withCommand(['centrifugo', '--config', '/centrifugo/config.yaml'])
     .withEnvironment({
