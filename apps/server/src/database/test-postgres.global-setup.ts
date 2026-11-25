@@ -1,7 +1,7 @@
 import type { TestProject } from 'vitest/node';
-import { serveTestValkeys } from '../valkey/test-valkey.js';
+import { serveTestValkeys } from '../valkey/test-valkey-slots.js';
 import { removeLeftoverContainers, testRunLabels } from './test-containers.js';
-import { startTestPostgres } from './test-database.js';
+import { startTestPostgres } from './test-postgres.js';
 
 // Vitest's global setup (vitest.config.ts): first the containers an earlier,
 // killed run left behind (src/database/test-containers.ts); then one PostGIS

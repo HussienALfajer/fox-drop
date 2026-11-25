@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import { newWorkbook } from '../../workbooks/new-workbook.js';
 import type { RestaurantPeriodStatement } from '../cashdesk/index.js';
 import { restaurantStatementLabels as labels } from '../content/index.js';
 
@@ -53,7 +53,7 @@ export async function statementWorkbook(
     return places === 0 ? '#,##0' : `#,##0.${'0'.repeat(places)}`;
   };
 
-  const workbook = new ExcelJS.Workbook();
+  const workbook = await newWorkbook();
   workbook.creator = 'FOX DROP';
   const sheet = workbook.addWorksheet(labels.sheet, { views: [{ rightToLeft: true }] });
 

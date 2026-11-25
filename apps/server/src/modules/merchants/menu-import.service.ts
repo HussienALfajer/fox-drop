@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
-import ExcelJS from 'exceljs';
+import type { CellValue } from 'exceljs';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { newWorkbook } from '../../workbooks/new-workbook.js';
 import { AuditService } from '../audit/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
@@ -63,7 +64,7 @@ export class MenuImportService {
       restaurantId,
       await this.cityOf(restaurantId),
     );
-    const workbook = new ExcelJS.Workbook();
+    const workbook = await newWorkbook();
     const sheet = workbook.addWorksheet('القائمة', { views: [{ rightToLeft: true }] });
     sheet.addRow([...IMPORT_HEADERS]);
     sheet.getRow(1).font = { bold: true };
@@ -231,7 +232,7 @@ export class MenuImportService {
     if (size === null || size > IMPORT_MAX_UNZIPPED) {
       throw new MerchantsRefusedError('import_unreadable', 'the workbook is not a small zip');
     }
-    const workbook = new ExcelJS.Workbook();
+    const workbook = await newWorkbook();
     try {
       await workbook.xlsx.load(bytes as unknown as ArrayBuffer);
     } catch {
@@ -431,7 +432,7 @@ export class MenuImportService {
 
 // A cell as text: a number as written, a rich text's words, a formula's
 // result.
-function textOf(value: ExcelJS.CellValue): string {
+function textOf(value: CellValue): string {
   if (value === null || value === undefined) return '';
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
@@ -439,8 +440,7 @@ function textOf(value: ExcelJS.CellValue): string {
   if (typeof value === 'object' && 'richText' in value) {
     return value.richText.map((part) => part.text).join('');
   }
-  if (typeof value === 'object' && 'result' in value)
-    return textOf(value.result as ExcelJS.CellValue);
+  if (typeof value === 'object' && 'result' in value) return textOf(value.result as CellValue);
   if (typeof value === 'object' && 'text' in value) return String(value.text);
   return '';
 }

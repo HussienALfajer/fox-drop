@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import { newWorkbook } from '../../workbooks/new-workbook.js';
 import { dailyReportLabels as labels } from '../content/index.js';
 import type { CashFigures, DailyFigures } from './daily-figures.js';
 import type { DailyReport } from './daily-report.service.js';
@@ -60,7 +60,7 @@ export async function dailyReportWorkbook(
   };
   const base = report.currency;
 
-  const workbook = new ExcelJS.Workbook();
+  const workbook = await newWorkbook();
   workbook.creator = 'FOX DROP';
   const sheet = workbook.addWorksheet(labels.sheet, { views: [{ rightToLeft: true }] });
 

@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import { newWorkbook } from '../../workbooks/new-workbook.js';
 import type { MerchantStatementRead } from '../cashdesk/index.js';
 import { merchantExportLabels, restaurantStatementLabels } from '../content/index.js';
 import type { OrderView } from '../ordering/index.js';
@@ -12,8 +12,8 @@ import type { RestaurantFigures } from './restaurant-report.js';
 
 const numberFormat = (places: number) => (places === 0 ? '#,##0' : `#,##0.${'0'.repeat(places)}`);
 
-function newSheet(name: string) {
-  const workbook = new ExcelJS.Workbook();
+async function newSheet(name: string) {
+  const workbook = await newWorkbook();
   workbook.creator = 'FOX DROP';
   return { workbook, sheet: workbook.addWorksheet(name, { views: [{ rightToLeft: true }] }) };
 }
@@ -41,7 +41,7 @@ export async function merchantReportWorkbook(
   const labels = merchantExportLabels.report;
   const places = decimalsOf.get(report.currency) ?? 2;
   const money = (minor: bigint | null) => (minor === null ? null : majorOf(minor, places));
-  const { workbook, sheet } = newSheet(labels.sheet);
+  const { workbook, sheet } = await newSheet(labels.sheet);
   sheet.addRow([labels.title]).font = { bold: true, size: 14 };
   sheet.addRow([report.restaurantName]);
   sheet.addRow([labels.period, `${report.fromDay} - ${report.toDay}`]);
@@ -134,7 +134,7 @@ export async function merchantHistoryWorkbook(
   decimalsOf: ReadonlyMap<string, number>,
 ): Promise<Buffer> {
   const labels = merchantExportLabels.history;
-  const { workbook, sheet } = newSheet(labels.sheet);
+  const { workbook, sheet } = await newSheet(labels.sheet);
   sheet.addRow([labels.title]).font = { bold: true, size: 14 };
   sheet.addRow([labels.period, `${history.fromDay} - ${history.toDay}`]);
   sheet.addRow([]);
@@ -193,7 +193,7 @@ export async function merchantStatementWorkbook(
   const decimals = (currency: string) => decimalsOf.get(currency) ?? 2;
   const money = (minor: bigint) => majorOf(minor, decimals(base));
   const format = numberFormat(decimals(base));
-  const { workbook, sheet } = newSheet(labels.sheet);
+  const { workbook, sheet } = await newSheet(labels.sheet);
   sheet.addRow([labels.title]).font = { bold: true, size: 14 };
   sheet.addRow([labels.restaurant, statement.restaurantName]);
   sheet.addRow([

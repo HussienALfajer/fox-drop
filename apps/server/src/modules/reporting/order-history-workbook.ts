@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import { newWorkbook } from '../../workbooks/new-workbook.js';
 import { orderHistoryLabels as labels } from '../content/index.js';
 import type { AdminHistoryRow } from '../ordering/index.js';
 import { majorOf } from './statement-workbook.js';
@@ -34,7 +34,7 @@ export async function orderHistoryWorkbook(
     minute: '2-digit',
     hourCycle: 'h23',
   });
-  const workbook = new ExcelJS.Workbook();
+  const workbook = await newWorkbook();
   workbook.creator = 'FOX DROP';
   const sheet = workbook.addWorksheet(labels.sheet, { views: [{ rightToLeft: true }] });
   sheet.addRow([labels.title]).font = { bold: true, size: 14 };
