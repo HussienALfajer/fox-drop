@@ -83,6 +83,17 @@ describe('the component tokens are read where they are declared', () => {
       expect(result.problems).toEqual([expect.stringMatching(/web folder gone.*does not exist/)]);
     });
 
+    it('does not count a field of another object as a Flutter read (review of D.W1)', () => {
+      writeFileSync(path.join(roots.flutter, 'chip/other.dart'), 'final b = this.size + old.size;');
+      const result = write('other', {
+        ...height,
+        size: { $type: 'dimension', $value: '{size.icon-sm}' },
+      });
+      expect(result.problems).toContainEqual(
+        expect.stringMatching(/chip\.size: no Flutter file .* reads chip\.size/),
+      );
+    });
+
     it('does not count a longer token name as a read', () => {
       const result = write('prefix', {
         ...height,

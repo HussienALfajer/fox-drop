@@ -130,7 +130,7 @@ export function tailwind(light: Tokens): string {
 
 // Dart ------------------------------------------------------------------
 
-const camel = (parts: string[]) =>
+export const camel = (parts: string[]) =>
   parts
     .join('-')
     .replace(/^(\d)x/, (_, n: string) => 'x'.repeat(Number(n)))
@@ -147,12 +147,14 @@ function argb(hex: string): string {
 const number = (value: number) => (Number.isInteger(value) ? `${value}.0` : `${value}`);
 
 function dartClass(name: string, doc: string, fields: [string, string][]): string {
+  // As `dart format` writes it: one line when it fits in 80 columns.
+  const oneLine = `  const ${name}({${fields.map(([field]) => `required this.${field}`).join(', ')}});`;
   return [
     `/// ${doc}`,
     `final class ${name} {`,
-    `  const ${name}({`,
-    ...fields.map(([field]) => `    required this.${field},`),
-    '  });',
+    ...(oneLine.length <= 80
+      ? [oneLine]
+      : [`  const ${name}({`, ...fields.map(([field]) => `    required this.${field},`), '  });']),
     '',
     ...fields.map(([field, type]) => `  final ${type} ${field};`),
     '}',

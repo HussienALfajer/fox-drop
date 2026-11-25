@@ -873,10 +873,7 @@ abstract final class FoxInput {
 
 /// Every component token of one theme, one field per file of tokens/component/.
 final class ComponentTokens {
-  const ComponentTokens({
-    required this.button,
-    required this.input,
-  });
+  const ComponentTokens({required this.button, required this.input});
 
   final ButtonTokens button;
   final InputTokens input;

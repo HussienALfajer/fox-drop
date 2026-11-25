@@ -6,7 +6,7 @@ Every token change bumps `version` in `package.json` and gets an entry here (arc
 
 - Dart: every file of `tokens/component/` now comes out with no change to the generator, and a new `ComponentTokens` per theme (`FoxComponents.light.button`, …) bundles them; `core_ui` exposes it as `FoxThemeData.components`. `FoxButton` and `FoxInput` keep their names.
 - A component file declares the ui-web and core_ui folders that read it in `$extensions["app.foxdrop"]` (`{ "web": [...], "flutter": [...] }`); `src/component-usage.test.ts` fails when a token is not read on a declared side. A token one side does not need says `"sides": ["web"]`. `button.json` declares `button` on both sides; `button.compact.height` is web only (the Flutter button has no compact density).
-- New `border-width.heavy` (4px): the current item's bar in the panel's sidebar, which wrote `border-s-4`. Dart gets the widths as `FoxBorderWidth` (`thin`, `thick`, `heavy`).
+- New tokens, each with the value of the literal it replaces (no look change): `border-width.heavy` (4px, the current item's bar in the panel's sidebar, which wrote `border-s-4`), `border-width.indicator` (3px, the Flutter tabs' underline), `size.menu-min-width` (192px), `size.menu-max-width` (336px), `size.menu-max-height` (288px) for the Flutter menus, and `motion.enter.sheet` (1) and `motion.enter.toast` (0.15), the share of its height a Flutter sheet and toast slide in from. Dart gets the widths as `FoxBorderWidth` (`thin`, `thick`, `indicator`, `heavy`); the motion group's description now covers the entrances.
 
 ## 0.13.0 (2026-11-25, blue headings)
 

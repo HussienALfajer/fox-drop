@@ -299,6 +299,15 @@ Path pin(Size size) {
 ''');
   }
 
+  /// A checked class inside another is reported once (review of D.W1).
+  Future<void> test_nestedOnce() async {
+    const code = r'''
+import 'package:flutter/widgets.dart';
+const a = BorderRadius.all(Radius.circular(12));
+''';
+    await assertDiagnostics(code, [lint(code.indexOf('12'), 2)]);
+  }
+
   Future<void> test_coreUiOnly() async {
     expect(NoLiteralDimension().packages, {'packages/core_ui'});
   }

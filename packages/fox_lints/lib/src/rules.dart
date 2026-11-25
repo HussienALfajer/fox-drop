@@ -245,7 +245,7 @@ class _DimensionVisitor extends SimpleAstVisitor<void> {
   }
 
   /// The class name and its checked arguments (null: all), or a null name.
-  (String?, Set<String>?) _checked(InstanceCreationExpression node) {
+  static (String?, Set<String>?) _checked(InstanceCreationExpression node) {
     final element = node.constructorName.type.element;
     final name = element?.name;
     final uri = element?.library?.uri;
@@ -305,6 +305,14 @@ class _DimensionVisitor extends SimpleAstVisitor<void> {
 /// The non-zero number literals of an expression, halving divisors left out.
 class _Literals extends RecursiveAstVisitor<void> {
   final found = <Literal>[];
+
+  /// A nested class the rule checks (`Radius.circular` inside
+  /// `BorderRadius.all`) is reported by its own visit, never twice.
+  @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    if (_DimensionVisitor._checked(node).$1 != null) return;
+    super.visitInstanceCreationExpression(node);
+  }
 
   @override
   void visitBinaryExpression(BinaryExpression node) {

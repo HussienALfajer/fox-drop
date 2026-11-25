@@ -93,6 +93,8 @@
         "$TURBO_ROOT$/packages/core_tokens/lib/src/icons.g.dart",
         "$TURBO_ROOT$/packages/core_tokens/lib/src/tokens.g.dart",
         "$TURBO_ROOT$/packages/core_ui/design-system/**",
+        "$TURBO_ROOT$/packages/core_ui/lib/src/**",
+        "$TURBO_ROOT$/packages/ui-web/src/**",
         "$TURBO_ROOT$/packages/core_ui/test/phone_harness.dart",
         "$TURBO_ROOT$/packages/core_ui/test/golden/design_system_cards_test.dart",
         "$TURBO_ROOT$/packages/core_ui/test/golden/goldens/design-system/**",

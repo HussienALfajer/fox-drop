@@ -1,11 +1,13 @@
 // The component layer's folders (architecture §9.2, slice D.W1): a file of
 // tokens/component/ declares the ui-web and core_ui folders that read it in
 // `$extensions["app.foxdrop"]`, and every token it holds is read in them: on
-// the web as its CSS variable, in Flutter as its Dart field. A token only one
+// the web as its CSS variable, in Flutter as `<component>.<field>`
+// (`theme.button.gap`, `components.button.gap`). A token only one
 // side needs says so with `"sides": ["web"]` (or `["flutter"]`). A text scan
 // of the sources, no build; src/component-usage.test.ts runs it.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { camel } from './generate.ts';
 import { PACKAGE_DIR } from './resolve.ts';
 
 export const COMPONENT_DIR = path.join(PACKAGE_DIR, 'tokens/component');
@@ -48,8 +50,6 @@ function sources(folder: string, side: Side): string[] {
     );
 }
 
-const camel = (parts: string[]) =>
-  parts.join('-').replace(/[-.](\w)/g, (_, c: string) => c.toUpperCase());
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** How each side names a token: `--fd-button-gap`, `.gap`. */
@@ -58,9 +58,11 @@ const reads: Record<Side, (tokenPath: string[]) => { name: string; pattern: RegE
     const name = `--fd-${tokenPath.join('-')}`;
     return { name, pattern: new RegExp(`${escape(name)}(?![\\w-])`) };
   },
+  // With its component, as `theme.button.gap` and `components.button.gap`
+  // read it: a bare `.gap` would also match `this.gap`.
   flutter: (tokenPath) => {
-    const name = `.${camel(tokenPath.slice(1))}`;
-    return { name, pattern: new RegExp(`${escape(name)}\\b`) };
+    const name = `${camel(tokenPath.slice(0, 1))}.${camel(tokenPath.slice(1))}`;
+    return { name, pattern: new RegExp(`\\b${escape(name)}\\b`) };
   },
 };
 
