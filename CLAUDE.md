@@ -15,8 +15,8 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes from `packageManager` in `package.json`. `fvm install` installs the pinned Flutter and links it at `.fvm/flutter_sdk` (a worktree without one uses the main checkout's), which `pnpm verify`, the hooks and every Bash command (SessionStart hook) use, never `C:\flutter`.
 
 - `pnpm install`, then `dart pub get`: install the TypeScript and Dart dependencies (the pub workspace replaces `melos bootstrap`).
-- `pnpm verify`: the whole check. It first regenerates the API contract and clients and fails when the committed ones are stale (needs Java 11 or later); then Prettier, ESLint, type checks, tests, the web builds and their Playwright smoke tests through Turborepo, then Dart analyze, format and tests through Melos. The database tests start PostGIS with Testcontainers, so Docker must be running. CI runs its parts as parallel jobs (`node scripts/verify.mjs contract|format|typescript|server|dart|flutter`, the server's tests in four shards and the Flutter packages in three, `--shard=<i>/<n>`), skips all but Prettier and the instruction size check for a change of Markdown and `docs/` only (only the spec files a test reads count as code: `SPEC_FILES_READ_BY_TESTS` in `scripts/classify-changes.mjs`), skips the Dart and Flutter parts for a change without Dart, and runs native release builds only for a native change or the `native-builds` label.
-- `node scripts/verify.mjs --changed`: only what the change since origin/main can break, committed or not (classified by `scripts/classify-changes.mjs`, which CI uses too). Run it with `run_in_background: true`, output to a log, once per finished layer. One check at a time in a folder (a second waits). CI runs everything and stays the gate.
+- `pnpm verify`: the whole check. It first regenerates the API contract and clients and fails when the committed ones are stale (needs Java 11 or later); then Prettier, ESLint, type checks, tests, the web builds and their Playwright smoke tests through Turborepo, then Dart analyze, format and tests through Melos. The database tests start PostGIS with Testcontainers, so Docker must be running. CI runs its parts as parallel jobs (`node scripts/verify.mjs contract|format|typescript|server|dart|flutter`, the server's tests in four shards and the Flutter packages in three, `--shard=<i>/<n>`), skips what a change cannot break (workflow §5) and runs native release builds only for a native change or the `native-builds` label.
+- `node scripts/verify.mjs --changed`: only what the change since origin/main can break, committed or not. Run it with `run_in_background: true`, output to a log, once per finished layer; never poll it or rerun it for docs (workflow §5). CI runs everything and stays the gate.
 - `docker compose up --detach`: the local PostGIS, Valkey and Centrifugo, after copying `.env.example` to `.env`; then `pnpm --filter @fox-drop/server db:migrate`.
 - `docker compose run --rm osrm-build`, then `docker compose --profile osrm up --detach`: OSRM over Azaz (else straight line × 1.3).
 - `pnpm generate:api`: regenerate the OpenAPI document and the TypeScript and Dart clients after a route or schema change.
@@ -37,15 +37,15 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 
 ## How to work
 
-- Slice loop: `/spec` (only beyond the written specs) → `/slice-plan` (fresh session, plan mode) → `/build-slice` (one session from the slice file) → `reviewer` (+ `security-reviewer` for T0) → pull request. One slice per session and per pull request; `/clear` between tasks.
+- Slice loop: `/spec` (only beyond the written specs) → `/slice-plan` (fresh session, plan mode) → `/build-slice` (one session from the slice file) → review by tier → pull request. One slice per session and per pull request, sized by workflow §3.1; `/clear` between tasks.
 - Model: Opus 5.5 always, chosen when the session starts and never switched in it. Effort by risk tier (`docs/process/development-workflow.md` §2): **T0** money, ledger, order states and timers, auth, migrations, secrets, deploy and CI: high or xhigh; **T1** domain services, routes, contracts: medium (high for tricky logic); **T2** UI, docs, tests: medium or low.
 - Build only what the cited spec sections say. No helpers, options or abstractions before their first real use.
 - Tests first: failing tests in the red phase, then locked (`/build-slice`); always for order states, timers and money.
 - Show evidence: the command and its result. A task is done when its checks pass, not when the code is written.
 - Fix root causes. Never silence a failing test, a type error or a lint rule. A flaky test is fixed at its cause: no retries, sleeps or skips. After three failed attempts at the same check, stop and ask the owner.
-- Send independent tool calls together in one message; send wide searches to the `Explore` agent.
+- Send independent tool calls together in one message; change a file with Edit, never a rewrite; Grep a log, never read it whole; wide searches go to `Explore`.
 - A bug found after a merge becomes a `REVIEW.md` item or a test in its fix's pull request.
-- Commit and push at every green checkpoint; keep the slice file's "Stopped at" line current.
+- One commit and one push per green checkpoint, nothing pushed known to fail, a draft pull request until the slice is done (workflow §6); keep "Stopped at" current.
 - Stop and ask the owner about: scope, business rules, open items, a feature's split into pull requests, destructive or non-backward-compatible migrations, production deploys, and anything that touches real money or real users.
 
 ## Git
@@ -71,7 +71,7 @@ Talk to the owner in Arabic: messages, questions and reports. Everything stored 
 
 End every substantial task with these sections, in Arabic, in this order:
 
-1. «ما المطلوب منك»: decisions blocking progress, what the owner can try (a slice's acceptance steps, to run after the merge), or «لا شيء». When the task opened or merged a pull request, end with the cleanup line in a code block, to run after the merge (squash merges need `-D`): `cd D:\fox-drop; git switch main; git pull --ff-only; git fetch --prune; git branch -D <branch>`.
+1. «ما المطلوب منك»: decisions blocking progress, what the owner can try (a slice's acceptance steps, to run after the merge), or «لا شيء». When the task opened or merged a pull request, end with the cleanup line in a code block, to run after the merge (squash merges need `-D`): `cd D:\fox-drop; git switch main; git pull --ff-only; git fetch --prune; git branch -D <branch>`. A worktree: its `.fvm/flutter_sdk` link goes first (workflow §7).
 2. «ما تغيّر»: what was built or changed, with the pull request link.
 3. «التحقق»: the checks run and their results.
 4. «ما وجدته»: issues, risks and follow-ups noticed.
