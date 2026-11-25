@@ -201,10 +201,11 @@ void main() {
     expect(_location(app), '/earnings/statements/$statementId');
     expect(find.text('المبلغ المصروف: 111 ₺'), findsOneWidget);
 
-    // Rendering the image runs outside the test's fake clock.
+    // Rendering the image runs outside the test's fake clock: wait until it is
+    // shared, checking every 50 ms for up to 10 s.
     await tester.runAsync(() async {
       await tester.tap(find.byKey(const Key('statement-share')));
-      for (var i = 0; i < 40 && app.shared.isEmpty; i++) {
+      for (var i = 0; i < 200 && app.shared.isEmpty; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 50));
       }
     });

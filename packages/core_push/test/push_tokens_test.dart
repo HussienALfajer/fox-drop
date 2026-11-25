@@ -28,8 +28,22 @@ void main() {
 
   tearDown(() => tokens.dispose());
 
+  // Lets the pending futures run; with `ms`, a window for a retry that must
+  // not come (a timer fires late on a loaded machine, never early).
   Future<void> settle([int ms = 0]) =>
       Future<void>.delayed(Duration(milliseconds: ms));
+
+  // Waits until [done] holds, checked every 5 ms for up to 5 s: the retries
+  // run on real timers, so a fixed wait for them fails on a loaded machine.
+  Future<void> until(bool Function() done) async {
+    final waited = Stopwatch()..start();
+    while (!done()) {
+      if (waited.elapsed > const Duration(seconds: 5)) {
+        fail('still waiting after 5 s');
+      }
+      await settle(5);
+    }
+  }
 
   test('registers the token at sign-in and each renewal', () async {
     tokens.signedIn();
@@ -65,7 +79,7 @@ void main() {
   test('a failed registration is tried again while signed in', () async {
     failures = 2;
     tokens.signedIn();
-    await settle(100);
+    await until(() => registered.isNotEmpty);
     expect(registered, ['push-token-0']);
   });
 
@@ -74,6 +88,7 @@ void main() {
     tokens.signedIn();
     await settle();
     tokens.signedOut();
+    // Two retries' time, in which the stopped retry must not register.
     await settle(50);
     expect(registered, isEmpty);
   });
@@ -81,7 +96,7 @@ void main() {
   test('Firebase failing to give a token is tried again', () async {
     push.failures = 2;
     tokens.signedIn();
-    await settle(100);
+    await until(() => registered.isNotEmpty);
     expect(registered, ['push-token-0']);
   });
 
@@ -106,6 +121,9 @@ void main() {
     tokens.signedIn();
     await settle();
     push.renew('push-token-1');
+    await until(() => registered.isNotEmpty);
+    // Two retries' time, in which the older token's cancelled retry must not
+    // register it.
     await settle(50);
     expect(registered, ['push-token-1']);
   });

@@ -875,10 +875,11 @@ void main() {
     // The order's discount and the statement's total.
     expect(find.text('خصم يموّله المطعم: 20 ₺'), findsNWidgets(2));
     await tester.ensureVisible(find.byKey(const Key('statement-share')));
-    // Rendering the image runs outside the test's fake clock.
+    // Rendering the image runs outside the test's fake clock: wait until it is
+    // shared, checking every 50 ms for up to 10 s.
     await tester.runAsync(() async {
       await tester.tap(find.byKey(const Key('statement-share')));
-      for (var i = 0; i < 40 && shared.isEmpty; i++) {
+      for (var i = 0; i < 200 && shared.isEmpty; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 50));
       }
     });

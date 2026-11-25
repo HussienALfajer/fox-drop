@@ -19,7 +19,22 @@ Map<String, Object?> event(String orderId, int version, [String? type]) => {
   'type': ?type,
 };
 
+// Lets the pending stream events and fetches run: they are futures, all run
+// before a timer, so the 5 ms is never what a test waits for.
 Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 5));
+
+// Waits until [done] holds, checked every 5 ms for up to 5 s: the polls run on
+// real timers, which fire late on a loaded machine, so a fixed wait for a
+// number of them fails there.
+Future<void> until(bool Function() done) async {
+  final waited = Stopwatch()..start();
+  while (!done()) {
+    if (waited.elapsed > const Duration(seconds: 5)) {
+      fail('still waiting after 5 s');
+    }
+    await settle();
+  }
+}
 
 void main() {
   late FakeTransport transport;
@@ -125,17 +140,18 @@ void main() {
 
   test('polls while the channel is down, and stops once it is up', () async {
     feed.start();
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-    expect(fetches, greaterThanOrEqualTo(3));
+    await until(() => fetches >= 3);
     transport.send('merchant:r1', const RealtimeUp(recovered: true));
     await settle();
     final atUp = fetches;
+    // Two and a half polls' time, in which a poll that did not stop would
+    // fetch (a timer fires late, never early).
     await Future<void>.delayed(const Duration(milliseconds: 100));
     expect(fetches, atUp);
     transport.send('merchant:r1', const RealtimeDown());
-    await Future<void>.delayed(const Duration(milliseconds: 100));
+    await settle();
     expect(feed.state.live, isFalse);
-    expect(fetches, greaterThan(atUp));
+    await until(() => fetches > atUp);
   });
 
   test('keeps the last state after a failed fetch, and tries again', () async {
@@ -147,8 +163,7 @@ void main() {
     expect(feed.state.failed, isTrue);
     expect(feed.state.value, {'a': 1});
     failing = false;
-    await Future<void>.delayed(const Duration(milliseconds: 80));
-    expect(feed.state.failed, isFalse);
+    await until(() => !feed.state.failed);
   });
 
   test('refreshes during a fetch make one more fetch after it', () async {
