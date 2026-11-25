@@ -258,14 +258,16 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
                         Semantics(
                           image: true,
                           label: s.valid,
-                          child: SizedBox.square(
-                            dimension: t.FoxSize.touchTarget,
-                            child: Center(
-                              child: FoxIcon(
-                                t.FoxIcons.success,
-                                style: FoxIconStyle.bold,
-                                color: FoxTheme.of(context).colors.success,
-                              ),
+                          // Not a control: as wide as its icon, so a
+                          // narrow field keeps room for the digits.
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.symmetric(
+                              horizontal: i.gap / 2,
+                            ),
+                            child: FoxIcon(
+                              t.FoxIcons.success,
+                              style: FoxIconStyle.bold,
+                              color: FoxTheme.of(context).colors.success,
                             ),
                           ),
                         ),

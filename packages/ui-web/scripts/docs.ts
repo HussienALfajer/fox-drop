@@ -115,6 +115,22 @@ interface TextAreaProps {
   disabled?: boolean;
 }
 
+interface DropLoaderProps {
+  /** 'sm' 16 (inside a field), 'md' 24 (a button, the default), 'lg' 48 (a page part). */
+  size?: 'sm' | 'md' | 'lg';
+  /** On the orange ground: an ivory drop with an orange fox. */
+  onPrimary?: boolean;
+  /** Read in a polite live region («جارٍ التحميل»); without it the loader is decoration. */
+  label?: string;
+}
+
+interface TextLinkProps {
+  children: ReactNode;
+  /** Where it goes; without it the link acts through onClick. Always read as a link. */
+  href?: string;
+  onClick?: () => void;
+}
+
 interface SearchFieldProps {
   /** The accessible name of the field; there is no visible label. */
   label: string;
@@ -125,7 +141,7 @@ interface SearchFieldProps {
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   name?: string;
-  /** A spinner replaces the clear button while results load. */
+  /** The drop loader replaces the clear button while results load. */
   loading?: boolean;
   disabled?: boolean;
   density?: Density;

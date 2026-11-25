@@ -1577,6 +1577,198 @@ Widget _refresh() => _card([
   _example('loading', const FoxRefreshDrop(progress: 1, refreshing: true)),
 ]);
 
+// ---------- D.11b: the components of D.11's screens ----------
+
+Widget _loader() => _card([
+  _example(
+    'sizes 16, 24, 48 on light, mid-cycle',
+    const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FoxDropLoader(size: FoxDropLoaderSize.sm, phase: 0.45),
+        gap,
+        FoxDropLoader(phase: 0.45),
+        gap,
+        FoxDropLoader(size: FoxDropLoaderSize.lg, phase: 0.45),
+      ],
+    ),
+  ),
+  _example(
+    'inside a busy button',
+    FoxButton(
+      label: 'أرسل الرمز',
+      loadingLabel: 'جارٍ إرسال الرمز…',
+      loading: true,
+      onPressed: () {},
+    ),
+  ),
+]);
+
+Widget _countrySheet() => _card([
+  _example(
+    'Syria and Turkey first, then the last used, then the rest',
+    _box(
+      _field,
+      SizedBox(
+        height: FoxSize.dialog,
+        child: FoxCountrySheet(
+          countries: testCountries,
+          selected: 'SY',
+          strings: testPhoneStrings.sheet,
+          lastUsed: 'DE',
+          onSelected: (_) {},
+        ),
+      ),
+    ),
+  ),
+]);
+
+Widget _textLinks() => _card([
+  _example(
+    'links',
+    Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FoxTextLink(label: 'ليس الآن', onPressed: () {}),
+        gap,
+        FoxTextLink(label: 'تعديل الرقم', onPressed: () {}),
+        gap,
+        FoxTextLink(label: 'الشروط', onPressed: () {}),
+      ],
+    ),
+  ),
+]);
+
+const _trackSteps = [
+  FoxTrackingStep(icon: FoxIcons.receipt, label: 'استلام'),
+  FoxTrackingStep(icon: FoxIcons.restaurant, label: 'تحضير'),
+  FoxTrackingStep(icon: FoxIcons.motorcycle, label: 'في الطريق'),
+  FoxTrackingStep(icon: FoxIcons.house, label: 'وصل'),
+];
+
+Widget _trackingSteps() => _card([
+  for (final (caption, current) in const [
+    ('the first step now', 0),
+    ('on the way', 2),
+    ('delivered', 4),
+  ])
+    _example(
+      caption,
+      _box(
+        _field,
+        FoxTrackingSteps(
+          steps: _trackSteps,
+          current: current,
+          doneLabel: 'تم',
+          nowLabel: 'الآن',
+        ),
+      ),
+    ),
+]);
+
+Widget _heroes() => _card([
+  for (final (caption, origin, title) in [
+    (
+      'from the cart',
+      const FoxSignInOrigin.checkout(
+        restaurant: 'مطعم الشام',
+        details: '3 أصناف · إلى حي الجلاء',
+        amount: '18500',
+        symbol: _lira,
+        savedLabel: 'سلّتك محفوظة كما هي',
+      ),
+      'سجّل دخولك لتكمل طلبك',
+    ),
+    (
+      'from «طلباتي»',
+      const FoxSignInOrigin.orders(
+        title: 'هكذا تتابع طلبك',
+        statusLabel: 'في الطريق إليك',
+        steps: _trackSteps,
+        current: 2,
+        doneLabel: 'تم',
+        nowLabel: 'الآن',
+      ),
+      'تابع طلبك لحظة بلحظة',
+    ),
+    (
+      'from «حسابي»',
+      const FoxSignInOrigin.account(
+        perks: [
+          FoxSignInPerk(icon: FoxIcons.dropPin, label: 'عناوينك'),
+          FoxSignInPerk(icon: FoxIcons.discount, label: 'أكوادك'),
+          FoxSignInPerk(icon: FoxIcons.heart, label: 'مفضّلتك'),
+        ],
+      ),
+      'حسابك يحفظ لك كل شيء',
+    ),
+  ])
+    _example(
+      caption,
+      _box(
+        _width / 1.5,
+        SizedBox(
+          height: FoxSize.dialog * 0.85,
+          child: FoxSignInHero(
+            origin: origin,
+            title: title,
+            lead: 'أدخل رقمك لنرسل لك رمز الدخول على واتساب.',
+          ),
+        ),
+      ),
+    ),
+]);
+
+Widget _codePreviews() => _card([
+  for (final compact in [false, true])
+    _example(
+      compact ? 'compact, the keyboard up' : 'full',
+      _box(
+        _field,
+        FoxCodePreview(
+          sender: 'FOX DROP',
+          message: 'رمز الدخول إلى FOX DROP:',
+          time: 'الآن · واتساب',
+          semanticLabel: 'يصلك الرمز في رسالة واتساب من FOX DROP',
+          compact: compact,
+        ),
+      ),
+    ),
+]);
+
+Widget _ticket() => _card([
+  _example(
+    'the forced update',
+    const FoxVersionTicket(
+      installedLabel: 'إصدارك',
+      installed: '1.0.3',
+      requiredLabel: 'الإصدار الجديد',
+      required: '1.1.0',
+      semanticLabel: 'إصدارك 1.0.3، والمطلوب 1.1.0 أو أحدث',
+    ),
+  ),
+]);
+
+Widget _shopSigns() => _card([
+  _example(
+    'maintenance',
+    const FoxShopSign(
+      title: 'نعود قريباً',
+      subtitle: 'صيانة قصيرة',
+      semanticLabel: 'لافتة: نعود قريباً',
+    ),
+  ),
+  _example(
+    'with the return time',
+    const FoxShopSign(
+      title: 'نعود قريباً',
+      subtitle: 'صيانة قصيرة',
+      returnTime: 'نعود الساعة 3:00 م',
+      semanticLabel: 'لافتة: نعود قريباً، الساعة 3:00 م',
+    ),
+  ),
+]);
+
 // ---------- the tests ----------
 
 typedef _Build = Widget Function(List<TextEditingController> text);
@@ -1640,6 +1832,14 @@ void main() {
     'FoxBottomNavigation': ((_) => _bottomNavigation(), const []),
     'FoxNavigationRail': ((_) => _rail(), const []),
     'FoxPullToRefresh': ((_) => _refresh(), const []),
+    'FoxDropLoader': ((_) => _loader(), const []),
+    'FoxCountrySheet': ((_) => _countrySheet(), const []),
+    'FoxTextLink': ((_) => _textLinks(), const []),
+    'FoxTrackingSteps': ((_) => _trackingSteps(), const []),
+    'FoxSignInHero': ((_) => _heroes(), const []),
+    'FoxCodePreview': ((_) => _codePreviews(), const []),
+    'FoxVersionTicket': ((_) => _ticket(), const []),
+    'FoxShopSign': ((_) => _shopSigns(), const []),
   };
 
   for (final MapEntry(key: name, value: (build, texts)) in cards.entries) {

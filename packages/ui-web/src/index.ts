@@ -48,6 +48,7 @@ export { Select, type SelectProps } from './select/select';
 export { Switch, type SwitchProps } from './switch/switch';
 export { TextArea, type TextAreaProps } from './text-area/text-area';
 export { TextField, type TextFieldProps } from './text-field/text-field';
+export { TextLink, type TextLinkProps } from './text-link/text-link';
 export { Sidebar, type SidebarItem, type SidebarProps } from './sidebar/sidebar';
 export { Tabs, type TabItem, type TabsProps } from './tabs/tabs';
 export {

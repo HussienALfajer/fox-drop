@@ -22,7 +22,7 @@ The button of every FOX DROP screen: one action, in four looks, two densities an
 ## States
 
 - `disabled`: greyed out, not focusable, ignores presses; say why nearby.
-- `loading`: a spinner over the hidden label; the width does not change, presses are ignored and the button stays focusable (`aria-busy`). Use it for a request in flight, not for navigation.
+- `loading`: the drop loader (`DropLoader`) over the hidden label, or beside `loadingLabel` («جارٍ إرسال الرمز…») when given; the width does not change, presses are ignored and the button stays focusable (`aria-busy`). Use it for a request in flight, not for navigation.
 - Hover, focus (ring) and pressed are drawn for you.
 
 ## RTL and accessibility

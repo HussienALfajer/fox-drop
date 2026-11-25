@@ -58,6 +58,12 @@ final _states = <String, (List<String>, List<String>)>{
   'FoxRefreshDrop': ([''], refreshDropStates),
   'FoxDropLoader': ([''], dropLoaderStates),
   'FoxCountrySheet': ([''], countrySheetStates),
+  'FoxTextLink': ([''], textLinkStates),
+  'FoxTrackingSteps': ([''], trackingStepsStates),
+  'FoxSignInHero': ([''], signInHeroStates),
+  'FoxCodePreview': ([''], codePreviewStates),
+  'FoxVersionTicket': ([''], versionTicketStates),
+  'FoxShopSign': ([''], shopSignStates),
 };
 
 void main() {

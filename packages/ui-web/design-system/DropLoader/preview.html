@@ -1,0 +1,70 @@
+<!-- @dsCard group="Feedback" height=360 -->
+<style>
+  /* The card paints the apps' own ground and text, whatever the page around it. */
+  :root {
+    color-scheme: light;
+  }
+  #root {
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+  }
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: var(--fd-space-lg) 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fd-space-lg);
+    margin-block-end: var(--fd-space-sm);
+  }
+  .orange {
+    display: inline-flex;
+    gap: var(--fd-space-lg);
+    align-items: center;
+    padding: var(--fd-space-sm);
+    border-radius: var(--fd-radius-md);
+    background: var(--fd-color-primary);
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, DropLoader, Button } = FoxDrop;
+  const h = React.createElement;
+  const section = (title, ...items) => [
+    h('h2', { key: title }, title),
+    h('div', { className: 'row', key: title + 'row' }, ...items),
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render([
+    ...section(
+      'Sizes on a light ground: 16, 24, 48',
+      h(DropLoader, { size: 'sm' }),
+      h(DropLoader, {}),
+      h(DropLoader, { size: 'lg', label: 'جارٍ التحميل' }),
+    ),
+    ...section(
+      'On orange, and inside a busy button',
+      h(
+        'span',
+        { className: 'orange' },
+        h(DropLoader, { onPrimary: true }),
+        h(DropLoader, { size: 'lg', onPrimary: true }),
+      ),
+      h(Button, { loading: true, loadingLabel: 'جارٍ إرسال الرمز…' }, 'أرسل الرمز'),
+    ),
+  ]);
+</script>

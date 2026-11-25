@@ -80,6 +80,8 @@ Checkpoints (one commit per step, `node scripts/verify.mjs --changed` once at ea
 
 2026-11-25, end of the first build session (owner: finish B, then stop): checkpoints A (tokens 0.11.0 and the loader, both sides) and B (the shared phone rules, the country list generator, `PhoneField` on the web, `FoxPhoneField` and `FoxCountrySheet` in Flutter, the old inputs moved) went to `main` in their own pull request (#283, owner 2026-11-25: merge A and B now). Next: checkpoint C (plan step 4) on a new branch from `main` (`feat/sign-in-frame-components-c`), then step 5, the goldens and visual baselines (A and B's are not updated yet), review and the slice's second pull request.
 
+2026-11-25, second build session (owner: build the rest as is, without the split the «Size» note asked for): checkpoint C and step 5 on `feat/sign-in-frame-components-c`. Built: the phone field's check-mark fix (both sides), `FoxTextLink` and `TextLink`, `FoxTrackingSteps`, `FoxSignInHero`, `FoxCodePreview`, `FoxBottomNavigation` in the Figma shape (Linear icons), `FoxBanner`'s close and second action, `FoxVersionTicket`, `FoxShopSign`; widgetbook use cases, Design System cards (web: `DropLoader`, `TextLink`; Flutter: the eight new cards), goldens and docs. Tests in `packages/core_ui/test/frame_parts_test.dart` and `packages/ui-web/src/text-link/text-link.test.tsx` (locked).
+
 ## Evidence
 
 - `node scripts/verify.mjs --changed`: not run yet

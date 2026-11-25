@@ -24,6 +24,7 @@ final class FoxColorScheme {
   Color get onPrimary => Color(_tokens.onPrimary);
   Color get heading => Color(_tokens.heading);
   Color get accent => Color(_tokens.accent);
+  Color get navHalo => Color(_tokens.navHalo);
   Color get onAccent => Color(_tokens.onAccent);
   Color get border => Color(_tokens.border);
   Color get borderStrong => Color(_tokens.borderStrong);

@@ -34,6 +34,7 @@ class Interaction extends StatefulWidget {
     this.value,
     this.hint,
     this.isButton = false,
+    this.isLink = false,
     this.checked,
     this.mixed,
     this.toggled,
@@ -55,6 +56,9 @@ class Interaction extends StatefulWidget {
   final String? value;
   final String? hint;
   final bool isButton;
+
+  /// Read as a link (the text link, D.11b).
+  final bool isLink;
   final bool? checked;
   final bool? mixed;
   final bool? toggled;
@@ -134,6 +138,7 @@ class _InteractionState extends State<Interaction> {
     return Semantics(
       container: true,
       button: widget.isButton ? true : null,
+      link: widget.isLink ? true : null,
       enabled: widget.enabledState ? widget.enabled : null,
       focusable: widget.enabled ? true : null,
       focused: widget.enabled ? _node.hasFocus : null,

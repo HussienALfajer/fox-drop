@@ -250,7 +250,7 @@ On a weak connection only thumbnails load. While an image loads, its dominant co
 
 ## 10. First icon set
 
-FOX DROP's own icons, set v4 **"Madar"** (architecture §9.4; owner, 2026-11-24), redrawn from scratch in D.5b on Solar's construction: a stroke of 1.5 at 24 (1.75 in the captain app), continuous corners, round caps and joins, blue by default and ivory inside an orange circle when active. Six styles come from each drawing: Linear by default, Bold for the selected tab and a chosen favourite's heart (the heart's fill is no longer an exception: it is the Bold style), Brand Duo with the meaning element in orange for empty states, and Bold Duo, Duotone and Broken (the "bite") for cards and marketing. The first batch is **44 icons** (with the forms pair and `menu`, 47):
+FOX DROP's own icons, set v4 **"Madar"** (architecture §9.4; owner, 2026-11-24), redrawn from scratch in D.5b on Solar's construction: a stroke of 1.5 at 24 (1.75 in the captain app), continuous corners, round caps and joins, blue by default and ivory inside an orange circle when active. Six styles come from each drawing: Linear by default (the selected bottom tab too, marked by its larger orange circle alone; owner, 2026-11-25), Bold for a chosen favourite's heart (the heart's fill is no longer an exception: it is the Bold style), Brand Duo with the meaning element in orange for empty states, and Bold Duo, Duotone and Broken (the "bite") for cards and marketing. The first batch is **44 icons** (with the forms pair and `menu`, 47):
 
 | Group                  | Icons                                                                                     |
 | ---------------------- | ----------------------------------------------------------------------------------------- |
