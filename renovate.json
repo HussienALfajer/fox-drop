@@ -23,6 +23,12 @@
       "groupName": "minor and patch updates"
     },
     {
+      "description": "Dart, Flutter and native build tool updates in a weekly pull request of their own: a change to pubspec.lock or to a native project starts the native release builds on the pull request (Android, Windows, iOS, which gate the merge: scripts/classify-changes.mjs, NATIVE), and the JavaScript updates no longer carry them (2026-11-25: the grouped pull request ran 22 jobs, 6 of them native builds).",
+      "matchManagers": ["pub", "gradle", "gradle-wrapper", "cocoapods"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "Dart and native minor and patch updates"
+    },
+    {
       "description": "Every GitHub Actions update, majors included, in one weekly pull request: each one runs the whole CI (docs/archive/claude-code-workflow.md, phase 5).",
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions",
