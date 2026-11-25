@@ -4,7 +4,8 @@
 //
 //   node scripts/classify-changes.mjs <base>   prints code=…, dart=…, native=…,
 //                                              build=…, visual=…, golden=…
-//                                              for $GITHUB_OUTPUT
+//                                              and hand_written=<count> (with
+//                                              a base) for $GITHUB_OUTPUT
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -53,19 +54,30 @@ const readByServerTests = (file) =>
 // or windows/ folder), checked by classify-changes.test.mjs.
 export const NATIVE_PACKAGES = ['packages/core_alerts'];
 
-// Files outside the Dart packages that core_ui's tests read (D.11b): the
-// phone cases shared with ui-web and the brand mark the loader draws. A change
-// to one runs every Dart package's checks.
+// Files outside the Dart packages that Dart tests read: core_ui's phone cases
+// shared with ui-web and the brand mark the loader draws (D.11b), and the
+// design tokens core_tokens' test compares its generated Dart with. A path
+// ending in /** is a folder. A change to one runs every Dart package's checks
+// (verify.mjs cannot yet scope a change outside the Dart packages to the
+// packages that read it).
 export const READ_BY_DART_TESTS = [
   'packages/ui-web/src/phone-field/phone-cases.json',
   'docs/brand/logo/mark/mark-orange-on-ivory-drop.svg',
+  'packages/design-tokens/tokens/**',
 ];
+
+const readByDartTests = (file) =>
+  READ_BY_DART_TESTS.some((each) =>
+    each.endsWith('/**') ? file.startsWith(each.slice(0, -2)) : file === each,
+  );
 
 // Generated Markdown is code: a test compares it with a fresh render.
 const DOCS = /^(?!packages\/design-tokens\/generated\/)(.*\.md$|docs\/)/;
 // packages/design-tokens generates the Dart tokens of packages/core_tokens.
+// CI runs the Dart jobs for its workflow and for the check engine: verify.mjs
+// and every script it runs or imports, and the golden job's image script.
 const DART =
-  /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml|dart_test\.yaml)$|^(apps\/(customer|captain|merchant|widgetbook)|packages\/(core_[a-z0-9_]+|fox_lints)|packages\/design-tokens)\/|^\.fvmrc$|^\.github\/workflows\/ci\.yml$|^scripts\/(verify(-support)?|golden-docker)\.mjs$)/;
+  /(\.dart$|\.arb$|(^|\/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml|dart_test\.yaml)$|^(apps\/(customer|captain|merchant|widgetbook)|packages\/(core_[a-z0-9_]+|fox_lints)|packages\/design-tokens)\/|^\.fvmrc$|^\.github\/workflows\/ci\.yml$|^scripts\/(verify(-support|-watchdog)?|classify-changes|green-tree|server-test-readers|outside-reads|baselines|golden-docker)\.mjs$)/;
 // What the `golden` job reads besides Dart: the fonts it fetches and the
 // scripts it runs (D.7). They set the Dart checks too.
 const GOLDEN_INPUTS =
@@ -108,6 +120,30 @@ const VISUAL =
 const GOLDEN =
   /^(packages\/(core_ui|core_tokens|design-tokens)\/|\.fvmrc$|\.node-version$|\.gitattributes$|scripts\/golden-docker\.mjs$)|(^|\/)pubspec\.(yaml|lock)$/;
 
+// The files nobody writes by hand, left out of the pull request size notice
+// (CI's `changes` job): what a generator writes, the same list as the edit
+// guard's (.claude/hooks/lib/policy.mjs, GENERATED; classify-changes.test.mjs
+// keeps the two in step), then images (the icons, the screenshot and golden
+// baselines, the app icons), fonts and test snapshots.
+export const NOT_HAND_WRITTEN = [
+  /(^|\/)generated\//i,
+  /^packages\/core_api\/lib\//i,
+  /^packages\/api-schema\/openapi\.json$/i,
+  /^packages\/api-schema\/src\/schema\.ts$/i,
+  /(^|\/)pnpm-lock\.yaml$/i,
+  /(^|\/)pubspec\.lock$/i,
+  /\.g\.dart$/i,
+  /\.freezed\.dart$/i,
+  /\.mocks\.dart$/i,
+  /(^|\/)migrations\/meta\/[^/]+\.json$/i,
+  /\.(png|jpe?g|gif|webp|ico|svg|ttf|otf|woff2?)$/i,
+  /(^|\/)__snapshots__\/|\.snap$/i,
+];
+
+/** The changed `files` written by hand (not in NOT_HAND_WRITTEN). */
+export const handWritten = (files) =>
+  files.filter((file) => !NOT_HAND_WRITTEN.some((pattern) => pattern.test(file)));
+
 /**
  * What the changed `files` (repository-relative, forward slashes) set.
  * `read(file)` returns a file's text, or null when it was deleted.
@@ -128,9 +164,7 @@ export function classify(files, read = readText) {
   const code = build || specRead;
   const dart = files.some(
     (file) =>
-      GOLDEN_INPUTS.test(file) ||
-      READ_BY_DART_TESTS.includes(file) ||
-      (!DOCS.test(file) && DART.test(file)),
+      GOLDEN_INPUTS.test(file) || readByDartTests(file) || (!DOCS.test(file) && DART.test(file)),
   );
   const native = files.some(
     (file) => !DOCS.test(file) && (NATIVE.test(file) || nativePackage(file)),
@@ -155,7 +189,7 @@ export function classify(files, read = readText) {
     (file) =>
       CI_ITSELF.test(file) ||
       GOLDEN_INPUTS.test(file) ||
-      READ_BY_DART_TESTS.includes(file) ||
+      readByDartTests(file) ||
       (!DOCS.test(file) && GOLDEN.test(file)),
   );
   return {
@@ -175,10 +209,11 @@ export function classify(files, read = readText) {
 
 // Which Dart packages the fast check covers: none, the changed ones and their
 // dependents, or all of them after a change to what every package shares (the
-// workspace pubspec, the lock file, the pinned Flutter, the analysis options).
-// CI's own reasons to run Dart (its workflow, verify.mjs) are not local ones.
+// workspace pubspec, the lock file, the pinned Flutter, the analysis options)
+// or to a file outside them that a Dart test reads. CI's own reasons to run
+// Dart (its workflow, the check engine) are not local ones.
 function dartScope(files) {
-  if (files.some((file) => READ_BY_DART_TESTS.includes(file))) return 'all';
+  if (files.some(readByDartTests)) return 'all';
   const dartFiles = files.filter((file) => !DOCS.test(file) && DART_ONLY.test(file));
   if (dartFiles.length === 0) return null;
   const inPackage =
@@ -225,6 +260,7 @@ function main() {
     const files = changedFiles(base, { workingTree: false });
     console.error(files.join('\n'));
     flags = classify(files);
+    console.log(`hand_written=${handWritten(files).length}`);
   } else {
     // No commit to compare with (a new branch): check everything.
     console.error('No base commit: everything counts as changed.');
