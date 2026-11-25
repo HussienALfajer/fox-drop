@@ -228,11 +228,13 @@ function scrollState() {
     return `${element.tagName.toLowerCase()}${classes ? ` (${classes})` : ''}`;
   };
   const span = (from: number, to: number) => `${Math.round(from)}..${Math.round(to)}`;
-  // A part a person cannot see: no box, hidden, aria-hidden or sr-only.
+  // A part a person cannot see: no box, hidden, or visually hidden (sr-only,
+  // a 1 px box). An aria-hidden icon or badge is still seen, so it counts.
   const unseen = (element: Element) => {
     const box = element.getBoundingClientRect();
     if (box.width === 0 || box.height === 0) return true;
-    if (element.closest('[aria-hidden="true"], .sr-only')) return true;
+    if (box.width <= 1 && box.height <= 1) return true;
+    if (element.closest('.sr-only')) return true;
     return getComputedStyle(element).visibility !== 'visible';
   };
   const containers = [...document.body.querySelectorAll('*')].filter(
@@ -319,11 +321,17 @@ test.describe('parts stay inside their scrolling container', () => {
           // A face is fetched only once laid-out text needs it: wait a frame.
           await new Promise(requestAnimationFrame);
           await document.fonts.ready;
-          // An opening popup grows from its trigger: let finite animations end.
+          // An opening popup grows from its trigger: let finite animations
+          // end. A looping one (a loader) is paused, so the two readings
+          // below cannot catch it at different points.
+          const animations = document.getAnimations();
+          const loops = animations.filter(
+            (animation) => animation.effect?.getTiming().iterations === Infinity,
+          );
+          for (const animation of loops) animation.pause();
           await Promise.all(
-            document
-              .getAnimations()
-              .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+            animations
+              .filter((animation) => !loops.includes(animation))
               .map((animation) => animation.finished.catch(() => undefined)),
           );
         });
@@ -339,6 +347,21 @@ test.describe('parts stay inside their scrolling container', () => {
         expect(after.ranges, `${story.id} on ${surface}: the scroll range moved`).toEqual(
           before.ranges,
         );
+        // A story opens at one scroll position; a part placed from the wrong
+        // side may show only at the other end. Scroll every overflowing
+        // container to its far end (negative in RTL) and check again.
+        await page.evaluate(() => {
+          for (const element of document.body.querySelectorAll('*')) {
+            const wide = element.scrollWidth - element.clientWidth;
+            const tall = element.scrollHeight - element.clientHeight;
+            if (wide <= 0 && tall <= 0) continue;
+            const rtl = getComputedStyle(element).direction === 'rtl';
+            element.scrollLeft = rtl ? -wide : wide;
+            element.scrollTop = tall;
+          }
+        });
+        const far = await page.evaluate(scrollState);
+        expect(far.problems, `${story.id} on ${surface}, scrolled to the end`).toEqual([]);
       }
     });
   }
