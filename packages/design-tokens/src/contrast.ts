@@ -198,7 +198,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...codeMask,
   ],
   // Text and numbers at 7:1 in near-black or blue; orange only on buttons and
-  // headings, under the owner's exception (§6).
+  // bars, under the owner's exception (§6).
   captain: [
     ...on(['on-surface', 'on-surface-muted', 'heading', 'accent'], 7, 'text and numbers'),
     ...on(statusText, 7, 'status text'),

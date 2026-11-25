@@ -269,7 +269,7 @@
     "name": "FoxTopBar",
     "file": "FoxTopBar.png",
     "group": "Flutter · Navigation",
-    "summary": "The phone apps' bar: the round back button, the orange title and an optional end action.",
+    "summary": "The phone apps' bar: the round back button, the blue title and an optional end action.",
     "web": "TopBar"
   },
   {
