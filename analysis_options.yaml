@@ -13,7 +13,10 @@ analyzer:
 # R2 and R5 (architecture §9.5, packages/fox_lints): no colour or length
 # literals, no Material import, no left or right. A plugin can be declared
 # only here, at the workspace root; the packages it checks are listed in
-# packages/fox_lints/lib/src/rules.dart (`enforcedPackages`).
+# packages/fox_lints/lib/src/rules.dart (`enforcedPackages`). The plugin is for
+# the editor: it re-resolves the whole workspace on every `dart analyze`, so
+# the check runs `dart analyze --no-plugins` and the same rules through
+# `dart packages/fox_lints/tool/check.dart`.
 plugins:
   fox_lints:
     path: packages/fox_lints

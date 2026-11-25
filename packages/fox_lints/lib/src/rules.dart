@@ -17,6 +17,15 @@ const enforcedPackages = {'packages/core_ui', 'apps/widgetbook'};
 /// for its complex components (architecture §9.10).
 const materialPackages = {'packages/core_ui'};
 
+/// The rules, as the plugin (lib/main.dart) and the check (lib/src/check.dart)
+/// run them.
+List<AnalysisRule> foxRules() => [
+  NoColorLiteral(),
+  NoLiteralSpacing(),
+  NoMaterialImport(),
+  NoPhysicalDirection(),
+];
+
 String? _packageOf(RuleContext context) {
   final root = context.package?.root;
   if (root == null) return null;
