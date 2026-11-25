@@ -35,11 +35,21 @@ export interface TabsProps {
 // orange on the offset shadow. The line slides in duration.fast; it jumps
 // under reduced motion. Overflow scrolls sideways and the SDK keeps the
 // selected tab in view.
+// The wrapper scrolls, not the list: the SDK places the indicator from the
+// list's edges as if it scrolled left to right, so a scrolled RTL list put
+// the line outside itself, unseen, where it also widened the scroll range
+// (found by a screenshot that moved with the fonts' timing, PR 300). The list
+// is as wide as its tabs and never scrolls.
+const scroller = formTv({
+  base: 'overflow-x-auto',
+  variants: { variant: { underline: 'border-b border-border', pill: '' } },
+});
+
 const list = formTv({
-  base: 'relative flex overflow-x-auto',
+  base: 'relative flex w-max min-w-full',
   variants: {
     variant: {
-      underline: 'gap-2xs border-b border-border',
+      underline: 'gap-2xs',
       pill: 'gap-xs py-2xs',
     },
   },
@@ -86,11 +96,30 @@ export function Tabs(props: TabsProps) {
   const { variant = 'underline', density = 'compact' } = props;
   const listRef = useRef<HTMLDivElement>(null);
   // The SDK scrolls a tab into view when it is chosen; this does it for the
-  // tab selected on the first render too (an overflowing list on a phone).
+  // tab selected on the first render too (an overflowing list on a phone),
+  // and again each time the row's tabs change size until the person first
+  // touches the row: the tabs widen when CoFo replaces the fallback font,
+  // whenever that lands, which pushed the selected tab back out of view (a
+  // screenshot differed with the fonts' timing, PR 300). Centred, as
+  // Flutter's `ensureVisible`: where it lands depends only on the final
+  // layout, not on where the row was before (as `nearest` does).
   useEffect(() => {
-    listRef.current
-      ?.querySelector('[data-selected]')
-      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    const list = listRef.current;
+    if (!list) return;
+    const reveal = () =>
+      list.querySelector('[data-selected]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    reveal();
+    // jsdom has no ResizeObserver.
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(reveal);
+    for (const tab of list.querySelectorAll('[role="tab"]')) observer.observe(tab);
+    const stop = () => observer.disconnect();
+    const touched = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
+    for (const type of touched) list.addEventListener(type, stop, { once: true });
+    return () => {
+      stop();
+      for (const type of touched) list.removeEventListener(type, stop);
+    };
   }, []);
   return (
     <SdkTabs
@@ -103,31 +132,33 @@ export function Tabs(props: TabsProps) {
         },
       })}
     >
-      <TabsList
-        ref={listRef}
-        aria-label={label}
-        data-variant={variant}
-        className={list({ variant })}
-      >
-        {items.map((item) => (
-          <TabsTab
-            key={item.value}
-            value={item.value}
-            className={tab({ variant, density })}
-            {...(item.disabled && { disabled: true })}
-          >
-            {item.label}
-            {item.count !== undefined && (
-              <CountBadge
-                count={item.count}
-                label={item.countLabel ?? String(item.count)}
-                tone="accent"
-              />
-            )}
-          </TabsTab>
-        ))}
-        {variant === 'underline' && <TabsIndicator className={indicator()} />}
-      </TabsList>
+      <div className={scroller({ variant })}>
+        <TabsList
+          ref={listRef}
+          aria-label={label}
+          data-variant={variant}
+          className={list({ variant })}
+        >
+          {items.map((item) => (
+            <TabsTab
+              key={item.value}
+              value={item.value}
+              className={tab({ variant, density })}
+              {...(item.disabled && { disabled: true })}
+            >
+              {item.label}
+              {item.count !== undefined && (
+                <CountBadge
+                  count={item.count}
+                  label={item.countLabel ?? String(item.count)}
+                  tone="accent"
+                />
+              )}
+            </TabsTab>
+          ))}
+          {variant === 'underline' && <TabsIndicator className={indicator()} />}
+        </TabsList>
+      </div>
       {items.map((item) => (
         <TabsPanel key={item.value} value={item.value} className="text-on-surface outline-hidden">
           {item.content}
