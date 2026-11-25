@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import { newWorkbook } from '../../workbooks/new-workbook.js';
 import { costReportLabels as labels } from '../content/index.js';
 import type { CostReport } from './cost-report.service.js';
 import { majorOf } from './statement-workbook.js';
@@ -14,7 +14,7 @@ export async function costReportWorkbook(
   const format = places === 0 ? '#,##0' : `#,##0.${'0'.repeat(places)}`;
   const money = (amount: bigint) => majorOf(amount, places);
 
-  const workbook = new ExcelJS.Workbook();
+  const workbook = await newWorkbook();
   workbook.creator = 'FOX DROP';
   const sheet = workbook.addWorksheet(labels.sheet, { views: [{ rightToLeft: true }] });
   // A row whose cells from `first` on are amounts.

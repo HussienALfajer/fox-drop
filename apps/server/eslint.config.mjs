@@ -31,6 +31,35 @@ export default [
               message:
                 'Only src/modules/identity/whatsapp-baileys.ts imports the WhatsApp library; use WhatsAppClient.',
             },
+            {
+              name: 'exceljs',
+              allowTypeImports: true,
+              message:
+                'exceljs takes 0.3 s to load: make a workbook with newWorkbook() from src/workbooks/new-workbook.ts.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Tests read the workbooks with exceljs itself.
+    files: ['src/**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@nestjs/common',
+              importNames: ['Controller'],
+              message: 'Use a route group controller from src/http/route-groups.ts.',
+            },
+            {
+              name: 'baileys',
+              message:
+                'Only src/modules/identity/whatsapp-baileys.ts imports the WhatsApp library; use WhatsAppClient.',
+            },
           ],
         },
       ],
