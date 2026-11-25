@@ -318,7 +318,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: node scripts/parity-report.mjs parity-report "$BASE"
+      # The checkout trusts the folder only in a temporary git config it then
+      # removes; the container's root does not own it, so without this git
+      # sees no repository and reads the base commit as a path.
+      - run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          node scripts/parity-report.mjs parity-report "$BASE"
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
 
