@@ -120,7 +120,9 @@ class FoxSignInHero extends StatelessWidget {
   final String? lead;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => _KeyboardWatch(builder: _build);
+
+  Widget _build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final c = theme.colors;
     // The view's own insets too: a resizing Scaffold removes the keyboard
@@ -216,6 +218,38 @@ class FoxSignInHero extends StatelessWidget {
       ],
     ),
   };
+}
+
+/// Rebuilds [builder] when the view's metrics change (the keyboard rising
+/// or falling): the `View` it reads does not notify on its own.
+class _KeyboardWatch extends StatefulWidget {
+  const _KeyboardWatch({required this.builder});
+
+  final WidgetBuilder builder;
+
+  @override
+  State<_KeyboardWatch> createState() => _KeyboardWatchState();
+}
+
+class _KeyboardWatchState extends State<_KeyboardWatch>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context);
 }
 
 /// A round tinted badge with a Bold icon in the brand colour.

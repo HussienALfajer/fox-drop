@@ -41,6 +41,8 @@ class _Resizable extends StatefulWidget {
 class _ResizableState extends State<_Resizable> {
   double height = _tall;
 
+  void shrink() => setState(() => height = _short);
+
   @override
   Widget build(BuildContext context) => Align(
     alignment: Alignment.topCenter,
@@ -56,9 +58,7 @@ void main() {
     phoneScreen(tester, size: const Size(360, 640));
     await tester.pumpWidget(overlayApp(const _Resizable()));
     expect(find.semantics.byLabel(RegExp('أدخل رقمك')), findsOne);
-    tester.state<_ResizableState>(find.byType(_Resizable)).setState(() {
-      tester.state<_ResizableState>(find.byType(_Resizable)).height = _short;
-    });
+    tester.state<_ResizableState>(find.byType(_Resizable)).shrink();
     await tester.pump();
     expect(find.textContaining('أدخل رقمك').hitTestable(), findsNothing);
     expect(find.semantics.byLabel(RegExp('أدخل رقمك')), findsNothing);
@@ -69,11 +69,19 @@ void main() {
     tester,
   ) async {
     phoneScreen(tester, size: const Size(360, 640));
-    tester.view.viewInsets = const FakeViewPadding(bottom: _keyboard);
     addTearDown(tester.view.resetViewInsets);
     await tester.pumpWidget(overlayApp(const m.Scaffold(body: _hero)));
+    expect(find.byType(FoxCard), findsNWidgets(3));
+
+    // The keyboard rises after the first frame, then falls.
+    tester.view.viewInsets = const FakeViewPadding(bottom: _keyboard);
+    await tester.pumpAndSettle();
     expect(find.text('حسابك يحفظ لك كل شيء'), findsOneWidget);
     expect(find.byType(FoxCard), findsNothing, reason: 'the title alone');
+
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
+    expect(find.byType(FoxCard), findsNWidgets(3));
   });
 
   group('FoxTextLink states', () {

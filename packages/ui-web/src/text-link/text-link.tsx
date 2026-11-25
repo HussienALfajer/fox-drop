@@ -24,7 +24,8 @@ export interface TextLinkProps {
 
 /**
  * Underlined words that act: «ليس الآن», «تعديل الرقم», «الشروط». Always read
- * as a link; an address makes it a real one.
+ * as a link; an address makes it a real one. Without one it is a button,
+ * so Space acts too: harmless, and kept (review, 2026-11-25).
  */
 export function TextLink({ children, href, onClick }: TextLinkProps) {
   if (href) {
