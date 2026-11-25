@@ -144,6 +144,24 @@ describe('the change classifier', () => {
       'code dart build typescript dartScope:all',
     );
     assert.equal(flags(['packages/design-tokens/src/generate.ts']), 'code dart build typescript');
+  });
+
+  it('runs both parity checks for the component registry and the generated CSS (D.P2)', () => {
+    // core_ui's parity test reads the registry and the resolved tokens: they
+    // count as a change to core_ui (and the apps on it), and ui-web's e2e
+    // runs through Turborepo as a dependent of design-tokens.
+    for (const file of [
+      'packages/design-tokens/components.json',
+      'packages/design-tokens/generated/tokens.css',
+    ]) {
+      assert.equal(flags([file]), 'code dart build typescript dartScope:changed', file);
+      assert.deepEqual(dartPackagesSourcedBy(file), ['packages/core_ui'], file);
+      assert.equal(images([file]), 'visual golden', file);
+    }
+    // A component token is a core_tokens source too.
+    assert.deepEqual(dartPackagesSourcedBy('packages/design-tokens/tokens/component/button.json'), [
+      'packages/core_tokens',
+    ]);
     // Generated Markdown and the font metrics are read by tests: they are code.
     assert.equal(
       flags(['packages/design-tokens/generated/contrast-report.md']),
