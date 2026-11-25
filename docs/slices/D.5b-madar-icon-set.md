@@ -157,4 +157,5 @@ Nothing new. The owner opens Storybook and widgetbook to see the six styles, the
 ## Notes for the next session
 
 - The sheet's link lives in Claude's memory (`fox-drop-icon-system-v4`); never commit it.
+- Later change (owner, 2026-11-25, D.11b): the selected bottom tab is Linear, not Bold; its larger orange circle alone marks it.
 - Write the SVGs with a script in the scratchpad that reads the v4 `icons.json`; do not copy `icons.mjs` into the repository.

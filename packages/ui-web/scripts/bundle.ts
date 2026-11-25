@@ -12,6 +12,8 @@ export const PACKAGE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.u
 /** The components the bundle exposes, in the index's order. */
 export const COMPONENTS = [
   'Button',
+  'DropLoader',
+  'TextLink',
   'Icon',
   'Field',
   'TextField',

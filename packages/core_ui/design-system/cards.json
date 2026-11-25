@@ -297,7 +297,63 @@
     "name": "FoxPullToRefresh",
     "file": "FoxPullToRefresh.png",
     "group": "Flutter · Navigation",
-    "summary": "Pull to refresh with the logo's drop filling as you pull, then holding while it loads.",
+    "summary": "Pull to refresh with the mark filling as you pull, then the drop loader while it loads.",
+    "web": null
+  },
+  {
+    "name": "FoxDropLoader",
+    "file": "FoxDropLoader.png",
+    "group": "Flutter · Data",
+    "summary": "The project's one loader: the mark fills with a swaying liquid, then fades back; 16, 24 and 48, and inside a busy button.",
+    "web": "DropLoader"
+  },
+  {
+    "name": "FoxCountrySheet",
+    "file": "FoxCountrySheet.png",
+    "group": "Flutter · Forms",
+    "summary": "The phone field's country list: a search by name or calling code, Syria and Turkey first, then the last used.",
+    "web": null
+  },
+  {
+    "name": "FoxTextLink",
+    "file": "FoxTextLink.png",
+    "group": "Flutter · Actions",
+    "summary": "Underlined primary words that act, with a 48 target around them.",
+    "web": "TextLink"
+  },
+  {
+    "name": "FoxTrackingSteps",
+    "file": "FoxTrackingSteps.png",
+    "group": "Flutter · Data",
+    "summary": "An order's way in four steps: done in blue, the current one orange with a soft pulse, the rest dashed.",
+    "web": null
+  },
+  {
+    "name": "FoxSignInHero",
+    "file": "FoxSignInHero.png",
+    "group": "Flutter · Navigation",
+    "summary": "The sign-in screen's head by where the guest came from: the saved cart, the way an order is followed, or what an account keeps.",
+    "web": null
+  },
+  {
+    "name": "FoxCodePreview",
+    "file": "FoxCodePreview.png",
+    "group": "Flutter · Forms",
+    "summary": "What the WhatsApp message with the code will look like, the code masked; full and compact.",
+    "web": null
+  },
+  {
+    "name": "FoxVersionTicket",
+    "file": "FoxVersionTicket.png",
+    "group": "Flutter · Overlays",
+    "summary": "The forced update's head: a ticket with the installed version struck and the required one below.",
+    "web": null
+  },
+  {
+    "name": "FoxShopSign",
+    "file": "FoxShopSign.png",
+    "group": "Flutter · Overlays",
+    "summary": "The maintenance head: an orange board hung from a nail, with the return time when the panel gives one.",
     "web": null
   }
 ]

@@ -51,6 +51,7 @@ describe('stories cover every state (R3)', () => {
       'Tabs',
       'TextArea',
       'TextField',
+      'TextLink',
       'Timer',
       'Toaster',
       'Tooltip',

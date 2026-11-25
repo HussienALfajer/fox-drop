@@ -44,6 +44,7 @@ for (const surface of surfaces)
       // combobox, a checkbox, a switch or a radio (the form stories).
       const button = page
         .getByRole('button')
+        .or(page.getByRole('link'))
         .or(page.getByRole('textbox'))
         .or(page.getByRole('searchbox'))
         .or(page.getByRole('combobox'))

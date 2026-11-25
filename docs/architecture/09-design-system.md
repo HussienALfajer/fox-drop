@@ -47,7 +47,7 @@ Tokens are W3C Design Tokens (JSON) in `packages/design-tokens`, compiled by **S
 - **Element roles**, one `<path d>` each, as data attributes: `data-role` `body` or `detail`; a detail's `data-knock`, `in` (knocked out of the body in Bold) or `out` (drawn as a solid line); and the flags `data-accent` (the meaning layer), `data-fill` (filled in Bold), `data-open` (an open body, never filled) and `data-halo` (crosses the body).
 - **Six styles from one drawing,** and where each is used:
   - **Linear,** the default: every element stroked.
-  - **Bold:** the bodies filled, `in` details knocked out at the stroke width, `out` details drawn solid. The selected bottom tab, a chosen favourite's heart, the captain's large buttons.
+  - **Bold:** the bodies filled, `in` details knocked out at the stroke width, `out` details drawn solid. A chosen favourite's heart, the captain's large buttons. The selected bottom tab stays Linear: its larger orange circle alone marks it (owner, 2026-11-25, D.11b).
   - **Brand Duo:** Linear with the accent stroked in `brand`. Empty states, promo cards, settings chips.
   - **Bold Duo:** Bold with the non-accent bodies at 0.5. Coloured cards and important notices.
   - **Duotone:** Linear with the non-accent elements at 0.5. **Broken:** Linear with the bite. Marketing and illustration.

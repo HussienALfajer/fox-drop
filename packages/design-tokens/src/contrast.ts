@@ -112,6 +112,28 @@ const brandAccent = excepted(
   ],
   2.4,
 );
+// The sign-in and frame components (D.11b, owner 2026-11-24): a text link's
+// hover and pressed ink, and the tracking steps' current label, in the
+// deeper oranges, under the same exception.
+const orangeStateText = excepted(
+  on(
+    ['primary-hover', 'primary-pressed'],
+    4.5,
+    'orange text, hovered or pressed; the current step',
+  ),
+  3.6,
+);
+// The masked code of the WhatsApp preview on its blue bubble (D.11b). The
+// hero's art (badges, dish circles) is decoration, read as words, so it has
+// no pair.
+const codeMask: Pair[] = [
+  {
+    foreground: 'primary-pressed',
+    background: 'info-subtle',
+    target: 4.5,
+    use: 'the masked code in the code preview',
+  },
+];
 // Alerts are read from across a room: the restaurant tablet, the panel (§6).
 const alerts: Pair[] = [
   { foreground: 'on-alert', background: 'alert', target: 7, use: 'alert' },
@@ -155,6 +177,8 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...orangeFills,
     ...orangeBoundary,
     ...brandAccent,
+    ...orangeStateText,
+    ...codeMask,
   ],
   panel: [
     ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
@@ -169,6 +193,8 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...orangeFills,
     ...orangeBoundary,
     ...brandAccent,
+    ...orangeStateText,
+    ...codeMask,
   ],
   // Text and numbers at 7:1 in near-black or blue; orange only on buttons and
   // headings, under the owner's exception (§6).
@@ -184,6 +210,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...orangeFills,
     ...orangeBoundary,
     ...brandAccent,
+    ...orangeStateText,
   ],
 };
 

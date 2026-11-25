@@ -13,6 +13,8 @@ const bannerStates = [
   'info',
   'neutral',
   'action',
+  'dismissible',
+  'paired',
 ];
 
 /// The states every BannerStack use case and golden shows (R3).
@@ -34,7 +36,16 @@ class FoxBanner extends StatelessWidget {
     this.icon,
     this.actionLabel,
     this.onAction,
-  });
+    this.actionIcon,
+    this.secondaryActionLabel,
+    this.onSecondaryAction,
+    this.secondaryActionIcon,
+    this.dismissLabel,
+    this.onDismiss,
+  }) : assert(
+         (dismissLabel == null) == (onDismiss == null),
+         'A close control needs its name and its callback.',
+       );
 
   final FoxBannerTone tone;
   final String message;
@@ -43,6 +54,23 @@ class FoxBanner extends StatelessWidget {
   final t.FoxIconData? icon;
   final String? actionLabel;
   final VoidCallback? onAction;
+
+  /// An icon before the action's words when it names a channel (`phone`).
+  final t.FoxIconData? actionIcon;
+
+  /// A second way out, such as WhatsApp beside a call: with two actions both
+  /// take their own line under the words, as on the web.
+  final String? secondaryActionLabel;
+  final VoidCallback? onSecondaryAction;
+  final t.FoxIconData? secondaryActionIcon;
+
+  /// A banner the user may put away for now (an update on offer): its close
+  /// control's name («إغلاق») and what closing does.
+  final String? dismissLabel;
+  final VoidCallback? onDismiss;
+
+  /// The key of the close control, for tests.
+  static const dismissKey = ValueKey('FoxBanner.dismiss');
 
   @override
   Widget build(BuildContext context) {
@@ -55,11 +83,33 @@ class FoxBanner extends StatelessWidget {
       FoxBannerTone.info => (c.infoSubtle, c.info, t.FoxIcons.info),
       FoxBannerTone.neutral => (c.neutralSubtle, c.neutral, t.FoxIcons.info),
     };
-    final actionLabel = this.actionLabel;
     final style = theme.text.secondary.copyWith(
       color: ink,
       fontWeight: FontWeight.w500,
     );
+    final actionStyle = style.copyWith(
+      fontWeight: FontWeight.w700,
+      decoration: TextDecoration.underline,
+      decorationColor: ink,
+    );
+    final actions = [
+      if (actionLabel case final label?)
+        _BannerAction(
+          label: label,
+          icon: actionIcon,
+          onTap: onAction,
+          style: actionStyle,
+        ),
+      if (secondaryActionLabel case final label?)
+        _BannerAction(
+          label: label,
+          icon: secondaryActionIcon,
+          onTap: onSecondaryAction,
+          style: actionStyle,
+        ),
+    ];
+    final stacked = actions.length > 1;
+    final dismissLabel = this.dismissLabel;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: fill,
@@ -78,26 +128,75 @@ class FoxBanner extends StatelessWidget {
               vertical: t.FoxSpace.xxs,
             ),
             child: Row(
+              crossAxisAlignment: stacked
+                  ? CrossAxisAlignment.start
+                  : CrossAxisAlignment.center,
               children: [
-                FoxIcon(icon ?? toneIcon, color: ink),
+                Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    top: stacked ? t.FoxSpace.sm : t.FoxSpace.none,
+                  ),
+                  child: FoxIcon(icon ?? toneIcon, color: ink),
+                ),
                 const SizedBox(width: t.FoxSpace.sm),
-                Expanded(child: Text(message, style: style)),
-                if (actionLabel != null)
-                  Flexible(
-                    child: _BannerAction(
-                      label: actionLabel,
-                      onTap: onAction,
-                      style: style.copyWith(
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.underline,
-                        decorationColor: ink,
+                if (stacked)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        top: t.FoxSpace.sm,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(message, style: style),
+                          Wrap(spacing: t.FoxSpace.lg, children: actions),
+                        ],
                       ),
                     ),
-                  ),
+                  )
+                else ...[
+                  Expanded(child: Text(message, style: style)),
+                  for (final action in actions) Flexible(child: action),
+                ],
+                if (dismissLabel != null)
+                  _Dismiss(label: dismissLabel, ink: ink, onTap: onDismiss!),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The close control: a 48 target with no fill of its own, so it reads as
+/// part of the bar in every tone.
+class _Dismiss extends StatelessWidget {
+  const _Dismiss({required this.label, required this.ink, required this.onTap});
+
+  final String label;
+  final Color ink;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FoxTheme.of(context);
+    return Interaction(
+      onTap: onTap,
+      label: label,
+      isButton: true,
+      builder: (context, state) => Container(
+        key: FoxBanner.dismissKey,
+        width: t.FoxSize.touchTarget,
+        height: t.FoxSize.touchTarget,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: state.focused
+              ? Border.all(color: ink, width: theme.input.focusWidth)
+              : null,
+        ),
+        alignment: Alignment.center,
+        child: FoxIcon(t.FoxIcons.close, color: ink),
       ),
     );
   }
@@ -108,11 +207,13 @@ class _BannerAction extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.style,
+    this.icon,
   });
 
   final String label;
   final VoidCallback? onTap;
   final TextStyle style;
+  final t.FoxIconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +239,16 @@ class _BannerAction extends StatelessWidget {
         child: Align(
           widthFactor: 1,
           heightFactor: 1,
-          child: Text(label, style: style),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon case final icon?) ...[
+                FoxIcon(icon, size: FoxIconSize.sm, color: style.color),
+                const SizedBox(width: t.FoxSpace.xxs),
+              ],
+              Flexible(child: Text(label, style: style)),
+            ],
+          ),
         ),
       ),
     );

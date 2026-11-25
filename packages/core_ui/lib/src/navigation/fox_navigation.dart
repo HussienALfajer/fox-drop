@@ -46,11 +46,12 @@ final class FoxNavItem {
   }
 }
 
-/// The bottom navigation of the three apps (D.10; owner, 2026-11-24): the
-/// Figma file's floating bar exactly, a pill in the accent colour holding a
-/// circle per item, the selected circle primary on its pressed edge. Icons
-/// only: the names are read by screen readers. Each item is a 48 target;
-/// the bar floats above the home indicator (safe area).
+/// The bottom navigation of the three apps (D.10; the Figma shape, D.11b):
+/// an accent outline that swells round each tab, in a `color.nav-halo`
+/// halo, an ivory circle per item and the current one a larger orange
+/// circle. Large Linear icons only: the names are read by screen readers.
+/// Each item is a 48 target; the bar floats above the home indicator (safe
+/// area).
 class FoxBottomNavigation extends StatelessWidget {
   const FoxBottomNavigation({
     super.key,
@@ -69,6 +70,9 @@ class FoxBottomNavigation extends StatelessWidget {
   /// The key of the pill, for tests.
   static const pillKey = ValueKey('FoxBottomNavigation.pill');
 
+  /// The key of the outline's painter, for tests.
+  static const outlineKey = ValueKey('FoxBottomNavigation.outline');
+
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
@@ -76,35 +80,127 @@ class FoxBottomNavigation extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.all(t.FoxSpace.sm),
-        child: DecoratedBox(
-          key: pillKey,
-          decoration: BoxDecoration(
-            color: c.accent,
-            borderRadius: BorderRadius.circular(t.FoxRadius.full),
-            boxShadow: [theme.shadows.medium],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: t.FoxSpace.sm,
-              vertical: t.FoxSpace.xs,
+        padding: const EdgeInsets.all(t.FoxSpace.md),
+        child: Center(
+          heightFactor: 1,
+          child: CustomPaint(
+            key: outlineKey,
+            painter: FoxNavOutlinePainter(
+              count: items.length,
+              fill: c.accent,
+              halo: c.navHalo,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                for (var n = 0; n < items.length; n++)
-                  _BarItem(
-                    item: items[n],
-                    selected: n == selected,
-                    onTap: () => onSelected(n),
-                  ),
-              ],
+            child: SizedBox(
+              key: pillKey,
+              height: t.FoxSize.touchTarget + 2 * t.FoxSpace.xs,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: t.FoxSpace.xs),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var n = 0; n < items.length; n++) ...[
+                      if (n > 0) const SizedBox(width: t.FoxSpace.xs),
+                      _BarItem(
+                        item: items[n],
+                        selected: n == selected,
+                        onTap: () => onSelected(n),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+/// The bar's outline in the owner's Figma shape (D.11 screen 6): one smooth
+/// accent shape that swells round each tab and dips between them, ringed by
+/// a halo in `color.nav-halo`. Its geometry follows the tabs: a 48 circle
+/// every 56 (`size.touch-target` and `space.xs`), the ends half circles of
+/// 32, a dip of `space.xs`. Exposed for tests.
+class FoxNavOutlinePainter extends CustomPainter {
+  FoxNavOutlinePainter({
+    required this.count,
+    required this.fill,
+    required this.halo,
+  });
+
+  final int count;
+  final Color fill;
+  final Color halo;
+
+  /// The outline for [count] tabs in a box [size] high, from its start.
+  static Path outline(int count, Size size) {
+    const step = t.FoxSize.touchTarget + t.FoxSpace.xs;
+    final radius = size.height / 2;
+    const dip = t.FoxSpace.xs;
+    final bottom = size.height;
+    // The Figma curve between two tabs, as fractions of the step.
+    const a = 14.4 / 56;
+    const b = 15.4 / 56;
+    final path = Path()
+      ..moveTo(radius, bottom)
+      ..arcToPoint(Offset(radius, 0), radius: Radius.circular(radius));
+    for (var n = 0; n < count - 1; n++) {
+      final x = radius + n * step;
+      path
+        ..cubicTo(x + a * step, 0, x + b * step, dip, x + step / 2, dip)
+        ..cubicTo(
+          x + step - b * step,
+          dip,
+          x + step - a * step,
+          0,
+          x + step,
+          0,
+        );
+    }
+    final last = radius + (count - 1) * step;
+    path.arcToPoint(Offset(last, bottom), radius: Radius.circular(radius));
+    for (var n = count - 1; n > 0; n--) {
+      final x = radius + n * step;
+      path
+        ..cubicTo(
+          x - a * step,
+          bottom,
+          x - b * step,
+          bottom - dip,
+          x - step / 2,
+          bottom - dip,
+        )
+        ..cubicTo(
+          x - step + b * step,
+          bottom - dip,
+          x - step + a * step,
+          bottom,
+          x - step,
+          bottom,
+        );
+    }
+    return path..close();
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = outline(count, size);
+    canvas
+      ..drawPath(
+        path,
+        Paint()
+          ..color = halo
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = t.FoxSpace.xs
+          ..strokeJoin = StrokeJoin.round,
+      )
+      ..drawPath(path, Paint()..color = fill);
+  }
+
+  @override
+  bool shouldRepaint(FoxNavOutlinePainter old) =>
+      old.count != count || old.fill != fill || old.halo != halo;
 }
 
 class _BarItem extends StatelessWidget {
@@ -135,36 +231,42 @@ class _BarItem extends StatelessWidget {
             : (state.pressed
                   ? c.surfacePressed
                   : (state.hovered ? c.surfaceHover : c.surface));
-        return _Badged(
-          item: item,
-          child: AnimatedContainer(
-            key: FoxBottomNavigation.itemKey,
-            duration: t.FoxDuration.base,
-            curve: theme.easing,
-            width: t.FoxSize.touchTarget,
-            height: t.FoxSize.touchTarget,
-            decoration: BoxDecoration(
-              color: fill,
-              shape: BoxShape.circle,
-              border: state.focused
-                  ? Border.all(color: c.onAccent, width: theme.input.focusWidth)
-                  : null,
-              // The Figma file's pressed edge under the active circle.
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color: c.primaryPressed,
-                        offset: const Offset(0, t.FoxSpace.xxs),
-                      ),
-                    ]
-                  : null,
-            ),
-            alignment: Alignment.center,
-            // The selected tab draws Bold (the Madar sheet, §9.4).
-            child: FoxIcon(
-              item.icon,
-              color: selected ? c.onPrimary : c.accent,
-              style: selected ? FoxIconStyle.bold : FoxIconStyle.linear,
+        // The current tab is a larger orange circle, `space.xs` wider, that
+        // reaches into its neighbours' gaps so the row keeps its width.
+        const big = t.FoxSize.touchTarget + t.FoxSpace.xs;
+        final side = selected ? big : t.FoxSize.touchTarget;
+        return SizedBox.square(
+          dimension: t.FoxSize.touchTarget,
+          child: OverflowBox(
+            maxWidth: big,
+            maxHeight: big,
+            child: _Badged(
+              item: item,
+              child: AnimatedContainer(
+                key: FoxBottomNavigation.itemKey,
+                duration: t.FoxDuration.base,
+                curve: theme.easing,
+                width: side,
+                height: side,
+                decoration: BoxDecoration(
+                  color: fill,
+                  shape: BoxShape.circle,
+                  border: state.focused
+                      ? Border.all(
+                          color: c.onAccent,
+                          width: theme.input.focusWidth,
+                        )
+                      : null,
+                ),
+                alignment: Alignment.center,
+                // Every tab Linear, the selected one too: the larger circle
+                // alone marks it (owner, 2026-11-25).
+                child: FoxIcon(
+                  item.icon,
+                  size: FoxIconSize.lg,
+                  color: selected ? c.onPrimary : c.accent,
+                ),
+              ),
             ),
           ),
         );

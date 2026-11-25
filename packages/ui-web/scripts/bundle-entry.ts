@@ -10,6 +10,7 @@ import {
   CodeField,
   CountBadge,
   DataTable,
+  DropLoader,
   EmptyState,
   Field,
   Icon,
@@ -26,6 +27,7 @@ import {
   Switch,
   TextArea,
   TextField,
+  TextLink,
   Timer,
   Dialog,
   ConfirmDialog,
@@ -45,6 +47,8 @@ import './bundle.css';
 
 const components = {
   Button,
+  DropLoader,
+  TextLink,
   Icon,
   Field,
   TextField,

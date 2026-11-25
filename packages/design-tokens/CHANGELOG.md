@@ -2,6 +2,10 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.12.0 (2026-11-25, slice D.11b checkpoint C: sign-in and frame components)
+
+- New contrast pairs, no token change: `primary-hover` and `primary-pressed` as text on `surface` and `surface-raised` under the orange exception (floor 3.6: the text link's hover and pressed ink, the tracking steps' current label), and `primary-pressed` on `info-subtle` at 4.5 on the phone and panel (the code preview's masked code, 4.68). The sign-in hero's orange badges and dish circles are decoration, read as words, so they have no pair.
+
 ## 0.11.0 (2026-11-25, slice D.11b: sign-in and frame components)
 
 - New group `motion.*`: `motion.pulse.*` (the live dot's ring: scale 1 → 1.7, opacity 0.7 → 0 over `duration.moment`; still at 1.25 and 0.35 under reduced motion) and `motion.mark-fill.*` (the loader: the liquid rises over the first 0.7 of `duration.moment`, its surface sways every 700 ms, the full mark fades back over the last 0.18, the empty mark at 0.35; still half full under reduced motion), as `number` and `duration` tokens. CSS variables `--fd-motion-*` and Dart `FoxMotion`.

@@ -232,9 +232,9 @@ void main() {
       }
     });
 
-    testWidgets('the selected tab draws Bold, the others Linear', (
-      tester,
-    ) async {
+    // Owner, 2026-11-25 (D.11b): the larger orange circle alone marks the
+    // selected tab; its icon stays Linear.
+    testWidgets('every tab draws Linear, the selected one too', (tester) async {
       await tester.pumpWidget(
         _app(
           FoxBottomNavigation(
@@ -251,7 +251,7 @@ void main() {
         for (final icon in tester.widgetList<FoxIcon>(find.byType(FoxIcon)))
           icon.icon: icon.style,
       };
-      expect(styles[t.FoxIcons.cart], FoxIconStyle.bold);
+      expect(styles[t.FoxIcons.cart], FoxIconStyle.linear);
       expect(styles[t.FoxIcons.home], FoxIconStyle.linear);
     });
 

@@ -48,11 +48,13 @@ const chevron = formTv({
 });
 
 const icon = formTv({
-  base: 'flex shrink-0 items-center justify-center size-(--fd-size-touch-target) rounded-full',
+  base: 'flex shrink-0 items-center justify-center rounded-full',
   variants: {
     kind: {
-      valid: 'text-success',
+      // Not a control: as wide as its icon, so a narrow field keeps its digits.
+      valid: 'px-2xs text-success',
       clear: [
+        'size-(--fd-size-touch-target)',
         'cursor-pointer text-(color:--fd-input-color-hint)',
         'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
         'hover:bg-surface-raised-hover active:bg-surface-raised-pressed',

@@ -4,7 +4,7 @@ A search pill with the brand-orange lens at its start and a clear button at its 
 
 ## States
 
-- `loading` swaps the clear button for a spinner and sets `aria-busy`; typing keeps working.
+- `loading` swaps the clear button for the drop loader (`DropLoader`, size `sm`) and sets `aria-busy`; typing keeps working.
 - Rest, hover, focus (a 2 brand-orange outline), filled and disabled; `density` `compact` is 40 high (panel and portal only).
 
 ## Props worth knowing

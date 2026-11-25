@@ -1,6 +1,6 @@
 # D.11b The components of D.11's screens
 
-Status: Planned · Tier: T2 · Branch: `feat/sign-in-frame-components`
+Status: Done · Tier: T2 · Branch: `feat/sign-in-frame-components` (A, B), `feat/sign-in-frame-components-c` (C)
 Spec: architecture §9.4, §9.5 (R1 to R10), §9.7, §9.9 (the component cycle), §9.10; brand expression §2 (the mark, the filling drop), §3 (motion), §9 (device budgets); CU §4.2, §5.2, §5.5, §6.1, §6.2; D.11's slice file: «Owner's answers» (e), the screen review (screens 2, 3, 6, 7, 8), «Design-system audit of screen 2» and «Code changes recorded for step 8» items 5, 6, 7, 11 and 12 (the components' part) · Definition of done: the D.11b line of `docs/roadmap.md`; D.11's screens can then be coded on `core_ui` only.
 
 ## Goal
@@ -80,11 +80,15 @@ Checkpoints (one commit per step, `node scripts/verify.mjs --changed` once at ea
 
 2026-11-25, end of the first build session (owner: finish B, then stop): checkpoints A (tokens 0.11.0 and the loader, both sides) and B (the shared phone rules, the country list generator, `PhoneField` on the web, `FoxPhoneField` and `FoxCountrySheet` in Flutter, the old inputs moved) went to `main` in their own pull request (#283, owner 2026-11-25: merge A and B now). Next: checkpoint C (plan step 4) on a new branch from `main` (`feat/sign-in-frame-components-c`), then step 5, the goldens and visual baselines (A and B's are not updated yet), review and the slice's second pull request.
 
+2026-11-25, second build session (owner: build the rest as is, without the split the «Size» note asked for): checkpoint C and step 5 on `feat/sign-in-frame-components-c`. Built: the phone field's check-mark fix (both sides), `FoxTextLink` and `TextLink`, `FoxTrackingSteps`, `FoxSignInHero`, `FoxCodePreview`, `FoxBottomNavigation` in the Figma shape (Linear icons), `FoxBanner`'s close and second action, `FoxVersionTicket`, `FoxShopSign`; widgetbook use cases, Design System cards (web: `DropLoader`, `TextLink`; Flutter: the eight new cards), goldens and docs. Tests in `packages/core_ui/test/frame_parts_test.dart` and `packages/ui-web/src/text-link/text-link.test.tsx` (locked).
+
 ## Evidence
 
-- `node scripts/verify.mjs --changed`: not run yet
-- Storybook and widgetbook: —
-- Review: —
+- Tests (checkpoint C): `flutter test test/frame_parts_test.dart test/frame_parts_review_test.dart` 31 passed; all of `core_ui` 323 passed before the review fixes; widgetbook coverage passed; ui-web `text-link`, `phone-field`, `stories` and `design-system` tests passed.
+- `node scripts/verify.mjs --changed`: first run failed only on `fox_lints` (test lengths written as literals; named constants since); the second failed only on the design-tokens card test until the eight card images existed; the final run is in the pull request's test plan.
+- `pnpm baselines`: «passed in 4 min 05 s»; every new and changed image looked at (the bar's outline and halo, the tracking steps, the banners, the ticket and the sign, the hero by origin, the TextLink focus ring). The phone field card still cuts its widest example's last digit in the card's 320 field: the check mark no longer takes a 48 box, but the chip, check and clear leave the digits little room at that width.
+- Storybook and widgetbook: every new state has a story or use case; the images above are those states.
+- Review (T2, `reviewer`, three rounds): round 1 one blocking (the visual gate's locator missed the link role) and three should-fix (the hero's semantics on resize, the keyboard inside a resizing Scaffold, the orange contrast pairs); round 2 the keyboard rising after the first frame; round 3 nothing left. Non-blocking items in `docs/backlog.md`.
 
 ## Before deploying
 
@@ -98,11 +102,11 @@ The owner sees the components in Storybook and widgetbook (and the Design System
 
 - **Built (A, B), with their tests locked in `.claude/state/locked-tests.txt`:** what each does is in `docs/code/packages/core_ui.md`, `ui-web.md` and `design-tokens.md` («D.11b»). The loader has three sizes (16, 24, 48) as the plan says; the components sheet proposed a fourth (32), which pull to refresh gets by scaling 48.
 - **Deviation to tell the owner:** the customer's checkout contact number takes the new rules (any country, `CheckoutForm.contactE164`) but keeps its plain field: the form holds the number as text without a country, so `FoxPhoneField` there waits for D.15's checkout screen. The sign-in screen and the staff dialog use `FoxPhoneField`, inside a local `FoxTheme` (the three apps have none yet).
-- **Not done yet:** checkpoint C (plan step 4: `FoxTextLink`/`TextLink`, `FoxTrackingSteps`, `FoxSignInHero`, `FoxCodePreview`, `FoxBottomNavigation` in the Figma shape with Linear icons, `FoxBanner` close and second action, `FoxVersionTicket`, `FoxShopSign`) and step 5: stories and Design System cards for the new web parts (`DropLoader` README and preview, `COMPONENTS` in `scripts/bundle.ts`, `bundle-entry.ts`, `docs.ts`), the Flutter Design System cards (`design_system_cards_test.dart`: `FoxDropLoader`, `FoxCountrySheet`), the goldens (`pnpm test:golden --update-goldens`, Docker: the button, forms, overlays and new frame goldens changed) and the visual baselines (`pnpm --filter @fox-drop/ui-web test:visual --update-snapshots`), the Design System sync, architecture §9.4 and `docs/brand/expression.md` (the selected tab Linear), then the full `pnpm verify` (this slice changed `scripts/classify-changes.mjs`), review and the pull request.
-- **Fix first in the next session (found in the goldens, 2026-11-25):** the phone field's check mark takes a 48 box though it is not a control, so in a narrow field (the Design System card) the digits are cut. Make it as wide as its icon (Flutter: a `Padding` of `i.gap / 2` instead of the `SizedBox.square`; web: `px-2xs` instead of `size-(--fd-size-touch-target)` on `valid`), then update the goldens and the phone field's visual baselines and look at them.
+- **Done in the second session (checkpoint C and step 5):** every part of plan step 4, the stories and Design System cards (web `DropLoader`, `TextLink`; eight Flutter cards), the goldens and visual baselines through `pnpm baselines`, architecture §9.4 and `docs/brand/expression.md` (the selected tab Linear). Left: the Design System sync (after the merge, with the owner), and D.11 wires the screens.
+- **Check-mark fix (done in checkpoint C):** the phone field's check mark is as wide as its icon on both sides (Flutter `i.gap / 2`, web `px-2xs`).
 - **The drawings for C** are on the customer screens canvas (memory file of design artifacts): `Components.dc.html` sections 2, 4, 5; `Main.dc.html` holds the hero (lines near «The hero: why you are asked»), the tracking strip (`track` in its script: done steps `info` with Bold icons, the current a `primary` circle with two `fx-pulse` rings, later steps dashed), the bottom bar's outline path and tab styles, the version ticket and the shop sign (near «Blocking»).
 - **Speed (owner, 2026-11-25: the session took about four hours):** run `dart analyze --fatal-infos` and the package's own tests before `--changed`; each failed `--changed` run costs 8 to 10 minutes. Writing through the Write and Edit tools turns `\uXXXX` into the character itself: build invisible characters from code points in code.
 
-- **Size (2026-11-25):** the remaining checkpoint C with step 5 exceeds the slice size of workflow §3.1 (about 25 hand-written files or two layers); it is split with `/slice-plan` before it is built. The images are now updated with `pnpm baselines` (workflow §5), not the two commands above.
+- **Size (2026-11-25):** the remaining checkpoint C with step 5 exceeded the slice size of workflow §3.1; the owner chose to build it as is in one pull request (2026-11-25) instead of splitting it. The images are updated with `pnpm baselines` (workflow §5).
 - Not in this slice: the screens and their wiring (D.11): the sign-in origin from the route, the Android phone number hint, the remembered number, the send button's words, the screens' strings other than the field's messages.
 - The starting screen's splash (D.11 screen 1) is its own drawing, not a component here.
