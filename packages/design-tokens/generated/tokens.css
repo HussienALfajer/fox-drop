@@ -32,6 +32,8 @@
   --fd-layer-tooltip: 60;
   --fd-layer-blocking: 70;
   --fd-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --fd-motion-enter-sheet: 1;
+  --fd-motion-enter-toast: 0.15;
   --fd-motion-pulse-duration: 1200ms;
   --fd-motion-pulse-scale-from: 1;
   --fd-motion-pulse-scale-to: 1.7;
@@ -133,10 +135,15 @@
   --fd-size-sidebar: 248px;
   --fd-size-sidebar-collapsed: 72px;
   --fd-size-bar: 64px;
+  --fd-size-menu-min-width: 192px;
+  --fd-size-menu-max-width: 336px;
+  --fd-size-menu-max-height: 288px;
   --fd-icon-stroke-phone: 1.5;
   --fd-icon-stroke-captain: 1.75;
   --fd-border-width-thin: 1px;
   --fd-border-width-thick: 2px;
+  --fd-border-width-indicator: 3px;
+  --fd-border-width-heavy: 4px;
   --fd-button-height: 50px;
   --fd-button-compact-height: 40px;
   --fd-button-padding-inline: 16px;
