@@ -43,7 +43,7 @@ Sizes for every screen: an Arabic phone at 360 × 640 and 412 × 915, and both a
 4. **Analysis** (step 4), written here and shown with the drawings: (a) every route, response field and error code above, where each is shown or why not; (b) API gaps, fixed in the server in this slice or a small slice before it (T1); (c) spec gaps to the owner; (d) improvements for Azaz with their cost; (e) missing components, drawn on their own sheet (step 5).
 5. **Designer pass** (step 6): skipped in this batch (see «Before the design checkpoint»).
 6. **Approval** (step 7): the owner tests the prototype and approves. Nothing in the batch is coded before.
-7. **Code** (step 8): the screens on `core_ui` only; the frame as a go_router shell route; the shared screens in `core_auth` and `core_platform`, which join the lint; goldens and the comparison with the drawing, each difference fixed or explained here. One commit per step, `checker` once per checkpoint.
+7. **Code** (step 8): the screens on `core_ui` only; the frame as a go_router shell route; the shared screens in `core_auth` and `core_platform`, which join the lint; goldens and the comparison with the drawing, each difference fixed or explained here. One commit per step, `node scripts/verify.mjs --changed` once per checkpoint, in the background (workflow §5).
 8. **Store review (R18):** the sign-up's terms and privacy links, the WhatsApp code text, no age gate (CU §5.3); record the checklist here.
 
 Tests written first (locked in the red phase):
