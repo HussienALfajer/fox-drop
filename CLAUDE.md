@@ -6,21 +6,21 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 
 - `docs/README.md`: the map of all documentation, the citation codes (AP, RA, CA, CU) and the decision ID prefixes. Start there, then read only the sections a task needs.
 - `docs/product/v1/<party>/`: the specs, one file per section. `docs/domain/`: the shared rules (AP §8). `docs/architecture/`: the stack and its rules. The specs are the source of truth; never guess an open item (`docs/open-questions.md`): ask the owner.
-- How we work (risk tiers, slice loop, definition of done): `docs/process/development-workflow.md`. Status: `docs/roadmap.md`. A slice's plan and hand-over: its file in `docs/slices/`. Open items: `docs/backlog.md`. Slices before 2026-11-23: the read-only archive `docs/slice-notes.md`.
-- Folder `CLAUDE.md` files and the path-scoped `.claude/rules/*.md` hold the rules for working in a folder and load by themselves; `docs/code/<folder path>.md` holds what each feature there does, what was decided and why. Grep it for the feature you touch; never read it whole.
+- How we work (risk tiers, slice loop, definition of done): `docs/process/development-workflow.md`. A slice's plan and hand-over: its file in `docs/slices/`. Open items: `docs/backlog.md`. Slices before 2026-11-23: the read-only archive `docs/slice-notes.md`.
+- Folder `CLAUDE.md` files and the path-scoped `.claude/rules/*.md` hold the rules for working in a folder and load by themselves; `docs/code/<folder path>.md` holds what each feature there does, what was decided and why. Grep it for your feature; never read it whole.
 - `apps/server/`: the server; its `CLAUDE.md` has the module, route, validation and logging rules. The web apps (`apps/admin/`, `apps/merchant-portal/`) share `.claude/rules/web-apps.md`; the Flutter apps (`apps/customer/`, `apps/captain/`, `apps/merchant/`) share `.claude/rules/flutter-apps.md`, and `packages/core_l10n/CLAUDE.md` has the strings' rules.
 
 ## Commands
 
-Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes from `packageManager` in `package.json`. `fvm install` installs the pinned Flutter and links it at `.fvm/flutter_sdk` (a worktree without one uses the main checkout's), which `pnpm verify`, the hooks and every Bash command (SessionStart hook) use, never `C:\flutter`.
+Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes from `packageManager` in `package.json`. `fvm install` installs the pinned Flutter and links it at `.fvm/flutter_sdk` (a worktree uses the main checkout's), used by `pnpm verify`, the hooks and Bash (SessionStart hook), never `C:\flutter`.
 
 - `pnpm install`, then `dart pub get`: install the TypeScript and Dart dependencies (the pub workspace replaces `melos bootstrap`).
-- `pnpm verify`: the whole check. It first regenerates the API contract and clients and fails when the committed ones are stale (needs Java 11 or later); then Prettier, ESLint, type checks, tests, the web builds and their Playwright smoke tests through Turborepo, then Dart analyze, format and tests through Melos. The database tests start PostGIS with Testcontainers, so Docker must be running. CI runs its parts as parallel jobs (`node scripts/verify.mjs contract|format|lint|e2e|server|dart|flutter`, one `e2e --package=<name>` job per package (`typescript` is both), the server's tests in four shards and the Flutter packages in three, `--shard=<i>/<n>`), skips what a change cannot break (workflow §5) and runs native release builds only for a native change or the `native-builds` label.
+- `pnpm verify`: the whole check. It first regenerates the API contract and clients and fails when the committed ones are stale (needs Java 11 or later); then Prettier, ESLint, type checks, tests, the web builds and their Playwright smoke tests through Turborepo, then Dart analyze, format and tests through Melos. The database tests start PostGIS with Testcontainers, so Docker must be running. CI runs its parts as parallel jobs (`node scripts/verify.mjs contract|format|lint|e2e|server|dart|flutter`, one `e2e --package=<name>` job per package (`typescript` is both), `--shard=<i>/<n>` for the server's tests and the Flutter packages), skips what a change cannot break (workflow §5) and runs native release builds only for a native change or the `native-builds` label.
 - `node scripts/verify.mjs --changed`: only what the change since origin/main can break, committed or not. Run it with `run_in_background: true`, output to a log, once per finished layer; never poll it or rerun it for docs (workflow §5). CI runs everything and stays the gate.
 - `docker compose up --detach`: the local PostGIS, Valkey and Centrifugo, after copying `.env.example` to `.env`; then `pnpm --filter @fox-drop/server db:migrate`.
 - `docker compose run --rm osrm-build`, then `docker compose --profile osrm up --detach`: OSRM over Azaz (else straight line × 1.3).
 - `pnpm generate:api`: regenerate the OpenAPI document and the TypeScript and Dart clients after a route or schema change.
-- `pnpm format`: format every file with Prettier. Edits made by Claude are formatted by a hook.
+- `pnpm format`: format every file with Prettier (a hook formats each edit).
 - `dart run melos run <script>`: one Dart step on its own (`analyze`, `format:check`, `test:dart`, `test:flutter`).
 
 ## Non-negotiable rules
@@ -58,8 +58,9 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 
 - Secret files (`.env*`, keys) are readable and editable; never commit them.
 - Edits are refused for generated files (`packages/core_api/lib/`, the OpenAPI document and its TypeScript types, `generated/` folders, `*.g.dart`, lockfiles, Drizzle's `migrations/meta/`), the read-only archives (`docs/archive/`, `docs/slice-notes.md`), migrations merged to `main` (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
-- Shell writes into `apps/`, `packages/`, `scripts/`, `infra/` and `.claude/` are refused: use Edit or Write so the format hook runs. The guard reads the command text, so it cannot see `cd apps && echo > x` or `cp` and `node -e` writes: do not use them.
+- Shell writes into `apps/`, `packages/`, `scripts/`, `infra/` and `.claude/` are refused: use Edit or Write so the format hook runs. It reads only the command text: no `cd apps && echo > x`, `cp` or `node -e` writes.
 - `--no-verify`, force pushes, pushes to `main`, permission bypasses, run-time package fetches (`npx -y`, `dlx`, `bunx`), installs outside pnpm and removing a worktree before its SDK link are refused.
+- `gh pr create` and `gh pr ready` are refused while `node scripts/baselines.mjs --status` finds unchecked images (allowed, with a warning, when it cannot run).
 - On stop, the files the session edited must pass Prettier, `dart format` and ESLint (never tests), unless `.claude/state/red-phase` exists.
 - At session end, uncommitted work is reported.
 
