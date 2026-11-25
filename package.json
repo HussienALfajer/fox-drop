@@ -11,6 +11,7 @@
     "generate:api": "node scripts/generate-api.mjs",
     "fonts:fetch": "node scripts/fonts-fetch.mjs",
     "test:golden": "node scripts/golden-docker.mjs",
+    "baselines": "node scripts/baselines.mjs",
     "format": "prettier --write .",
     "lint:root": "eslint --ignore-pattern \"apps/**\" --ignore-pattern \"packages/**\" --ignore-pattern \"tools/**\" ."
   },
