@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFICIENCIES, contrast, deltaE2000, distance } from './color.ts';
@@ -13,8 +14,8 @@ import {
   POINTER_THEMES,
   STATE_TRIPLES,
 } from './contrast.ts';
-import { OUTPUTS, render } from './generate.ts';
-import { colour, PACKAGE_DIR, resolveAll } from './resolve.ts';
+import { css, dart, OUTPUTS, render, tailwind } from './generate.ts';
+import { colour, PACKAGE_DIR, resolveAll, THEMES } from './resolve.ts';
 
 const read = (file: string) =>
   readFileSync(path.join(PACKAGE_DIR, file), 'utf8').replaceAll('\r\n', '\n');
@@ -226,5 +227,58 @@ describe('the chart palette (brand expression §6)', () => {
   it('computes CIEDE2000 as Sharma, Wu and Dalal (2005)', () => {
     expect(deltaE2000([50, 2.6772, -79.7751], [50, 0, -82.7485])).toBeCloseTo(2.0425, 4);
     expect(deltaE2000([50, 2.5, 0], [73, 25, -18])).toBeCloseTo(27.1492, 4);
+  });
+});
+
+// A component file dropped into a copy of tokens/ comes out in both outputs
+// with no change to the generator.
+const withFixtureComponent = () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'fd-tokens-'));
+  cpSync(path.join(PACKAGE_DIR, 'tokens'), path.join(root, 'tokens'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'tokens/component/fixture-card.json'),
+    JSON.stringify({
+      'fixture-card': {
+        $extensions: { 'app.foxdrop': { web: ['card'], flutter: ['card'] } },
+        padding: { $type: 'dimension', $value: '{space.md}' },
+        'title-gap': { $type: 'dimension', $value: '{space.xs}' },
+        background: { $type: 'color', $value: '{color.surface-raised}' },
+      },
+    }),
+  );
+  return resolveAll(root);
+};
+const fixture = await withFixtureComponent();
+
+describe('the component layer (slice D.W1, architecture §9.2)', () => {
+  it('writes any component file to CSS and to the Dart ComponentTokens of every theme', () => {
+    const styles = css(fixture);
+    expect(styles).toContain('--fd-fixture-card-padding: 16px;');
+    expect(styles).toContain('--fd-fixture-card-title-gap: 8px;');
+    expect(styles).toMatch(/--fd-fixture-card-background: #[0-9A-F]{6};/i);
+    const code = dart(fixture);
+    expect(code).toMatch(/final class FixtureCardTokens \{/);
+    expect(code).toContain('final double titleGap;');
+    expect(code).toMatch(/abstract final class FoxFixtureCard \{/);
+    expect(code).toMatch(/final class ComponentTokens \{/);
+    expect(code).toContain('final FixtureCardTokens fixtureCard;');
+    expect(code).toContain('final ButtonTokens button;');
+    expect(code).toMatch(/abstract final class FoxComponents \{/);
+    for (const theme of THEMES) {
+      expect(code).toContain(`static const ComponentTokens ${theme} = ComponentTokens(`);
+      expect(code).toContain(`fixtureCard: FoxFixtureCard.${theme},`);
+      expect(code).toContain(`button: FoxButton.${theme},`);
+    }
+  });
+
+  it('keeps $extensions out of every output', () => {
+    for (const output of [css(fixture), dart(fixture), tailwind(fixture.light)])
+      expect(output).not.toMatch(/extensions|app\.foxdrop|flutter/i);
+  });
+
+  it('gives the committed Dart a ComponentTokens per theme', () => {
+    const code = read(OUTPUTS.dart);
+    for (const theme of THEMES)
+      expect(code).toContain(`static const ComponentTokens ${theme} = ComponentTokens(`);
   });
 });

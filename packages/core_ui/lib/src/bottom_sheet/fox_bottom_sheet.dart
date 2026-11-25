@@ -89,7 +89,7 @@ class _SheetRoute<T> extends PopupRoute<T> {
     }
     return SlideTransition(
       position: Tween<Offset>(
-        begin: const Offset(0, 1),
+        begin: const Offset(0, t.FoxMotion.enterSheet),
         end: Offset.zero,
       ).animate(curved),
       child: child,

@@ -296,8 +296,8 @@ class _MenuPanelState extends State<_MenuPanel> {
         label: widget.label,
         child: ConstrainedBox(
           constraints: const BoxConstraints(
-            minWidth: t.FoxSize.touchTarget * 4,
-            maxWidth: t.FoxSize.touchTarget * 7,
+            minWidth: t.FoxSize.menuMinWidth,
+            maxWidth: t.FoxSize.menuMaxWidth,
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(
@@ -320,7 +320,10 @@ class _MenuPanelState extends State<_MenuPanel> {
                             vertical: t.FoxSpace.xxs,
                             horizontal: t.FoxSpace.xs,
                           ),
-                          child: Container(height: 1, color: c.border),
+                          child: Container(
+                            height: t.FoxBorderWidth.thin,
+                            color: c.border,
+                          ),
                         )
                       else
                         _MenuRow(

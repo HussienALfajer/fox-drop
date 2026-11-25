@@ -257,7 +257,7 @@ class _MenuListState<T> extends State<_MenuList<T>> {
                 borderRadius: BorderRadius.circular(t.FoxRadius.lg),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
-                    maxHeight: t.FoxSize.touchTarget * 6,
+                    maxHeight: t.FoxSize.menuMaxHeight,
                   ),
                   child: SingleChildScrollView(
                     child: Column(

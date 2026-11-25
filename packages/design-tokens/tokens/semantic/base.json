@@ -130,7 +130,20 @@
     }
   },
   "motion": {
-    "$description": "Two looping motions as numbers, not curves (brand expression §3, slice D.11b): each loops on its own duration and has a still frame for reduced motion.",
+    "$description": "Motions as numbers, not curves (brand expression §3): two loops (slice D.11b), each on its own duration with a still frame for reduced motion, and the entrances' slides (slice D.W1).",
+    "enter": {
+      "$description": "Where a Flutter panel slides in from, as a share of its own height below its place.",
+      "sheet": {
+        "$type": "number",
+        "$value": 1,
+        "$description": "The bottom sheet: from fully below."
+      },
+      "toast": {
+        "$type": "number",
+        "$value": 0.15,
+        "$description": "The phone toast (the web toaster rises space.xs: a parity gap for D.W3c)."
+      }
+    },
     "pulse": {
       "$description": "The live dot's soft ring: it grows and fades, then starts again.",
       "duration": { "$type": "duration", "$value": "{duration.moment}" },
@@ -570,7 +583,16 @@
       "$value": "72px",
       "$description": "The collapsed sidebar: icons only (D.10)."
     },
-    "bar": { "$value": "64px", "$description": "The top bar and the phone back bar (D.10)." }
+    "bar": { "$value": "64px", "$description": "The top bar and the phone back bar (D.10)." },
+    "menu-min-width": {
+      "$value": "192px",
+      "$description": "The Flutter menu's narrowest width (the web menu opens at size.tooltip: a parity gap for D.W3c)."
+    },
+    "menu-max-width": { "$value": "336px", "$description": "The Flutter menu's widest width." },
+    "menu-max-height": {
+      "$value": "288px",
+      "$description": "The tallest anchored list before it scrolls (select, date and time)."
+    }
   },
   "icon-stroke": {
     "$type": "number",
@@ -593,6 +615,14 @@
     "thick": {
       "$value": "2px",
       "$description": "A focused or invalid control's outline, a checkbox's and a radio's ring."
+    },
+    "indicator": {
+      "$value": "3px",
+      "$description": "The Flutter tabs' underline under the current tab (the web draws space.2xs: a parity gap for D.W3c)."
+    },
+    "heavy": {
+      "$value": "4px",
+      "$description": "The bar that marks the current item of the panel's sidebar."
     }
   }
 }
