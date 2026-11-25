@@ -38,21 +38,35 @@ const registry = JSON.parse(readFileSync(`${TOKENS}/components.json`, 'utf8')) a
   components: Component[];
 };
 
+type Surface = 'phone' | 'captain';
+
 /**
- * The light theme's resolved tokens, by dotted path, from the generated CSS
+ * A surface's light resolved tokens, by dotted path, from the generated CSS
  * both platforms are built from: `--fd-button-primary-background` is
- * `button.primary.background`, read back by its dashes.
+ * `button.primary.background`, read back by its dashes. The captain's block
+ * overrides some of `:root`.
  */
-function lightTokens(): Map<string, string> {
+function lightTokens(surface: Surface): Map<string, string> {
   const css = readFileSync(`${TOKENS}/generated/tokens.css`, 'utf8');
-  const root = /^:root \{([^}]*)\}/m.exec(css)?.[1];
-  if (!root) throw new Error('No :root block in tokens.css');
+  const block = (selector: string) => {
+    const at = css.indexOf(`\n${selector} {`);
+    if (at < 0) throw new Error(`No ${selector} block in tokens.css`);
+    return css.slice(at, css.indexOf('}', at));
+  };
+  const blocks = [
+    block(':root'),
+    ...(surface === 'captain' ? [block('[data-surface="captain"]')] : []),
+  ];
   const out = new Map<string, string>();
-  for (const [, name, value] of root.matchAll(/--fd-([\w-]+):\s*([^;]+);/g))
-    out.set(name!, value!.trim());
+  for (const text of blocks)
+    for (const [, name, value] of text.matchAll(/--fd-([\w-]+):\s*([^;]+);/g))
+      out.set(name!, value!.trim());
   return out;
 }
-const tokens = lightTokens();
+const TOKENS_BY_SURFACE: Record<Surface, Map<string, string>> = {
+  phone: lightTokens('phone'),
+  captain: lightTokens('captain'),
+};
 
 const DIMENSIONS = new Set<Metric>([
   'height',
@@ -64,9 +78,9 @@ const DIMENSIONS = new Set<Metric>([
 ]);
 
 /** A token's value as measured: a number of pixels, or an upper-case hex colour. */
-function tokenValue(metric: Metric, name: string): number | string {
+function tokenValue(surface: Surface, metric: Metric, name: string): number | string {
   if (name === 'none') return 'none';
-  const raw = tokens.get(name.replaceAll('.', '-'));
+  const raw = TOKENS_BY_SURFACE[surface].get(name.replaceAll('.', '-'));
   if (raw === undefined) throw new Error(`No token ${name} in tokens.css`);
   if (DIMENSIONS.has(metric)) {
     const px = /^(-?[\d.]+)px$/.exec(raw);
@@ -156,10 +170,14 @@ async function measure(box: Locator, wanted: Metric[]): Promise<Measured> {
 const round = (n: number) => Math.round(n * 100) / 100;
 
 /** The expected values, with a corner as drawn: no larger than half the box. */
-function expected(wanted: Partial<Record<Metric, string>>, size: Measured): Measured {
+function expected(
+  surface: Surface,
+  wanted: Partial<Record<Metric, string>>,
+  size: Measured,
+): Measured {
   const out: Measured = {};
   for (const [metric, name] of Object.entries(wanted) as [Metric, string][])
-    out[metric] = tokenValue(metric, name);
+    out[metric] = tokenValue(surface, metric, name);
   if (typeof out.radius === 'number') {
     const height = Number(size.height ?? Infinity);
     const width = Number(size.width ?? Infinity);
@@ -186,27 +204,41 @@ for (const component of registry.components) {
   test.describe(`${component.name} parity (R9)`, () => {
     for (const state of metrics.states) {
       if (state.only === 'flutter' || state.story === null) continue;
-      test(`${state.state} equals its tokens`, async ({ page }) => {
-        await openStory(page, state.story!);
-        const box = page.locator('#storybook-root').locator(metrics.web).first();
-        await act(page, box, state.act);
-        const wanted = { ...metrics.expect, ...state.expect };
-        const keys = Object.keys(wanted) as Metric[];
-        // The colours fade over duration.base: poll until the state settles.
-        // Each value that differs is reported as `measured ≠ token (name)`.
-        await expect
-          .poll(async () => {
-            const measured = await measure(box, [...new Set<Metric>([...keys, 'height', 'width'])]);
-            const want = expected(wanted, measured);
-            const off: Record<string, string> = {};
-            for (const key of keys)
-              if (measured[key] !== want[key])
-                off[key] = `${measured[key]} ≠ ${want[key]} (${wanted[key]})`;
-            return off;
-          })
-          .toEqual({});
-        if (state.act === 'press') await page.mouse.up();
-      });
+      for (const surface of ['phone', 'captain'] as const)
+        test(`${state.state} on ${surface} equals its tokens`, async ({ page }) => {
+          await openStory(page, state.story!, surface);
+          const box = page.locator('#storybook-root').locator(metrics.web).first();
+          await act(page, box, state.act);
+          // The colours fade over duration.base: measure once the box's
+          // transitions have finished, so a fade cannot pass on its first frame.
+          // An endless one (a loader) is not waited for, and a cancelled one
+          // is not an error: the poll below stays the judge.
+          await box.evaluate((element) =>
+            Promise.all(
+              element
+                .getAnimations({ subtree: true })
+                .filter((each) => each.effect?.getTiming().iterations !== Infinity)
+                .map((each) => each.finished.catch(() => undefined)),
+            ),
+          );
+          const wanted = { ...metrics.expect, ...state.expect };
+          const keys = Object.keys(wanted) as Metric[];
+          // Each value that differs is reported as `measured ≠ token (name)`.
+          await expect
+            .poll(async () => {
+              const measured = await measure(box, [
+                ...new Set<Metric>([...keys, 'height', 'width']),
+              ]);
+              const want = expected(surface, wanted, measured);
+              const off: Record<string, string> = {};
+              for (const key of keys)
+                if (measured[key] !== want[key])
+                  off[key] = `${measured[key]} ≠ ${want[key]} (${wanted[key]})`;
+              return off;
+            })
+            .toEqual({});
+          if (state.act === 'press') await page.mouse.up();
+        });
     }
   });
 }

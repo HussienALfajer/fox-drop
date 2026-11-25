@@ -635,7 +635,8 @@
         "expect": {
           "width": "input.switch.width",
           "height": "input.switch.height",
-          "radius": "input.radius"
+          "radius": "input.radius",
+          "border": "none"
         },
         "states": [
           {

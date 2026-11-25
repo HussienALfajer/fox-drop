@@ -24,27 +24,37 @@ const _dimensions = {
   'gap',
 };
 
-/// The light theme's resolved tokens by dotted path, from the generated CSS
-/// both platforms are built from (`--fd-button-height` is `button.height`).
-Map<String, String> _lightTokens() {
+/// A theme's light resolved tokens by dotted path, from the generated CSS
+/// both platforms are built from (`--fd-button-height` is `button.height`);
+/// the captain's block overrides some of `:root`.
+Map<String, String> _lightTokens({required bool captain}) {
   final css = File(
     '../design-tokens/generated/tokens.css',
   ).readAsStringSync().replaceAll('\r\n', '\n');
-  final root = RegExp(r'^:root \{([^}]*)\}', multiLine: true).firstMatch(css);
-  if (root == null) throw StateError('No :root block in tokens.css');
+  String block(String selector) {
+    final at = css.indexOf('\n$selector {');
+    if (at < 0) throw StateError('No $selector block in tokens.css');
+    return css.substring(at, css.indexOf('}', at));
+  }
+
   return {
-    for (final m in RegExp(
-      r'--fd-([\w-]+):\s*([^;]+);',
-    ).allMatches(root.group(1)!))
-      m.group(1)!: m.group(2)!.trim(),
+    for (final text in [
+      block(':root'),
+      if (captain) block('[data-surface="captain"]'),
+    ])
+      for (final m in RegExp(r'--fd-([\w-]+):\s*([^;]+);').allMatches(text))
+        m.group(1)!: m.group(2)!.trim(),
   };
 }
 
-final _tokens = _lightTokens();
+final _tokensByTheme = {
+  'phone': _lightTokens(captain: false),
+  'captain': _lightTokens(captain: true),
+};
 
-Object _tokenValue(String metric, String name) {
+Object _tokenValue(String theme, String metric, String name) {
   if (name == 'none') return 'none';
-  final raw = _tokens[name.replaceAll('.', '-')];
+  final raw = _tokensByTheme[theme]![name.replaceAll('.', '-')];
   if (raw == null) throw StateError('No token $name in tokens.css');
   if (_dimensions.contains(metric)) {
     final px = RegExp(r'^(-?[\d.]+)px$').firstMatch(raw);
@@ -93,7 +103,11 @@ Map<String, Object> _measure(WidgetTester tester, Finder component) {
   if (decoration?.shape == BoxShape.circle) {
     radius = size.shortestSide / 2;
   } else if (decoration?.borderRadius != null) {
-    radius = decoration!.borderRadius!.resolve(direction).topLeft.x;
+    // The start-start corner, as the web's border-start-start-radius.
+    final corners = decoration!.borderRadius!.resolve(direction);
+    radius = direction == TextDirection.rtl
+        ? corners.topRight.x
+        : corners.topLeft.x;
   }
 
   var padding = container.padding?.resolve(direction);
@@ -194,62 +208,68 @@ void main() {
     }
   });
 
+  final themes = {
+    'phone': FoxThemeData.phone(),
+    'captain': FoxThemeData.captain(),
+  };
   for (final spec in states) {
-    final key = '${spec.component}/${spec.state}';
-    testWidgets('$key equals its tokens (R9)', (tester) async {
-      tester.view.physicalSize = const Size(800, 800);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      final build = parityStates[key];
-      expect(build, isNotNull, reason: 'parity_table.dart has no $key');
-      await tester.pumpWidget(formApp(build!()));
-      await tester.pumpAndSettle();
+    for (final MapEntry(key: themeName, value: theme) in themes.entries) {
+      final key = '${spec.component}/${spec.state}';
+      testWidgets('$key on $themeName equals its tokens (R9)', (tester) async {
+        tester.view.physicalSize = const Size(800, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final build = parityStates[key];
+        expect(build, isNotNull, reason: 'parity_table.dart has no $key');
+        await tester.pumpWidget(formApp(build!(), theme: theme));
+        await tester.pumpAndSettle();
 
-      final component = find.byWidgetPredicate(
-        (widget) => widget.runtimeType.toString() == spec.flutter,
-      );
-      expect(component, findsOneWidget);
-      final box = find
-          .descendant(of: component, matching: find.byType(AnimatedContainer))
-          .first;
-      TestGesture? held;
-      switch (spec.act) {
-        case 'hover':
-          final mouse = await tester.createGesture(
-            kind: PointerDeviceKind.mouse,
-          );
-          await mouse.addPointer(location: Offset.zero);
-          addTearDown(mouse.removePointer);
-          await mouse.moveTo(tester.getCenter(box));
-        case 'press':
-          held = await tester.startGesture(tester.getCenter(box));
-        case 'focus':
-          await tester.tap(box);
-      }
-      await tester.pump();
-      await tester.pumpAndSettle();
+        final component = find.byWidgetPredicate(
+          (widget) => widget.runtimeType.toString() == spec.flutter,
+        );
+        expect(component, findsOneWidget);
+        final box = find
+            .descendant(of: component, matching: find.byType(AnimatedContainer))
+            .first;
+        TestGesture? held;
+        switch (spec.act) {
+          case 'hover':
+            final mouse = await tester.createGesture(
+              kind: PointerDeviceKind.mouse,
+            );
+            await mouse.addPointer(location: Offset.zero);
+            addTearDown(mouse.removePointer);
+            await mouse.moveTo(tester.getCenter(box));
+          case 'press':
+            held = await tester.startGesture(tester.getCenter(box));
+          case 'focus':
+            await tester.tap(box);
+        }
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      final measured = _measure(tester, component);
-      final off = <String, String>{};
-      for (final MapEntry(key: metric, value: name) in spec.expect.entries) {
-        var want = _tokenValue(metric, name);
-        if (metric == 'radius') {
-          final shortest = math.min(
-            measured['height']! as double,
-            measured['width']! as double,
-          );
-          want = _round(math.min(want as double, shortest / 2));
+        final measured = _measure(tester, component);
+        final off = <String, String>{};
+        for (final MapEntry(key: metric, value: name) in spec.expect.entries) {
+          var want = _tokenValue(themeName, metric, name);
+          if (metric == 'radius') {
+            final shortest = math.min(
+              measured['height']! as double,
+              measured['width']! as double,
+            );
+            want = _round(math.min(want as double, shortest / 2));
+          }
+          final got = measured[metric];
+          if (got == null) {
+            off[metric] = 'not measurable ($name)';
+          } else if (got != want) {
+            off[metric] = '$got ≠ $want ($name)';
+          }
         }
-        final got = measured[metric];
-        if (got == null) {
-          off[metric] = 'not measurable ($name)';
-        } else if (got != want) {
-          off[metric] = '$got ≠ $want ($name)';
-        }
-      }
-      await held?.up();
-      await tester.pumpAndSettle();
-      expect(off, isEmpty);
-    });
+        await held?.up();
+        await tester.pumpAndSettle();
+        expect(off, isEmpty);
+      });
+    }
   }
 }

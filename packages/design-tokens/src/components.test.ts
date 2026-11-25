@@ -159,7 +159,18 @@ describe("the registry's parity metrics", () => {
     }
   });
 
-  it('points every metric at a token of its kind, or `none` for a colour', async () => {
+  // The top-level keys of tokens/component/*.json: `button`, `input`.
+  const COMPONENT_ROOTS = readdirSync(path.join(PACKAGE_DIR, 'tokens/component'))
+    .filter((file) => file.endsWith('.json'))
+    .flatMap((file) =>
+      Object.keys(
+        JSON.parse(readFileSync(path.join(PACKAGE_DIR, 'tokens/component', file), 'utf8')),
+      ),
+    );
+
+  it('points every metric at a component token of its kind, or `none` for a colour', async () => {
+    expect(COMPONENT_ROOTS).toEqual(expect.arrayContaining(['button', 'input']));
+    expect(COMPONENT_ROOTS).not.toContain('color');
     const tokens = await resolveTheme('light');
     const dimensions: readonly string[] = DIMENSION_METRICS;
     for (const c of measured)
@@ -169,7 +180,9 @@ describe("the registry's parity metrics", () => {
           if (name === 'none' && !dimensions.includes(key)) continue;
           const token = tokens.get(name);
           expect(token, `${where} names ${name}`).toBeDefined();
-          expect(token!.path[0], `${where}: a component token`).toBe(name.split('.')[0]);
+          expect(COMPONENT_ROOTS, `${where}: ${name} is not a component token`).toContain(
+            token!.path[0],
+          );
           expect(token!.type, where).toBe(dimensions.includes(key) ? 'dimension' : 'color');
         }
   });
