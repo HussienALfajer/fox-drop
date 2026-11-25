@@ -9,6 +9,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readRegistry } from './components.ts';
 import { designSystem, FONT_FILES } from './design-system.ts';
 import { PACKAGE_DIR, resolveAll } from './resolve.ts';
 
@@ -17,7 +18,6 @@ const SOURCE = path.join(PACKAGE_DIR, 'design-system');
 export const OUT = path.join(PACKAGE_DIR, '.design-system/system');
 export const FONTS = path.join(ROOT, '.fonts/cofo-sans-pro-arabic');
 const FLUTTER_IMAGES = 'packages/core_ui/test/golden/goldens/design-system';
-const FLUTTER_CARDS = path.join(ROOT, 'packages/core_ui/design-system/cards.json');
 
 export const MAX_FONT = 1024 * 1024;
 export const MAX_PNG = 15 * 1024 * 1024;
@@ -30,7 +30,8 @@ export const ASSET_GROUPS: { name: string; tile: string; dir: string; files: Reg
   // The broken-edges icons wait for the owner to name their purpose.
   { name: 'App icon', tile: 'm', dir: 'docs/brand/app-icon/svg', files: /^app-icon-\d+\.svg$/ },
   { name: 'Icons', tile: 'm', dir: 'packages/design-tokens/icons', files: /\.svg$/ },
-  // One image per Flutter component, drawn by core_ui's design-system goldens.
+  // One image per Flutter component, drawn by core_ui's design-system goldens:
+  // the store the cards show them from (components.json names each).
   { name: 'Flutter', tile: 'l', dir: FLUTTER_IMAGES, files: /\.png$/ },
 ];
 
@@ -40,7 +41,7 @@ const GROUP_README: Record<string, string> = {
   'App icon':
     '# App icon\n\nThe app icon artwork. The ivory fox on orange is the official icon; the others are alternatives the owner has not named.\n',
   Flutter:
-    "# Flutter\n\nOne image per component of `core_ui`, the Flutter design system of the customer, captain and restaurant apps, drawn by its golden tests (`packages/core_ui/test/golden/design_system_cards_test.dart`) in the phone theme on the apps' ground, the captain theme where it differs. The cards in the Flutter group show them; the web components beside them are live.\n",
+    "# Flutter\n\nOne image per component of `core_ui`, the Flutter design system of the customer, captain and restaurant apps, drawn by its golden tests (`packages/core_ui/test/golden/design_system_cards_test.dart`) in the phone theme on the apps' ground, the captain theme where it differs. Each component has one card: the live web component, the reference, with its Flutter image underneath; a component whose web twin is pending shows its image alone.\n",
   Icons:
     '# Icons\n\nThe 47 icons of set v4 "Madar" (brand expression §10, architecture §9.4), in their Linear style. Each file is the source: `viewBox="0 0 24 24"`, `stroke="currentColor"`, stroke 1.5, round caps and joins, every point inside the live area 2..22; each element is a path carrying its role (`data-role`, `data-knock`, `data-accent`), from which Bold, Bold Duo, Duotone, Brand Duo and Broken are drawn. Colour it with the text colour: `on-surface` by default, `on-primary` inside the orange active circle. Sizes: `size-icon-sm` 16, `size-icon-md` 24, `size-icon-lg` 32; the stroke scales with the size. `back`, `motorcycle` and `car` are drawn left to right and flip in RTL. In code, use `@fox-drop/design-tokens/icons` (web) or `FoxIcons` (Flutter), never these files.\n',
 };
@@ -153,15 +154,6 @@ export function index(blobs: Blobs, uploads: Map<string, Buffer>, now: string): 
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
-interface FlutterCard {
-  name: string;
-  file: string;
-  /** «Flutter · Forms»: the Flutter group the card sits in. */
-  group: string;
-  summary: string;
-  web: string | null;
-}
-
 /** A PNG's width and height, from its header. */
 export function pngSize(bytes: Buffer): { width: number; height: number } {
   if (bytes.toString('latin1', 1, 4) !== 'PNG') throw new Error('not a PNG');
@@ -169,29 +161,30 @@ export function pngSize(bytes: Buffer): { width: number; height: number } {
 }
 
 /**
- * One card per Flutter component: its README and a preview that shows the
- * golden image from the asset store, so it needs the blob ids.
+ * The image card of each component whose web twin is pending (D.P3 to D.P6),
+ * under its web name, so the live card replaces it in place. A component with
+ * a web twin has one card, the live one ui-web writes with its golden below.
+ * The preview shows the golden from the asset store, so it needs the blob ids.
  */
-export function flutterCards(blobs: Blobs, uploads: Map<string, Buffer>): Files {
-  const cards = JSON.parse(readFileSync(FLUTTER_CARDS, 'utf8')) as FlutterCard[];
+export function pendingCards(blobs: Blobs, uploads: Map<string, Buffer>): Files {
   const files: Files = new Map();
-  for (const card of cards) {
-    const key = `Flutter/${card.file}`;
+  for (const card of readRegistry().components) {
+    if (card.web !== null || !card.golden) continue;
+    const key = `Flutter/${card.golden}`;
     const bytes = uploads.get(key);
     const upload = blobs.assets[key];
-    if (!bytes) throw new Error(`${card.file} is missing from ${FLUTTER_IMAGES}`);
+    if (!bytes) throw new Error(`${card.golden} is missing from ${FLUTTER_IMAGES}`);
     if (!upload) throw new Error(`No blob id for ${key} in the --blobs file`);
     const { width, height } = pngSize(bytes);
-    // The image fills the card's width; the card is as tall as it then is.
-    const cardHeight = Math.ceil((height * 720) / width) + 32;
-    const mirror = card.web ? ` The web twin is the live \`${card.web}\` card.` : ' Flutter only.';
+    // The image fills the card's width under its note; the card is as tall as both.
+    const cardHeight = Math.ceil((height * 720) / width) + 72;
     files.set(
       `project/components/${card.name}/README.md`,
       `# ${card.name}
 
 ${card.summary}
 
-Flutter (\`core_ui\`): an image from its golden test, in the phone theme on the apps' ground.${mirror}
+Flutter: \`${card.flutter}\` in \`core_ui\`, an image from its golden test in the phone theme on the apps' ground. Web twin pending: \`ui-web\` builds it from this design, and its live card then replaces this one.
 `,
     );
     files.set(
@@ -210,6 +203,12 @@ Flutter (\`core_ui\`): an image from its golden test, in the phone theme on the 
     box-sizing: border-box;
     padding: 16px;
     background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  p {
+    margin: 0 0 12px;
+    font-size: 14px;
   }
   img {
     display: block;
@@ -218,7 +217,8 @@ Flutter (\`core_ui\`): an image from its golden test, in the phone theme on the 
   }
 </style>
 <div id="root" dir="rtl" lang="ar">
-  <img src="/_blob/${upload.blob}" alt="${card.name} in core_ui, its states side by side" />
+  <p dir="ltr">Flutter <code>${card.flutter}</code> · Web twin pending</p>
+  <img src="/_blob/${upload.blob}" alt="${card.flutter} in core_ui, its states side by side" />
 </div>
 `,
     );
@@ -249,7 +249,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     console.log(`wrote ${OUT}: upload uploads/*, then rerun with --blobs <file>`);
   } else {
     const blobs = JSON.parse(readFileSync(process.argv[blobsAt + 1]!, 'utf8')) as Blobs;
-    write(flutterCards(blobs, uploads));
+    write(pendingCards(blobs, uploads));
     write(
       new Map([['project/design-system.json', index(blobs, uploads, new Date().toISOString())]]),
     );

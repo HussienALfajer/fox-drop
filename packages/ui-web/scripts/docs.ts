@@ -716,12 +716,88 @@ interface SidebarProps {
 `;
 }
 
-export function readme(component: string): string {
-  return readFileSync(path.join(SOURCE, component, 'README.md'), 'utf8');
+/** An entry of the component registry, `packages/design-tokens/components.json`. */
+export interface RegistryEntry {
+  name: string;
+  web: string | null;
+  flutter: string | null;
+  group: string;
+  golden: string | null;
+  platform?: string;
 }
 
-/** The Icon preview lists every icon: its names come from the package, not the template. */
-export function preview(component: string): string {
-  const html = readFileSync(path.join(SOURCE, component, 'preview.html'), 'utf8');
-  return html.replace('__ICON_NAMES__', JSON.stringify(ICON_NAMES));
+export function registry(): RegistryEntry[] {
+  const file = path.join(PACKAGE_DIR, '../design-tokens/components.json');
+  return (JSON.parse(readFileSync(file, 'utf8')) as { components: RegistryEntry[] }).components;
+}
+
+function entry(component: string): RegistryEntry {
+  const found = registry().find((e) => e.name === component);
+  if (!found) throw new Error(`${component} is not in packages/design-tokens/components.json`);
+  return found;
+}
+
+/** The README, with its Flutter twin and what differs between the platforms. */
+export function readme(component: string): string {
+  const text = readFileSync(path.join(SOURCE, component, 'README.md'), 'utf8');
+  const { flutter, platform } = entry(component);
+  const twin = flutter
+    ? `Flutter: \`${flutter}\` in \`core_ui\`, built from this component: the same anatomy, sizes, states, colours, copy and API names. Its golden is under the live component on this card.\n\nPlatform differences: ${platform ?? 'none beyond each platform’s own input (touch on the phones, the pointer and keyboard on the web)'}.`
+    : 'Flutter: none, web only.';
+  return `${text.trimEnd()}\n\n## Flutter\n\n${twin}\n`;
+}
+
+/** The golden of the Flutter twin, from the Design System's asset store. */
+export interface FlutterImage {
+  blob: string;
+  width: number;
+  height: number;
+}
+
+/**
+ * The card: the live component in its registry group, then, given the golden's
+ * blob (the `--blobs` run), its Flutter twin underneath. The Icon preview lists
+ * every icon: its names come from the package, not the template.
+ */
+export function preview(component: string, image?: FlutterImage): string {
+  const { flutter, group } = entry(component);
+  const html = readFileSync(path.join(SOURCE, component, 'preview.html'), 'utf8')
+    .replace('__ICON_NAMES__', JSON.stringify(ICON_NAMES))
+    .replace(/^<!-- @dsCard group="\w+" /, `<!-- @dsCard group="${group}" `);
+  if (!image || !flutter) return html;
+  // The image is at most 720 wide; the card grows by its height and its heading.
+  const grow = Math.ceil((image.height * 720) / image.width) + 72;
+  // The live part no longer fills the card, so the image follows it.
+  const section = `<style>
+  #root {
+    min-height: 0;
+  }
+  .fd-flutter {
+    box-sizing: border-box;
+    padding: 16px;
+    background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+    font-family: var(--fd-font-family-sans);
+    border-block-start: 1px solid var(--fd-color-border);
+  }
+  .fd-flutter h2 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .fd-flutter img {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+  }
+</style>
+<section class="fd-flutter" dir="ltr">
+  <h2>Flutter <code>${flutter}</code></h2>
+  <img src="/_blob/${image.blob}" alt="${flutter} in core_ui, its states side by side" />
+</section>
+`;
+  return html
+    .replace(/height=(\d+) -->/, (_, h: string) => `height=${Number(h) + grow} -->`)
+    .replace(/(<div id="root"[^>]*>(?:<\/div>)?\n)/, `$1${section}`);
 }

@@ -104,7 +104,7 @@ Short motion that shows what changed: 100 ms press, 200 ms appear, 300 ms screen
 
 ## Not synced
 
-- Components are the web ones (`packages/ui-web`); the Flutter widgets (`packages/core_ui`) draw the same design and are not carried.
+- Components are live only on the web (`packages/ui-web`), the design reference; each card shows its Flutter widget (`packages/core_ui`) as the image of its golden test underneath, and a component whose web twin is still pending shows that image alone.
 - YR-Speed (marketing only) and Emad-Diana (not used) are not carried; only the three CoFo weights are.
 - The `app-icon-broken-edges` SVGs are left out until the owner names their purpose.
 - Durations and easing are not a token family here; they are listed under Motion.
