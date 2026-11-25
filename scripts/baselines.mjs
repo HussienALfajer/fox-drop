@@ -204,7 +204,8 @@ export function selectStories(files, { sources, entries }) {
       );
     return byFile.get(file) || baselines.has(entry.id);
   });
-  const why = [...modules, ...[...baselines].map((id) => `the baselines of ${id}`)];
+  const why = [...modules];
+  if (baselines.size > 0) why.push(`the baselines of ${baselines.size} stories`);
   return { stories: stories.map((entry) => entry.id), why: why.join(', ') };
 }
 
