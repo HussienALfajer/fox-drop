@@ -944,7 +944,7 @@ const foxLintsStep = (inputs) => ({
 
 // A cold analysis of the workspace took 7 min 13 s on 2026-11-25 in a new
 // worktree, without the plugin too (the analyzer's cache does not follow a new
-// folder); warm, 20 s. One that runs far longer has stopped answering.
+// folder); warm, 20 to 36 s. One that runs far longer has stopped answering.
 const ANALYZE_LIMIT_MS = 15 * 60 * 1000;
 
 // ---------------------------------------------------------------- the parts
