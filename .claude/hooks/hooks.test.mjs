@@ -1,22 +1,41 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { recordGreen, treeState } from '../../scripts/green-tree.mjs';
-import { checkBash, checkEdit, stripPayload, toRepoPath } from './lib/policy.mjs';
+import {
+  checkBash,
+  checkEdit,
+  checkFvmInWorktree,
+  checkPinnedSdk,
+  stripPayload,
+  toRepoPath,
+} from './lib/policy.mjs';
+import { bashPath, dartOf, pathExport } from './lib/sdk.mjs';
 import {
   clearEdits,
   cut,
+  editedFiles,
   editsFile,
-  failingStep,
+  MAX_FILES,
+  needsReminder,
+  planChecks,
   recordEdit,
   shouldCheck,
-  statusPaths,
-} from './stop-verify.mjs';
+  summary,
+} from './stop-check.mjs';
 
 const hooks = path.dirname(fileURLToPath(import.meta.url));
 const scratch = mkdtempSync(path.join(os.tmpdir(), 'hooks-test-'));
@@ -222,6 +241,25 @@ describe('checkBash', () => {
     'bun install',
     'corepack npm install x',
     'corepack yarn add react',
+    // the unpinned Flutter, named explicitly
+    'C:\\flutter\\bin\\flutter.bat test',
+    'c:/flutter/bin/dart analyze',
+    '/c/flutter/bin/dart format x.dart',
+    'export PATH=/c/flutter/bin:$PATH && dart --version',
+    'export PATH="$PATH:/c/flutter/bin"',
+    '& "C:\\flutter\\bin\\dart.bat" --version',
+    // a worktree removed before its SDK link (2026-11-25: it emptied the shared SDK)
+    'git worktree remove .claude/worktrees/agent-x',
+    'git worktree remove --force D:/fox-drop/.claude/worktrees/agent-x',
+    'git -C D:/fox-drop worktree remove .claude/worktrees/agent-x',
+    'rm -rf .claude/worktrees/agent-x',
+    'rm -fr "D:/fox-drop/.claude/worktrees/agent-x/"',
+    'rm -r --force /d/fox-drop/.claude/worktrees',
+    'Remove-Item -Recurse -Force D:\\fox-drop\\.claude\\worktrees\\agent-x',
+    'cmd /c rd /s /q D:\\fox-drop\\.claude\\worktrees\\agent-x',
+    'git worktree remove .claude/worktrees/a && rm -f .claude/worktrees/a/.fvm/flutter_sdk',
+    'rm -rf .claude/worktrees/a/.fvm/flutter_sdk/ && git worktree remove .claude/worktrees/a',
+    'Remove-Item .claude\\worktrees\\a\\.fvm\\flutter_sdk; git worktree remove .claude/worktrees/a',
   ];
   for (const cmd of refused) it(`refuses: ${cmd}`, () => assert.notEqual(checkBash(cmd), null));
 
@@ -281,6 +319,20 @@ describe('checkBash', () => {
     'corepack enable',
     'corepack pnpm install',
     `npx ${'--- '.repeat(40)}tsc`,
+    // the pinned Flutter, and folders that only look like the unpinned one
+    'D:/fox-drop/.fvm/flutter_sdk/bin/flutter test',
+    'dart format x.dart',
+    'ls C:/flutter-old',
+    'ls D:/flutter',
+    // a worktree's SDK link removed first, and deletes inside a worktree
+    'rm -f .claude/worktrees/a/.fvm/flutter_sdk && git worktree remove .claude/worktrees/a',
+    'rm -f "D:/fox-drop/.claude/worktrees/a/.fvm/flutter_sdk"; git worktree remove --force D:/fox-drop/.claude/worktrees/a',
+    'unlink .claude/worktrees/a/.fvm/flutter_sdk && rm -rf .claude/worktrees/a',
+    'cmd /c rmdir "D:\\fox-drop\\.claude\\worktrees\\a\\.fvm\\flutter_sdk"; git worktree remove D:/fox-drop/.claude/worktrees/a',
+    'rm -rf .claude/worktrees/a/node_modules/.cache',
+    'git worktree list',
+    'git worktree prune',
+    'git worktree add .claude/worktrees/b -b feat/b',
   ];
   for (const cmd of allowed) it(`allows: ${cmd}`, () => assert.equal(checkBash(cmd), null));
 });
@@ -350,7 +402,92 @@ describe('the guard scripts', () => {
   });
 });
 
-describe('the fast check at the end of a turn', () => {
+describe('the pinned Flutter', () => {
+  it('finds dart.exe on Windows and dart elsewhere, never dart.bat', () => {
+    assert.equal(
+      dartOf('D:\\fox-drop\\.fvm\\flutter_sdk\\bin', 'win32'),
+      'D:\\fox-drop\\.fvm\\flutter_sdk\\bin\\cache\\dart-sdk\\bin\\dart.exe',
+    );
+    assert.equal(
+      dartOf('/r/.fvm/flutter_sdk/bin', 'linux'),
+      '/r/.fvm/flutter_sdk/bin/cache/dart-sdk/bin/dart',
+    );
+  });
+
+  it('puts the pinned Dart and Flutter first on PATH, in Git Bash paths', () => {
+    assert.equal(bashPath('D:\\fox-drop\\.fvm', 'win32'), '/d/fox-drop/.fvm');
+    assert.equal(bashPath('/home/u/x', 'linux'), '/home/u/x');
+    assert.equal(
+      pathExport('D:\\fox-drop\\.fvm\\flutter_sdk\\bin', 'win32'),
+      'export PATH="/d/fox-drop/.fvm/flutter_sdk/bin/cache/dart-sdk/bin:/d/fox-drop/.fvm/flutter_sdk/bin:$PATH"\n',
+    );
+    assert.equal(
+      pathExport('/a $b/bin', 'linux'),
+      'export PATH="/a \\$b/bin/cache/dart-sdk/bin:/a \\$b/bin:$PATH"\n',
+    );
+  });
+
+  it('asks PowerShell for the prefix before a bare dart or flutter', () => {
+    const ctx = { tool: 'PowerShell', prefix: '$env:PATH = "x;$env:PATH"; ' };
+    for (const cmd of [
+      'flutter test',
+      'cd apps/customer; flutter test',
+      'dart run melos run analyze',
+      'dart.bat format x.dart',
+      'pnpm install; dart pub get',
+    ])
+      assert.match(checkPinnedSdk(cmd, ctx) ?? '', /Start the command with: \$env:PATH/, cmd);
+    for (const cmd of [
+      '$env:PATH = "D:\\fox-drop\\.fvm\\flutter_sdk\\bin;$env:PATH"; flutter test',
+      '& D:\\fox-drop\\.fvm\\flutter_sdk\\bin\\flutter.bat test',
+      'fvm flutter test',
+      'rg dart apps/customer',
+      'git commit -m "flutter test passes"',
+      'pnpm verify',
+    ])
+      assert.equal(checkPinnedSdk(cmd, ctx), null, cmd);
+    assert.equal(checkPinnedSdk('flutter test', { ...ctx, tool: 'Bash' }), null);
+  });
+
+  it('writes the PATH line at session start, or tells Claude the pinned Flutter is missing', () => {
+    const repo = path.join(scratch, 'session-start');
+    mkdirSync(path.join(repo, '.fvm', 'flutter_sdk', 'bin'), { recursive: true });
+    spawnSync('git', ['init', '--quiet'], { cwd: repo });
+    const envFile = path.join(scratch, 'session-start.env');
+    const started = runScript(
+      'session-start.mjs',
+      { cwd: repo, source: 'startup' },
+      { CLAUDE_PROJECT_DIR: repo, CLAUDE_ENV_FILE: envFile },
+    );
+    assert.equal(started.status, 0, started.stderr);
+    assert.match(
+      readFileSync(envFile, 'utf8'),
+      /^export PATH=".*\.fvm\/flutter_sdk\/bin\/cache\/dart-sdk\/bin:.*\.fvm\/flutter_sdk\/bin:\$PATH"\n$/,
+    );
+    const bare = path.join(scratch, 'session-start-bare');
+    mkdirSync(bare, { recursive: true });
+    spawnSync('git', ['init', '--quiet'], { cwd: bare });
+    const missing = runScript(
+      'session-start.mjs',
+      { cwd: bare, source: 'startup' },
+      { CLAUDE_PROJECT_DIR: bare, CLAUDE_ENV_FILE: path.join(scratch, 'bare.env') },
+    );
+    assert.equal(missing.status, 0);
+    assert.match(JSON.parse(missing.stdout).hookSpecificOutput.additionalContext, /missing/);
+    assert.ok(!existsSync(path.join(scratch, 'bare.env')));
+  });
+
+  it('refuses fvm install and fvm use inside a worktree only', () => {
+    const tree = 'D:\\fox-drop\\.claude\\worktrees\\agent-x';
+    assert.match(checkFvmInWorktree('fvm install', tree) ?? '', /main checkout/);
+    assert.match(checkFvmInWorktree('cd apps; fvm use 3.47.9', `${tree}\\apps`) ?? '', /main/);
+    assert.equal(checkFvmInWorktree('fvm install', 'D:\\fox-drop'), null);
+    assert.equal(checkFvmInWorktree('fvm list', tree), null);
+    assert.equal(checkFvmInWorktree('fvm install', undefined), null);
+  });
+});
+
+describe('the light check at the end of a turn', () => {
   it('checks only a session that edited files, never in the red phase or on its retry', () => {
     const dir = path.join(scratch, 'edits');
     const root = path.join(scratch, 'root');
@@ -364,64 +501,161 @@ describe('the fast check at the end of a turn', () => {
     assert.equal(shouldCheck({ session_id: 'author' }, root, dir), false);
   });
 
-  // Runs the hook in a new repository with one uncommitted code file, where a stand-in
-  // scripts/verify.mjs exits with `status`; the hook's temp folder is under the scratch folder.
-  const runHook = (name, status, { edited = true, green = false } = {}) => {
+  // Runs the hook in a new repository whose node_modules links to this checkout's (Prettier and
+  // ESLint), with a one-rule ESLint config; `files` are written uncommitted, `edited` of them
+  // recorded as this session's edits. The hook's temp folder is under the scratch folder.
+  const modules = path.resolve(hooks, '..', '..', 'node_modules');
+  const runHook = (
+    name,
+    { files = {}, edited = Object.keys(files), green = false, event } = {},
+  ) => {
     const repo = path.join(scratch, name);
     const tmp = path.join(repo, 'tmp');
-    mkdirSync(path.join(repo, 'scripts'), { recursive: true });
+    mkdirSync(repo, { recursive: true });
     const git = (...args) => spawnSync('git', args, { cwd: repo });
     git('init', '--quiet');
-    writeFileSync(path.join(repo, '.gitignore'), 'tmp/\n.claude/state/\n');
-    git('add', '.gitignore');
-    git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '--quiet', '-m', 'init');
+    writeFileSync(path.join(repo, '.gitignore'), 'tmp/\nnode_modules\n.claude/state/\n');
     writeFileSync(
-      path.join(repo, 'scripts', 'verify.mjs'),
-      `console.log('=== Step');\nconsole.log('the output');\nprocess.exitCode = ${status};`,
+      path.join(repo, 'eslint.config.mjs'),
+      "export default [{ rules: { 'no-unused-vars': 'error' } }];\n",
     );
+    git('add', '.');
+    git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '--quiet', '-m', 'init');
+    if (!existsSync(path.join(repo, 'node_modules')))
+      symlinkSync(modules, path.join(repo, 'node_modules'), 'junction');
+    for (const [file, text] of Object.entries(files)) {
+      mkdirSync(path.dirname(path.join(repo, file)), { recursive: true });
+      writeFileSync(path.join(repo, file), text);
+    }
     if (green) recordGreen(repo, treeState(repo).fingerprint);
-    const dir = path.join(tmp, 'claude-stop-verify');
-    if (edited) recordEdit(name, 'scripts/verify.mjs', dir);
-    const result = runScript(
-      'stop-verify.mjs',
-      { session_id: name, cwd: repo },
-      { CLAUDE_PROJECT_DIR: repo, TMP: tmp, TEMP: tmp, TMPDIR: tmp },
-    );
-    return { ...result, edits: editsFile(name, dir) };
+    const dir = path.join(tmp, 'claude-stop-check');
+    for (const file of edited) recordEdit(name, path.join(repo, file), dir);
+    const result = runScript('stop-check.mjs', event ?? { session_id: name, cwd: repo }, {
+      CLAUDE_PROJECT_DIR: repo,
+      TMP: tmp,
+      TEMP: tmp,
+      TMPDIR: tmp,
+    });
+    const message = result.stdout ? JSON.parse(result.stdout).systemMessage : '';
+    return { ...result, message, edits: editsFile(name, dir), repo, dir };
   };
+  const clean = { 'src/a.mjs': 'export const a = 1;\n', 'notes.md': '# Notes\n' };
 
-  it('runs the check after an edit, and forgets the edits once it passes', () => {
-    const result = runHook('passes', 0);
-    assert.equal(result.status, 0);
-    assert.equal(result.stdout + result.stderr, '');
+  it('passes clean edits in one line, forgets them and reminds once per tree', () => {
+    const result = runHook('clean', { files: clean });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(
+      result.message,
+      /^Light check of 2 edited files \(Prettier 2, ESLint 1\): passed in \d+\.\d s\.\nThe full check has not run on this tree: node scripts\/verify\.mjs --changed/,
+    );
     assert.ok(!existsSync(result.edits));
+    recordEdit('clean', path.join(result.repo, 'src/a.mjs'), result.dir);
+    const tmp = path.join(result.repo, 'tmp');
+    const again = runScript(
+      'stop-check.mjs',
+      { session_id: 'clean', cwd: result.repo },
+      { CLAUDE_PROJECT_DIR: result.repo, TMP: tmp, TEMP: tmp, TMPDIR: tmp },
+    );
+    assert.doesNotMatch(JSON.parse(again.stdout).systemMessage, /full check/);
   });
 
-  it('hands a failure back to Claude and keeps the edits', () => {
-    const result = runHook('fails', 1);
+  it('does not remind on a tree the last passing verify recorded', () => {
+    const result = runHook('green', { files: clean, green: true });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.message, /passed/);
+    assert.doesNotMatch(result.message, /full check/);
+  });
+
+  it('hands a mis-formatted file back to Claude and keeps the edits', () => {
+    const result = runHook('format', { files: { 'src/a.mjs': 'export const   a=1\n' } });
     assert.equal(result.status, 2);
-    assert.match(result.stderr, /fast check of the uncommitted changes failed[\s\S]*=== Step/);
+    assert.match(result.stderr, /Light check of 1 edited file .*failed \(Prettier\)/);
+    assert.match(result.stderr, /=== Prettier[\s\S]*src\/a\.mjs/);
     assert.ok(existsSync(result.edits));
   });
 
-  it('skips a tree the last passing verify recorded', () => {
-    const result = runHook('green', 1, { green: true });
-    assert.equal(result.status, 0);
-    assert.equal(result.stdout + result.stderr, '');
-    assert.ok(!existsSync(result.edits));
+  it('hands an ESLint error back, linted from the folder of its config', () => {
+    const files = { 'src/b.mjs': 'const unused = 1;\n' };
+    const result = runHook('lint', { files });
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /failed \(ESLint \.\)[\s\S]*no-unused-vars/);
   });
 
-  it('lets the turn end with a notice while another check runs, and keeps the edits', () => {
-    const result = runHook('busy', 3);
-    assert.equal(result.status, 0);
-    assert.match(JSON.parse(result.stdout).systemMessage, /fast check was skipped/);
-    assert.ok(existsSync(result.edits));
-  });
-
-  it('does not check a session that edited nothing', () => {
-    const result = runHook('watcher', 1, { edited: false });
+  it('never starts for an untracked file the session did not edit', () => {
+    const files = { '.claude/launch.json': '{  "x":1}\n' };
+    const result = runHook('untracked', { files, edited: [] });
     assert.equal(result.status, 0);
     assert.equal(result.stdout + result.stderr, '');
+  });
+
+  it('is off in the red phase and on its own retry, and says so in the red phase', () => {
+    const files = { 'src/a.mjs': 'export const   a=1\n', '.claude/state/red-phase': '' };
+    const red = runHook('red', { files });
+    assert.equal(red.status, 0);
+    assert.match(red.message, /light check is off: \.claude\/state\/red-phase/);
+    const retry = runHook('retry', {
+      files: { 'src/a.mjs': 'export const   a=1\n' },
+      event: { session_id: 'retry', cwd: path.join(scratch, 'retry'), stop_hook_active: true },
+    });
+    assert.equal(retry.status, 0);
+    assert.equal(retry.stdout + retry.stderr, '');
+  });
+
+  it('keeps only existing files of this checkout, once each, outside worktrees', () => {
+    const root = path.resolve('/repo');
+    const exists = (full) => !full.includes('gone');
+    const recorded = [
+      path.join(root, 'apps/a.ts'),
+      path.join(root, 'apps/a.ts'),
+      'docs/b.md',
+      path.join(root, 'gone.ts'),
+      path.join(root, '.claude/worktrees/w/apps/c.ts'),
+      path.resolve('/elsewhere/d.ts'),
+      '',
+    ].join('\n');
+    assert.deepEqual(editedFiles(recorded, root, exists), ['apps/a.ts', 'docs/b.md']);
+  });
+
+  it('plans Prettier, the pinned dart format and ESLint per package config', () => {
+    const configs = new Set(['', 'apps/server', 'packages/ui-web']);
+    const plan = planChecks(
+      [
+        'apps/server/src/a.ts',
+        'apps/server/test/b.test.ts',
+        'packages/ui-web/src/c.tsx',
+        'scripts/d.mjs',
+        'packages/core_ui/lib/e.dart',
+        'docs/f.md',
+      ],
+      (dir) => configs.has(dir),
+    );
+    assert.deepEqual(plan.dart, ['packages/core_ui/lib/e.dart']);
+    assert.equal(plan.prettier.length, 5);
+    assert.deepEqual(Object.fromEntries(plan.eslint), {
+      'apps/server': ['src/a.ts', 'test/b.test.ts'],
+      'packages/ui-web': ['src/c.tsx'],
+      '': ['scripts/d.mjs'],
+    });
+    assert.equal(planChecks(['a.ts'], () => false).eslint.size, 0);
+  });
+
+  it('says in one line what it checked, and reminds once per unverified code tree', () => {
+    const counts = { Prettier: 3, 'dart format': 0, ESLint: 1 };
+    assert.equal(
+      summary({ files: 3, counts, failed: [], seconds: 2.345 }),
+      'Light check of 3 edited files (Prettier 3, ESLint 1): passed in 2.3 s.',
+    );
+    assert.equal(
+      summary({ files: 1, counts: {}, failed: ['Prettier'], seconds: 1, notes: ['x.'] }),
+      'Light check of 1 edited file (nothing to check): failed (Prettier) in 1.0 s. x.',
+    );
+    const tree = { code: true, green: false, fingerprint: 'f', reminded: '' };
+    assert.equal(needsReminder(tree), true);
+    assert.equal(needsReminder({ ...tree, reminded: 'f' }), false);
+    assert.equal(needsReminder({ ...tree, green: true }), false);
+    assert.equal(needsReminder({ ...tree, code: false }), false);
+    assert.equal(needsReminder({ ...tree, fingerprint: undefined }), false);
+    assert.ok(MAX_FILES >= 10);
   });
 
   it('keeps edits recorded while the check ran for the next turn', () => {
@@ -434,21 +668,6 @@ describe('the fast check at the end of a turn', () => {
     assert.equal(shouldCheck({ session_id: 's' }, root, dir), true);
     clearEdits('s', readFileSync(editsFile('s', dir), 'utf8'), dir);
     assert.equal(shouldCheck({ session_id: 's' }, root, dir), false);
-  });
-
-  it('reads the uncommitted paths, renames by their new name', () => {
-    const porcelain =
-      ' M apps/server/src/app.ts\nR  docs/old.md -> docs/new.md\n?? "scripts/a b.mjs"\n';
-    assert.deepEqual(statusPaths(porcelain), [
-      'apps/server/src/app.ts',
-      'docs/new.md',
-      'scripts/a b.mjs',
-    ]);
-  });
-
-  it('reports the step that failed only', () => {
-    const output = '\n=== Prettier\nok\n\n=== Server tests\n FAIL a.test.ts\n\nverify: failed';
-    assert.equal(failingStep(output), '=== Server tests\n FAIL a.test.ts\n\nverify: failed');
   });
 
   it('cuts a long step to its failures and its end, never the server log', () => {

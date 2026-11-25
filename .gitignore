@@ -57,6 +57,8 @@ logs/
 # Local agent files
 CLAUDE.local.md
 .claude/settings.local.json
+# The desktop app's preview servers (written by the Browser pane's preview_start)
+.claude/launch.json
 .claude/worktrees/
 # Hook state: red phase, locked tests, the last green tree (docs/process/development-workflow.md)
 .claude/state/

@@ -158,7 +158,89 @@ const BASH_RULES = [
     test: (cmd) => commandSegments(cmd).some(installsOutsidePnpm),
     why: 'Packages are installed with pnpm only (lockfile, exact pins); never npm, yarn or bun.',
   },
+  {
+    re: /(?:^|[\s"'=(&|;:,])(?:c:[\\/]+|\/c\/)flutter(?=[\\/"'\s;&|:]|$)/i,
+    why: "`C:\\flutter` is Flutter 3.41.2, not the pinned SDK (.fvmrc). Use `.fvm/flutter_sdk` (the main checkout's in a worktree): in Bash it is already first on PATH; `pnpm verify` and the hooks use it by themselves.",
+  },
+  {
+    test: removesWorktreeWithSdkLink,
+    why: 'Removing a worktree before its `.fvm/flutter_sdk` link follows the link and empties the shared Flutter SDK (2026-11-25). Remove the link alone first, in the same command: Git Bash `rm -f "<worktree>/.fvm/flutter_sdk" && git worktree remove "<worktree>"`; PowerShell `cmd /c rmdir "<worktree>\\.fvm\\flutter_sdk"; git worktree remove "<worktree>"` (never Remove-Item on the link: Windows PowerShell 5.1 deletes what it points to).',
+  },
 ];
+
+// The root of a worktree under `.claude/worktrees/` (or the folder itself), not a path inside it.
+const WORKTREE_ROOT = new RegExp(
+  String.raw`\.claude[\\/]+worktrees(?:[\\/]+[^\s"'\\/*;&|]+)?[\\/]*\*?(?=["'\s;&|]|$)`,
+  'i',
+);
+// Deletes only the link: `rm` without -r, `unlink`, `rmdir` without /s (also through `cmd /c`).
+const UNLINKS_SDK =
+  /(?:^|[\s"'(])(?:rm(?:\s+-f)?|unlink|rmdir)\s+["']?[^\s"']*\.fvm[\\/]+flutter_sdk[\\/]?["']?\s*$/i;
+
+const SDK_LINK = /\.fvm[\\/]+flutter_sdk/i;
+
+function removesWorktree(segment) {
+  if (new RegExp(String.raw`${GIT}worktree\s+remove\b`).test(segment)) return true;
+  const recursive =
+    /\brm\s+(?:\S+\s+)*?(?:-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)(?:\s|$)/.test(segment) ||
+    /\b(?:Remove-Item|ri|rd|rmdir|del)\b[^\n]*(?:-Recurse\b|\/s\b)/i.test(segment);
+  return recursive && WORKTREE_ROOT.test(segment);
+}
+
+// A delete that follows the link into the SDK: recursive, or PowerShell's Remove-Item.
+const deletesThroughLink = (segment) =>
+  SDK_LINK.test(segment) &&
+  (/\brm\s+(?:\S+\s+)*?(?:-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)(?:\s|$)/.test(segment) ||
+    /\b(?:Remove-Item|ri|del)\b|\b(?:rd|rmdir)\b[^\n]*\/s\b/i.test(segment));
+
+/**
+ * True when the command removes a worktree (`git worktree remove`, or a recursive delete of
+ * `.claude/worktrees/<name>`) without first removing a `.fvm/flutter_sdk` link on its own, or
+ * deletes such a link in a way that follows it into the SDK.
+ */
+function removesWorktreeWithSdkLink(cmd) {
+  let unlinked = false;
+  for (const segment of cmd.split(/&&|\|\||[;|&\n]/)) {
+    if (deletesThroughLink(segment)) return true;
+    if (UNLINKS_SDK.test(segment.trim())) unlinked = true;
+    else if (removesWorktree(segment) && !unlinked) return true;
+  }
+  return false;
+}
+
+/**
+ * PowerShell commands never get the session's PATH from CLAUDE_ENV_FILE (Claude Code passes no
+ * value with `/` or `\` to them on Windows), so a bare `dart` or `flutter` there would run the
+ * PATH's own Flutter. Refuses one unless the command names the pinned SDK (`.fvm/flutter_sdk`).
+ * @param {string} command
+ * @param {{ tool?: string, prefix: string }} ctx prefix: the PowerShell line that puts the
+ *   pinned SDK first on PATH
+ * @returns {string | null}
+ */
+export function checkPinnedSdk(command, { tool, prefix }) {
+  if (tool !== 'PowerShell') return null;
+  const cmd = stripPayload(command);
+  if (/\.fvm[\\/]+flutter_sdk/i.test(cmd)) return null;
+  if (!commandSegments(cmd).some(({ program }) => program === 'dart' || program === 'flutter'))
+    return null;
+  return `A bare dart or flutter in PowerShell runs the PATH's Flutter (C:\\flutter, 3.41.2), not the pinned one. Start the command with: ${prefix}`;
+}
+
+/**
+ * `fvm install` or `fvm use` inside a worktree links a second `.fvm/flutter_sdk` there, which a
+ * later worktree removal follows into the shared SDK. A worktree uses the main checkout's.
+ * @param {string} command
+ * @param {string | undefined} cwd the event's working folder
+ */
+export function checkFvmInWorktree(command, cwd) {
+  if (!cwd || !/[\\/]\.claude[\\/]+worktrees[\\/]/i.test(`${cwd}/`)) return null;
+  const runsFvm = commandSegments(stripPayload(command)).some(
+    ({ program, args }) => program === 'fvm' && ['install', 'use'].includes(args[0]),
+  );
+  return runsFvm
+    ? "A worktree uses the main checkout's pinned Flutter (scripts/verify-support.mjs, pinnedFlutterBin); `fvm install` or `fvm use` here would link a second SDK that a worktree removal can empty. Run it in the main checkout, or ask the owner."
+    : null;
+}
 
 const WRAPPERS = new Set(['sudo', 'command', 'exec', 'env', 'time', 'nice']);
 // Programs that start another program: `corepack <pm>[@version]`, `pnpm exec|x`, `pnpm <tool>`
@@ -181,12 +263,12 @@ const RUNNERS = new Set([
   ...WRAPPERS,
 ]);
 
-/** The program a word names: no path, no .cmd/.exe/.ps1, no `@version` (`pnpm@9.0.0`). */
+/** The program a word names: no path, no .cmd/.bat/.exe/.ps1, no `@version` (`pnpm@9.0.0`). */
 const programName = (word) =>
   (word ?? '')
     .split(/[\\/]/)
     .pop()
-    .replace(/\.(cmd|exe|ps1)$/i, '')
+    .replace(/\.(cmd|bat|exe|ps1)$/i, '')
     .replace(/(?<=.)@.*$/, '')
     .toLowerCase();
 

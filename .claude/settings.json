@@ -19,6 +19,17 @@
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.mjs\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit|NotebookEdit",
@@ -58,8 +69,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-verify.mjs\"",
-            "timeout": 600
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-check.mjs\"",
+            "timeout": 60
           }
         ]
       }
