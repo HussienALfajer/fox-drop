@@ -378,6 +378,9 @@ importers:
       jose:
         specifier: 6.1.3
         version: 6.1.3
+      libphonenumber-js:
+        specifier: 1.13.15
+        version: 1.13.15
       nestjs-pino:
         specifier: 5.3.1
         version: 5.3.1(@nestjs/common@11.2.8(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@11.2.8(@nestjs/common@11.2.8(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@11.0.0)(pino@10.4.0)(rxjs@7.8.2)
@@ -552,8 +555,8 @@ importers:
         specifier: 0.1.0-beta.14
         version: 0.1.0-beta.14(@types/react@19.3.0)(@ui-sdk/core@0.1.0-beta.14)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       libphonenumber-js:
-        specifier: 1.13.17
-        version: 1.13.17
+        specifier: 1.13.15
+        version: 1.13.15
       react:
         specifier: 19.3.1
         version: 19.3.1
@@ -4957,8 +4960,8 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  libphonenumber-js@1.13.17:
-    resolution: {integrity: sha512-V92dxRHhYTsHF5B6IjR8rtKW6qL7xKuERPFFqZt7XQl8A+NikbwEzjhxGpM+R6JnWjaL7/wokWSdTG/eyYAscQ==}
+  libphonenumber-js@1.13.15:
+    resolution: {integrity: sha512-AHdhEQeDFEJ4GKDAQ9AwxChy+v2kUILUB3TGQRpkXMkWePjXTU/WQEzWVQoIx/Gz8fE73Wr5SEuZCy2vk8jrMQ==}
 
   libsignal@6.0.0:
     resolution: {integrity: sha512-d/5V3YFtDljbFMufz4ncyUYGYhJl+vzAe+c2EFFBQ6bz1h8Q3IOMEGXYMzlibU60I+e8GagMMpji18iez3P1hA==}
@@ -10996,7 +10999,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  libphonenumber-js@1.13.17: {}
+  libphonenumber-js@1.13.15: {}
 
   libsignal@6.0.0:
     dependencies:

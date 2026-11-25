@@ -276,6 +276,28 @@ describe('«تسجيل دفع المستحق» (AP §8.8, §9.8)', () => {
     ).toBe(part.json().number);
   });
 
+  // Slice D.11a (D.11's owner's answer (d)): the dues sheet's office carries
+  // «وصف المكان».
+  it("answers the office's landmark on the dues sheet", async () => {
+    const buyer = await customerOwing('3000');
+    await app.get(GeoService).setOffice(
+      azaz,
+      {
+        location: { latitude: 36.5862, longitude: 37.0471 },
+        hours: [],
+        landmark: 'بجانب جامع الفاروق',
+      },
+      {
+        actor: { type: 'system', id: null, role: null },
+        context: { ipAddress: null, device: null },
+      },
+    );
+    expect((await banner(buyer.headers)).office).toMatchObject({
+      latitude: 36.5862,
+      landmark: 'بجانب جامع الفاروق',
+    });
+  });
+
   it('never takes more than is owed, needs an open drawer, and answers a repeat with its receipt', async () => {
     const buyer = await customerOwing('5000');
     const noDrawer = await (

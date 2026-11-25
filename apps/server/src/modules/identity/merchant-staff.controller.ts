@@ -28,7 +28,7 @@ import {
   ReceivingDevicesService,
 } from '../merchants/index.js';
 import { deviceId } from './app-auth.js';
-import { APP_PHONE_PATTERN } from './app-phone.js';
+import { appPhone } from './app-phone.js';
 import { type AppSession, AppSessionsService } from './app-sessions.service.js';
 import {
   type MerchantAccount,
@@ -66,10 +66,7 @@ class MerchantStaffDto extends createZodDto(
 class MerchantNewCashierDto extends createZodDto(
   z.object({
     name: z.string().trim().min(1).max(80),
-    phone: z
-      .string()
-      .regex(APP_PHONE_PATTERN)
-      .describe('A Syrian or Turkish mobile in E.164, as at sign-in.'),
+    phone: appPhone.describe('A mobile of any country in E.164, as at sign-in.'),
   }),
 ) {}
 

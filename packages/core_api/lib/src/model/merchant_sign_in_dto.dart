@@ -11,13 +11,13 @@ part 'merchant_sign_in_dto.g.dart';
 /// MerchantSignInDto
 ///
 /// Properties:
-/// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+/// * [phone] - The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
 /// * [deviceId] - The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
 /// * [code]
 @BuiltValue()
 abstract class MerchantSignInDto
     implements Built<MerchantSignInDto, MerchantSignInDtoBuilder> {
-  /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+  /// The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

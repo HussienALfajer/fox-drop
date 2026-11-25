@@ -62,3 +62,9 @@ The typed settings of AP §4.4 and Appendix A, cached in Valkey (architecture §
 - **Descriptions:** the list carries the key, not the Appendix A description;
   the panel shows each setting's Arabic name and description from its translation files, by key (AP §4.7).
   `panel-labels.test.ts` reads `apps/admin/src/locales/ar.json` and fails a key of the catalogue (but `app.*`, which «التطبيقات» names) without its `settings.name` and `settings.description`, a name left for a key gone, and an enum choice without its words (`settings.choice`, the weekdays shared), so a new setting gets its Arabic words in the same change.
+
+## GET platform (slice D.11a)
+
+- `PlatformDto` and `platformAnswer` (`app-platform.controller.ts`, exported) answer every app: `minVersion` when `app.<app>.min_version` is set, and `maintenanceReturnsAt` while maintenance is on and its `returnsAt` is still ahead (a passed time promises nothing).
+- `app.<app>.maintenance` gained `returnsAt` with `.default(null)`, so a value stored before it still parses and maintenance that was on stays on (`effective()` would otherwise fall back to the default, off).
+- The customer's route moved to ordering (`customer-platform.controller.ts`), which adds `hours` at the selected point: settings cannot import geo, which imports settings.

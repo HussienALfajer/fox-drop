@@ -45,6 +45,7 @@ test('saves the office with its hours on Saturday', async ({ page }) => {
   expect(sent).toEqual({
     location: { latitude: 36.5862, longitude: 37.0471 },
     hours: [{ weekday: 6, opensAt: 540, closesAt: 1380 }],
+    landmark: null,
   });
   await expect(page.getByText('السبت: من 09:00 إلى 23:00')).toBeVisible();
   await expect(page.getByText('الجمعة: مغلق')).toBeVisible();

@@ -4,7 +4,6 @@ import { ValkeyModule } from '../../valkey/valkey.module.js';
 import { AuditModule } from '../audit/index.js';
 import {
   CaptainPlatformController,
-  CustomerPlatformController,
   MerchantPlatformController,
 } from './app-platform.controller.js';
 import { SettingsController } from './settings.controller.js';
@@ -15,19 +14,16 @@ import { SettingsService } from './settings.service.js';
 // through SettingsService only.
 @Module({
   imports: [DatabaseModule, ValkeyModule, AuditModule],
-  controllers: [
-    SettingsController,
-    CustomerPlatformController,
-    MerchantPlatformController,
-    CaptainPlatformController,
-  ],
+  controllers: [SettingsController, MerchantPlatformController, CaptainPlatformController],
   providers: [SettingsService],
   exports: [SettingsService],
 })
 export class SettingsModule {}
 
+export { platformAnswer, PlatformDto, platformVersion } from './app-platform.controller.js';
 export {
   adminRoles,
+  catalogue,
   type AdminRole,
   type SettingKey,
   type SettingValue,

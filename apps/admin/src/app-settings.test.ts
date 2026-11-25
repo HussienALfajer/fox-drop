@@ -18,7 +18,7 @@ describe('appValues', () => {
       minVersion: '1.4.0',
       latestVersion: null,
       updateMessage: null,
-      maintenance: { enabled: true, message: 'صيانة' },
+      maintenance: { enabled: true, message: 'صيانة', returnsAt: null },
     });
   });
 });
@@ -31,11 +31,24 @@ describe('formValues', () => {
     form.set('updateMessage', '  ');
     form.set('maintenance', 'on');
     form.set('maintenanceMessage', 'نعود بعد ساعة');
-    expect(formValues(form)).toEqual({
+    form.set('maintenanceReturnsAt', '');
+    expect(formValues(form, 'Asia/Damascus')).toEqual({
       minVersion: '1.4.0',
       latestVersion: null,
       updateMessage: null,
-      maintenance: { enabled: true, message: 'نعود بعد ساعة' },
+      maintenance: { enabled: true, message: 'نعود بعد ساعة', returnsAt: null },
+    });
+  });
+
+  // Slice D.11a: the return time is typed on the city's clock (UTC+3).
+  it('reads the return time on the city clock', () => {
+    const form = new FormData();
+    form.set('maintenance', 'on');
+    form.set('maintenanceReturnsAt', '2026-11-25T18:30');
+    expect(formValues(form, 'Asia/Damascus').maintenance).toEqual({
+      enabled: true,
+      message: null,
+      returnsAt: '2026-11-25T15:30:00.000Z',
     });
   });
 });
@@ -45,7 +58,7 @@ describe('changes', () => {
     minVersion: '1.4.0',
     latestVersion: null,
     updateMessage: null,
-    maintenance: { enabled: false, message: null },
+    maintenance: { enabled: false, message: null, returnsAt: null },
   };
 
   it('sends only the settings that changed, by their concrete keys', () => {
@@ -53,11 +66,11 @@ describe('changes', () => {
       changes('merchant', before, {
         ...before,
         latestVersion: '1.6.0',
-        maintenance: { enabled: true, message: null },
+        maintenance: { enabled: true, message: null, returnsAt: null },
       }),
     ).toEqual([
       { key: 'app.merchant.latest_version', value: '1.6.0' },
-      { key: 'app.merchant.maintenance', value: { enabled: true, message: null } },
+      { key: 'app.merchant.maintenance', value: { enabled: true, message: null, returnsAt: null } },
     ]);
     expect(changes('merchant', before, before)).toEqual([]);
   });

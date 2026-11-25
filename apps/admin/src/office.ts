@@ -27,8 +27,13 @@ export interface DayForm {
 export interface OfficeForm {
   latitude: string;
   longitude: string;
+  // «وصف المكان» (slice D.11a), one line; empty is none.
+  landmark: string;
   days: Record<OfficeDay, DayForm>;
 }
+
+// The landmark's length, as the server takes it.
+export const LANDMARK_MAX = 120;
 
 const closedDay: DayForm = { open: false, from: '', to: '' };
 
@@ -48,6 +53,7 @@ export function officeFormOf(office: CityOffice['office']): OfficeForm {
   return {
     latitude: office ? String(office.location.latitude) : '',
     longitude: office ? String(office.location.longitude) : '',
+    landmark: office?.landmark ?? '',
     days,
   };
 }
@@ -83,7 +89,10 @@ export function officeRequestOf(
     }
     hours.push({ weekday: day, opensAt, closesAt });
   }
-  return { body: { location: { latitude, longitude }, hours } };
+  const landmark = form.landmark.trim();
+  return {
+    body: { location: { latitude, longitude }, hours, landmark: landmark === '' ? null : landmark },
+  };
 }
 
 const officeKey = (cityId: string) => ['city-office', cityId] as const;

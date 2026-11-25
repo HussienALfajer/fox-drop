@@ -2277,44 +2277,6 @@
         ]
       }
     },
-    "/v1/customer/platform": {
-      "get": {
-        "operationId": "customerPlatformGet",
-        "parameters": [
-          {
-            "name": "version",
-            "required": true,
-            "in": "query",
-            "description": "The app version, such as 1.4.0.",
-            "schema": {
-              "minLength": 1,
-              "maxLength": 40,
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "customer"
-        ]
-      }
-    },
     "/v1/merchant/platform": {
       "get": {
         "operationId": "merchantPlatformGet",
@@ -12924,6 +12886,63 @@
         ]
       }
     },
+    "/v1/customer/platform": {
+      "get": {
+        "operationId": "customerPlatformGet",
+        "parameters": [
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The app version, such as 1.4.0.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 40,
+              "type": "string"
+            }
+          },
+          {
+            "name": "latitude",
+            "required": false,
+            "in": "query",
+            "description": "The selected point (CU §7.1), with longitude: the platform hours of its city.",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "longitude",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/v1/customer/orders/active": {
       "get": {
         "operationId": "customerOrdersActive",
@@ -23186,8 +23205,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "deviceId": {
             "type": "string",
@@ -23233,8 +23252,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "deviceId": {
             "type": "string",
@@ -23363,8 +23382,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "deviceId": {
             "type": "string",
@@ -23441,8 +23460,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "deviceId": {
             "type": "string",
@@ -23698,8 +23717,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "browserId": {
             "type": "string",
@@ -23745,8 +23764,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "browserId": {
             "type": "string",
@@ -23852,8 +23871,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "deviceId": {
             "type": "string",
@@ -23903,8 +23922,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "deviceId": {
             "type": "string",
@@ -24278,8 +24297,8 @@
           },
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused."
           },
           "reason": {
             "type": "string",
@@ -24454,8 +24473,8 @@
           },
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "A Syrian or Turkish mobile in E.164, as at sign-in."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "A mobile of any country in E.164, as at sign-in."
           }
         },
         "required": [
@@ -24726,8 +24745,8 @@
           },
           "phone": {
             "type": "string",
-            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-            "description": "A Syrian or Turkish mobile in E.164, as at sign-in."
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "A mobile of any country in E.164, as at sign-in."
           }
         },
         "required": [
@@ -25325,6 +25344,10 @@
             ],
             "description": "required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner."
           },
+          "minVersion": {
+            "type": "string",
+            "description": "The min_version setting of the app, when set: the version the update screen names."
+          },
           "updateMessage": {
             "type": "string",
             "description": "The update_message setting of the app, when set."
@@ -25336,6 +25359,40 @@
           "maintenanceMessage": {
             "type": "string",
             "description": "The maintenance message, when set."
+          },
+          "maintenanceReturnsAt": {
+            "type": "string",
+            "description": "When maintenance is expected to end, while maintenance is on and the time is still ahead.",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "hours": {
+            "type": "object",
+            "description": "The customer app only, given a point: the platform hours of the point's city (CU §4.7).",
+            "properties": {
+              "open": {
+                "type": "boolean",
+                "description": "Whether the platform takes orders now (platform.hours)."
+              },
+              "opensAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While closed, the next opening; null when open or when none is scheduled."
+              }
+            },
+            "required": [
+              "open",
+              "opensAt"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -31852,6 +31909,13 @@
                     "additionalProperties": false,
                     "description": "The office's point, until the map (slice 2.29)."
                   },
+                  "landmark": {
+                    "description": "«وصف المكان», such as «بجانب جامع …», shown to customers and captains (slice D.11a); null for none.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "hours": {
                     "maxItems": 7,
                     "type": "array",
@@ -31919,6 +31983,7 @@
                 },
                 "required": [
                   "location",
+                  "landmark",
                   "hours",
                   "open",
                   "closesAt",
@@ -31992,6 +32057,18 @@
                 "closesAt"
               ]
             }
+          },
+          "landmark": {
+            "description": "Trimmed; empty or absent is none.",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -34624,6 +34701,13 @@
                   "longitude": {
                     "type": "number"
                   },
+                  "landmark": {
+                    "description": "«وصف المكان», such as «بجانب جامع …» (CA C13, slice D.11a); null for none.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "hours": {
                     "type": "array",
                     "items": {
@@ -34694,6 +34778,7 @@
                 "required": [
                   "latitude",
                   "longitude",
+                  "landmark",
                   "hours",
                   "timeZone",
                   "open",
@@ -34909,6 +34994,13 @@
                   "longitude": {
                     "type": "number"
                   },
+                  "landmark": {
+                    "description": "«وصف المكان», such as «بجانب جامع …» (CA C13, slice D.11a); null for none.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "hours": {
                     "type": "array",
                     "items": {
@@ -34979,6 +35071,7 @@
                 "required": [
                   "latitude",
                   "longitude",
+                  "landmark",
                   "hours",
                   "timeZone",
                   "open",
@@ -38366,7 +38459,7 @@
                     {
                       "type": "string",
                       "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-                      "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+                      "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
                     },
                     {
                       "type": "null"
@@ -38515,7 +38608,7 @@
               {
                 "type": "string",
                 "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-                "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+                "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
               },
               {
                 "type": "null"
@@ -38644,7 +38737,7 @@
               {
                 "type": "string",
                 "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-                "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+                "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
               },
               {
                 "type": "null"
@@ -38786,7 +38879,7 @@
               {
                 "type": "string",
                 "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-                "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+                "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
               },
               {
                 "type": "null"
@@ -39868,6 +39961,13 @@
                   "longitude": {
                     "type": "number"
                   },
+                  "landmark": {
+                    "description": "«وصف المكان», such as «بجانب جامع …» (slice D.11a); null for none.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "hours": {
                     "type": "array",
                     "items": {
@@ -39935,6 +40035,7 @@
                 "required": [
                   "latitude",
                   "longitude",
+                  "landmark",
                   "hours",
                   "timeZone",
                   "open",
@@ -50946,7 +51047,7 @@
                       {
                         "type": "string",
                         "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
-                        "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+                        "description": "A Syrian or Turkish mobile in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
                       },
                       {
                         "type": "null"

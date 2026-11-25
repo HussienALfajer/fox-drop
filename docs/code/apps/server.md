@@ -9,7 +9,8 @@ The FOX DROP server: one NestJS on Fastify application, strict TypeScript, ES mo
 - `src/modules/<name>/`: one folder per module of architecture §4.2, created by the first slice that needs it.
   `index.ts` is the module's public entry: its Nest module, public service and domain events.
   Everything else in the folder is private.
-- Everything else in `src` is the shared layer: `http/` (the API app and route groups), `database/` (the connection and the migration runner), `valkey/` (the Valkey client), `jobs/` (pg-boss), `centrifugo/` (the tests' Centrifugo), `storage/` (the object storage's setup command, the map's publishing command `maps-publish` (architecture §7.2) and the tests' Garage, `startTestStorage`), `logging/`, `roles/` (process roles), `seed/` (the placeholder data of development and staging) and `main.ts`.
+- Everything else in `src` is the shared layer: `http/` (the API app and route groups), `database/` (the connection and the migration runner), `valkey/` (the Valkey client), `jobs/` (pg-boss), `centrifugo/` (the tests' Centrifugo), `storage/` (the object storage's setup command, the map's publishing command `maps-publish` (architecture §7.2) and the tests' Garage, `startTestStorage`), `logging/`, `phone/` (`maskedPhone`, the panel's masked number with its own calling code, slice D.11a; shared so captains, customers and reporting need not load identity's entry), `roles/` (process roles), `seed/` (the placeholder data of development and staging) and `main.ts`.
+- **Phone metadata** (slice D.11a): `libphonenumber-js` 1.13.15, pinned exactly (MIT), read with its `max` metadata (`libphonenumber-js/max`) in `identity/app-phone.ts` and `phone/masked-phone.ts` only.
 - `src/modules/<name>/schema.ts`: the module's Drizzle tables, in the PostgreSQL schema of the module's name.
   `migrations/`: the SQL migrations generated from them.
   `db/`: the one-time bootstrap of the database roles.

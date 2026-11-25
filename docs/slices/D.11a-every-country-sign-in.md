@@ -1,6 +1,6 @@
 # D.11a Every country at sign-in, and the fields D.11's screens need
 
-Status: Planned · Tier: T0 (sign-in, a migration) · Branch: `feat/every-country-sign-in`
+Status: Done · Tier: T0 (sign-in, a migration) · Branch: `claude/clever-fermi-q9m9ot` (the session's branch, in place of `feat/every-country-sign-in`)
 Spec: CU U3, CU §4.2, §4.7, §5.2; RA §5; CA §5, C13; AP §9.12.1, §9.14, Appendix A (`otp.*`, `app.<app>.*`); architecture §8.3.3 item 2 · Definition of done: the D.11a line of `docs/roadmap.md`; it closes the server items 1 to 4 of D.11's «Code changes recorded for step 8» and the server parts of D.11's «Owner's answers» (b) and (d).
 
 ## Goal
@@ -63,18 +63,38 @@ Tests written first (locked in the red phase):
 
 Checkpoints (one commit and `checker` each): (1) red phase; (2) every country and the masks; (3) the abroad limit and the attempts; (4) `GET platform`; (5) the office migration and landmark; (6) the contract, the clients, the panel fields and the spec text; then `reviewer` and `security-reviewer`.
 
+## Plan critique (fresh build session, 2026-11-24)
+
+Checked against the code before building; the plan stands with these corrections:
+
+1. **`+96390…` is a Syrian mobile** in libphonenumber's `max` metadata (`+963900000001` parses as `MOBILE`), so the placeholder seed and the fixtures keep their numbers.
+2. **The metadata refuses `+96391…` and `+96392…`**, which today's pattern takes. To refuse nothing the apps take today, `isAppMobile` takes today's Syrian and Turkish pattern as well as any number the metadata calls a mobile (or fixed-or-mobile). The tests' random `+9639xxxxxxxx` numbers keep working. Whether `+96391`/`+96392` are real Syrian ranges is in «ما وجدته» of the report.
+3. **The daily refusal is `daily_limit`**, not `number_limit`: the abroad limit answers it, as the Syrian one does.
+4. **Settings cannot import geo** (geo imports settings), so the customer's `GET platform` with `hours` moves to the ordering module (which reads geo, settings and its own `platformOpening`); the shape and `PlatformDto` stay in settings and are exported from its entry. The captain and restaurant routes stay in settings.
+5. `setOffice` takes `landmark` as optional (absent is none), so its other callers stay as they are; the admin route always sends it.
+6. The masks in the customers blocks and the captain applications and profile tests stay Syrian: they now call the one `maskedPhone`, whose own test covers `+44`, `+1`, `+7`; the panel's restaurant accounts test adds a `+44` account.
+7. There is no `redact.test.ts`: it is new. It passes before any change, as the plan expected (proof, not red).
+8. The Flutter and portal message mappings are tested through small pure functions: `signInMessage` (extracted from the sign-in screen's private `_message`) and `signInResultOf` (from the portal's mutation).
+9. Found while building: `maskedPhone` lives in `src/phone/masked-phone.ts` (shared), re-exported by `identity/app-phone.ts`: captains and merchants import only types from identity, so loading identity's entry from them would make a cycle.
+10. Found while building: the address's contact number shared `app-auth.ts`'s `phone`; after the review it has its own `syrianOrTurkishPhone`, today's rule, and CU §7 is unchanged.
+11. Review: `isAppMobile` also requires the canonical form (`parsed.number === phone`): the metadata takes `+9630944…` as `+963944…`, which would give one phone a second hash (`app-phone-canonical.test.ts`).
+12. The locked tests cover every checkpoint, so the type check stayed red until the last server layer: the server layers were built in one pass and checked together, then committed.
+
+Owner, 2026-11-24 (during the build): approved fixing two lines of locked tests the red phase got wrong: the captain test's British number (one digit short; now a range the metadata takes whole, `+447400…`) and the `otp.max_attempts` = 1 case of `app-sign-in.test.ts`, which now expects `attempts_used` as the plan says.
+
 ## Stopped at
 
-Planned and approved by the owner 2026-11-24; waiting for the plan critique of a fresh session (T0).
+Done: built, checked, reviewed (two rounds each, no finding open) and sent for merge.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`: not run yet
-- Review: not yet
+- `node scripts/verify.mjs --changed` (checker): every step passed but the server's tests, where 14 files that start the test object storage (Garage) fail before any test runs: `dxflrs/garage:v2.5.0` exits 139 (a segfault) in this session's container, `ECONNREFUSED` on its port. None touches the slice's code; CI runs them. In that run: 237 files passed, 2778 tests passed.
+- Run by hand after the review fixes: the server's identity and customers tests (27 files, 398 tests passed); the slice's server tests (49 files, 1067 tests passed before the fixes); `tsc --noEmit` and ESLint clean; the panel's unit tests (77 files, 403 passed) and smoke tests (131 passed); the portal's unit tests (11 files, 59 passed) and smoke tests (6 passed); `core_auth`'s tests (39 passed), the customer's `my_account_test` and `delete_account_message_test` (6 passed); `dart analyze --fatal-infos` on the three apps and `core_auth`, `dart format` and Prettier clean; `pnpm generate:api` regenerated the contract.
+- Review: `reviewer` round 1 (1 blocking: a number with a national 0 after its calling code, `+9630944…`, passed as a second identity; 1 should-fix: the address's contact number widened without the owner; 3 minor), all fixed in round 2 with no new finding. `security-reviewer` round 1 (the same blocking finding; 3 non-blocking), round 2 clean: the emergency-code answer fixed, the abroad flood question and the nginx log of the selected point in `docs/backlog.md`.
 
 ## Before deploying
 
-The `geo.offices.landmark` migration; a server deploy (new dependency). No new variable. The apps need no rebuild: every new field is optional and the new refusal reads as today's message.
+The `geo.offices.landmark` migration (0152, expand only: a nullable column and its check); a server deploy (new dependency `libphonenumber-js`). No new variable. The new setting `otp.number_daily_max_abroad` reads its default (3) until OWN changes it. The apps need no rebuild for the new fields (all optional). The new refusal reads as today's expired-code message only in builds made from this merge on; a build installed before it shows the generic sign-in error for `attempts_used` (no released build exists yet).
 
 ## To check on staging
 
@@ -83,5 +103,5 @@ The `geo.offices.landmark` migration; a server deploy (new dependency). No new v
 
 ## Notes for the next session
 
-- Not in this slice: the clients' phone field, picker and normalisation (D.11 items 5 to 13, the components slice); `attempts_used`'s own words (D.11's code screen).
-- The plan critique of a fresh session goes here before building.
+- Not in this slice: the clients' phone field, picker and normalisation (D.11 items 5 to 13, the components slice), including the panel's account form (`apps/admin/src/restaurant-drafts.ts` `phoneOf`, `accountBody`) and the owner portal's sign-in (`apps/merchant-portal/src/session.ts` `phoneOf`), which still take +963 and +90 only; `attempts_used`'s own words (D.11's code screen).
+- The address's contact number stays Syrian or Turkish (`syrianOrTurkishPhone`, review finding): the owner widened sign-in only. Widening it is the owner's decision (a captain calls it from Syria). D.11b moves the customer's checkout phone to the every-country field: until the owner decides, that field keeps Syria and Turkey there, or the server refuses a foreign contact number with `400`.

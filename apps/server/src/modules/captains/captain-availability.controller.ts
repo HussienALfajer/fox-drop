@@ -84,6 +84,10 @@ const office = z
   .object({
     latitude: z.number(),
     longitude: z.number(),
+    landmark: z
+      .string()
+      .nullable()
+      .describe('«وصف المكان», such as «بجانب جامع …» (CA C13, slice D.11a); null for none.'),
     hours: z
       .array(
         z.object({
@@ -456,6 +460,7 @@ function officeBody(value: Office | null) {
     value && {
       latitude: value.location.latitude,
       longitude: value.location.longitude,
+      landmark: value.landmark,
       hours: value.hours,
       timeZone: value.timeZone,
       open: value.open,

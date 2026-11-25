@@ -107,6 +107,19 @@ async function addCashier(owner: { headers: Record<string, string> }, phone = ne
 }
 
 describe('the owners’ staff (RA §14.1)', () => {
+  it('adds a cashier whose mobile is of another country, never a landline (slice D.11a)', async () => {
+    const { owner } = await restaurant();
+    const { phone } = await addCashier(owner, '+447911123987');
+    expect(phone).toBe('+447911123987');
+    const landline = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/staff',
+      headers: owner.headers,
+      payload: { name: 'كاشير', phone: '+442071234567' },
+    });
+    expect(landline.statusCode).toBe(400);
+  });
+
   it('adds a cashier who signs in, lists them with their devices, and removes them at once', async () => {
     const { owner, ownerId } = await restaurant();
     const { phone, accountId } = await addCashier(owner);

@@ -15,6 +15,7 @@ part 'captain_availability_dto_output_office.g.dart';
 /// Properties:
 /// * [latitude]
 /// * [longitude]
+/// * [landmark] - «وصف المكان», such as «بجانب جامع …» (CA C13, slice D.11a); null for none.
 /// * [hours] - The desk hours per weekday; a weekday not listed is closed.
 /// * [timeZone] - The city's clock, such as Asia/Damascus.
 /// * [open]
@@ -32,6 +33,10 @@ abstract class CaptainAvailabilityDtoOutputOffice
 
   @BuiltValueField(wireName: r'longitude')
   num get longitude;
+
+  /// «وصف المكان», such as «بجانب جامع …» (CA C13, slice D.11a); null for none.
+  @BuiltValueField(wireName: r'landmark')
+  String? get landmark;
 
   /// The desk hours per weekday; a weekday not listed is closed.
   @BuiltValueField(wireName: r'hours')
@@ -92,6 +97,13 @@ class _$CaptainAvailabilityDtoOutputOfficeSerializer
       object.longitude,
       specifiedType: const FullType(num),
     );
+    yield r'landmark';
+    yield object.landmark == null
+        ? null
+        : serializers.serialize(
+            object.landmark,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'hours';
     yield serializers.serialize(
       object.hours,
@@ -161,6 +173,16 @@ class _$CaptainAvailabilityDtoOutputOfficeSerializer
               serializers.deserialize(value, specifiedType: const FullType(num))
                   as num;
           result.longitude = valueDes;
+          break;
+        case r'landmark':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.landmark = valueDes;
           break;
         case r'hours':
           final valueDes =

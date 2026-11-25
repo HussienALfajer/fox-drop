@@ -124,6 +124,7 @@ export {
   phone,
   signInCode,
 } from './app-auth.js';
+export { syrianOrTurkishPhone } from './app-phone.js';
 export { SignInCodeRefusedError } from './app-sign-in.service.js';
 export { PhoneCipher } from './phone-cipher.js';
 export {

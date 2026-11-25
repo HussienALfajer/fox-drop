@@ -12,14 +12,14 @@ part 'merchant_new_cashier_dto.g.dart';
 ///
 /// Properties:
 /// * [name]
-/// * [phone] - A Syrian or Turkish mobile in E.164, as at sign-in.
+/// * [phone] - A mobile of any country in E.164, as at sign-in.
 @BuiltValue()
 abstract class MerchantNewCashierDto
     implements Built<MerchantNewCashierDto, MerchantNewCashierDtoBuilder> {
   @BuiltValueField(wireName: r'name')
   String get name;
 
-  /// A Syrian or Turkish mobile in E.164, as at sign-in.
+  /// A mobile of any country in E.164, as at sign-in.
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

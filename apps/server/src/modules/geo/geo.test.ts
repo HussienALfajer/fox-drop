@@ -889,6 +889,7 @@ describe('GeoService.office (AP §9.12.1, CA C13, §7.5)', () => {
     // Thursday 22:00 in Azaz (UTC+3): open until 23:00.
     await expect(geo.office(cityId, new Date('2026-11-12T19:00:00Z'))).resolves.toEqual({
       location,
+      landmark: null,
       hours: [0, 1, 2, 3, 4, 6].map((weekday) => ({ weekday, opensAt: 540, closesAt: 1380 })),
       timeZone: 'Asia/Damascus',
       open: true,
@@ -901,6 +902,45 @@ describe('GeoService.office (AP §9.12.1, CA C13, §7.5)', () => {
       closesAt: null,
       opensAt: new Date('2026-11-14T06:00:00Z'),
     });
+  });
+
+  // Slice D.11a (D.11's owner's answer (d)): «وصف المكان», shown to the
+  // customer and the captain.
+  it('keeps the landmark in a new version, trimmed, an empty one as none, audited', async () => {
+    const cityId = await city();
+    await geo.setOffice(cityId, { location, hours, landmark: '  بجانب جامع الفاروق ' }, change);
+    await expect(geo.office(cityId, new Date())).resolves.toMatchObject({
+      landmark: 'بجانب جامع الفاروق',
+    });
+    await geo.setOffice(cityId, { location, hours, landmark: '   ' }, change);
+    await expect(geo.office(cityId, new Date())).resolves.toMatchObject({ landmark: null });
+    const { rows } = await sql.query(
+      "SELECT changes FROM audit.events WHERE city_id = $1 AND action = 'city.office' ORDER BY id",
+      [cityId],
+    );
+    expect(rows.map((row) => row.changes.landmark)).toEqual([
+      { before: null, after: 'بجانب جامع الفاروق' },
+      { before: 'بجانب جامع الفاروق', after: null },
+    ]);
+    const { rows: versions } = await sql.query(
+      'SELECT landmark FROM geo.offices WHERE city_id = $1 ORDER BY id',
+      [cityId],
+    );
+    expect(versions).toEqual([{ landmark: 'بجانب جامع الفاروق' }, { landmark: null }]);
+  });
+
+  it('refuses a landmark over 120 characters, and the database does too', async () => {
+    const cityId = await city();
+    await expect(
+      geo.setOffice(cityId, { location, hours, landmark: 'م'.repeat(121) }, change),
+    ).rejects.toMatchObject({ refusal: 'invalid_office' });
+    await geo.setOffice(cityId, { location, hours, landmark: 'م'.repeat(120) }, change);
+    await expect(
+      sql.query(
+        "INSERT INTO geo.offices (city_id, latitude, longitude, landmark) VALUES ($1, 36.5, 37.0, ' ')",
+        [cityId],
+      ),
+    ).rejects.toThrow(/check constraint/);
   });
 
   it('keeps every version, the newest in force, audited, and the application role cannot change one', async () => {

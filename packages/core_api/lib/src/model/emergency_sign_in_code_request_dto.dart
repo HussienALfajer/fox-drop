@@ -13,7 +13,7 @@ part 'emergency_sign_in_code_request_dto.g.dart';
 ///
 /// Properties:
 /// * [party] - The captain app or the restaurant app; customers are not covered.
-/// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+/// * [phone] - The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
 /// * [reason] - Why, kept in the audit log (owner decision 2026-11-07).
 @BuiltValue()
 abstract class EmergencySignInCodeRequestDto
@@ -27,7 +27,7 @@ abstract class EmergencySignInCodeRequestDto
   EmergencySignInCodeRequestDtoPartyEnum get party;
   // enum partyEnum {  captain,  merchant,  };
 
-  /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+  /// The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

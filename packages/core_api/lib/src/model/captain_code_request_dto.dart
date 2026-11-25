@@ -11,13 +11,13 @@ part 'captain_code_request_dto.g.dart';
 /// CaptainCodeRequestDto
 ///
 /// Properties:
-/// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+/// * [phone] - The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
 /// * [deviceId] - The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
 /// * [join] - «انضم ككابتن» (CA §5.1): a number without an account gets the code too, to apply. Without it only a captain or an applicant does.
 @BuiltValue()
 abstract class CaptainCodeRequestDto
     implements Built<CaptainCodeRequestDto, CaptainCodeRequestDtoBuilder> {
-  /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
+  /// The mobile number in E.164, of any country (CU U3), such as +963944123456; a landline is refused.
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

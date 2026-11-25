@@ -232,6 +232,9 @@ export const offices = geo.table(
       .references(() => cities.id),
     latitude: doublePrecision('latitude').notNull(),
     longitude: doublePrecision('longitude').notNull(),
+    // «وصف المكان» (slice D.11a), shown to customers and captains; trimmed,
+    // none when empty.
+    landmark: text('landmark'),
     editorId: uuid('editor_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -239,6 +242,10 @@ export const offices = geo.table(
     index('offices_current').on(table.cityId, table.id.desc()),
     check('offices_latitude', sql`${table.latitude} BETWEEN -90 AND 90`),
     check('offices_longitude', sql`${table.longitude} BETWEEN -180 AND 180`),
+    check(
+      'offices_landmark',
+      sql`${table.landmark} IS NULL OR (${table.landmark} = btrim(${table.landmark}) AND char_length(${table.landmark}) BETWEEN 1 AND 120)`,
+    ),
   ],
 );
 

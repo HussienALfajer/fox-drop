@@ -23,7 +23,7 @@ class DeleteAccountState {
   final bool busy;
 
   /// The server's refusal of the last call: `active_order`, the code
-  /// request's limits, `wrong_code` or `code_expired`.
+  /// request's limits, `wrong_code`, `attempts_used` or `code_expired`.
   final AuthRefusal? refusal;
 
   /// The account is «مغلق»; this device signed out.
@@ -99,7 +99,9 @@ String deleteAccountMessage(AppLocalizations l10n, AuthRefusal refusal) =>
       ),
       'resend_wait' => l10n.signInResendWait(refusal.retryAfterSec ?? 60),
       'wrong_code' => l10n.signInWrongCode(refusal.attemptsLeft ?? 0),
-      'code_expired' => l10n.signInCodeExpired,
+      // Slice D.11a: used-up attempts read as an expired code until D.11's
+      // code screen gives them words of their own.
+      'code_expired' || 'attempts_used' => l10n.signInCodeExpired,
       _ => l10n.customerDeleteAccountFailed,
     };
 
