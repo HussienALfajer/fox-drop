@@ -5,7 +5,7 @@ group = "com.foxdrop.core_alerts"
 version = "1.0"
 
 buildscript {
-    val kotlinVersion = "2.2.0"
+    val kotlinVersion = "2.4.21"
 
     repositories {
         google()
@@ -13,7 +13,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.12.1")
+        classpath("com.android.tools.build:gradle:8.13.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
