@@ -50,7 +50,7 @@ Done: pull request open with auto-merge.
 ## Evidence
 
 - Red phase: `node --test scripts/parity.test.mjs` failed with `ERR_MODULE_NOT_FOUND` (no `scripts/parity.mjs`), then 6 of 6 passed.
-- `node scripts/verify.mjs --changed`: "the checks of the change passed" (Prettier, Dart analyze and format of 6 packages, fox_lints, Turborepo lint, type check, build and smoke test, Flutter tests, server tests, script tests, instruction file sizes); run again after the review fixes.
+- `node scripts/verify.mjs --changed`: "the checks of the change passed" (Prettier, Dart analyze and format of 6 packages, fox_lints, Turborepo lint, type check, build and smoke test, Flutter tests, server tests, script tests, instruction file sizes). After the review fixes every step passed again except the server tests, which this branch does not touch (they run because `package.json` and `scripts/verify.mjs` changed): three runs, each a different test timing out at 5 s (`openapi.test.ts`, `app-sign-in.test.ts`, `captain-offboarding.test.ts`), 2,848 to 2,851 of 2,852 passing, while D.W1 ran its checks in parallel on the same machine and PostGIS. CI's server job is the gate.
 - `pnpm baselines`: all 268 stories and the core_ui goldens updated and compared, "no image changed".
 - `pnpm parity Button`: 66 Flutter cases and 92 web shots, `.parity/Button.html` with 92 rows (46 stories × 2 surfaces), 26 marked «no Flutter case» (the 13 stories in the decision above), every image 720 × 164 device pixels on both sides. `pnpm parity Button Icon` writes both sheets (Icon's 22 rows all «no Flutter case»: no twin yet).
 - `flutter test test/parity` in core_ui: all 66 cases skipped; `--tags golden --run-skipped`: no test matches (checked by the reviewer).
