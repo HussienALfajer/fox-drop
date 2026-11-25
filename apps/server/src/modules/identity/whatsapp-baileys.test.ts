@@ -55,7 +55,8 @@ describe('the ordered session', () => {
     const first = session.write({ first: '1' });
     const second = session.write({ second: '2' });
     const read = session.read('second');
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    // Everything here is promise callbacks, all run before setImmediate's.
+    await new Promise((resolve) => setImmediate(resolve));
     expect(committed).toEqual([]);
     release();
     await Promise.all([first, second]);

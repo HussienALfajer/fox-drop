@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Test, type TestingModule } from '@nestjs/testing';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
@@ -428,6 +428,23 @@ describe('changes running together', () => {
     return { taken, release, done };
   }
 
+  // Waits until a transaction of this test file's database waits for a lock
+  // that another holds: the condition a test of a lock needs, not a time.
+  async function waitingForALock(): Promise<void> {
+    await vi.waitFor(
+      async () => {
+        const { rows } = await sql.query<{ waiting: number }>(
+          `SELECT count(*)::int AS waiting FROM pg_stat_activity
+           WHERE datname = current_database() AND wait_event_type = 'Lock'`,
+        );
+        expect(rows[0]!.waiting).toBeGreaterThan(0);
+      },
+      { timeout: 10_000, interval: 20 },
+    );
+  }
+
+  // Whether the promise settles before `ms` pass: a bound for one that must
+  // not wait (it fails rather than hangs), never a pause.
   async function settledWithin(promise: Promise<unknown>, ms: number): Promise<boolean> {
     const timeout = new Promise<false>((resolve) => setTimeout(() => resolve(false), ms));
     return Promise.race([
@@ -461,7 +478,9 @@ describe('changes running together', () => {
     await order.taken;
 
     const change = refusal(fx.setBaseCurrency(cityId, 'SYP', system));
-    expect(await settledWithin(change, 500)).toBe(false);
+    await waitingForALock();
+    // A settled promise's callback runs before a timer of 0 ms.
+    expect(await settledWithin(change, 0)).toBe(false);
     order.release();
     await order.done;
     expect(await change).toBe('base_locked');

@@ -15,6 +15,7 @@ import {
   pickedUpOrder,
   sql,
 } from './delivery.fixture.js';
+import { OrderRoutes } from './order-routes.js';
 
 // CA §4.6, §9.2, §9.5, CU §11.3, architecture §6.2, §7.1: the leg's route
 // and the captain's live position after the pickup. The tests set no OSRM
@@ -25,6 +26,20 @@ const captainRoute = (orderId: string, headers: Record<string, string>) =>
 
 const customerRoute = (orderId: string, headers: Record<string, string>) =>
   app.inject({ method: 'GET', url: `/v1/customer/orders/${orderId}/route`, headers });
+
+// The publications a captain's points start run after the request, unawaited
+// (CaptainsService.onLivePosition): `settled` waits for every one started, so
+// "nothing was published" is read when there is nothing left to publish.
+function publications() {
+  const publish = vi.spyOn(
+    app.get(OrderRoutes) as unknown as { publish: (...args: unknown[]) => Promise<void> },
+    'publish',
+  );
+  const settled = async () => {
+    await Promise.allSettled(publish.mock.results.map((result) => result.value));
+  };
+  return { publish, settled };
+}
 
 describe('GET /v1/captain/orders/{orderId}/route (CA §4.6, §9.2, §9.5)', () => {
   it('routes to the restaurant until the pickup, then to the pin', async () => {
@@ -95,6 +110,7 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
     const publisher = app.get(RealtimePublisher);
     const enabled = vi.spyOn(publisher, 'enabled', 'get').mockReturnValue(true);
     const broadcast = vi.spyOn(publisher, 'broadcast').mockResolvedValue();
+    const { publish, settled } = publications();
     try {
       const captains = app.get(CaptainsService);
       const assigned = await assignedOrder();
@@ -103,6 +119,7 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
       ];
       broadcast.mockClear();
       await captains.recordLocations(assigned.captain.captainId, point(new Date()), new Date());
+      await settled();
       expect(
         broadcast.mock.calls.filter(([channels]) => channels[0]?.startsWith('order:')),
       ).toEqual([]);
@@ -136,7 +153,7 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
         point(new Date(at.getTime() - 500)),
         new Date(at.getTime() + 2),
       );
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await settled();
       expect(broadcast).not.toHaveBeenCalled();
 
       // A failed publication never fails the point.
@@ -149,7 +166,9 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
           new Date(later.getTime() + 1),
         ),
       ).resolves.toEqual({ accepted: 1 });
+      await settled();
     } finally {
+      publish.mockRestore();
       enabled.mockRestore();
       broadcast.mockRestore();
     }
@@ -159,6 +178,7 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
     const publisher = app.get(RealtimePublisher);
     const enabled = vi.spyOn(publisher, 'enabled', 'get').mockReturnValue(true);
     const broadcast = vi.spyOn(publisher, 'broadcast').mockResolvedValue();
+    const { publish, settled } = publications();
     try {
       const captains = app.get(CaptainsService);
       const picked = await pickedUpOrder();
@@ -180,7 +200,9 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
         [{ ...atCustomer, accuracyMetres: 8, recordedAt: before, simulated: false }],
         new Date(before.getTime() + 1),
       );
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      // The point reached the publication, which left it out.
+      expect(publish).toHaveBeenCalled();
+      await settled();
       expect(broadcast).not.toHaveBeenCalled();
       // Nor does the customer's read show it.
       expect((await customerRoute(picked.order.id, picked.order.customer)).json()).toMatchObject({
@@ -192,6 +214,7 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
         arrivedAt,
       ]);
     } finally {
+      publish.mockRestore();
       enabled.mockRestore();
       broadcast.mockRestore();
     }
