@@ -29,6 +29,8 @@ An item is a bug class with its source (the pull request that first had it, or t
 
 15. **A component on either platform** (D.P2, architecture §9.8). The parity gate measures the registry's `metrics` states on both sides against the component tokens. Ask: does a new state, variant or component add its states to `packages/design-tokens/components.json` and its widget to `packages/core_ui/test/parity_table.dart`, and does the pull request's `parity-report` artifact show the two sides alike? Bug: a look changed on one side only, a measured state removed or pointed at another token to make the gate pass, or a component with both twins and no `metrics` once its slice is done.
 
+16. **A web component that scrolls or clips** (PR 300's Tabs). The `functional` gate checks, on every story, that each visible part of an overflowing clipping container lies in its scrollable area and over its in-flow content, and that the scroll range is still after the fonts load; it sees only the states a story shows. Ask: does a component with `overflow-*` have a story that overflows on a phone, scrolled away from its start, in RTL? Does a part placed by the UI SDK's physical CSS variables (`--active-tab-left`, a popup's `left`) get checked there? Bug: a scrolling or clipping component whose stories never overflow.
+
 ## After a merge
 
 A bug found after a merge becomes a new item here or a test, in the same fix's pull request, with the pull request number as its source. If it is a test, name it in the fix's description; if it is an item, add it under a trigger above. Pruning is in `docs/archive/claude-code-workflow.md`, phase 7 item 4.
