@@ -135,15 +135,13 @@ ${body}
 
 const idPrefix = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-function run(command, args, options = {}) {
-  // pnpm and flutter are .cmd and .bat files on Windows: they need the shell.
-  const result = spawnSync(command, args, {
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-    ...options,
-  });
+function run(command, options = {}) {
+  // One command line through the shell: pnpm and flutter are .cmd and .bat
+  // files on Windows. Every part with a space or a regex is double-quoted, which
+  // cmd.exe and sh both leave literal.
+  const result = spawnSync(command, { stdio: 'inherit', shell: true, ...options });
   if (result.status !== 0) {
-    console.error(`${command} ${args.join(' ')} failed`);
+    console.error(`${command} failed`);
     process.exit(result.status ?? 1);
   }
 }
@@ -160,7 +158,7 @@ function buildStorybook() {
   const index = path.join(UI_WEB, 'dist/storybook/index.json');
   if (existsSync(index) && statSync(index).mtimeMs >= newest(path.join(UI_WEB, 'src'))) return;
   console.log('Building the Storybook (src/ is newer than dist/storybook)…');
-  run('pnpm', ['--filter', '@fox-drop/ui-web', 'build']);
+  run('pnpm --filter @fox-drop/ui-web build');
 }
 
 function storiesOf(title) {
@@ -205,37 +203,24 @@ function main(argv) {
     return { title, prefix, hasCases, stories };
   });
 
-  const withCases = sheets.filter((sheet) => sheet.hasCases);
-  if (withCases.length > 0) {
-    const bin = pinnedFlutterBin(ROOT);
-    const flutter = bin
-      ? path.join(bin, process.platform === 'win32' ? 'flutter.bat' : 'flutter')
-      : 'flutter';
-    // The test names start with the story id: one prefix per component.
-    run(
-      flutter,
-      [
-        'test',
-        'test/parity',
-        '--tags',
-        'parity',
-        '--run-skipped',
-        ...withCases.flatMap((sheet) => ['--name', `${sheet.prefix}--`]),
-      ],
-      { cwd: CORE_UI },
-    );
-  }
+  const bin = pinnedFlutterBin(ROOT);
+  const flutter = bin
+    ? `"${path.join(bin, process.platform === 'win32' ? 'flutter.bat' : 'flutter')}"`
+    : 'flutter';
+  // One run per component: repeated --name flags must all match. A test's
+  // name starts with its story id, so the anchored prefix keeps out a later
+  // component whose id ends the same (`icon-button--`).
+  for (const sheet of sheets.filter((each) => each.hasCases))
+    run(`${flutter} test test/parity --tags parity --run-skipped --name "^${sheet.prefix}--"`, {
+      cwd: CORE_UI,
+    });
 
   const stories = sheets.flatMap((sheet) => sheet.stories);
   if (stories.length > 0)
     // The ids go through the environment: a list can be longer than a command line.
-    run(
-      'pnpm',
-      ['--filter', '@fox-drop/ui-web', 'exec', 'playwright', 'test', '--project=parity'],
-      {
-        env: { ...process.env, FD_PARITY: stories.join(',') },
-      },
-    );
+    run('pnpm --filter @fox-drop/ui-web exec playwright test --project=parity', {
+      env: { ...process.env, FD_PARITY: stories.join(',') },
+    });
 
   for (const sheet of sheets) {
     // The literal ids, then the ones a loop built, as the run wrote them.

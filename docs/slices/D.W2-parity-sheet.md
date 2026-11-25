@@ -1,6 +1,6 @@
 # D.W2 The parity sheet
 
-Status: Planned · Tier: T2 · Branch: `feat/parity-sheet`
+Status: Done · Tier: T2 · Branch: `feat/parity-sheet`
 Spec: architecture §9.1 (Flutter drawings are a visual reference), §9.5 R9, §9.7 · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Runs in parallel with D.W1: the two slices edit no file in common.
@@ -45,13 +45,23 @@ Tests written first (locked in the red phase):
 
 ## Stopped at
 
-Built; checks and pull request next.
+Done: pull request open with auto-merge.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- `pnpm parity Button`:
-- Review:
+- Red phase: `node --test scripts/parity.test.mjs` failed with `ERR_MODULE_NOT_FOUND` (no `scripts/parity.mjs`), then 6 of 6 passed.
+- `node scripts/verify.mjs --changed`: "the checks of the change passed" (Prettier, Dart analyze and format of 6 packages, fox_lints, Turborepo lint, type check, build and smoke test, Flutter tests, server tests, script tests, instruction file sizes); run again after the review fixes.
+- `pnpm baselines`: all 268 stories and the core_ui goldens updated and compared, "no image changed".
+- `pnpm parity Button`: 66 Flutter cases and 92 web shots, `.parity/Button.html` with 92 rows (46 stories × 2 surfaces), 26 marked «no Flutter case» (the 13 stories in the decision above), every image 720 × 164 device pixels on both sides. `pnpm parity Button Icon` writes both sheets (Icon's 22 rows all «no Flutter case»: no twin yet).
+- `flutter test test/parity` in core_ui: all 66 cases skipped; `--tags golden --run-skipped`: no test matches (checked by the reviewer).
+- The sheet already shows a real difference: with both icons, Flutter's Button is about 12 logical pixels wider than the web one (backlog, for D.W3).
+- Review (`reviewer`, T2, medium): one should-fix (repeated `--name` flags are ANDed, so two components with Flutter cases stopped the run) and two minors (an unanchored name prefix; an argument array through the shell, unquoted). Fixed: one `flutter test` per component with `--name "^<prefix>--"`, each command one quoted line. The slice file's status and evidence filled in.
+- The owner's look: Button's sheet published as a private artifact (its link is in the session's report, not here).
+
+## What the owner can try
+
+1. `pnpm fonts:fetch` once, then `pnpm parity Button` at the repository root (a few minutes the first time: it builds the Storybook).
+2. Open `.parity/Button.html` in a browser: each Button state, web on the right (start), Flutter on the left (end), phone then captain.
 
 ## Before deploying
 
