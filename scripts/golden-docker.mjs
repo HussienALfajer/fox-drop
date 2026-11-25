@@ -6,8 +6,9 @@
 // tracked and untracked files, not ignored ones, plus .fonts/), so a Linux
 // `pub get` never rewrites the host's .dart_tool; only the goldens and the
 // failure images come back. Arguments pass to `flutter test`:
-// `node scripts/golden-docker.mjs --update-goldens`.
+// `node scripts/golden-docker.mjs --update-goldens`; `pnpm baselines` runs it.
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -37,7 +38,12 @@ const run = (args, options = {}) => {
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
 
-run(['build', '--tag', image, '-'], { input: dockerfile, stdio: ['pipe', 'inherit', 'inherit'] });
+// The tag names the Dockerfile's content too, so an image that exists is the
+// one this file builds: no build at all then (Docker's build cache is pruned
+// on its own, and a rebuild downloads Flutter again, about 7 minutes).
+const tag = `${image}-${createHash('sha256').update(dockerfile).digest('hex').slice(0, 12)}`;
+if (spawnSync('docker', ['image', 'inspect', tag], { stdio: 'ignore' }).status !== 0)
+  run(['build', '--tag', tag, '-'], { input: dockerfile, stdio: ['pipe', 'inherit', 'inherit'] });
 
 // The file list comes from the host's git: inside the container a worktree's
 // `.git` file points at a host path that does not exist there.
@@ -83,7 +89,7 @@ run(
     `${resolve(repo, golden)}:/out`,
     '-v',
     'fd-golden-pub-cache:/root/.pub-cache',
-    image,
+    tag,
     'sh',
     '-c',
     script,
