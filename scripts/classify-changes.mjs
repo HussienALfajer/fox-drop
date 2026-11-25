@@ -55,21 +55,28 @@ const readByServerTests = (file) =>
 export const NATIVE_PACKAGES = ['packages/core_alerts'];
 
 // Files outside the Dart packages that Dart tests read: core_ui's phone cases
-// shared with ui-web and the brand mark the loader draws (D.11b), and the
-// design tokens core_tokens' test compares its generated Dart with. A path
-// ending in /** is a folder. A change to one runs every Dart package's checks
-// (verify.mjs cannot yet scope a change outside the Dart packages to the
-// packages that read it).
+// shared with ui-web and the brand mark the loader draws (D.11b). A path
+// ending in /** is a folder. A change to one runs every Dart package's checks.
 export const READ_BY_DART_TESTS = [
   'packages/ui-web/src/phone-field/phone-cases.json',
   'docs/brand/logo/mark/mark-orange-on-ivory-drop.svg',
-  'packages/design-tokens/tokens/**',
 ];
 
-const readByDartTests = (file) =>
-  READ_BY_DART_TESTS.some((each) =>
-    each.endsWith('/**') ? file.startsWith(each.slice(0, -2)) : file === each,
-  );
+// Files outside a Dart package that count as a change to that package (its
+// folder) and so to its dependents: core_tokens' Dart is generated from the
+// design tokens, and its test compares the two. A path ending in /** is a folder.
+export const DART_PACKAGE_SOURCES = {
+  'packages/core_tokens': ['packages/design-tokens/tokens/**'],
+};
+
+const matches = (file) => (each) =>
+  each.endsWith('/**') ? file.startsWith(each.slice(0, -2)) : file === each;
+
+const readByDartTests = (file) => READ_BY_DART_TESTS.some(matches(file));
+
+/** The Dart package folders that the file outside them counts for (DART_PACKAGE_SOURCES). */
+export const dartPackagesSourcedBy = (file) =>
+  Object.keys(DART_PACKAGE_SOURCES).filter((dir) => DART_PACKAGE_SOURCES[dir].some(matches(file)));
 
 // Generated Markdown is code: a test compares it with a fresh render.
 const DOCS = /^(?!packages\/design-tokens\/generated\/)(.*\.md$|docs\/)/;
@@ -112,6 +119,47 @@ const CI_ITSELF = /^(\.github\/workflows\/ci\.yml|scripts\/classify-changes\.mjs
 // true; classify-changes.test.mjs derives the job's inputs from ci.yml.
 const VISUAL =
   /^(packages\/(ui-web|design-tokens)\/|(package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig\.base\.json|\.npmrc|\.node-version|\.gitattributes)$|scripts\/(fonts|fonts-fetch|github-known-hosts)\.mjs$)/;
+// The root package.json scripts the `visual` job runs: the ones it names
+// (classify-changes.test.mjs reads them from ci.yml) and pnpm's install
+// hooks. A change to the root package.json that leaves every other field
+// alone (only other scripts changed) cannot change a screenshot.
+export const VISUAL_ROOT_SCRIPTS = [
+  'fonts:fetch',
+  'pnpm:devPreinstall',
+  'preinstall',
+  'install',
+  'postinstall',
+  'prepare',
+];
+
+/**
+ * Whether the root package.json changed only in scripts the `visual` job does
+ * not run, from its text now and at the base (null: missing or unknown).
+ */
+function onlyOtherRootScripts(now, before) {
+  if (now === null || before === null || before === undefined) return false;
+  const visualPart = (text) => {
+    const manifest = JSON.parse(text);
+    const scripts = Object.fromEntries(
+      Object.entries(manifest.scripts ?? {}).filter(([name]) => VISUAL_ROOT_SCRIPTS.includes(name)),
+    );
+    return canonical({ ...manifest, scripts });
+  };
+  try {
+    return visualPart(now) === visualPart(before);
+  } catch {
+    return false; // not JSON: in doubt, it counts
+  }
+}
+
+/** JSON with every object's keys sorted, so a reordering is no change. */
+function canonical(value) {
+  return JSON.stringify(value, (_, each) =>
+    each && typeof each === 'object' && !Array.isArray(each)
+      ? Object.fromEntries(Object.entries(each).sort(([a], [b]) => a.localeCompare(b)))
+      : each,
+  );
+}
 // What can change a core_ui golden (the `golden` job): core_ui and the tokens
 // it is generated from, every pubspec and the lock file (the job resolves the
 // whole workspace), the pinned Flutter, the files outside Dart its tests read
@@ -155,8 +203,10 @@ export const handWritten = (files) =>
  *   contract: regenerate the API contract; tokenDocs: a doc the design tokens'
  *   tests read changed, so they run though no package file did; dartScope:
  *   null, 'changed' or 'all'.
+ * `readBase(file)` returns a file's text at the base commit, or null; without
+ * it, the root package.json counts for `visual` whatever changed in it.
  */
-export function classify(files, read = readText) {
+export function classify(files, read = readText, readBase = null) {
   const specRead = files.some(
     (file) => SPEC_FILES_READ_BY_TESTS.includes(file) || readByTokenTests(file),
   );
@@ -183,7 +233,11 @@ export function classify(files, read = readText) {
   );
   const visual = files.some(
     (file) =>
-      CI_ITSELF.test(file) || readByTokenTests(file) || (!DOCS.test(file) && VISUAL.test(file)),
+      CI_ITSELF.test(file) ||
+      readByTokenTests(file) ||
+      (!DOCS.test(file) &&
+        VISUAL.test(file) &&
+        !(file === 'package.json' && readBase && onlyOtherRootScripts(read(file), readBase(file)))),
   );
   const golden = files.some(
     (file) =>
@@ -208,17 +262,21 @@ export function classify(files, read = readText) {
 }
 
 // Which Dart packages the fast check covers: none, the changed ones and their
-// dependents, or all of them after a change to what every package shares (the
-// workspace pubspec, the lock file, the pinned Flutter, the analysis options)
-// or to a file outside them that a Dart test reads. CI's own reasons to run
-// Dart (its workflow, the check engine) are not local ones.
+// dependents (a package's sources outside it, DART_PACKAGE_SOURCES, count as
+// the package), or all of them after a change to what every package shares
+// (the workspace pubspec, the lock file, the pinned Flutter, the analysis
+// options) or to a file outside them that a Dart test reads. CI's own reasons
+// to run Dart (its workflow, the check engine) are not local ones.
 function dartScope(files) {
   if (files.some(readByDartTests)) return 'all';
-  const dartFiles = files.filter((file) => !DOCS.test(file) && DART_ONLY.test(file));
+  const sourced = (file) => dartPackagesSourcedBy(file).length > 0;
+  const dartFiles = files.filter(
+    (file) => sourced(file) || (!DOCS.test(file) && DART_ONLY.test(file)),
+  );
   if (dartFiles.length === 0) return null;
   const inPackage =
     /^(apps\/(customer|captain|merchant|widgetbook)|packages\/(core_[a-z0-9_]+|fox_lints))\//;
-  return dartFiles.every((file) => inPackage.test(file)) ? 'changed' : 'all';
+  return dartFiles.every((file) => sourced(file) || inPackage.test(file)) ? 'changed' : 'all';
 }
 
 // A server file that builds a request or response schema: a change to it can
@@ -259,7 +317,10 @@ function main() {
   if (base && spawnSync('git', ['cat-file', '-e', `${base}^{commit}`]).status === 0) {
     const files = changedFiles(base, { workingTree: false });
     console.error(files.join('\n'));
-    flags = classify(files);
+    flags = classify(files, readText, (file) => {
+      const shown = spawnSync('git', ['show', `${base}:${file}`], { encoding: 'utf8' });
+      return shown.status === 0 ? shown.stdout : null;
+    });
     console.log(`hand_written=${handWritten(files).length}`);
   } else {
     // No commit to compare with (a new branch): check everything.

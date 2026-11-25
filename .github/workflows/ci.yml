@@ -334,6 +334,14 @@ jobs:
 
       - run: dart pub get --enforce-lockfile
 
+      # The fox_lints check compiles itself into .dart_tool/fox_lints once per
+      # change to its sources, the lock file or the SDK (packages/fox_lints/CLAUDE.md),
+      # with the summaries of what the enforced packages import beside it.
+      - uses: actions/cache@v5
+        with:
+          path: .dart_tool/fox_lints
+          key: fox-lints-${{ runner.os }}-${{ steps.flutter.outputs.version }}-${{ hashFiles('packages/fox_lints/bin/**', 'packages/fox_lints/lib/**', 'pubspec.lock') }}
+
       - run: node scripts/verify.mjs dart
 
   # The Flutter packages' tests in three shards, balanced by verify.mjs

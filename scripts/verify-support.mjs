@@ -17,7 +17,11 @@ import {
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-import { READ_BY_DART_TESTS } from './classify-changes.mjs';
+import {
+  DART_PACKAGE_SOURCES,
+  dartPackagesSourcedBy,
+  READ_BY_DART_TESTS,
+} from './classify-changes.mjs';
 
 /** Whether a process with this id is running. */
 export function processAlive(pid) {
@@ -375,17 +379,19 @@ export const ROOT_FILES = [':(glob)*', ':(exclude,glob)*.md', 'scripts'];
 /**
  * What the Dart part reads (`workspace`: its packages, { dir }), for the pass
  * record: the packages, the files outside them that their tests read
- * (READ_BY_DART_TESTS, the design tokens' sources core_tokens' test compares
- * with, the brand assets), the root's files and the git-ignored fonts the
- * widget tests load. verify-support.test.mjs fails when a Dart file names a
- * path outside its package that these do not cover.
+ * (READ_BY_DART_TESTS, a package's sources outside it such as the design
+ * tokens core_tokens' test compares with, the brand assets), the root's files
+ * and the git-ignored fonts the widget tests load. verify-support.test.mjs
+ * fails when a Dart file names a path outside its package that these do not
+ * cover.
  */
 export function dartInputs(workspace) {
   return {
     paths: [
       ...workspace.map((each) => each.dir),
-      ...READ_BY_DART_TESTS.map((entry) => entry.replace(/\/\*\*$/, '')),
-      'packages/design-tokens/tokens',
+      ...[...READ_BY_DART_TESTS, ...Object.values(DART_PACKAGE_SOURCES).flat()].map((entry) =>
+        entry.replace(/\/\*\*$/, ''),
+      ),
       'docs/brand',
       ...ROOT_FILES,
     ],
@@ -393,6 +399,47 @@ export function dartInputs(workspace) {
     // The Flutter version goes into the key too (verify.mjs).
     flutter: true,
   };
+}
+
+/**
+ * The names of the `workspace` packages ({ name, dir }) that a changed file
+ * is in, or counts for (DART_PACKAGE_SOURCES: core_tokens for the design
+ * tokens it is generated from).
+ */
+export function changedDartPackages(workspace, files) {
+  const sourced = new Set(files.flatMap(dartPackagesSourcedBy));
+  return workspace
+    .filter(
+      (each) => sourced.has(each.dir) || files.some((file) => file.startsWith(`${each.dir}/`)),
+    )
+    .map((each) => each.name);
+}
+
+// `dart analyze --no-plugins` keeps the fox_lints analyzer plugin (the
+// editor's, minutes a run) out of the check, whose rules run in
+// packages/fox_lints/tool/check.dart instead. The option is undocumented, so
+// verify asks for it first: an SDK without it stops the check with what to do.
+export const NO_PLUGINS_PROBE = 'dart analyze --no-plugins --help';
+
+/** What is wrong when NO_PLUGINS_PROBE did not pass (`result`, from spawnSync), or null. */
+export function noPluginsProblem(result) {
+  if (result.status === 0 && !result.error) return null;
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}${result.error ?? ''}`.trim();
+  const missing = /could not find an option named "?-*(no-)?plugins/i.test(output);
+  return [
+    missing
+      ? "This Dart SDK's `dart analyze` has no --no-plugins option (undocumented, it may go)."
+      : `\`${NO_PLUGINS_PROBE}\` failed (exit ${result.status ?? 'none'}).`,
+    'The check runs `dart analyze --fatal-infos --no-plugins` so that the fox_lints analyzer' +
+      ' plugin stays out of it (packages/fox_lints/CLAUDE.md); without the option it would' +
+      ' analyze for minutes with the plugin, or not at all. Find what replaced the option in' +
+      " the Dart SDK's changelog and use it in the melos `analyze` script of pubspec.yaml and" +
+      ' in scripts/verify.mjs (analyzeStep), and NO_PLUGINS_PROBE in scripts/verify-support.mjs;' +
+      ' or pin the last Dart SDK that has it.',
+    output,
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 /** Whether `inputs` (from dartInputs) cover a repository path, a file or a folder. */
