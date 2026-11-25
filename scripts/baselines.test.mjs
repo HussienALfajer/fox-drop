@@ -343,6 +343,11 @@ describe('the record and --status', () => {
       unchecked: [],
       line: 'no change since origin/main can alter an image',
     });
+    // `--changed=<ref>` names its own base.
+    assert.equal(
+      imageStatus(['docs/a.md'], { root: repo, record, since: 'HEAD~3' }).line,
+      'no change since HEAD~3 can alter an image',
+    );
     // Without a base both suites count; the screenshots are recorded above.
     assert.deepEqual(imageStatus(null, { root: repo, record }).unchecked, ['golden']);
     rmSync(record);

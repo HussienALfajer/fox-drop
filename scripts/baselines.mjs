@@ -294,14 +294,17 @@ export function treeFingerprint(root, pathspecs, { ignoredDirs = [] } = {}) {
 
 /**
  * Whether the tree's images are checked: { ok, line, unchecked: [suites] }.
- * `files` are the changed files (null: no base to compare with, so every
- * suite counts).
+ * `files` are the changed files since `since` (null: no base to compare with,
+ * so every suite counts).
  */
-export function imageStatus(files, { root = ROOT, record = recordFile(gitDir(root)) } = {}) {
+export function imageStatus(
+  files,
+  { root = ROOT, record = recordFile(gitDir(root)), since = 'origin/main' } = {},
+) {
   const touched = files ? suitesFor(files) : { visual: [true], golden: [true] };
   const needed = Object.keys(SUITES).filter((suite) => touched[suite].length > 0);
   if (needed.length === 0)
-    return { ok: true, unchecked: [], line: 'no change since origin/main can alter an image' };
+    return { ok: true, unchecked: [], line: `no change since ${since} can alter an image` };
   const unchecked = needed.filter((suite) => !hasPassed(record, suiteKey(suite, root)));
   const names = (suites) => suites.map((suite) => SUITES[suite].label).join(' and ');
   if (unchecked.length === 0)

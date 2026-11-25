@@ -839,15 +839,15 @@ async function verifyChanged(since) {
         ? dartChanged(files, touched.dartScope)
         : skipped('Dart', 'no change it can break'),
   ]);
-  imageBaselines(files);
+  imageBaselines(files, since);
 }
 
 // The image baselines take minutes in Docker, so verify does not run them:
 // `pnpm baselines` does, and records the tree it checked. The table says
 // whether this tree's images are checked (CI's `visual` and `golden` jobs are
 // the gate).
-function imageBaselines(files) {
-  const status = imageStatus(files);
+function imageBaselines(files, since) {
+  const status = imageStatus(files, { since });
   const result = !status.ok
     ? 'UNCHECKED'
     : status.line.startsWith('no change')
