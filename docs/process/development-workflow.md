@@ -30,7 +30,7 @@ Every pull request gets auto-merge and Auto-fix when it is opened; branch protec
 
 1. **Spec** (only for features the written specs do not cover): `/spec` interviews the owner with recommended options and writes the spec sections with a definition of done. The owner approves.
 2. **Plan:** a fresh session in plan mode runs `/slice-plan`: the split into slices, a tier each, one file each in [`docs/slices/`](../slices/README.md) with the plan by layer and the tests written first. The owner approves. A T0 plan is critiqued by a second fresh session before it is built.
-3. **Build:** one session runs `/build-slice` from the slice file: for components and screens, the Figma look and the owner's approval first; then the red phase (failing tests, then locked), then layer by layer (database and server → contract and clients → web → Flutter → end-to-end), the `checker` and a commit at each green checkpoint.
+3. **Build:** one session runs `/build-slice` from the slice file: for components and screens, the Figma look and the owner's approval first; then the red phase (failing tests, then locked), then layer by layer (database and server → contract and clients → web → Flutter → end-to-end), `node scripts/verify.mjs --changed` in the background and a commit at each green checkpoint.
 4. **Verify:** `node scripts/verify.mjs --changed` passes on the final tree; screens and components are run in Arabic, right to left, and compared with their approved drawing. The evidence goes into the slice file.
 5. **Review:** `reviewer` (and `security-reviewer` for T0); real findings fixed, non-blocking ones to [`backlog.md`](../backlog.md).
 6. **Pull request:** one slice, the slice file and spec sections linked, the evidence, the tier; auto-merge (squash) and Auto-fix at once.
@@ -47,9 +47,10 @@ Every pull request gets auto-merge and Auto-fix when it is opened; branch protec
 
 ## 5. Verification
 
-- `pnpm verify` is the whole check; `node scripts/verify.mjs --changed` runs only what the change since `origin/main` can break (the paths are classified by `scripts/classify-changes.mjs`, which CI uses too). The `checker` agent runs it at each checkpoint; CI runs everything as parallel jobs and stays the gate. Run the full check locally too when the change touches `scripts/verify.mjs`, `scripts/classify-changes.mjs`, `.github/` or a generator.
-- One check at a time in a folder: `verify.mjs` takes a lock in the folder's git directory; a second check exits with 3.
-- A passing `--changed` or full run records the tree (`scripts/green-tree.mjs`), so the Stop hook does not check the same tree again.
+- `pnpm verify` is the whole check; `node scripts/verify.mjs --changed` runs only what the change since `origin/main` can break (the paths are classified by `scripts/classify-changes.mjs`, which CI uses too). The session runs it itself, once per finished layer: a Bash call with `run_in_background: true` and its output redirected to a log file; Claude Code says when it exits, then the session reads the log with Grep or a ranged Read. Never in the foreground (the Bash tool moves a command to the background after 180 s), never piped into `tail`, never a second run for a docs-only edit, never a sleep loop on the lock. CI runs everything as parallel jobs and stays the gate. Run the full check locally too when the change touches `scripts/verify.mjs`, `scripts/classify-changes.mjs`, `.github/` or a generator.
+- One check at a time in a folder: `verify.mjs` takes a lock in the folder's git directory; a second check waits for it (`--no-wait` exits with 3 instead).
+- A passing `--changed` or full run records the tree (`scripts/green-tree.mjs`); the Stop hook says once per tree when the full check has not run on it.
+- The Stop hook checks only the files the session edited since its last pass, in seconds: Prettier, the pinned `dart format` and ESLint per package. It never runs tests, builds, type checks or analyzers, and an untracked file nobody edited through the tools never starts it.
 - CI's filters skip all but Prettier and the instruction size check for a change of Markdown and `docs/` only, and the Dart and Flutter parts for a change without Dart.
 - Money has property tests with fast-check (every journal balances per currency, rounding round-trips, a repeated request or timer job posts once); new money rules extend them.
 
@@ -62,9 +63,9 @@ Every pull request gets auto-merge and Auto-fix when it is opened; branch protec
 
 ## 7. Working with Claude Code
 
-- **Model and effort:** Opus 5.5 always, chosen when the session starts; effort by tier (§2): `medium` by default (`.claude/settings.json`), `high` or `xhigh` for T0. Never switch the model in a session (it rewrites the prompt cache). The `checker` runs on Haiku at low effort; `reviewer` on Opus at high, `security-reviewer` on Opus at xhigh.
-- **Context:** one slice per session, `/clear` between tasks, plan mode for work across packages. Read files with Read and Grep a range at a time; send independent tool calls together in one message. Use subagents (the built-in `Explore`, `Plan` and `general-purpose`, and the project's `checker`, `reviewer`, `security-reviewer`) for independent review and noisy exploration.
-- **Parallel work:** two or three sessions in separate git worktrees on independent slices; schema and API-contract changes one at a time.
+- **Model and effort:** Opus 5.5 always, chosen when the session starts; effort by tier (§2): `medium` by default (`.claude/settings.json`), `high` or `xhigh` for T0. Never switch the model in a session (it rewrites the prompt cache). `reviewer` runs on Opus at high, `security-reviewer` on Opus at xhigh.
+- **Context:** one slice per session, `/clear` between tasks, plan mode for work across packages. Read files with Read and Grep a range at a time; send independent tool calls together in one message. Use subagents (the built-in `Explore`, `Plan` and `general-purpose`, and the project's `reviewer`, `security-reviewer`) for independent review and noisy exploration; the session runs the check itself (§5).
+- **Parallel work:** two or three sessions in separate git worktrees on independent slices; schema and API-contract changes one at a time. A worktree uses the main checkout's pinned Flutter: never `fvm install` or `fvm use` in one, and remove a worktree only after removing its `.fvm/flutter_sdk` link alone (Git Bash `rm -f <worktree>/.fvm/flutter_sdk`, PowerShell `cmd /c rmdir`), since `git worktree remove` follows the link and empties the shared SDK (2026-11-25); the shell guard refuses both.
 
 ## 8. Instruction files
 
@@ -88,12 +89,13 @@ Every pull request gets auto-merge and Auto-fix when it is opened; branch protec
 
 - **Settings** (`.claude/settings.json`): model `opus`, `effortLevel` `medium`; `permissions.allow` lists every built-in tool, with no deny list (the owner's decision, 2026-11-23: secret files are readable and editable; `.gitignore` and the CI secret scan keep them out of git). No sandbox: Windows with Git Bash. The permission mode is the owner's choice; Claude never starts a session that skips permissions.
 - **Hooks** (`.claude/hooks/`, policy in `lib/policy.mjs` with unit tests in `hooks.test.mjs`, run by `pnpm verify`; the guards fail closed):
-  - `guard-bash.mjs`: refuses shell writes into `apps/`, `packages/`, `scripts/`, `infra/`, `.claude/`, `--no-verify`, force pushes, pushes to `main`, permission bypasses, run-time package fetches and installs outside pnpm;
+  - `session-start.mjs`: puts the pinned Dart and Flutter first on PATH for the session's Bash commands (`CLAUDE_ENV_FILE`; PowerShell commands never get it, so the shell guard asks them for the prefix);
+  - `guard-bash.mjs`: refuses shell writes into `apps/`, `packages/`, `scripts/`, `infra/`, `.claude/`, `--no-verify`, force pushes, pushes to `main`, permission bypasses, run-time package fetches, installs outside pnpm, `C:\flutter`, a bare `dart` or `flutter` in PowerShell, `fvm install` in a worktree and removing a worktree before its `.fvm/flutter_sdk` link;
   - `guard-edits.mjs`: refuses edits to generated files, the read-only archives, merged migrations and the slice's locked tests;
-  - `format.mjs`: formats each edited file (Prettier, `dart format`) and records the edit for the Stop hook;
-  - `stop-verify.mjs`: runs `--changed` when the session itself edited code, unless in the red phase or the tree is already green;
+  - `format.mjs`: formats each edited file (Prettier, the pinned `dart.exe format`, no shell) and records the edit for the Stop hook;
+  - `stop-check.mjs`: the light check of the files the session edited (§5), unless in the red phase; one line of result, timeout 60 s;
   - `session-end.mjs`: warns about uncommitted work.
-- **Agents:** `checker`, `reviewer`, `security-reviewer`; the built-in agents for the rest.
+- **Agents:** `reviewer`, `security-reviewer`; the built-in agents for the rest.
 - **Skills:** `/spec`, `/slice-plan`, `/build-slice`, `/audit-phase`, `/db-migration`, `/deploy`.
 
 ## 11. Cadence

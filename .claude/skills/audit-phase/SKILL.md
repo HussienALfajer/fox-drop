@@ -7,7 +7,7 @@ argument-hint: '<phase, such as D or L>'
 # Audit a phase
 
 1. Read `docs/roadmap.md` (the phase's exit criteria and slice list), the phase's slice files in `docs/slices/` (and the archive `docs/slice-notes.md` for slices before 2026-11-23), and `docs/backlog.md`.
-2. Run the full `pnpm verify` through the `checker` agent.
+2. Run the full `pnpm verify` in a Bash call with `run_in_background: true` and its output in a log file; read the log when it exits.
 3. Start read-only reviewers in parallel (at most four), each with one dimension and the list of the phase's merged pull requests:
    - money, ledger, order states and timers (`security-reviewer`);
    - auth, scope across cities, restaurants, captains and customers, secrets, CI (`security-reviewer`);

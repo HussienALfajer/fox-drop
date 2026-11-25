@@ -25,16 +25,16 @@ When the slice builds components or screens:
 
 ## 3. Red phase: the tests first
 
-- Write `.claude/state/red-phase` (empty) with the Write tool: the Stop hook skips the check while it exists.
-- Write the failing tests the plan lists (for domain rules, order states, timers and money always) and run them to see each fail for the right reason.
+- Write `.claude/state/red-phase` (empty) with the Write tool: the Stop hook skips its light check while it exists.
+- Write the failing tests the plan lists (for domain rules, order states, timers and money always) and run each test file on its own to see each fail for the right reason.
 - List their paths in `.claude/state/locked-tests.txt`, one per line: the edit guard then refuses changes to them. If a locked test turns out wrong, stop and ask the owner.
 - Delete `.claude/state/red-phase`.
 
 ## 4. Build layer by layer
 
-In the plan's order: database and server module → routes, contract and generated clients (`pnpm generate:api`) → web (`ui-web`, the panel and portal) → Flutter (`core_ui`, the apps) → end-to-end. After each layer:
+In the plan's order: database and server module → routes, contract and generated clients (`pnpm generate:api`) → web (`ui-web`, the panel and portal) → Flutter (`core_ui`, the apps) → end-to-end. While building, run only the test file being edited; the Stop hook checks the format and lint of the edited files by itself. After each finished layer:
 
-- run the `checker` agent (`node scripts/verify.mjs --changed`) and fix at the root until it passes;
+- run the check once: `node scripts/verify.mjs --changed > <scratchpad>/verify-<layer>.log 2>&1` in a Bash call with `run_in_background: true`, and go on with work that does not depend on it; you are told when it exits. Read the log with Grep or a ranged Read (it prints one line per step and the failing step's output). Never run it in the foreground, never pipe it into `tail`, never write a sleep loop on the lock (verify waits for it by itself), never start a second run for a docs-only edit. Fix at the root and run it again until it passes;
 - commit at the green checkpoint (Conventional Commits, the slice ID in the scope, the body says what and why) and push;
 - update the slice file's "Stopped at" line.
 
@@ -42,10 +42,10 @@ In the same slice: a rule an agent editing a folder would get wrong goes in that
 
 ## 5. Before the pull request
 
-- `checker` passes on the final tree. Run the full `pnpm verify` through it as well when the slice changes `scripts/verify.mjs`, `scripts/classify-changes.mjs`, `.github/` or the generators; CI runs everything and is the gate.
+- `node scripts/verify.mjs --changed` passes on the final tree (in the background, as in §4). Run the full `pnpm verify` the same way as well when the slice changes `scripts/verify.mjs`, `scripts/classify-changes.mjs`, `.github/` or the generators; CI runs everything and is the gate.
 - For screens and components: run them (Storybook, widgetbook, the app) in Arabic, right to left, and compare each with its approved drawing; fix a difference or explain it in the slice file.
 - Write the evidence into the slice file: the commands and their summary lines, screenshots' paths outside the repository, what the owner can try. Fill "Before deploying" and "To check on staging".
-- Review by tier: the `reviewer` agent with the branch and the slice file (it applies `REVIEW.md` from `main`); for T0 also the `security-reviewer`, in parallel. Fix every blocking and should-fix finding and run `checker` again; send the fixes' diff to the same reviewer (SendMessage) for the next round. After three rounds with a blocking finding still open, stop and ask the owner. Non-blocking findings go to `docs/backlog.md` with their source.
+- Review by tier: the `reviewer` agent with the branch and the slice file (it applies `REVIEW.md` from `main`); for T0 also the `security-reviewer`, in parallel. Fix every blocking and should-fix finding and run the check again (§4); send the fixes' diff to the same reviewer (SendMessage) for the next round. After three rounds with a blocking finding still open, stop and ask the owner. Non-blocking findings go to `docs/backlog.md` with their source.
 
 ## 6. Pull request
 
