@@ -1,0 +1,583 @@
+{
+  "pendingWeb": [
+    "DateField",
+    "TimeField",
+    "CountdownRing",
+    "OrderRow",
+    "Logo",
+    "RestaurantCard",
+    "DishCard",
+    "BottomSheet",
+    "RestaurantBar",
+    "BottomNavigation",
+    "PullToRefresh",
+    "CountrySheet",
+    "TrackingSteps",
+    "SignInHero",
+    "CodePreview",
+    "VersionTicket",
+    "ShopSign"
+  ],
+  "components": [
+    {
+      "name": "Button",
+      "web": "Button",
+      "flutter": "FoxButton",
+      "group": "Actions",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "The button of the three apps: primary, secondary, danger and ghost, with icons, disabled and loading, in the phone and captain themes.",
+      "golden": "FoxButton.png"
+    },
+    {
+      "name": "Icon",
+      "web": "Icon",
+      "flutter": "FoxIcon",
+      "group": "Actions",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "Every line icon of the first set on the 24 grid, at three sizes, as the apps draw them.",
+      "golden": "FoxIcon.png"
+    },
+    {
+      "name": "TextLink",
+      "web": "TextLink",
+      "flutter": "FoxTextLink",
+      "group": "Actions",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "Underlined primary words that act, with a 48 target around them.",
+      "golden": "FoxTextLink.png"
+    },
+    {
+      "name": "Field",
+      "web": "Field",
+      "flutter": "FoxField",
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "The frame of every form control: its label, optional marker, hint and error around the control.",
+      "golden": "FoxField.png"
+    },
+    {
+      "name": "TextField",
+      "web": "TextField",
+      "flutter": "FoxTextField",
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "A single-line text field: empty with a hint, filled with an icon, with an error and disabled.",
+      "golden": "FoxTextField.png"
+    },
+    {
+      "name": "TextArea",
+      "web": "TextArea",
+      "flutter": "FoxTextArea",
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "A multi-line field for order notes, with its counter and its error.",
+      "golden": "FoxTextArea.png"
+    },
+    {
+      "name": "SearchField",
+      "web": "SearchField",
+      "flutter": "FoxSearchField",
+      "group": "Forms",
+      "surfaces": ["customer", "panel"],
+      "phoneOnly": false,
+      "summary": "The customer's search pill: empty, filled with its clear button, and loading.",
+      "golden": "FoxSearchField.png"
+    },
+    {
+      "name": "PhoneField",
+      "web": "PhoneField",
+      "flutter": "FoxPhoneField",
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "The sign-in phone number with its country chip, Syria or Turkey, read left to right inside the right-to-left form.",
+      "golden": "FoxPhoneField.png"
+    },
+    {
+      "name": "CountrySheet",
+      "web": null,
+      "flutter": "FoxCountrySheet",
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "restaurant"],
+      "phoneOnly": true,
+      "summary": "The phone field's country list: a search by name or calling code, Syria and Turkey first, then the last used.",
+      "golden": "FoxCountrySheet.png"
+    },
+    {
+      "name": "CodeField",
+      "web": "CodeField",
+      "flutter": "FoxCodeField",
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "restaurant", "portal"],
+      "phoneOnly": false,
+      "summary": "The six cells of the sign-in code: typing, wrong code and accepted.",
+      "golden": "FoxCodeField.png"
+    },
+    {
+      "name": "CodePreview",
+      "web": null,
+      "flutter": "FoxCodePreview",
+      "group": "Forms",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "What the WhatsApp message with the code will look like, the code masked; full and compact.",
+      "golden": "FoxCodePreview.png"
+    },
+    {
+      "name": "Select",
+      "web": "Select",
+      "flutter": "FoxSelect",
+      "group": "Forms",
+      "surfaces": ["portal", "panel"],
+      "phoneOnly": false,
+      "summary": "A single choice from a list, its menu open under the field with the choice ticked, and empty with an error.",
+      "golden": "FoxSelect.png"
+    },
+    {
+      "name": "DateField",
+      "web": null,
+      "flutter": "FoxDateField",
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "A date chosen from the calendar picker, shown with Western digits, and empty with an error.",
+      "golden": "FoxDateField.png"
+    },
+    {
+      "name": "TimeField",
+      "web": null,
+      "flutter": "FoxTimeField",
+      "group": "Forms",
+      "surfaces": ["restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "A time of day chosen from the picker, shown with «ص» and «م», and disabled.",
+      "golden": "FoxTimeField.png"
+    },
+    {
+      "name": "Checkbox",
+      "web": "Checkbox",
+      "flutter": "FoxCheckbox",
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "panel"],
+      "phoneOnly": false,
+      "summary": "A checkbox with its label: unchecked, checked, mixed, invalid and disabled.",
+      "golden": "FoxCheckbox.png"
+    },
+    {
+      "name": "RadioGroup",
+      "web": "RadioGroup",
+      "flutter": "FoxRadioGroup",
+      "flutterParts": ["FoxRadio"],
+      "group": "Forms",
+      "surfaces": ["customer", "captain", "restaurant", "portal"],
+      "phoneOnly": false,
+      "summary": "Radio buttons in a named group with one tab stop: a choice made, an error and a disabled option.",
+      "golden": "FoxRadio.png",
+      "platform": "Flutter also exports `FoxRadio`, the single option the country sheet lists as its rows"
+    },
+    {
+      "name": "Switch",
+      "web": "Switch",
+      "flutter": "FoxSwitch",
+      "group": "Forms",
+      "surfaces": ["restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "An on and off setting such as order notifications, enabled and disabled.",
+      "golden": "FoxSwitch.png"
+    },
+    {
+      "name": "QuantityStepper",
+      "web": "QuantityStepper",
+      "flutter": "FoxQuantityStepper",
+      "group": "Forms",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "The quantity of a cart line: minus becomes delete at the minimum, plus stops at the maximum.",
+      "golden": "FoxQuantityStepper.png"
+    },
+    {
+      "name": "Money",
+      "web": "Money",
+      "flutter": "FoxMoney",
+      "group": "Data",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "An amount in Western tabular digits with its currency, in its sizes, signs and tones, for the phone and the captain.",
+      "golden": "FoxMoney.png"
+    },
+    {
+      "name": "StatusChip",
+      "web": "StatusChip",
+      "flutter": "FoxStatusChip",
+      "group": "Data",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "The nine order states as tinted chips with an icon and words, compact for dense lists, and a free tone.",
+      "golden": "FoxStatusChip.png"
+    },
+    {
+      "name": "CountBadge",
+      "web": "CountBadge",
+      "flutter": "FoxCountBadge",
+      "group": "Data",
+      "surfaces": ["customer", "restaurant", "panel"],
+      "phoneOnly": false,
+      "summary": "A dot or a count on an icon's corner, 99+ when large, orange for the cart and inline in a tab.",
+      "golden": "FoxCountBadge.png"
+    },
+    {
+      "name": "Card",
+      "web": "Card",
+      "flutter": "FoxCard",
+      "group": "Data",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "The card shell: an outline, the customer app's offset shadow, a pressable card and a late one.",
+      "golden": "FoxCard.png"
+    },
+    {
+      "name": "ListRow",
+      "web": "ListRow",
+      "flutter": "FoxListRow",
+      "group": "Data",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "A row of a list or settings page: pressable with its chevron, with a value or a chip, danger and disabled.",
+      "golden": "FoxListRow.png"
+    },
+    {
+      "name": "Timer",
+      "web": "Timer",
+      "flutter": "FoxTimer",
+      "group": "Data",
+      "surfaces": ["captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "An order's countdown, calm, soon and in minutes, and the late time counting up, for the restaurant and the captain.",
+      "golden": "FoxTimer.png"
+    },
+    {
+      "name": "CountdownRing",
+      "web": null,
+      "flutter": "FoxCountdownRing",
+      "group": "Data",
+      "surfaces": ["captain"],
+      "phoneOnly": true,
+      "summary": "The ring around the captain's new offer, emptying over its 45 seconds.",
+      "golden": "FoxCountdownRing.png"
+    },
+    {
+      "name": "OrderCard",
+      "web": "OrderCard",
+      "flutter": "FoxOrderCard",
+      "group": "Data",
+      "surfaces": ["restaurant", "portal"],
+      "phoneOnly": false,
+      "summary": "The restaurant board's order card with its timer and one main action, new and late.",
+      "golden": "FoxOrderCard.png"
+    },
+    {
+      "name": "OrderRow",
+      "web": null,
+      "flutter": "FoxOrderRow",
+      "group": "Data",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "A row of the customer's «طلباتي» list: the restaurant, the date, the state and the total.",
+      "golden": "FoxOrderRow.png"
+    },
+    {
+      "name": "Logo",
+      "web": null,
+      "flutter": "FoxLogo",
+      "group": "Data",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "A restaurant's logo, or its initials when it has none, in a circle.",
+      "golden": "FoxLogo.png"
+    },
+    {
+      "name": "AmountsSummary",
+      "web": "AmountsSummary",
+      "flutter": "FoxAmountsSummary",
+      "group": "Data",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "The money lines of an order and its total: the customer cart's orange total bar, and plain elsewhere.",
+      "golden": "FoxAmountsSummary.png"
+    },
+    {
+      "name": "RestaurantCard",
+      "web": null,
+      "flutter": "FoxRestaurantCard",
+      "group": "Data",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "The customer's restaurant card with its rating, time and fee, a favourite, and closed with its reopening time.",
+      "golden": "FoxRestaurantCard.png"
+    },
+    {
+      "name": "DishCard",
+      "web": null,
+      "flutter": "FoxDishCard",
+      "group": "Data",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "A menu dish row with its square photo and «+»: in the cart, unavailable and plain.",
+      "golden": "FoxDishCard.png"
+    },
+    {
+      "name": "TrackingSteps",
+      "web": null,
+      "flutter": "FoxTrackingSteps",
+      "group": "Data",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "An order's way in four steps: done in blue, the current one orange with a soft pulse, the rest dashed.",
+      "golden": "FoxTrackingSteps.png"
+    },
+    {
+      "name": "DropLoader",
+      "web": "DropLoader",
+      "flutter": "FoxDropLoader",
+      "group": "Data",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "The project's one loader: the mark fills with a swaying liquid, then fades back; 16, 24 and 48, and inside a busy button.",
+      "golden": "FoxDropLoader.png"
+    },
+    {
+      "name": "Skeleton",
+      "web": "Skeleton",
+      "flutter": "FoxSkeleton",
+      "flutterParts": ["FoxSkeletonBlock"],
+      "group": "Data",
+      "surfaces": ["customer", "panel"],
+      "phoneOnly": false,
+      "summary": "The calm loading blocks in the shape of the content that comes, still under reduced motion.",
+      "golden": "FoxSkeleton.png",
+      "platform": "the web lays out `Skeleton.Block` elements; Flutter lays out `FoxSkeletonBlock` widgets"
+    },
+    {
+      "name": "EmptyState",
+      "web": "EmptyState",
+      "flutter": "FoxEmptyState",
+      "group": "Data",
+      "surfaces": ["customer", "panel"],
+      "phoneOnly": false,
+      "summary": "An empty list and an error in the logo's drop, with one action.",
+      "golden": "FoxEmptyState.png"
+    },
+    {
+      "name": "DataTable",
+      "web": "DataTable",
+      "flutter": null,
+      "group": "Data",
+      "surfaces": ["panel"],
+      "phoneOnly": false,
+      "summary": "The panel's table, compact 40, with sort, selection, loading and empty rows.",
+      "golden": null
+    },
+    {
+      "name": "Dialog",
+      "web": "Dialog",
+      "flutter": "FoxDialog",
+      "group": "Overlays",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "A question that blocks the screen, its safe action first in focus, in the phone and captain themes.",
+      "golden": "FoxDialog.png",
+      "platform": "Flutter opens it with `showFoxDialog`, which can place it at the bottom, in the captain’s thumb zone"
+    },
+    {
+      "name": "ConfirmDialog",
+      "web": "ConfirmDialog",
+      "flutter": "FoxConfirmDialog",
+      "group": "Overlays",
+      "surfaces": ["panel"],
+      "phoneOnly": false,
+      "summary": "The confirmation of a destructive or financial action: a required reason, the money effect and who is notified.",
+      "golden": "FoxConfirmDialog.png"
+    },
+    {
+      "name": "Drawer",
+      "web": "Drawer",
+      "flutter": null,
+      "group": "Overlays",
+      "surfaces": ["panel"],
+      "phoneOnly": false,
+      "summary": "A full-height panel over the page: the quick view from a table at the end side, the sidebar on a phone at the start side.",
+      "golden": null
+    },
+    {
+      "name": "BottomSheet",
+      "web": null,
+      "flutter": "FoxBottomSheet",
+      "group": "Overlays",
+      "surfaces": ["customer", "captain", "restaurant"],
+      "phoneOnly": true,
+      "summary": "A sheet from the bottom: the customer's item sheet with the S-curve tab, and the restaurant's plain status sheet.",
+      "golden": "FoxBottomSheet.png"
+    },
+    {
+      "name": "Toaster",
+      "web": "Toaster",
+      "flutter": "FoxToast",
+      "flutterParts": ["FoxToaster"],
+      "group": "Overlays",
+      "surfaces": ["customer", "captain", "restaurant", "portal", "panel"],
+      "phoneOnly": false,
+      "summary": "The dark blue toast in its four tones, with an action, shown one at a time above the bottom bar.",
+      "golden": "FoxToast.png",
+      "platform": "the web wraps the app in `Toaster` and shows a toast with `useToast().show()`; Flutter wraps it in `FoxToaster` and shows `FoxToast` with `FoxToaster.of(context).show()`"
+    },
+    {
+      "name": "Banner",
+      "web": "Banner",
+      "flutter": "FoxBanner",
+      "group": "Overlays",
+      "surfaces": ["customer", "captain", "restaurant", "portal"],
+      "phoneOnly": false,
+      "summary": "The banners under the top bar: red solid, then yellow, amber, blue and grey tinted, each with an icon and words.",
+      "golden": "FoxBanner.png"
+    },
+    {
+      "name": "BannerStack",
+      "web": "BannerStack",
+      "flutter": "FoxBannerStack",
+      "group": "Overlays",
+      "surfaces": ["restaurant"],
+      "phoneOnly": true,
+      "summary": "The banners in their priority order: two shown and the rest behind a counter that opens them.",
+      "golden": "FoxBannerStack.png"
+    },
+    {
+      "name": "BlockingBanner",
+      "web": "BlockingBanner",
+      "flutter": null,
+      "group": "Overlays",
+      "surfaces": ["panel"],
+      "phoneOnly": false,
+      "summary": "The panel's blocking sound banner (AP §7.3): it covers the page after sign-in until alert sound is enabled.",
+      "golden": null
+    },
+    {
+      "name": "VersionTicket",
+      "web": null,
+      "flutter": "FoxVersionTicket",
+      "group": "Overlays",
+      "surfaces": ["customer", "captain", "restaurant"],
+      "phoneOnly": true,
+      "summary": "The forced update's head: a ticket with the installed version struck and the required one below.",
+      "golden": "FoxVersionTicket.png"
+    },
+    {
+      "name": "ShopSign",
+      "web": null,
+      "flutter": "FoxShopSign",
+      "group": "Overlays",
+      "surfaces": ["customer", "captain", "restaurant"],
+      "phoneOnly": true,
+      "summary": "The maintenance head: an orange board hung from a nail, with the return time when the panel gives one.",
+      "golden": "FoxShopSign.png"
+    },
+    {
+      "name": "Menu",
+      "web": "Menu",
+      "flutter": "FoxMenu",
+      "group": "Overlays",
+      "surfaces": ["captain", "panel"],
+      "phoneOnly": false,
+      "summary": "A list of actions under its trigger, a destructive one after a separator.",
+      "golden": "FoxMenu.png",
+      "platform": "on Android, back closes an open `FoxMenu` before the page"
+    },
+    {
+      "name": "Tooltip",
+      "web": "Tooltip",
+      "flutter": null,
+      "group": "Overlays",
+      "surfaces": ["panel"],
+      "phoneOnly": false,
+      "summary": "A short description on hover (after 500 ms) and on keyboard focus (at once).",
+      "golden": null
+    },
+    {
+      "name": "Tabs",
+      "web": "Tabs",
+      "flutter": "FoxTabs",
+      "group": "Navigation",
+      "surfaces": ["customer", "restaurant", "panel"],
+      "phoneOnly": false,
+      "summary": "Underline tabs with counts for boards and detail pages, and the customer's pill tabs.",
+      "golden": "FoxTabs.png"
+    },
+    {
+      "name": "TopBar",
+      "web": "TopBar",
+      "flutter": "FoxTopBar",
+      "group": "Navigation",
+      "surfaces": ["customer", "captain", "panel"],
+      "phoneOnly": false,
+      "summary": "The phone apps' bar: the round back button, the orange title and an optional end action.",
+      "golden": "FoxTopBar.png"
+    },
+    {
+      "name": "RestaurantBar",
+      "web": null,
+      "flutter": "FoxRestaurantBar",
+      "group": "Navigation",
+      "surfaces": ["restaurant"],
+      "phoneOnly": true,
+      "summary": "The restaurant app's bar: its name, the status pill, the connection dot with its word and the support button.",
+      "golden": "FoxRestaurantBar.png"
+    },
+    {
+      "name": "BottomNavigation",
+      "web": null,
+      "flutter": "FoxBottomNavigation",
+      "group": "Navigation",
+      "surfaces": ["customer", "captain", "restaurant"],
+      "phoneOnly": true,
+      "summary": "The Figma file's floating bar, icons only, in the customer, restaurant and captain apps.",
+      "golden": "FoxBottomNavigation.png"
+    },
+    {
+      "name": "Sidebar",
+      "web": "Sidebar",
+      "flutter": "FoxNavigationRail",
+      "group": "Navigation",
+      "surfaces": ["restaurant", "panel"],
+      "phoneOnly": false,
+      "summary": "The navigation on the start side: the panel's collapsible sidebar and the restaurant's rail on tablets and Windows.",
+      "golden": "FoxNavigationRail.png",
+      "platform": "the web Sidebar collapses and becomes a drawer below the tablet width; `FoxNavigationRail` is the restaurant tablet’s fixed rail, 88 wide with the names shown"
+    },
+    {
+      "name": "PullToRefresh",
+      "web": null,
+      "flutter": "FoxPullToRefresh",
+      "flutterParts": ["FoxRefreshDrop"],
+      "group": "Navigation",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "Pull to refresh with the mark filling as you pull, then the drop loader while it loads.",
+      "golden": "FoxPullToRefresh.png"
+    },
+    {
+      "name": "SignInHero",
+      "web": null,
+      "flutter": "FoxSignInHero",
+      "group": "Navigation",
+      "surfaces": ["customer"],
+      "phoneOnly": true,
+      "summary": "The sign-in screen's head by where the guest came from: the saved cart, the way an order is followed, or what an account keeps.",
+      "golden": "FoxSignInHero.png"
+    }
+  ]
+}

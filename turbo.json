@@ -92,7 +92,8 @@
         "$TURBO_ROOT$/docs/brand/app-icon/**",
         "$TURBO_ROOT$/packages/core_tokens/lib/src/icons.g.dart",
         "$TURBO_ROOT$/packages/core_tokens/lib/src/tokens.g.dart",
-        "$TURBO_ROOT$/packages/core_ui/design-system/**",
+        "$TURBO_ROOT$/packages/core_ui/lib/**",
+        "$TURBO_ROOT$/packages/ui-web/scripts/bundle.ts",
         "$TURBO_ROOT$/packages/core_ui/test/phone_harness.dart",
         "$TURBO_ROOT$/packages/core_ui/test/golden/design_system_cards_test.dart",
         "$TURBO_ROOT$/packages/core_ui/test/golden/goldens/design-system/**",
@@ -114,6 +115,8 @@
         "$TURBO_ROOT$/docs/brand/logo/mark/mark-orange-on-ivory-drop.svg",
         "$TURBO_ROOT$/scripts/countries.mjs",
         "$TURBO_ROOT$/packages/core_l10n/lib/src/countries.g.dart",
+        "$TURBO_ROOT$/packages/design-tokens/components.json",
+        "$TURBO_ROOT$/packages/core_ui/test/golden/goldens/design-system/**",
         "$TURBO_ROOT$/.fonts/**"
       ],
       "outputs": [],
@@ -127,7 +130,11 @@
     },
     "@fox-drop/ui-web#build": {
       "dependsOn": ["^transit"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.fonts/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/core_ui/test/golden/goldens/design-system/**",
+        "$TURBO_ROOT$/.fonts/**"
+      ],
       "outputs": ["dist/**"]
     },
     "@fox-drop/ui-web#test:e2e": {
@@ -137,6 +144,7 @@
         "$TURBO_ROOT$/docs/brand/logo/mark/mark-orange-on-ivory-drop.svg",
         "$TURBO_ROOT$/scripts/countries.mjs",
         "$TURBO_ROOT$/packages/core_l10n/lib/src/countries.g.dart",
+        "$TURBO_ROOT$/packages/core_ui/test/golden/goldens/design-system/**",
         "$TURBO_ROOT$/.fonts/**"
       ],
       "outputs": []
