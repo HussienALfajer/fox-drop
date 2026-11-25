@@ -1,6 +1,6 @@
 # D.P1 The component registry, the web-first rule and one card per component
 
-Status: Done · Tier: T2 · Branch: `feat/component-registry`
+Status: Planned · Tier: T2 · Branch: `feat/component-registry`
 Spec: architecture §9.3, §9.6–§9.9 (rewritten here); workflow §1 item 7, §3.1 · Definition of done: the owner decision of 2026-11-25 (web components are the single design reference) is written and checked by a test; the 51 separate «Flutter ·» cards are gone and each component with both sides has one card, the live web component with its Flutter golden beneath.
 
 ## Goal
@@ -23,34 +23,15 @@ Tests written first (locked in the red phase):
 - `src/components.test.ts`: every `ui-web` export in `COMPONENTS` and every public `core_ui` widget has exactly one entry; an entry without a web twin must be in `pendingWeb`; a name in `pendingWeb` that now has a twin fails until removed; every `surfaces` value is known; `phoneOnly` matches `surfaces`.
 - The design-system tests: the build reads the registry; a twin's preview carries its golden; no `project/components/Fox*` card for a component with a web twin; a pending one has exactly one card.
 
-## Surfaces: the sources
-
-Each surface is one a spec section cites (CU customer, CA captain, RA restaurant, RA §17 the portal, which has everything an owner can do in the app; AP the panel). Generic controls (Button, Icon, Field, TextField, TextArea, TextLink, PhoneField, DateField, Money, StatusChip, Card, ListRow, AmountsSummary, Dialog) carry all five where each surface has forms, lists and money; DropLoader carries all five because every `Button`'s loading state draws it. Specific ones: CountdownRing CA §8; OrderCard RA §8.2 and RA §17 (read-only); OrderRow CU §12.3; RestaurantCard CU §8.2; DishCard CU §9.3; TrackingSteps CU §11.1; Logo CU §8.2, §9.1; PullToRefresh CU §8.1; SignInHero and CodePreview CU §5.2; CountrySheet CU §5.2.1, CA §5.2, RA §5.2.1; CodeField CU §5.2.2, CA §5.1, RA §5.2.2, RA §17; BottomSheet CU §9.4, CA §8, RA §7.2; BottomNavigation CU §6.1, CA §6.2, RA §6.2; RestaurantBar RA §6.2; Sidebar RA §6.2 (the rail) and AP §7.1; VersionTicket CU §4.2, CA §4.2, RA §4.2; ShopSign (the maintenance sign) CU §4.7, CA §4.8, RA §4.10; TimeField RA §10, RA §17, AP §9.6; Timer CA §9.3, RA §8.2, RA §17, AP §9.2.1; Switch RA §14.3, RA §17, AP §9.1; Select AP §7.2 and the portal's forms; Checkbox CU §5.3, CA §5.2, AP §7.4; RadioGroup CU §5.3, CA §5.2, RA §8.6, RA §17; SearchField CU §8.3, AP §7.2; CountBadge CU §6.1, RA §8.2, AP §7.2; Tabs CU §8.3, RA §8.2, AP §7.4; TopBar CU, CA, AP §7.2; Menu CA §9.1, AP §7.2; Banner CU §6.2, CA §6.3, RA §6.3, RA §17; BannerStack RA §6.3; Skeleton CU §4.5, AP §7.4; EmptyState CU §5.1, AP §7.4; QuantityStepper CU §10.1; ConfirmDialog, DataTable, Drawer, BlockingBanner, Tooltip AP §7.1 to §7.4, §9.4.
-
-**Left out as unclear, for the owner** (adding one later is a registry edit): the portal for ShopSign and Logo (decides whether D.P3 and D.P5 put them in `ui-web/phone`); the panel for CodeField (AP §5.1's authenticator code), OrderCard (the ops room's cards differ), QuantityStepper (AP §9.3.3), Logo and Banner; the captain for TrackingSteps (CA §9.1's four-step bar) and CodePreview, the restaurant for CodePreview; the phone apps for ConfirmDialog (only AP §7.4 specifies it; `FoxConfirmDialog` exists); the portal for DataTable, Sidebar, TopBar and Tabs (RA §17 gives no layout); Skeleton, EmptyState, SearchField, Select, Checkbox and CountBadge on the surfaces no section names. Toaster carries all five by the owner's decision (2026-11-25): no section names a toast.
-
-## Decisions while building
-
-- Pending cards sit under the web name (`project/components/DateField/`), not `Fox*`, so the live card replaces each in place; no `Fox*` card remains.
-- `flutterParts` (not in the plan) holds the other exported widgets of a component, so the test can require every public widget once: `FoxRadio`, `FoxToaster`, `FoxSkeletonBlock`, `FoxRefreshDrop`.
-- The card's group comes from the registry: DropLoader moved from Feedback to Data, Icon from Icons to Actions, Menu and Tooltip from Navigation to Overlays.
-- Overlays on a card with its golden (review): the body is the box of fixed overlays, so the toasts stay over the live part; Dialog and ConfirmDialog no longer open by themselves there (the top layer covers the whole card), their golden shows them open.
-- `turbo.json`: ui-web's test, build and e2e read the goldens folder and the registry; the design-tokens test reads `core_ui/lib` and ui-web's `bundle.ts` (`scripts/turbo-inputs.test.mjs`).
-- Toaster's five surfaces: no spec names a toast; the owner approved all five (2026-11-25).
-- The ui-web `design-system` script takes `--blobs` too, run after the design-tokens `--blobs` pass.
-- The plan cites architecture §9.3 (typography): nothing there changed; the rule went into §9.1, §9.7, §9.8 and §9.9.
-
 ## Stopped at
 
-Done: built, reviewed, synced; the pull request is open.
+Not started.
 
 ## Evidence
 
-- Red phase: `vitest run src/components.test.ts src/design-system-build.test.ts` failed on the missing `./components.ts`; `test/design-system.test.ts` on the missing `components.json`. Green after: design-tokens 16 passed (1 skipped, the fonts check), ui-web 131 passed (with `test/design-system-cards.test.ts`).
-- `node scripts/verify.mjs --changed`: the first run failed `scripts/turbo-inputs.test.mjs` (ui-web's script reads the goldens folder; inputs declared in `turbo.json`); then every step passed (Dart analyze, format and Flutter tests over 6 packages, lint, types, builds and smoke tests, the tests), images left to `pnpm baselines`.
-- Cards rendered with Playwright as the system loads them (tokens, bundle, the golden in place of the blob), screenshots in the session scratchpad: Switch, DateField (pending), Toaster, Dialog, Menu, Sidebar, each card's declared height equal to its content.
-- The Design System synced (version 27): 55 cards under their web names, 51 old `Fox*` cards removed; no new upload (no golden changed).
-- Review: `reviewer` at medium, two rounds. Round 1: live overlays over the image (fixed), Toaster's surfaces without a spec (open item, architecture §22 item 11), the group moves in the docs (fixed), the widget scan (backlog), the roadmap (at close). Round 2: the menu lost its open state (fixed: only the two modals skip opening, `test/design-system-cards.test.ts`).
+- `node scripts/verify.mjs --changed`:
+- The published system checked card by card (screenshots outside the repository).
+- Review: `reviewer` at medium, short list.
 
 ## Before deploying
 
