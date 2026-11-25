@@ -21,6 +21,9 @@ const parityInset = FoxSpace.md;
 const _ratio = 2.0;
 const _frame = ValueKey('parity');
 
+/// CoFo, loaded once by the first case that runs.
+var _fontsLoaded = false;
+
 const _themes = {'phone': FoxThemeData.phone, 'captain': FoxThemeData.captain};
 
 /// One parity case per surface, keyed by its web story's id
@@ -36,13 +39,18 @@ void parityCase(
   List<String> surfaces = const ['phone', 'captain'],
 }) {
   group(storyId, () {
-    setUpAll(loadFoxFonts);
     tearDown(() {
       FocusManager.instance.highlightStrategy =
           FocusHighlightStrategy.automatic;
     });
     for (final surface in surfaces) {
       testWidgets(surface, tags: ['parity'], (tester) async {
+        // In the test, not a setUpAll: a group's setUpAll runs even when the
+        // tag skips its tests, and CI has no .fonts/ (loadFoxFonts throws).
+        if (!_fontsLoaded) {
+          await tester.runAsync(loadFoxFonts);
+          _fontsLoaded = true;
+        }
         final theme = _themes[surface]!();
         const size = Size(parityWidth, 2000);
         tester.view.devicePixelRatio = _ratio;

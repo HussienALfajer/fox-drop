@@ -101,6 +101,7 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 ## Parity cases (D.W2)
 
 - `test/parity/parity.dart`: `parityCase(storyId, builder, {surfaces})` pumps the widget at the start of a 360 logical pixel frame (the phone width of the screen goldens), 16 pixels around it (`FoxSpace.md`, so a focus ring is not cut; the web side pads the story's root by the same), height from its content, pixel ratio 2, RTL, the phone or captain theme's surface, animations off, CoFo from `loadFoxFonts`. It writes `<repo>/.parity/flutter/<storyId>-<surface>.png`. An id ending in `-hover`, `-focus` or `-pressed` drives the frame's first `GestureDetector` with a mouse, keyboard focus or a held touch, as the web side drives the story's first control.
+- CoFo is loaded inside the first case that runs (`tester.runAsync(loadFoxFonts)`), never in a `setUpAll`: a group's `setUpAll` runs even when the tag skips all its tests, and CI has no `.fonts/`, so 33 setUpAlls failed the `flutter` job on PR 305.
 - The cases are tagged `parity`, skipped in `dart_test.yaml`; only `pnpm parity` (`scripts/parity.mjs`) passes `--tags parity --run-skipped`. The golden run passes `--tags golden`, so it never runs them.
 - `button_parity_test.dart`: one case per Button story it can show (variants × `buttonStates`, the icon stories, the icon-only stories). The densities and the press-counting stories have none: one density here, and the counter is a keyboard test; the sheet marks their rows «no Flutter case».
 

@@ -56,6 +56,7 @@ Done: pull request open with auto-merge.
 - `flutter test test/parity` in core_ui: all 66 cases skipped; `--tags golden --run-skipped`: no test matches (checked by the reviewer).
 - The sheet already shows a real difference: with both icons, Flutter's Button is about 12 logical pixels wider than the web one (backlog, for D.W3).
 - Review (`reviewer`, T2, medium): one should-fix (repeated `--name` flags are ANDed, so two components with Flutter cases stopped the run) and two minors (an unanchored name prefix; an argument array through the shell, unquoted). Fixed: one `flutter test` per component with `--name "^<prefix>--"`, each command one quoted line. The slice file's status and evidence filled in.
+- CI `flutter (3)` on PR 305 failed: 33 `setUpAll(loadFoxFonts)` of the skipped parity groups ran without `.fonts/` (CI has none). Locally the fonts exist, so it passed. The fonts now load inside the first case that runs. With `.fonts/` moved away, `flutter test test/parity` reports "All tests skipped" (66). With the fonts, `--tags parity --run-skipped` passes and draws CoFo.
 - The owner's look: Button's sheet published as a private artifact (its link is in the session's report, not here).
 
 ## What the owner can try
