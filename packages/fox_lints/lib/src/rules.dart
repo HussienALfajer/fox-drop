@@ -4,6 +4,7 @@ import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/error/error.dart';
 
 /// The workspace packages the rules run in, as `<parent>/<folder>`. A plugin
@@ -24,6 +25,7 @@ List<AnalysisRule> foxRules() => [
   NoLiteralSpacing(),
   NoMaterialImport(),
   NoPhysicalDirection(),
+  NoLiteralDimension(),
 ];
 
 String? _packageOf(RuleContext context) {
@@ -162,6 +164,167 @@ class _SpacingVisitor extends SimpleAstVisitor<void> {
       final e = argument.argumentExpression;
       if (_isNonZeroNumber(e)) rule.reportAtNode(e, arguments: [name]);
     }
+  }
+}
+
+/// R2 (slice D.W1): no number literal other than 0 in a component's radii,
+/// borders, sizes, type, icon size, offsets, shadows or durations, anywhere in
+/// the argument (`gap * 3` too): a dimension is a token. Halving (`x / 2`)
+/// is geometry, not a design value. A painter draws in its own unit, so a
+/// `CustomPainter` or `CustomClipper` subclass and its helpers (a function
+/// that takes a `Canvas` or returns a `Path`) are out of scope. A direct
+/// literal in `SizedBox` or `TextStyle` is [NoLiteralSpacing]'s.
+class NoLiteralDimension extends FoxRule {
+  static const code = LintCode(
+    'no_literal_dimension',
+    'A number literal in {0}: dimensions and durations come from the tokens '
+        '(R2).',
+    correctionMessage:
+        'Use FoxSize, FoxRadius, FoxBorderWidth, FoxDuration or a component '
+        'token of FoxTheme.of(context).',
+  );
+
+  /// The Flutter classes and the arguments it checks; null checks them all.
+  static const _flutterArguments = <String, Set<String>?>{
+    'Radius': null,
+    'BorderRadius': null,
+    'BorderSide': {'width'},
+    'SizedBox': {'width', 'height'},
+    'Container': {'width', 'height'},
+    'BoxConstraints': null,
+    'TextStyle': {'fontSize', 'height', 'letterSpacing'},
+    'Offset': null,
+    'BoxShadow': {'blurRadius', 'spreadRadius'},
+  };
+
+  NoLiteralDimension({super.packages = const {'packages/core_ui'}})
+    : super(
+        name: 'no_literal_dimension',
+        description: 'No literal dimensions or durations in components.',
+      );
+
+  @override
+  DiagnosticCode get diagnosticCode => code;
+
+  @override
+  void registerNodeProcessors(
+    RuleVisitorRegistry registry,
+    RuleContext context,
+  ) {
+    // Component code only: a test may pin a size or wait a set time.
+    if (!appliesTo(context) || !context.isInLibDir) return;
+    registry.addInstanceCreationExpression(this, _DimensionVisitor(this));
+  }
+}
+
+class _DimensionVisitor extends SimpleAstVisitor<void> {
+  _DimensionVisitor(this.rule);
+
+  final AnalysisRule rule;
+
+  @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    final (name, checked) = _checked(node);
+    if (name == null || _inPainter(node)) return;
+    for (final argument in node.argumentList.arguments) {
+      final label = argument is NamedArgument ? argument.name.lexeme : null;
+      if (checked != null && (label == null || !checked.contains(label))) {
+        continue;
+      }
+      final e = argument.argumentExpression;
+      // A direct literal here is no_literal_spacing's report.
+      if (NoLiteralSpacing._classes.contains(name) && _isNonZeroNumber(e)) {
+        continue;
+      }
+      final literals = _Literals();
+      e.accept(literals);
+      for (final literal in literals.found) {
+        rule.reportAtNode(literal, arguments: [name]);
+      }
+    }
+  }
+
+  /// The class name and its checked arguments (null: all), or a null name.
+  (String?, Set<String>?) _checked(InstanceCreationExpression node) {
+    final element = node.constructorName.type.element;
+    final name = element?.name;
+    final uri = element?.library?.uri;
+    if (_isFlutter(element) &&
+        NoLiteralDimension._flutterArguments.containsKey(name)) {
+      return (name, NoLiteralDimension._flutterArguments[name]);
+    }
+    if (name == 'Duration' && uri?.toString() == 'dart:core') {
+      return (name, {'milliseconds'});
+    }
+    if (name == 'FoxIcon' &&
+        uri?.scheme == 'package' &&
+        uri!.pathSegments.first == 'core_ui') {
+      return (name, {'size'});
+    }
+    return (null, null);
+  }
+
+  static bool _inPainter(AstNode node) {
+    for (AstNode? at = node.parent; at != null; at = at.parent) {
+      if (at is ClassDeclaration) {
+        final element = at.declaredFragment?.element;
+        final painter = element?.allSupertypes.any(
+          (type) =>
+              _isFlutter(type.element) &&
+              (type.element.name == 'CustomPainter' ||
+                  type.element.name == 'CustomClipper'),
+        );
+        if (painter ?? false) return true;
+      }
+      if (at is FunctionDeclaration &&
+          _drawsOrBuildsPath(at.functionExpression.parameters, at.returnType)) {
+        return true;
+      }
+      if (at is MethodDeclaration &&
+          _drawsOrBuildsPath(at.parameters, at.returnType)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool _drawsOrBuildsPath(
+    FormalParameterList? parameters,
+    TypeAnnotation? returnType,
+  ) {
+    bool isFlutterType(DartType? type, String name) =>
+        type != null && type.element?.name == name && _isFlutter(type.element);
+    if (isFlutterType(returnType?.type, 'Path')) return true;
+    return parameters?.parameters.any(
+          (p) => isFlutterType(p.declaredFragment?.element.type, 'Canvas'),
+        ) ??
+        false;
+  }
+}
+
+/// The non-zero number literals of an expression, halving divisors left out.
+class _Literals extends RecursiveAstVisitor<void> {
+  final found = <Literal>[];
+
+  @override
+  void visitBinaryExpression(BinaryExpression node) {
+    node.leftOperand.accept(this);
+    final right = node.rightOperand.unParenthesized;
+    final halving =
+        node.operator.lexeme == '/' &&
+        right is IntegerLiteral &&
+        right.value == 2;
+    if (!halving) node.rightOperand.accept(this);
+  }
+
+  @override
+  void visitIntegerLiteral(IntegerLiteral node) {
+    if (node.value != 0) found.add(node);
+  }
+
+  @override
+  void visitDoubleLiteral(DoubleLiteral node) {
+    if (node.value != 0) found.add(node);
   }
 }
 

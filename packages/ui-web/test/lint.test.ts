@@ -57,6 +57,32 @@ describe('ui-web lint rules', () => {
     expect(await errors(agent)).toHaveLength(1);
   });
 
+  // Slice D.W1: the numeric classes Tailwind still builds from a bare number.
+  it.each([
+    ['a numeric duration', 'export const c = "transition duration-150";'],
+    ['a numeric delay', 'export const c = "delay-75";'],
+    ['a numeric opacity under a variant', 'export const c = "hover:opacity-50";'],
+    ['a numeric line height', 'export const c = "leading-6";'],
+    ['a numeric letter spacing', 'export const c = "tracking-1";'],
+    ['a numeric font size', 'export const c = "text-14";'],
+    ['a numeric radius', 'export const c = "rounded-4";'],
+    ['a numeric side radius', 'export const c = "rounded-s-8";'],
+    ['a numeric stroke', 'export const c = "stroke-2";'],
+    ['a numeric border', 'export const c = "border-2";'],
+    ['a numeric side border', 'export const c = "border-s-4";'],
+    ['a numeric border, important', 'export const c = "border-t-2!";'],
+  ])('fails %s', async (_, code) => {
+    expect(await errors(code)).toEqual([expect.stringMatching(/numeric value/i)]);
+  });
+
+  it('passes the token form of those classes, and 0', async () => {
+    const code = [
+      'export const c =',
+      '  "duration-(--fd-duration-base) opacity-0 data-starting-style:opacity-0 border-b-0 border-t-(length:--fd-border-width-thick) rounded-(--fd-button-radius) text-phone-body leading-none stroke-(--fd-x) border-dashed";',
+    ].join('\n');
+    expect(await errors(code)).toEqual([]);
+  });
+
   it('keeps stories out of the translation rule', async () => {
     const code = 'export const X = () => <p>نص</p>;';
     expect(await errors(code, 'src/x.stories.tsx')).toEqual([]);

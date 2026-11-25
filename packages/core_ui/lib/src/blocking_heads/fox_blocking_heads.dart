@@ -46,7 +46,7 @@ class FoxVersionTicket extends StatelessWidget {
         child: ConstrainedBox(
           // Wider as the text grows, so the words keep their lines.
           constraints: BoxConstraints(
-            maxWidth: _scaled(context, t.FoxSize.touchTarget * 5),
+            maxWidth: _scaled(context, t.FoxSize.tooltip),
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(

@@ -317,7 +317,7 @@ class FoxToasterState extends State<FoxToaster> {
               if (still) return faded;
               return SlideTransition(
                 position: Tween<Offset>(
-                  begin: const Offset(0, 0.15),
+                  begin: const Offset(0, t.FoxMotion.enterToast),
                   end: Offset.zero,
                 ).animate(animation),
                 child: faded,

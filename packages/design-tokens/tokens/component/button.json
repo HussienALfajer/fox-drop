@@ -1,5 +1,8 @@
 {
   "button": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["button"], "flutter": ["button"] }
+    },
     "height": {
       "$type": "dimension",
       "$value": "{size.control}"
@@ -7,7 +10,9 @@
     "compact": {
       "height": {
         "$type": "dimension",
-        "$value": "{size.control-compact}"
+        "$value": "{size.control-compact}",
+        "$description": "The panel's and the portal's compact density; the Flutter button has none.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
       }
     },
     "padding-inline": {

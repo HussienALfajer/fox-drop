@@ -135,6 +135,7 @@ const camel = (parts: string[]) =>
     .join('-')
     .replace(/^(\d)x/, (_, n: string) => 'x'.repeat(Number(n)))
     .replace(/[-.](\w)/g, (_, c: string) => c.toUpperCase());
+const pascal = (name: string) => camel([name]).replace(/^\w/, (c) => c.toUpperCase());
 
 /** `#RRGGBB` or `#RRGGBBAA` as a Dart ARGB literal. */
 function argb(hex: string): string {
@@ -177,8 +178,14 @@ export function dart(themes: Record<Theme, Tokens>): string {
       .filter((token) => token.path[0] === 'color')
       .map((token) => [camel(token.path.slice(1)), argb(String(token.value))]);
 
+  // Every file of tokens/component/, in file order: a new one needs no change
+  // here or in core_ui (slice D.W1).
+  const components = [
+    ...new Set(exported(light).flatMap((token) => (token.component ? [token.component] : []))),
+  ].map((name) => ({ name, label: pascal(name), field: camel([name]) }));
+
   // One component's tokens: a class of fields and one instance per theme.
-  const component = (name: string, label: string) => {
+  const component = ({ name, label }: { name: string; label: string }) => {
     const type = `${label}Tokens`;
     const fields = group(name).map((token): [string, string] => [
       camel(token.path.slice(1)),
@@ -201,11 +208,17 @@ export function dart(themes: Record<Theme, Tokens>): string {
     ].join('\n');
   };
 
-  const constants = (name: string, doc: string, type: string, value: (t: Token) => string) =>
+  const constants = (
+    name: string,
+    doc: string,
+    type: string,
+    value: (t: Token) => string,
+    source = name.replace(/^Fox/, '').toLowerCase(),
+  ) =>
     [
       `/// ${doc}`,
       `abstract final class ${name} {`,
-      ...group(name.replace(/^Fox/, '').toLowerCase()).map(
+      ...group(source).map(
         (token) => `  static const ${type} ${camel(token.path.slice(1))} = ${value(token)};`,
       ),
       '}',
@@ -246,15 +259,37 @@ export function dart(themes: Record<Theme, Tokens>): string {
     ),
     '}',
     '',
-    component('button', 'Button'),
+    ...components.flatMap((each) => [component(each), '']),
+    dartClass(
+      'ComponentTokens',
+      'Every component token of one theme, one field per file of tokens/component/.',
+      components.map(({ label, field }): [string, string] => [field, `${label}Tokens`]),
+    ),
     '',
-    component('input', 'Input'),
+    '/// The component tokens per theme.',
+    'abstract final class FoxComponents {',
+    DART_THEMES.map((theme) =>
+      dartInstance(
+        'ComponentTokens',
+        theme,
+        components.map(({ label, field }): [string, string] => [field, `Fox${label}.${theme}`]),
+      ),
+    ).join('\n\n'),
+    '}',
     '',
     constants('FoxSpace', 'The spacing steps of the 4-point grid.', 'double', (t) =>
       number(dimension(t.value)),
     ),
     '',
     constants('FoxRadius', 'Corner radii.', 'double', (t) => number(dimension(t.value))),
+    '',
+    constants(
+      'FoxBorderWidth',
+      'Outline and rule widths.',
+      'double',
+      (t) => number(dimension(t.value)),
+      'border-width',
+    ),
     '',
     constants(
       'FoxDuration',

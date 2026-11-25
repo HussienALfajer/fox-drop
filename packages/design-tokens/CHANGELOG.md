@@ -2,6 +2,12 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.14.0 (2026-11-26, slice D.W1: the component token pipeline)
+
+- Dart: every file of `tokens/component/` now comes out with no change to the generator, and a new `ComponentTokens` per theme (`FoxComponents.light.button`, …) bundles them; `core_ui` exposes it as `FoxThemeData.components`. `FoxButton` and `FoxInput` keep their names.
+- A component file declares the ui-web and core_ui folders that read it in `$extensions["app.foxdrop"]` (`{ "web": [...], "flutter": [...] }`); `src/component-usage.test.ts` fails when a token is not read on a declared side. A token one side does not need says `"sides": ["web"]`. `button.json` declares `button` on both sides; `button.compact.height` is web only (the Flutter button has no compact density).
+- New `border-width.heavy` (4px): the current item's bar in the panel's sidebar, which wrote `border-s-4`. Dart gets the widths as `FoxBorderWidth` (`thin`, `thick`, `heavy`).
+
 ## 0.13.0 (2026-11-25, blue headings)
 
 - `heading` moves from the brand orange `#FF6E31` to the brand blue `#03428E` (`primitive.color.blue.500`) in every theme, as the identity package V1.1 sets titles (owner, 2026-11-25). It leaves the orange exception (`ORANGE` in `src/contrast.ts`) and is checked as text: 4.5:1 on the phone and panel (8.72 on `surface`), 7:1 for the captain.
