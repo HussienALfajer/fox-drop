@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { waitFor } from 'storybook/test';
 import { AmountsSummary } from '../amounts-summary/amounts-summary';
 import { Button } from '../button/button';
 import { ConfirmDialog } from './confirm-dialog';
@@ -41,8 +42,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const open = (canvasElement: HTMLElement) =>
-  canvasElement.querySelector<HTMLButtonElement>('button')?.click();
+// Opens the dialog from its trigger; a missing trigger fails the story.
+const open = (canvasElement: HTMLElement) => {
+  canvasElement.querySelector<HTMLButtonElement>('button')!.click();
+};
+
+// An element of the open dialog, once it is there: the dialog opens after the
+// click, so a play waits for it (a fixed 300 ms once missed it on CI and shot
+// «Invalid» without its error), and fails when it never comes.
+const inDialog = <T extends Element>(selector: string) =>
+  waitFor(
+    () => {
+      const found = document.querySelector<T>(`[role="alertdialog"] ${selector}`);
+      if (!found) throw new Error(`the open dialog has no ${selector}`);
+      return found;
+    },
+    { timeout: 5_000 },
+  );
 
 export const Default: Story = {};
 export const Empty: Story = { play: ({ canvasElement }) => open(canvasElement) };
@@ -50,20 +66,17 @@ export const Empty: Story = { play: ({ canvasElement }) => open(canvasElement) }
 export const Invalid: Story = {
   play: async ({ canvasElement }) => {
     open(canvasElement);
-    await new Promise((done) => setTimeout(done, 300));
-    document
-      .querySelector<HTMLButtonElement>('[role="alertdialog"] button[aria-disabled="true"]')
-      ?.click();
+    (await inDialog<HTMLButtonElement>('button[aria-disabled="true"]')).click();
   },
 };
 export const Filled: Story = {
   play: async ({ canvasElement }) => {
     open(canvasElement);
-    await new Promise((done) => setTimeout(done, 300));
-    const input = document.querySelector<HTMLInputElement>('[role="alertdialog"] input');
-    if (!input) return;
-    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-    setValue?.call(input, 'الزبون طلب الإلغاء عبر الدعم');
+    const input = await inDialog<HTMLInputElement>('input');
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+      input,
+      'الزبون طلب الإلغاء عبر الدعم',
+    );
     input.dispatchEvent(new Event('input', { bubbles: true }));
   },
 };

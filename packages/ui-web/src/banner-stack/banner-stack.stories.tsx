@@ -42,6 +42,6 @@ export const Two: Story = { args: { banners: all.slice(0, 2) } };
 export const Folded: Story = {};
 export const Opened: Story = {
   play: ({ canvasElement }) => {
-    canvasElement.querySelector<HTMLButtonElement>('button[aria-expanded]')?.click();
+    canvasElement.querySelector<HTMLButtonElement>('button[aria-expanded]')!.click();
   },
 };

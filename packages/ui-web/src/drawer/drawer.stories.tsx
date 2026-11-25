@@ -58,6 +58,6 @@ export const Start: Story = {
 };
 export const Open: Story = {
   play: ({ canvasElement }) => {
-    canvasElement.querySelector<HTMLButtonElement>('button')?.click();
+    canvasElement.querySelector<HTMLButtonElement>('button')!.click();
   },
 };

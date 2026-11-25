@@ -25,7 +25,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const focus: Story['play'] = ({ canvasElement }) => {
-  canvasElement.querySelector<HTMLElement>('button, a')?.focus();
+  canvasElement.querySelector<HTMLElement>('button, a')!.focus();
 };
 
 export const Default: Story = {};

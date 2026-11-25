@@ -19,7 +19,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const open: Story['play'] = ({ canvasElement }) => {
-  canvasElement.querySelector<HTMLButtonElement>('button')?.click();
+  canvasElement.querySelector<HTMLButtonElement>('button')!.click();
 };
 
 export const Default: Story = {};
