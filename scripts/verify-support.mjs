@@ -425,8 +425,10 @@ const COLOURS = new RegExp(`${ESC}\\[[0-9;?]*[A-Za-z]`, 'g');
 // A line that reports a failure, in the output of Vitest, Playwright, ESLint,
 // tsc, Turborepo, Prettier, the Dart analyzer and `dart test` / `flutter test`.
 const FAILED_LINE =
-  /\b(FAIL|FAILED|failed|Failed|Error|ERROR|ERR!|error|AssertionError|Expected|Received|Exception|TimeoutError)\b|✗|×|✘|❌|^\s*\d+\) |\[(E|warn)\]|Some tests failed|exited with code [1-9]|^\s*(info|warning|error) - /;
-const NOT_FAILED = /\b(0 failed|failed: 0|no errors?|0 errors?)\b|\[WebServer\]/i;
+  /\b(FAIL|FAILED|failed|Failed|Error|ERROR|ERR!|error|AssertionError|Expected|Received|Exception|TimeoutError)\b|(^|\s)[✗×✘❌](\s|$)|^\s*\d+\) |\[(E|warn)\]|Some tests failed|exited with code [1-9]|^\s*(info|warning|error) - /;
+// A passing test's line (Playwright's `ok 12 [project] › …`, Vitest's ✓) names
+// a story or test that may hold such a word ("emptystate--error").
+const NOT_FAILED = /\b(0 failed|failed: 0|no errors?|0 errors?)\b|\[WebServer\]|\sok\s+\d+\s|✓/i;
 
 /**
  * A failing step's output cut to what failed: each failure line with a little

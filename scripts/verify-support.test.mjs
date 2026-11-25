@@ -174,10 +174,16 @@ describe('the output of a run', () => {
     const lines = Array.from({ length: 500 }, (_, i) => `line ${i}`);
     lines[100] = ' FAIL  src/geo.test.ts > the fee';
     lines[300] = 'Tests  0 failed';
+    lines[200] = '  ok 27 [chromium] › refuses an image smaller than 1200×500';
+    lines[220] = 'ui-web:test:e2e:   ok 234 [functional] › axe › emptystate--error (774ms)';
+    lines[250] = ' × src/fee.test.ts > rounds down';
     const text = cut(lines.join('\n'), 'run/05.log');
     assert.match(text, /^\[… 97 lines …\]\nline 97\nline 98\nline 99\n FAIL {2}src\/geo\.test\.ts/);
     assert.match(text, /line 112\n\[… /);
     assert.doesNotMatch(text, /Tests {2}0 failed/);
+    assert.doesNotMatch(text, /1200×500/);
+    assert.doesNotMatch(text, /emptystate--error/);
+    assert.match(text, / × src\/fee\.test\.ts > rounds down/);
     assert.match(text, /line 499\n\[cut from 500 lines; the whole output is in run\/05\.log\]$/);
     assert.equal(cut('short\noutput', 'x'), 'short\noutput');
   });

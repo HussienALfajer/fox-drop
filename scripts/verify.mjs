@@ -599,8 +599,13 @@ const localizationSteps = () =>
 
 // Turborepo replays a task whose inputs did not change (turbo.json); CI and
 // --fresh run every task again.
-// (`--force` alone would take the next task's name as its value.)
-const TURBO = `pnpm exec turbo run${CI || fresh ? ' --force=true' : ''}`;
+// (`--force` alone would take the next task's name as its value.) Locally the
+// log holds each task's output in one piece and a replayed task as one line.
+// A failing task still stops the rest: the fix changes the package's inputs,
+// so its other tasks would run again anyway.
+const TURBO = `pnpm exec turbo run${CI || fresh ? ' --force=true' : ''}${
+  CI ? '' : ' --output-logs=new-only --log-order=grouped'
+}`;
 const LINT_TASKS = 'lint:root lint typecheck';
 const E2E_TASKS = 'build test:e2e';
 // The web apps' smoke tests run in Chromium; this downloads it once. One app
