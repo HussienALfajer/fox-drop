@@ -45,7 +45,7 @@
     "react-dom-18": "npm:react-dom@18.3.1",
     "storybook": "10.6.8",
     "tailwindcss": "4.3.5",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "typescript-eslint": "8.72.1",
     "vite": "8.3.5",
     "vitest": "5.1.0"
