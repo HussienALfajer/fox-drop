@@ -8,9 +8,9 @@ environment:
 resolution: workspace
 
 dependencies:
-  firebase_app_installations: 0.5.1
-  firebase_core: 5.1.0
-  firebase_messaging: 17.0.1
+  firebase_app_installations: 0.5.2
+  firebase_core: 5.2.0
+  firebase_messaging: 17.1.0
   flutter:
     sdk: flutter
   # 13.x needs permission_handler_android 14.1, which compiles against API 37;
