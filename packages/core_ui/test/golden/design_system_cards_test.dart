@@ -12,9 +12,8 @@ import 'sheet.dart';
 // One image per core_ui component for the Design System (owner, 2026-11-24:
 // every component, the Flutter ones too, in the system). Each card is 720
 // wide on the app ground, RTL, the phone theme, and the captain theme where
-// that app draws the component differently. The component registry,
-// `packages/design-tokens/components.json`, names each image (`golden`) with
-// its component: the image sits under the live web component on its card.
+// that app draws the component differently. `packages/core_ui/design-system/
+// cards.json` names, groups and describes each image.
 
 /// The card's width, less the sheet's padding on both sides.
 const _width = 720.0 - FoxSpace.lg * 2;

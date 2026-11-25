@@ -43,8 +43,7 @@ const control = formTv({
     // unchecked
     'data-unchecked:bg-(--fd-input-check-color-background)',
     // Disabled beats everything, by two attributes: a lone `data-disabled:`
-    // lost to `data-unchecked:` and `data-checked:` (found by the parity gate,
-    // D.P2). Off: the grey box with its outline; on: grey, no outline (the
+    // lost to `data-unchecked:` and `data-checked:`. Off: the grey box with its outline; on: grey, no outline (the
     // approved forms sheet).
     'data-disabled:text-(color:--fd-input-color-on-disabled)',
     'data-disabled:data-unchecked:bg-(--fd-input-color-disabled) data-disabled:data-unchecked:inset-ring-(color:--fd-input-color-on-disabled)',

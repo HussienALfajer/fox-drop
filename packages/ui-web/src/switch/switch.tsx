@@ -24,7 +24,7 @@ const track = formTv({
     keyboardRing,
     'data-unchecked:bg-(--fd-input-switch-color-track) data-checked:bg-(--fd-input-switch-color-track-on)',
     // Two attributes outrank the one above: a lone `data-disabled:` lost to
-    // `data-unchecked:` (the parity gate found the track blue, D.P2).
+    // `data-unchecked:`, which drew the disabled track blue.
     'data-disabled:data-unchecked:bg-(--fd-input-color-disabled) data-disabled:data-checked:bg-(--fd-input-color-disabled)',
   ],
   variants: {

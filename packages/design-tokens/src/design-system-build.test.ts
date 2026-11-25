@@ -1,20 +1,20 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { readRegistry } from './components.ts';
 import {
   assets,
+  flutterCards,
   fonts,
   FONTS,
   index,
   MAX_FONT,
   MAX_PNG,
   MAX_SVG,
-  pendingCards,
   pngSize,
   systemFiles,
 } from './design-system-build.ts';
 import { designSystem, FONT_FILES } from './design-system.ts';
-import { resolveAll } from './resolve.ts';
+import { PACKAGE_DIR, resolveAll } from './resolve.ts';
 
 // The fonts are licensed and fetched only where the build runs: the test
 // gives the build stand-in bytes (the SHA-256 check runs in `fonts()`).
@@ -62,47 +62,26 @@ describe("the Design System's files (architecture §9.8)", () => {
     }
   });
 
-  it('uploads every golden the registry names, as the store of the Flutter images', () => {
-    const goldens = readRegistry().components.flatMap((c) => (c.golden ? [c.golden] : []));
+  it('uploads one image per Flutter card and draws each card from it', () => {
+    const cards = JSON.parse(
+      readFileSync(path.join(PACKAGE_DIR, '../core_ui/design-system/cards.json'), 'utf8'),
+    ) as { name: string; file: string }[];
     const images = [...uploads.keys()].filter((key) => key.startsWith('Flutter/'));
-    expect(images.sort()).toEqual(goldens.map((file) => `Flutter/${file}`).sort());
+    expect(images.sort()).toEqual(cards.map((card) => `Flutter/${card.file}`).sort());
     for (const key of images) {
       expect(key).toMatch(/^Flutter\/Fox\w+\.png$/);
       expect(uploads.get(key)!.length).toBeLessThanOrEqual(MAX_PNG);
       expect(pngSize(uploads.get(key)!).width).toBe(720);
     }
-  });
-
-  it('draws an image card only for a component whose web twin is pending, under its web name', () => {
-    const registry = readRegistry();
-    const images = [...uploads.keys()].filter((key) => key.startsWith('Flutter/'));
     const blobs = Object.fromEntries(images.map((key, i) => [key, { blob: `id${i}`, size: 1 }]));
-    const drawn = pendingCards({ created: 'x', assets: blobs }, uploads);
-    // A component with a web twin has one card, the live one ui-web writes.
-    expect([...drawn.keys()].filter((f) => /^project\/components\/Fox/.test(f))).toEqual([]);
-    const pending = registry.components.filter((c) => c.web === null);
-    expect(pending.map((c) => c.name).sort()).toEqual([...registry.pendingWeb].sort());
-    expect([...drawn.keys()].sort()).toEqual(
-      pending
-        .flatMap((c) => [
-          `project/components/${c.name}/README.md`,
-          `project/components/${c.name}/preview.html`,
-        ])
-        .sort(),
-    );
-    for (const c of pending) {
-      const preview = String(drawn.get(`project/components/${c.name}/preview.html`));
-      expect(preview.split('\n')[0]).toMatch(
-        new RegExp(`^<!-- @dsCard group="${c.group}" height=\\d+ -->$`),
-      );
+    const drawn = flutterCards({ created: 'x', assets: blobs }, uploads);
+    for (const card of cards) {
+      const preview = String(drawn.get(`project/components/${card.name}/preview.html`));
+      expect(preview.split('\n')[0]).toMatch(/^<!-- @dsCard group="Flutter · \w+" height=\d+ -->$/);
       expect(preview).toContain('src="/_blob/id');
-      expect(preview).toContain('Web twin pending');
       expect(preview).toMatch(/#root \{[^}]*background: var\(--fd-color-surface\)/);
-      const readme = String(drawn.get(`project/components/${c.name}/README.md`));
-      expect(readme.split('\n')[0]).toBe(`# ${c.name}`);
+      const readme = String(drawn.get(`project/components/${card.name}/README.md`));
       expect(readme.split('\n')[2]).toMatch(/\.$/);
-      expect(readme).toContain(`Flutter: \`${c.flutter}\``);
-      expect(readme).toContain('Web twin pending');
     }
   });
 

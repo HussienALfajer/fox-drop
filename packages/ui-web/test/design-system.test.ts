@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { buildBundle, checkJs, COMPONENTS, ICON_NAMES, PACKAGE_DIR } from '../scripts/bundle.ts';
-import { preview, readme, typesDoc } from '../scripts/docs.ts';
+import { preview, typesDoc } from '../scripts/docs.ts';
 import type { AmountsSummaryProps } from '../src/amounts-summary/amounts-summary';
 import type { ButtonProps } from '../src/button/button';
 import type { CardProps } from '../src/card/card';
@@ -644,54 +644,5 @@ describe('the component docs', () => {
     expect(html).not.toContain('__ICON_NAMES__');
     const readme = readFileSync(path.join(PACKAGE_DIR, 'design-system', name, 'README.md'), 'utf8');
     expect(readme.split('\n')[2]).toMatch(/\.$/);
-  });
-});
-
-interface Entry {
-  name: string;
-  flutter: string | null;
-  group: string;
-}
-
-const entries = (
-  JSON.parse(readFileSync(path.join(PACKAGE_DIR, '../design-tokens/components.json'), 'utf8')) as {
-    components: Entry[];
-  }
-).components;
-const entry = (name: string) => entries.find((e) => e.name === name)!;
-
-describe('one card per component (architecture §9.8)', () => {
-  it.each(COMPONENTS)('sets the %s card in its registry group', (name) => {
-    expect(entry(name), name).toBeDefined();
-    expect(preview(name).split('\n')[0]).toMatch(
-      new RegExp(`^<!-- @dsCard group="${entry(name).group}" height=\\d+ -->$`),
-    );
-  });
-
-  const twins = COMPONENTS.filter((name) => entry(name)?.flutter);
-  const webOnly = COMPONENTS.filter((name) => entry(name) && !entry(name).flutter);
-  const height = (html: string) => Number(/height=(\d+)/.exec(html.split('\n')[0]!)![1]);
-
-  it.each(twins)('ends the %s card with its Flutter golden, the card grown to hold it', (name) => {
-    const live = preview(name);
-    const html = preview(name, { blob: 'abc123', width: 720, height: 400 });
-    expect(html).toContain('src="/_blob/abc123"');
-    expect(html).toContain(`<code>${entry(name).flutter}</code>`);
-    expect(html.indexOf('/_blob/abc123')).toBeGreaterThan(html.indexOf('<div id="root"'));
-    expect(height(html)).toBeGreaterThanOrEqual(height(live) + 400);
-    // Without the blob ids (the first run) the card is the live component alone.
-    expect(live).not.toContain('/_blob/');
-    expect(readme(name)).toContain(`Flutter: \`${entry(name).flutter}\``);
-    expect(readme(name)).toMatch(/^Platform differences: .+\.$/m);
-  });
-
-  it.each(webOnly)('says the %s card has no Flutter side', (name) => {
-    expect(readme(name)).toContain('Flutter: none, web only.');
-    expect(preview(name, { blob: 'abc123', width: 720, height: 400 })).not.toContain('/_blob/');
-  });
-
-  it('covers both kinds', () => {
-    expect(twins.length).toBeGreaterThan(30);
-    expect(webOnly).toEqual(expect.arrayContaining(['DataTable', 'Drawer']));
   });
 });

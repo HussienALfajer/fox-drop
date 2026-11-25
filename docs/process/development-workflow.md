@@ -12,7 +12,7 @@ How FOX DROP is built: almost all code is written by Claude Code (Opus 5.5) unde
 4. **Small slices.** One slice per session, one slice per pull request, sized by §3.1.
 5. **Independent review.** The session that wrote the code never approves it: a fresh-context `reviewer` checks it against the slice file and the specs.
 6. **Compounding.** A correction made twice becomes a rule, a skill, a hook or a test. A bug found after a merge becomes a `REVIEW.md` item or a test in its fix's pull request.
-7. **Design before code.** A component or screen is coded only after the owner approved its sheet or drawing (architecture §9.9). A component is built on the web first (`ui-web`), the single design reference, then in Flutter (`core_ui`) from it (owner, 2026-11-25). Screens come in UI batches after their API, drawn as working prototypes with an analysis and tested by the owner in Play before approval (T13).
+7. **Design before code.** A component or screen is coded only after the owner approved its sheet or drawing (architecture §9.9). Screens come in UI batches after their API, drawn as working prototypes with an analysis and tested by the owner in Play before approval (T13).
 
 ## 2. Risk tiers
 
@@ -42,7 +42,7 @@ Measured on 2026-11-25: slices of 115 to 320 files took 250 to 440 requests in o
 
 - A slice is at most about 25 hand-written files, or two layers of the build order (database and server, contract and clients, web, Flutter, end-to-end), whichever comes first. Generated files (the contract, the clients, `*.g.dart`), icons and image baselines do not count; they go in a commit of their own.
 - A behaviour that crosses more layers is split along the build order, each slice leaving `main` working: the server and its contract first, then each client.
-- A component batch's web side (`ui-web`) and Flutter side (`core_ui`) are separate slices, and so is its Design System sheet when it is written by hand (`packages/design-tokens/src/*-sheet.ts`). The cycle of architecture §9.9 is unchanged: the sheet is approved before either side is coded. The web side comes first and is the reference; the Flutter side is built from it (owner, 2026-11-25).
+- A component batch's web side (`ui-web`) and Flutter side (`core_ui`) are separate slices, and so is its Design System sheet when it is written by hand (`packages/design-tokens/src/*-sheet.ts`). The cycle of architecture §9.9 is unchanged: the sheet is approved before either side is coded.
 - The planner estimates by counting: the slice file's plan names, layer by layer, every file the slice creates or changes by hand, and the count is written next to the plan. A plan over the limit is split before the owner approves it, never during the build.
 
 ## 4. Definition of done

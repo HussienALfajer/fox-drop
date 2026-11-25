@@ -302,7 +302,7 @@ class _FoxButtonState extends State<FoxButton> {
   _Colors _colors(FoxButtonTheme b) {
     if (_disabled) {
       // The disabled ghost keeps its transparent ground (the approved sheet,
-      // `button()` in design-tokens; found by the parity gate, D.P2).
+      // `button()` in design-tokens).
       final fill = widget.variant == FoxButtonVariant.ghost
           ? b.ghostBackgroundHover.withValues(alpha: 0)
           : b.disabledBackground;

@@ -64,15 +64,9 @@ export const READ_BY_DART_TESTS = [
 
 // Files outside a Dart package that count as a change to that package (its
 // folder) and so to its dependents: core_tokens' Dart is generated from the
-// design tokens, and its test compares the two; core_ui's parity test (D.P2)
-// measures the registry's states against the resolved CSS tokens. A path
-// ending in /** is a folder.
+// design tokens, and its test compares the two. A path ending in /** is a folder.
 export const DART_PACKAGE_SOURCES = {
   'packages/core_tokens': ['packages/design-tokens/tokens/**'],
-  'packages/core_ui': [
-    'packages/design-tokens/components.json',
-    'packages/design-tokens/generated/tokens.css',
-  ],
 };
 
 const matches = (file) => (each) =>
