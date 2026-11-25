@@ -78,7 +78,7 @@ Checkpoints (one commit per step, `checker` once at each): (A) tokens and the lo
 
 ## Stopped at
 
-2026-11-25, end of the first build session (owner: finish B, then stop): checkpoints A (tokens 0.11.0 and the loader, both sides) and B (the shared phone rules, the country list generator, `PhoneField` on the web, `FoxPhoneField` and `FoxCountrySheet` in Flutter, the old inputs moved) are on the branch. Next: checkpoint C (plan step 4), then step 5, the goldens and visual baselines, review and the pull request.
+2026-11-25, end of the first build session (owner: finish B, then stop): checkpoints A (tokens 0.11.0 and the loader, both sides) and B (the shared phone rules, the country list generator, `PhoneField` on the web, `FoxPhoneField` and `FoxCountrySheet` in Flutter, the old inputs moved) went to `main` in their own pull request (#283, owner 2026-11-25: merge A and B now). Next: checkpoint C (plan step 4) on a new branch from `main` (`feat/sign-in-frame-components-c`), then step 5, the goldens and visual baselines (A and B's are not updated yet), review and the slice's second pull request.
 
 ## Evidence
 
