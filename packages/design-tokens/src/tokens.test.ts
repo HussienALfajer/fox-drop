@@ -134,7 +134,6 @@ describe('contrast (R4, brand expression §6)', () => {
     const orange = {
       brand: '#FF6E31',
       primary: '#FF6E31',
-      heading: '#FF6E31',
       'primary-hover': '#DA531B',
       'primary-pressed': '#C2410C',
       'on-primary': '#FFFAED',
@@ -143,6 +142,9 @@ describe('contrast (R4, brand expression §6)', () => {
       for (const [name, value] of Object.entries(orange))
         expect(colour(themes[theme], `color.${name}`), `${theme} ${name}`).toBe(value);
     expect(Object.keys(orange)).toEqual(expect.arrayContaining([...ORANGE]));
+    // Headings are the brand blue, as the identity package V1.1 sets them (owner, 2026-11-25).
+    for (const theme of Object.keys(themes) as (keyof typeof themes)[])
+      expect(colour(themes[theme], 'color.heading'), `${theme} heading`).toBe('#03428E');
   });
 
   it('makes every hover and press visible (R10, owner 2026-11-24)', () => {

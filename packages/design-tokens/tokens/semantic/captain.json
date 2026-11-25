@@ -1,7 +1,7 @@
 {
   "color": {
     "$type": "color",
-    "$description": "The captain app override: text and numbers at 7:1 in near-black or blue; orange only on buttons and headings, under the owner's exception (brand expression §6).",
+    "$description": "The captain app override: text and numbers at 7:1 in near-black or blue; orange only on buttons and bars, under the owner's exception (brand expression §6).",
     "on-surface-muted": {
       "$value": "{primitive.color.neutral.700}"
     },

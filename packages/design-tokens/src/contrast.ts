@@ -18,11 +18,12 @@ export interface Pair {
 
 /**
  * The owner's decision of 2026-11-23: the brand orange `#FF6E31` carries
- * filled controls, bars and headings in every app, as the Figma
- * file draws it, although it misses 4.5:1 (architecture §9.5 R4). The report
- * lists these pairs with their ratios; a test keeps the exception to them.
+ * filled controls and bars in every app, as the Figma file draws it,
+ * although it misses 4.5:1 (architecture §9.5 R4). Headings left it for the
+ * brand blue on 2026-11-25 (identity package V1.1). The report lists these
+ * pairs with their ratios; a test keeps the exception to them.
  */
-export const ORANGE = new Set(['brand', 'primary', 'primary-hover', 'primary-pressed', 'heading']);
+export const ORANGE = new Set(['brand', 'primary', 'primary-hover', 'primary-pressed']);
 const EXCEPTION = 'owner, 2026-11-23: the brand orange as in the Figma file';
 
 export const BACKGROUNDS = ['surface', 'surface-raised'];
@@ -42,8 +43,8 @@ const excepted = (pairs: Pair[], floor: number): Pair[] =>
   pairs.map((p) => ({ ...p, exception: EXCEPTION, floor }));
 
 // The owner allows orange anywhere, text and numbers included (2026-11-23):
-// headings in `heading`, any other orange text or number in `primary`.
-const orangeText = excepted(on(['heading', 'primary'], 4.5, 'orange text'), 2.4);
+// any orange text or number uses `primary`.
+const orangeText = excepted(on(['primary'], 4.5, 'orange text'), 2.4);
 const orangeFills = excepted(
   ['primary', 'primary-hover', 'primary-pressed'].map((background) => ({
     foreground: 'on-primary',
@@ -165,7 +166,7 @@ const tints = (target: number): Pair[] =>
 /** The required pairs of each surface; the colour names are under `color.`. */
 export const PAIRS: Record<Surface, Pair[]> = {
   phone: [
-    ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
+    ...on(['on-surface', 'on-surface-muted', 'heading', 'accent'], 4.5, 'text'),
     ...on(statusText, 4.5, 'status text'),
     ...tints(4.5),
     ...fills,
@@ -181,7 +182,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
     ...codeMask,
   ],
   panel: [
-    ...on(['on-surface', 'on-surface-muted', 'accent'], 4.5, 'text'),
+    ...on(['on-surface', 'on-surface-muted', 'heading', 'accent'], 4.5, 'text'),
     ...on(statusText, 4.5, 'status text'),
     ...tints(4.5),
     ...fills,
@@ -199,7 +200,7 @@ export const PAIRS: Record<Surface, Pair[]> = {
   // Text and numbers at 7:1 in near-black or blue; orange only on buttons and
   // headings, under the owner's exception (§6).
   captain: [
-    ...on(['on-surface', 'on-surface-muted', 'accent'], 7, 'text and numbers'),
+    ...on(['on-surface', 'on-surface-muted', 'heading', 'accent'], 7, 'text and numbers'),
     ...on(statusText, 7, 'status text'),
     ...tints(7),
     ...fills,
