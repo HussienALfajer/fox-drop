@@ -64,7 +64,7 @@ const link = formTv({
   base: `relative flex min-h-(--fd-size-control-compact) items-center gap-sm rounded-md text-panel-body font-medium no-underline hover:bg-surface-raised-hover active:bg-surface-raised-pressed ${keyboardRing}`,
   variants: {
     current: {
-      true: 'bg-primary-subtle font-bold text-on-primary-subtle border-s-4 border-primary hover:bg-primary-subtle',
+      true: 'bg-primary-subtle font-bold text-on-primary-subtle border-s-(length:--fd-border-width-heavy) border-primary hover:bg-primary-subtle',
       false: 'text-on-surface',
     },
     collapsed: {

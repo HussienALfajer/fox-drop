@@ -238,7 +238,7 @@ class _TabState extends State<_Tab> {
         border: Border(
           bottom: BorderSide(
             color: on ? c.primary : c.surface.withValues(alpha: 0),
-            width: t.FoxSpace.xxs - 1,
+            width: t.FoxBorderWidth.indicator,
           ),
         ),
       );

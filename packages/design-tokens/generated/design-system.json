@@ -912,6 +912,21 @@
         "name": "size-bar",
         "value": "64px",
         "usage": "The top bar and the phone back bar (D.10)."
+      },
+      {
+        "name": "size-menu-min-width",
+        "value": "192px",
+        "usage": "The Flutter menu's narrowest width (the web menu opens at size.tooltip: a parity gap for D.W3c)."
+      },
+      {
+        "name": "size-menu-max-width",
+        "value": "336px",
+        "usage": "The Flutter menu's widest width."
+      },
+      {
+        "name": "size-menu-max-height",
+        "value": "288px",
+        "usage": "The tallest anchored list before it scrolls (select, date and time)."
       }
     ]
   },
@@ -919,7 +934,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.13.0",
+    "version": "0.14.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

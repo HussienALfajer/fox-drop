@@ -299,14 +299,16 @@ class _FoxButtonState extends State<FoxButton> {
     );
   }
 
-  _Colors _colors(FoxButtonTheme b) {
+  // Named `button` so design-tokens' usage check finds each token as
+  // `button.<field>` (slice D.W1).
+  _Colors _colors(FoxButtonTheme button) {
     if (_disabled) {
       // The disabled ghost keeps its transparent ground (the approved sheet,
       // `button()` in design-tokens).
       final fill = widget.variant == FoxButtonVariant.ghost
-          ? b.ghostBackgroundHover.withValues(alpha: 0)
-          : b.disabledBackground;
-      return _Colors(fill, b.disabledLabel, fill);
+          ? button.ghostBackgroundHover.withValues(alpha: 0)
+          : button.disabledBackground;
+      return _Colors(fill, button.disabledLabel, fill);
     }
     // A loading button shows neither hover nor pressed (as on the web).
     final hover = _hovered && _interactive;
@@ -316,41 +318,41 @@ class _FoxButtonState extends State<FoxButton> {
     switch (widget.variant) {
       case FoxButtonVariant.primary:
         final fill = pick(
-          b.primaryBackground,
-          b.primaryBackgroundHover,
-          b.primaryBackgroundPressed,
+          button.primaryBackground,
+          button.primaryBackgroundHover,
+          button.primaryBackgroundPressed,
         );
-        return _Colors(fill, b.primaryLabel, fill);
+        return _Colors(fill, button.primaryLabel, fill);
       case FoxButtonVariant.secondary:
         return _Colors(
           pick(
-            b.secondaryBackground,
-            b.secondaryBackgroundHover,
-            b.secondaryBackgroundPressed,
+            button.secondaryBackground,
+            button.secondaryBackgroundHover,
+            button.secondaryBackgroundPressed,
           ),
-          b.secondaryLabel,
+          button.secondaryLabel,
           pick(
-            b.secondaryBorder,
-            b.secondaryBorderHover,
-            b.secondaryBorderHover,
+            button.secondaryBorder,
+            button.secondaryBorderHover,
+            button.secondaryBorderHover,
           ),
         );
       case FoxButtonVariant.danger:
         final fill = pick(
-          b.dangerBackground,
-          b.dangerBackgroundHover,
-          b.dangerBackgroundPressed,
+          button.dangerBackground,
+          button.dangerBackgroundHover,
+          button.dangerBackgroundPressed,
         );
-        return _Colors(fill, b.dangerLabel, fill);
+        return _Colors(fill, button.dangerLabel, fill);
       case FoxButtonVariant.ghost:
         // Transparent hover colour, so the fade does not pass through black.
-        final none = b.ghostBackgroundHover.withValues(alpha: 0);
+        final none = button.ghostBackgroundHover.withValues(alpha: 0);
         final fill = pick(
           none,
-          b.ghostBackgroundHover,
-          b.ghostBackgroundPressed,
+          button.ghostBackgroundHover,
+          button.ghostBackgroundPressed,
         );
-        return _Colors(fill, b.ghostLabel, fill);
+        return _Colors(fill, button.ghostLabel, fill);
     }
   }
 }

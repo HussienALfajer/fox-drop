@@ -237,20 +237,18 @@ final class FoxShadows {
 final class FoxThemeData {
   FoxThemeData._(
     t.ColorTokens colors,
-    t.ButtonTokens button,
-    t.InputTokens input,
+    this.components,
     t.TypeScale type,
     this.iconWeight,
   ) : colors = FoxColorScheme(colors),
-      button = FoxButtonTheme(button),
-      input = FoxInputTheme(input),
+      button = FoxButtonTheme(components.button),
+      input = FoxInputTheme(components.input),
       text = FoxTextTheme(type);
 
   /// The customer and restaurant apps.
   factory FoxThemeData.phone() => FoxThemeData._(
     t.FoxColors.light,
-    t.FoxButton.light,
-    t.FoxInput.light,
+    t.FoxComponents.light,
     t.FoxType.phone,
     t.FoxIconWeight.phone,
   );
@@ -258,11 +256,15 @@ final class FoxThemeData {
   /// The captain app: sunlight contrast and a larger scale (R7).
   factory FoxThemeData.captain() => FoxThemeData._(
     t.FoxColors.captainLight,
-    t.FoxButton.captainLight,
-    t.FoxInput.captainLight,
+    t.FoxComponents.captainLight,
     t.FoxType.captain,
     t.FoxIconWeight.captain,
   );
+
+  /// Every component's tokens of this theme, generated from
+  /// `tokens/component/` (slice D.W1): a component without a theme class of
+  /// its own reads them here (`components.card.padding`), colours as ARGB.
+  final t.ComponentTokens components;
 
   final FoxColorScheme colors;
   final FoxButtonTheme button;

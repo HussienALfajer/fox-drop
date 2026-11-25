@@ -13,6 +13,7 @@ void main() {
     defineReflectiveTests(NoLiteralSpacingTest);
     defineReflectiveTests(NoMaterialImportTest);
     defineReflectiveTests(NoPhysicalDirectionTest);
+    defineReflectiveTests(NoLiteralDimensionTest);
     defineReflectiveTests(OutsideEnforcedTest);
     defineReflectiveTests(MaterialAllowedTest);
   });
@@ -41,7 +42,7 @@ class SizedBox {
   const SizedBox({double? width, double? height});
 }
 class TextStyle {
-  const TextStyle({double? fontSize, double? height, Color? color});
+  const TextStyle({double? fontSize, double? height, double? letterSpacing, Color? color});
 }
 class Positioned {
   const Positioned({double? left, double? right, double? top});
@@ -52,6 +53,44 @@ class Alignment {
   static const center = Alignment(0, 0);
 }
 enum TextAlign { left, right, start, end, center }
+class Radius {
+  const Radius.circular(double radius);
+}
+class BorderRadius {
+  const BorderRadius.circular(double radius);
+  const BorderRadius.all(Radius radius);
+}
+class BorderSide {
+  const BorderSide({Color? color, double width = 1});
+}
+class Container {
+  const Container({double? width, double? height, Color? color});
+}
+class BoxConstraints {
+  const BoxConstraints({double minWidth = 0, double maxWidth = 0, double minHeight = 0, double maxHeight = 0});
+}
+class Offset {
+  const Offset(double dx, double dy);
+}
+class BoxShadow {
+  const BoxShadow({Color? color, Offset? offset, double blurRadius = 0, double spreadRadius = 0});
+}
+class Size {
+  double get width => 0;
+}
+class Canvas {}
+class Path {}
+abstract class CustomPainter {
+  void paint(Canvas canvas, Size size);
+}
+''';
+
+/// A stand-in for core_ui's icon, the one class of ours the dimension rule
+/// looks at.
+const _coreUi = r'''
+class FoxIcon {
+  const FoxIcon(Object icon, {double? size});
+}
 ''';
 
 abstract class _RuleTest extends AnalysisRuleTest {
@@ -64,6 +103,7 @@ abstract class _RuleTest extends AnalysisRuleTest {
     newPackage('flutter')
       ..addFile('lib/widgets.dart', _flutter)
       ..addFile('lib/material.dart', "export 'widgets.dart';");
+    newPackage('core_ui').addFile('lib/core_ui.dart', _coreUi);
     super.setUp();
   }
 }
@@ -186,6 +226,90 @@ const b = Positioned(top: 8);
 const c = Alignment.center;
 const d = TextAlign.start;
 ''');
+  }
+}
+
+@reflectiveTest
+class NoLiteralDimensionTest extends _RuleTest {
+  @override
+  AbstractAnalysisRule get ruleUnderTest => NoLiteralDimension(packages: _here);
+
+  Future<void> test_literals() async {
+    const code = r'''
+import 'package:core_ui/core_ui.dart';
+import 'package:flutter/widgets.dart';
+const space = 8.0;
+const a = Radius.circular(12);
+const b = BorderRadius.circular(-6);
+const c = BorderSide(width: 1.5);
+const d = Container(width: 40);
+const e = BoxConstraints(maxWidth: 360);
+const f = Offset(0, 3);
+const g = BoxShadow(blurRadius: 9, spreadRadius: 0);
+const h = Duration(milliseconds: 150);
+const i = FoxIcon(Object(), size: 20);
+const j = TextStyle(letterSpacing: space / 40);
+const k = SizedBox(width: space * 3);
+''';
+    // Each literal is reported where it stands, inside the expression too.
+    int at(String line, String literal) =>
+        code.indexOf(line) + line.indexOf(literal);
+    await assertDiagnostics(code, [
+      lint(at('Radius.circular(12)', '12'), 2),
+      lint(at('circular(-6)', '6'), 1),
+      lint(at('width: 1.5', '1.5'), 3),
+      lint(at('width: 40', '40'), 2),
+      lint(at('maxWidth: 360', '360'), 3),
+      lint(at('Offset(0, 3)', '3'), 1),
+      lint(at('blurRadius: 9', '9'), 1),
+      lint(at('milliseconds: 150', '150'), 3),
+      lint(at('size: 20', '20'), 2),
+      lint(at('space / 40', '40'), 2),
+      lint(at('space * 3', '3'), 1),
+    ]);
+  }
+
+  Future<void> test_tokensZeroHalvesAndPainters() async {
+    await assertNoDiagnostics(r'''
+import 'package:core_ui/core_ui.dart';
+import 'package:flutter/widgets.dart';
+const space = 8.0;
+const a = Radius.circular(space);
+const b = BorderSide(width: 0);
+const c = Offset(0, 0);
+const d = Radius.circular(space / 2);
+const e = Duration(seconds: 4);
+const f = FoxIcon(Object(), size: space);
+// A direct literal in SizedBox or TextStyle is no_literal_spacing's.
+const g = SizedBox(width: 5);
+
+/// A painter draws in its own unit: its geometry is not a design value.
+class Drop extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) =>
+      print([Radius.circular(size.width / 24 * 9), Offset(3, 8.5)]);
+}
+
+/// A painter's helper takes the canvas or builds a path.
+void tick(Canvas canvas) => print(Offset(1, 2));
+Path pin(Size size) {
+  print(Radius.circular(9));
+  return Path();
+}
+''');
+  }
+
+  /// A checked class inside another is reported once (review of D.W1).
+  Future<void> test_nestedOnce() async {
+    const code = r'''
+import 'package:flutter/widgets.dart';
+const a = BorderRadius.all(Radius.circular(12));
+''';
+    await assertDiagnostics(code, [lint(code.indexOf('12'), 2)]);
+  }
+
+  Future<void> test_coreUiOnly() async {
+    expect(NoLiteralDimension().packages, {'packages/core_ui'});
   }
 }
 

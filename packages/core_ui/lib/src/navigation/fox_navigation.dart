@@ -92,7 +92,7 @@ class FoxBottomNavigation extends StatelessWidget {
             ),
             child: SizedBox(
               key: pillKey,
-              height: t.FoxSize.touchTarget + 2 * t.FoxSpace.xs,
+              height: t.FoxSize.bar,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: t.FoxSpace.xs),
                 child: Row(

@@ -5,13 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FoxThemeData', () {
-    for (final (name, theme, colors, button, type) in [
+    for (final (name, theme, colors, button, type, components) in [
       (
         'phone',
         FoxThemeData.phone(),
         t.FoxColors.light,
         t.FoxButton.light,
         t.FoxType.phone,
+        t.FoxComponents.light,
       ),
       (
         'captain',
@@ -19,8 +20,16 @@ void main() {
         t.FoxColors.captainLight,
         t.FoxButton.captainLight,
         t.FoxType.captain,
+        t.FoxComponents.captainLight,
       ),
     ]) {
+      // Slice D.W1: every component's tokens, from the generated bundle.
+      test('$name: the component tokens are the generated bundle', () {
+        expect(theme.components, same(components));
+        expect(theme.components.button, same(components.button));
+        expect(theme.components.button, same(button));
+      });
+
       test('$name: every colour equals its token', () {
         final c = theme.colors;
         final pairs = <(Color, int)>[

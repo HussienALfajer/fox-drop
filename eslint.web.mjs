@@ -23,6 +23,12 @@ const numericSpacing =
   /^-?(?:p|px|py|ps|pe|pt|pb|m|mx|my|ms|me|mt|mb|inset|inset-x|inset-y|top|bottom|start|end|gap|gap-x|gap-y|space-x|space-y|w|h|size|min-w|min-h|max-w|max-h|translate-x|translate-y)-\d+(?:\.\d+)?(?:$|\/|!)/;
 // A number alone is the numeric scale (`p-4`, `w-0.5`); a named step such as
 // `gap-2xs` or `w-2xl` goes on with letters, and the theme has it.
+// ui-web only (slice D.W1): the utilities Tailwind still builds from a bare
+// number, a raw value in a component (`duration-150`, `border-2`). The token
+// form reads a variable (`border-t-(length:--fd-border-width-thick)`); 0 is no
+// design value (`opacity-0`, `border-b-0`), as in fox_lints.
+const numericValue =
+  /^-?(?:duration|delay|opacity|leading|tracking|text|stroke|rounded(?:-(?:s|e|t|b|ss|se|es|ee))?|border(?:-(?:x|y|s|e|t|b))?)-(?!0(?:$|!))\d+(?:\.\d+)?(?:$|\/|!)/;
 
 const messages = {
   numericSpacing:
@@ -35,6 +41,8 @@ const messages = {
   style: 'No style prop (R1): style with classes over design tokens.',
   cssVariable:
     'No CSS-variable class in an app (R1): a screen uses semantic classes only; a component token belongs in @fox-drop/ui-web.',
+  numericValue:
+    'No numeric value in a component class (R1): read a token, duration-(--fd-duration-base), border-t-(length:--fd-border-width-thick).',
 };
 
 function textChecks(context, node, text) {
@@ -83,7 +91,32 @@ const appDesignRules = {
   }),
 };
 
-const plugin = { rules: { design: designRules, 'app-design': appDesignRules } };
+function componentTextChecks(context, node, text) {
+  for (const word of text.split(/\s+/)) {
+    const utility = word.split(':').at(-1).replace(/^!/, '');
+    if (numericValue.test(utility)) context.report({ node, messageId: 'numericValue' });
+  }
+}
+
+const componentDesignRules = {
+  meta: { type: 'problem', messages, schema: [] },
+  create: (context) => ({
+    Literal(node) {
+      if (typeof node.value === 'string') componentTextChecks(context, node, node.value);
+    },
+    TemplateElement(node) {
+      componentTextChecks(context, node, node.value.cooked ?? node.value.raw);
+    },
+  }),
+};
+
+const plugin = {
+  rules: {
+    design: designRules,
+    'app-design': appDesignRules,
+    'component-design': componentDesignRules,
+  },
+};
 
 const intlSelectors = [
   {
@@ -170,7 +203,10 @@ export const uiWebConfig = [
   ...common,
   {
     files: ['src/**/*.{ts,tsx}'],
-    rules: { 'no-restricted-imports': ['error', { patterns: [noAgent] }] },
+    rules: {
+      'fd/component-design': 'error',
+      'no-restricted-imports': ['error', { patterns: [noAgent] }],
+    },
   },
   {
     // Stories show Arabic sample text and tests use plain strings (ui-web only).

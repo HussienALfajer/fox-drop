@@ -17,6 +17,8 @@ export interface Token {
   description?: string;
   /** What replaces a deprecated token (architecture §9.2 governance). */
   deprecated?: string;
+  /** The component a token of `tokens/component/` belongs to: its file's top key. */
+  component?: string;
 }
 
 const SOURCES: Record<Theme, { include: string[]; source: string[] }> = {
@@ -35,16 +37,20 @@ const SOURCES: Record<Theme, { include: string[]; source: string[] }> = {
 };
 
 // Style Dictionary's globs take forward slashes, on Windows too.
-const inPackage = (file: string) => `${PACKAGE_DIR.replaceAll('\\', '/')}/${file}`;
+const under = (root: string) => (file: string) => `${root.replaceAll('\\', '/')}/${file}`;
 
 const COMMON = ['tokens/primitive/*.json', 'tokens/semantic/base.json', 'tokens/component/*.json'];
 
-/** Every resolved token of a theme, primitives included, keyed by its dotted path. */
-export async function resolveTheme(theme: Theme): Promise<Map<string, Token>> {
+/**
+ * Every resolved token of a theme, primitives included, keyed by its dotted
+ * path. `root` holds the `tokens/` folder (a test passes a copy).
+ */
+export async function resolveTheme(theme: Theme, root = PACKAGE_DIR): Promise<Map<string, Token>> {
   const { include, source } = SOURCES[theme];
+  const inRoot = under(root);
   const sd = new StyleDictionary({
-    include: [...COMMON, ...include].map(inPackage),
-    source: source.map(inPackage),
+    include: [...COMMON, ...include].map(inRoot),
+    source: source.map(inRoot),
     platforms: { resolved: {} },
     log: { verbosity: 'silent', warnings: 'error' },
   });
@@ -58,14 +64,17 @@ export async function resolveTheme(theme: Theme): Promise<Map<string, Token>> {
       value: token.$value ?? token.value,
       ...(token.$description ? { description: String(token.$description) } : {}),
       ...(token.$deprecated ? { deprecated: String(token.$deprecated) } : {}),
+      ...(/[\\/]tokens[\\/]component[\\/]/.test(String(token.filePath))
+        ? { component: tokenPath[0]! }
+        : {}),
     });
   }
   return tokens;
 }
 
-export async function resolveAll(): Promise<Record<Theme, Map<string, Token>>> {
+export async function resolveAll(root = PACKAGE_DIR): Promise<Record<Theme, Map<string, Token>>> {
   const entries = await Promise.all(
-    THEMES.map(async (theme) => [theme, await resolveTheme(theme)] as const),
+    THEMES.map(async (theme) => [theme, await resolveTheme(theme, root)] as const),
   );
   return Object.fromEntries(entries) as Record<Theme, Map<string, Token>>;
 }

@@ -26,7 +26,7 @@ const totalRow = formTv({
   base: 'flex items-center justify-between gap-sm',
   variants: {
     variant: {
-      plain: 'border-t-2 border-on-surface pt-sm',
+      plain: 'border-t-(length:--fd-border-width-thick) border-on-surface pt-sm',
       prominent: 'rounded-lg bg-primary px-lg py-sm text-on-primary',
     },
   },

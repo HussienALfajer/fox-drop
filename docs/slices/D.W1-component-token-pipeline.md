@@ -1,6 +1,6 @@
 # D.W1 The component token pipeline and the raw-value check
 
-Status: Planned · Tier: T2 · Branch: `feat/component-token-pipeline`
+Status: Done · Tier: T2 · Branch: `feat/component-token-pipeline`
 Spec: architecture §9.1, §9.2 (the component layer), §9.5 R1, R2, R9 · Definition of done: workflow §4 (UI items)
 
 ## The web-first plan (owner, 2026-11-26)
@@ -61,14 +61,27 @@ Tests written first (locked in the red phase):
 - `packages/core_ui/test/theme_test.dart`: `FoxTheme.of(context).components.button` equals `FoxComponents.<theme>.button` in the phone and captain themes.
 - Proof of no look change: `pnpm baselines --check` finds no moved image.
 
+## Decisions taken overnight (pending the owner)
+
+The owner was asleep and delegated decisions to the supervising session (2026-11-26); each took the recommended option.
+
+1. **0 is allowed on the web too.** The Flutter rule passes 0 (plan step 3); the web rule does the same (`opacity-0`, `border-b-0`), since 0 means "none", not a design value, and Tailwind builds it. So the about 11 `opacity-0` sites the plan counted stay; the web sites replaced are `border-t-2` (amounts summary, now `border-width.thick`) and `border-s-4` (sidebar, new `border-width.heavy`). The new class check is its own rule, `fd/component-design`, in ui-web only.
+2. **A token can belong to one side.** `button.compact.height` is the panel's density; the Flutter button has none. Rather than a Flutter getter nobody reads, the token says `"$extensions": { "app.foxdrop": { "sides": ["web"] } }` and the usage check skips Flutter for it.
+3. **The Flutter rule reads literals anywhere in the argument** (`touchTarget * 6`), as the plan's 13 sites imply, except a divisor of 2 (a half: a circle's radius, a centre) and inside painters. Painters are `CustomPainter` and `CustomClipper` subclasses; their helpers are functions and methods that take a `Canvas` or return a `Path`. It runs on `core_ui`'s `lib/` only: tests pin sizes and wait set times. A direct literal in `SizedBox` or `TextStyle` stays `no_literal_spacing`'s report, so nothing is reported twice. `Duration(milliseconds:)` matches `dart:core`'s class; `FoxIcon(size:)` matches `core_ui`'s.
+4. **Nine Flutter sites, all value-for-value** (no golden moves): the menu's widths and the anchored list's height get `size.menu-min-width`, `menu-max-width`, `menu-max-height`; the separator `FoxBorderWidth.thin`; the bottom bar's pill `FoxSize.bar` (64 = 48 + 2 × 8); the blocking heads' bubble `FoxSize.tooltip` (240 = 48 × 5); the tabs' underline new `border-width.indicator` (3); the sheet's and toast's slides new `motion.enter.sheet` (1) and `motion.enter.toast` (0.15). The empty state's drop is a painter, out of scope. Three of these are parity gaps with the web (the menu's minimum width, the underline 3 against 4, the toast's rise) and are left to D.W3c, where the owner decides on the sheet.
+5. **Two locked tests were corrected, not weakened:** the usage fixture's Flutter file had to read `gap` for the "unread on the web" case to fail on the web alone, and the lint test's stub `TextStyle` lacked `letterSpacing`.
+
 ## Stopped at
 
-Not started.
+Done: pull request open with auto-merge.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- Review:
+- Red phase: each locked test failed for the missing feature (no `component-usage.ts`, the fixture component absent from the outputs, 12 new lint cases unreported, `NoLiteralDimension` undefined, `FoxThemeData.components` undefined).
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (36 files; Turborepo lint, types, build and smoke; tests; Dart analyze, `fox_lints rules`, format, Dart and Flutter tests). A first run failed on two things this slice caused and fixed: `tokens.g.dart` not as `dart format` writes a short constructor, and `turbo-inputs.test.mjs` asking for `core_ui/lib/src` and `ui-web/src` as inputs of `design-tokens#test` (added to `turbo.json`, a file outside the plan's list).
+- `dart packages/fox_lints/tool/check.dart`: «no issues found» (64 findings before the rule was limited to `lib/`, 9 in `lib/` before the fixes).
+- `pnpm baselines`: no moved image (see below).
+- Review (T2, `reviewer`, two rounds): round 1 found no blocking item, two should-fix (a nested class reported twice by `no_literal_dimension`; the Flutter usage scan counting `this.gap` as a read) and two minor (the changelog's list, a second `camel`); all fixed with tests in `bb967f79`; round 2 found nothing new. Its observation, numeric classes outside the plan's list (`ring-1`, `ring-2`, `ring-offset-2`, `underline-offset-4`, `z-10`), is in `docs/backlog.md`.
 
 ## Before deploying
 

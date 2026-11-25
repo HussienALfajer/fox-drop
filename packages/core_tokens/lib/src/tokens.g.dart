@@ -871,6 +871,37 @@ abstract final class FoxInput {
   );
 }
 
+/// Every component token of one theme, one field per file of tokens/component/.
+final class ComponentTokens {
+  const ComponentTokens({required this.button, required this.input});
+
+  final ButtonTokens button;
+  final InputTokens input;
+}
+
+/// The component tokens per theme.
+abstract final class FoxComponents {
+  static const ComponentTokens light = ComponentTokens(
+    button: FoxButton.light,
+    input: FoxInput.light,
+  );
+
+  static const ComponentTokens dark = ComponentTokens(
+    button: FoxButton.dark,
+    input: FoxInput.dark,
+  );
+
+  static const ComponentTokens captainLight = ComponentTokens(
+    button: FoxButton.captainLight,
+    input: FoxInput.captainLight,
+  );
+
+  static const ComponentTokens captainDark = ComponentTokens(
+    button: FoxButton.captainDark,
+    input: FoxInput.captainDark,
+  );
+}
+
 /// The spacing steps of the 4-point grid.
 abstract final class FoxSpace {
   static const double none = 0.0;
@@ -894,6 +925,14 @@ abstract final class FoxRadius {
   static const double full = 9999.0;
 }
 
+/// Outline and rule widths.
+abstract final class FoxBorderWidth {
+  static const double thin = 1.0;
+  static const double thick = 2.0;
+  static const double indicator = 3.0;
+  static const double heavy = 4.0;
+}
+
 /// Motion durations (brand expression §3).
 abstract final class FoxDuration {
   static const Duration fast = Duration(milliseconds: 100);
@@ -904,6 +943,8 @@ abstract final class FoxDuration {
 
 /// The looping motions as numbers (brand expression §3): the pulse and the mark fill.
 abstract final class FoxMotion {
+  static const double enterSheet = 1.0;
+  static const double enterToast = 0.15;
   static const Duration pulseDuration = Duration(milliseconds: 1200);
   static const double pulseScaleFrom = 1.0;
   static const double pulseScaleTo = 1.7;
@@ -1070,4 +1111,7 @@ abstract final class FoxSize {
   static const double sidebar = 248.0;
   static const double sidebarCollapsed = 72.0;
   static const double bar = 64.0;
+  static const double menuMinWidth = 192.0;
+  static const double menuMaxWidth = 336.0;
+  static const double menuMaxHeight = 288.0;
 }
