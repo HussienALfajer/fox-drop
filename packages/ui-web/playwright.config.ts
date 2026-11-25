@@ -10,6 +10,10 @@ const visual = process.env['FD_VISUAL'] === '1';
 // `pnpm baselines` reads the failed comparisons from a JSON report.
 const report = process.env['FD_VISUAL_REPORT'];
 const reporter = process.env['CI'] ? 'github' : 'list';
+// - parity: the web side of `pnpm parity <Component>` (the repository root),
+//   which names the stories in FD_PARITY; it exists only then, so neither
+//   `pnpm verify` nor CI runs it.
+const parity = !!process.env['FD_PARITY'];
 
 export default defineConfig({
   testDir: 'e2e',
@@ -48,6 +52,20 @@ export default defineConfig({
               // repeats, the pressed stepper 20 of 20 without a full repaint.
               // Every tile drawn whole: 0 of 4,160.
               launchOptions: { args: ['--disable-partial-raster'] },
+            },
+          },
+        ]
+      : []),
+    ...(parity
+      ? [
+          {
+            name: 'parity',
+            testMatch: 'parity.spec.ts',
+            // The phone width of the Flutter case, at its pixel ratio.
+            use: {
+              ...devices['Desktop Chrome'],
+              viewport: { width: 360, height: 800 },
+              deviceScaleFactor: 2,
             },
           },
         ]

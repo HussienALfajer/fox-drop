@@ -40,6 +40,8 @@ GoogleService-Info.plist
 
 # Tests
 .verify/
+# The parity sheets and their shots (`pnpm parity <Component>`), a local review
+.parity/
 coverage/
 playwright-report/
 test-results/

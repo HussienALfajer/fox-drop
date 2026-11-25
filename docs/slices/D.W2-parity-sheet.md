@@ -34,9 +34,18 @@ Tests written first (locked in the red phase):
 - `classify-changes.test.mjs` is unchanged and must stay green: `scripts/parity.mjs` and the `parity` tag run in no CI job (checked by reading `scripts/classify-changes.mjs`; a change to it is out of scope).
 - Evidence, not a locked test: `pnpm parity Button` on the host, the page opened in the browser pane and shown to the owner.
 
+## Decisions taken overnight (pending the owner)
+
+- **`--docker` left out.** The plan offered it for when the host's text rendering misleads. Running both sides in the baseline images means changing `scripts/golden-docker.mjs` (it hard-codes `--tags golden` and its output folders) and `packages/ui-web/scripts/visual-docker.mjs` (it hard-codes `--project=visual`), both outside this slice's files. The host render was faithful on Button's sheet (CoFo on both sides, same sizes). Backlog item added; build it the first time a sheet misleads.
+- **`scripts/parity.test.mjs` joins verify's script tests** (`SCRIPT_TESTS` in `scripts/verify.mjs`, one name added). Without it the locked test would run nowhere; the step takes seconds and runs in every `format` job.
+- **The frame has 16 pixels around the widget on both sides** (`FoxSpace.md`; on the web, `padding: 16px` on the story's root, whose Storybook body padding is removed). Flush against the frame, the focus ring was cut on both sides.
+- **The web ground is `--fd-color-surface`**, set on the story's root by the spec: Storybook leaves it white while the Flutter frame paints the theme's surface, and the plan asks for "the app's ground".
+- **Flutter ids built in a loop** (`'button--${variant.name}-$state'`) are read back from the shots the run wrote; the source scan still decides which components have cases and finds the literal ids. The plan's `rg` scan alone would have missed 24 of Button's 33 cases.
+- **No Flutter case** for the densities (`*-comfortable`, `*-compact`, `compact-with-icon`, `icon-only-compact`) and the three press-counting stories: FoxButton has one density, and the counter is a keyboard test. The sheet marks the 13 rows.
+
 ## Stopped at
 
-Not started.
+Built; checks and pull request next.
 
 ## Evidence
 

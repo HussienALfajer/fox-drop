@@ -11,7 +11,8 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 - **A component exports its states:** `const <name>States = [...]` (and `<name>Variants` when it has variants) beside the widget. `apps/widgetbook/test/coverage_test.dart` fails until every state has a use case (R3), so add them in `apps/widgetbook/lib/catalogue.dart` in the same change.
 - **States follow R10:** hover (a mouse) and pressed (touch) paint the component's own `-hover` and `-pressed` tokens; colours fade over `FoxDuration.base`, nothing moves; the focus ring shows for keyboard focus only. Disabled is `onPressed: null` and is not focusable; loading keeps the size and the name, stays focusable, ignores presses.
 - **RTL and text scale:** directional insets and alignment only; a test pumps each component in RTL and at text scale 1.3 and 2.0 without overflow.
-- **Goldens (R9)** live in `test/golden/`, tagged `golden`, skipped by plain `flutter test`; they run on Linux only, in Docker: `pnpm baselines` updates and compares them after an intended change (`--check` only compares). They need `.fonts/` (`pnpm fonts:fetch`). Never update a baseline to make a failure pass without looking at `test/golden/failures/`. The run passes `--run-skipped`, which un-skips every test in the package, so never skip a test here with `skip:`.
+- **Goldens (R9)** live in `test/golden/`, tagged `golden`, skipped by plain `flutter test`; Linux only, in Docker: `pnpm baselines` updates and compares them (`--check` only compares). They need `.fonts/` (`pnpm fonts:fetch`). Never update a baseline to make a failure pass without looking at `test/golden/failures/`. `--run-skipped` un-skips every test here: never use `skip:`.
+- **Parity cases** (`test/parity/`, tag `parity`): one `parityCase('<story id>', …)` per web story of a twin; `pnpm parity <Component>`.
 
 ## Inputs and forms (D.8)
 
@@ -26,4 +27,4 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 
 ## More
 
-Behaviour, decisions and history: `docs/code/packages/core_ui.md`. Grep it for what you change; never read it whole.
+Behaviour and decisions: `docs/code/packages/core_ui.md`. Grep it; never read it whole.
