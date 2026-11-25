@@ -302,6 +302,7 @@ void main() {
       await tester.pumpWidget(search(loading: true, controller: controller));
       expect(find.bySemanticsLabel('مسح'), findsNothing);
       expect(find.bySemanticsLabel('جارٍ البحث'), findsOneWidget);
+      expect(find.byType(FoxDropLoader), findsOneWidget);
     });
 
     testWidgets('fits at every scale', (tester) async {

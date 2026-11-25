@@ -39,7 +39,8 @@ export {
   type Tone,
 } from './status-chip/status-chip';
 export { formatDuration, Timer, type TimerProps, type TimerTone } from './timer/timer';
-export { PhoneField, type PhoneFieldProps, type PhoneCountry } from './phone-field/phone-field';
+export { PhoneField, type PhoneFieldProps, type PhoneMessages } from './phone-field/phone-field';
+export { readPhone, type PhoneProblem, type PhoneReading } from './phone-field/phone';
 export { QuantityStepper, type QuantityStepperProps } from './quantity-stepper/quantity-stepper';
 export { RadioGroup, type RadioGroupProps, type RadioOption } from './radio-group/radio-group';
 export { SearchField, type SearchFieldProps } from './search-field/search-field';

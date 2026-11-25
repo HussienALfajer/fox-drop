@@ -1,8 +1,9 @@
+import 'package:core_ui/core_ui.dart' show foxReadPhone;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_party.dart';
 import 'auth_scope.dart';
-import 'phone.dart';
+import 'phone.dart' show westernDigits;
 
 enum SignInStep { phone, code }
 
@@ -11,7 +12,7 @@ enum SignInStep { phone, code }
 class SignInState {
   const SignInState({
     this.step = SignInStep.phone,
-    this.country = PhoneCountry.syria,
+    this.country = 'SY',
     this.phone,
     this.busy = false,
     this.invalidPhone = false,
@@ -21,7 +22,10 @@ class SignInState {
   });
 
   final SignInStep step;
-  final PhoneCountry country;
+
+  /// The phone field's country (ISO); Syria until the user picks another
+  /// or types a number of another (D.11b).
+  final String country;
 
   /// The number in E.164, once the user entered a valid one.
   final String? phone;
@@ -59,7 +63,7 @@ class SignInController extends Notifier<SignInState> {
   @override
   SignInState build() => const SignInState();
 
-  void selectCountry(PhoneCountry country) {
+  void selectCountry(String country) {
     state = SignInState(country: country);
   }
 
@@ -67,11 +71,15 @@ class SignInController extends Notifier<SignInState> {
   /// is «انضم ككابتن» (CA §5.1), kept for «إعادة الإرسال».
   Future<void> requestCode(String input, {bool join = false}) async {
     _join = join;
-    final phone = e164Phone(state.country, input);
+    // Any country's mobile, read by the shared rules (D.11b): a number of
+    // another country moves the field's country to it.
+    final reading = foxReadPhone(input, state.country);
+    final phone = reading.e164;
     if (phone == null) {
-      state = SignInState(country: state.country, invalidPhone: true);
+      state = SignInState(country: reading.country, invalidPhone: true);
       return;
     }
+    state = SignInState(country: reading.country);
     await _send(phone, step: SignInStep.phone);
   }
 

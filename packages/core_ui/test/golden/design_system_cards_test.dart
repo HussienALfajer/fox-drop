@@ -6,6 +6,7 @@ import 'package:core_ui/testing.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../phone_harness.dart';
 import 'sheet.dart';
 
 // One image per core_ui component for the Design System (owner, 2026-11-24:
@@ -343,42 +344,37 @@ Widget _search(TextEditingController query) => _card([
   ),
 ]);
 
-const _names = {
-  FoxPhoneCountry.syria: 'سوريا',
-  FoxPhoneCountry.turkey: 'تركيا',
-};
-
-Widget _phone(TextEditingController syria, TextEditingController turkey) =>
+Widget _phone(TextEditingController syria, TextEditingController germany) =>
     _card([
       _example(
-        'Syria, hint',
+        'Syria, valid',
         _box(
           _field,
           FoxPhoneField(
             controller: syria,
-            country: FoxPhoneCountry.syria,
+            country: 'SY',
+            countries: testCountries,
+            strings: testPhoneStrings,
             onChanged: (_) {},
             onCountryChanged: (_) {},
-            countryNames: _names,
-            countryLabel: 'رمز الدولة',
             label: 'رقم الهاتف',
             hint: 'سنرسل لك رمز التحقق',
           ),
         ),
       ),
       _example(
-        'Turkey, error',
+        'Germany, error',
         _box(
           _field,
           FoxPhoneField(
-            controller: turkey,
-            country: FoxPhoneCountry.turkey,
+            controller: germany,
+            country: 'DE',
+            countries: testCountries,
+            strings: testPhoneStrings,
             onChanged: (_) {},
             onCountryChanged: (_) {},
-            countryNames: _names,
-            countryLabel: 'رمز الدولة',
             label: 'رقم الهاتف',
-            error: 'رقم غير صحيح',
+            error: 'هذا الرقم غير مسجّل على واتساب',
           ),
         ),
       ),
@@ -1597,7 +1593,10 @@ void main() {
     'FoxTextField': ((c) => _textField(c[0], c[1]), const ['محمد الأحمد', 'م']),
     'FoxTextArea': ((c) => _textArea(c[0]), const ['بدون بصل، والصلصة جانبًا']),
     'FoxSearchField': ((c) => _search(c[0]), const ['شاورما']),
-    'FoxPhoneField': ((c) => _phone(c[0], c[1]), const ['0912345678', '53212']),
+    'FoxPhoneField': (
+      (c) => _phone(c[0], c[1]),
+      const ['944 123 456', '151 234 567 89'],
+    ),
     'FoxCodeField': ((c) => _code(c), const ['482', '482915', '482915']),
     'FoxSelect': ((_) => _select(), const []),
     'FoxDateField': ((_) => _date(), const []),

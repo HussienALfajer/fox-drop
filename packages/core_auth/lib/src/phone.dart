@@ -1,48 +1,40 @@
-/// The countries of the number picker (CU §5.2 item 1).
-enum PhoneCountry {
-  syria('+963'),
-  turkey('+90');
+import 'package:core_l10n/core_l10n.dart';
+import 'package:core_ui/core_ui.dart';
 
-  const PhoneCountry(this.dialCode);
+/// The phone field's words from the app's strings (D.11 items 5 to 7 and
+/// 11): the sign-in screen, the customer's checkout and the restaurant's
+/// staff screen pass them to `FoxPhoneField`.
+FoxPhoneStrings phoneFieldStrings(AppLocalizations l10n) => FoxPhoneStrings(
+  chip: (name, code) => l10n.phoneCountryChip(name, code),
+  valid: l10n.phoneValid,
+  clear: l10n.phoneClear,
+  empty: l10n.phoneEmpty,
+  missingDigits: l10n.phoneMissingDigits,
+  tooLong: l10n.phoneTooLong,
+  landline: l10n.phoneLandline,
+  notMobilePrefix: l10n.phoneNotMobilePrefix,
+  unknownCode: l10n.phoneUnknownCode,
+  switched: l10n.phoneSwitchedCountry,
+  sheet: FoxCountrySheetStrings(
+    title: l10n.countrySheetTitle,
+    close: l10n.countrySheetClose,
+    search: l10n.countrySearch,
+    clearSearch: l10n.countrySearchClear,
+    pinned: l10n.countryPinned,
+    lastUsed: l10n.countryLastUsed,
+    all: l10n.countryAll,
+    none: l10n.countryNone,
+  ),
+);
 
-  final String dialCode;
-}
+/// The E.164 of a mobile of any country typed or pasted under [country]
+/// (ISO), or null when it is not one (D.11's normalisation table, read by
+/// core_ui's shared rules).
+String? e164Phone(String country, String input) =>
+    foxReadPhone(input, country).e164;
 
 const _arabicIndicZero = 0x0660;
 const _easternArabicIndicZero = 0x06F0;
-
-/// The number typed in [country] as E.164, or null when it is not a mobile
-/// of that country (CU §5.2 item 1): Syrian `09xxxxxxxx` or `9xxxxxxxx`,
-/// Turkish `05xxxxxxxxx` or `5xxxxxxxxx`. Spaces and dashes are ignored, and
-/// Arabic-Indic digits from an Arabic keyboard count as Western ones (AP
-/// §4.7). The full international form is accepted too, for a pasted number.
-String? e164Phone(PhoneCountry country, String input) {
-  final buffer = StringBuffer();
-  for (final rune in input.runes) {
-    if (rune >= _arabicIndicZero && rune <= _arabicIndicZero + 9) {
-      buffer.writeCharCode(0x30 + rune - _arabicIndicZero);
-    } else if (rune >= _easternArabicIndicZero &&
-        rune <= _easternArabicIndicZero + 9) {
-      buffer.writeCharCode(0x30 + rune - _easternArabicIndicZero);
-    } else if (rune != 0x20 && rune != 0x2D) {
-      buffer.writeCharCode(rune);
-    }
-  }
-  var digits = buffer.toString();
-  final international = country.dialCode.substring(1);
-  if (digits.startsWith('+$international')) {
-    digits = digits.substring(international.length + 1);
-  } else if (digits.startsWith('00$international')) {
-    digits = digits.substring(international.length + 2);
-  } else if (digits.startsWith('0')) {
-    digits = digits.substring(1);
-  }
-  final national = switch (country) {
-    PhoneCountry.syria => RegExp(r'^9\d{8}$'),
-    PhoneCountry.turkey => RegExp(r'^5\d{9}$'),
-  };
-  return national.hasMatch(digits) ? '${country.dialCode}$digits' : null;
-}
 
 /// The digits of [input] with Arabic-Indic digits made Western, for the code
 /// field and a pasted code.

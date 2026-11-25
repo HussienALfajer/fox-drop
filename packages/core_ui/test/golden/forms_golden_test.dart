@@ -7,12 +7,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../phone_harness.dart';
 import 'sheet.dart';
-
-const _names = {
-  FoxPhoneCountry.syria: 'سوريا',
-  FoxPhoneCountry.turkey: 'تركيا',
-};
 
 /// The width of a phone form's column, and of the sheet that holds a menu.
 const _column340 = 340.0;
@@ -125,11 +121,11 @@ void main() {
             ),
             FoxPhoneField(
               controller: controllers[4],
-              country: FoxPhoneCountry.syria,
+              country: 'SY',
+              countries: testCountries,
+              strings: testPhoneStrings,
               onChanged: (_) {},
               onCountryChanged: (_) {},
-              countryNames: _names,
-              countryLabel: 'رمز الدولة',
               label: 'رقم الهاتف',
               hint: 'سنرسل لك رمز التحقق',
             ),

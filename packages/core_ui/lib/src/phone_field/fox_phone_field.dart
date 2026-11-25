@@ -5,251 +5,93 @@ import 'package:flutter/widgets.dart';
 import '../field/entry.dart';
 import '../field/fox_field.dart';
 import '../icon/fox_icon.dart';
-import '../internal/anchored_menu.dart';
 import '../internal/interaction.dart';
 import '../theme/fox_theme.dart';
+import 'fox_country_sheet.dart';
+import 'phone_rules.dart';
 
 /// The states every phone field use case and golden shows (R3). Hover and
-/// focus are live; `open` shows the country menu.
+/// focus are live.
 const phoneFieldStates = [
   'default',
   'hover',
   'focus',
-  'open',
   'filled',
-  'disabled',
+  'valid',
   'invalid',
+  'switched',
+  'busy',
+  'disabled',
 ];
 
-/// The two countries a phone number may belong to (CU §5.2, decision U3).
-enum FoxPhoneCountry {
-  syria('+963', 9, '9'),
-  turkey('+90', 10, '5');
-
-  const FoxPhoneCountry(this.dialCode, this.digits, this.firstDigit);
-
-  /// `+963` or `+90`.
-  final String dialCode;
-
-  /// The digits of a mobile after the dial code.
-  final int digits;
-
-  /// The digit every mobile starts with after the dial code.
-  final String firstDigit;
-}
-
-String _dial(FoxPhoneCountry country) => country.dialCode.substring(1);
-
-/// Western digits only: Arabic-Indic (٠-٩) and Persian (۰-۹) digits become
-/// 0-9 (AP §4.7), everything else goes. The web's `digitsOf`.
-String foxPhoneDigits(String text) {
-  final out = StringBuffer();
-  for (final rune in text.runes) {
-    if (rune >= 0x30 && rune <= 0x39) {
-      out.writeCharCode(rune);
-    } else if (rune >= 0x0660 && rune <= 0x0669) {
-      out.write(rune - 0x0660);
-    } else if (rune >= 0x06F0 && rune <= 0x06F9) {
-      out.write(rune - 0x06F0);
-    }
-  }
-  return out.toString();
-}
-
-bool _isComplete(FoxPhoneCountry country, String national) =>
-    national.length == country.digits &&
-    national.startsWith(country.firstDigit);
-
-/// What [foxParsePhone] read.
-class FoxParsedPhone {
-  const FoxParsedPhone({
-    required this.country,
-    required this.display,
-    required this.e164,
-    required this.refused,
+/// The words of the phone field and its country list, from the app's strings
+/// (`core_l10n`; D.11 items 5 to 7 and 11). `core_auth`'s
+/// `phoneFieldStrings` builds them.
+final class FoxPhoneStrings {
+  const FoxPhoneStrings({
+    required this.chip,
+    required this.valid,
+    required this.clear,
+    required this.empty,
+    required this.missingDigits,
+    required this.tooLong,
+    required this.landline,
+    required this.notMobilePrefix,
+    required this.unknownCode,
+    required this.switched,
+    required this.sheet,
   });
 
-  /// The picked country, or the one the number's own calling code names.
-  final FoxPhoneCountry country;
+  /// «الدولة: {الاسم}، {الرمز}. اضغط لتغييرها».
+  final String Function(String name, String code) chip;
 
-  /// The digits as typed, or the national digits of a number given with its
-  /// calling code.
-  final String display;
+  /// The check mark: «الرقم صحيح».
+  final String valid;
 
-  /// The E.164 number, or null while it is not a complete mobile number.
-  final String? e164;
+  /// The clear button: «مسح الرقم».
+  final String clear;
+  final String empty;
+  final String Function(int count) missingDigits;
+  final String tooLong;
+  final String landline;
+  final String Function(String prefix) notMobilePrefix;
+  final String unknownCode;
 
-  /// The text cannot be a number of either country (too long, or a calling
-  /// code with a wrong rest); it is shown, never reshaped.
-  final bool refused;
+  /// «عرفنا الدولة من رمزها: {الدولة}.»
+  final String Function(String country) switched;
+  final FoxCountrySheetStrings sheet;
+
+  /// The words of [reading]'s problem, or null when it has none.
+  String? problem(FoxPhoneReading reading) => switch (reading.problem) {
+    null => null,
+    FoxPhoneProblem.empty => empty,
+    FoxPhoneProblem.missingDigits => missingDigits(reading.missing ?? 1),
+    FoxPhoneProblem.tooLong => tooLong,
+    FoxPhoneProblem.landline => landline,
+    FoxPhoneProblem.notMobilePrefix => notMobilePrefix(reading.prefix ?? ''),
+    FoxPhoneProblem.unknownCode => unknownCode,
+  };
 }
 
-FoxParsedPhone _international(FoxPhoneCountry country, String national) =>
-    _isComplete(country, national)
-    ? FoxParsedPhone(
-        country: country,
-        display: national,
-        e164: '${country.dialCode}$national',
-        refused: false,
-      )
-    : FoxParsedPhone(
-        country: country,
-        display: national,
-        e164: null,
-        refused: true,
-      );
-
-/// Reads what was typed or pasted under the [selected] country, as the web's
-/// `parsePhone` (CU §5.2). A number with its own calling code (`+90…`,
-/// `0090…`, or exactly that code and a full national number such as
-/// `963912345678`) belongs to that country, whichever is selected, and must
-/// be complete for it. Otherwise the leading 0 is dropped and nothing is cut:
-/// more digits than the country has make the text refused.
-FoxParsedPhone foxParsePhone(FoxPhoneCountry selected, String text) {
-  final trimmed = text.trim();
-  final digits = foxPhoneDigits(trimmed);
-  final refused = FoxParsedPhone(
-    country: selected,
-    display: digits,
-    e164: null,
-    refused: true,
-  );
-
-  if (trimmed.startsWith('+') || digits.startsWith('00')) {
-    final rest = trimmed.startsWith('+') ? digits : digits.substring(2);
-    final code = FoxPhoneCountry.values
-        .where((c) => rest.startsWith(_dial(c)))
-        .firstOrNull;
-    if (code == null) return refused;
-    final result = _international(code, rest.substring(_dial(code).length));
-    return result.refused ? refused : result;
-  }
-
-  final full = FoxPhoneCountry.values
-      .where(
-        (c) =>
-            digits.length == _dial(c).length + c.digits &&
-            digits.startsWith(_dial(c)),
-      )
-      .firstOrNull;
-  if (full != null) {
-    final result = _international(full, digits.substring(_dial(full).length));
-    if (!result.refused) return result;
-  }
-
-  final national = digits.startsWith('0') ? digits.substring(1) : digits;
-  if (national.length > selected.digits) return refused;
-  return FoxParsedPhone(
-    country: selected,
-    display: digits,
-    e164: _isComplete(selected, national)
-        ? '${selected.dialCode}$national'
-        : null,
-    refused: false,
-  );
-}
-
-/// The E.164 number (`+963912345678`) of what a person typed for [country],
-/// or null while it is not a complete mobile number (CU §5.2): Syrian mobiles
-/// are 9 digits starting with 9, typed `09xxxxxxxx` or `9xxxxxxxx`; Turkish
-/// mobiles are 10 digits starting with 5, typed `05xxxxxxxxx` or
-/// `5xxxxxxxxx`. Anything but digits is ignored; Arabic-Indic and Persian
-/// digits count. A number with its own calling code gives that country's
-/// number (see [foxParsePhone]).
-String? foxPhoneE164(FoxPhoneCountry country, String input) =>
-    foxParsePhone(country, input).e164;
-
-/// The country and national digits of a stored E.164 number, or null when it
-/// is neither country's complete mobile number.
-({FoxPhoneCountry country, String national})? foxPhoneFromE164(String value) {
-  for (final country in FoxPhoneCountry.values) {
-    if (value.startsWith(country.dialCode)) {
-      final national = value.substring(country.dialCode.length);
-      if (_isComplete(country, national)) {
-        return (country: country, national: national);
-      }
-    }
-  }
-  return null;
-}
-
-/// Keeps the box to digits, `+`, spaces and dashes, in Western digits, and
-/// stops typing at the country's length: a single added character that makes
-/// the text too long is dropped. A paste of more is kept whole (it shows, and
-/// is refused by [foxParsePhone]), never cut.
-class _PhoneFormatter extends TextInputFormatter {
-  const _PhoneFormatter(this.country);
-
-  final FoxPhoneCountry country;
-
-  static String _clean(String text) {
-    final out = StringBuffer();
-    for (final rune in text.runes) {
-      final char = String.fromCharCode(rune);
-      if (char == '+' || char == ' ' || char == '-') {
-        out.write(char);
-      } else {
-        out.write(foxPhoneDigits(char));
-      }
-    }
-    return out.toString();
-  }
-
-  bool _tooLong(String text) {
-    final trimmed = text.trim();
-    final digits = foxPhoneDigits(trimmed);
-    if (trimmed.startsWith('+') || digits.startsWith('00')) {
-      final rest = trimmed.startsWith('+') ? digits : digits.substring(2);
-      for (final c in FoxPhoneCountry.values) {
-        if (rest.startsWith(_dial(c))) {
-          return rest.length - _dial(c).length > c.digits;
-        }
-      }
-      // The calling code is still being typed.
-      return false;
-    }
-    final national = digits.startsWith('0') ? digits.substring(1) : digits;
-    return national.length > country.digits;
-  }
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final text = _clean(newValue.text);
-    if (text.length == oldValue.text.length + 1 && _tooLong(text)) {
-      return oldValue;
-    }
-    if (text == newValue.text) return newValue;
-    final offset = newValue.selection.baseOffset.clamp(0, newValue.text.length);
-    return TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(
-        offset: _clean(newValue.text.substring(0, offset)).length,
-      ),
-    );
-  }
-}
-
-/// A mobile number field (D.8, CU §5.2): one pill holding a left-to-right
-/// island, the country chip («+963» or «+90» with a chevron, opening a menu of
-/// the two countries) then the digits, under a label, hint and error that
-/// read right to left. [onChanged] gets the E.164 number, or null while it
-/// is incomplete or refused. Text given with its own calling code (`+90…`,
-/// `0090…`, `905321234567`) switches the chip to that country when the rest
-/// is a complete number for it ([onCountryChanged] is called, the box shows
-/// the national digits and [onChanged] gets the number with the new code); a
-/// calling code with a wrong rest, or more digits than the country has, stays
-/// as typed and gives null, never cut. The names are passed in.
+/// The phone number of every app (D.11 item 6), as ui-web's `PhoneField`:
+/// one pill whose island runs left to right, the country chip (ISO letters
+/// and calling code) that opens [FoxCountrySheet] with every region, the
+/// digits, a check mark once the number is a complete mobile and a clear
+/// button. What is typed or pasted is read by the shared rules
+/// ([foxReadPhone]): a number of another country switches the chip by itself
+/// ([onCountryChanged]) and says so. A problem shows on leaving the field or
+/// on the keyboard's send key, then live until fixed; [error] is the screen's
+/// own (the server's answer). [busy] locks it while the number is sent (R14).
 class FoxPhoneField extends StatefulWidget {
   const FoxPhoneField({
     super.key,
     required this.country,
     required this.onCountryChanged,
     required this.onChanged,
-    required this.countryNames,
-    required this.countryLabel,
+    required this.countries,
+    required this.strings,
+    this.onSubmitted,
+    this.lastUsedCountry,
     this.controller,
     this.focusNode,
     this.label,
@@ -258,18 +100,25 @@ class FoxPhoneField extends StatefulWidget {
     this.placeholder,
     this.error,
     this.enabled = true,
-    this.initiallyOpen = false,
+    this.busy = false,
   });
 
-  final FoxPhoneCountry country;
-  final ValueChanged<FoxPhoneCountry> onCountryChanged;
-  final ValueChanged<String?> onChanged;
+  /// The picked country (ISO).
+  final String country;
+  final ValueChanged<String> onCountryChanged;
 
-  /// «سوريا» and «تركيا»: the menu shows each name with its dial code.
-  final Map<FoxPhoneCountry, String> countryNames;
+  /// Every change, with its reading; `e164` is set for a complete mobile.
+  final ValueChanged<FoxPhoneReading> onChanged;
 
-  /// The chip's accessible name, for example «رمز الدولة».
-  final String countryLabel;
+  /// The send key with a complete mobile; otherwise the problem shows.
+  final ValueChanged<String>? onSubmitted;
+
+  /// Every region with its names (`core_l10n`'s `foxCountryNames`).
+  final List<FoxCountryOption> countries;
+  final FoxPhoneStrings strings;
+
+  /// Listed after Syria and Turkey (the app stores it).
+  final String? lastUsedCountry;
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? label;
@@ -278,24 +127,16 @@ class FoxPhoneField extends StatefulWidget {
   final String? placeholder;
   final String? error;
   final bool enabled;
-  final bool initiallyOpen;
+  final bool busy;
 
   @override
   State<FoxPhoneField> createState() => _FoxPhoneFieldState();
 }
 
 class _FoxPhoneFieldState extends State<FoxPhoneField> {
-  final OverlayPortalController _menu = OverlayPortalController();
   final FocusNode _chip = FocusNode(debugLabel: 'FoxPhoneChip');
-  bool _open = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.initiallyOpen) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _show());
-    }
-  }
+  bool _judged = false;
+  String? _switchedFrom;
 
   @override
   void dispose() {
@@ -303,115 +144,168 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
     super.dispose();
   }
 
-  void _show() {
-    if (!mounted || !widget.enabled) return;
-    _menu.show();
-    setState(() => _open = true);
+  bool get _locked => !widget.enabled || widget.busy;
+
+  String _name(String iso) {
+    for (final country in widget.countries) {
+      if (country.iso == iso) return country.ar;
+    }
+    return iso;
   }
 
-  void _close() {
-    if (!_open) return;
-    _menu.hide();
-    setState(() => _open = false);
+  Future<void> _pickCountry(TextEditingController controller) async {
+    final picked = await showFoxCountrySheet(
+      context,
+      countries: widget.countries,
+      selected: widget.country,
+      lastUsed: widget.lastUsedCountry,
+      strings: widget.strings.sheet,
+    );
+    if (!mounted) return;
     _chip.requestFocus();
+    if (picked == null || picked == widget.country) return;
+    setState(() => _switchedFrom = null);
+    widget.onCountryChanged(picked);
+    widget.onChanged(foxReadPhone(controller.text, picked));
+  }
+
+  void _show(TextEditingController controller, String text) {
+    controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final i = FoxTheme.of(context).input;
-    return FoxField(
-      label: widget.label,
-      marker: widget.marker,
-      hint: widget.hint,
-      error: widget.error,
-      enabled: widget.enabled,
-      namesControl: false,
-      child: EntryHost(
-        controller: widget.controller,
-        focusNode: widget.focusNode,
-        builder: (context, controller, node) => AnchoredMenu<FoxPhoneCountry>(
-          controller: _menu,
-          label: widget.countryLabel,
-          selected: widget.country,
-          items: [
-            for (final c in FoxPhoneCountry.values)
-              MenuItem(
-                value: c,
-                label: '${widget.countryNames[c] ?? ''} ${c.dialCode}',
-              ),
-          ],
-          onSelected: (country) {
-            _close();
-            widget.onCountryChanged(country);
-            widget.onChanged(foxParsePhone(country, controller.text).e164);
-          },
-          onClosed: _close,
-          // The island: the digits and the chip always run left to right.
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Entry(
-              controller: controller,
-              node: node,
-              enabled: widget.enabled,
-              invalid: widget.error != null,
-              name: fieldName(widget.label, widget.marker),
-              description: widget.error ?? widget.hint,
-              placeholder: widget.placeholder,
-              keyboardType: TextInputType.phone,
-              textInputAction: TextInputAction.done,
-              autofillHints: const [AutofillHints.telephoneNumberNational],
-              inputFormatters: [_PhoneFormatter(widget.country)],
-              onChanged: (text) {
-                final parsed = foxParsePhone(widget.country, text);
-                if (parsed.country != widget.country) {
-                  widget.onCountryChanged(parsed.country);
-                }
-                // A number given with its calling code shows its national
-                // digits under the chip that now names the country.
-                if (parsed.e164 != null &&
-                    parsed.display != foxPhoneDigits(text)) {
-                  controller.value = TextEditingValue(
-                    text: parsed.display,
-                    selection: TextSelection.collapsed(
-                      offset: parsed.display.length,
-                    ),
-                  );
-                }
-                widget.onChanged(parsed.e164);
+    final s = widget.strings;
+    return EntryHost(
+      controller: widget.controller,
+      focusNode: widget.focusNode,
+      builder: (context, controller, node) => ListenableBuilder(
+        listenable: controller,
+        builder: (context, _) {
+          final reading = foxReadPhone(controller.text, widget.country);
+          final problem = _judged ? s.problem(reading) : null;
+          final shown = widget.error ?? problem;
+          final code = '+${foxCallingCode(widget.country) ?? ''}';
+          final switchedNote = _switchedFrom != null && shown == null
+              ? s.switched(_name(widget.country))
+              : null;
+          return FoxField(
+            label: widget.label,
+            marker: widget.marker,
+            hint: switchedNote ?? widget.hint,
+            error: shown,
+            enabled: !_locked,
+            namesControl: false,
+            child: Focus(
+              skipTraversal: true,
+              canRequestFocus: false,
+              onFocusChange: (focused) {
+                if (focused || !mounted) return;
+                if (controller.text.isNotEmpty) setState(() => _judged = true);
+                if (reading.e164 != null) _show(controller, reading.grouped);
               },
-              start: _Chip(
-                dialCode: widget.country.dialCode,
-                label: widget.countryLabel,
-                enabled: widget.enabled,
-                open: _open,
-                focusNode: _chip,
-                gap: i.gap,
-                onTap: () => _open ? _close() : _show(),
+              // The island: the chip and the digits always run left to right.
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: Entry(
+                  controller: controller,
+                  node: node,
+                  enabled: !_locked,
+                  invalid: shown != null,
+                  name: fieldName(widget.label, widget.marker),
+                  description: shown ?? switchedNote ?? widget.hint,
+                  placeholder: widget.placeholder,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.send,
+                  autofillHints: const [AutofillHints.telephoneNumber],
+                  onSubmitted: (text) {
+                    setState(() => _judged = true);
+                    final e164 = foxReadPhone(text, widget.country).e164;
+                    if (e164 != null) widget.onSubmitted?.call(e164);
+                  },
+                  onChanged: (text) {
+                    final read = foxReadPhone(text, widget.country);
+                    if (read.country != widget.country) {
+                      // The number named another country: the chip takes
+                      // it, the box its national digits.
+                      setState(() => _switchedFrom = widget.country);
+                      widget.onCountryChanged(read.country);
+                      _show(controller, read.grouped);
+                    } else if (read.e164 != null &&
+                        RegExp(r'[^\d\s]').hasMatch(text)) {
+                      // A paste with its code or marks: shown grouped.
+                      _show(controller, read.grouped);
+                    }
+                    widget.onChanged(read);
+                  },
+                  start: _Chip(
+                    iso: widget.country,
+                    dialCode: code,
+                    label: s.chip(_name(widget.country), code),
+                    enabled: !_locked,
+                    focusNode: _chip,
+                    gap: i.gap,
+                    onTap: () => _pickCountry(controller),
+                  ),
+                  end: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (reading.e164 != null)
+                        Semantics(
+                          image: true,
+                          label: s.valid,
+                          child: SizedBox.square(
+                            dimension: t.FoxSize.touchTarget,
+                            child: Center(
+                              child: FoxIcon(
+                                t.FoxIcons.success,
+                                style: FoxIconStyle.bold,
+                                color: FoxTheme.of(context).colors.success,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (controller.text.isNotEmpty && !_locked)
+                        _Clear(
+                          label: s.clear,
+                          onTap: () {
+                            controller.clear();
+                            setState(() => _switchedFrom = null);
+                            widget.onChanged(foxReadPhone('', widget.country));
+                          },
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 }
 
-/// «+963 ⌄»: the country chip, with a hairline to its end.
+/// «SY +963 ⌄»: the country chip, with a hairline to its end.
 class _Chip extends StatelessWidget {
   const _Chip({
+    required this.iso,
     required this.dialCode,
     required this.label,
     required this.enabled,
-    required this.open,
     required this.focusNode,
     required this.gap,
     required this.onTap,
   });
 
+  final String iso;
   final String dialCode;
   final String label;
   final bool enabled;
-  final bool open;
   final FocusNode focusNode;
   final double gap;
   final VoidCallback onTap;
@@ -427,8 +321,6 @@ class _Chip extends StatelessWidget {
       onTap: onTap,
       isButton: true,
       label: label,
-      value: dialCode,
-      expanded: open,
       builder: (context, state) => CustomPaint(
         foregroundPainter: FocusRing.of(
           theme,
@@ -437,29 +329,84 @@ class _Chip extends StatelessWidget {
         ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: t.FoxSize.touchTarget),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                dialCode,
-                style: theme.text.body.copyWith(
+          child: ExcludeSemantics(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  iso,
+                  style: theme.text.secondary.copyWith(
+                    color: colour,
+                    fontWeight: FoxTextTheme.fontWeight(700),
+                  ),
+                ),
+                SizedBox(width: gap / 2),
+                Text(dialCode, style: theme.text.body.copyWith(color: colour)),
+                SizedBox(width: gap / 2),
+                FoxIcon(
+                  t.FoxIcons.chevronDown,
+                  size: FoxIconSize.sm,
                   color: colour,
-                  fontWeight: FoxTextTheme.fontWeight(500),
+                ),
+                SizedBox(width: gap),
+                Container(
+                  width: i.borderWidth,
+                  height: t.FoxSpace.lg,
+                  color: enabled ? i.border : i.onDisabled,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The × that empties the field.
+class _Clear extends StatelessWidget {
+  const _Clear({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FoxTheme.of(context);
+    final c = theme.colors;
+    return Interaction(
+      label: label,
+      isButton: true,
+      onTap: onTap,
+      builder: (context, state) => SizedBox.square(
+        dimension: t.FoxSize.touchTarget,
+        child: Center(
+          child: CustomPaint(
+            foregroundPainter: FocusRing.of(
+              theme,
+              on: state.focused,
+              radius: t.FoxSize.step,
+              circle: true,
+            ),
+            child: AnimatedContainer(
+              duration: t.FoxDuration.base,
+              curve: theme.easing,
+              width: t.FoxSize.step,
+              height: t.FoxSize.step,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: state.pressed
+                    ? c.surfacePressed
+                    : (state.hovered ? c.surfaceHover : c.surface),
+              ),
+              child: Center(
+                child: FoxIcon(
+                  t.FoxIcons.close,
+                  size: FoxIconSize.sm,
+                  color: theme.input.hint,
                 ),
               ),
-              SizedBox(width: gap / 2),
-              FoxIcon(
-                t.FoxIcons.chevronDown,
-                size: FoxIconSize.sm,
-                color: colour,
-              ),
-              SizedBox(width: gap),
-              Container(
-                width: i.borderWidth,
-                height: t.FoxSpace.lg,
-                color: enabled ? i.border : i.onDisabled,
-              ),
-            ],
+            ),
           ),
         ),
       ),

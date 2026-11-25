@@ -1,0 +1,247 @@
+{
+  "$comment": "An invisible mark is written {U+XXXX}; the tests put the character in its place. D.11's normalisation table (owner, 2026-11-24), one row per case: what is typed or pasted (`input`) under the picked country (`picked`, ISO). `country` is the country the field ends on; `e164` when the number is a complete mobile, else `problem` (`empty`, `missingDigits` with `missing`, `tooLong`, `landline`, `notMobilePrefix` with `prefix`, `unknownCode`); `switchedFrom` when the country changed by itself; `grouped` the national digits as the field shows them. Read by `phone.test.ts` (ui-web) and `phone_rules_test.dart` (core_ui), so the two parsers cannot drift.",
+  "cases": [
+    {
+      "name": "Syrian national with its 0",
+      "input": "0944123456",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "Syrian national without its 0",
+      "input": "944123456",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "Syrian with +",
+      "input": "+963944123456",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "Syrian with 00",
+      "input": "00963944123456",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "Syrian with the bare code",
+      "input": "963944123456",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "a 0 after the code",
+      "input": "+9630944123456",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "a 0 before the code",
+      "input": "0963944123456",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "Arabic-Indic digits",
+      "input": "٠٩٤٤١٢٣٤٥٦",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "Persian digits",
+      "input": "۰۹۴۴۱۲۳۴۵۶",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "spaces, dashes, brackets and dots",
+      "input": "(0944) 123-45.6",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "direction marks and no-break spaces from a contact",
+      "input": "{U+202A}+963{U+00A0}944{U+200E}123{U+2069}456{U+202C}",
+      "picked": "SY",
+      "country": "SY",
+      "e164": "+963944123456",
+      "grouped": "944 123 456"
+    },
+    {
+      "name": "a number inside pasted text",
+      "input": "رقمي هو +90 532 123 45 67 شكراً",
+      "picked": "SY",
+      "country": "TR",
+      "e164": "+905321234567",
+      "switchedFrom": "SY",
+      "grouped": "532 123 4567"
+    },
+    {
+      "name": "Turkish national with its 0",
+      "input": "05321234567",
+      "picked": "TR",
+      "country": "TR",
+      "e164": "+905321234567",
+      "grouped": "532 123 4567"
+    },
+    {
+      "name": "Turkish typed with + under Syria switches",
+      "input": "+905321234567",
+      "picked": "SY",
+      "country": "TR",
+      "e164": "+905321234567",
+      "switchedFrom": "SY",
+      "grouped": "532 123 4567"
+    },
+    {
+      "name": "Turkish bare code under Syria switches",
+      "input": "905321234567",
+      "picked": "SY",
+      "country": "TR",
+      "e164": "+905321234567",
+      "switchedFrom": "SY",
+      "grouped": "532 123 4567"
+    },
+    {
+      "name": "a German mobile",
+      "input": "+4915123456789",
+      "picked": "SY",
+      "country": "DE",
+      "e164": "+4915123456789",
+      "switchedFrom": "SY",
+      "grouped": "151 234 567 89"
+    },
+    {
+      "name": "a German mobile under Germany",
+      "input": "015123456789",
+      "picked": "DE",
+      "country": "DE",
+      "e164": "+4915123456789",
+      "grouped": "151 234 567 89"
+    },
+    {
+      "name": "+1 resolved to Canada from the number",
+      "input": "+16135550123",
+      "picked": "SY",
+      "country": "CA",
+      "e164": "+16135550123",
+      "switchedFrom": "SY",
+      "grouped": "613 555 0123"
+    },
+    {
+      "name": "+7 resolved to Kazakhstan from the number",
+      "input": "+77012345678",
+      "picked": "SY",
+      "country": "KZ",
+      "e164": "+77012345678",
+      "switchedFrom": "SY",
+      "grouped": "701 234 5678"
+    },
+    {
+      "name": "+7 resolved to Russia from the number",
+      "input": "+79123456789",
+      "picked": "SY",
+      "country": "RU",
+      "e164": "+79123456789",
+      "switchedFrom": "SY",
+      "grouped": "912 345 6789"
+    },
+    {
+      "name": "empty",
+      "input": "",
+      "picked": "SY",
+      "country": "SY",
+      "problem": "empty",
+      "grouped": ""
+    },
+    {
+      "name": "only spaces",
+      "input": "  ",
+      "picked": "SY",
+      "country": "SY",
+      "problem": "empty",
+      "grouped": ""
+    },
+    {
+      "name": "one digit missing",
+      "input": "094412345",
+      "picked": "SY",
+      "country": "SY",
+      "problem": "missingDigits",
+      "missing": 1,
+      "grouped": "944 123 45"
+    },
+    {
+      "name": "two digits missing",
+      "input": "09441234",
+      "picked": "SY",
+      "country": "SY",
+      "problem": "missingDigits",
+      "missing": 2,
+      "grouped": "944 1234"
+    },
+    {
+      "name": "a digit too many",
+      "input": "09441234567",
+      "picked": "SY",
+      "country": "SY",
+      "problem": "tooLong",
+      "grouped": "944 123 4567"
+    },
+    {
+      "name": "a Syrian landline",
+      "input": "0112345678",
+      "picked": "SY",
+      "country": "SY",
+      "problem": "landline",
+      "grouped": "112 345 678"
+    },
+    {
+      "name": "a Turkish landline",
+      "input": "02121234567",
+      "picked": "TR",
+      "country": "TR",
+      "problem": "landline",
+      "grouped": "212 123 4567"
+    },
+    {
+      "name": "a prefix that is not a mobile",
+      "input": "0844123456",
+      "picked": "SY",
+      "country": "SY",
+      "problem": "notMobilePrefix",
+      "prefix": "9",
+      "grouped": "844 123 456"
+    },
+    {
+      "name": "an unknown calling code",
+      "input": "+999123456789",
+      "picked": "SY",
+      "country": "SY",
+      "problem": "unknownCode",
+      "grouped": ""
+    }
+  ]
+}

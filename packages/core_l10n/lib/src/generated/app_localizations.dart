@@ -142,18 +142,6 @@ abstract class AppLocalizations {
   /// **'تسجيل الدخول'**
   String get signInTitle;
 
-  /// The Syrian choice of the number's country picker (CU §5.2 item 1).
-  ///
-  /// In ar, this message translates to:
-  /// **'سوريا +963'**
-  String get signInCountrySyria;
-
-  /// The Turkish choice of the number's country picker (CU §5.2 item 1).
-  ///
-  /// In ar, this message translates to:
-  /// **'تركيا +90'**
-  String get signInCountryTurkey;
-
   /// The phone number field (CU Appendix B).
   ///
   /// In ar, this message translates to:
@@ -165,6 +153,114 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'رقم الهاتف غير صحيح'**
   String get signInInvalidPhone;
+
+  /// The phone field is empty, on send or on leaving it (D.11 item 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رقم هاتفك.'**
+  String get phoneEmpty;
+
+  /// The number is short of a mobile of its country (D.11 item 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{ينقص رقم واحد.} =2{ينقص رقمان.} other{ينقص {count} أرقام.}}'**
+  String phoneMissingDigits(int count);
+
+  /// The number has more digits than a mobile of its country (D.11 item 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'الرقم أطول من المعتاد. تأكّد منه.'**
+  String get phoneTooLong;
+
+  /// The number is a landline: the code goes over WhatsApp (D.11 item 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا رقم أرضي. أدخل رقم جوال عليه واتساب.'**
+  String get phoneLandline;
+
+  /// The number does not start like a mobile of its country (D.11 item 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رقم جوال يبدأ بـ {prefix}.'**
+  String phoneNotMobilePrefix(String prefix);
+
+  /// The calling code after + or 00 is no country's (D.11 item 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'رمز الدولة غير معروف.'**
+  String get phoneUnknownCode;
+
+  /// The number named another country, so the chip changed to it (D.11 item 6).
+  ///
+  /// In ar, this message translates to:
+  /// **'عرفنا الدولة من رمزها: {country}.'**
+  String phoneSwitchedCountry(String country);
+
+  /// The screen reader's name of the country chip (D.11 item 11).
+  ///
+  /// In ar, this message translates to:
+  /// **'الدولة: {country}، {code}. اضغط لتغييرها'**
+  String phoneCountryChip(String country, String code);
+
+  /// The screen reader's name of the check mark beside a complete number (D.11 item 5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الرقم صحيح'**
+  String get phoneValid;
+
+  /// The phone field's clear button (D.11 item 5).
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح الرقم'**
+  String get phoneClear;
+
+  /// The title of the country list of the phone field (D.11 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر الدولة'**
+  String get countrySheetTitle;
+
+  /// Closes the country list without a choice (D.11 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق'**
+  String get countrySheetClose;
+
+  /// Empties the country list's search (D.11 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح'**
+  String get countrySearchClear;
+
+  /// The country list's search field (D.11 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث باسم الدولة أو رمزها'**
+  String get countrySearch;
+
+  /// The country list's first section: Syria and Turkey (D.11 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأكثر استعمالاً'**
+  String get countryPinned;
+
+  /// The country list's section of the last country used (D.11 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر ما استعملته'**
+  String get countryLastUsed;
+
+  /// The country list's section of every country, in Arabic order (D.11 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الدول'**
+  String get countryAll;
+
+  /// The country list's search found nothing (D.11 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا دولة بهذا الاسم أو الرمز'**
+  String get countryNone;
 
   /// Asks the server to send the code over WhatsApp.
   ///

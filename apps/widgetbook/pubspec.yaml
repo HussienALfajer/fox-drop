@@ -9,6 +9,8 @@ environment:
 resolution: workspace
 
 dependencies:
+  # The phone field's country list: every region, with its CLDR names.
+  core_l10n: any
   core_ui: any
   flutter:
     sdk: flutter

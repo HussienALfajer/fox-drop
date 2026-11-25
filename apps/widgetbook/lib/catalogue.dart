@@ -1,8 +1,10 @@
+import 'package:core_l10n/core_l10n.dart' show foxCountryNames;
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:widgetbook/widgetbook.dart';
 
 import 'data_catalogue.dart';
+import 'frame_catalogue.dart';
 import 'overlays_catalogue.dart';
 
 /// Every core_ui component with a use case per state (R3): the same names
@@ -108,7 +110,7 @@ final List<WidgetbookNode> catalogue = [
       for (final state in phoneFieldStates)
         WidgetbookUseCase(
           name: state,
-          builder: (context) => _form(_phone(state), tall: state == 'open'),
+          builder: (context) => _form(_phone(state)),
         ),
     ],
   ),
@@ -207,12 +209,36 @@ final List<WidgetbookNode> catalogue = [
   ),
   ...dataCatalogue,
   ...overlaysCatalogue,
+  ...frameCatalogue,
 ];
 
-const _countryNames = {
-  FoxPhoneCountry.syria: 'سوريا',
-  FoxPhoneCountry.turkey: 'تركيا',
-};
+/// The phone field's words; review copy only (the apps take core_l10n's).
+final phoneStrings = FoxPhoneStrings(
+  chip: (name, code) => 'الدولة: $name، $code. اضغط لتغييرها',
+  valid: 'الرقم صحيح',
+  clear: 'مسح الرقم',
+  empty: 'أدخل رقم هاتفك.',
+  missingDigits: (n) => switch (n) {
+    1 => 'ينقص رقم واحد.',
+    2 => 'ينقص رقمان.',
+    _ => 'ينقص $n أرقام.',
+  },
+  tooLong: 'الرقم أطول من المعتاد. تأكّد منه.',
+  landline: 'هذا رقم أرضي. أدخل رقم جوال عليه واتساب.',
+  notMobilePrefix: (p) => 'أدخل رقم جوال يبدأ بـ $p.',
+  unknownCode: 'رمز الدولة غير معروف.',
+  switched: (name) => 'عرفنا الدولة من رمزها: $name.',
+  sheet: const FoxCountrySheetStrings(
+    title: 'اختر الدولة',
+    close: 'إغلاق',
+    search: 'ابحث باسم الدولة أو رمزها',
+    clearSearch: 'مسح',
+    pinned: 'الأكثر استعمالاً',
+    lastUsed: 'آخر ما استعملته',
+    all: 'كل الدول',
+    none: 'لا دولة بهذا الاسم أو الرمز',
+  ),
+);
 
 /// What the field use cases type, show and say; review copy only.
 const _name = 'محمد الأحمد';
@@ -273,24 +299,33 @@ Widget _search(String state) => _Typed(
 );
 
 Widget _phone(String state) => _Typed(
-  text: state == 'filled' || state == 'invalid' ? '0912345678' : '',
+  text: switch (state) {
+    'filled' => '0944 123',
+    'valid' || 'busy' => '944 123 456',
+    'invalid' => '0112345678',
+    'switched' => '151 234 567 89',
+    _ => '',
+  },
   focus: state == 'focus',
-  builder: (controller, node) => _Live<FoxPhoneCountry>(
-    FoxPhoneCountry.syria,
+  builder: (controller, node) => _Live<String>(
+    state == 'switched' ? 'DE' : 'SY',
     (country, set) => FoxPhoneField(
       controller: controller,
       focusNode: node,
       country: country,
+      countries: foxCountryNames,
+      strings: phoneStrings,
+      lastUsedCountry: 'DE',
       onCountryChanged: set,
       onChanged: (_) {},
-      countryNames: _countryNames,
-      countryLabel: 'رمز الدولة',
       label: 'رقم الهاتف',
       hint: 'سنرسل لك رمز التحقق',
       placeholder: '9xx xxx xxx',
-      error: state == 'invalid' ? 'رقم الهاتف غير صالح' : null,
+      error: state == 'invalid'
+          ? 'هذا رقم أرضي. أدخل رقم جوال عليه واتساب.'
+          : null,
       enabled: state != 'disabled',
-      initiallyOpen: state == 'open',
+      busy: state == 'busy',
     ),
   ),
 );

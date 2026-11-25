@@ -33,16 +33,79 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signInTitle => 'تسجيل الدخول';
 
   @override
-  String get signInCountrySyria => 'سوريا +963';
-
-  @override
-  String get signInCountryTurkey => 'تركيا +90';
-
-  @override
   String get signInPhoneLabel => 'رقم الهاتف';
 
   @override
   String get signInInvalidPhone => 'رقم الهاتف غير صحيح';
+
+  @override
+  String get phoneEmpty => 'أدخل رقم هاتفك.';
+
+  @override
+  String phoneMissingDigits(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ينقص $count أرقام.',
+      two: 'ينقص رقمان.',
+      one: 'ينقص رقم واحد.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get phoneTooLong => 'الرقم أطول من المعتاد. تأكّد منه.';
+
+  @override
+  String get phoneLandline => 'هذا رقم أرضي. أدخل رقم جوال عليه واتساب.';
+
+  @override
+  String phoneNotMobilePrefix(String prefix) {
+    return 'أدخل رقم جوال يبدأ بـ $prefix.';
+  }
+
+  @override
+  String get phoneUnknownCode => 'رمز الدولة غير معروف.';
+
+  @override
+  String phoneSwitchedCountry(String country) {
+    return 'عرفنا الدولة من رمزها: $country.';
+  }
+
+  @override
+  String phoneCountryChip(String country, String code) {
+    return 'الدولة: $country، $code. اضغط لتغييرها';
+  }
+
+  @override
+  String get phoneValid => 'الرقم صحيح';
+
+  @override
+  String get phoneClear => 'مسح الرقم';
+
+  @override
+  String get countrySheetTitle => 'اختر الدولة';
+
+  @override
+  String get countrySheetClose => 'إغلاق';
+
+  @override
+  String get countrySearchClear => 'مسح';
+
+  @override
+  String get countrySearch => 'ابحث باسم الدولة أو رمزها';
+
+  @override
+  String get countryPinned => 'الأكثر استعمالاً';
+
+  @override
+  String get countryLastUsed => 'آخر ما استعملته';
+
+  @override
+  String get countryAll => 'كل الدول';
+
+  @override
+  String get countryNone => 'لا دولة بهذا الاسم أو الرمز';
 
   @override
   String get signInSendCode => 'إرسال الرمز';

@@ -52,6 +52,14 @@ const readByServerTests = (file) =>
 // or windows/ folder), checked by classify-changes.test.mjs.
 export const NATIVE_PACKAGES = ['packages/core_alerts'];
 
+// Files outside the Dart packages that core_ui's tests read (D.11b): the
+// phone cases shared with ui-web and the brand mark the loader draws. A change
+// to one runs every Dart package's checks.
+export const READ_BY_DART_TESTS = [
+  'packages/ui-web/src/phone-field/phone-cases.json',
+  'docs/brand/logo/mark/mark-orange-on-ivory-drop.svg',
+];
+
 // Generated Markdown is code: a test compares it with a fresh render.
 const DOCS = /^(?!packages\/design-tokens\/generated\/)(.*\.md$|docs\/)/;
 // packages/design-tokens generates the Dart tokens of packages/core_tokens.
@@ -98,7 +106,10 @@ export function classify(files, read = readText) {
   const build = files.some((file) => !DOCS.test(file));
   const code = build || specRead;
   const dart = files.some(
-    (file) => GOLDEN_INPUTS.test(file) || (!DOCS.test(file) && DART.test(file)),
+    (file) =>
+      GOLDEN_INPUTS.test(file) ||
+      READ_BY_DART_TESTS.includes(file) ||
+      (!DOCS.test(file) && DART.test(file)),
   );
   const native = files.some(
     (file) => !DOCS.test(file) && (NATIVE.test(file) || nativePackage(file)),
@@ -133,6 +144,7 @@ export function classify(files, read = readText) {
 // workspace pubspec, the lock file, the pinned Flutter, the analysis options).
 // CI's own reasons to run Dart (its workflow, verify.mjs) are not local ones.
 function dartScope(files) {
+  if (files.some((file) => READ_BY_DART_TESTS.includes(file))) return 'all';
   const dartFiles = files.filter((file) => !DOCS.test(file) && DART_ONLY.test(file));
   if (dartFiles.length === 0) return null;
   const inPackage =

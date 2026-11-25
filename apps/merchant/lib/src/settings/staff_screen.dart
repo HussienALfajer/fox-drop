@@ -1,6 +1,8 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/core_auth.dart';
 import 'package:core_l10n/core_l10n.dart';
+import 'package:core_ui/core_ui.dart'
+    show FoxPhoneField, FoxTheme, FoxThemeData, foxReadPhone;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -176,8 +178,8 @@ class _NewCashierDialog extends StatefulWidget {
 class _NewCashierDialogState extends State<_NewCashierDialog> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
-  var _country = PhoneCountry.syria;
-  var _invalidPhone = false;
+  var _country = 'SY';
+  String? _phoneProblem;
 
   @override
   void dispose() {
@@ -188,8 +190,11 @@ class _NewCashierDialogState extends State<_NewCashierDialog> {
 
   void _send() {
     final name = _name.text.trim();
-    final phone = e164Phone(_country, _phone.text);
-    setState(() => _invalidPhone = phone == null);
+    // Any country's mobile (D.11b); a problem is said in its own words.
+    final reading = foxReadPhone(_phone.text, _country);
+    final phone = reading.e164;
+    final strings = phoneFieldStrings(AppLocalizations.of(context));
+    setState(() => _phoneProblem = strings.problem(reading));
     if (name.isEmpty || phone == null) return;
     Navigator.of(context).pop((name: name, phone: phone));
   }
@@ -209,30 +214,24 @@ class _NewCashierDialogState extends State<_NewCashierDialog> {
             maxLength: 80,
             decoration: InputDecoration(labelText: l10n.merchantCashierName),
           ),
-          DropdownButton<PhoneCountry>(
-            value: _country,
-            onChanged: (country) {
-              if (country != null) setState(() => _country = country);
-            },
-            items: [
-              DropdownMenuItem(
-                value: PhoneCountry.syria,
-                child: Text(l10n.signInCountrySyria),
-              ),
-              DropdownMenuItem(
-                value: PhoneCountry.turkey,
-                child: Text(l10n.signInCountryTurkey),
-              ),
-            ],
-          ),
-          TextField(
-            key: const Key('cashier-phone'),
-            controller: _phone,
-            keyboardType: TextInputType.phone,
-            textDirection: TextDirection.ltr,
-            decoration: InputDecoration(
-              labelText: l10n.signInPhoneLabel,
-              errorText: _invalidPhone ? l10n.signInInvalidPhone : null,
+          // The phone field for every country (D.11b); the dialog stays
+          // unstyled until the restaurant batch, so the field brings its
+          // own theme.
+          FoxTheme(
+            data: FoxThemeData.phone(),
+            child: FoxPhoneField(
+              key: const Key('cashier-phone'),
+              controller: _phone,
+              country: _country,
+              countries: foxCountryNames,
+              strings: phoneFieldStrings(l10n),
+              label: l10n.signInPhoneLabel,
+              error: _phoneProblem,
+              onCountryChanged: (country) => setState(() => _country = country),
+              onChanged: (_) {
+                if (_phoneProblem != null) setState(() => _phoneProblem = null);
+              },
+              onSubmitted: (_) => _send(),
             ),
           ),
         ],
