@@ -5,7 +5,6 @@
 // `pnpm test:visual --update-snapshots`. `pnpm baselines` (scripts/baselines.mjs)
 // runs it with FD_VISUAL_STORIES (the stories to run) and FD_VISUAL_REPORT (a
 // JSON report), which pass into the container.
-import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -31,24 +30,12 @@ const forwarded = process.argv.slice(2).map((arg) => `'${arg.replaceAll("'", "'\
 // version of `packageManager`, once, into its own volume. The install itself
 // (about 2 min: pnpm checks the lock file against the registry) runs only when
 // what it installs changed since the volume's last install: the pnpm version,
-// the lock file, the workspace and the manifests of the installed packages.
-const read = (file) => readFileSync(resolve(repo, file));
-const pnpm = JSON.parse(read('package.json')).packageManager;
-// A manifest's fields that change an install (a new script does not).
-const installFields = (file) => {
-  const manifest = JSON.parse(read(file));
-  const fields = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'];
-  return JSON.stringify([...fields, 'pnpm', 'engines'].map((field) => manifest[field] ?? null));
-};
-const installed = createHash('sha256')
-  .update(pnpm)
-  .update(read('pnpm-lock.yaml'))
-  .update(read('pnpm-workspace.yaml'))
-  .update(installFields('package.json'))
-  .update(installFields('packages/ui-web/package.json'))
-  .update(installFields('packages/design-tokens/package.json'))
-  .digest('hex');
+// the lock file, the workspace and the manifests of the installed packages,
+// hashed in the container (the root manifest's packages are not installed).
+const pnpm = JSON.parse(readFileSync(resolve(repo, 'package.json'), 'utf8')).packageManager;
 const marker = '/work/node_modules/.fd-visual-installed';
+const installed =
+  '/work/pnpm-lock.yaml /work/pnpm-workspace.yaml /work/packages/ui-web/package.json /work/packages/design-tokens/package.json';
 const script = [
   'set -e',
   `if [ "$(cat /opt/pnpm/version 2>/dev/null)" != "${pnpm}" ]; then` +
@@ -56,9 +43,10 @@ const script = [
     ` && echo "${pnpm}" > /opt/pnpm/version; fi`,
   'export PATH=/opt/pnpm/bin:$PATH',
   'cd /work',
-  `if [ "$(cat ${marker} 2>/dev/null)" != "${installed}" ]; then` +
+  `key="${pnpm} $(cat ${installed} | sha256sum)"`,
+  `if [ "$(cat ${marker} 2>/dev/null)" != "$key" ]; then` +
     ' pnpm install --frozen-lockfile --filter "@fox-drop/ui-web..."' +
-    ` && echo "${installed}" > ${marker}; fi`,
+    ` && echo "$key" > ${marker}; fi`,
   'cd packages/ui-web',
   `pnpm exec playwright test --project=visual ${forwarded.join(' ')}`,
 ].join('\n');
