@@ -1,27 +1,15 @@
 import { existsSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { openStory, stories, type Surface } from './stories';
 
 // Screenshot comparison (architecture §9.5 R9) of every story on the phone and
 // captain surfaces, with the real CoFo. Baselines in e2e/__screenshots__ are
-// valid only from the Playwright image: `pnpm test:visual` runs this project in
-// Docker (FD_VISUAL=1); update them with `pnpm test:visual --update-snapshots`.
+// valid only from the Playwright image: `pnpm baselines` (the repository root)
+// runs this project in Docker (FD_VISUAL=1), updates and compares them.
 const surfaces: Surface[] = ['phone', 'captain'];
+// `pnpm baselines` runs only the stories a change can reach (a comma list).
+const only = process.env['FD_VISUAL_STORIES']?.split(',').filter(Boolean);
 
-// Two frames with another root background, then two with its own: each change
-// invalidates the paint of the whole page, with no new layer (opacity made
-// one, which changed the text's anti-aliasing) and no change to hit testing,
-// so a hover or a press stays.
-async function repaint(page: Page) {
-  await page.evaluate(async () => {
-    const frames = () =>
-      new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-    document.documentElement.style.backgroundColor = 'rgb(0 0 0)';
-    await frames();
-    document.documentElement.style.backgroundColor = '';
-    await frames();
-  });
-}
 const font = `${import.meta.dirname}/../dist/storybook/fonts/cofo-sans-pro-arabic/CoFoSansProArabic-Regular.ttf`;
 
 test.beforeAll(() => {
@@ -33,7 +21,7 @@ test.beforeAll(() => {
 });
 
 for (const surface of surfaces)
-  for (const story of stories()) {
+  for (const story of stories().filter((each) => !only || only.includes(each.id))) {
     test(`${story.id} on ${surface}`, async ({ page }) => {
       await openStory(page, story.id, surface);
       // Loads the faces even for a story without text, so the check is real.
@@ -73,11 +61,11 @@ for (const surface of surfaces)
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
         await page.mouse.down();
       }
-      // A state repaints only its control's rectangle, and an anti-aliased
-      // edge inside it (the stepper's strip) then rounded by one level
-      // depending on which frames were painted before (CI, PR 265). Repaint the
-      // whole page in the final state, so the shot depends on the state alone.
-      if (/(Hover|Focus|Pressed)$/.test(story.name)) await repaint(page);
+      // No repaint before the shot: Chromium re-rasterized only the changed
+      // part of a tile (partial raster), so an anti-aliased edge crossing it
+      // (a field's rounded outline, the stepper's strip in PR 265) differed by
+      // a level or two with the frames painted before. The visual project
+      // turns partial raster off (playwright.config.ts).
       await expect(page).toHaveScreenshot(`${story.id}-${surface}.png`, {
         animations: 'disabled',
         fullPage: true,
