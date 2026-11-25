@@ -66,7 +66,7 @@ export function css(themes: Record<Theme, Tokens>): string {
     declarations(colours(themes.dark)),
     '}',
     '',
-    "/* The captain app: text and numbers at 7:1; orange only on buttons and headings, under the owner's exception. */",
+    "/* The captain app: text and numbers at 7:1; orange only on buttons and bars, under the owner's exception. */",
     '[data-surface="captain"] {',
     declarations(changed(themes.captainLight, themes.light)),
     '}',

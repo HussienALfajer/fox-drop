@@ -39,9 +39,9 @@ In order; when two conflict, the higher one wins.
 Ivory ground, blue words, orange actions.
 
 - **Ground and cards:** `surface` (`#FBF2E7`) is every screen's ground; `surface-raised` (`#FEFEFE`) carries cards, sheets and inputs.
-- **Text and numbers are blue:** `on-surface` (`#03428E`, 8.72:1 on the ground) for all text, prices and numbers; `on-surface-muted` (`#416EA4`, 4.75:1 on the ground, 4.59:1 at worst) for hints and captions.
-- **Orange acts and titles:** `primary` (`#FF6E31`) fills buttons, bars and the active item, with `on-primary` ivory labels; `heading` sets titles in bold orange; `brand` is the logo and decorative areas.
-- **The orange exception.** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory labels, below 4.5:1. The owner accepts this for `brand`, `primary`, `primary-hover`, `primary-pressed` and `heading` only (architecture §9.5 R4). Text and numbers are blue by default; the owner allows orange anywhere, body text, prices and numbers included (2026-11-23).
+- **Text, numbers and titles are blue:** `on-surface` (`#03428E`, 8.72:1 on the ground) for all text, prices and numbers; `heading` sets titles in the same bold blue, as the identity package sets them; `on-surface-muted` (`#416EA4`, 4.75:1 on the ground, 4.59:1 at worst) for hints and captions.
+- **Orange acts:** `primary` (`#FF6E31`) fills buttons, bars and the active item, with `on-primary` ivory labels; `brand` is the logo and decorative areas.
+- **The orange exception.** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory labels, below 4.5:1. The owner accepts this for `brand`, `primary`, `primary-hover` and `primary-pressed` only (architecture §9.5 R4). Text, numbers and titles are blue by default; the owner allows orange anywhere, body text, prices and numbers included (2026-11-23).
 - **Borders:** `border` for decorative dividers and card outlines only; `border-strong` (3.20:1 at worst) for every control boundary; `focus-ring` blue.
 - **States, always with an icon:** `success`, `warning` (a brown amber, not orange), `danger` (the Figma error red `#BF2929`), `info` (the brand blue), each with its `on-*` label colour. `alert` (`#8C1530`, 7:1) is for alerts read from across a kitchen.
 - **Interaction states, one model for everything pressed** (R10, «brand tonal steps»): a filled control deepens inside its own ramp: `primary` → `primary-hover` → `primary-pressed`, `danger` → `danger-hover` → `danger-pressed`. A light control (outlined button, ghost, tag, list row, card) takes the brand blue's tint: on the ground `surface-hover` → `surface-pressed`, on white `surface-raised-hover` → `surface-raised-pressed`, and an outline turns `border-hover` blue. Every step is measured: hover is ΔE2000 ≥ 8 from rest and pressed ≥ 5 beyond it, so a state is always seen. The colour fades over 200 ms; nothing moves. A component never invents its own state colour. Phones have no hover, so the pressed colour carries the feedback there.
@@ -50,7 +50,7 @@ Ivory ground, blue words, orange actions.
 
 ### Type
 
-**CoFo Sans Pro Arabic** alone, with its own Latin glyphs, at 400, 500 and 700 only: thin Arabic strokes vanish in the sun. Headings are CoFo 700 in `heading` orange.
+**CoFo Sans Pro Arabic** alone, with its own Latin glyphs, at 400, 500 and 700 only: thin Arabic strokes vanish in the sun. Headings are CoFo 700 in `heading` blue.
 
 | Role        | Phone | Panel | Captain | Line height |
 | ----------- | ----- | ----- | ------- | ----------- |

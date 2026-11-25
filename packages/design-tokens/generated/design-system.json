@@ -154,12 +154,12 @@
       {
         "name": "heading",
         "value": {
-          "light": "#FF6E31",
-          "dark": "#FF6E31",
-          "captain-light": "#FF6E31",
-          "captain-dark": "#FF6E31"
+          "light": "#03428E",
+          "dark": "#03428E",
+          "captain-light": "#03428E",
+          "captain-dark": "#03428E"
         },
-        "usage": "Titles and section headings, in bold; under the owner's contrast exception."
+        "usage": "Titles and section headings, in bold brand blue, as the identity package V1.1 sets them (owner, 2026-11-25)."
       },
       {
         "name": "accent",
@@ -919,7 +919,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.12.0",
+    "version": "0.13.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

@@ -16,7 +16,7 @@ The owner adopted the Figma file "Fox Drop" on 2026-11-23 as FOX DROP's design d
 | Raised cards   | `#FEFEFE` (also `#FBFAF8`)                                                                       | `color.surface-raised`                                |
 | Text, prices   | Blue `#03428E`                                                                                   | `color.on-surface`                                    |
 | Muted text     | Blue at 9 to 45% alpha                                                                           | `color.on-surface-muted`: blue at 75% over the ground |
-| Headings       | Orange `#FF6E31`                                                                                 | `color.heading`                                       |
+| Headings       | Orange `#FF6E31`; the apps set them blue `#03428E` (owner, 2026-11-25)                           | `color.heading`                                       |
 | Buttons, bars  | Orange `#FF6E31`, ivory label                                                                    | `color.primary`, `color.on-primary`                   |
 | Borders        | Blue at 40% (inputs), orange 2 px (focused)                                                      | `color.border` (16%), `color.border-strong` (60%)     |
 | Error          | `#BF2929`                                                                                        | `color.danger`                                        |

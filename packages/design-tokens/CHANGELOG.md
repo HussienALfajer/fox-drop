@@ -2,6 +2,10 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.13.0 (2026-11-25, blue headings)
+
+- `heading` moves from the brand orange `#FF6E31` to the brand blue `#03428E` (`primitive.color.blue.500`) in every theme, as the identity package V1.1 sets titles (owner, 2026-11-25). It leaves the orange exception (`ORANGE` in `src/contrast.ts`) and is checked as text: 4.5:1 on the phone and panel (8.72 on `surface`), 7:1 for the captain.
+
 ## 0.12.0 (2026-11-25, slice D.11b checkpoint C: sign-in and frame components)
 
 - New contrast pairs, no token change: `primary-hover` and `primary-pressed` as text on `surface` and `surface-raised` under the orange exception (floor 3.6: the text link's hover and pressed ink, the tracking steps' current label), and `primary-pressed` on `info-subtle` at 4.5 on the phone and panel (the code preview's masked code, 4.68). The sign-in hero's orange badges and dish circles are decoration, read as words, so they have no pair.

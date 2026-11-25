@@ -46,8 +46,8 @@
       "$description": "Ivory labels on orange, as in the Figma file."
     },
     "heading": {
-      "$value": "{primitive.color.orange.400}",
-      "$description": "Titles and section headings, in bold; under the owner's contrast exception."
+      "$value": "{primitive.color.blue.500}",
+      "$description": "Titles and section headings, in bold brand blue, as the identity package V1.1 sets them (owner, 2026-11-25)."
     },
     "accent": {
       "$value": "{primitive.color.blue.500}"

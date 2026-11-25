@@ -231,7 +231,7 @@
   --fd-color-primary-hover: #DA531B;
   --fd-color-primary-pressed: #C2410C;
   --fd-color-on-primary: #FFFAED;
-  --fd-color-heading: #FF6E31;
+  --fd-color-heading: #03428E;
   --fd-color-accent: #03428E;
   --fd-color-on-accent: #FFFFFF;
   --fd-color-border: #D3D6D9;
@@ -345,7 +345,7 @@
   --fd-color-primary-hover: #DA531B;
   --fd-color-primary-pressed: #C2410C;
   --fd-color-on-primary: #FFFAED;
-  --fd-color-heading: #FF6E31;
+  --fd-color-heading: #03428E;
   --fd-color-accent: #03428E;
   --fd-color-on-accent: #FFFFFF;
   --fd-color-border: #D3D6D9;
@@ -387,7 +387,7 @@
   --fd-color-chart-6: #BE185D;
 }
 
-/* The captain app: text and numbers at 7:1; orange only on buttons and headings, under the owner's exception. */
+/* The captain app: text and numbers at 7:1; orange only on buttons and bars, under the owner's exception. */
 [data-surface="captain"] {
   --fd-button-secondary-background-pressed: #D6E4F7;
   --fd-button-danger-background: #8C1530;

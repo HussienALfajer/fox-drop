@@ -15,7 +15,7 @@
         "300": { "$value": "#FFA06B" },
         "400": {
           "$value": "#FF6E31",
-          "$description": "The brand orange: buttons, headings, accents, the logo (owner, 2026-11-23)."
+          "$description": "The brand orange: buttons, bars, accents, the logo (owner, 2026-11-23; headings are blue since 2026-11-25)."
         },
         "450": {
           "$value": "#FD6425",
