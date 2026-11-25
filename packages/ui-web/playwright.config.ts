@@ -18,6 +18,10 @@ export default defineConfig({
   // story) alone held one worker for 5.4 of the 5.5 minutes, and the visual
   // project is one file.
   fullyParallel: true,
+  // Playwright's default is half the cores: 2 workers on CI's 4-vCPU runner,
+  // where the functional (432 tests) and visual (528) suites each took over
+  // 3 minutes, the longest jobs of the run. Locally the default stays.
+  ...(process.env['CI'] ? { workers: '100%' } : {}),
   forbidOnly: !!process.env['CI'],
   reporter: report ? [[reporter], ['json', { outputFile: report }]] : reporter,
   snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
