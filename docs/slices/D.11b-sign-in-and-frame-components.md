@@ -1,6 +1,6 @@
 # D.11b The components of D.11's screens
 
-Status: Planned · Tier: T2 · Branch: `feat/sign-in-frame-components`
+Status: Done · Tier: T2 · Branch: `feat/sign-in-frame-components` (A, B), `feat/sign-in-frame-components-c` (C)
 Spec: architecture §9.4, §9.5 (R1 to R10), §9.7, §9.9 (the component cycle), §9.10; brand expression §2 (the mark, the filling drop), §3 (motion), §9 (device budgets); CU §4.2, §5.2, §5.5, §6.1, §6.2; D.11's slice file: «Owner's answers» (e), the screen review (screens 2, 3, 6, 7, 8), «Design-system audit of screen 2» and «Code changes recorded for step 8» items 5, 6, 7, 11 and 12 (the components' part) · Definition of done: the D.11b line of `docs/roadmap.md`; D.11's screens can then be coded on `core_ui` only.
 
 ## Goal
@@ -84,9 +84,11 @@ Checkpoints (one commit per step, `node scripts/verify.mjs --changed` once at ea
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`: not run yet
-- Storybook and widgetbook: —
-- Review: —
+- Tests (checkpoint C): `flutter test test/frame_parts_test.dart test/frame_parts_review_test.dart` 31 passed; all of `core_ui` 323 passed before the review fixes; widgetbook coverage passed; ui-web `text-link`, `phone-field`, `stories` and `design-system` tests passed.
+- `node scripts/verify.mjs --changed`: first run failed only on `fox_lints` (test lengths written as literals; named constants since); the second failed only on the design-tokens card test until the eight card images existed; the final run is in the pull request's test plan.
+- `pnpm baselines`: «passed in 4 min 05 s»; every new and changed image looked at (the bar's outline and halo, the tracking steps, the banners, the ticket and the sign, the hero by origin, the TextLink focus ring). The phone field card still cuts its widest example's last digit in the card's 320 field: the check mark no longer takes a 48 box, but the chip, check and clear leave the digits little room at that width.
+- Storybook and widgetbook: every new state has a story or use case; the images above are those states.
+- Review (T2, `reviewer`, three rounds): round 1 one blocking (the visual gate's locator missed the link role) and three should-fix (the hero's semantics on resize, the keyboard inside a resizing Scaffold, the orange contrast pairs); round 2 the keyboard rising after the first frame; round 3 nothing left. Non-blocking items in `docs/backlog.md`.
 
 ## Before deploying
 
