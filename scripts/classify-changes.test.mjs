@@ -6,11 +6,14 @@ import { describe, it } from 'node:test';
 
 import {
   classify,
+  DART_PACKAGE_SOURCES,
+  dartPackagesSourcedBy,
   handWritten,
   NATIVE_PACKAGES,
   NOT_HAND_WRITTEN,
   READ_BY_SERVER_TESTS,
   SPEC_FILES_READ_BY_TESTS,
+  VISUAL_ROOT_SCRIPTS,
 } from './classify-changes.mjs';
 
 const tracked = () =>
@@ -125,9 +128,19 @@ describe('the change classifier', () => {
   });
 
   it('sets TypeScript and Dart for the design tokens, which generate both outputs', () => {
-    // core_tokens' test reads the token sources: the local Dart checks run.
+    // core_tokens is generated from the token sources and its test reads
+    // them: they count as a change to core_tokens (and its dependents).
     assert.equal(
       flags(['packages/design-tokens/tokens/semantic/light.json']),
+      'code dart build typescript dartScope:changed',
+    );
+    assert.deepEqual(dartPackagesSourcedBy('packages/design-tokens/tokens/semantic/light.json'), [
+      'packages/core_tokens',
+    ]);
+    assert.deepEqual(dartPackagesSourcedBy('packages/design-tokens/src/generate.ts'), []);
+    // With a file every package shares, still all.
+    assert.equal(
+      flags(['packages/design-tokens/tokens/semantic/light.json', 'pubspec.yaml']),
       'code dart build typescript dartScope:all',
     );
     assert.equal(flags(['packages/design-tokens/src/generate.ts']), 'code dart build typescript');
@@ -272,6 +285,77 @@ describe('the change classifier', () => {
       'docs/brand/logo/mark/mark-orange-on-ivory-drop.svg',
     ])
       assert.equal(images([file]), 'visual golden', file);
+  });
+
+  it('runs the screenshots for the root package.json unless only scripts they do not run changed', () => {
+    const manifest = (fields) =>
+      JSON.stringify({
+        name: 'fox-drop',
+        packageManager: 'pnpm@10.0.0',
+        scripts: {
+          verify: 'node scripts/verify.mjs',
+          'fonts:fetch': 'node scripts/fonts-fetch.mjs',
+        },
+        devDependencies: { prettier: '3.9.10' },
+        ...fields,
+      });
+    const visual = (now, before) =>
+      classify(['package.json'], () => now, before === undefined ? null : () => before).visual;
+    const base = manifest({});
+    // A new script, or another script changed: no screenshot can follow.
+    assert.equal(
+      visual(
+        manifest({
+          scripts: {
+            verify: 'node scripts/verify.mjs --x',
+            'fonts:fetch': 'node scripts/fonts-fetch.mjs',
+            baselines: 'node scripts/baselines.mjs',
+          },
+        }),
+        base,
+      ),
+      false,
+    );
+    // Keys in another order are the same manifest.
+    assert.equal(
+      visual(
+        JSON.stringify({ devDependencies: { prettier: '3.9.10' }, ...JSON.parse(base) }),
+        base,
+      ),
+      false,
+    );
+    for (const changed of [
+      manifest({ devDependencies: { prettier: '3.9.11' } }),
+      manifest({ packageManager: 'pnpm@10.0.1' }),
+      manifest({ engines: { node: '24' } }),
+      manifest({ pnpm: { overrides: { a: '1.0.0' } } }),
+      manifest({ scripts: { 'fonts:fetch': 'node scripts/fonts-fetch.mjs --all' } }),
+      manifest({ scripts: { 'fonts:fetch': 'node scripts/fonts-fetch.mjs', postinstall: 'x' } }),
+      'not json',
+    ])
+      assert.equal(visual(changed, base), true, changed);
+    // No base, or no file at the base or now: in doubt, it counts.
+    assert.equal(visual(base), true);
+    assert.equal(visual(base, null), true);
+    assert.equal(visual(null, base), true);
+    // Every other path is as before.
+    assert.equal(
+      classify(
+        ['pnpm-lock.yaml'],
+        () => '',
+        () => '',
+      ).visual,
+      true,
+    );
+  });
+
+  it('knows every root script the visual job runs', () => {
+    const rootScripts = JSON.parse(readFileSync('package.json', 'utf8')).scripts;
+    const run = [...job('visual').matchAll(/\bpnpm ([\w:-]+)/g)]
+      .map((match) => match[1])
+      .filter((script) => rootScripts[script]);
+    assert.ok(run.includes('fonts:fetch'), run.join(' '));
+    for (const script of run) assert.ok(VISUAL_ROOT_SCRIPTS.includes(script), script);
   });
 
   it('runs both image jobs for a change to CI itself', () => {
@@ -420,6 +504,20 @@ describe('the change classifier', () => {
       if (match) native.add(match[1]);
     }
     assert.deepEqual([...native].sort(), [...NATIVE_PACKAGES].sort());
+  });
+
+  it('counts sources outside a Dart package only for packages of the Dart workspace', () => {
+    const members = [...readFileSync('pubspec.yaml', 'utf8').matchAll(/^ {2}- (\S+)$/gm)].map(
+      (match) => match[1],
+    );
+    for (const [dir, sources] of Object.entries(DART_PACKAGE_SOURCES)) {
+      assert.ok(members.includes(dir), dir);
+      for (const source of sources)
+        assert.ok(
+          tracked().some((file) => file.startsWith(source.replace(/\*\*$/, ''))),
+          `${dir}: ${source} names tracked files`,
+        );
+    }
   });
 
   it('is in step with the server tests that read files outside the server', () => {

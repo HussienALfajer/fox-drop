@@ -15,6 +15,7 @@ import { after, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  changedDartPackages,
   chromiumFolders,
   chromiumInstalled,
   cut,
@@ -26,6 +27,8 @@ import {
   hasPassed,
   inputsFingerprint,
   killTree,
+  NO_PLUGINS_PROBE,
+  noPluginsProblem,
   passKey,
   pinnedFlutterBin,
   pinnedSdkPath,
@@ -274,6 +277,64 @@ describe('the Dart workspace', () => {
       'customer',
     ]);
     assert.deepEqual([...withDependents(workspace, ['core_api'])], ['core_api']);
+  });
+
+  it('counts a change to the design tokens as one to core_tokens', () => {
+    const workspace = [
+      { name: 'core_tokens', dir: 'packages/core_tokens' },
+      { name: 'core_ui', dir: 'packages/core_ui' },
+      { name: 'customer', dir: 'apps/customer' },
+    ];
+    assert.deepEqual(
+      changedDartPackages(workspace, ['packages/design-tokens/tokens/semantic/light.json']),
+      ['core_tokens'],
+    );
+    assert.deepEqual(
+      changedDartPackages(workspace, [
+        'packages/core_ui/lib/core_ui.dart',
+        'packages/design-tokens/src/generate.ts',
+      ]),
+      ['core_ui'],
+    );
+    // A folder that only starts with a package's name is not in it.
+    assert.deepEqual(changedDartPackages(workspace, ['packages/core_tokens_x/a.dart']), []);
+  });
+});
+
+describe('the --no-plugins probe', () => {
+  it('passes when dart analyze takes the option', () => {
+    assert.equal(noPluginsProblem({ status: 0, stdout: 'Usage: dart analyze', stderr: '' }), null);
+  });
+
+  it('says what to do when the SDK lacks the option', () => {
+    // What `dart analyze --no-such --help` prints with Dart 3.13 (exit 64).
+    const problem = noPluginsProblem({
+      status: 64,
+      stdout: '',
+      stderr: 'Could not find an option named "--no-plugins".\n\nUsage: dart analyze [arguments]',
+    });
+    assert.match(problem, /has no --no-plugins option/);
+    assert.match(problem, /pubspec\.yaml/);
+    assert.match(problem, /scripts\/verify\.mjs/);
+    assert.match(problem, /Could not find an option/);
+  });
+
+  it('fails with the output for any other failure, and when dart does not start', () => {
+    assert.match(
+      noPluginsProblem({ status: 255, stdout: '', stderr: 'boom' }),
+      /failed \(exit 255\)[\s\S]*boom/,
+    );
+    assert.match(
+      noPluginsProblem({ status: null, error: new Error('spawn dart ENOENT') }),
+      /failed \(exit none\)[\s\S]*ENOENT/,
+    );
+  });
+
+  it('is the option the analyze commands use', () => {
+    assert.match(NO_PLUGINS_PROBE, /^dart analyze --no-plugins /);
+    const melos = readFileSync('pubspec.yaml', 'utf8');
+    assert.match(melos, /run: dart analyze --fatal-infos --no-plugins && /);
+    assert.match(readFileSync(verify, 'utf8'), /dart analyze --fatal-infos --no-plugins/);
   });
 });
 

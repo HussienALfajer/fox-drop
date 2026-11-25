@@ -40,6 +40,7 @@ import { changedFiles, classify, READ_BY_SERVER_TESTS } from './classify-changes
 import { recordGreen, treeState } from './green-tree.mjs';
 import { serverTestScope } from './server-test-readers.mjs';
 import {
+  changedDartPackages,
   chromiumInstalled,
   cut,
   dartInputs,
@@ -48,6 +49,8 @@ import {
   gitDir,
   hasPassed,
   inputsFingerprint,
+  NO_PLUGINS_PROBE,
+  noPluginsProblem,
   passKey,
   pinnedFlutterBin,
   pinnedSdkPath,
@@ -528,7 +531,7 @@ function checkInstructionSizes() {
 const SCRIPT_TESTS = {
   name: 'Claude Code hooks and scripts',
   command:
-    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/baselines.test.mjs',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/baselines.test.mjs scripts/dependency-pins.test.mjs',
 };
 
 function formatSteps(files) {
@@ -866,9 +869,7 @@ async function dartChanged(files, dartScope) {
         inputs = dartInputs(workspace);
         // The changed Dart packages and the packages that depend on them, or all.
         // Melos's own --diff sees commits only, not the working tree.
-        const changedNames = workspace
-          .filter((each) => files.some((file) => file.startsWith(`${each.dir}/`)))
-          .map((each) => each.name);
+        const changedNames = changedDartPackages(workspace, files);
         scoped =
           dartScope === 'all'
             ? workspace
@@ -877,7 +878,9 @@ async function dartChanged(files, dartScope) {
       },
     },
     ...(files.some((file) => file.startsWith('packages/core_l10n/')) ? localizationSteps() : []),
-    () => scoped.length > 0 && analyzeStep(files, scoped, workspace, inputs),
+    NO_PLUGINS_STEP,
+    () => scoped.length > 0 && analyzeStep(scoped, workspace, inputs),
+    () => foxLintsStep(inputs),
     () =>
       scoped.length > 0 && {
         name: `Dart format, ${scopeLabel(scoped, workspace)}`,
@@ -906,26 +909,42 @@ const scopeLabel = (scoped, workspace) =>
     ? 'all packages'
     : `${scoped.length} changed or dependent packages`;
 
-// One analyzer process over the changed packages and their dependents: 49 s
-// against 84 s over the workspace for core_ui's six (2026-11-25, warm, with
-// the fox_lints plugin; 11 s against 23 s without it, so the plugin is most of
-// the time). The plugin's rules apply to packages that do not
-// depend on it (it is declared in the root analysis_options.yaml), so a change
-// to the plugin analyzes everything.
-function analyzeStep(files, scoped, workspace, inputs) {
-  const all =
-    scoped.length === workspace.length ||
-    files.some((file) => file.startsWith('packages/fox_lints/'));
+// The analyzer without the fox_lints plugin (`--no-plugins`, the editor's:
+// it re-resolves the whole workspace on every run), whose rules the check
+// runs on its own (foxLintsStep). One analyzer process over the changed
+// packages and their dependents: 11 s against 23 s over the workspace for
+// core_ui's six (2026-11-25, warm).
+function analyzeStep(scoped, workspace, inputs) {
+  const all = scoped.length === workspace.length;
   return {
-    name: `Dart analyze, ${all ? 'all packages' : scopeLabel(scoped, workspace)}`,
-    command: `dart analyze --fatal-infos${all ? '' : ` ${scoped.map((each) => each.dir).join(' ')}`}`,
+    name: `Dart analyze, ${scopeLabel(scoped, workspace)}`,
+    command: `dart analyze --fatal-infos --no-plugins${all ? '' : ` ${scoped.map((each) => each.dir).join(' ')}`}`,
     inputs,
     timeoutMs: ANALYZE_LIMIT_MS,
   };
 }
 
-// A cold analysis of the workspace took 7 min on 2026-11-25 (a new worktree,
-// the plugin compiled first); one that runs far longer has stopped answering.
+// An SDK whose `dart analyze` lacks the undocumented --no-plugins stops here,
+// with what to do (noPluginsProblem), before any analysis.
+const NO_PLUGINS_STEP = {
+  name: 'Dart analyze takes --no-plugins',
+  check: () => noPluginsProblem(spawnSync(NO_PLUGINS_PROBE, { shell: true, encoding: 'utf8' })),
+};
+
+// The fox_lints rules (architecture §9.5 R2, R5) over the packages they
+// enforce, as the analyzer plugin runs them in the editor
+// (packages/fox_lints/CLAUDE.md): it compiles itself once per change to
+// fox_lints, pubspec.lock or the SDK (35 s), then takes 2.5 s.
+const foxLintsStep = (inputs) => ({
+  name: 'fox_lints rules',
+  command: 'dart packages/fox_lints/tool/check.dart',
+  inputs,
+  timeoutMs: ANALYZE_LIMIT_MS,
+});
+
+// A cold analysis of the workspace took 7 min 13 s on 2026-11-25 in a new
+// worktree, without the plugin too (the analyzer's cache does not follow a new
+// folder); warm, 20 to 36 s. One that runs far longer has stopped answering.
 const ANALYZE_LIMIT_MS = 15 * 60 * 1000;
 
 // ---------------------------------------------------------------- the parts
@@ -980,8 +999,10 @@ async function verifyParts() {
         ...(parts.has('dart')
           ? [
               ...localizationSteps(),
+              NO_PLUGINS_STEP,
+              // `dart analyze --fatal-infos --no-plugins`, then the fox_lints rules.
               () => ({
-                name: 'Dart analyze',
+                name: 'Dart analyze and the fox_lints rules',
                 command: 'dart run melos run analyze --no-select',
                 inputs: dartInputs(workspace),
                 timeoutMs: ANALYZE_LIMIT_MS,

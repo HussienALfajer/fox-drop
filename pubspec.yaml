@@ -32,9 +32,11 @@ melos:
   scripts:
     analyze:
       # One analyzer over the workspace, each package with its own
-      # analysis_options.yaml: 13 s against 40 s for one per package.
-      description: Analyze every Dart package, warnings and infos fail.
-      run: dart analyze --fatal-infos
+      # analysis_options.yaml, without the fox_lints analyzer plugin (the
+      # editor's: 53 to 115 s against 20 s), then the same rules as the
+      # fox_lints check (packages/fox_lints/CLAUDE.md).
+      description: Analyze every Dart package, warnings and infos fail, then the fox_lints rules.
+      run: dart analyze --fatal-infos --no-plugins && dart packages/fox_lints/tool/check.dart
     format:check:
       description: Fail when a Dart file is not formatted.
       exec:
