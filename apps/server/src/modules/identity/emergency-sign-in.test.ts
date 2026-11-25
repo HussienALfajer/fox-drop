@@ -25,6 +25,17 @@ import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
 // 2026-11-07): OWN or OPS verify a captain or a restaurant user by phone and
 // issue a one-time code bound to the number, which the person types in the
 // app's usual code screen on any device.
+// Every leaf value of a JSON text, as strings: a secret kept in clear is one
+// of them, while a substring check could match inside a random id.
+function jsonValues(text: string): string[] {
+  const values: string[] = [];
+  JSON.parse(text, (_key, value: unknown) => {
+    if (typeof value !== 'object' || value === null) values.push(String(value));
+    return value;
+  });
+  return values;
+}
+
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
@@ -187,7 +198,10 @@ describe('emergency sign-in codes (W4, architecture §22 item 1)', () => {
       issue_reason: 'أرقام الإرسال متوقفة، تحققت منه هاتفياً',
       end_reason: 'used',
     });
-    expect(JSON.stringify(stored.rows[0])).not.toContain(body.code);
+    // Compared whole, never as a substring: six random digits can appear
+    // inside a random hash or id.
+    expect(Object.values(stored.rows[0])).not.toContain(body.code);
+    expect(stored.rows[0].code_hash).toMatch(/^[0-9a-f]{64}$/);
 
     const events = await sql.query(
       `SELECT actor_id, actor_role, target_type, city_id, reason, changes::text AS changes
@@ -203,7 +217,7 @@ describe('emergency sign-in codes (W4, architecture §22 item 1)', () => {
         reason: 'أرقام الإرسال متوقفة، تحققت منه هاتفياً',
       }),
     ]);
-    expect(events.rows[0].changes).not.toContain(body.code);
+    expect(jsonValues(events.rows[0].changes)).not.toContain(body.code);
     expect(events.rows[0].changes).not.toContain(phone.slice(1));
   });
 

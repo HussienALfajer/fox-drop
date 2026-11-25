@@ -122,10 +122,13 @@ describe('the sign-in code (architecture §8.3.2)', () => {
     expect(code).toMatch(/^\d{6}$/);
     const { rows } = await sql.query('SELECT * FROM identity.app_sign_in_codes');
     const stored = JSON.stringify(rows);
-    expect(stored).not.toContain(code);
     expect(stored).not.toContain(phone);
     expect(stored).not.toContain(phone.slice(1));
     const row = rows.find((r) => r.device_id === deviceId)!;
+    // No column holds the code; it is a 64-hex hash. A substring check of six
+    // random digits against every row's hashes could match by chance.
+    expect(Object.values(row)).not.toContain(code);
+    expect(row.code_hash).toMatch(/^[0-9a-f]{64}$/);
     expect(row.expires_at).toEqual(new Date(now.getTime() + 5 * MINUTE));
   });
 

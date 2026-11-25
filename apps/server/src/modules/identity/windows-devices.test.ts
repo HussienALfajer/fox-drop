@@ -20,6 +20,17 @@ import {
 // RA §4.3, architecture §8.3.3 item 1 (slice 2.44; owner decision
 // 2026-11-20): an owner's pairing code registers a Windows PC, whose signed
 // code requests pass where App Check is required.
+// Every leaf value of a JSON text, as strings: a secret kept in clear is one
+// of them, while a substring check could match inside a random id.
+function jsonValues(text: string): string[] {
+  const values: string[] = [];
+  JSON.parse(text, (_key, value: unknown) => {
+    if (typeof value !== 'object' || value === null) values.push(String(value));
+    return value;
+  });
+  return values;
+}
+
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
@@ -174,9 +185,15 @@ describe('the owner’s pairing code', () => {
       "SELECT changes::text FROM audit.events WHERE action = 'merchant_device.windows_pairing'",
     );
     expect(audited.rows.length).toBeGreaterThan(0);
-    expect(JSON.stringify(audited.rows)).not.toContain(code);
-    const stored = await sql.query('SELECT code_hash FROM identity.windows_pairings');
-    expect(JSON.stringify(stored.rows)).not.toContain(code);
+    // Compared whole, never as a substring: eight random digits can appear
+    // inside a random hash or id.
+    expect(
+      audited.rows.flatMap((row: { changes: string }) => jsonValues(row.changes)),
+    ).not.toContain(code);
+    const stored = await sql.query<{ code_hash: string }>(
+      'SELECT code_hash FROM identity.windows_pairings',
+    );
+    for (const row of stored.rows) expect(row.code_hash).toMatch(/^[0-9a-f]{64}$/);
   });
 });
 
