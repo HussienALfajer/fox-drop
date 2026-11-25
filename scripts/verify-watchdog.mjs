@@ -15,6 +15,7 @@ import { existsSync, readFileSync, rmSync } from 'node:fs';
 
 import {
   descendants,
+  killProcesses,
   killTrees,
   processAlive,
   releaseLock,
@@ -22,6 +23,9 @@ import {
 } from './verify-support.mjs';
 
 const [verifyPid, stateFile] = [Number(process.argv[2]), process.argv[3]];
+// When verify was last seen alive: no process started after it is the run's,
+// unless one of the run's own processes started it.
+let lastAlive = Date.now();
 
 function reap() {
   if (!existsSync(stateFile)) return;
@@ -32,19 +36,30 @@ function reap() {
     return;
   }
   if (state.pid !== verifyPid) return;
-  // On POSIX each step is a process group of its own.
-  killTrees(
-    process.platform === 'win32'
-      ? descendants(windowsProcessTable(), state.steps, state.started)
-      : state.steps,
-  );
+  if (process.platform === 'win32') {
+    // Each process by itself (no /T: Windows' own tree walk trusts reused ids).
+    killProcesses(
+      descendants(
+        windowsProcessTable(),
+        state.steps,
+        state.started,
+        Math.max(lastAlive, state.alive ?? 0),
+      ),
+    );
+  } else {
+    // Each step is a process group of its own.
+    killTrees(state.steps);
+  }
   rmSync(stateFile, { force: true });
   // The next check would take the stale lock over; release it now.
   if (state.lock) releaseLock(state.lock, verifyPid);
 }
 
 const timer = setInterval(() => {
-  if (processAlive(verifyPid)) return;
+  if (processAlive(verifyPid)) {
+    lastAlive = Date.now();
+    return;
+  }
   clearInterval(timer);
   reap();
-}, 1000);
+}, 250);

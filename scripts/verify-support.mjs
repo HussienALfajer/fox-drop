@@ -4,7 +4,7 @@
 // that passed on unchanged inputs, the cut of a failing step's output, the
 // summary table and the end of a process tree.
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   existsSync,
   linkSync,
@@ -16,6 +16,8 @@ import {
 } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+
+import { READ_BY_DART_TESTS } from './classify-changes.mjs';
 
 /** Whether a process with this id is running. */
 export function processAlive(pid) {
@@ -55,7 +57,7 @@ export function takeLock(
       const age = now - Date.parse(holder?.started ?? '');
       if (holder && isAlive(holder.pid) && age < STALE_AFTER_MS) return { taken: false, holder };
       // Remove the stale lock only if it is still the one read, not a fresh one.
-      if (readText(file) === seen) rmSync(file, { force: true });
+      removeIf(file, (text) => text === seen);
     }
     return { taken: false, holder: parse(readText(file)) };
   } finally {
@@ -68,7 +70,35 @@ const STALE_AFTER_MS = 3 * 60 * 60 * 1000;
 
 /** Removes the lock file if this process holds it. */
 export function releaseLock(file, pid = process.pid) {
-  if (parse(readText(file))?.pid === pid) rmSync(file, { force: true });
+  removeIf(file, (text) => parse(text)?.pid === pid);
+}
+
+/**
+ * Removes `file` only if its content passes `expected`, with no gap between the
+ * check and the removal: the file is first renamed to a name of this call's
+ * own (one rename wins), checked there, then deleted, or linked back when it
+ * is not the expected one (unless a new one took its place meanwhile). Two
+ * checks that both saw one stale lock cannot then both take it over, and a
+ * release cannot delete a lock another process took a moment before.
+ */
+export function removeIf(file, expected) {
+  const moved = `${file}.${process.pid}.${randomUUID()}.removing`;
+  try {
+    renameSync(file, moved);
+  } catch {
+    return false; // gone already
+  }
+  try {
+    if (expected(readText(moved))) return true;
+    try {
+      linkSync(moved, file);
+    } catch {
+      // A new file took its place meanwhile: that one stays.
+    }
+    return false;
+  } finally {
+    rmSync(moved, { force: true });
+  }
 }
 
 function readText(file) {
@@ -114,6 +144,13 @@ export function pinnedFlutterBin(root, commonDirOf = gitCommonDir) {
   if (!commonDir) return null;
   const main = path.join(path.dirname(commonDir), '.fvm', 'flutter_sdk', 'bin');
   return existsSync(main) ? main : null;
+}
+
+/** The version of the Flutter whose bin folder this is, from its own record, or null. */
+export function flutterVersionOf(flutterBin) {
+  if (!flutterBin) return null;
+  const record = parse(readText(path.join(flutterBin, 'cache', 'flutter.version.json')));
+  return record?.frameworkVersion ?? null;
 }
 
 /**
@@ -237,28 +274,72 @@ export function killTrees(pids, platform = process.platform) {
   }
 }
 
+/** Ends exactly these processes, none of their children (on Windows in one taskkill). */
+export function killProcesses(pids, platform = process.platform) {
+  if (pids.length === 0) return;
+  if (platform === 'win32') {
+    spawnSync('taskkill', [...pids.flatMap((pid) => ['/PID', String(pid)]), '/F'], {
+      stdio: 'ignore',
+    });
+    return;
+  }
+  for (const pid of pids) {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      // Gone already.
+    }
+  }
+}
+
+/**
+ * Ends every process a run's steps (`roots`, started at `since` or later)
+ * started: on Windows the processes `descendants` proves are the run's, read
+ * from the process table, since `taskkill /T` follows reused parent ids; on
+ * POSIX each step's process group.
+ */
+export function endSteps(roots, since, platform = process.platform) {
+  if (roots.length === 0) return;
+  if (platform !== 'win32') return killTrees(roots, platform);
+  killProcesses(descendants(windowsProcessTable(), roots, since, Date.now()), platform);
+}
+
 /**
  * The processes of `table` ({ pid, ppid, created } in ms) that descend from
- * one of the `roots` (pids) and started at or after `since`, the live roots
- * included. A root may be gone already: its children still name it as their
- * parent. The time guard keeps a reused process id out.
+ * one of the run's step `roots` (pids), for a run that started at `since` and
+ * was last seen alive at `lastAlive`. Never a process of another run: process
+ * ids are reused (a step's shell dies with verify, so its id is free at once),
+ * so
+ *   - a root, or a process whose parent root is gone, counts only when it
+ *     started while the run was alive (since <= created <= lastAlive);
+ *   - a child counts only when it started after the parent it names (a
+ *     process cannot be older than its parent: an older one names an earlier
+ *     owner of that id).
+ * A process whose own parent is gone and was not a root is left alone: who
+ * started it can no longer be proven.
  */
-export function descendants(table, roots, since) {
-  const fresh = table.filter((each) => each.created >= since);
-  const found = new Set(fresh.filter((each) => roots.includes(each.pid)).map((each) => each.pid));
-  const parents = new Set(roots);
+export function descendants(table, roots, since, lastAlive) {
+  const duringRun = (each) => each.created >= since && each.created <= lastAlive;
+  const found = new Map();
+  for (const each of table)
+    if (roots.includes(each.pid) && duringRun(each)) found.set(each.pid, each);
+  const goneRoots = new Set(roots.filter((pid) => !found.has(pid)));
   let grew = true;
   while (grew) {
     grew = false;
-    for (const each of fresh) {
-      if (parents.has(each.ppid) && !found.has(each.pid)) {
-        found.add(each.pid);
-        parents.add(each.pid);
+    for (const each of table) {
+      if (found.has(each.pid)) continue;
+      const parent = found.get(each.ppid);
+      const ours = parent
+        ? each.created >= parent.created
+        : goneRoots.has(each.ppid) && duringRun(each);
+      if (ours) {
+        found.set(each.pid, each);
         grew = true;
       }
     }
   }
-  return [...found];
+  return [...found.keys()];
 }
 
 /** Every process on Windows: { pid, ppid, created } (ms since the epoch). */
@@ -284,6 +365,42 @@ export function windowsProcessTable() {
         ppid,
         created: fileTime / 10_000 - 11_644_473_600_000,
       }))
+  );
+}
+
+// What every part of verify reads besides its own folders: the root's own
+// files (configuration, lock files, .fvmrc; not its Markdown) and scripts/.
+export const ROOT_FILES = [':(glob)*', ':(exclude,glob)*.md', 'scripts'];
+
+/**
+ * What the Dart part reads (`workspace`: its packages, { dir }), for the pass
+ * record: the packages, the files outside them that their tests read
+ * (READ_BY_DART_TESTS, the design tokens' sources core_tokens' test compares
+ * with, the brand assets), the root's files and the git-ignored fonts the
+ * widget tests load. verify-support.test.mjs fails when a Dart file names a
+ * path outside its package that these do not cover.
+ */
+export function dartInputs(workspace) {
+  return {
+    paths: [
+      ...workspace.map((each) => each.dir),
+      ...READ_BY_DART_TESTS.map((entry) => entry.replace(/\/\*\*$/, '')),
+      'packages/design-tokens/tokens',
+      'docs/brand',
+      ...ROOT_FILES,
+    ],
+    ignored: ['.fonts'],
+    // The Flutter version goes into the key too (verify.mjs).
+    flutter: true,
+  };
+}
+
+/** Whether `inputs` (from dartInputs) cover a repository path, a file or a folder. */
+export function inputsCover(inputs, file) {
+  if (inputs.ignored.some((dir) => file === dir || file.startsWith(`${dir}/`))) return true;
+  if (!file.includes('/') && !file.endsWith('.md')) return true; // a root file
+  return inputs.paths.some(
+    (each) => !each.startsWith(':') && (file === each || file.startsWith(`${each}/`)),
   );
 }
 

@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
@@ -10,8 +18,11 @@ import {
   chromiumFolders,
   chromiumInstalled,
   cut,
+  dartInputs,
   descendants,
+  flutterVersionOf,
   formatDuration,
+  inputsCover,
   hasPassed,
   inputsFingerprint,
   killTree,
@@ -22,6 +33,7 @@ import {
   pubspecDependencies,
   recordStepPass,
   releaseLock,
+  removeIf,
   stepTable,
   takeLock,
   turboNote,
@@ -29,6 +41,7 @@ import {
   windowsProcessTable,
   withDependents,
 } from './verify-support.mjs';
+import { readsOf, tracked } from './outside-reads.mjs';
 
 const scratch = mkdtempSync(path.join(os.tmpdir(), 'verify-support-test-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
@@ -78,7 +91,20 @@ describe('the processes a dead run left', () => {
       { pid: 30, ppid: 20, created: 500 }, // an older process that reuses a parent id
       { pid: 40, ppid: 1, created: 1004 }, // someone else's
     ];
-    assert.deepEqual(descendants(table, [10, 20], 900).sort(), [10, 11, 21, 22]);
+    assert.deepEqual(descendants(table, [10, 20], 900, 5000).sort(), [10, 11, 21, 22]);
+  });
+
+  it('never takes a process of another run whose id was reused', () => {
+    // The run: started at 1000, last seen alive at 2000; its steps 10 and 20 are gone.
+    const table = [
+      { pid: 21, ppid: 10, created: 1500 }, // the run's: a child of its step 10
+      { pid: 20, ppid: 1, created: 2500 }, // another process now has step 20's id
+      { pid: 23, ppid: 20, created: 2600 }, // and its child
+      { pid: 31, ppid: 21, created: 1200 }, // older than 21: it names an earlier owner of the id
+      { pid: 41, ppid: 10, created: 3000 }, // started after the run ended, naming its step
+      { pid: 22, ppid: 21, created: 3100 }, // started by the run's 21 after the run ended: still the run's
+    ];
+    assert.deepEqual(descendants(table, [10, 20], 1000, 2000).sort(), [21, 22]);
   });
 
   it('reads the Windows process table', { skip: process.platform !== 'win32' }, () => {
@@ -251,6 +277,47 @@ describe('the Dart workspace', () => {
   });
 });
 
+describe("the Dart part's inputs", () => {
+  const workspace = /^workspace:\n((?: {2}- .+\n)+)/m
+    .exec(readFileSync('pubspec.yaml', 'utf8').replaceAll('\r\n', '\n'))[1]
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => ({ dir: line.replace(/^ {2}- /, '').trim() }));
+
+  it('cover every path outside its package that a Dart file names', () => {
+    assert.ok(workspace.length > 5, 'the root pubspec lists the workspace');
+    const inputs = dartInputs(workspace);
+    const missing = [];
+    for (const { dir } of workspace)
+      for (const file of tracked.filter(
+        (each) => each.startsWith(`${dir}/`) && each.endsWith('.dart'),
+      ))
+        for (const outside of readsOf(file, dir))
+          if (!inputsCover(inputs, outside)) missing.push(`${outside} (${file})`);
+    assert.deepEqual(missing.sort(), []);
+  });
+
+  it("cover the design tokens' sources that core_tokens' test reads", () => {
+    const inputs = dartInputs(workspace);
+    assert.ok(inputsCover(inputs, 'packages/design-tokens/tokens/primitive/color.json'));
+    assert.ok(!inputsCover(inputs, 'packages/ui-web/src/button/button.tsx'));
+    assert.ok(inputsCover(inputs, '.fonts/cofo-sans-pro-arabic/x.ttf'));
+    assert.ok(inputsCover(inputs, 'pubspec.lock'));
+  });
+
+  it("key a pass on the pinned Flutter's version, read from its own record", () => {
+    const bin = path.join(scratch, 'versioned-flutter', 'bin');
+    mkdirSync(path.join(bin, 'cache'), { recursive: true });
+    assert.equal(flutterVersionOf(bin), null);
+    writeFileSync(
+      path.join(bin, 'cache', 'flutter.version.json'),
+      JSON.stringify({ frameworkVersion: '3.47.9' }),
+    );
+    assert.equal(flutterVersionOf(bin), '3.47.9');
+    assert.equal(flutterVersionOf(null), null);
+  });
+});
+
 describe("Turborepo's summary", () => {
   it('says how many tasks came from the cache', () => {
     assert.equal(
@@ -312,19 +379,50 @@ describe('the lock of one check at a time', () => {
     assert.ok(!existsSync(file));
   });
 
-  it('makes verify.mjs --no-wait say it is busy, exit 3 and leave the lock alone', () => {
+  it('is removed only when it is still the one checked, with no gap', () => {
+    const file = path.join(scratch, 'atomic.lock');
+    writeFileSync(file, 'stale');
+    // Two checks saw the same stale lock; the first removes it and takes its own.
+    assert.equal(
+      removeIf(file, (text) => text === 'stale'),
+      true,
+    );
+    writeFileSync(file, 'fresh');
+    // The second must not remove the fresh one: it is put back.
+    assert.equal(
+      removeIf(file, (text) => text === 'stale'),
+      false,
+    );
+    assert.equal(readFileSync(file, 'utf8'), 'fresh');
+    assert.equal(
+      removeIf(path.join(scratch, 'none.lock'), () => true),
+      false,
+    );
+    assert.deepEqual(
+      readdirSync(scratch).filter((name) => name.includes('.removing')),
+      [],
+    );
+  });
+
+  it('makes verify.mjs --no-wait say it is busy, exit 3, and leave the lock and the running check’s state alone', () => {
     const repo = path.join(scratch, 'repo');
     mkdirSync(repo);
     assert.equal(spawnSync('git', ['init', '--quiet'], { cwd: repo }).status, 0);
     const lock = path.join(repo, '.git', 'verify.lock');
+    const state = path.join(repo, '.git', 'verify-steps.json');
     takeLock(lock, { command: 'format' }); // held by this test, a live process
+    writeFileSync(state, JSON.stringify({ pid: process.pid, steps: [1234] }));
+    const env = { ...process.env };
+    delete env.CI;
     const result = spawnSync(process.execPath, [verify, 'format', '--no-wait'], {
       cwd: repo,
       encoding: 'utf8',
+      env,
     });
     assert.equal(result.status, 3);
     assert.match(result.stderr, /another check is running in this folder .*verify\.mjs format/);
     assert.ok(existsSync(lock));
+    assert.ok(existsSync(state), "the running check's state file");
     releaseLock(lock);
   });
 

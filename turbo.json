@@ -44,7 +44,15 @@
       "outputs": []
     },
     "@fox-drop/server#test": {
-      "cache": false
+      "cache": false,
+      "dependsOn": ["^transit"],
+      "passThroughEnv": [
+        "DOCKER_HOST",
+        "DOCKER_TLS_VERIFY",
+        "DOCKER_CERT_PATH",
+        "DOCKER_CONTEXT",
+        "TESTCONTAINERS_*"
+      ]
     },
     "@fox-drop/server#build": {
       "dependsOn": ["^transit"],
@@ -65,7 +73,14 @@
         "$TURBO_ROOT$/apps/customer/lib/src/media.dart",
         "$TURBO_ROOT$/apps/server/src/modules/files/files.service.ts"
       ],
-      "outputs": []
+      "outputs": [],
+      "passThroughEnv": [
+        "DOCKER_HOST",
+        "DOCKER_TLS_VERIFY",
+        "DOCKER_CERT_PATH",
+        "DOCKER_CONTEXT",
+        "TESTCONTAINERS_*"
+      ]
     },
     "@fox-drop/design-tokens#test": {
       "dependsOn": ["^transit"],
@@ -78,11 +93,19 @@
         "$TURBO_ROOT$/packages/core_tokens/lib/src/icons.g.dart",
         "$TURBO_ROOT$/packages/core_tokens/lib/src/tokens.g.dart",
         "$TURBO_ROOT$/packages/core_ui/design-system/**",
+        "$TURBO_ROOT$/packages/core_ui/test/phone_harness.dart",
         "$TURBO_ROOT$/packages/core_ui/test/golden/design_system_cards_test.dart",
         "$TURBO_ROOT$/packages/core_ui/test/golden/goldens/design-system/**",
         "$TURBO_ROOT$/.fonts/**"
       ],
-      "outputs": []
+      "outputs": [],
+      "passThroughEnv": [
+        "DOCKER_HOST",
+        "DOCKER_TLS_VERIFY",
+        "DOCKER_CERT_PATH",
+        "DOCKER_CONTEXT",
+        "TESTCONTAINERS_*"
+      ]
     },
     "@fox-drop/ui-web#test": {
       "dependsOn": ["^transit"],
@@ -93,7 +116,14 @@
         "$TURBO_ROOT$/packages/core_l10n/lib/src/countries.g.dart",
         "$TURBO_ROOT$/.fonts/**"
       ],
-      "outputs": []
+      "outputs": [],
+      "passThroughEnv": [
+        "DOCKER_HOST",
+        "DOCKER_TLS_VERIFY",
+        "DOCKER_CERT_PATH",
+        "DOCKER_CONTEXT",
+        "TESTCONTAINERS_*"
+      ]
     },
     "@fox-drop/ui-web#build": {
       "dependsOn": ["^transit"],

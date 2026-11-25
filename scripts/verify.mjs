@@ -27,6 +27,7 @@ import {
   openSync,
   readdirSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
   writeSync,
@@ -34,21 +35,18 @@ import {
 import os from 'node:os';
 import path from 'node:path';
 
-import {
-  changedFiles,
-  classify,
-  READ_BY_DART_TESTS,
-  READ_BY_SERVER_TESTS,
-} from './classify-changes.mjs';
+import { changedFiles, classify, READ_BY_SERVER_TESTS } from './classify-changes.mjs';
 import { recordGreen, treeState } from './green-tree.mjs';
 import { serverTestScope } from './server-test-readers.mjs';
 import {
   chromiumInstalled,
   cut,
+  dartInputs,
+  endSteps,
+  flutterVersionOf,
   gitDir,
   hasPassed,
   inputsFingerprint,
-  killTree,
   passKey,
   pinnedFlutterBin,
   pinnedSdkPath,
@@ -56,6 +54,8 @@ import {
   pubspecDependencies,
   recordStepPass,
   releaseLock,
+  removeIf,
+  ROOT_FILES,
   stepLine,
   stepTable,
   turboNote,
@@ -134,25 +134,42 @@ const children = new Set();
 const stateFile = path.join(lockDir, 'verify-steps.json');
 // A second early, against the rounding of the process table's start times.
 const startedAtProcess = Date.now() - process.uptime() * 1000 - 1000;
+// The state file belongs to the run that holds the lock: a run that waits for
+// it, or gives up, never writes or removes it.
+let holdsLock = false;
+/** Writes the state file whole (renamed into place), with the time verify was last alive. */
 function writeState() {
-  if (CI) return;
+  if (CI || !holdsLock) return;
   try {
+    const pending = `${stateFile}.${process.pid}`;
     writeFileSync(
-      stateFile,
+      pending,
       JSON.stringify({
         pid: process.pid,
         started: startedAtProcess,
+        alive: Date.now(),
         lock: lockFile,
         steps: [...children].map((child) => child.pid),
       }),
     );
+    renameSync(pending, stateFile);
   } catch {
     // Only the watchdog reads it.
   }
 }
+function ownState(text) {
+  try {
+    return JSON.parse(text).pid === process.pid;
+  } catch {
+    return false;
+  }
+}
 process.on('exit', () => {
-  for (const child of children) killTree(child.pid);
-  if (!CI) rmSync(stateFile, { force: true });
+  endSteps(
+    [...children].map((child) => child.pid),
+    startedAtProcess,
+  );
+  if (holdsLock && !CI) removeIf(stateFile, (text) => ownState(text));
   releaseLock(lockFile);
 });
 for (const [signal, code] of [
@@ -194,8 +211,11 @@ if (!lock.taken) {
   );
   process.exit(BUSY);
 }
+holdsLock = true;
 if (!CI) {
   writeState();
+  // The time verify was last alive, for the watchdog's guard against reused ids.
+  setInterval(writeState, 5000).unref();
   spawn(
     process.execPath,
     [path.join(import.meta.dirname, 'verify-watchdog.mjs'), String(process.pid), stateFile],
@@ -278,7 +298,7 @@ function spawnCommand(command, { cwd, env, stdio, timeoutMs }) {
       timeoutMs &&
       setTimeout(() => {
         timedOut = true;
-        killTree(child.pid);
+        endSteps([child.pid], startedAtProcess);
       }, timeoutMs);
     child.on('error', (error) => {
       clearTimeout(timer);
@@ -328,7 +348,8 @@ function stepKey({ name, command, cwd = '.', env = process.env, inputs }) {
     melosPackages: env.MELOS_PACKAGES ?? '',
     node: process.version,
     platform: process.platform,
-    flutter: fvmFlutter ?? '',
+    // Its version, not its folder: a worktree's link may point at another SDK later.
+    flutter: inputs.flutter ? flutterForKey() : '',
     inputs: inputsFingerprint(ROOT, inputs.paths, { ignoredDirs: inputs.ignored ?? [] }),
   });
 }
@@ -469,25 +490,11 @@ function skipped(name, why) {
 // ---------------------------------------------------------------- inputs
 
 // The paths each part reads, over-approximated: a needless run is fine, a
-// wrong skip is not. The root's own files (configuration, lock files, .fvmrc;
-// not its Markdown) and scripts/ (this file) count for every part.
-const ROOT_FILES = [':(glob)*', ':(exclude,glob)*.md', 'scripts'];
+// wrong skip is not (ROOT_FILES and the Dart part's in verify-support.mjs).
 const pathspec = (entry) => (entry.endsWith('/**') ? entry.slice(0, -3) : entry);
 const SERVER_INPUTS = {
   paths: ['apps/server', ...READ_BY_SERVER_TESTS.map(pathspec), ...ROOT_FILES],
 };
-function dartInputs(workspace) {
-  return {
-    paths: [
-      ...workspace.map((each) => each.dir),
-      ...READ_BY_DART_TESTS.map(pathspec),
-      'docs/brand',
-      ...ROOT_FILES,
-    ],
-    // The licensed fonts the widget tests load (git-ignored).
-    ignored: ['.fonts'],
-  };
-}
 
 // ---------------------------------------------------------------- the format checks
 
@@ -688,15 +695,27 @@ async function dartWorkspace() {
 }
 
 // A mismatch only warns locally, but fails in CI, which must run the pinned version.
+let flutterVersion;
+/** The Flutter that runs the checks: the pinned SDK's own record answers at once, `flutter --version` takes seconds. */
+function installedFlutter() {
+  flutterVersion ??=
+    flutterVersionOf(fvmFlutter) ??
+    JSON.parse(read('flutter --version --machine')).frameworkVersion;
+  return flutterVersion;
+}
+
+/** The Flutter version for a pass key; a fresh value, so no pass matches, when none answers. */
+function flutterForKey() {
+  try {
+    return installedFlutter();
+  } catch {
+    return `unknown ${Date.now()}`;
+  }
+}
+
 function checkFlutterVersion() {
   const pinned = JSON.parse(readFileSync('.fvmrc', 'utf8')).flutter;
-  // The pinned SDK's own record answers at once; `flutter --version` takes seconds.
-  const record = fvmFlutter && path.join(fvmFlutter, 'cache', 'flutter.version.json');
-  const installed = JSON.parse(
-    record && existsSync(record)
-      ? readFileSync(record, 'utf8')
-      : read('flutter --version --machine'),
-  ).frameworkVersion;
+  const installed = installedFlutter();
   if (installed === pinned) return null;
   const message =
     `Flutter ${installed} is installed, .fvmrc pins ${pinned}.` +
