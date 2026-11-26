@@ -32,13 +32,27 @@ Tests written first (locked in the red phase):
 - The six token files with their `$extensions`: `component-usage.test.ts` fails until both sides read every token.
 - New screenshots for every story; Flutter goldens move only for an agreed gap.
 
+## Decisions taken overnight (pending the owner)
+
+The owner was asleep and delegated decisions to the supervising session (2026-11-26); each took the recommended option.
+
+1. **The design checkpoint was not held separately.** The web components were drawn after their approved Flutter twins (D.10, D.11, D.11b), built, and their sheets made together with the Flutter cases; the sheets are left on the host (`.parity/`) for the owner's approval, which stays pending.
+2. **The selected bottom tab stays Linear**, as the Flutter twin and the owner's rule of 2026-11-25 («the larger circle alone marks it»); the plan's «selected tab Bold» predates that rule.
+3. **The top bar and the sidebar are twins by name only.** The web `TopBar` and `Sidebar` are the panel's and portal's (AP §7.1, §7.2); the Flutter `FoxTopBar` and `FoxNavigationRail` are the phone bar and the restaurant's tablet rail (D.10). Their differences (the bar's gap and ground, the rail's 88 width and its icon-over-name items) are by design, not parity gaps: `top-bar.json` and `navigation-rail.json` share what both draw (height, inline padding, ground, hairline, item colours) and mark the rest `sides`. Their parity cases pair each panel story with the closest phone or tablet state; `topbar--emergency`, `sidebar--portal` and `sidebar--drawer` have no twin.
+4. **The blocking heads have one folder, one Storybook title (`BlockingHeads`) and one Design System card**, as the plan says, with `VersionTicket` and `ShopSign` exported from the index. So `test/stories.test.ts` maps the two names to `blocking-heads` (`FOLDERS`), the module's `STATES` are `versionTicket`, `shopSign`, `shopSignReturnTime`, and the bundle exposes `FoxDrop.BlockingHeads` (drawing nothing) with the two heads as parts.
+5. **The hero's tracking steps are a slot** (`origin.steps`): the web `TrackingSteps` came with D.W4b, which merged while this slice was built; the orders story uses it.
+6. **Semantic tokens of the same value are reused** (as D.W3c): `bottom-navigation.item-size-selected` is `size.list-row` (56), `blocking-heads.sign.width` `size.menu-min-width` (192), `sign.strings-height` `size.control-compact` (40). A later retune of those semantic tokens moves these too.
+7. **Parity gaps left, none fixed** (no golden or existing screenshot moves): the web perforation is the browser's dashed border (Flutter draws 4-and-4 dashes; `ticket.dash` is Flutter only), and the web cut-outs need `ticket.cut-offset`; the web sign's strings start about 2 px higher (`sign.strings-lift`, Flutter lifts by half the nail in a transform); at the parity width the Flutter restaurant bar wraps a long name on two lines where the web truncates it on one; the bottom navigation's count badge sits on the right corner on the web, the left in Flutter (a `CountBadge` placement gap outside this slice's files: `docs/backlog.md`); the ticket's required version looks heavier on the web (the `number` role's rendering, both sides read the same token).
+8. **One locked test was corrected, not weakened:** `test/stories.test.ts` listed `RestaurantBar` before `RadioGroup`, against the sorted order it compares; and it took D.W4b's `TrackingSteps` when main was merged.
+
 ## Stopped at
 
-Not started.
+Built and checked; pull request next.
 
 ## Evidence
 
-- `pnpm parity …`: the sheets shown to the owner and the approval
+- Red phase: `bars-hero-review.test.tsx` failed on the missing modules, `stories.test.ts` on the five missing components, `component-usage.test.ts` on every token of the six new files unread on both sides.
+- `pnpm parity RestaurantBar BottomNavigation SignInHero BlockingHeads TopBar Sidebar`: six sheets, 44 web shots and the Flutter cases, all passed; the new components match their twins but for the gaps in decision 7. Approval: delegated overnight, pending the owner.
 - `node scripts/verify.mjs --changed`:
 - Review:
 
@@ -52,4 +66,4 @@ Nothing new.
 
 ## Notes for the next session
 
-<the gaps and the owner's choices>
+Gaps and choices: «Decisions taken overnight». The web components' sheets wait for the owner's approval; the count badge's corner is a backlog item.
