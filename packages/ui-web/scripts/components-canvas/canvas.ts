@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { buildBundle, COMPONENTS, PACKAGE_DIR } from '../bundle.ts';
 import { anatomy, lightValues } from './anatomy.ts';
 import { makeBoard } from './board.ts';
-import { GROUPS, PAGES } from './copy-ar.ts';
+import { GROUPS, PAGES, PROPOSALS_NOTE } from './copy-ar.ts';
 import { makeIndex } from './index.ts';
 import { type Fonts, WIDTH } from './page.ts';
 import { membersOf, parseTypes, playgroundOf } from './playground.ts';
@@ -45,6 +45,20 @@ export const LATER: ReadonlySet<string> = new Set([
   'PhoneField',
   'Sidebar',
 ]);
+
+/**
+ * The hand-drawn boards of the old "Component proposals" canvas, approved in
+ * D.6 to D.10 and replaced by the generated boards (decision T15): left out of
+ * the index, and the publish sends each as `"project/<file>": null`.
+ */
+export const RETIRED: readonly string[] = [
+  'Main.dc.html',
+  'Buttons.dc.html',
+  'States.dc.html',
+  'Forms.dc.html',
+  'Data.dc.html',
+  'Overlays.dc.html',
+];
 
 /** Every component of the bundle but those D.C3 adds. */
 export const BOARDS: readonly string[] = COMPONENTS.filter((name) => !LATER.has(name));
@@ -145,12 +159,11 @@ export async function buildCanvas(input: {
   const boards: Record<string, BoardEntry> = {};
   const order: string[] = [];
   const groups = [...new Set(placed.map((p) => p.group))];
-  // The index first, then each group under its title note, four boards a row.
-  // The old hand-drawn Main.dc.html is still on the proposals page (D.C4), so
-  // the index is Index.dc.html.
-  const indexH = measured?.heights['Index'] ?? 1600;
+  // The index (Main.dc.html) first, then each group under its title note,
+  // four boards a row.
+  const indexH = measured?.heights['Main'] ?? 1600;
   files.set(
-    'Index.dc.html',
+    'Main.dc.html',
     makeIndex(
       groups.map((group) => ({
         group,
@@ -160,7 +173,7 @@ export async function buildCanvas(input: {
       config.fonts ?? {},
     ),
   );
-  boards['Index.dc.html'] = {
+  boards['Main.dc.html'] = {
     x: 0,
     y: 0,
     w: WIDTH,
@@ -169,7 +182,7 @@ export async function buildCanvas(input: {
     page: 'components',
     is_interactive: true,
   };
-  order.push('Index.dc.html');
+  order.push('Main.dc.html');
   const groupNotes: Record<string, { page?: string; [key: string]: unknown }> = {};
   let y = indexH + 520;
   for (const group of groups) {
@@ -206,16 +219,26 @@ export async function buildCanvas(input: {
     }
     y += rowH + 520;
   }
-  // Boards of other pages stay; the old hand-drawn ones (no page) wait on the
-  // proposals page until D.C4 deletes them.
-  const kept = Object.entries(current.boards ?? {})
-    .filter(([, b]) => b.page !== 'components')
-    .map(([file, b]) => [file, { ...b, page: b.page ?? 'proposals' }] as const);
+  // Proposals drawn on the proposals page stay until their board is built
+  // from the bundle; the retired hand-drawn boards go.
+  const kept = Object.entries(current.boards ?? {}).filter(
+    ([file, b]) => b.page !== 'components' && !RETIRED.includes(file) && !files.has(file),
+  );
   const notes = {
     ...groupNotes,
     ...Object.fromEntries(
       Object.entries(current.notes ?? {}).filter(([, n]) => n.page !== 'components'),
     ),
+    'proposals-life-cycle': {
+      // A sticky (no `kind`), above where the proposals are drawn.
+      x: 0,
+      y: -720,
+      w: 960,
+      size: 'l',
+      fill: 'orange',
+      text: PROPOSALS_NOTE,
+      page: 'proposals',
+    },
   };
   const index: CanvasIndex = {
     ...current,

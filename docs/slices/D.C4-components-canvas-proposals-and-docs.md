@@ -1,6 +1,6 @@
 # D.C4 The components canvas: the proposals page, the old boards out, decision T15
 
-Status: Planned · Tier: T2 · Branch: `docs/components-canvas-proposals`
+Status: In progress · Tier: T2 · Branch: `docs/components-canvas-proposals`
 Spec: architecture §2, §9.8, §9.9 · Definition of done: workflow §4
 
 Part of the components canvas plan; its shared rules are in `D.C1-components-canvas-generator.md`. Last, after D.C3 is merged.
@@ -23,7 +23,7 @@ Tests written first (locked in the red phase): `test/components-canvas.test.ts` 
 
 ## Stopped at
 
-Planned.
+Generator and docs written, test green; next: `--changed`, review, publish, PR.
 
 ## Evidence
 
@@ -39,3 +39,8 @@ Nothing.
 Nothing new.
 
 ## Notes for the next session
+
+- **Approvals checked before the delete:** `Main` («Icons — batch 1») and `Buttons` in `docs/slice-notes.md` (2026-11-23), `States` there too (system B, 2026-11-24), `Forms` in D.8 (2026-11-23), `Data` in D.9 (2026-11-24), `Overlays` in D.10 (2026-11-24).
+- **The index is `Main.dc.html`** (the Design type names the entry so); `Index.dc.html` leaves the canvas with the six retired boards.
+- **Proposals kept:** a board on the proposals page that is not retired stays (a component drawn there before it is coded); the plan's "no board" holds for today's canvas, which has none.
+- **The note** is a sticky (no `kind`; the Design type's `title1` is for a row of boards).
