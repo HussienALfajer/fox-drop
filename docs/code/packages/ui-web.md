@@ -133,7 +133,7 @@ Drawn on «Overlays and navigation — batch 4» (`packages/design-tokens/src/ov
 
 - Money, StatusChip, CountBadge, Card, ListRow, AmountsSummary, Skeleton, EmptyState, DropLoader and DataTable read only their own `--fd-<component>-*` variables, the type roles and the motion tokens (`tokens/component/<component>.json`; DataTable's file is web only). The density and shape tokens only the web has (`compact`, Money's `muted` and `inverse`, Skeleton's `web.*`) say `sides: ["web"]`.
 - Gaps fixed against the D.9 sheet: CountBadge's ring is a border inside its 24 size (it was an outside `ring-2` on 16) and a count is centred on the icon's corner; ListRow is 56 with a 40 lead on `surface-raised` (was 48, 32 and transparent) and its `lead` variants got defaults, so a row naming no density drew no circle before; EmptyState's drop is 120 (72 compact), its icon lifted by padding instead of a negative margin, the svg `overflow-visible` (the round head reaches above the 24 grid and was cut) with a `non-scaling-stroke` edge of `border-width.thick`.
-- Card's outline is `inset-ring-(length:--fd-card-border-width)`; the offset shadow stays `shadow-offset` (no shadow type in the component generator).
+- Card's and DataTable's outlines are `inset-ring-(length:--fd-<component>-border-width)`; the offset shadow stays `shadow-offset` (no shadow type in the component generator). `ring-inset` shared its shadow with `keyboardRing`'s `focus-visible:ring-2`, so a focused card lost its outline to an inward ring; `inset-ring` is its own layer, so the focus ring now sits outside the kept outline, as on every other control.
 
 ## Fixes kept from PR 300 (its parity gate was removed by the owner, 2026-11-25)
 

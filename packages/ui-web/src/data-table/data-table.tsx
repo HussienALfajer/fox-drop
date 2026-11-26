@@ -20,7 +20,7 @@ export interface Sort {
 }
 
 const cell = formTv({
-  base: 'h-(--fd-data-table-row-height) border-t border-(--fd-data-table-color-border) px-(--fd-data-table-padding-inline) text-panel-body whitespace-nowrap text-(color:--fd-data-table-color-text)',
+  base: 'h-(--fd-data-table-row-height) border-t-(length:--fd-data-table-border-width) border-(--fd-data-table-color-border) px-(--fd-data-table-padding-inline) text-panel-body whitespace-nowrap text-(color:--fd-data-table-color-text)',
   variants: { numeric: { true: 'text-end tabular-nums', false: 'text-start' } },
 });
 
@@ -87,7 +87,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
       direction: sort?.key === key && sort.direction === 'descending' ? 'ascending' : 'descending',
     });
   return (
-    <div className="overflow-x-auto rounded-(--fd-data-table-radius) bg-(--fd-data-table-color-background) ring-1 ring-inset ring-(--fd-data-table-color-border)">
+    <div className="overflow-x-auto rounded-(--fd-data-table-radius) bg-(--fd-data-table-color-background) inset-ring-(length:--fd-data-table-border-width) inset-ring-(--fd-data-table-color-border)">
       <table aria-label={label} aria-busy={loading || undefined} className="w-full border-collapse">
         <thead>
           <tr>

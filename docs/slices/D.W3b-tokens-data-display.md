@@ -1,6 +1,6 @@
 # D.W3b Component tokens and parity: data display
 
-Status: Planned · Tier: T2 · Branch: `refactor/tokens-data-display`
+Status: Done · Tier: T2 · Branch: `refactor/tokens-data-display`
 Spec: architecture §9.2 (the component layer), §9.5 R1, R2, R5, R9, §9.9 · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1 and D.W2 merged. Runs in parallel with any other D.W3 or D.W4 slice.
@@ -43,17 +43,21 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 5. **Status chip:** the sheet draws 30 (phone), 36 (captain), 24 (panel), which no token holds. The web's `size.step` (32) wins over Flutter's text plus 8 (29 on the phone).
 6. **Amounts summary:** the equivalents sit one `gap` (12) under the total, as the web and the sheet's cart; Flutter had 8.
 7. **Three files beyond the plan's list:** `tokens/semantic/base.json` (the three sizes above) and the existing tests whose class assertions name the old semantic classes (`money`, `status-chip`, `card`, `amounts-summary`, `skeleton` tests: the same assertion on the component token). The card's shadow stays the foundation `elevation.offset`: the generator has no shadow type for component files (a `shadow` token came out as `NaN` in Dart).
-8. **Not a gap:** the Flutter card in the parity frame is as wide as its content (the frame aligns it to the start; a column stretches it in the apps); the skeleton's `square`, `media`, `title` and `pill` shapes exist on the web only (Flutter callers give a block its height), so their tokens say `sides: ["web"]`; the web-only densities (`compact` of Money, ListRow, AmountsSummary, EmptyState) have no Flutter case.
+8. **The focused web card keeps its outline** (found by the review): the outline was `ring-1 ring-inset`, which shares Tailwind's ring shadow with `keyboardRing`'s `focus-visible:ring-2`, so focus turned the ring inward and erased the outline. On `inset-ring-*` the two are separate layers: the focus ring sits outside with its 2 px offset, as on every other `keyboardRing` control and as Flutter's `FocusRing` over the kept border. Kept; the `card--focus` screenshots move. A pressable card inside an `overflow-hidden` parent may clip that ring (none does today).
+9. **Approval:** plan step 0 has the owner mark each gap on the sheet. The supervising session's brief delegated these choices for the night; the before and after sheets are published for the owner as a private artifact (link kept out of the repository), and each choice above stays open for the owner to reverse.
+10. **Not a gap:** the Flutter card in the parity frame is as wide as its content (the frame aligns it to the start; a column stretches it in the apps); the skeleton's `square`, `media`, `title` and `pill` shapes exist on the web only (Flutter callers give a block its height), so their tokens say `sides: ["web"]`; the web-only densities (`compact` of Money, ListRow, AmountsSummary, EmptyState) have no Flutter case.
 
 ## Stopped at
 
-Built: tokens, web and Flutter; checks running.
+Done: pull request open with auto-merge.
 
 ## Evidence
 
-- `pnpm parity …` before and after: the sheets shown to the owner
-- `node scripts/verify.mjs --changed`:
-- Review:
+- Red phase: `component-usage.test.ts` failed for every token of the ten new files («no web file in … reads --fd-…», «no Flutter file in … reads listRow.…»); the gap tests failed for the old values (Flutter: badge offset 8 against 12, chip 30 against 32, chevron gap 8 against 12, equivalents gap 8 against 12, drop 128 against 120; web: the badge, row and drop classes absent). The row's lead test also caught a real bug: the web lead circle had no default variants, so a row naming no density drew no circle.
+- `pnpm parity Money StatusChip CountBadge Card ListRow AmountsSummary Skeleton EmptyState DropLoader` before and after (106 web shots, 98 Flutter): after the fixes each pair matches; the sheets are published for the owner as a private artifact.
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (Turborepo lint, types, build and smoke; tests; Dart analyze, `fox_lints rules`, format, Dart and Flutter tests). A first run failed on stale token outputs after the version bump; regenerated.
+- `pnpm baselines`: 87 images moved, each one of the listed gaps (the count badge also in tabs, top bar, sidebar, drawer, tooltip and the Flutter navigation; the status chip in the order cards, rows, restaurant card and sign-in hero; the empty state in the data table), committed on their own.
+- Review (T2, `reviewer`): round 1 raised the owner's approval (recorded as decision 9), the card's focus ring (decision 8), a token description that said «a quarter» and DataTable's literal widths; all fixed.
 
 ## Before deploying
 
@@ -65,4 +69,4 @@ Nothing new.
 
 ## Notes for the next session
 
-<the gaps found on the sheets, the owner's choice for each, and their fixes>
+The gaps and their fixes are under «Decisions taken overnight». If the owner reverses one, change its token (or the semantic size) and run `pnpm baselines`; the parity cases in `core_ui/test/parity/data_parity_test.dart` show the pair again. The card's offset shadow waits for a shadow type in the component generator.

@@ -56,7 +56,7 @@ Markers: `[ ]` not started, `[~]` in progress, `[x]` done.
       - `[x]` D.W1 The component token pipeline and the raw-value check ([slice file](slices/D.W1-component-token-pipeline.md)): any `tokens/component/` file to CSS and Dart, a test that both sides read every declared token, no raw values on either side. No look change.
       - `[x]` D.W2 The parity sheet ([slice file](slices/D.W2-parity-sheet.md)): `pnpm parity <Component>`, web story beside the Flutter render, same size, CoFo. The owner opens Button's sheet.
       - `[ ]` D.W3a Tokens and parity: forms and actions ([slice file](slices/D.W3a-tokens-forms-and-actions.md)). The owner marks the gaps on the sheets.
-      - `[ ]` D.W3b Tokens and parity: data display ([slice file](slices/D.W3b-tokens-data-display.md)). The owner marks the gaps on the sheets.
+      - `[x]` D.W3b Tokens and parity: data display ([slice file](slices/D.W3b-tokens-data-display.md)): nine twins and the data table on their own token files; the count badge, list row, empty state, status chip and summary gaps fixed by the D.9 sheet or the web. The owner reviews the overnight gap decisions on the published sheets.
       - `[ ]` D.W3c Tokens and parity: overlays, tabs and the icon ([slice file](slices/D.W3c-tokens-overlays-tabs-icon.md)). The owner marks the gaps on the sheets.
       - `[ ]` D.W4a Web versions: date, time, country sheet, code preview ([slice file](slices/D.W4a-web-date-country-code.md)). The owner approves the web components on their sheets.
       - `[ ]` D.W4b Web versions: countdown ring, order row, logo, tracking steps, with the timer and order card ([slice file](slices/D.W4b-web-order-parts.md)). The owner approves them on their sheets.

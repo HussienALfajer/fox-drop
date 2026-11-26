@@ -20,7 +20,7 @@
       },
       "lift": {
         "$value": "{space.xl}",
-        "$description": "How far the icon sits above the drop's centre, into its round head: a quarter of the drop."
+        "$description": "The drop's bottom padding: it lifts the icon by half this into the drop's round head (the D.9 sheet pads a quarter of the drop)."
       },
       "edge-width": {
         "$value": "{border-width.thick}"

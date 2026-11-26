@@ -14,6 +14,12 @@
       "$value": "{space.sm}",
       "$extensions": { "app.foxdrop": { "sides": ["web"] } }
     },
+    "border-width": {
+      "$type": "dimension",
+      "$value": "{border-width.thin}",
+      "$description": "The table's outline and the rule above each row.",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
     "radius": {
       "$type": "dimension",
       "$value": "{radius.md}",

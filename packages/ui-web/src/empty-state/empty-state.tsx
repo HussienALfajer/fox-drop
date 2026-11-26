@@ -21,8 +21,8 @@ const title = formTv({
   defaultVariants: { tone: 'default', density: 'comfortable' },
 });
 
-// The D.9 sheet's drop (D.W3b): 120 on the phone, 72 in the panel; the icon
-// sits a quarter of it above the centre, in the drop's round head.
+// The D.9 sheet's drop (D.W3b): 120 on the phone, 72 in the panel; a bottom
+// padding lifts the icon by half of it into the drop's round head.
 const drop = formTv({
   base: 'relative flex items-center justify-center text-(color:--fd-empty-state-color-icon)',
   variants: {
