@@ -5,7 +5,7 @@ import { PullToRefresh } from './pull-to-refresh';
 // touch pointer events in `play`: half the threshold (the mark half full), and
 // a whole pull let go with a refresh that never ends (the drop loader).
 const list = (
-  <div className="flex flex-col text-phone-body">
+  <div className="flex flex-col text-phone-body text-on-surface">
     {['كنافة أعزاز', 'برجر كبصو', 'فطائر الشام', 'مشاوي حلب'].map((name) => (
       <p key={name} className="m-none p-md">
         {name}

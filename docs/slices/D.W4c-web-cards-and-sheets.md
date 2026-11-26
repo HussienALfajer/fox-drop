@@ -33,9 +33,23 @@ Tests written first (locked in the red phase):
 - The four token files with their `$extensions`: `component-usage.test.ts` fails until both sides read every token.
 - New screenshots for every story; Flutter goldens move only for an agreed gap.
 
+## Decisions taken overnight (pending the owner)
+
+The owner was asleep and delegated decisions to the supervising session (2026-11-26); each took the recommended option.
+
+1. **The bases (step 0):** BottomSheet on the UI SDK's `Dialog`, as the side drawer (focus trap, Escape, focus back); not its `Drawer`, whose drag physics would give the web the Flutter sheet's drag-down close but writes physical sides and has no `inline` frame for the stories. So the web sheet does not close on a drag (Escape, the scrim and the × do). PullToRefresh on React pointer events, touch only. No new dependency.
+2. **The cards are one link each, not one button.** A card holding a button (the heart, «+») cannot be a `<button>`; the name is the link, stretched over the card (`href` on both, where Flutter has `onPressed`). The web `Card` is imported nowhere here: its pressable form is a button. The restaurant link reads its state with the name; an unavailable dish is no link (as Flutter's `onPressed: null`).
+3. **Three semantic sizes outside the plan's files** (`tokens/semantic/base.json`): `size.cover-logo` 72, `size.dish-photo` 96, `size.sheet-handle` 40, the values the twins computed (`touchTarget + lg`, `touchTarget * 2`, `xl + xs`); a component file references semantic tokens only and has no arithmetic. **One file removed:** `core_ui/lib/src/internal/faded.dart`, unused once both cards read their `faded-opacity` token.
+4. **The `far` state** of the plan has no badge in CU §8.2 (a restaurant outside the coverage does not appear): the story is a restaurant at the edge of its coverage, with a long estimate and a higher fee. Added states the web needs: `favourite`, `hover`, `focus`, `pressed` on both cards.
+5. **No photos in the stories** (no image asset in Storybook, the CSP forbids `data:` URLs, the Flutter goldens use none either): every story shows the fallback; the photo and its failure are in the tests.
+6. **The open sheets are `inline` in their stories** (a new `inline` prop, the SDK's frame mode with `modal="trap-focus"`), so the screenshot and the parity sheet show the sheet; the Design System card uses it too.
+7. **The web sheet's height:** at most the screen below `size.bar` (64) rather than Flutter's 90% (the lint refuses a fraction class, and no token holds a viewport share). Web only besides: centred at `size.dialog` on a wide page; no home-indicator padding (no `env()` class without an arbitrary value).
+8. **The web Logo is local** to `restaurant-card.tsx` (D.W4b builds the exported one in parallel); swap it when D.W4b is on main (backlog).
+9. **The Figma look (skill §2) could not run:** the Figma API reset the connection. The twins carry the approved D.9 and D.10 looks; no new idea is taken.
+
 ## Stopped at
 
-Not started.
+Building: the four web components, the tokens and the Flutter twins on them are committed; the parity sheets are next.
 
 ## Evidence
 

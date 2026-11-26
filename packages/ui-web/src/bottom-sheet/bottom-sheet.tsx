@@ -139,7 +139,8 @@ export function BottomSheet(props: BottomSheetProps) {
       <span data-handle="" aria-hidden="true" className={plainHandle} />
       <div className="flex items-center gap-sm">
         <DialogTitle className={title({ sCurve })}>{name}</DialogTitle>
-        <DialogClose className={closeButton()} aria-label={closeLabel}>
+        {/* In the row, as Flutter's 48 icon button: not pulled out by -m-xs. */}
+        <DialogClose className={closeButton({ class: 'm-none' })} aria-label={closeLabel}>
           <Icon name="close" />
         </DialogClose>
       </div>

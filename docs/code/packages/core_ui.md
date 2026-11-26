@@ -131,6 +131,12 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 - `test/parity/sign_in_forms_parity_test.dart`: one case per DateField, TimeField, CountrySheet and CodePreview story; none for `datefield--open` (the calendar is a dialog route, outside the frame). The country cases use the test regions of `phone_harness.dart`.
 - Still on semantic tokens, in `fox_phone_field.dart` (not this slice's file): the chip's ring radius and 48 height.
 
+## Cards, bottom sheet and pull to refresh on component tokens (D.W4c)
+
+- `FoxRestaurantCard` and `FoxDishCard` read `components.restaurantCard` and `components.dishCard` for every size, gap and colour of their own; their fade is `restaurantCard.fadedOpacity` and `dishCard.fadedOpacity` (0.55), so `internal/faded.dart` (`foxFadedOpacity`) is gone. `FoxCard` and `FoxLogo` underneath are unchanged.
+- `FoxBottomSheet` reads `components.bottomSheet`; `_SCurvePainter` takes the tab share, the curve's width (its `s` is `curveWidth / 1.5`, the old 32), the band's height and the radius as fields. `FoxPullToRefresh` and `FoxRefreshDrop` read `components.pullToRefresh`. Same values: no golden moves.
+- `test/parity/cards_sheets_parity_test.dart`: one case per RestaurantCard, DishCard, BottomSheet and PullToRefresh story. The open sheets render inline under their trigger, as the web stories keep theirs in the frame; the pulling and refreshing cases put `FoxRefreshDrop` over the list (half full, refreshing), as a pull leaves it.
+
 ## Left out
 
 Wiring into the apps and bundling CoFo there (each app's screen slice, which also adds the app to `enforcedPackages`); compact density in Flutter; dark mode; the fox scenes inside the empty state's drop; Cupertino localizations for the iOS text toolbar (apps provide them); a hosted widgetbook.

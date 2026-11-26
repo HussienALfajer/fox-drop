@@ -7,7 +7,7 @@ import 'parity.dart';
 /// refresh web stories (`pnpm parity RestaurantCard DishCard BottomSheet
 /// PullToRefresh`, slice D.W4c), with the stories' own arguments. The web
 /// stories have no photos (Storybook serves none), so neither do these. The
-/// open sheets are inline, as the web stories keep theirs in the frame; the
+/// open sheets are inline and alone, as the web side shoots them; the
 /// pulling and refreshing states show the drop over the list, as a pull
 /// leaves it (the web stories drive the pull with touch events).
 void main() {
@@ -154,12 +154,9 @@ void _sheet() {
       ],
     ),
   );
-  // The web stories show the trigger above the open sheet.
-  Widget open(Widget sheet) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
-    children: [trigger, sheet],
-  );
+  // The web side shoots an open dialog alone (`e2e/parity.spec.ts`), so the
+  // sheet comes without its trigger.
+  Widget open(Widget sheet) => sheet;
 
   parityCase('bottomsheet--default', () => trigger);
   parityCase(

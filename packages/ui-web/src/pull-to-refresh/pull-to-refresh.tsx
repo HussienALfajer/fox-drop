@@ -28,6 +28,10 @@ const scroller = formTv({
   },
 });
 
+/** The refresh button's wrapper: out of sight until the keyboard reaches it. */
+const keyboardOnly =
+  'sr-only focus-within:not-sr-only focus-within:absolute focus-within:start-(--fd-pull-to-refresh-inset) focus-within:top-(--fd-pull-to-refresh-inset) focus-within:z-(--fd-layer-sticky)';
+
 /** The mark filled from the bottom to `level` (0 to 1), still: Flutter's `FoxDropLoader(level:)`. */
 function FillingMark({ level }: { level: number }) {
   const clip = `pull-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -117,12 +121,18 @@ export function PullToRefresh({ children, onRefresh, refreshLabel }: PullToRefre
 
   const level = Math.min(1, pulled / THRESHOLD);
   const showing = refreshing || pulled > 0;
-  const button = `${buttonClasses('secondary', 'compact')} sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:start-(--fd-pull-to-refresh-inset) focus-visible:top-(--fd-pull-to-refresh-inset) focus-visible:z-(--fd-layer-sticky)`;
   return (
     <div className="relative size-full">
-      <button type="button" onClick={() => void refresh()} className={button}>
-        {refreshLabel}
-      </button>
+      {/* Hidden by its wrapper: the button's own position and height would beat sr-only. */}
+      <span className={keyboardOnly}>
+        <button
+          type="button"
+          onClick={() => void refresh()}
+          className={buttonClasses('secondary', 'compact')}
+        >
+          {refreshLabel}
+        </button>
+      </span>
       <div
         data-pull-scroller=""
         onScroll={(event) => setAtTop(event.currentTarget.scrollTop <= 0)}

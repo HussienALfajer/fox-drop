@@ -58,7 +58,7 @@ const heartCircle = formTv({
 /** An image the name beside it already says. */
 const DECORATIVE = '';
 
-const coverBox = 'aspect-video overflow-hidden rounded-(--fd-restaurant-card-cover-radius)';
+const coverBox = 'aspect-cover overflow-hidden rounded-(--fd-restaurant-card-cover-radius)';
 
 const facts =
   'mt-(--fd-restaurant-card-facts-top) flex flex-wrap items-center gap-x-(--fd-restaurant-card-facts-gap) gap-y-(--fd-restaurant-card-facts-row-gap) text-phone-secondary text-on-surface-muted';
