@@ -72,3 +72,21 @@ export {
   type TrackingStep,
   type TrackingStepsProps,
 } from './tracking-steps/tracking-steps';
+export { RestaurantBar, type RestaurantBarProps } from './restaurant-bar/restaurant-bar';
+export {
+  BottomNavigation,
+  type BottomNavigationItem,
+  type BottomNavigationProps,
+} from './bottom-navigation/bottom-navigation';
+export {
+  SignInHero,
+  type SignInHeroProps,
+  type SignInOrigin,
+  type SignInPerk,
+} from './sign-in-hero/sign-in-hero';
+export {
+  ShopSign,
+  VersionTicket,
+  type ShopSignProps,
+  type VersionTicketProps,
+} from './blocking-heads/blocking-heads';

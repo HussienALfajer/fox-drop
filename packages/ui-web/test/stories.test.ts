@@ -7,8 +7,14 @@ import * as library from '../src/index';
 // in src/<dir>/<dir>.tsx. The mapping: a component `FooBar` lives in the
 // folder `foo-bar`; a state `hover` is covered by a story export named
 // `Hover` or ending in `Hover`. A module that also exports VARIANTS needs the
-// exact name <Variant><State> (`PrimaryHover`) for every pair.
-const kebab = (name: string) => name.replace(/(?!^)([A-Z])/g, '-$1').toLowerCase();
+// exact name <Variant><State> (`PrimaryHover`) for every pair. Components that
+// share one folder and one Storybook title, as their Flutter file does, are
+// listed in FOLDERS (the blocking heads, D.W4d).
+const FOLDERS: Record<string, string> = {
+  VersionTicket: 'blocking-heads',
+  ShopSign: 'blocking-heads',
+};
+const kebab = (name: string) => FOLDERS[name] ?? name.replace(/(?!^)([A-Z])/g, '-$1').toLowerCase();
 const pascal = (state: string) => state.charAt(0).toUpperCase() + state.slice(1);
 
 const components = Object.entries(library).filter(
@@ -22,6 +28,7 @@ describe('stories cover every state (R3)', () => {
       'Banner',
       'BannerStack',
       'BlockingBanner',
+      'BottomNavigation',
       'Button',
       'Card',
       'Checkbox',
@@ -48,9 +55,12 @@ describe('stories cover every state (R3)', () => {
       'PhoneField',
       'QuantityStepper',
       'RadioGroup',
+      'RestaurantBar',
       'SearchField',
       'Select',
+      'ShopSign',
       'Sidebar',
+      'SignInHero',
       'Skeleton',
       'StatusChip',
       'Switch',
@@ -64,7 +74,20 @@ describe('stories cover every state (R3)', () => {
       'Tooltip',
       'TopBar',
       'TrackingSteps',
+      'VersionTicket',
     ]);
+  });
+
+  it.each([
+    ['restaurant-bar', 'RestaurantBar'],
+    ['bottom-navigation', 'BottomNavigation'],
+    ['sign-in-hero', 'SignInHero'],
+    ['blocking-heads', 'BlockingHeads'],
+  ])('src/%s has the Storybook title %s', async (dir, title) => {
+    const stories = (await import(`../src/${dir}/${dir}.stories.tsx`)) as {
+      default: { title: string };
+    };
+    expect(stories.default.title).toBe(title);
   });
 
   it.each(components.map(([name]) => [name, kebab(name)]))('%s', async (_, dir) => {

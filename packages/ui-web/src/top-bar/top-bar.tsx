@@ -34,13 +34,18 @@ export interface TopBarProps {
 }
 
 // The approved sheet: 64 high on the raised surface with a hairline under it,
-// sticky above the page (layer.sticky); the banners sit under it.
+// sticky above the page (layer.sticky); the banners sit under it. The sizes
+// and the ground are `top-bar.json`'s, shared with the Flutter phone bar
+// where the two surfaces agree (slice D.W4d).
 const bar = formTv({
-  base: 'sticky top-none z-(--fd-layer-sticky) flex min-h-(--fd-size-bar) items-center gap-md border-b border-border bg-surface-raised px-md text-on-surface',
+  base: [
+    'sticky top-none z-(--fd-layer-sticky) flex min-h-(--fd-top-bar-min-height) items-center gap-(--fd-top-bar-gap)',
+    'border-b-(length:--fd-top-bar-border-width) border-(--fd-top-bar-color-border) bg-(--fd-top-bar-color-background) px-(--fd-top-bar-padding-inline) text-on-surface',
+  ],
 });
 
 const iconButton = formTv({
-  base: `relative inline-flex size-(--fd-size-control-compact) shrink-0 cursor-pointer items-center justify-center rounded-full inset-ring-1 inset-ring-border hover:bg-surface-raised-hover active:bg-surface-raised-pressed ${keyboardRing}`,
+  base: `relative inline-flex size-(--fd-top-bar-action-size) shrink-0 cursor-pointer items-center justify-center rounded-full inset-ring-1 inset-ring-border hover:bg-surface-raised-hover active:bg-surface-raised-pressed ${keyboardRing}`,
 });
 
 /**

@@ -1,0 +1,100 @@
+{
+  "navigation-rail": {
+    "$description": "The navigation on the start side: the panel's and the portal's sidebar on the web (AP §7.1, RA §17), the restaurant's rail on a tablet in Flutter (RA §6.2). They share the raised ground, the end hairline and the item colours; the sidebar's links are rows, the rail's items an icon pill over the name.",
+    "$extensions": {
+      "app.foxdrop": { "web": ["sidebar"], "flutter": ["navigation"] }
+    },
+    "border-width": {
+      "$type": "dimension",
+      "$value": "{border-width.thin}",
+      "$description": "The hairline at its end."
+    },
+    "width": {
+      "$type": "dimension",
+      "$value": "{size.sidebar}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "width-collapsed": {
+      "$type": "dimension",
+      "$value": "{size.sidebar-collapsed}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "padding-block": {
+      "$type": "dimension",
+      "$value": "{space.xs}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.2xs}",
+      "$description": "Between two sidebar links.",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "link-height": {
+      "$type": "dimension",
+      "$value": "{size.control-compact}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "current-edge": {
+      "$type": "dimension",
+      "$value": "{border-width.heavy}",
+      "$description": "The current link's orange start edge.",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "rail": {
+      "padding-block": {
+        "$type": "dimension",
+        "$value": "{space.md}",
+        "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+      },
+      "item-gap": {
+        "$type": "dimension",
+        "$value": "{space.sm}",
+        "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+      },
+      "pill-height": {
+        "$type": "dimension",
+        "$value": "{space.xl}",
+        "$description": "The icon's pill, 56 wide.",
+        "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+      },
+      "label-gap": {
+        "$type": "dimension",
+        "$value": "{space.2xs}",
+        "$description": "The pill to the name under it.",
+        "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+      }
+    },
+    "color": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.surface-raised}"
+      },
+      "border": {
+        "$value": "{color.border}"
+      },
+      "item-hover": {
+        "$value": "{color.surface-raised-hover}"
+      },
+      "item-pressed": {
+        "$value": "{color.surface-raised-pressed}"
+      },
+      "item-selected": {
+        "$value": "{color.primary-subtle}",
+        "$description": "The current link's tint; the rail's selected pill."
+      },
+      "on-item-selected": {
+        "$value": "{color.on-primary-subtle}"
+      },
+      "current-edge": {
+        "$value": "{color.primary}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "rail-ink": {
+        "$value": "{color.on-surface-muted}",
+        "$description": "An unselected rail item's icon and name.",
+        "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+      }
+    }
+  }
+}
