@@ -2,6 +2,10 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.22.0 (2026-11-27, the components canvas audit)
+
+- Deprecated `data-table.loading-line-height` (use `skeleton.line-height`) and `data-table.color.loading` (use `skeleton.background`): a loading cell of the web table now draws the system's Skeleton block, whose values are the same (12px, `neutral-subtle`). Both go in the next release. A deprecated token no longer has to be read (`src/component-usage.ts`). No look change.
+
 ## 0.21.0 (2026-11-26, slice D.W4c: web restaurant and dish cards, bottom sheet, pull to refresh)
 
 - New semantic sizes, each the value the Flutter twin computed by hand: `size.cover-logo` (72px, the logo on the tint of a card with no cover: touch target plus `space.lg`), `size.dish-photo` (96px, two touch targets) and `size.sheet-handle` (40px, `space.xl` plus `space.xs`).

@@ -143,6 +143,11 @@ interface ButtonBase {
   /** Shown beside the loader while loading, and the button's name then: «جارٍ إرسال الرمز…». */
   loadingLabel?: string;
   disabled?: boolean;
+  /**
+   * Looks disabled and says so (`aria-disabled`) yet takes presses, so a form
+   * can say what is missing when pressed (ConfirmDialog's confirm).
+   */
+  softDisabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
   onClick?: (event: MouseEvent<HTMLElement>) => void;
 }
@@ -172,6 +177,7 @@ const OWN = new Set([
   'loading',
   'loadingLabel',
   'disabled',
+  'softDisabled',
   'icon',
   'iconEnd',
   'children',
@@ -185,7 +191,9 @@ const OWN = new Set([
  * Button. A `loading` button is disabled for presses but stays focusable.
  */
 export function Button(props: ButtonProps) {
-  const { variant = 'primary', density = 'comfortable', loading = false, disabled = false } = props;
+  const { variant = 'primary', density = 'comfortable', loading = false } = props;
+  const disabled = props.disabled ?? false;
+  const looksDisabled = disabled || (props.softDisabled ?? false);
   const { icon, iconEnd, children, label, type, onClick, loadingLabel } = props;
   // What an overlay's trigger merges in through the SDK's `render` (D.10): its
   // ARIA state, ref and handlers. Our own props above win.
@@ -200,14 +208,15 @@ export function Button(props: ButtonProps) {
       {...(iconOnly && { 'aria-label': label })}
       {...(loading && loadingLabel !== undefined && { 'aria-label': loadingLabel })}
       {...(loading && { 'aria-busy': true })}
+      {...(props.softDisabled && !disabled && { 'aria-disabled': true })}
       disabled={disabled || loading}
       focusableWhenDisabled={loading && !disabled}
       className={button({
         variant,
         density,
         iconOnly,
-        disabled,
-        interactive: !disabled && !loading,
+        disabled: looksDisabled,
+        interactive: !looksDisabled && !loading,
       })}
     >
       <span className={content({ loading })}>

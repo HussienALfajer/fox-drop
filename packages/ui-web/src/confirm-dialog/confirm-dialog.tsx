@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from '@ui-sdk/react/dialog';
 import { useId, useState, type ReactElement, type ReactNode } from 'react';
-import { buttonClasses } from '../button/button';
+import { Button } from '../button/button';
 import { formTv } from '../field/styles';
 import { Icon } from '../icon/icon';
 import {
@@ -29,7 +29,7 @@ import {
 import { TextField } from '../text-field/text-field';
 
 /** The states the stories show (R3): empty, refused without a reason, filled. */
-export const STATES = ['default', 'empty', 'invalid', 'filled'] as const;
+export const STATES = ['default', 'empty', 'invalid', 'filled', 'pending'] as const;
 
 const section = formTv({ base: 'flex flex-col gap-(--fd-dialog-confirm-section-gap)' });
 const sectionTitle = formTv({ base: 'm-none text-panel-secondary font-bold' });
@@ -74,9 +74,12 @@ export interface ConfirmDialogProps {
   /**
    * Draws the open dialog and its scrim in a frame where it is written, beside
    * the page (the components canvas): a plain dialog that neither blocks the
-   * page, traps focus nor takes focus on opening.
+   * page nor traps focus; drawn open (`open`) it takes no focus, opened by
+   * its trigger it does.
    */
   inline?: boolean;
+  /** Drawn as if its command runs: the confirm button's loader (the components canvas). */
+  pending?: boolean;
 }
 
 /** The SDK parts: the alert dialog, or, inline, the plain non-modal dialog (as Dialog's). */
@@ -119,7 +122,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     }
     onOpenChange?.(next);
   };
-  const ready = reason.trim() !== '' && !pending;
+  const busy = pending || (props.pending ?? false);
+  const ready = reason.trim() !== '' && !busy;
   const confirm = async () => {
     setTried(true);
     if (!ready) return;
@@ -143,7 +147,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       <P.Content
         inline={inline}
         className={dialogPanel({ inline })}
-        initialFocus={inline ? 'none' : '[data-reason] input'}
+        initialFocus={inline && props.open !== undefined ? 'none' : '[data-reason] input'}
       >
         <div className={header()}>
           <P.Title className={titleClass()}>{title}</P.Title>
@@ -182,16 +186,22 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           </ul>
         </div>
         <div className={actions()}>
-          <button
-            type="button"
-            aria-disabled={!ready}
-            {...(pending && { 'aria-busy': true })}
-            className={buttonClasses('danger', 'compact', !ready)}
+          <Button
+            variant="danger"
+            density="compact"
+            softDisabled={!ready && !busy}
+            loading={busy}
             onClick={() => void confirm()}
           >
             {confirmLabel}
-          </button>
-          <P.Close className={buttonClasses('secondary', 'compact')}>{cancelLabel}</P.Close>
+          </Button>
+          <P.Close
+            render={
+              <Button variant="secondary" density="compact">
+                {cancelLabel}
+              </Button>
+            }
+          />
         </div>
       </P.Content>
     </>

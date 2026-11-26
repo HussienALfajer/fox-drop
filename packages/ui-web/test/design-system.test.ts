@@ -204,6 +204,7 @@ describe('the component docs', () => {
     loading: true,
     loadingLabel: true,
     disabled: true,
+    softDisabled: true,
     type: true,
     onClick: true,
     children: true,
@@ -556,6 +557,7 @@ describe('the component docs', () => {
       moreLabel: true,
       lessLabel: true,
       density: true,
+      defaultOpen: true,
     } satisfies Record<Keys<BannerStackProps>, true>,
     BlockingBannerProps: {
       open: true,
@@ -578,6 +580,7 @@ describe('the component docs', () => {
       onConfirm: true,
       density: true,
       inline: true,
+      pending: true,
     } satisfies Record<Keys<DialogProps>, true>,
     ConfirmDialogProps: {
       trigger: true,
@@ -596,6 +599,7 @@ describe('the component docs', () => {
       closeLabel: true,
       onConfirm: true,
       inline: true,
+      pending: true,
     } satisfies Record<Keys<ConfirmDialogProps>, true>,
     DrawerProps: {
       trigger: true,

@@ -16,8 +16,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@ui-sdk/react/dialog';
-import type { ReactElement, ReactNode } from 'react';
-import { buttonClasses } from '../button/button';
+import { useState, type ReactElement, type ReactNode } from 'react';
+import { Button } from '../button/button';
 import { formTv } from '../field/styles';
 import { Icon } from '../icon/icon';
 import {
@@ -30,7 +30,7 @@ import {
 } from '../overlay/styles';
 
 /** The states the stories show (R3). Open is the dialog itself; focus starts on the safe action. */
-export const STATES = ['default', 'open', 'danger', 'primary', 'compact'] as const;
+export const STATES = ['default', 'open', 'danger', 'primary', 'compact', 'pending'] as const;
 
 const actions = formTv({ base: 'flex flex-wrap gap-(--fd-dialog-actions-gap) *:flex-1' });
 const description = formTv({
@@ -58,9 +58,12 @@ export interface DialogProps {
   /**
    * Draws the open dialog and its scrim in a frame where it is written, beside
    * the page instead of over it (the components canvas shows it open beside its
-   * trigger): it neither blocks the page, traps focus nor takes focus on opening.
+   * trigger): it neither blocks the page nor traps focus; drawn open (`open`)
+   * it takes no focus, opened by its trigger it does.
    */
   inline?: boolean;
+  /** Drawn as if its command runs: the confirm button's loader (the components canvas). */
+  pending?: boolean;
 }
 
 /**
@@ -96,6 +99,17 @@ export function Dialog(props: DialogProps) {
   const { trigger, open, onOpenChange, title, children, confirmLabel, cancelLabel } = props;
   const { closeLabel, tone = 'primary', onConfirm, density = 'comfortable' } = props;
   const inline = props.inline ?? false;
+  const [running, setRunning] = useState(false);
+  const pending = running || (props.pending ?? false);
+  // The SDK keeps the dialog open while the Promise runs; the button shows Button's loader.
+  const run = async () => {
+    setRunning(true);
+    try {
+      return await onConfirm?.();
+    } finally {
+      setRunning(false);
+    }
+  };
   const P = inline ? BESIDE : ALERT;
   const popup = (
     <>
@@ -103,7 +117,7 @@ export function Dialog(props: DialogProps) {
       <P.Content
         inline={inline}
         className={dialogPanel({ inline })}
-        initialFocus={inline ? 'none' : '[data-cancel]'}
+        initialFocus={inline && open !== undefined ? 'none' : '[data-cancel]'}
       >
         <div className={header()}>
           <P.Title className={titleClass()}>{title}</P.Title>
@@ -118,14 +132,21 @@ export function Dialog(props: DialogProps) {
         <div className={actions()}>
           <P.Close
             value="confirm"
-            className={buttonClasses(tone, density)}
-            {...(onConfirm && { action: () => onConfirm() })}
-          >
-            {confirmLabel}
-          </P.Close>
-          <P.Close data-cancel="" className={buttonClasses('secondary', density)}>
-            {cancelLabel}
-          </P.Close>
+            render={
+              <Button variant={tone} density={density} loading={pending}>
+                {confirmLabel}
+              </Button>
+            }
+            {...(onConfirm && { action: run })}
+          />
+          <P.Close
+            data-cancel=""
+            render={
+              <Button variant="secondary" density={density}>
+                {cancelLabel}
+              </Button>
+            }
+          />
         </div>
       </P.Content>
     </>

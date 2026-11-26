@@ -40,8 +40,5 @@ type Story = StoryObj<typeof meta>;
 export const One: Story = { args: { banners: all.slice(3, 4) } };
 export const Two: Story = { args: { banners: all.slice(0, 2) } };
 export const Folded: Story = {};
-export const Opened: Story = {
-  play: ({ canvasElement }) => {
-    canvasElement.querySelector<HTMLButtonElement>('button[aria-expanded]')!.click();
-  },
-};
+// Drawn opened from the start, so the components canvas shows it (the audit).
+export const Opened: Story = { args: { defaultOpen: true } };

@@ -28,6 +28,8 @@ export interface BannerStackProps {
   /** The words that fold them again: «إخفاء». */
   lessLabel: string;
   density?: BannerProps['density'];
+  /** Opened from the start (the components canvas draws the opened stack). */
+  defaultOpen?: boolean;
 }
 
 const toggle = formTv({
@@ -50,8 +52,9 @@ const toggle = formTv({
  * behind a counter that opens them in place. A banner that clears leaves at
  * once and the next moves up.
  */
-export function BannerStack({ banners, moreLabel, lessLabel, density }: BannerStackProps) {
-  const [open, setOpen] = useState(false);
+export function BannerStack(props: BannerStackProps) {
+  const { banners, moreLabel, lessLabel, density, defaultOpen = false } = props;
+  const [open, setOpen] = useState(defaultOpen);
   const id = useId();
   if (banners.length === 0) return null;
   const hidden = banners.length - SHOWN;

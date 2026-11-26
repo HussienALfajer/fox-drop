@@ -5,7 +5,9 @@
 // props changed (each boolean flipped, each choice its last option), and each
 // scenario (story) loaded. Reports a missing component or value, a page error, a
 // console error or warning, content wider than its panel and content taller
-// than its board. With --measure it writes each board's natural height (its
+// than its board. Then it plays each board as the owner does in Play (play.ts:
+// presses, typing, Tab, arrows, Escape, the panel and the scenarios), the
+// board's state changes drawing it again. With --measure it writes each board's natural height (its
 // tallest combination) to heights.json and the class names on it to
 // classes.json, which canvas.ts reads. Usage:
 //   pnpm --filter @fox-drop/ui-web components-canvas:check [--measure] [Name…]
@@ -16,6 +18,7 @@ import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { PACKAGE_DIR } from '../bundle.ts';
 import { OUT, PROJECT } from './canvas.ts';
+import { playBoard } from './play.ts';
 import { renderBoard } from './render-board.ts';
 
 const flags = process.argv.slice(2);
@@ -81,6 +84,7 @@ interface Combination {
   name: string;
   props: Record<string, unknown>;
   state: Record<string, unknown>;
+  play?: true;
 }
 
 /** The playground at its Tweaks, its props changed, then each scenario. */
@@ -134,7 +138,9 @@ for (const f of files) {
   const scenarios = [...script.matchAll(/for \(const s of (\[[^\]]*\])\) sc\[s\]/g)].flatMap(
     (m) => JSON.parse(m[1] ?? '[]') as string[],
   );
-  for (const combo of combinations(tweaks, scenarios)) {
+  const combos = combinations(tweaks, scenarios);
+  if (!measure) combos.push({ name: 'play', props: {}, state: {}, play: true });
+  for (const combo of combos) {
     runs += 1;
     const page = await browser.newPage({
       viewport: { width: preview.width, height: preview.height },
@@ -166,14 +172,17 @@ for (const f of files) {
       props: combo.props,
       state: combo.state,
       measureHeight: measure,
+      live: combo.play === true,
     });
+    const played = combo.play ? await playBoard(page) : [];
     if (result.natural !== null) heights[key] = Math.max(heights[key] ?? 0, result.natural);
     const seen = (classes[key] ??= new Set());
     for (const c of result.classes) seen.add(c);
-    const taller = !measure && result.content > result.frame + 1;
+    const taller = !measure && !combo.play && result.content > result.frame + 1;
     const found = [
       ...result.missing.map((m) => `missing ${m}`),
       ...result.over.map((o) => `over ${o}`),
+      ...played,
       ...errors,
       ...(taller
         ? [`taller than its board (${String(result.content)} > ${String(result.frame)})`]

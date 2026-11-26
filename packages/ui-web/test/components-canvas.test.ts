@@ -162,8 +162,8 @@ describe('the components canvas', () => {
     const html = board('Dialog');
     const vals = renderVals(html) as { v: Record<string, unknown> };
     const open = [...html.matchAll(/open="\{\{ v\.(p\d+) \}\}" inline="\{\{ v\.(p\d+) \}\}"/g)];
-    // Open, Danger, Primary and Compact open their dialog in Storybook (`play`).
-    expect(open).toHaveLength(4);
+    // Open, Danger, Primary, Compact and Pending open their dialog in Storybook (`play`).
+    expect(open).toHaveLength(5);
     for (const m of open) expect([vals.v[m[1] ?? ''], vals.v[m[2] ?? '']]).toEqual([true, true]);
   });
 
@@ -296,10 +296,15 @@ describe('the components canvas', () => {
   });
 
   it('says so when a state only a gesture reaches is drawn at rest', () => {
-    for (const name of ['PullToRefresh', 'BannerStack']) {
-      expect(board(name), name).toContain(TEXT.inPlay);
-    }
+    // ConfirmDialog's Invalid and Filled: drawn open, before what their play types.
+    expect(board('ConfirmDialog')).toContain(TEXT.inPlay);
     expect(board('Dialog')).not.toContain(TEXT.inPlay);
+  });
+
+  it('draws the states a gesture reaches from their props (the audit, 2026-11-27)', () => {
+    for (const name of ['PullToRefresh', 'BannerStack']) {
+      expect(board(name), name).not.toContain(TEXT.inPlay);
+    }
   });
 
   it('names the canvas, its two pages and the page of every board', () => {

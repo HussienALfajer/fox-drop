@@ -57,7 +57,8 @@ export interface DrawerProps {
   /**
    * Draws the open drawer and its scrim in a frame where it is written, at its
    * side of the frame, beside the page (the components canvas): it neither
-   * blocks the page, traps focus nor takes focus on opening.
+   * blocks the page nor traps focus; drawn open (`open`) it takes no focus,
+   * opened by its trigger it does.
    */
   inline?: boolean;
 }
@@ -86,7 +87,7 @@ export function Drawer(props: DrawerProps) {
         inline={inline}
         className={panel({ side, inline })}
         data-side={side}
-        {...(inline && { initialFocus: 'none' as const })}
+        {...(inline && props.open !== undefined && { initialFocus: 'none' as const })}
       >
         <div className={head()}>
           <DialogTitle className={titleClass()}>{title}</DialogTitle>

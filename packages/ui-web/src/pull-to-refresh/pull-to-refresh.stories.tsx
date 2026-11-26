@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PullToRefresh } from './pull-to-refresh';
 
-// The Flutter twin's states (D.10, D.11b), review copy. The pull is driven by
-// touch pointer events in `play`: half the threshold (the mark half full), and
-// a whole pull let go with a refresh that never ends (the drop loader).
+// The Flutter twin's states (D.10, D.11b), review copy: half the threshold
+// pulled (the mark half full), and a refresh that never ends (the drop loader),
+// both drawn from props so the components canvas shows them (the audit); the
+// gesture itself is tested in pull-to-refresh.test.tsx.
 const ROWS = [
   'كنافة أعزاز',
   'برجر كبصو',
@@ -26,18 +27,6 @@ const list = (
   </div>
 );
 
-function touch(target: Element, type: string, y: number) {
-  target.dispatchEvent(
-    new PointerEvent(type, {
-      bubbles: true,
-      pointerId: 1,
-      pointerType: 'touch',
-      isPrimary: true,
-      clientY: y,
-    }),
-  );
-}
-
 const meta = {
   title: 'PullToRefresh',
   component: PullToRefresh,
@@ -52,18 +41,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
-export const Pulling: Story = {
-  play: ({ canvasElement }) => {
-    const scroller = canvasElement.querySelector('[data-pull-scroller]')!;
-    touch(scroller, 'pointerdown', 100);
-    touch(scroller, 'pointermove', 140);
-  },
-};
-export const Refreshing: Story = {
-  play: ({ canvasElement }) => {
-    const scroller = canvasElement.querySelector('[data-pull-scroller]')!;
-    touch(scroller, 'pointerdown', 100);
-    touch(scroller, 'pointermove', 200);
-    touch(scroller, 'pointerup', 200);
-  },
-};
+export const Pulling: Story = { args: { defaultPulled: 40 } };
+export const Refreshing: Story = { args: { defaultRefreshing: true } };
