@@ -1,6 +1,6 @@
 # D.C4 The components canvas: the proposals page, the old boards out, decision T15
 
-Status: In progress · Tier: T2 · Branch: `docs/components-canvas-proposals`
+Status: Done · Tier: T2 · Branch: `docs/components-canvas-proposals`
 Spec: architecture §2, §9.8, §9.9 · Definition of done: workflow §4
 
 Part of the components canvas plan; its shared rules are in `D.C1-components-canvas-generator.md`. Last, after D.C3 is merged.
@@ -23,12 +23,15 @@ Tests written first (locked in the red phase): `test/components-canvas.test.ts` 
 
 ## Stopped at
 
-Generator and docs written, test green; next: `--changed`, review, publish, PR.
+Done. After the merge, D.C3 publishes from a tree with both slices (the index is `Main.dc.html`).
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- Review:
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (a first run failed on Prettier of the locked test, formatted, no assertion changed).
+- `pnpm baselines`: «no image changed» (340 stories, phone and captain).
+- Unit tests: `test/components-canvas.test.ts` 16 of 16 (the new case: the six boards retired, the proposals page holds the note and a live proposal only, the index is `Main.dc.html`).
+- `components-canvas`, `--measure`, again, `components-canvas:check`: 42 boards written and checked; published to the canvas with the six old files and `Index.dc.html` removed.
+- Review (reviewer, T2, medium): round 1, two should-fix (§9's opening rules and the design-tokens icon sheet still said the old canvas) and two minor (step 3's "card or sheet"; kept entries without a page), all fixed; round 2, none. The icon sheet's retirement went to `docs/backlog.md`.
 
 ## Before deploying
 
