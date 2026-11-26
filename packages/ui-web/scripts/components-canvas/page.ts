@@ -87,6 +87,7 @@ export const HYDRATE = `    const R = window.React;
       if (x.$fn) return () => undefined;
       if (x.$date) return new Date(x.$date);
       if (x.$set) return new Set(x.$set);
+      if (x.$html !== undefined) return R.createElement('div', { style: { display: 'contents' }, dangerouslySetInnerHTML: { __html: x.$html } });
       if (x.$el) return R.createElement(typeOf(x.$el), hydrate(x.props));
       return Object.fromEntries(Object.entries(x).map(([k, y]) => [k, hydrate(y)]));
     };`;

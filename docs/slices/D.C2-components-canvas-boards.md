@@ -1,6 +1,6 @@
 # D.C2 The components canvas: the other boards, the index and the group notes
 
-Status: Planned · Tier: T2 · Branch: `feat/components-canvas-boards`
+Status: In progress · Tier: T2 · Branch: `feat/components-canvas-boards`
 Spec: architecture §9.8, §9.9, T14 · Definition of done: workflow §4
 
 Part of the components canvas plan; its shared rules are in `D.C1-components-canvas-generator.md`. After D.C1 is merged and the owner approved the pilot boards' look.
@@ -24,7 +24,7 @@ Tests written first (locked in the red phase): `test/components-canvas.test.ts` 
 
 ## Stopped at
 
-Planned.
+Built: 41 component boards and the index, written, measured and checked; the unit test widened (12 of 12). Next: `--changed`, review, publish.
 
 ## Evidence
 
@@ -41,3 +41,10 @@ Nothing.
 Nothing new.
 
 ## Notes for the next session
+
+- **No per-component overrides were needed.** A story's `render` (its own or its meta's) is called in Node and the first library component it draws is taken with its props (SignInHero framed, StatusChip's tone, Field around the SDK's input); a child from outside the library (the SDK's input, `InputBox`) crosses as its static markup (`{ $html }`); a `render` that only wraps state (QuantityStepper's counter, DataTable's sorter, BottomNavigation's demo) keeps the story's args. The blocking heads mount their parts (`FoxDrop.BlockingHeads.VersionTicket`, `.ShopSign`), named as the bundle names them.
+- **BlockingBanner moved to D.C3:** it covers the page like a popup, so it is drawn open once it takes `inline`.
+- **TopBar is wide:** its surfaces and states sit one a row (`WIDE` in `board.ts`).
+- **The index is `Index.dc.html`:** the old hand-drawn `Main.dc.html` is still on the proposals page until D.C4, which may rename the index to `Main`.
+- **Caption words:** `SCurve` splits as «s curve», `picked_up` as «picked up»; every word of every state and story name has its Arabic in `copy-ar.ts` (`WORDS`), phrases before words.
+- **The Design System is re-synced once after D.C3** (Dialog's `inline` from D.C1 and the popups' from D.C3); until then the canvas sends this branch's bundle.

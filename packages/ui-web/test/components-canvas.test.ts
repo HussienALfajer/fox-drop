@@ -7,8 +7,14 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildBundle, COMPONENTS } from '../scripts/bundle.ts';
 import { caption } from '../scripts/components-canvas/board.ts';
-import { BOARDS, buildCanvas, type Built } from '../scripts/components-canvas/canvas.ts';
-import { COMPONENTS as COPY } from '../scripts/components-canvas/copy-ar.ts';
+import {
+  BOARDS,
+  buildCanvas,
+  type Built,
+  groupOf,
+  LATER,
+} from '../scripts/components-canvas/canvas.ts';
+import { COMPONENTS as COPY, GROUPS } from '../scripts/components-canvas/copy-ar.ts';
 import { classesOf, forcedStates } from '../scripts/components-canvas/states.ts';
 import {
   readStories,
@@ -80,7 +86,10 @@ describe('the components canvas', () => {
   it('has a board and a forced-states sheet for every component of the slice', () => {
     for (const name of BOARDS) {
       expect(COMPONENTS, name).toContain(name);
-      expect(board(name), name).toContain(`component-from-global-scope="FoxDrop.${name}"`);
+      // Itself, or its parts (FoxDrop.BlockingHeads.ShopSign).
+      expect(board(name), name).toMatch(
+        new RegExp(`component-from-global-scope="FoxDrop\\.${name}[".]`),
+      );
       expect(built.files.has(`support/states/${name}.css`), name).toBe(true);
     }
   });
@@ -165,6 +174,34 @@ describe('the components canvas', () => {
       Buffer.byteLength(forcedStates(bundleCss)),
     );
     expect(Buffer.byteLength(sheet)).toBeLessThan(60 * 1024);
+  });
+
+  it('has a board for every component but the popups D.C3 opens', () => {
+    expect([...BOARDS, ...LATER].sort()).toEqual([...COMPONENTS].sort());
+    expect(BOARDS.filter((name) => LATER.has(name))).toEqual([]);
+  });
+
+  it('links every board from the index, and every link reaches a board', () => {
+    const html = built.files.get('Index.dc.html') ?? '';
+    const links = [...html.matchAll(/href="([\w.]+)\.dc\.html"/g)].map((m) => m[1]);
+    expect([...links].sort()).toEqual([...BOARDS].sort());
+    expect(built.index.boards?.['Index.dc.html']?.page).toBe('components');
+  });
+
+  it('titles each group with its count, above its boards', () => {
+    const notes = Object.values(
+      built.index['notes'] as Record<string, { text: string; page?: string }>,
+    )
+      .filter((n) => n.page === 'components')
+      .map((n) => n.text);
+    const groups = new Map<string, number>();
+    for (const name of BOARDS) {
+      const group = groupOf(name);
+      groups.set(group, (groups.get(group) ?? 0) + 1);
+    }
+    expect(notes.sort()).toEqual(
+      [...groups].map(([group, count]) => `${GROUPS[group] ?? group} · ${String(count)}`).sort(),
+    );
   });
 
   it('names the canvas, its two pages and the page of every board', () => {

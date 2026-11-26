@@ -92,13 +92,18 @@ function literals(type: string, aliases: Map<string, string>): string[] | null {
   return out;
 }
 
+/** What a story mounts: its own part (`BlockingHeads.ShopSign`) or the board's component. */
+export const mountOf = (c: ComponentStories, story: string) =>
+  c.stories[story]?.component ?? c.name;
+
 export function playgroundOf(c: ComponentStories, types = parseTypes()): Playground {
   const names = Object.keys(c.stories);
   const base =
     names.find((s) => s === 'Default') ?? c.cells[Object.keys(c.cells)[0] ?? ''] ?? names[0] ?? '';
   const start = c.stories[base]?.args ?? {};
+  const mounted = mountOf(c, base);
   const controls: Control[] = [];
-  for (const m of membersOf(c.name, types)) {
+  for (const m of membersOf(mounted.split('.').at(-1) ?? mounted, types)) {
     if (RESERVED.has(m.name) || m.type.includes('=>')) continue;
     const value = start[m.name];
     const choices = literals(m.type, types.aliases);
@@ -118,8 +123,13 @@ export function playgroundOf(c: ComponentStories, types = parseTypes()): Playgro
     }
   }
   const used = new Set(Object.values(c.cells));
+  // A scenario loads into the same copy, so it draws the same component (one of the heads).
   const scenarios = names.filter(
-    (s) => s !== base && !c.stories[s]?.render && (c.variants ? !used.has(s) : true),
+    (s) =>
+      s !== base &&
+      !c.stories[s]?.render &&
+      mountOf(c, s) === mounted &&
+      (c.variants ? !used.has(s) : true),
   );
   const keys = new Set<string>(controls.map((k) => k.prop));
   for (const s of [base, ...scenarios]) {
@@ -233,7 +243,7 @@ export function playgroundSection(
   styles: { panel: string; head: string; muted: string; aside: string },
 ): string {
   const holes = Object.fromEntries(pg.keys.map((k) => [k, `live.${k}`]));
-  const copy = mounts.tag(c.name, {}, { ...holes, key: 'pgKey' });
+  const copy = mounts.tag(mountOf(c, pg.base), {}, { ...holes, key: 'pgKey' });
   const controls = pg.controls
     .map((k) => `          ${control(k, mounts, () => text.none)}`)
     .join('\n');
