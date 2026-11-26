@@ -4,7 +4,7 @@
 // role and name, takes no focus, and leaves the page around it usable.
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { BlockingBanner } from '../blocking-banner/blocking-banner';
 import { Button } from '../button/button';
@@ -329,6 +329,32 @@ describe('an inline popup opened by its trigger', () => {
     ],
   ])('%s takes focus and closes on Escape', async (_, popup) => {
     render(popup);
+    await userEvent.click(screen.getByRole('button', { name: 'افتح' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement | null);
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+describe('an inline popup whose open state is held outside', () => {
+  it('takes focus when opened, since onOpenChange says it is not drawn open', async () => {
+    function Held() {
+      const [open, setOpen] = useState(false);
+      return (
+        <Dialog
+          inline
+          open={open}
+          onOpenChange={setOpen}
+          trigger={<Button>افتح</Button>}
+          title="حذف العنوان"
+          confirmLabel="حذف"
+          cancelLabel="إلغاء"
+          closeLabel="إغلاق"
+        />
+      );
+    }
+    render(<Held />);
     await userEvent.click(screen.getByRole('button', { name: 'افتح' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toContainElement(document.activeElement as HTMLElement | null);

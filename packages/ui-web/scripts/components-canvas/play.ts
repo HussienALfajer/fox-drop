@@ -6,7 +6,7 @@
 //   a checkbox, switch or radio changes its checked state; a field takes text;
 // - a trigger that opens a popup (aria-expanded) opens it, and Escape closes it;
 // - Tab reaches every control of the copy that is in the tab order;
-// - arrow keys move between the items of a tab list, radio group or menu;
+// - arrow keys (either way) move between the items of a tab list, radio group or menu;
 // - each switch, choice and text of the panel, Reset and every scenario button
 //   redraw the copy without an error and leave it drawn.
 import type { Locator, Page } from '@playwright/test';
@@ -52,7 +52,9 @@ async function nameOf(el: Locator): Promise<string> {
 async function usable(el: Locator): Promise<boolean> {
   return el.evaluate((n) => {
     const h = n as HTMLElement & { disabled?: boolean; readOnly?: boolean };
-    if (h.disabled || h.getAttribute('aria-disabled') === 'true') return false;
+    // A soft-disabled control (aria-disabled, not busy) still takes presses: ConfirmDialog's
+    // confirm then says what is missing; one that is disabled or busy does not.
+    if (h.disabled || h.getAttribute('aria-busy') === 'true') return false;
     if (h.readOnly || h.getAttribute('aria-readonly') === 'true') return false;
     if (h.closest('[inert], [aria-hidden=true]')) return false;
     const r = h.getBoundingClientRect();
@@ -122,7 +124,13 @@ async function pressEach(page: Page, stage: Locator, found: string[]): Promise<v
     }
     await page.waitForTimeout(SETTLE);
     const after = await snapshot(page, el);
-    if (before.checked !== null && before.checked !== 'true' && after.checked === before.checked)
+    const soft = (await el.getAttribute('aria-disabled')) === 'true';
+    if (
+      !soft &&
+      before.checked !== null &&
+      before.checked !== 'true' &&
+      after.checked === before.checked
+    )
       found.push(`${name}: a press did not check it`);
     if (before.expanded === 'false') {
       if (after.expanded !== 'true') found.push(`${name}: a press did not open it`);
@@ -190,13 +198,20 @@ async function arrows(page: Page, stage: Locator, found: string[]): Promise<void
     const start = group.locator('[tabindex="0"]').first();
     if (!(await start.count())) continue;
     await start.focus();
-    const before = await page.evaluate(() => document.activeElement?.outerHTML);
-    await page.keyboard.press('ArrowLeft');
-    await page.waitForTimeout(SETTLE);
-    const after = await page.evaluate(() => document.activeElement?.outerHTML);
-    if (before === after) {
+    // Either way along the items: the first one may sit at an end that does not wrap.
+    let moved = false;
+    for (const key of ['ArrowLeft', 'ArrowRight']) {
+      const before = await page.evaluate(() => document.activeElement?.outerHTML);
+      await page.keyboard.press(key);
+      await page.waitForTimeout(SETTLE);
+      if ((await page.evaluate(() => document.activeElement?.outerHTML)) !== before) {
+        moved = true;
+        break;
+      }
+    }
+    if (!moved) {
       const role = (await group.getAttribute('role')) ?? 'group';
-      found.push(`${role}: ArrowLeft did not move between its items`);
+      found.push(`${role}: the arrow keys did not move between its items`);
     }
   }
 }

@@ -102,13 +102,13 @@ export function Dialog(props: DialogProps) {
   const [running, setRunning] = useState(false);
   const pending = running || (props.pending ?? false);
   // The SDK keeps the dialog open while the Promise runs; the button shows Button's loader.
-  const run = async () => {
+  // The SDK keeps the dialog open while a returned Promise runs; the button
+  // shows Button's loader then. Anything else goes back to the SDK as it is.
+  const run = () => {
+    const result = onConfirm?.();
+    if (!(result instanceof Promise)) return result;
     setRunning(true);
-    try {
-      return await onConfirm?.();
-    } finally {
-      setRunning(false);
-    }
+    return result.finally(() => setRunning(false));
   };
   const P = inline ? BESIDE : ALERT;
   const popup = (
@@ -117,7 +117,7 @@ export function Dialog(props: DialogProps) {
       <P.Content
         inline={inline}
         className={dialogPanel({ inline })}
-        initialFocus={inline && open !== undefined ? 'none' : '[data-cancel]'}
+        initialFocus={inline && open !== undefined && !onOpenChange ? 'none' : '[data-cancel]'}
       >
         <div className={header()}>
           <P.Title className={titleClass()}>{title}</P.Title>

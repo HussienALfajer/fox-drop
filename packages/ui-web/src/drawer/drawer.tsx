@@ -87,7 +87,9 @@ export function Drawer(props: DrawerProps) {
         inline={inline}
         className={panel({ side, inline })}
         data-side={side}
-        {...(inline && props.open !== undefined && { initialFocus: 'none' as const })}
+        {...(inline &&
+          props.open !== undefined &&
+          !props.onOpenChange && { initialFocus: 'none' as const })}
       >
         <div className={head()}>
           <DialogTitle className={titleClass()}>{title}</DialogTitle>

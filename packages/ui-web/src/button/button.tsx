@@ -193,7 +193,9 @@ const OWN = new Set([
 export function Button(props: ButtonProps) {
   const { variant = 'primary', density = 'comfortable', loading = false } = props;
   const disabled = props.disabled ?? false;
-  const looksDisabled = disabled || (props.softDisabled ?? false);
+  // A loading button looks like any loading button: softDisabled waits until it settles.
+  const soft = (props.softDisabled ?? false) && !disabled && !loading;
+  const looksDisabled = disabled || soft;
   const { icon, iconEnd, children, label, type, onClick, loadingLabel } = props;
   // What an overlay's trigger merges in through the SDK's `render` (D.10): its
   // ARIA state, ref and handlers. Our own props above win.
@@ -208,7 +210,7 @@ export function Button(props: ButtonProps) {
       {...(iconOnly && { 'aria-label': label })}
       {...(loading && loadingLabel !== undefined && { 'aria-label': loadingLabel })}
       {...(loading && { 'aria-busy': true })}
-      {...(props.softDisabled && !disabled && { 'aria-disabled': true })}
+      {...(soft && { 'aria-disabled': true })}
       disabled={disabled || loading}
       focusableWhenDisabled={loading && !disabled}
       className={button({

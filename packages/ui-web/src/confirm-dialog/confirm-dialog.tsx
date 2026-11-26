@@ -147,7 +147,9 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       <P.Content
         inline={inline}
         className={dialogPanel({ inline })}
-        initialFocus={inline && props.open !== undefined ? 'none' : '[data-reason] input'}
+        initialFocus={
+          inline && props.open !== undefined && !onOpenChange ? 'none' : '[data-reason] input'
+        }
       >
         <div className={header()}>
           <P.Title className={titleClass()}>{title}</P.Title>

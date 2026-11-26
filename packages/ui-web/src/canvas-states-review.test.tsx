@@ -135,3 +135,40 @@ describe('a confirm button that waits shows the loader', () => {
     expect(loader(screen.getByRole('button', { name: 'حذف' }))).not.toBeNull();
   });
 });
+
+// Review of the audit branch.
+describe('after review', () => {
+  it('a loading Button looks like any loading Button, softDisabled or not', () => {
+    render(
+      <>
+        <Button loading softDisabled>
+          أ
+        </Button>
+        <Button loading>ب</Button>
+      </>,
+    );
+    const [soft, plain] = screen.getAllByRole('button');
+    expect(soft?.className).toBe(plain?.className);
+    expect(soft?.getAttribute('aria-disabled')).toBe(plain?.getAttribute('aria-disabled'));
+  });
+
+  it('a synchronous onConfirm closes the dialog at once, with no loader', async () => {
+    const onConfirm = vi.fn();
+    render(
+      <Dialog
+        trigger={<Button>افتح</Button>}
+        title="حذف الصنف"
+        confirmLabel="حذف"
+        cancelLabel="إلغاء"
+        closeLabel="إغلاق"
+        onConfirm={onConfirm}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'افتح' }));
+    const confirm = await screen.findByRole('button', { name: 'حذف' });
+    await userEvent.click(confirm);
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(loader(confirm)).toBeNull();
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+  });
+});

@@ -33,7 +33,7 @@
     "inner-radius": {
       "$type": "dimension",
       "$value": "{radius.xs}",
-      "$description": "The sort button's focus corner and a loading line's.",
+      "$description": "The sort button's focus corner.",
       "$extensions": { "app.foxdrop": { "sides": ["web"] } }
     },
     "loading-line-height": {
