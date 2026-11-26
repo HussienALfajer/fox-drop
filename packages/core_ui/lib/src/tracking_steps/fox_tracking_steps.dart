@@ -50,14 +50,16 @@ class FoxTrackingSteps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FoxTheme.of(context);
+    final trackingSteps = FoxTheme.of(context).components.trackingSteps;
     return CustomPaint(
       painter: _Links(
         count: steps.length,
         current: current,
-        done: theme.colors.info,
-        later: theme.colors.borderStrong,
-        width: theme.input.focusWidth,
+        done: Color(trackingSteps.colorDone),
+        later: Color(trackingSteps.colorLaterLine),
+        width: trackingSteps.lineWidth,
+        dash: trackingSteps.dash,
+        centre: trackingSteps.circle / 2,
         direction: Directionality.of(context),
       ),
       child: Row(
@@ -100,22 +102,34 @@ class _Step extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final trackingSteps = theme.components.trackingSteps;
     final (fill, ink, labelInk) = done
-        ? (c.info, c.onInfo, c.info)
+        ? (
+            trackingSteps.colorDone,
+            trackingSteps.colorOnDone,
+            trackingSteps.colorDoneLabel,
+          )
         : now
-        ? (c.primary, c.onPrimary, c.primaryPressed)
-        : (c.surfaceRaised, c.onSurfaceMuted, c.onSurfaceMuted);
+        ? (
+            trackingSteps.colorCurrent,
+            trackingSteps.colorOnCurrent,
+            trackingSteps.colorCurrentLabel,
+          )
+        : (
+            trackingSteps.colorLater,
+            trackingSteps.colorOnLater,
+            trackingSteps.colorLaterLabel,
+          );
     final state = done ? doneLabel : (now ? nowLabel : null);
     Widget circle = DecoratedBox(
       key: FoxTrackingSteps.stepKey(n),
-      decoration: BoxDecoration(color: fill, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: Color(fill), shape: BoxShape.circle),
       child: SizedBox.square(
-        dimension: t.FoxSize.touchTarget,
+        dimension: trackingSteps.circle,
         child: Center(
           child: FoxIcon(
             step.icon,
-            color: ink,
+            color: Color(ink),
             style: done || now ? FoxIconStyle.bold : FoxIconStyle.linear,
           ),
         ),
@@ -124,8 +138,8 @@ class _Step extends StatelessWidget {
     if (!done && !now) {
       circle = CustomPaint(
         foregroundPainter: _DashedCircle(
-          colour: c.borderStrong,
-          width: theme.input.focusWidth,
+          colour: Color(trackingSteps.colorLaterLine),
+          width: trackingSteps.lineWidth,
         ),
         child: circle,
       );
@@ -139,12 +153,12 @@ class _Step extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             circle,
-            const SizedBox(height: t.FoxSpace.xs),
+            SizedBox(height: trackingSteps.labelGap),
             Text(
               step.label,
               textAlign: TextAlign.center,
               style: theme.text.caption.copyWith(
-                color: labelInk,
+                color: Color(labelInk),
                 fontWeight: now ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
@@ -189,29 +203,36 @@ class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  Widget _ring(Color colour, double width, double scale, double opacity) =>
-      IgnorePointer(
-        key: FoxTrackingSteps.pulseKey,
-        child: Opacity(
-          opacity: opacity,
-          child: Transform.scale(
-            scale: scale,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: colour, width: width),
-              ),
-              child: const SizedBox.square(dimension: t.FoxSize.touchTarget),
-            ),
+  Widget _ring(
+    Color colour,
+    double width,
+    double size,
+    double scale,
+    double opacity,
+  ) => IgnorePointer(
+    key: FoxTrackingSteps.pulseKey,
+    child: Opacity(
+      opacity: opacity,
+      child: Transform.scale(
+        scale: scale,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: colour, width: width),
           ),
+          child: SizedBox.square(dimension: size),
         ),
-      );
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final colour = theme.colors.primary;
-    final width = theme.input.focusWidth;
+    final trackingSteps = theme.components.trackingSteps;
+    final colour = Color(trackingSteps.colorPulse);
+    final width = trackingSteps.lineWidth;
+    final size = trackingSteps.circle;
     final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final easing = theme.easing;
     return Stack(
@@ -222,6 +243,7 @@ class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
           _ring(
             colour,
             width,
+            size,
             t.FoxMotion.pulseStillScale,
             t.FoxMotion.pulseStillOpacity,
           )
@@ -234,6 +256,7 @@ class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
                 return _ring(
                   colour,
                   width,
+                  size,
                   ui.lerpDouble(
                     t.FoxMotion.pulseScaleFrom,
                     t.FoxMotion.pulseScaleTo,
@@ -262,6 +285,8 @@ class _Links extends CustomPainter {
     required this.done,
     required this.later,
     required this.width,
+    required this.dash,
+    required this.centre,
     required this.direction,
   });
 
@@ -270,6 +295,10 @@ class _Links extends CustomPainter {
   final Color done;
   final Color later;
   final double width;
+  final double dash;
+
+  /// The circles' centre line, half a circle down.
+  final double centre;
   final TextDirection direction;
 
   @override
@@ -283,17 +312,16 @@ class _Links extends CustomPainter {
           : fromStart;
     }
 
-    const y = t.FoxSize.touchTarget / 2;
     for (var n = 0; n < count - 1; n++) {
       final paint = Paint()
         ..strokeWidth = width
         ..color = n < current ? done : later;
-      final from = Offset(x(n), y);
-      final to = Offset(x(n + 1), y);
+      final from = Offset(x(n), centre);
+      final to = Offset(x(n + 1), centre);
       if (n < current) {
         canvas.drawLine(from, to, paint);
       } else {
-        _dashed(canvas, from, to, paint);
+        _dashed(canvas, from, to, paint, dash);
       }
     }
   }
@@ -305,11 +333,12 @@ class _Links extends CustomPainter {
       old.done != done ||
       old.later != later ||
       old.direction != direction ||
-      old.width != width;
+      old.width != width ||
+      old.dash != dash ||
+      old.centre != centre;
 }
 
-void _dashed(Canvas canvas, Offset from, Offset to, Paint paint) {
-  const dash = t.FoxSpace.xxs;
+void _dashed(Canvas canvas, Offset from, Offset to, Paint paint, double dash) {
   final length = (to - from).distance;
   final step = (to - from) / length;
   for (var d = 0.0; d < length; d += dash * 2) {

@@ -6,19 +6,30 @@ import { Icon } from '../icon/icon';
 /** The states the stories show (R3). */
 export const STATES = ['default', 'preparing', 'late', 'readOnly', 'open'] as const;
 
+// The outline card's frame (card.json), as the Flutter twin's FoxCard; the
+// parts' spacing and inks are the order card's own.
 const card = formTv({
-  base: 'flex flex-col gap-sm rounded-lg bg-surface-raised p-md text-on-surface',
+  base: 'flex flex-col gap-(--fd-order-card-gap) rounded-(--fd-card-radius) p-(--fd-card-padding) text-(color:--fd-order-card-color-items)',
   variants: {
     late: {
-      true: 'bg-danger-subtle ring-2 ring-inset ring-danger',
-      false: 'ring-1 ring-inset ring-border',
+      true: 'bg-(--fd-card-danger-background) inset-ring-(length:--fd-card-danger-border-width) inset-ring-(--fd-card-danger-border)',
+      false:
+        'bg-(--fd-card-color-background) inset-ring-(length:--fd-card-border-width) inset-ring-(--fd-card-color-border)',
     },
   },
 });
 
+const numberType = 'text-phone-title font-bold tabular-nums';
+
 const opener = formTv({
-  base: `cursor-pointer rounded-xs text-phone-title font-bold tabular-nums text-accent underline-offset-4 hover:underline ${keyboardRing}`,
+  base: `cursor-pointer rounded-xs ${numberType} text-(color:--fd-order-card-color-opener) underline-offset-4 hover:underline ${keyboardRing}`,
 });
+
+const numberText = `${numberType} text-(color:--fd-order-card-color-number)`;
+
+const muted = 'text-phone-secondary text-(color:--fd-order-card-color-muted)';
+
+const captainLine = `m-none flex items-center gap-(--fd-order-card-line-gap) ${muted}`;
 
 export interface OrderCardProps {
   /** The card's name for screen readers: «طلب #10423». */
@@ -53,25 +64,27 @@ export function OrderCard(props: OrderCardProps) {
   const name = late && lateLabel ? `${label}، ${lateLabel}` : label;
   return (
     <article aria-label={name} className={card({ late })}>
-      <div className="flex items-center gap-xs">
+      <div className="flex items-center gap-(--fd-order-card-head-gap)">
         {/* The card holds a button of its own, so it cannot be one: its number opens it. */}
         {onOpen ? (
           <button type="button" onClick={onOpen} aria-label={name} className={opener()}>
             {heading}
           </button>
         ) : (
-          <span className="text-phone-title font-bold tabular-nums">{heading}</span>
+          <span className={numberText}>{heading}</span>
         )}
-        <span className="text-phone-secondary text-on-surface-muted">{since}</span>
+        <span className={muted}>{since}</span>
         <span className="flex-1" />
         {timer}
       </div>
       <p className="m-none text-phone-body">{items}</p>
-      <p className="m-none flex items-center gap-2xs text-phone-secondary text-on-surface-muted">
+      <p className={captainLine}>
         <Icon name="motorcycle" size="sm" />
         {captain}
       </p>
-      {badges ? <div className="flex flex-wrap gap-xs">{badges}</div> : null}
+      {badges ? (
+        <div className="flex flex-wrap gap-(--fd-order-card-head-gap)">{badges}</div>
+      ) : null}
       {action ? (
         // A grid cell stretches the button to the card's width.
         <div className="grid">

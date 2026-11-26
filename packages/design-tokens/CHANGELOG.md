@@ -8,6 +8,12 @@ Every token change bumps `version` in `package.json` and gets an entry here (arc
 - Semantic tokens of the same value are reused rather than new sizes: `bottom-navigation.item-size-selected` is `size.list-row` (56), `blocking-heads.sign.width` is `size.menu-min-width` (192, the drawing's board), `blocking-heads.sign.strings-height` is `size.control-compact` (40).
 - Web only: `blocking-heads.ticket.cut-offset` (`space.sm`, half the perforation's band) and `blocking-heads.sign.strings-lift` (`space.xs`); Flutter only: `blocking-heads.ticket.dash` (the web draws the browser's dashed border). No Flutter look change.
 
+## 0.19.0 (2026-11-26, slice D.W4b: the order parts on the web)
+
+- New component files, each read on both sides unless a token says `sides`: `countdown-ring` (ui-web `countdown-ring`, core_ui `timer`), `logo` and `order-row` (ui-web `logo`, `order-row`; core_ui `order_card`, where `FoxLogo` and `FoxOrderRow` live), `tracking-steps`, `timer` and `order-card`. Values are the ones the Flutter twins drew, except the parity gaps below. `timer.compact.min-height` and `order-card.color.opener` are web only (the Flutter timer has one density; the Flutter order card is one button).
+- New semantic tokens from the approved D.9 sheet and the Flutter ring: `size.countdown-ring` (96px, two touch targets) and `border-width.ring` (6px, the ring's track and arc); Dart `FoxSize.countdownRing`, `FoxBorderWidth.ring`.
+- Parity gaps fixed (the D.9 sheet where it shows the state, else the web): the Flutter order card spaces every part by one `order-card.gap` (12), as the sheet and the web (was 8, 4, 8 and 12); the Flutter timer is at least `size.step` (32) tall, as the web (its text and padding came to 31.4).
+
 ## 0.18.0 (2026-11-26, slice D.W3c: overlays, tabs and the icon on component tokens)
 
 - New component files, each read on both sides unless a token says `sides`: `dialog` (ui-web `dialog`, `confirm-dialog`, `overlay`; core_ui `dialog`), `toast` (`toaster`; `toast`), `banner` (`banner`, `banner-stack`; `banner`), `menu` (`menu`; `menu`), `tabs` (`tabs`; `tabs`) and `icon` (`icon`; `icon`, the three sizes); `blocking-banner`, `tooltip` and `drawer` are web only (every token `sides: ["web"]`, no Flutter folder). Web only besides: `banner.compact.*`, `menu.compact.item-height` and `tabs.compact.height` (Flutter has one density). Values are the ones either side used, except the parity gaps below.
@@ -19,6 +25,8 @@ Every token change bumps `version` in `package.json` and gets an entry here (arc
 - New file `date-field.json`, read by the web `date-field` and `time-field` and the Flutter `date_field` (the pickers' theme): `popup.radius` (`radius.lg`), `color.popup-background` (`surface-raised`), `color.today`, `color.day-selected` (`primary`), `color.on-day-selected` (`on-primary`) and `color.segment` (`surface`, the time boxes); web only `segment.min-size` (`size.selection`, 24, the WCAG target of a time box), `popup.padding` (`space.sm`), `popup.gap` (`space.xs`), `day.size` (`size.touch-target`), `color.day-hover` (`surface-hover`) and `color.day-outside` (`on-surface-muted`).
 - New file `country-sheet.json`, read by the web `country-sheet` and the Flutter `phone_field`: `row-height` (`size.touch-target`), `section-gap` (`space.sm`), `empty-padding-block` (`space.lg`), `color.code` and `color.empty` (`on-surface-muted`); web only `width` (`size.dialog`).
 - New file `code-preview.json`, read by the web `code-preview` and the Flutter `code_preview`: `avatar-size` (`size.icon-lg`), `mark-scale` (0.62, a `number`), `gap` (`space.xs`), `line-gap` (`space.2xs`), `bubble.radius` (`radius.lg`), `bubble.radius-tail` (`radius.xs`), `bubble.padding-inline` (`space.sm`), `bubble.padding-block` (`space.xs`), `color.avatar` (`primary`), `color.bubble` (`info-subtle`), `color.code` (`primary-pressed`) and `color.time` (`on-surface-muted`). Every value is the one the Flutter twin wrote by hand; the one Flutter look change is a fix: a selected today in the date picker now shows its number in `on-day-selected` (it was orange on the orange fill).
+
+> > > > > > > origin/main
 
 ## 0.16.0 (2026-11-26, slice D.W3b: data display on component tokens)
 

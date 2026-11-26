@@ -486,6 +486,54 @@ interface OrderCardProps {
   onOpen?: () => void;
 }
 
+interface CountdownRingProps {
+  /** Seconds left; the app ticks it. Red in the last ten. */
+  seconds: number;
+  /** The whole time, 45 seconds for a captain's offer. */
+  total: number;
+  /** The words after the number for screen readers. */
+  label: string;
+}
+
+interface LogoProps {
+  /** The restaurant's name; its first letter stands in for a missing image. */
+  name: string;
+  /** The logo's image. */
+  src?: string;
+}
+
+interface OrderRowProps {
+  restaurant: string;
+  date: string;
+  /** A StatusChip with the customer's wording. */
+  status: ReactNode;
+  /** A Money. */
+  total: ReactNode;
+  /** The restaurant's logo image; without it, its first letter. */
+  logo?: string;
+  /** The reorder action of a past order. */
+  trailing?: ReactNode;
+  /** Opens the order: the restaurant's name becomes its button. */
+  onPress?: () => void;
+}
+
+interface TrackingStep {
+  icon: IconName;
+  label: string;
+}
+
+interface TrackingStepsProps {
+  /** The list's name. */
+  label: string;
+  steps: TrackingStep[];
+  /** The current step; the steps' count marks every step done. */
+  current: number;
+  /** Read after a done step's name. */
+  doneLabel: string;
+  /** Read after the current step's name. */
+  nowLabel: string;
+}
+
 interface AmountLine {
   label: string;
   /** Minor units. */

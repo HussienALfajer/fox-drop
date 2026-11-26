@@ -69,29 +69,31 @@ class FoxOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final muted = theme.text.secondary.copyWith(
-      color: theme.colors.onSurfaceMuted,
-    );
+    final orderCard = theme.components.orderCard;
+    final mutedInk = Color(orderCard.colorMuted);
+    final muted = theme.text.secondary.copyWith(color: mutedInk);
     final action = this.action;
     final lateLabel = this.lateLabel;
+    // One gap between every part, as the D.9 sheet and the web (D.W4b).
+    final gap = SizedBox(height: orderCard.gap);
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         Wrap(
-          spacing: t.FoxSpace.xs,
-          runSpacing: t.FoxSpace.xs,
+          spacing: orderCard.headGap,
+          runSpacing: orderCard.headGap,
           crossAxisAlignment: WrapCrossAlignment.center,
           alignment: WrapAlignment.spaceBetween,
           children: [
             Wrap(
-              spacing: t.FoxSpace.xs,
+              spacing: orderCard.headGap,
               crossAxisAlignment: WrapCrossAlignment.end,
               children: [
                 Text(
                   '#$number',
                   style: theme.text.title.copyWith(
-                    color: theme.colors.onSurface,
+                    color: Color(orderCard.colorNumber),
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
@@ -101,33 +103,33 @@ class FoxOrderCard extends StatelessWidget {
             timer,
           ],
         ),
-        const SizedBox(height: t.FoxSpace.xs),
+        gap,
         Text(
           items,
-          style: theme.text.body.copyWith(color: theme.colors.onSurface),
+          style: theme.text.body.copyWith(color: Color(orderCard.colorItems)),
         ),
-        const SizedBox(height: t.FoxSpace.xxs),
+        gap,
         Row(
           children: [
             FoxIcon(
               t.FoxIcons.motorcycle,
               size: FoxIconSize.sm,
-              color: theme.colors.onSurfaceMuted,
+              color: mutedInk,
             ),
-            const SizedBox(width: t.FoxSpace.xxs),
+            SizedBox(width: orderCard.lineGap),
             Expanded(child: Text(captain, style: muted)),
           ],
         ),
         if (badges.isNotEmpty) ...[
-          const SizedBox(height: t.FoxSpace.xs),
+          gap,
           Wrap(
-            spacing: t.FoxSpace.xs,
-            runSpacing: t.FoxSpace.xs,
+            spacing: orderCard.headGap,
+            runSpacing: orderCard.headGap,
             children: badges,
           ),
         ],
         if (action != null) ...[
-          const SizedBox(height: t.FoxSpace.sm),
+          gap,
           FoxButton(label: action.label, onPressed: action.onPressed),
         ],
       ],
@@ -181,6 +183,7 @@ class FoxOrderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final orderRow = theme.components.orderRow;
     final trailing = this.trailing;
     final stacked = foxLargeText(context);
     return FoxCard(
@@ -195,7 +198,7 @@ class FoxOrderRow extends StatelessWidget {
           Row(
             children: [
               FoxLogo(name: restaurant, image: logo),
-              const SizedBox(width: t.FoxSpace.sm),
+              SizedBox(width: orderRow.gap),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,28 +206,28 @@ class FoxOrderRow extends StatelessWidget {
                     Text(
                       restaurant,
                       style: theme.text.subtitle.copyWith(
-                        color: theme.colors.onSurface,
+                        color: Color(orderRow.colorTitle),
                       ),
                     ),
                     Text(
                       date,
                       style: theme.text.secondary.copyWith(
-                        color: theme.colors.onSurfaceMuted,
+                        color: Color(orderRow.colorDate),
                       ),
                     ),
                     if (stacked) total,
                   ],
                 ),
               ),
-              if (!stacked) ...[const SizedBox(width: t.FoxSpace.xs), total],
+              if (!stacked) ...[SizedBox(width: orderRow.totalGap), total],
             ],
           ),
-          const SizedBox(height: t.FoxSpace.sm),
+          SizedBox(height: orderRow.gap),
           Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: t.FoxSpace.xs,
-            runSpacing: t.FoxSpace.xs,
+            spacing: orderRow.statusGap,
+            runSpacing: orderRow.statusGap,
             children: [status, ?trailing],
           ),
         ],
@@ -237,21 +240,20 @@ class FoxOrderRow extends StatelessWidget {
 /// on a tint when it has none (brand expression §5: never a drop, never a
 /// fake image).
 class FoxLogo extends StatelessWidget {
-  const FoxLogo({
-    super.key,
-    required this.name,
-    this.image,
-    this.size = t.FoxSize.touchTarget,
-  });
+  const FoxLogo({super.key, required this.name, this.image, this.size});
 
   final String name;
   final ImageProvider? image;
-  final double size;
+
+  /// Defaults to the logo's token, a touch target.
+  final double? size;
 
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final logo = theme.components.logo;
     final image = this.image;
+    final size = this.size ?? logo.size;
     return ExcludeSemantics(
       child: Container(
         width: size,
@@ -259,18 +261,25 @@ class FoxLogo extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: theme.colors.primarySubtle,
-          borderRadius: BorderRadius.circular(t.FoxRadius.md),
+          color: Color(logo.colorBackground),
+          borderRadius: BorderRadius.circular(logo.radius),
         ),
         child: image != null
             ? Image(image: image, fit: BoxFit.cover, width: size, height: size)
             : Text(
-                name.isEmpty ? '' : name.characters.first,
+                foxLogoInitial(name),
                 style: theme.text.title.copyWith(
-                  color: theme.colors.onPrimarySubtle,
+                  color: Color(logo.colorLetter),
                 ),
               ),
       ),
     );
   }
+}
+
+/// The letter that stands in for a missing logo: the trimmed name's first
+/// character, a Latin one in capitals (as the web's `logoInitial`).
+String foxLogoInitial(String name) {
+  final trimmed = name.trim();
+  return trimmed.isEmpty ? '' : trimmed.characters.first.toUpperCase();
 }
