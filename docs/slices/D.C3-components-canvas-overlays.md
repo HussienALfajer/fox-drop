@@ -40,3 +40,12 @@ Nothing.
 Nothing new.
 
 ## Notes for the next session
+
+Findings of 2026-11-27 (the session that built D.C1 and D.C2), read before the plan is refined:
+
+- **Two kinds of popup.** The dialog kind (`ConfirmDialog` and `BlockingBanner` on AlertDialog, `Drawer` and Sidebar's drawer on Dialog) takes the SDK content's `inline`: do as D.C1's `Dialog` (the plain dialog's parts when inline, `modal: false`, `closeOnOutsidePress: false`, `initialFocus: 'none'`, `inlineFrame`, the `inline` variants of `backdrop` and `dialogPanel` in `overlay/styles.ts`). The anchored kind (`Menu`, `Tooltip`, `Select`, `CountrySheet` on Combobox, `DateField` on DatePicker) has no `inline` in the SDK 0.1.0-beta.14 types or docs, only `container` (an element the popup renders into), `open`, `modal` (`'pointer' | boolean`, not Tooltip) and `dismissible`. Spike first: render into a container beside the trigger with `open`, `modal={false}`, `dismissible={false}`, and see whether the positioned popup takes room in its cell (it is placed from the trigger, so it may cover the next row); if not, reserve its height or draw it in flow. The canvas passes only JSON, so `container` is made inside the component (a ref to a box after the trigger), behind the one `inline` prop.
+- **TimeField has no popup** (`@ui-sdk/react/time-input` segments only; no `play` story): it leaves `LATER` and gets an ordinary board.
+- **Toaster:** the SDK's toast `Region` takes `container`; its stories seed toasts through `useToast` in `play`. Read `toast-parts.d.ts` and decide between a region drawn in place with seeded toasts and a part exposed on `FoxDrop.Toaster`.
+- **PhoneField** opens CountrySheet; **Sidebar** opens its Drawer (`portal`/`drawer` states): both follow their popup's choice.
+- The generator already draws a story with `play` open (`open: true, inline: true`) when the component declares `inline` in `docs.ts`, and captions it «بالإيماءة في Play» otherwise (`board.ts`); a component that gains `inline` needs its type in `docs.ts` and its prop list in `test/design-system.test.ts`.
+- After D.C3 merges, re-sync the Design System once (D.C1's `Dialog` `inline` and these), then republish the canvas with `ds/fox-drop/*` copied from it (`{artifact, path}`), not sent as files.
