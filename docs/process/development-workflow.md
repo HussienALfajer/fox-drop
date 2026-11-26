@@ -12,7 +12,7 @@ How FOX DROP is built: almost all code is written by Claude Code (Opus 5.5) unde
 4. **Small slices.** One slice per session, one slice per pull request, sized by §3.1.
 5. **Independent review.** The session that wrote the code never approves it: a fresh-context `reviewer` checks it against the slice file and the specs.
 6. **Compounding.** A correction made twice becomes a rule, a skill, a hook or a test. A bug found after a merge becomes a `REVIEW.md` item or a test in its fix's pull request.
-7. **Design before code.** A screen is coded only after the owner approved its drawing; a web component's Design System card is its drawing, and a Flutter twin's checkpoint is its parity sheet (architecture §9.9, T14). Screens come in UI batches after their API, drawn as working prototypes with an analysis and tested by the owner in Play before approval (T13).
+7. **Design before code.** A screen is coded only after the owner approved its drawing; a web component's board on "Fox Drop Components", generated from the bundle, is its drawing, and a Flutter twin's checkpoint is its parity sheet (architecture §9.9, T14, T15). Screens come in UI batches after their API, drawn as working prototypes with an analysis and tested by the owner in Play before approval (T13).
 
 ## 2. Risk tiers
 
@@ -42,7 +42,7 @@ Measured on 2026-11-25: slices of 115 to 320 files took 250 to 440 requests in o
 
 - A slice is at most about 25 hand-written files, or two layers of the build order (database and server, contract and clients, web, Flutter, end-to-end), whichever comes first. Generated files (the contract, the clients, `*.g.dart`), icons and image baselines do not count; they go in a commit of their own.
 - A behaviour that crosses more layers is split along the build order, each slice leaving `main` working: the server and its contract first, then each client.
-- A component batch's web side (`ui-web`) and Flutter side (`core_ui`) are separate slices (T14, owner 2026-11-26). The web side comes first and is the drawing: its components, synced to the Design System, are the cards the owner approves (architecture §9.9). Its Flutter twin is its own slice, planned when a screen needs it, on the same component tokens, and its checkpoint is its parity sheet (`pnpm parity`), with no second sheet. A hand-written sheet (`packages/design-tokens/src/*-sheet.ts`) is its own slice too, and only where a look must be settled before any code.
+- A component batch's web side (`ui-web`) and Flutter side (`core_ui`) are separate slices (T14, owner 2026-11-26). The web side comes first and is the drawing: its components, synced, get their boards on "Fox Drop Components" from the bundle, and those boards are what the owner approves (architecture §9.9, T15). Its Flutter twin is its own slice, planned when a screen needs it, on the same component tokens, and its checkpoint is its parity sheet (`pnpm parity`), with no second sheet. A component whose look must be settled before any code is drawn first on that canvas's proposals page with the owner; once coded, its drawing is deleted and its board generated.
 - The planner estimates by counting: the slice file's plan names, layer by layer, every file the slice creates or changes by hand, and the count is written next to the plan. A plan over the limit is split before the owner approves it, never during the build.
 
 ## 4. Definition of done
@@ -50,7 +50,7 @@ Measured on 2026-11-25: slices of 115 to 320 files took 250 to 440 requests in o
 - Every definition-of-done item the slice closes is met and proven by a test or a staging demonstration.
 - `--changed` green locally; CI's full check green; no new lint suppression without a written reason.
 - Money: integer minor units, balances only through the ledger, every journal balanced per currency, repeated requests and timer jobs post once.
-- UI: a screen built from its approved drawing, a web component approved as its Design System card, a Flutter twin checked on its parity sheet (T14); Arabic right to left, start and end, strings in translation files.
+- UI: a screen built from its approved drawing, a web component approved as its generated board (T15), a Flutter twin checked on its parity sheet (T14); Arabic right to left, start and end, strings in translation files.
 - No secrets or real personal data in code, fixtures, logs or screenshots.
 - `docs/code/<folder path>.md`, folder `CLAUDE.md` files and the slice file updated; the roadmap line ticked.
 

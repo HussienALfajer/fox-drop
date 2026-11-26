@@ -1,6 +1,6 @@
 # D.C4 The components canvas: the proposals page, the old boards out, decision T15
 
-Status: Planned · Tier: T2 · Branch: `docs/components-canvas-proposals`
+Status: Done · Tier: T2 · Branch: `docs/components-canvas-proposals`
 Spec: architecture §2, §9.8, §9.9 · Definition of done: workflow §4
 
 Part of the components canvas plan; its shared rules are in `D.C1-components-canvas-generator.md`. Last, after D.C3 is merged.
@@ -23,12 +23,15 @@ Tests written first (locked in the red phase): `test/components-canvas.test.ts` 
 
 ## Stopped at
 
-Planned.
+Done. After the merge, D.C3 publishes from a tree with both slices (the index is `Main.dc.html`).
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- Review:
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (a first run failed on Prettier of the locked test, formatted, no assertion changed).
+- `pnpm baselines`: «no image changed» (340 stories, phone and captain).
+- Unit tests: `test/components-canvas.test.ts` 16 of 16 (the new case: the six boards retired, the proposals page holds the note and a live proposal only, the index is `Main.dc.html`).
+- `components-canvas`, `--measure`, again, `components-canvas:check`: 42 boards written and checked; published to the canvas with the six old files and `Index.dc.html` removed.
+- Review (reviewer, T2, medium): round 1, two should-fix (§9's opening rules and the design-tokens icon sheet still said the old canvas) and two minor (step 3's "card or sheet"; kept entries without a page), all fixed; round 2, none. The icon sheet's retirement went to `docs/backlog.md`.
 
 ## Before deploying
 
@@ -39,3 +42,8 @@ Nothing.
 Nothing new.
 
 ## Notes for the next session
+
+- **Approvals checked before the delete:** `Main` («Icons — batch 1») and `Buttons` in `docs/slice-notes.md` (2026-11-23), `States` there too (system B, 2026-11-24), `Forms` in D.8 (2026-11-23), `Data` in D.9 (2026-11-24), `Overlays` in D.10 (2026-11-24).
+- **The index is `Main.dc.html`** (the Design type names the entry so); `Index.dc.html` leaves the canvas with the six retired boards.
+- **Proposals kept:** a board on the proposals page that is not retired stays (a component drawn there before it is coded); the plan's "no board" holds for today's canvas, which has none.
+- **The note** is a sticky (no `kind`; the Design type's `title1` is for a row of boards).

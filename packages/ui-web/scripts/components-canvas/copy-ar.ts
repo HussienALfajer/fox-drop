@@ -20,6 +20,10 @@ export const PAGES = {
   proposals: 'المكوّنات المقترحة',
 };
 
+/** The proposals page's note: a proposal's life cycle (decision T15). */
+export const PROPOSALS_NOTE =
+  'هنا يُرسم المكوّن المقترح قبل أن يوجد في الكود: يرسمه Claude مع المالك من نظام التصميم وحده، ويوافق عليه المالك، ثم يُبنى في packages/ui-web. بعد بنائه ومزامنته تُحذف رسمته من هنا، وتصير لوحته المولَّدة من الكود في «مكوّنات فوكس دروب» هي الرسمة المعتمدة.';
+
 /** The index board (index.ts). */
 export const INDEX = {
   kicker: 'نظام تصميم فوكس دروب · مكوّنات الويب',

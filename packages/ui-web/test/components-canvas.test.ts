@@ -7,8 +7,19 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildBundle, COMPONENTS } from '../scripts/bundle.ts';
 import { caption } from '../scripts/components-canvas/board.ts';
-import { BOARDS, buildCanvas, type Built, groupOf } from '../scripts/components-canvas/canvas.ts';
-import { COMPONENTS as COPY, GROUPS, TEXT } from '../scripts/components-canvas/copy-ar.ts';
+import {
+  BOARDS,
+  buildCanvas,
+  type Built,
+  groupOf,
+  RETIRED,
+} from '../scripts/components-canvas/canvas.ts';
+import {
+  COMPONENTS as COPY,
+  GROUPS,
+  PROPOSALS_NOTE,
+  TEXT,
+} from '../scripts/components-canvas/copy-ar.ts';
 import { classesOf, forcedStates } from '../scripts/components-canvas/states.ts';
 import {
   readStories,
@@ -16,7 +27,15 @@ import {
   type ComponentStories,
 } from '../scripts/components-canvas/stories.ts';
 
-const OLD = { 'Main.dc.html': { x: 0, y: 0, w: 1280, h: 3910, title: 'Icons — batch 1' } };
+// The six hand-drawn boards of the old "Component proposals" canvas, as
+// published on its proposals page, and one proposal drawn there since.
+const OLD = Object.fromEntries(
+  RETIRED.map((file, at) => [
+    file,
+    { x: at * 1760, y: 0, w: 1680, h: 3000, title: file, page: 'proposals' },
+  ]),
+);
+const PROPOSAL = { x: 0, y: 0, w: 1440, h: 2000, title: 'A proposal', page: 'proposals' };
 
 let built: Built;
 let bundleCss: string;
@@ -26,7 +45,11 @@ beforeAll(async () => {
   bundleCss = (await buildBundle()).css;
   built = await buildCanvas({
     names: BOARDS,
-    current: { title: 'Component proposals', boards: OLD, order: ['Main.dc.html'] },
+    current: {
+      title: 'Component proposals',
+      boards: { ...OLD, 'Proposal.dc.html': PROPOSAL },
+      order: [...RETIRED, 'Proposal.dc.html'],
+    },
     config: { system: 'https://example.test/system', created: '2026-11-26T00:00:00Z' },
     bundleCss,
     now: '2026-11-26T00:00:00Z',
@@ -234,10 +257,10 @@ describe('the components canvas', () => {
   });
 
   it('links every board from the index, and every link reaches a board', () => {
-    const html = built.files.get('Index.dc.html') ?? '';
+    const html = built.files.get('Main.dc.html') ?? '';
     const links = [...html.matchAll(/href="([\w.]+)\.dc\.html"/g)].map((m) => m[1]);
     expect([...links].sort()).toEqual([...BOARDS].sort());
-    expect(built.index.boards?.['Index.dc.html']?.page).toBe('components');
+    expect(built.index.boards?.['Main.dc.html']?.page).toBe('components');
   });
 
   it('titles each group with its count, above its boards', () => {
@@ -284,7 +307,32 @@ describe('the components canvas', () => {
     expect(index.title).toBe('Fox Drop Components');
     expect(index.pages?.map((p) => p.id)).toEqual(['components', 'proposals']);
     for (const name of BOARDS) expect(index.boards?.[`${name}.dc.html`]?.page).toBe('components');
-    expect(index.boards?.['Main.dc.html']?.page).toBe('proposals');
+    expect(index.boards?.['Main.dc.html']?.page).toBe('components');
     expect(new Set(index.order)).toEqual(new Set(Object.keys(index.boards ?? {})));
+  });
+
+  it('retires the six hand-drawn boards and keeps the proposals page to its note and live proposals', () => {
+    const { index, files } = built;
+    expect(RETIRED).toEqual([
+      'Main.dc.html',
+      'Buttons.dc.html',
+      'States.dc.html',
+      'Forms.dc.html',
+      'Data.dc.html',
+      'Overlays.dc.html',
+    ]);
+    const generated = new Set(['Main.dc.html', ...BOARDS.map((name) => `${name}.dc.html`)]);
+    for (const [file, entry] of Object.entries(index.boards ?? {})) {
+      if (generated.has(file)) expect(entry.page, file).toBe('components');
+      else expect([file, entry]).toEqual(['Proposal.dc.html', PROPOSAL]);
+    }
+    for (const file of RETIRED.filter((f) => f !== 'Main.dc.html')) {
+      expect(index.boards?.[file], file).toBeUndefined();
+      expect(files.has(file), file).toBe(false);
+    }
+    expect(files.get('Main.dc.html')).not.toContain('Icons — batch 1');
+    const proposals = Object.values(index.notes ?? {}).filter((n) => n.page === 'proposals');
+    expect(proposals.map((n) => (n as { text?: string }).text)).toEqual([PROPOSALS_NOTE]);
+    expect(PROPOSALS_NOTE).toMatch(/[؀-ۿ]/);
   });
 });
