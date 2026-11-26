@@ -1,24 +1,12 @@
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxGroup,
-  ComboboxGroupLabel,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxTrigger,
-} from '@ui-sdk/react/combobox';
 import { Field as SdkField } from '@ui-sdk/react/field';
 import { Input } from '@ui-sdk/react/input';
 import { useState, type KeyboardEvent } from 'react';
+import { CountrySheet } from '../country-sheet/country-sheet';
 import { Field } from '../field/field';
 import { InputBox } from '../field/input-box';
 import { formTv, inputClass, keyboardRing, type Density } from '../field/styles';
 import { Icon } from '../icon/icon';
-import { SIDE_OFFSET } from '../select/menu';
-import type { CountryName } from './countries.generated';
-import { countryName, countrySections } from './country-list';
+import { countryName } from './country-list';
 import { callingCode, readPhone, type PhoneReading } from './phone';
 
 /** The states the stories show (R3). Hover and focus are driven in the browser by the gate. */
@@ -70,32 +58,6 @@ const clearCircle = formTv({
     'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
   ],
 });
-
-// The country list: the listbox of the select (`select/menu.tsx`) with a
-// search field on top and named sections (D.11 item 5).
-const listTv = formTv({
-  slots: {
-    content: [
-      'z-10 w-(--fd-size-dialog) max-w-(--available-width) max-h-(--available-height) overflow-y-auto p-2xs outline-hidden',
-      'rounded-(--fd-input-area-radius) bg-(--fd-input-color-background) text-(color:--fd-input-color-text)',
-      'shadow-(--fd-elevation-medium)',
-    ],
-    search: [
-      'mb-2xs flex min-h-(--fd-input-compact-height) items-center gap-(--fd-input-gap) rounded-full px-sm',
-      'inset-ring-1 inset-ring-(--fd-input-color-border) focus-within:inset-ring-2 focus-within:inset-ring-(--fd-input-color-border-focus)',
-    ],
-    group: 'flex flex-col',
-    label: 'px-sm pt-xs pb-2xs text-phone-caption font-medium text-(color:--fd-input-color-hint)',
-    item: [
-      'flex min-h-(--fd-input-check-target) cursor-pointer items-center justify-between gap-(--fd-input-gap)',
-      'rounded-md px-sm text-phone-body outline-hidden',
-      'data-highlighted:bg-surface-hover active:bg-surface-pressed data-selected:font-medium',
-    ],
-    code: 'text-(color:--fd-input-color-hint) tabular-nums',
-    empty: 'px-sm py-sm text-phone-secondary text-(color:--fd-input-color-hint)',
-  },
-});
-const list = listTv();
 
 /** The words of each problem, from the app's strings (D.11 item 6). */
 export interface PhoneMessages {
@@ -197,8 +159,6 @@ export function PhoneField(props: PhoneFieldProps) {
   const [text, setText] = useState(start?.text ?? '');
   const [judged, setJudged] = useState(false);
   const [switchedFrom, setSwitchedFrom] = useState<string | undefined>(undefined);
-  const [query, setQuery] = useState('');
-  const [chipButton, setChipButton] = useState<HTMLButtonElement | null>(null);
   const country = props.country ?? ownCountry;
   const reading = readPhone(text, country);
 
@@ -250,32 +210,6 @@ export function PhoneField(props: PhoneFieldProps) {
     report(shown, read);
   };
 
-  const sections = countrySections(query, lastUsedCountry);
-  const option = (entry: CountryName) => {
-    const dial = ['+', entry.code].join('');
-    return (
-      <ComboboxItem
-        key={entry.iso}
-        value={entry.iso}
-        label={entry.ar}
-        data-value={entry.iso}
-        className={list.item()}
-      >
-        <span>{entry.ar}</span>
-        <bdi dir="ltr" className={list.code()}>
-          {dial}
-        </bdi>
-      </ComboboxItem>
-    );
-  };
-  const group = (title: string, entries: CountryName[]) =>
-    entries.length > 0 && (
-      <ComboboxGroup className={list.group()}>
-        <ComboboxGroupLabel className={list.label()}>{title}</ComboboxGroupLabel>
-        {entries.map(option)}
-      </ComboboxGroup>
-    );
-
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== 'Enter') return;
     event.preventDefault();
@@ -301,19 +235,18 @@ export function PhoneField(props: PhoneFieldProps) {
         start={
           // Its own Field: the chip is a second control, named by `chipLabel`.
           <SdkField className="contents" {...(locked && { disabled: true })}>
-            <Combobox
+            <CountrySheet
               value={country}
-              filter={false}
-              query={query}
-              onQueryChange={setQuery}
+              onValueChange={pickCountry}
+              {...(lastUsedCountry && { lastUsed: lastUsedCountry })}
               {...(locked && { disabled: true })}
-              onOpenChange={(open: boolean) => open && setQuery('')}
-              onOpenChangeComplete={(open: boolean) => !open && chipButton?.focus()}
-              onValueChange={(next: string | null) => {
-                if (next && next !== country) pickCountry(next);
-              }}
+              searchLabel={props.searchLabel}
+              pinnedLabel={props.pinnedLabel}
+              lastUsedLabel={props.lastUsedLabel}
+              allLabel={props.allLabel}
+              emptyLabel={props.emptyLabel}
             >
-              <ComboboxTrigger ref={setChipButton} className={chip({ class: 'group' })}>
+              <CountrySheet.Trigger className={chip({ class: 'group' })}>
                 {/* Named by its content, not aria-label: the full sentence
                     for screen readers, the letters and code for the eye
                     (axe's label-content-name-mismatch). */}
@@ -327,31 +260,8 @@ export function PhoneField(props: PhoneFieldProps) {
                     <Icon name="chevron-down" size="sm" />
                   </span>
                 </span>
-              </ComboboxTrigger>
-              <ComboboxContent
-                anchor={chipButton}
-                sideOffset={SIDE_OFFSET}
-                align="start"
-                dir="rtl"
-                className={list.content()}
-              >
-                <div className={list.search()}>
-                  <Icon name="search" size="sm" />
-                  <ComboboxInput
-                    autoFocus
-                    aria-label={props.searchLabel}
-                    placeholder={props.searchLabel}
-                    className={inputClass()}
-                  />
-                </div>
-                <ComboboxEmpty className={list.empty()}>{props.emptyLabel}</ComboboxEmpty>
-                <ComboboxList>
-                  {group(props.pinnedLabel, sections.pinned)}
-                  {group(props.lastUsedLabel, sections.lastUsed)}
-                  {group(props.allLabel, sections.all)}
-                </ComboboxList>
-              </ComboboxContent>
-            </Combobox>
+              </CountrySheet.Trigger>
+            </CountrySheet>
           </SdkField>
         }
         end={
