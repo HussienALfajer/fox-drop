@@ -72,6 +72,8 @@ describe('Tabs', () => {
 
   it('shows the selected tab count in red, the others in blue', () => {
     render(<Tabs label="تفاصيل الطلب" items={items} defaultValue="notes" />);
-    expect(screen.getByText('2').closest('[class*="bg-"]')?.className).toContain('bg-danger');
+    expect(screen.getByText('2').closest('[class*="bg-"]')?.className).toContain(
+      'bg-(--fd-count-badge-danger-background)',
+    );
   });
 });

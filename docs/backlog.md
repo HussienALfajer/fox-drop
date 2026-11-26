@@ -18,6 +18,9 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 
 ## Follow-ups
 
+- **The D.W3c overnight decisions and open gaps** (`slices/D.W3c-tokens-overlays-tabs-icon.md`, «Gaps on the sheets»): the gaps settled by the D.10 sheet or the web for the owner to confirm on the before and after sheets, and the ones left (the dialog's × and the toast's × keep 48 targets, the confirm action not greyed before a reason, one toast at a time in Flutter, the unselected count's colour against the sheet).
+- **`core_auth` «retries a refresh that got no answer» fails under load** (D.W3c, `node scripts/verify.mjs --changed`): it failed once while the other Flutter packages ran in parallel and passes alone; the retry waits on real time. Give the session a fake clock or async timers in the test.
+
 - **Numeric classes outside D.W1's list** (D.W1 review): ui-web still writes `ring-1`, `ring-2`, `ring-offset-2` (button, card, count badge, data table), `underline-offset-4` and `z-10`; `fd/component-design` (`eslint.web.mjs`) checks only the plan's list. Add these utilities to `numericValue` with tokens of the same value (`border-width.*`, `layer.*`). Also the scale steps `scale-96` and `scale-100` in `overlay/styles.ts`.
 - **The D.W3b overnight decisions** (`slices/D.W3b-tokens-data-display.md`, «Decisions taken overnight»): the count badge's size and corner, the list row's 56 and 40, the empty state's 120 drop, the chip's 32, the summary's gap and the card's focus ring outside its outline, each a parity gap settled by the D.9 sheet or the web, for the owner to confirm on the published before and after sheets.
 - **A shadow type for component files** (D.W3b): `src/generate.ts` writes a component's `shadow` token as `NaN` in Dart, so the card's offset shadow still reads the foundation `elevation.offset`. Add the type, then `card.shadow`.
