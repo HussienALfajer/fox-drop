@@ -298,6 +298,8 @@ describe('the component docs', () => {
     required: true,
     disabled: true,
     density: true,
+    open: true,
+    inline: true,
   } satisfies Record<Keys<PhoneFieldProps>, true>;
   const codeFieldProps = {
     label: true,
@@ -326,6 +328,8 @@ describe('the component docs', () => {
     required: true,
     disabled: true,
     density: true,
+    open: true,
+    inline: true,
   } satisfies Record<Keys<SelectProps>, true>;
   const checkboxProps = {
     label: true,
@@ -558,6 +562,7 @@ describe('the component docs', () => {
       text: true,
       actionLabel: true,
       onEnable: true,
+      inline: true,
     } satisfies Record<Keys<BlockingBannerProps>, true>,
     DialogProps: {
       trigger: true,
@@ -590,6 +595,7 @@ describe('the component docs', () => {
       cancelLabel: true,
       closeLabel: true,
       onConfirm: true,
+      inline: true,
     } satisfies Record<Keys<ConfirmDialogProps>, true>,
     DrawerProps: {
       trigger: true,
@@ -600,11 +606,14 @@ describe('the component docs', () => {
       side: true,
       headerAction: true,
       children: true,
+      inline: true,
     } satisfies Record<Keys<DrawerProps>, true>,
     ToasterProps: {
       label: true,
       closeLabel: true,
       max: true,
+      toasts: true,
+      inline: true,
       children: true,
     } satisfies Record<Keys<ToasterProps>, true>,
     MenuProps: {
@@ -613,11 +622,15 @@ describe('the component docs', () => {
       triggerIcon: true,
       items: true,
       density: true,
+      open: true,
+      inline: true,
     } satisfies Record<Keys<MenuProps>, true>,
     TooltipProps: {
       content: true,
       children: true,
       side: true,
+      open: true,
+      inline: true,
     } satisfies Record<Keys<TooltipProps>, true>,
     TabsProps: {
       label: true,
@@ -650,6 +663,7 @@ describe('the component docs', () => {
       open: true,
       onOpenChange: true,
       closeLabel: true,
+      inline: true,
     } satisfies Record<Keys<SidebarProps>, true>,
   };
 

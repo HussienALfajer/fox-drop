@@ -113,6 +113,13 @@ export interface PhoneFieldProps {
   required?: boolean;
   disabled?: boolean;
   density?: Density;
+  /** The country list, open. */
+  open?: boolean;
+  /**
+   * Draws the open country list under the field in the page's flow, beside the
+   * page (the components canvas).
+   */
+  inline?: boolean;
 }
 
 function problemText(reading: PhoneReading, messages: PhoneMessages): string | undefined {
@@ -153,7 +160,9 @@ function fromE164(value: string): { country: string; text: string } | undefined 
 export function PhoneField(props: PhoneFieldProps) {
   const { label, optionalLabel, hint, error, messages, chipLabel, placeholder } = props;
   const { value, defaultValue, onValueChange, onSubmit, onCountryChange, lastUsedCountry } = props;
-  const { name, required, disabled, busy, density } = props;
+  const { name, required, disabled, busy, density, open, inline = false } = props;
+  // Inline, the country list draws in a box under the pill, not inside it.
+  const [below, setBelow] = useState<HTMLElement | null>(null);
   const start = fromE164(value ?? defaultValue ?? '');
   const [ownCountry, setOwnCountry] = useState(start?.country ?? props.defaultCountry ?? 'SY');
   const [text, setText] = useState(start?.text ?? '');
@@ -245,6 +254,8 @@ export function PhoneField(props: PhoneFieldProps) {
               lastUsedLabel={props.lastUsedLabel}
               allLabel={props.allLabel}
               emptyLabel={props.emptyLabel}
+              {...(open !== undefined && { open })}
+              {...(inline && { inline: true, container: below })}
             >
               <CountrySheet.Trigger className={chip({ class: 'group' })}>
                 {/* Named by its content, not aria-label: the full sentence
@@ -308,6 +319,7 @@ export function PhoneField(props: PhoneFieldProps) {
           {...(required && { required })}
         />
       </InputBox>
+      {inline && <div ref={setBelow} />}
       {switchedName && !shownError && (
         <span className="flex items-center gap-2xs text-phone-caption text-info">
           <Icon name="info" size="sm" />

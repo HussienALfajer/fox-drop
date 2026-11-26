@@ -30,12 +30,30 @@ type Markup = (element: unknown) => string;
 /** The inputs a function prop is called with, by prop name: its results cross as a table. */
 type Samples = Record<string, unknown[]>;
 
+/** A sample called with more than one argument (PhoneField's `chipLabel(name, code)`). */
+class Spread {
+  readonly args: unknown[];
+  constructor(args: unknown[]) {
+    this.args = args;
+  }
+}
+
+/** The phone field's helpers, loaded with the stories (`src/phone-field/`). */
+interface PhoneLib {
+  countryName: (iso: string) => { ar: string } | undefined;
+  callingCode: (iso: string) => string | undefined;
+  readPhone: (input: string, picked: string) => { country: string };
+}
+
 /**
  * The props that are functions giving content, and what they are called
  * with, by component (read from their types in docs.ts): a DataTable's cells,
- * row keys and names over its rows; a BannerStack's counter over the hidden counts.
+ * row keys and names over its rows; a BannerStack's counter over the hidden
+ * counts; a PhoneField's chip name over the countries its story shows (Syria
+ * and Turkey first) and its messages over what a person may type in Play. A
+ * call the table lacks gives nothing, never a Promise React cannot draw.
  */
-const CALLS: Record<string, (args: Record<string, unknown>) => Samples> = {
+const CALLS: Record<string, (args: Record<string, unknown>, phone: PhoneLib) => Samples> = {
   DataTable: (args) => {
     const rows = (args['rows'] as unknown[] | undefined) ?? [];
     return { cell: rows, rowKey: rows, rowLabel: rows };
@@ -43,6 +61,25 @@ const CALLS: Record<string, (args: Record<string, unknown>) => Samples> = {
   BannerStack: (args) => {
     const banners = (args['banners'] as unknown[] | undefined) ?? [];
     return { moreLabel: banners.map((_, i) => i + 1) };
+  },
+  PhoneField: (args, phone) => {
+    const isos = new Set(['SY', 'TR']);
+    for (const key of ['country', 'defaultCountry', 'lastUsedCountry']) {
+      if (typeof args[key] === 'string') isos.add(args[key]);
+    }
+    for (const key of ['value', 'defaultValue']) {
+      const value = args[key];
+      if (typeof value === 'string' && value) isos.add(phone.readPhone(value, 'SY').country);
+    }
+    const names = [...isos].map((iso) => phone.countryName(iso)?.ar ?? iso);
+    return {
+      chipLabel: [...isos].map(
+        (iso, i) => new Spread([names[i], ['+', phone.callingCode(iso) ?? ''].join('')]),
+      ),
+      missingDigits: Array.from({ length: 12 }, (_, i) => i + 1),
+      notMobilePrefix: Array.from({ length: 10 }, (_, i) => String(i)),
+      switched: names,
+    };
   },
 };
 
@@ -56,7 +93,24 @@ export interface StoryInfo {
   render: boolean;
   /** What it mounts when not its board's component (`BlockingHeads.ShopSign`). */
   component?: string;
+  /** The story's `parameters.canvas`: how its board draws a `play` it cannot run. */
+  canvas?: CanvasParameters;
 }
+
+/**
+ * A story's `parameters.canvas`. By default a `play` opens its popup, drawn open
+ * in place (`inline`) when the component can be. `open: false` says the play
+ * opens nothing (it types into a field); `gesture: true` that the play does
+ * more than the drawing shows (types a reason after opening), said in its caption.
+ */
+export interface CanvasParameters {
+  open?: boolean;
+  gesture?: boolean;
+}
+
+/** The story opens its popup (`play`), unless its parameters say otherwise. */
+export const opens = (info: StoryInfo | undefined) =>
+  info?.play === true && info.canvas?.open !== false;
 
 export interface ComponentStories {
   name: string;
@@ -120,11 +174,18 @@ export function serialise(
     // results for the inputs the story gives it, looked up on the canvas.
     const known = samples[where.split('.').at(-1) ?? ''];
     if (!known) return { $fn: true };
-    const fn = value as (input: unknown) => unknown;
+    const fn = value as (...input: unknown[]) => unknown;
+    // Keyed as the canvas looks it up: the argument, or the list of them.
     return {
       $memo: known.map((input, i) => [
-        JSON.stringify(input),
-        serialise(fn(input), names, `${where}(${String(i)})`, markup, samples) ?? null,
+        JSON.stringify(input instanceof Spread ? input.args : input),
+        serialise(
+          input instanceof Spread ? fn(...input.args) : fn(input),
+          names,
+          `${where}(${String(i)})`,
+          markup,
+          samples,
+        ) ?? null,
       ]),
     };
   }
@@ -200,6 +261,7 @@ interface StoryExport {
   args?: Record<string, unknown>;
   play?: unknown;
   render?: unknown;
+  parameters?: { canvas?: CanvasParameters };
 }
 
 interface Element {
@@ -213,11 +275,14 @@ interface Element {
  * it returns, with its props, so a story that frames its component or draws one
  * part keeps its look. None when `render` only wraps state in a component of
  * the story's own (its args are then the story) or uses hooks outside React.
+ * A wrapper of the story's own given the meta component's props (Sidebar's
+ * phone drawer, which holds its open state) draws the meta component with them.
  */
 function drawnBy(
   render: unknown,
   args: Record<string, unknown>,
   names: Map<unknown, string>,
+  meta: { name: string | undefined; type: unknown },
 ): { name: string; type: unknown; props: Record<string, unknown> } | 'args' | undefined {
   if (typeof render !== 'function') return undefined;
   let root: unknown;
@@ -230,8 +295,12 @@ function drawnBy(
   // counter): the args are the story.
   const top = root as Element | null;
   const props = top?.props ?? {};
+  const own = typeof top?.type === 'function' && !names.get(top.type);
+  if (own && Object.keys(args).length === 0 && Object.keys(props).length > 0 && meta.name) {
+    return { name: meta.name, type: meta.type, props };
+  }
   if (Object.entries(args).every(([key, value]) => props[key] === value)) {
-    if (!names.get(top?.type)) return 'args';
+    if (own) return 'args';
   }
   const queue: unknown[] = [root];
   while (queue.length > 0) {
@@ -255,6 +324,10 @@ export async function readStories(
 ): Promise<ComponentStories[]> {
   const library = (await server.ssrLoadModule('/src/index.ts')) as Record<string, unknown>;
   const names = namesOf(library);
+  const phone = {
+    ...(await server.ssrLoadModule('/src/phone-field/country-list.ts')),
+    ...(await server.ssrLoadModule('/src/phone-field/phone.ts')),
+  } as unknown as PhoneLib;
   // A child from outside the library is drawn inside the component it came from
   // (a Field's input takes the field's disabled), then only the child's markup
   // is kept. Vite leaves React to Node, so this is the stories' own React.
@@ -292,11 +365,14 @@ export async function readStories(
       const value = exported as StoryExport;
       const merged = { ...metaArgs, ...value.args };
       const where = `${name}.${story}`;
-      const result = drawnBy(value.render ?? meta.render, merged, names);
+      const result = drawnBy(value.render ?? meta.render, merged, names, {
+        name: metaName,
+        type: meta.component,
+      });
       const drawn = typeof result === 'object' ? result : undefined;
       const component = drawn?.name ?? metaName;
       const props = drawn?.props ?? merged;
-      const samples = CALLS[name]?.(props) ?? {};
+      const samples = CALLS[name]?.(props, phone) ?? {};
       stories[story] = {
         args: drawn
           ? serialiseProps(props, names, where, markupIn(drawn.type, props), samples)
@@ -304,6 +380,7 @@ export async function readStories(
         play: typeof value.play === 'function',
         render: typeof value.render === 'function' && result === undefined,
         ...(component && component !== name && { component }),
+        ...(value.parameters?.canvas && { canvas: value.parameters.canvas }),
       };
     }
     const states = [...(module.STATES ?? [])];

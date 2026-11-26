@@ -19,17 +19,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Shown from the start (`toasts`), so the components canvas draws them too; the
+// button shows them again.
 const make = (toasts: ToastOptions[], shown = true): Story => ({
+  ...(shown && { args: { toasts } }),
   render: (args) => (
     <Toaster {...args}>
       <Show toasts={toasts} />
     </Toaster>
   ),
-  ...(shown && {
-    play: ({ canvasElement }) => {
-      canvasElement.querySelector<HTMLButtonElement>('button')!.click();
-    },
-  }),
 });
 
 // Review copy.

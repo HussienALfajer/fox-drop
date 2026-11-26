@@ -12,7 +12,6 @@ import {
   buildCanvas,
   type Built,
   groupOf,
-  LATER,
   RETIRED,
 } from '../scripts/components-canvas/canvas.ts';
 import {
@@ -194,9 +193,67 @@ describe('the components canvas', () => {
     expect(Buffer.byteLength(sheet)).toBeLessThan(60 * 1024);
   });
 
-  it('has a board for every component but the popups D.C3 opens', () => {
-    expect([...BOARDS, ...LATER].sort()).toEqual([...COMPONENTS].sort());
-    expect(BOARDS.filter((name) => LATER.has(name))).toEqual([]);
+  it('has a board for every component of the bundle', () => {
+    expect([...BOARDS].sort()).toEqual([...COMPONENTS].sort());
+  });
+
+  /** The markup of one state's cell. */
+  const cellOf = (html: string, story: string) => {
+    const at = html.indexOf(`data-cell="${story}"`);
+    const next = html.indexOf('data-cell="', at + 1);
+    return html.slice(at, next === -1 ? undefined : next);
+  };
+
+  it('draws every popup open inside its cell, and a gesture at rest', () => {
+    const popups = [
+      'Dialog',
+      'ConfirmDialog',
+      'Drawer',
+      'Menu',
+      'Select',
+      'Tooltip',
+      'CountrySheet',
+      'DateField',
+      'PhoneField',
+      'Sidebar',
+    ];
+    for (const name of popups) {
+      const c = stories.find((s) => s.name === name);
+      const html = board(name);
+      const vals = renderVals(html) as { v: Record<string, unknown> };
+      let open = 0;
+      for (const story of new Set(Object.values(c?.cells ?? {}))) {
+        const info = c?.stories[story];
+        const cell = cellOf(html, story);
+        const pair = /open="\{\{ v\.(p\d+) \}\}" inline="\{\{ v\.(p\d+) \}\}"/.exec(cell);
+        if (info?.play && info.canvas?.open !== false) {
+          open += 1;
+          expect(pair, `${name} ${story}`).not.toBeNull();
+          expect([vals.v[pair?.[1] ?? ''], vals.v[pair?.[2] ?? '']], `${name} ${story}`).toEqual([
+            true,
+            true,
+          ]);
+        } else {
+          expect(pair, `${name} ${story}`).toBeNull();
+        }
+        if (info?.canvas?.gesture) expect(cell, `${name} ${story}`).toContain(TEXT.inPlay);
+      }
+      expect(open, name).toBeGreaterThan(0);
+    }
+    // Typing in the field is a gesture: the country list stays closed.
+    expect(cellOf(board('PhoneField'), 'Invalid')).toContain(TEXT.inPlay);
+  });
+
+  it('draws the page-wide overlays in their cells', () => {
+    for (const name of ['BlockingBanner', 'Toaster']) {
+      const html = board(name);
+      const vals = renderVals(html) as { v: Record<string, unknown> };
+      const inline = [...html.matchAll(/inline="\{\{ v\.(p\d+) \}\}"/g)];
+      expect(inline.length, name).toBeGreaterThan(0);
+      for (const m of inline) expect(vals.v[m[1] ?? ''], name).toBe(true);
+    }
+    // The seeded toasts cross to the canvas.
+    expect(board('Toaster')).toContain('تعذّر الحفظ');
   });
 
   it('links every board from the index, and every link reaches a board', () => {

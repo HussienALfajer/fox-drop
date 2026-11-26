@@ -8,7 +8,7 @@
 // its changes in the board's state: «إعادة الضبط» goes back to Tweaks.
 import { typesDoc } from '../docs.ts';
 import { esc, js, type Mounts, type TweakDef } from './page.ts';
-import type { ComponentStories, Value } from './stories.ts';
+import { type ComponentStories, opens, type Value } from './stories.ts';
 
 export interface Control {
   prop: string;
@@ -25,6 +25,8 @@ export interface Playground {
   scenarios: string[];
   /** Every prop any story gives, so each is a hole of the copy. */
   keys: string[];
+  /** The component is drawn in place (`inline`), as its cells. */
+  inline: boolean;
 }
 
 const NONE = '__none__';
@@ -139,7 +141,10 @@ export function playgroundOf(c: ComponentStories, types = parseTypes()): Playgro
   for (const s of [base, ...scenarios]) {
     for (const key of Object.keys(c.stories[s]?.args ?? {})) if (!RESERVED.has(key)) keys.add(key);
   }
-  return { base, controls, scenarios, keys: [...keys] };
+  // Drawn in place, as its cells: a scenario that opens its popup loads it open.
+  const inline = members.some((m) => m.name === 'inline');
+  if (inline) keys.add('open').add('inline');
+  return { base, controls, scenarios, keys: [...keys], inline };
 }
 
 /** The board's Tweaks: the playground's starting props, saved and shared. */
@@ -165,7 +170,11 @@ export function playgroundTweaks(pg: Playground): Record<string, TweakDef> {
  */
 export function playgroundLogic(c: ComponentStories, pg: Playground): string {
   const stories = Object.fromEntries(
-    [pg.base, ...pg.scenarios].map((s) => [s, c.stories[s]?.args ?? {}]),
+    [pg.base, ...pg.scenarios].map((s) => {
+      const args = c.stories[s]?.args ?? {};
+      if (!pg.inline) return [s, args];
+      return [s, { ...args, ...(opens(c.stories[s]) && { open: true }), inline: true }];
+    }),
   );
   const controls = pg.controls.map((k) => k.prop);
   return `    const p = this.props || {};

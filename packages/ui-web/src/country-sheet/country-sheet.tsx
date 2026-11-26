@@ -19,6 +19,7 @@ import {
 } from 'react';
 import { formTv, inputClass } from '../field/styles';
 import { Icon } from '../icon/icon';
+import { IN_FLOW, inFlowFrame, useInFlow } from '../overlay/in-flow';
 import type { CountryName } from '../phone-field/countries.generated';
 import { countrySections } from '../phone-field/country-list';
 import { SIDE_OFFSET } from '../select/menu';
@@ -56,6 +57,9 @@ const listTv = formTv({
 });
 const list = listTv();
 
+/** Inline, the list has no window edge to stop at: as wide as its frame at most, it scrolls past a menu's height. */
+const INLINE_SIZE = 'max-w-full! max-h-(--fd-size-menu-max-height)!';
+
 const Anchor = createContext<((button: HTMLButtonElement | null) => void) | null>(null);
 
 export interface CountrySheetProps {
@@ -77,6 +81,16 @@ export interface CountrySheetProps {
   defaultQuery?: string;
   /** The button that opens the list: a `CountrySheetTrigger`. */
   children: ReactNode;
+  /** Open. */
+  open?: boolean;
+  /**
+   * Draws the open list in the page's flow, beside the page (the components
+   * canvas): under its trigger, or in `container`; it does not block the page
+   * and its search takes no focus.
+   */
+  inline?: boolean;
+  /** Where the inline list draws, when not under its trigger (PhoneField: under its pill). */
+  container?: HTMLElement | null;
 }
 
 /** The button that opens the list; the list opens beside it. */
@@ -107,7 +121,9 @@ export function CountrySheetTrigger({
  * Flutter twin is a bottom sheet.
  */
 export function CountrySheet(props: CountrySheetProps) {
-  const { value, onValueChange, lastUsed, disabled, children } = props;
+  const { value, onValueChange, lastUsed, disabled, children, open, container } = props;
+  const inline = props.inline ?? false;
+  const inFlow = useInFlow(inline);
   const [query, setQuery] = useState(props.defaultQuery ?? '');
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
   const sections = countrySections(query, lastUsed);
@@ -148,31 +164,40 @@ export function CountrySheet(props: CountrySheetProps) {
         onValueChange={(next: string | null) => {
           if (next && next !== value) onValueChange(next);
         }}
+        {...(open !== undefined && { open })}
+        {...(inline && { modal: false })}
       >
-        {children}
-        <ComboboxContent
-          anchor={button}
-          sideOffset={SIDE_OFFSET}
-          align="start"
-          dir="rtl"
-          className={list.content()}
-        >
-          <div className={list.search()}>
-            <Icon name="search" size="sm" />
-            <ComboboxInput
-              autoFocus
-              aria-label={props.searchLabel}
-              placeholder={props.searchLabel}
-              className={inputClass()}
-            />
-          </div>
-          <ComboboxEmpty className={list.empty()}>{props.emptyLabel}</ComboboxEmpty>
-          <ComboboxList>
-            {group(props.pinnedLabel, sections.pinned)}
-            {group(props.lastUsedLabel, sections.lastUsed)}
-            {group(props.allLabel, sections.all)}
-          </ComboboxList>
-        </ComboboxContent>
+        <div className={inFlowFrame({ inline: inline && container === undefined })}>
+          {children}
+          {/* An inline list waits for the container it draws in. */}
+          {(container !== null || !inline) && (
+            <ComboboxContent
+              ref={inFlow}
+              anchor={button}
+              sideOffset={SIDE_OFFSET}
+              align="start"
+              dir="rtl"
+              className={list.content({ class: inline && [IN_FLOW, INLINE_SIZE] })}
+              {...(container && { container })}
+            >
+              <div className={list.search()}>
+                <Icon name="search" size="sm" />
+                <ComboboxInput
+                  autoFocus={!inline}
+                  aria-label={props.searchLabel}
+                  placeholder={props.searchLabel}
+                  className={inputClass()}
+                />
+              </div>
+              <ComboboxEmpty className={list.empty()}>{props.emptyLabel}</ComboboxEmpty>
+              <ComboboxList>
+                {group(props.pinnedLabel, sections.pinned)}
+                {group(props.lastUsedLabel, sections.lastUsed)}
+                {group(props.allLabel, sections.all)}
+              </ComboboxList>
+            </ComboboxContent>
+          )}
+        </div>
       </Combobox>
     </Anchor.Provider>
   );

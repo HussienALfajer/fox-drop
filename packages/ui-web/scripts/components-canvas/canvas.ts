@@ -30,22 +30,6 @@ const ROW = 4 * WIDTH + 3 * GAP;
 /** A board's height before the check has measured it. */
 const UNMEASURED = 3000;
 
-/** The popups D.C3 draws open in their boards once each takes `inline`; none has a board yet. */
-export const LATER: ReadonlySet<string> = new Set([
-  'BlockingBanner',
-  'ConfirmDialog',
-  'Drawer',
-  'Menu',
-  'Select',
-  'Tooltip',
-  'Toaster',
-  'CountrySheet',
-  'DateField',
-  'TimeField',
-  'PhoneField',
-  'Sidebar',
-]);
-
 /**
  * The hand-drawn boards of the old "Component proposals" canvas, approved in
  * D.6 to D.10 and replaced by the generated boards (decision T15): left out of
@@ -60,8 +44,8 @@ export const RETIRED: readonly string[] = [
   'Overlays.dc.html',
 ];
 
-/** Every component of the bundle but those D.C3 adds. */
-export const BOARDS: readonly string[] = COMPONENTS.filter((name) => !LATER.has(name));
+/** Every component of the bundle has its board (D.C3: the popups drawn open in theirs). */
+export const BOARDS: readonly string[] = COMPONENTS;
 
 export interface CanvasConfig {
   system: string;

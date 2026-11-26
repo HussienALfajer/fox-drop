@@ -55,9 +55,11 @@ export const Open: Story = {
 };
 export const Filled = make({ defaultValue: '+963944123456' });
 export const Valid = make({ defaultValue: '+905321234567' });
+// Typing is a gesture: the components canvas draws the field before it, its list closed.
+const typing = { canvas: { open: false, gesture: true } };
 // A problem shows on leaving the field.
-export const Invalid: Story = { play: typeIn('094412345', true) };
+export const Invalid: Story = { play: typeIn('094412345', true), parameters: typing };
 // A pasted German mobile switched the chip by itself.
-export const Switched: Story = { play: typeIn('+49 151 23456789') };
+export const Switched: Story = { play: typeIn('+49 151 23456789'), parameters: typing };
 export const Busy = make({ busy: true, defaultValue: '+963944123456' });
 export const Disabled = make({ disabled: true });
