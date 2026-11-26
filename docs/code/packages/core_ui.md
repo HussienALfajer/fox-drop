@@ -117,6 +117,12 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 - Gaps fixed: the status chip is at least `minHeight` with the label centred (was its text plus 4 above and below); the count badge is offset by `offset` (12), the dot by `dotOffset` (4); the list row keeps one `gap` before the chevron; the summary's equivalents sit one `gap` under the total; the empty state's drop is `artSize` (120, was 128) with one `gap` between drop, title, line and action (was 12, 4, 16), the edge `artEdgeWidth` wide.
 - `test/parity/data_parity_test.dart`: the cases of the nine twins, with each story's arguments; the web-only densities have none.
 
+## The order parts on component tokens (D.W4b)
+
+- FoxTimer and FoxCountdownRing (`timer/`) read `components.timer` and `components.countdownRing`; FoxOrderCard, FoxOrderRow and FoxLogo (`order_card/`) read `orderCard`, `orderRow` and `logo`; FoxTrackingSteps reads `trackingSteps` (its painters take the line width, dash and centre line as arguments). Their web twins are the reference since this slice (`ui-web` CountdownRing, OrderRow, Logo, TrackingSteps, Timer, OrderCard).
+- Gaps fixed: the order card spaces every part by one `orderCard.gap` (12; was 8, 4, 8 and 12), as the D.9 sheet and the web; the timer is at least `timer.minHeight` (32; its text and padding came to 31.4). The countdown ring's arc now eases between ticks over `FoxDuration.base` (`TweenAnimationBuilder`, instant under `disableAnimations`), as the web's. `foxLogoInitial` trims the name and capitalises a Latin letter, as the web's `logoInitial`. `FoxCountdownRing.diameter` and `FoxLogo.size` are nullable now, defaulting to their tokens.
+- `test/parity/order_parts_parity_test.dart`: the cases of the six twins with each story's arguments; the timer's web-only `compact` has none. The tracking strip takes the frame's inner width, as the web list fills its frame.
+
 ## Left out
 
 Wiring into the apps and bundling CoFo there (each app's screen slice, which also adds the app to `enforcedPackages`); compact density in Flutter; dark mode; the fox scenes inside the empty state's drop; Cupertino localizations for the iOS text toolbar (apps provide them); a hosted widgetbook.

@@ -1,0 +1,20 @@
+{
+  "logo": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["logo"], "flutter": ["order_card"] }
+    },
+    "size": {
+      "$type": "dimension",
+      "$value": "{size.touch-target}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.md}"
+    },
+    "color": {
+      "$type": "color",
+      "background": { "$value": "{color.primary-subtle}" },
+      "letter": { "$value": "{color.on-primary-subtle}" }
+    }
+  }
+}

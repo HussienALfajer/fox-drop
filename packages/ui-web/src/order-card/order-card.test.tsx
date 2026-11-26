@@ -40,7 +40,7 @@ describe('OrderCard', () => {
   it('turns red when late and says so in words', () => {
     render(<OrderCard {...base} late lateLabel="متأخر" />);
     const card = screen.getByRole('article', { name: 'طلب #10423، متأخر' });
-    expect(card.className).toContain('bg-danger-subtle');
+    expect(card.className).toContain('bg-(--fd-card-danger-background)');
   });
 
   it('shows the badges it is given', () => {

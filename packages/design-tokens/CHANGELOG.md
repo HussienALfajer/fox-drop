@@ -2,6 +2,12 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.17.0 (2026-11-26, slice D.W4b: the order parts on the web)
+
+- New component files, each read on both sides unless a token says `sides`: `countdown-ring` (ui-web `countdown-ring`, core_ui `timer`), `logo` and `order-row` (ui-web `logo`, `order-row`; core_ui `order_card`, where `FoxLogo` and `FoxOrderRow` live), `tracking-steps`, `timer` and `order-card`. Values are the ones the Flutter twins drew, except the parity gaps below. `timer.compact.min-height` and `order-card.color.opener` are web only (the Flutter timer has one density; the Flutter order card is one button).
+- New semantic tokens from the approved D.9 sheet and the Flutter ring: `size.countdown-ring` (96px, two touch targets) and `border-width.ring` (6px, the ring's track and arc); Dart `FoxSize.countdownRing`, `FoxBorderWidth.ring`.
+- Parity gaps fixed (the D.9 sheet where it shows the state, else the web): the Flutter order card spaces every part by one `order-card.gap` (12), as the sheet and the web (was 8, 4, 8 and 12); the Flutter timer is at least `size.step` (32) tall, as the web (its text and padding came to 31.4).
+
 ## 0.16.0 (2026-11-26, slice D.W3b: data display on component tokens)
 
 - New component files, each read on both sides unless a token says `sides`: `money`, `status-chip`, `count-badge`, `card`, `list-row`, `amounts-summary`, `skeleton`, `empty-state`, `drop-loader` (ui-web and core_ui), and `data-table` (web only: every token `sides: ["web"]`, no Flutter folder). Values are the ones either side used, except the parity gaps below.

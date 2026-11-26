@@ -32,9 +32,22 @@ Tests written first (locked in the red phase):
 - The six token files with their `$extensions`: `component-usage.test.ts` fails until both sides read every token.
 - New screenshots for every story; Flutter goldens move only for an agreed gap.
 
+## Decisions taken overnight (pending the owner)
+
+The owner was asleep and delegated decisions to the supervising session (2026-11-26); each took the recommended option and stays open for the owner to reverse. The approved looks are the Flutter twins (D.9, D.11b); where the D.9 sheet («Data display — batch 3», `packages/design-tokens/src/data-sheet.ts`) draws a state it wins, else the web wins (shared rule).
+
+1. **Design checkpoint:** the new web components copy their approved Flutter twins, so the sheet approval of plan step 3 is taken as given for the night; the before and after parity sheets stay on disk for the owner (`.parity/*.html`, git-ignored, not published). The Figma look of §2 of `/build-slice` was skipped for the same reason: no new look is drawn.
+2. **Order card spacing (a gap):** the sheet spaces every part of the board card by `space.sm` (12), as the web did; Flutter used 8, 4, 8 and 12. Flutter moves to one `order-card.gap`.
+3. **Timer height (a gap):** the web timer is at least `size.step` (32); the Flutter one came to 31.4 (its text and 4 above and below). Flutter takes `timer.min-height`. The sheet's 36, 28 and 44 stay undrawn, as the status chip's in D.W3b. The web's compact density keeps 24 with no block padding (adding it would make 30).
+4. **Countdown ring:** the sheet draws a 96 ring with an 8 stroke and a 29 number; Flutter's approved ring has a 6 stroke and the `number` type role. The twin wins: new semantic `size.countdown-ring` (96px) and `border-width.ring` (6px). The web eases each tick's sweep over `duration.base` (motion-safe only); the Flutter ring now does the same through a `TweenAnimationBuilder` that is instant under `disableAnimations`, so both are still under reduced motion and no golden moves.
+5. **Logo's letter:** the web and Flutter both take the trimmed name's first character, a Latin one in capitals (Flutter took the untrimmed first character as is; no golden shows a Latin or spaced name). No image story or case: the image is the app's.
+6. **Order row:** the web row is an `article` named «restaurant، date»; with `onPress` the restaurant's name is the button and covers the card, so the reorder action stays a separate button (Flutter's card is one button that keeps its inner semantics). It has no hover tint on the card.
+7. **Tracking steps:** the web list takes a `label` prop (its name for assistive technology), which the Flutter strip has no need for (each step is a node).
+8. **Files beyond the plan's list:** `tokens/semantic/base.json` (the two tokens of decision 4); `src/theme.css` (the pulse keyframes and the late ring's delay) with `src/countdown-ring/countdown-ring.css` and `src/tracking-steps/tracking-steps.css` (the SVG radius and dash utilities: no style prop, no arbitrary value); `src/order-card/order-card.test.tsx` (its late assertion names the card token now); `test/design-system.test.ts` (the four new props types documented).
+
 ## Stopped at
 
-Not started.
+Done: pull request open with auto-merge.
 
 ## Evidence
 

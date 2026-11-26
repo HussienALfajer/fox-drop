@@ -64,43 +64,47 @@ class FoxTimer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final timer = theme.components.timer;
     final look =
         tone ??
         foxTimerTone(seconds: seconds, countsDown: countsDown, late: late);
     final (ink, fill) = switch (look) {
-      FoxTimerTone.calm => (c.onSurface, c.infoSubtle),
-      FoxTimerTone.soon => (c.warning, c.warningSubtle),
-      FoxTimerTone.late => (c.danger, c.dangerSubtle),
+      FoxTimerTone.calm => (timer.calmText, timer.calmBackground),
+      FoxTimerTone.soon => (timer.soonText, timer.soonBackground),
+      FoxTimerTone.late => (timer.lateText, timer.lateBackground),
     };
+    final colour = Color(ink);
     final time = foxFormatDuration(seconds, minuteUnit);
     final prefix = this.prefix;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: fill,
+        color: Color(fill),
         borderRadius: BorderRadius.circular(t.FoxRadius.full),
       ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: t.FoxSpace.sm,
-          vertical: t.FoxSpace.xxs,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FoxIcon(icon, size: FoxIconSize.sm, color: ink),
-            const SizedBox(width: t.FoxSpace.xxs),
-            Flexible(
-              child: Text(
-                prefix == null ? time : '$prefix $time',
-                style: theme.text.subtitle.copyWith(
-                  color: ink,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: timer.minHeight),
+        child: Padding(
+          padding: EdgeInsetsDirectional.symmetric(
+            horizontal: timer.paddingInline,
+            vertical: timer.paddingBlock,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FoxIcon(icon, size: FoxIconSize.sm, color: colour),
+              SizedBox(width: timer.gap),
+              Flexible(
+                child: Text(
+                  prefix == null ? time : '$prefix $time',
+                  style: theme.text.subtitle.copyWith(
+                    color: colour,
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -108,33 +112,47 @@ class FoxTimer extends StatelessWidget {
 }
 
 /// The captain's offer countdown (brand expression §3): a ring that empties
-/// over [total] seconds, the seconds left inside, red in the last ten. Under
-/// reduced motion the app updates it without a sweep; the number carries it.
+/// over [total] seconds, the seconds left inside, red in the last ten. The
+/// arc eases from tick to tick over `FoxDuration.base`; under reduced motion
+/// it jumps, and the number carries the time.
 class FoxCountdownRing extends StatelessWidget {
   const FoxCountdownRing({
     super.key,
     required this.seconds,
     required this.total,
-    this.diameter = t.FoxSize.touchTarget * 2,
+    this.diameter,
   });
 
   final int seconds;
   final int total;
-  final double diameter;
+
+  /// Defaults to the ring's token, two touch targets.
+  final double? diameter;
 
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final colour = seconds <= 10 ? theme.colors.danger : theme.colors.primary;
+    final countdownRing = theme.components.countdownRing;
+    final colour = Color(
+      seconds <= 10 ? countdownRing.colorLast : countdownRing.colorProgress,
+    );
+    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final clockwise = Directionality.of(context) == TextDirection.ltr;
     return SizedBox.square(
-      dimension: diameter,
-      child: CustomPaint(
-        painter: _Ring(
-          share: total <= 0 ? 0 : (seconds / total).clamp(0, 1),
-          colour: colour,
-          track: theme.colors.neutralSubtle,
-          width: theme.input.focusWidth * 3,
-          clockwise: Directionality.of(context) == TextDirection.ltr,
+      dimension: diameter ?? countdownRing.size,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(end: total <= 0 ? 0 : (seconds / total).clamp(0, 1)),
+        duration: still ? Duration.zero : t.FoxDuration.base,
+        curve: theme.easing,
+        builder: (context, share, child) => CustomPaint(
+          painter: _Ring(
+            share: share,
+            colour: colour,
+            track: Color(countdownRing.colorTrack),
+            width: countdownRing.strokeWidth,
+            clockwise: clockwise,
+          ),
+          child: child,
         ),
         child: Center(
           child: Text(

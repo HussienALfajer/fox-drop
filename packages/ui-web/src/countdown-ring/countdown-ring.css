@@ -1,0 +1,6 @@
+/* The countdown ring's circles (D.W4b), imported by ../theme.css: centred,
+   their stroke inside the ring's box. SVG takes its radius from CSS, and the
+   components take no arbitrary value (R1), so it lives here. */
+@utility countdown-arc {
+  r: calc(50% - var(--fd-countdown-ring-stroke-width) / 2);
+}
