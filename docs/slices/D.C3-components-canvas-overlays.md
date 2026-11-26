@@ -11,7 +11,7 @@ Every overlay's board shows it open inside the board, beside its closed trigger,
 
 ## Plan
 
-1. Web: `inline?: boolean` on each popup, as `BottomSheet` and D.C1's `Dialog` do (the UI SDK content's `inline` with `modal: 'trap-focus'`, no outside-press close, the backdrop inside the frame): `ConfirmDialog`, `Drawer`, `Menu`, `Select`, `Tooltip`, `CountrySheet`, the `DateField` and `TimeField` pickers, `PhoneField`'s country sheet, `Sidebar`'s drawer; `Toaster` shows seeded toasts in place (its toast container or a part exposed on `FoxDrop.Toaster`, decided by reading the SDK's `toast-parts` first). Types in `scripts/docs.ts`.
+1. Web: `inline?: boolean` on each popup, as D.C1's `Dialog` does (the UI SDK content's `inline`, beside the page: `modal: false`, no outside-press close, no initial focus, the scrim inside the frame; an alert dialog is always modal, so inline it takes the plain dialog's parts): `ConfirmDialog`, `BlockingBanner` (moved here from D.C2: it covers the page), `Drawer`, `Menu`, `Select`, `Tooltip`, `CountrySheet`, the `DateField` and `TimeField` pickers, `PhoneField`'s country sheet, `Sidebar`'s drawer; `Toaster` shows seeded toasts in place (its toast container or a part exposed on `FoxDrop.Toaster`, decided by reading the SDK's `toast-parts` first). Types in `scripts/docs.ts`.
 2. Generator: the open states of these components drawn with `open` and `inline`; their Arabic copy in `copy-ar.ts`.
 3. The test widens to every entry of `COMPONENTS`.
 4. Re-sync the Design System (the components changed), write, measure, write, check (0 problems), publish.

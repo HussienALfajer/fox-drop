@@ -13,10 +13,11 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildBundle, PACKAGE_DIR } from '../bundle.ts';
+import { buildBundle, COMPONENTS, PACKAGE_DIR } from '../bundle.ts';
 import { anatomy, lightValues } from './anatomy.ts';
 import { makeBoard } from './board.ts';
-import { PAGES } from './copy-ar.ts';
+import { GROUPS, PAGES } from './copy-ar.ts';
+import { makeIndex } from './index.ts';
 import { type Fonts, WIDTH } from './page.ts';
 import { membersOf, parseTypes, playgroundOf } from './playground.ts';
 import { forcedStates } from './states.ts';
@@ -29,8 +30,24 @@ const ROW = 4 * WIDTH + 3 * GAP;
 /** A board's height before the check has measured it. */
 const UNMEASURED = 3000;
 
-/** The boards of this slice (D.C1); D.C2 and D.C3 widen it to COMPONENTS. */
-export const BOARDS = ['Button', 'TextField', 'Dialog', 'OrderCard', 'Tabs'] as const;
+/** The popups D.C3 draws open in their boards once each takes `inline`; none has a board yet. */
+export const LATER: ReadonlySet<string> = new Set([
+  'BlockingBanner',
+  'ConfirmDialog',
+  'Drawer',
+  'Menu',
+  'Select',
+  'Tooltip',
+  'Toaster',
+  'CountrySheet',
+  'DateField',
+  'TimeField',
+  'PhoneField',
+  'Sidebar',
+]);
+
+/** Every component of the bundle but those D.C3 adds. */
+export const BOARDS: readonly string[] = COMPONENTS.filter((name) => !LATER.has(name));
 
 export interface CanvasConfig {
   system: string;
@@ -127,9 +144,44 @@ export async function buildCanvas(input: {
   }
   const boards: Record<string, BoardEntry> = {};
   const order: string[] = [];
-  let y = 0;
   const groups = [...new Set(placed.map((p) => p.group))];
+  // The index first, then each group under its title note, four boards a row.
+  // The old hand-drawn Main.dc.html is still on the proposals page (D.C4), so
+  // the index is Index.dc.html.
+  const indexH = measured?.heights['Index'] ?? 1600;
+  files.set(
+    'Index.dc.html',
+    makeIndex(
+      groups.map((group) => ({
+        group,
+        names: placed.filter((p) => p.group === group).map((p) => p.name),
+      })),
+      indexH,
+      config.fonts ?? {},
+    ),
+  );
+  boards['Index.dc.html'] = {
+    x: 0,
+    y: 0,
+    w: WIDTH,
+    h: indexH,
+    title: 'Fox Drop Components',
+    page: 'components',
+    is_interactive: true,
+  };
+  order.push('Index.dc.html');
+  const groupNotes: Record<string, { page?: string; [key: string]: unknown }> = {};
+  let y = indexH + 520;
   for (const group of groups) {
+    const count = placed.filter((p) => p.group === group).length;
+    groupNotes[`g-${group.toLowerCase()}`] = {
+      x: 0,
+      y: y - 260,
+      text: `${GROUPS[group] ?? group} · ${String(count)}`,
+      kind: 'title1',
+      maxW: ROW,
+      page: 'components',
+    };
     let x = 0;
     let rowH = 0;
     for (const p of placed.filter((q) => q.group === group)) {
@@ -152,16 +204,19 @@ export async function buildCanvas(input: {
       x += WIDTH + GAP;
       rowH = Math.max(rowH, p.h);
     }
-    y += rowH + 400;
+    y += rowH + 520;
   }
   // Boards of other pages stay; the old hand-drawn ones (no page) wait on the
   // proposals page until D.C4 deletes them.
   const kept = Object.entries(current.boards ?? {})
     .filter(([, b]) => b.page !== 'components')
     .map(([file, b]) => [file, { ...b, page: b.page ?? 'proposals' }] as const);
-  const notes = Object.fromEntries(
-    Object.entries(current.notes ?? {}).filter(([, n]) => n.page !== 'components'),
-  );
+  const notes = {
+    ...groupNotes,
+    ...Object.fromEntries(
+      Object.entries(current.notes ?? {}).filter(([, n]) => n.page !== 'components'),
+    ),
+  };
   const index: CanvasIndex = {
     ...current,
     v: 3,

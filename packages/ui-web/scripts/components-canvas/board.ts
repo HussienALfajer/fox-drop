@@ -9,6 +9,7 @@ import type { TokenFile } from './anatomy.ts';
 import { COMPONENTS as COPY, GROUPS, TEXT, WORDS } from './copy-ar.ts';
 import { esc, Mounts, page, type Fonts, WIDTH } from './page.ts';
 import {
+  mountOf,
   type Playground,
   playgroundLogic,
   playgroundSection,
@@ -37,6 +38,9 @@ const FORCED: Record<string, keyof typeof PSEUDO> = {
 /** Groups whose copies take their cell's width (fields, bars, tabs that scroll, cards). */
 const FILL = new Set(['Forms', 'Navigation', 'Data']);
 
+/** Bars and tables as wide as a panel page: their surfaces and states one a row. */
+const WIDE = new Set(['TopBar', 'DataTable']);
+
 /** The narrowest a state's copy is drawn, by Design System group. */
 const CELL_WIDTH: Record<string, number> = {
   Forms: 340,
@@ -47,8 +51,11 @@ const CELL_WIDTH: Record<string, number> = {
 
 /** `PrimaryHover`, `readOnly`, `WithIconStart` in Arabic, from WORDS; throws on a missing word. */
 export function caption(name: string): string {
+  // `SCurve` is «s curve», `picked_up` «picked up».
   const words = name
+    .replaceAll('_', ' ')
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
     .toLowerCase()
     .split(/\s+/)
     .filter(Boolean);
@@ -127,17 +134,16 @@ function header(input: BoardInput): string {
 }
 
 function surfaces(input: BoardInput, mounts: Mounts): string {
-  const { name } = input.stories;
   const base = propsOf(input, input.playground.base);
   const density = input.members.has('density');
   const cell = (label: string, attrs: string, props: Args) =>
     `        <div${attrs} style="display: flex; flex-direction: column; gap: var(--fd-space-sm); min-width: 0; padding: var(--fd-space-md); border-radius: var(--fd-radius-md); background: var(--fd-color-surface); color: var(--fd-color-on-surface); border: 1px solid var(--fd-color-border);">
           <span style="${MUTED}">${esc(label)}</span>
-          <div style="display: flex; justify-content: center; min-width: 0;">${mounts.tag(name, props)}</div>
+          <div style="display: flex; justify-content: center; min-width: 0;">${mounts.tag(mountOf(input.stories, input.playground.base), props)}</div>
         </div>`;
   return `    <section data-surfaces style="${PANEL}">
       <div style="${HEAD}"><strong>${esc(TEXT.surfaces)}</strong><span style="${MUTED}">${esc(TEXT.surfacesNote)}</span></div>
-      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--fd-space-md);">
+      <div style="display: grid; grid-template-columns: repeat(${WIDE.has(input.stories.name) ? '1' : '3'}, minmax(0, 1fr)); gap: var(--fd-space-md);">
 ${cell(TEXT.phone, '', base)}
 ${cell(TEXT.captain, ' data-surface="captain"', base)}
 ${cell(density ? TEXT.panelCompact : TEXT.panel, '', density ? { ...base, density: 'compact' } : base)}
@@ -157,11 +163,15 @@ function copyCell(
   if (!input.stories.stories[story])
     throw new Error(`${input.stories.name}: no story for ${state}`);
   const forced = FORCED[state];
-  let slot = mounts.tag(input.stories.name, propsOf(input, story));
+  let slot = mounts.tag(mountOf(input.stories, story), propsOf(input, story));
   if (forced) {
     slot = `<div data-pseudo="${PSEUDO[forced]}" data-pseudo-outer style="display: block; min-width: 0;">${slot}</div>`;
   }
-  const under = captioned ? `<span style="${MUTED}">${esc(caption(state))}</span>` : '';
+  // A state only a gesture reaches (pulling a list) is drawn at rest and says so.
+  const info = input.stories.stories[story];
+  const gesture = info?.play === true && !input.members.has('inline');
+  const words = gesture ? `${caption(state)} · ${TEXT.inPlay}` : caption(state);
+  const under = captioned ? `<span style="${MUTED}">${esc(words)}</span>` : '';
   return `<div data-cell="${esc(story)}" style="display: flex; flex-direction: column; gap: var(--fd-space-xs); align-items: ${fill ? 'stretch' : 'flex-start'}; min-width: 0;">${slot}${under}</div>`;
 }
 
@@ -191,7 +201,7 @@ function matrix(input: BoardInput, mounts: Mounts): string {
         ${[...head, ...rows].join('\n        ')}
       </div>`;
   } else {
-    const width = CELL_WIDTH[input.group] ?? 200;
+    const width = WIDE.has(input.stories.name) ? 1200 : (CELL_WIDTH[input.group] ?? 200);
     const items = states.map((state) => {
       return copyCell(input, mounts, cells[pascal(state)] ?? '', state, fill, true);
     });
