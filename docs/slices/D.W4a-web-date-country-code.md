@@ -1,6 +1,6 @@
 # D.W4a Web versions: date, time, country sheet and code preview
 
-Status: In progress · Tier: T2 · Branch: `feat/web-date-country-code`
+Status: Done · Tier: T2 · Branch: `feat/web-date-country-code`
 Spec: architecture §9.5 R1, R3, R4, R5, R9, §9.6, §9.9, §9.10; CU §5.2 (the code preview), D.8 and D.11b's slice files for the approved looks · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1, D.W2 and D.W3a merged (it reads `input.json` and edits `phone-field.tsx`). Runs in parallel with any D.W3 or D.W4 slice but D.W3a.
@@ -47,13 +47,15 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 
 ## Stopped at
 
-Not started.
+Done: pull request open with auto-merge; the owner's approval of the sheets and of the overnight decisions is pending.
 
 ## Evidence
 
-- `pnpm parity …`: the sheets shown to the owner and the approval
-- `node scripts/verify.mjs --changed`:
-- Review:
+- Red phase: `sign-in-forms-review.test.tsx` failed on the missing modules, `stories.test.ts` on the four missing components, `component-usage.test.ts` on every token of the three new files unread on both sides.
+- `pnpm parity DateField TimeField CountrySheet CodePreview`: four sheets, published for the owner as one private artifact (link outside the repository). The first run timed out on the time field's Hover and Focus (no `spinbutton` in the driven controls, decision 7); the second showed four gaps, fixed (decision 4); the third matched. Approval: delegated overnight, pending the owner.
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (16 steps). Earlier runs failed on axe's `target-size` for the time boxes once they hugged their text (fixed with `date-field.segment.min-size`, 24) and once on port 6007 held by another session's run.
+- ui-web `vitest run`: 46 files, 455 tests passed before the review fixes; `sign-in-forms-review.test.tsx` 21 passed after them. design-tokens: 454 passed.
+- Review (T2, `reviewer`, one round): no code blocker. Fixed: days that cannot be picked lit up on hover; documented: the Flutter picker's selected today (now `on-day-selected`), the time group's description (for the owner). Its blocking item, the owner's approval of the sheet, and the locked-test corrections are the overnight decisions above, left to the owner.
 
 ## Before deploying
 

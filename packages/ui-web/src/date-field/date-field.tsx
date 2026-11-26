@@ -200,13 +200,13 @@ export function DateField(props: DateFieldProps) {
               <div className={parts.header()}>
                 <CalendarPrevious aria-label={props.previousLabel} className={parts.step()}>
                   {/* Previous is at the start, pointing to it; RTL only, as the app. */}
-                  <span className="flex -rotate-90">
+                  <span className="flex rotate-90">
                     <Icon name="chevron-down" size="sm" />
                   </span>
                 </CalendarPrevious>
                 <CalendarHeading className={parts.heading()} />
                 <CalendarNext aria-label={props.nextLabel} className={parts.step()}>
-                  <span className="flex rotate-90">
+                  <span className="flex -rotate-90">
                     <Icon name="chevron-down" size="sm" />
                   </span>
                 </CalendarNext>

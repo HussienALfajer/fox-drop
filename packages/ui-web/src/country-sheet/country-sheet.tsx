@@ -48,7 +48,8 @@ const listTv = formTv({
     ],
     code: 'text-(color:--fd-country-sheet-color-code) tabular-nums',
     empty: [
-      'px-sm py-(--fd-country-sheet-empty-padding-block) text-center text-phone-secondary',
+      // Always there (a live region), filled only when nothing matches.
+      'px-sm py-(--fd-country-sheet-empty-padding-block) empty:p-none text-center text-phone-secondary',
       'text-(color:--fd-country-sheet-color-empty)',
     ],
   },
