@@ -30,13 +30,14 @@ const frame = formTv({
         'transition duration-(--fd-duration-slow) ease-(--fd-easing-standard) data-starting-style:translate-y-full data-ending-style:translate-y-full',
         'motion-reduce:transition-opacity motion-reduce:data-starting-style:translate-y-none motion-reduce:data-starting-style:opacity-0 motion-reduce:data-ending-style:translate-y-none motion-reduce:data-ending-style:opacity-0',
       ],
-      true: 'relative',
+      // In a frame of a set height (a story, a preview) the sheet fits it and its content scrolls.
+      true: 'relative max-h-full',
     },
   },
 });
 
 const panel = formTv({
-  base: 'pointer-events-auto mx-auto flex max-h-full w-full max-w-(--fd-bottom-sheet-max-width) flex-col text-on-surface',
+  base: 'pointer-events-auto mx-auto flex max-h-full min-h-none w-full max-w-(--fd-bottom-sheet-max-width) flex-col text-on-surface',
   variants: {
     sCurve: {
       false: 'overflow-hidden rounded-t-(--fd-bottom-sheet-radius)',
@@ -103,7 +104,11 @@ export interface BottomSheetProps {
   sCurve?: boolean;
   /** False keeps it open on Escape and the scrim. */
   dismissible?: boolean;
-  /** Keeps the sheet in its frame instead of over the page: a preview, the Design System card. */
+  /**
+   * Keeps the sheet in its frame instead of over the page: a preview, the
+   * Design System card. It still keeps Tab inside while open (the SDK's
+   * `trap-focus`); Escape or the × lets the keyboard out.
+   */
   inline?: boolean;
 }
 

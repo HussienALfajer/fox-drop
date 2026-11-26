@@ -35,8 +35,10 @@ export const Default: Story = {};
 export const Open: Story = { ...open, args: { inline: true } };
 // The customer's item sheet: the S-curve tab holds the title (brand expression §2).
 export const SCurve: Story = { ...open, args: { inline: true, sCurve: true } };
+// In a frame lower than its content: the content scrolls under the title (REVIEW item 15).
 export const Long: Story = {
   ...open,
+  decorators: [(Story) => <div className="h-(--fd-size-menu-max-height)">{Story()}</div>],
   args: {
     inline: true,
     title: 'اختر المدينة',

@@ -176,10 +176,12 @@ void _sheet() {
       ),
     ),
   );
+  // The web story's frame is `size.menu-max-height` high: the content scrolls.
   parityCase(
     'bottomsheet--long',
-    () => open(
-      FoxBottomSheet(
+    () => ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: FoxSize.menuMaxHeight),
+      child: FoxBottomSheet(
         title: 'اختر المدينة',
         closeLabel: 'إغلاق',
         child: Column(
@@ -208,7 +210,16 @@ void _sheet() {
 void _noop() {}
 
 void _pull() {
-  const names = ['كنافة أعزاز', 'برجر كبصو', 'فطائر الشام', 'مشاوي حلب'];
+  const names = [
+    'كنافة أعزاز',
+    'برجر كبصو',
+    'فطائر الشام',
+    'مشاوي حلب',
+    'حلويات الشمال',
+    'فلافل السوق',
+    'بيتزا الريف',
+    'عصائر الربيع',
+  ];
   Widget list() => ListView(
     physics: const AlwaysScrollableScrollPhysics(),
     padding: EdgeInsets.zero,

@@ -168,7 +168,7 @@ export function RestaurantCard(props: RestaurantCardProps) {
           {state && (
             <span
               aria-hidden="true"
-              className="absolute end-(--fd-restaurant-card-state-inset) top-(--fd-restaurant-card-state-inset)"
+              className="absolute start-(--fd-size-touch-target) end-(--fd-restaurant-card-state-inset) top-(--fd-restaurant-card-state-inset) ms-(--fd-restaurant-card-state-inset) flex justify-end"
             >
               <StatusChip label={state.label} tone={state.tone} />
             </span>

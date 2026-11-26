@@ -28,6 +28,11 @@ const fade = formTv({
   variants: { faded: { true: 'opacity-(--fd-dish-card-faded-opacity)' } },
 });
 
+// The link's ::after paints the hover and pressed colours over the article's
+// own inset ring: it draws the outline again, so it stays in every state.
+const outlineOnTop =
+  'after:inset-ring-(length:--fd-card-border-width) after:inset-ring-(--fd-card-color-border)';
+
 /** A photo the name beside it already says. */
 const DECORATIVE = '';
 const muted = 'text-phone-secondary text-on-surface-muted';
@@ -95,7 +100,7 @@ export function DishCard(props: DishCardProps) {
           {unavailable ? (
             title
           ) : (
-            <a href={href} className={stretchedLink()}>
+            <a href={href} className={stretchedLink({ class: outlineOnTop })}>
               {title}
             </a>
           )}

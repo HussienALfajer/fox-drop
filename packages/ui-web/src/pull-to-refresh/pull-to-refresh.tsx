@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { buttonClasses } from '../button/button';
 import { DropLoader } from '../drop-loader/drop-loader';
 import { DROP, PIECES, VIEW_BOX } from '../drop-loader/mark';
@@ -65,7 +65,7 @@ function FillingMark({ level }: { level: number }) {
 export interface PullToRefreshProps {
   /** The list. The component is its scroll container and fills its parent. */
   children: ReactNode;
-  /** Runs once per pull; a Promise keeps the loader until it settles. */
+  /** Runs once per pull; a Promise keeps the loader until it settles. A rejection only stops the loader: show the error yourself. */
   onRefresh: () => unknown;
   /** The refresh button for screen readers and keyboards: «تحديث». */
   refreshLabel: string;
@@ -84,6 +84,23 @@ export function PullToRefresh({ children, onRefresh, refreshLabel }: PullToRefre
   const [atTop, setAtTop] = useState(true);
   const start = useRef<{ id: number; y: number } | null>(null);
   const busy = useRef(false);
+  const list = useRef<HTMLDivElement>(null);
+
+  // WebKit has no `pan-down`, so its `touch-action` falls back to auto and the
+  // page would take the pull as its own scroll (and cancel the pointer). A
+  // downward move during a pull is held back here instead; it must be a
+  // listener that is not passive, which React's `onTouchMove` is not.
+  useEffect(() => {
+    const element = list.current;
+    if (!element) return;
+    const hold = (event: TouchEvent) => {
+      const from = start.current;
+      const touch = event.touches[0];
+      if (from && touch && touch.clientY > from.y && event.cancelable) event.preventDefault();
+    };
+    element.addEventListener('touchmove', hold, { passive: false });
+    return () => element.removeEventListener('touchmove', hold);
+  }, []);
 
   const refresh = async () => {
     if (busy.current) return;
@@ -91,6 +108,8 @@ export function PullToRefresh({ children, onRefresh, refreshLabel }: PullToRefre
     setRefreshing(true);
     try {
       await onRefresh();
+    } catch {
+      // The caller shows its own error (a toast, a banner); the loader stops.
     } finally {
       busy.current = false;
       setRefreshing(false);
@@ -134,6 +153,7 @@ export function PullToRefresh({ children, onRefresh, refreshLabel }: PullToRefre
         </button>
       </span>
       <div
+        ref={list}
         data-pull-scroller=""
         onScroll={(event) => setAtTop(event.currentTarget.scrollTop <= 0)}
         onPointerDown={down}

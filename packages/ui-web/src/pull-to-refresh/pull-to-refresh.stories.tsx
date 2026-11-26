@@ -4,9 +4,21 @@ import { PullToRefresh } from './pull-to-refresh';
 // The Flutter twin's states (D.10, D.11b), review copy. The pull is driven by
 // touch pointer events in `play`: half the threshold (the mark half full), and
 // a whole pull let go with a refresh that never ends (the drop loader).
+const ROWS = [
+  'كنافة أعزاز',
+  'برجر كبصو',
+  'فطائر الشام',
+  'مشاوي حلب',
+  'حلويات الشمال',
+  'فلافل السوق',
+  'بيتزا الريف',
+  'عصائر الربيع',
+];
+
 const list = (
   <div className="flex flex-col text-phone-body text-on-surface">
-    {['كنافة أعزاز', 'برجر كبصو', 'فطائر الشام', 'مشاوي حلب'].map((name) => (
+    {/* More rows than the frame holds, so the list scrolls (REVIEW item 15). */}
+    {ROWS.map((name) => (
       <p key={name} className="m-none p-md">
         {name}
       </p>

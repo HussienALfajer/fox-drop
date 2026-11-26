@@ -135,7 +135,7 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 
 - `FoxRestaurantCard` and `FoxDishCard` read `components.restaurantCard` and `components.dishCard` for every size, gap and colour of their own; their fade is `restaurantCard.fadedOpacity` and `dishCard.fadedOpacity` (0.55), so `internal/faded.dart` (`foxFadedOpacity`) is gone. `FoxCard` and `FoxLogo` underneath are unchanged.
 - `FoxBottomSheet` reads `components.bottomSheet`; `_SCurvePainter` takes the tab share, the curve's width (its `s` is `curveWidth / 1.5`, the old 32), the band's height and the radius as fields. `FoxPullToRefresh` and `FoxRefreshDrop` read `components.pullToRefresh`. Same values: no golden moves.
-- `test/parity/cards_sheets_parity_test.dart`: one case per RestaurantCard, DishCard, BottomSheet and PullToRefresh story. The open sheets render inline under their trigger, as the web stories keep theirs in the frame; the pulling and refreshing cases put `FoxRefreshDrop` over the list (half full, refreshing), as a pull leaves it.
+- `test/parity/cards_sheets_parity_test.dart`: one case per RestaurantCard, DishCard, BottomSheet and PullToRefresh story. The open sheets render inline and alone, as the web side shoots an open dialog (the long one under a `size.menu-max-height` bound, so it scrolls as its story does); the pulling and refreshing cases put `FoxRefreshDrop` over the list (half full, refreshing), as a pull leaves it.
 
 ## Left out
 
