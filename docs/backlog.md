@@ -22,6 +22,7 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 
 ## Follow-ups
 
+- **Retire `icon-sheet`** (D.C4 review): `packages/design-tokens/src/icon-sheet.ts` still writes the six hand-drawn boards and a `canvas.json` titled "Component proposals"; since T15 its output is never published (it would overwrite the "Fox Drop Components" index). Remove the script and its sheets, keeping the icons' Arabic labels where `src/icons.test.ts` needs them.
 - **The D.W3c overnight decisions and open gaps** (`slices/D.W3c-tokens-overlays-tabs-icon.md`, «Gaps on the sheets»): the gaps settled by the D.10 sheet or the web for the owner to confirm on the before and after sheets, and the ones left (the dialog's × and the toast's × keep 48 targets, the confirm action not greyed before a reason, one toast at a time in Flutter, the unselected count's colour against the sheet).
 - **`core_auth` «retries a refresh that got no answer» fails under load** (D.W3c, `node scripts/verify.mjs --changed`): it failed once while the other Flutter packages ran in parallel and passes alone; the retry waits on real time. Give the session a fake clock or async timers in the test.
 
