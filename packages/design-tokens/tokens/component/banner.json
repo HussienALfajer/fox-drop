@@ -1,0 +1,93 @@
+{
+  "banner": {
+    "$description": "The banner and the banner stack (D.10): red solid, every other tone its words on its tint with a hairline under it.",
+    "$extensions": {
+      "app.foxdrop": { "web": ["banner", "banner-stack"], "flutter": ["banner"] }
+    },
+    "min-height": {
+      "$type": "dimension",
+      "$value": "{size.touch-target}"
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.md}"
+    },
+    "padding-block": {
+      "$type": "dimension",
+      "$value": "{space.xs}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.sm}"
+    },
+    "actions-gap": {
+      "$type": "dimension",
+      "$value": "{space.lg}",
+      "$description": "Between two actions on their own line."
+    },
+    "border-width": {
+      "$type": "dimension",
+      "$value": "{border-width.thin}"
+    },
+    "compact": {
+      "min-height": {
+        "$type": "dimension",
+        "$value": "{size.control-compact}",
+        "$description": "The panel's and the portal's compact density; the Flutter banner has none.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "padding-block": {
+        "$type": "dimension",
+        "$value": "{space.2xs}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
+    "stack": {
+      "toggle-height": {
+        "$type": "dimension",
+        "$value": "{size.step}",
+        "$description": "The counter's pill; on Flutter it sits in a 48 target."
+      },
+      "toggle-padding-inline": {
+        "$type": "dimension",
+        "$value": "{space.sm}"
+      }
+    },
+    "color": {
+      "$type": "color",
+      "border": {
+        "$value": "{color.border}"
+      },
+      "danger-background": {
+        "$value": "{color.danger}"
+      },
+      "danger-text": {
+        "$value": "{color.on-danger}"
+      },
+      "caution-background": {
+        "$value": "{color.caution-subtle}"
+      },
+      "caution-text": {
+        "$value": "{color.caution}"
+      },
+      "warning-background": {
+        "$value": "{color.warning-subtle}"
+      },
+      "warning-text": {
+        "$value": "{color.warning}"
+      },
+      "info-background": {
+        "$value": "{color.info-subtle}"
+      },
+      "info-text": {
+        "$value": "{color.info}"
+      },
+      "neutral-background": {
+        "$value": "{color.neutral-subtle}"
+      },
+      "neutral-text": {
+        "$value": "{color.neutral}"
+      }
+    }
+  }
+}

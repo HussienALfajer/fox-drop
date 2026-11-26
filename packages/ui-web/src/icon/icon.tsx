@@ -32,14 +32,14 @@ export const STATES = [
   'boldDuo',
 ] as const;
 
-// The sizes are the `size.icon-*` tokens; an icon that mirrors flips under RTL.
+// The sizes are the `icon.size.*` tokens; an icon that mirrors flips under RTL.
 const icon = tv({
   base: 'shrink-0',
   variants: {
     size: {
-      sm: 'size-(--fd-size-icon-sm)',
-      md: 'size-(--fd-size-icon-md)',
-      lg: 'size-(--fd-size-icon-lg)',
+      sm: 'size-(--fd-icon-size-sm)',
+      md: 'size-(--fd-icon-size-md)',
+      lg: 'size-(--fd-icon-size-lg)',
     },
     mirror: { true: 'rtl:-scale-x-100' },
   },

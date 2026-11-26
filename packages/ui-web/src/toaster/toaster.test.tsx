@@ -34,6 +34,18 @@ describe('Toast', () => {
     vi.useRealTimers();
   });
 
+  // Parity gap (D.W3c): on a screen narrower than a toast and its margins,
+  // the toast kept its width and ran past the start edge.
+  it('keeps md from both edges on a narrow screen', async () => {
+    const user = setup({ tone: 'info', text: 'نُسخ رقم الطلب' });
+    await user.click(screen.getByRole('button', { name: 'أظهر' }));
+    const region = screen.getByRole('region', { name: 'الإشعارات' });
+    expect(region.className).toContain('inset-x-md');
+    expect(screen.getByText('نُسخ رقم الطلب').closest('li')?.className).toContain(
+      'max-w-(--fd-toast-width)',
+    );
+  });
+
   it('keeps the documented durations', () => {
     expect(TOAST_DURATION).toEqual({ success: 4000, info: 4000, warning: 6000, action: 8000 });
   });

@@ -130,12 +130,14 @@ class _FoxTabsState extends State<FoxTabs> {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final tabs = theme.components.tabs;
     final pill = widget.style == FoxTabsStyle.pill;
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var n = 0; n < widget.tabs.length; n++) ...[
-          if (pill && n > 0) const SizedBox(width: t.FoxSpace.xs),
+          // Underline tabs stand 2xs apart, as the web's (parity, D.W3c).
+          if (n > 0) SizedBox(width: pill ? tabs.pillGap : tabs.gap),
           KeyedSubtree(
             key: _keys[n],
             child: _Tab(
@@ -154,7 +156,12 @@ class _FoxTabsState extends State<FoxTabs> {
       decoration: BoxDecoration(
         border: pill
             ? null
-            : Border(bottom: BorderSide(color: theme.colors.border)),
+            : Border(
+                bottom: BorderSide(
+                  color: Color(tabs.colorBorder),
+                  width: tabs.borderWidth,
+                ),
+              ),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -192,15 +199,21 @@ class _TabState extends State<_Tab> {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final tabs = theme.components.tabs;
     final tab = widget.tab;
     final on = widget.selected;
     final count = tab.count;
     final countLabel = tab.countLabel;
     final name = countLabel == null ? tab.label : '${tab.label}، $countLabel';
-    final ink = widget.pill
-        ? (on ? c.onPrimary : c.onSurface)
-        : (on ? c.onSurface : c.onSurfaceMuted);
+    // Hover darkens an underline tab's words, as on the web (parity, D.W3c;
+    // it tinted the tab).
+    final ink = Color(
+      widget.pill
+          ? (on ? tabs.pillColorTextSelected : tabs.pillColorText)
+          : (on
+                ? tabs.colorTextSelected
+                : (_hovered ? tabs.colorTextHover : tabs.colorText)),
+    );
     final label = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -213,7 +226,7 @@ class _TabState extends State<_Tab> {
               ),
         ),
         if (count != null) ...[
-          const SizedBox(width: t.FoxSpace.xxs),
+          SizedBox(width: tabs.labelGap),
           FoxCountBadge(
             count: count,
             semanticLabel: countLabel ?? '$count',
@@ -225,24 +238,47 @@ class _TabState extends State<_Tab> {
     final Decoration decoration;
     if (widget.pill) {
       decoration = BoxDecoration(
-        color: on
-            ? c.primary
-            : (_hovered ? c.surfaceRaisedHover : c.surfaceRaised),
+        color: Color(
+          on
+              ? tabs.pillColorBackgroundSelected
+              : (_hovered
+                    ? tabs.pillColorBackgroundHover
+                    : tabs.pillColorBackground),
+        ),
         borderRadius: BorderRadius.circular(t.FoxRadius.full),
-        border: on ? null : Border.all(color: c.border),
+        border: on
+            ? null
+            : Border.all(
+                color: Color(tabs.colorBorder),
+                width: tabs.borderWidth,
+              ),
         boxShadow: on ? [theme.shadows.offset] : null,
       );
     } else {
+      final line = Color(tabs.colorIndicator);
       decoration = BoxDecoration(
-        color: _hovered && !on ? c.surfaceHover : null,
         border: Border(
           bottom: BorderSide(
-            color: on ? c.primary : c.surface.withValues(alpha: 0),
-            width: t.FoxBorderWidth.indicator,
+            color: on ? line : line.withValues(alpha: 0),
+            width: tabs.indicator,
           ),
         ),
       );
     }
+    // A pill is drawn 40 high (the sheet's) inside its 48 target; an
+    // underline tab is the target (parity, D.W3c).
+    final body = AnimatedContainer(
+      duration: t.FoxDuration.fast,
+      curve: theme.easing,
+      constraints: BoxConstraints(
+        minHeight: widget.pill ? tabs.pillHeight : tabs.height,
+      ),
+      padding: EdgeInsetsDirectional.symmetric(
+        horizontal: widget.pill ? tabs.pillPaddingInline : tabs.paddingInline,
+      ),
+      decoration: decoration,
+      child: Align(widthFactor: 1, heightFactor: 1, child: label),
+    );
     return Semantics(
       container: true,
       button: true,
@@ -266,20 +302,18 @@ class _TabState extends State<_Tab> {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: widget.onTap,
-              child: _Ring(
-                show: widget.node.hasFocus && _focusRing,
-                pill: widget.pill,
-                child: AnimatedContainer(
-                  duration: t.FoxDuration.fast,
-                  curve: theme.easing,
-                  constraints: const BoxConstraints(
-                    minHeight: t.FoxSize.touchTarget,
+              // The ring hugs what is drawn (the pill), the box around it is
+              // the 48 target only.
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: tabs.height),
+                child: Align(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: _Ring(
+                    show: widget.node.hasFocus && _focusRing,
+                    pill: widget.pill,
+                    child: body,
                   ),
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: t.FoxSpace.md,
-                  ),
-                  decoration: decoration,
-                  child: Align(widthFactor: 1, heightFactor: 1, child: label),
                 ),
               ),
               onTapDown: (_) => _focusRing = false,

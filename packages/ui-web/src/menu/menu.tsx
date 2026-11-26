@@ -39,25 +39,30 @@ export interface MenuProps {
 // trigger aligned to its start (right in RTL) and fades in duration.fast.
 const content = formTv({
   base: [
-    'z-(--fd-layer-menu) min-w-(--fd-size-tooltip) max-h-(--available-height) overflow-y-auto p-2xs outline-hidden',
-    'rounded-md bg-surface-raised text-on-surface shadow-medium inset-ring-1 inset-ring-border',
+    'z-(--fd-layer-menu) min-w-(--fd-menu-min-width) max-h-(--available-height) overflow-y-auto p-(--fd-menu-padding) outline-hidden',
+    'rounded-(--fd-menu-radius) bg-(--fd-menu-color-background) text-(color:--fd-menu-color-text) shadow-medium',
+    'inset-ring-(length:--fd-menu-border-width) inset-ring-(color:--fd-menu-color-border)',
     'transition-opacity duration-(--fd-duration-fast) ease-(--fd-easing-standard) data-starting-style:opacity-0 data-ending-style:opacity-0',
   ],
 });
 
 const item = formTv({
   base: [
-    'flex cursor-pointer items-center gap-xs rounded-sm px-xs outline-hidden',
-    'data-highlighted:bg-surface-raised-hover active:bg-surface-raised-pressed',
+    'flex cursor-pointer items-center gap-(--fd-menu-item-gap) rounded-(--fd-menu-item-radius) px-(--fd-menu-item-padding-inline) font-medium outline-hidden',
+    'data-highlighted:bg-(--fd-menu-color-item-hover) active:bg-(--fd-menu-color-item-pressed)',
     'data-disabled:cursor-not-allowed data-disabled:text-on-disabled',
-    'data-destructive:text-danger',
+    'data-destructive:text-(color:--fd-menu-color-danger)',
   ],
   variants: {
     density: {
-      comfortable: 'min-h-(--fd-size-touch-target) text-phone-body',
-      compact: 'min-h-(--fd-size-control-compact) text-panel-body',
+      comfortable: 'min-h-(--fd-menu-item-height) text-phone-body',
+      compact: 'min-h-(--fd-menu-compact-item-height) text-panel-body',
     },
   },
+});
+
+const separator = formTv({
+  base: 'mx-(--fd-menu-separator-margin-inline) my-(--fd-menu-separator-margin-block) h-(--fd-menu-border-width) bg-(--fd-menu-color-border)',
 });
 
 const trigger = formTv({
@@ -101,7 +106,7 @@ export function Menu({
       <MenuContent className={content()} side="bottom" align="start">
         {items.map((entry, index) =>
           entry === 'separator' ? (
-            <MenuSeparator key={index} className="mx-xs my-2xs h-px bg-border" />
+            <MenuSeparator key={index} className={separator()} />
           ) : (
             <MenuItem
               key={entry.label}

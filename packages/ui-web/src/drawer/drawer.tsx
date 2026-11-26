@@ -22,7 +22,7 @@ export const STATES = ['default', 'start', 'open'] as const;
 // under reduced motion it only fades.
 const panel = formTv({
   base: [
-    'fixed inset-y-none z-(--fd-layer-overlay) flex w-full max-w-(--fd-size-drawer) flex-col bg-surface-raised text-on-surface shadow-high outline-hidden',
+    'fixed inset-y-none z-(--fd-layer-overlay) flex w-full max-w-(--fd-drawer-width) flex-col bg-(--fd-drawer-color-background) text-on-surface shadow-high outline-hidden',
     'transition duration-(--fd-duration-slow) ease-(--fd-easing-standard) data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-opacity motion-reduce:data-starting-style:translate-x-none motion-reduce:data-ending-style:translate-x-none',
   ],
   variants: {
@@ -35,7 +35,10 @@ const panel = formTv({
 });
 
 const head = formTv({
-  base: 'flex min-h-(--fd-size-bar) shrink-0 items-center gap-sm border-b border-border px-md',
+  base: [
+    'flex min-h-(--fd-drawer-header-height) shrink-0 items-center gap-(--fd-drawer-header-gap) px-(--fd-drawer-header-padding-inline)',
+    'border-b-(length:--fd-drawer-border-width) border-(color:--fd-drawer-color-border)',
+  ],
 });
 
 export interface DrawerProps {
