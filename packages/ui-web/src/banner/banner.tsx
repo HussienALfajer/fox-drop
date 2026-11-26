@@ -111,7 +111,10 @@ export function Banner({
     <div
       role={tone === 'danger' ? 'alert' : 'status'}
       data-tone={tone}
-      className={banner({ tone, density, class: stacked ? 'items-start py-sm' : '' })}
+      // Stacked, the words and actions start at the top; the block padding
+      // stays the density's (the D.10 sheet's 8: a `py-sm` here lost to it in
+      // the CSS order anyway, D.W3c).
+      className={banner({ tone, density, class: stacked ? 'items-start' : '' })}
     >
       <Icon name={icon ?? ICON[tone]} />
       {stacked ? (

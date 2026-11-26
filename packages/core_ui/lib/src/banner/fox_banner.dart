@@ -153,8 +153,7 @@ class FoxBanner extends StatelessWidget {
             // xs above and below, the web's (parity, D.W3c; it was 2xs).
             padding: EdgeInsetsDirectional.symmetric(
               horizontal: banner.paddingInline,
-              // Two actions under the words take sm, as the web's.
-              vertical: stacked ? t.FoxSpace.sm : banner.paddingBlock,
+              vertical: banner.paddingBlock,
             ),
             child: Row(
               crossAxisAlignment: stacked
