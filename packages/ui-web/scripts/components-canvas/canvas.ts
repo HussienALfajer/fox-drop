@@ -221,13 +221,15 @@ export async function buildCanvas(input: {
   }
   // Proposals drawn on the proposals page stay until their board is built
   // from the bundle; the retired hand-drawn boards go.
-  const kept = Object.entries(current.boards ?? {}).filter(
-    ([file, b]) => b.page !== 'components' && !RETIRED.includes(file) && !files.has(file),
-  );
+  const kept = Object.entries(current.boards ?? {})
+    .filter(([file, b]) => b.page !== 'components' && !RETIRED.includes(file) && !files.has(file))
+    .map(([file, b]) => [file, { ...b, page: b.page ?? 'proposals' }] as const);
   const notes = {
     ...groupNotes,
     ...Object.fromEntries(
-      Object.entries(current.notes ?? {}).filter(([, n]) => n.page !== 'components'),
+      Object.entries(current.notes ?? {})
+        .filter(([, n]) => n.page !== 'components')
+        .map(([id, n]) => [id, { ...n, page: n.page ?? 'proposals' }]),
     ),
     'proposals-life-cycle': {
       // A sticky (no `kind`), above where the proposals are drawn.

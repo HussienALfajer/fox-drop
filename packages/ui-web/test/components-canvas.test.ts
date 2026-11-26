@@ -15,7 +15,12 @@ import {
   LATER,
   RETIRED,
 } from '../scripts/components-canvas/canvas.ts';
-import { COMPONENTS as COPY, GROUPS, PROPOSALS_NOTE, TEXT } from '../scripts/components-canvas/copy-ar.ts';
+import {
+  COMPONENTS as COPY,
+  GROUPS,
+  PROPOSALS_NOTE,
+  TEXT,
+} from '../scripts/components-canvas/copy-ar.ts';
 import { classesOf, forcedStates } from '../scripts/components-canvas/states.ts';
 import {
   readStories,
