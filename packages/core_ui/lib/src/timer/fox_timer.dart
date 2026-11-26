@@ -120,11 +120,16 @@ class FoxCountdownRing extends StatelessWidget {
     super.key,
     required this.seconds,
     required this.total,
+    this.label,
     this.diameter,
   });
 
   final int seconds;
   final int total;
+
+  /// The words after the number for screen readers: «ثانية متبقية», so the
+  /// ring reads «38 ثانية متبقية» as the web's; without it, the number alone.
+  final String? label;
 
   /// Defaults to the ring's token, two touch targets.
   final double? diameter;
@@ -133,15 +138,17 @@ class FoxCountdownRing extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final countdownRing = theme.components.countdownRing;
+    final left = math.max(0, seconds);
     final colour = Color(
-      seconds <= 10 ? countdownRing.colorLast : countdownRing.colorProgress,
+      left <= 10 ? countdownRing.colorLast : countdownRing.colorProgress,
     );
+    final label = this.label;
     final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final clockwise = Directionality.of(context) == TextDirection.ltr;
     return SizedBox.square(
       dimension: diameter ?? countdownRing.size,
       child: TweenAnimationBuilder<double>(
-        tween: Tween(end: total <= 0 ? 0 : (seconds / total).clamp(0, 1)),
+        tween: Tween(end: total <= 0 ? 0 : (left / total).clamp(0, 1)),
         duration: still ? Duration.zero : t.FoxDuration.base,
         curve: theme.easing,
         builder: (context, share, child) => CustomPaint(
@@ -155,10 +162,14 @@ class FoxCountdownRing extends StatelessWidget {
           child: child,
         ),
         child: Center(
-          child: Text(
-            '$seconds',
-            textDirection: TextDirection.ltr,
-            style: theme.text.number.copyWith(color: colour),
+          child: Semantics(
+            label: label == null ? null : '$left $label',
+            excludeSemantics: label != null,
+            child: Text(
+              '$left',
+              textDirection: TextDirection.ltr,
+              style: theme.text.number.copyWith(color: colour),
+            ),
           ),
         ),
       ),

@@ -56,6 +56,7 @@ Widget _row({
 
 void _orderRow() {
   parityCase('orderrow--active', _row);
+  parityCase('orderrow--focus', _row);
   parityCase(
     'orderrow--past',
     () => _row(

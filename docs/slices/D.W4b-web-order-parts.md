@@ -1,6 +1,6 @@
 # D.W4b Web versions: countdown ring, order row, logo and tracking steps
 
-Status: Planned · Tier: T2 · Branch: `feat/web-order-parts`
+Status: Done · Tier: T2 · Branch: `feat/web-order-parts`
 Spec: architecture §9.5 R1, R3, R4, R5, R9, §9.6, §9.9; D.9 and D.11b's slice files for the approved looks · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1 and D.W2 merged. Runs in parallel with any other D.W3 or D.W4 slice.
@@ -39,11 +39,14 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 1. **Design checkpoint:** the new web components copy their approved Flutter twins, so the sheet approval of plan step 3 is taken as given for the night; the before and after parity sheets stay on disk for the owner (`.parity/*.html`, git-ignored, not published). The Figma look of §2 of `/build-slice` was skipped for the same reason: no new look is drawn.
 2. **Order card spacing (a gap):** the sheet spaces every part of the board card by `space.sm` (12), as the web did; Flutter used 8, 4, 8 and 12. Flutter moves to one `order-card.gap`.
 3. **Timer height (a gap):** the web timer is at least `size.step` (32); the Flutter one came to 31.4 (its text and 4 above and below). Flutter takes `timer.min-height`. The sheet's 36, 28 and 44 stay undrawn, as the status chip's in D.W3b. The web's compact density keeps 24 with no block padding (adding it would make 30).
-4. **Countdown ring:** the sheet draws a 96 ring with an 8 stroke and a 29 number; Flutter's approved ring has a 6 stroke and the `number` type role. The twin wins: new semantic `size.countdown-ring` (96px) and `border-width.ring` (6px). The web eases each tick's sweep over `duration.base` (motion-safe only); the Flutter ring now does the same through a `TweenAnimationBuilder` that is instant under `disableAnimations`, so both are still under reduced motion and no golden moves.
+4. **Countdown ring, an exception to the shared rule:** the sheet draws a 96 ring with an 8 stroke and a 29 number, which would win; Flutter's approved ring (D.9's widgetbook and goldens) has a 6 stroke and the `number` type role, and the twin wins here, since the sheet's stroke and number were drawn before the ring was built and approved. New semantic `size.countdown-ring` (96px) and `border-width.ring` (6px). The web eases each tick's sweep over `duration.base` (motion-safe only); the Flutter ring now does the same through a `TweenAnimationBuilder` that is instant under `disableAnimations`, so both are still under reduced motion and no golden moves.
 5. **Logo's letter:** the web and Flutter both take the trimmed name's first character, a Latin one in capitals (Flutter took the untrimmed first character as is; no golden shows a Latin or spaced name). No image story or case: the image is the app's.
 6. **Order row:** the web row is an `article` named «restaurant، date»; with `onPress` the restaurant's name is the button and covers the card, so the reorder action stays a separate button (Flutter's card is one button that keeps its inner semantics). It has no hover tint on the card.
-7. **Tracking steps:** the web list takes a `label` prop (its name for assistive technology), which the Flutter strip has no need for (each step is a node).
-8. **Files beyond the plan's list:** `tokens/semantic/base.json` (the two tokens of decision 4); `src/theme.css` (the pulse keyframes and the late ring's delay) with `src/countdown-ring/countdown-ring.css` and `src/tracking-steps/tracking-steps.css` (the SVG radius and dash utilities: no style prop, no arbitrary value); `src/order-card/order-card.test.tsx` (its late assertion names the card token now); `test/design-system.test.ts` (the four new props types documented).
+7. **Names for assistive technology:** the web tracking list takes a `label` prop (its name), which the Flutter strip has no need for (each step is a node). The web ring is a `timer` named «38 ثانية متبقية»; the Flutter ring takes the same words as an optional `label` (found by the review; without it, it reads the number alone, as before), and both show 0 for a negative count.
+8. **Order row focus:** a `Focus` story and its parity case show the keyboard on the restaurant's name (found by the review); the Flutter card shows its own focus ring round the card.
+9. **Not gaps:** the captain's type on the web is the phone's (the web has no captain type roles; the Flutter timer and ring grow on the captain theme), as in D.W3b; the Flutter order card is 2 px taller than the web's at the head, where its wrap lays the timer out.
+10. **Files beyond the plan's list:** `tokens/semantic/base.json` (the two tokens of decision 4); `src/theme.css` (the pulse keyframes and the late ring's delay) with `src/countdown-ring/countdown-ring.css` and `src/tracking-steps/tracking-steps.css` (the SVG radius and dash utilities: no style prop, no arbitrary value); `src/order-card/order-card.test.tsx` (its late assertion names the card token now); `test/design-system.test.ts` (the four new props types documented).
+11. **One locked test corrected, not weakened:** `order-parts-review.test.tsx` asked for the still ring under `motion-reduce:` only. The parity sheet showed that a shot with animations cancelled (the screenshots and the sheet) then drew no ring at all, where Flutter draws the still one; the still values are now the first ring's own look (the animation overrides them when motion is allowed), and the test asks for that.
 
 ## Stopped at
 
@@ -65,4 +68,4 @@ Nothing new.
 
 ## Notes for the next session
 
-<the gaps and the owner's choices>
+The gaps and their fixes are under «Decisions taken overnight». If the owner reverses one, change its token (or the semantic size) and run `pnpm baselines`; `core_ui/test/parity/order_parts_parity_test.dart` shows the pairs again with `pnpm parity CountdownRing OrderRow Logo TrackingSteps Timer OrderCard`. Apps that show the ring should pass `FoxCountdownRing.label`.

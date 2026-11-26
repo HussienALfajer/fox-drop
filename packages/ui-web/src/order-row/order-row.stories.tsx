@@ -31,6 +31,8 @@ export const Past: Story = {
     ),
   },
 };
+// The keyboard on the restaurant's name, the button that opens the order.
+export const Focus: Story = {};
 export const Cancelled: Story = {
   args: {
     date: '21/11/2026',
