@@ -338,6 +338,29 @@ void main() {
       expect(turns(), 0.5);
     });
 
+    testWidgets('turns its chevron at once under reduced motion', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        formApp(
+          FoxSelect<int>(
+            options: options,
+            value: null,
+            onChanged: (_) {},
+            label: 'الحي',
+          ),
+          disableAnimations: true,
+        ),
+      );
+      final rotation = tester.widget<AnimatedRotation>(
+        find.descendant(
+          of: find.byType(FieldBox),
+          matching: find.byType(AnimatedRotation),
+        ),
+      );
+      expect(rotation.duration, Duration.zero);
+    });
+
     testWidgets('opens a menu under the field, as wide as it, and picks', (
       tester,
     ) async {

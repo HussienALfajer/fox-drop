@@ -314,7 +314,7 @@ class _FoxRadioState<T> extends State<FoxRadio<T>> implements RadioEntry {
             box: box,
             label: widget.label,
             color: enabled
-                ? theme.colors.onSurface
+                ? Color(input.colorText)
                 : Color(input.colorOnDisabled),
           );
         },

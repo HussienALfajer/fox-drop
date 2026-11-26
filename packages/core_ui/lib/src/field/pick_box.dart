@@ -97,10 +97,13 @@ class PickBox extends StatelessWidget {
               if (end != null) ...[
                 SizedBox(width: input.gap),
                 // Turned up while its menu is open, as on the web (parity,
-                // D.W3a).
+                // D.W3a); at once under reduced motion.
                 AnimatedRotation(
                   turns: expanded == true ? 0.5 : 0,
-                  duration: t.FoxDuration.base,
+                  duration:
+                      (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+                      ? Duration.zero
+                      : t.FoxDuration.base,
                   curve: theme.easing,
                   child: FoxIcon(end!, color: colour),
                 ),

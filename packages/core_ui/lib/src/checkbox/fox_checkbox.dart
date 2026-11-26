@@ -115,7 +115,7 @@ class FoxCheckbox extends StatelessWidget {
           box: box,
           label: label,
           color: enabled
-              ? theme.colors.onSurface
+              ? Color(input.colorText)
               : Color(input.colorOnDisabled),
         );
       },
