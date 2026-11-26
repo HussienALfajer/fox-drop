@@ -1,6 +1,6 @@
 # D.W5 The Design System shows web components only; the web-first rule
 
-Status: Planned · Tier: T2 · Branch: `docs/web-first-design-system`
+Status: Done · Tier: T2 · Branch: `docs/web-first-design-system`
 Spec: architecture §9.1, §9.7, §9.8, §9.9 · Definition of done: workflow §4
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Last: needs every D.W3 and D.W4 slice merged, so no component leaves the Design System before its web version is in it.
@@ -29,7 +29,7 @@ Tests written first (locked in the red phase):
 
 ## Stopped at
 
-Built: the Flutter cards removed, the build and its test, the docs and instructions. Next: the checks, the review, the pull request.
+Done: built, checked, reviewed; the pull request is open. The Design System's republish runs after the merge (decision 1).
 
 ## Decisions taken overnight (pending the owner)
 
@@ -41,12 +41,16 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 4. **Unused exports go with the Flutter group:** `flutterCards`, `pngSize` and `MAX_PNG` (every upload is an SVG now, so the index's type is `image/svg+xml` alone). `scripts/parity.mjs` keeps its own `pngSize`.
 5. **The three package `CLAUDE.md` files stay under 4 KB** by shortening lines elsewhere (the core_ui layout's export list, the forms harness line, the ui-web command line), meaning unchanged.
 6. **`classify-changes.test.mjs` is unchanged and green:** the card paths were globbed, not named.
+7. **Two instruction files beyond the plan's list (review, round 1):** the root `CLAUDE.md`'s «Design first» line and the `reviewer` agent's checklist still asked for every component's approval before its code. Both now say the T14 checkpoints; the root file stays under its 10 KB cap by dropping «(Phase D)» from the same line.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- The republished Design System: the owner's look
-- Review:
+- Red phase: `vitest run src/design-system-build.test.ts` failed 3 of 9 for the right reason (a `Flutter/FoxAmountsSummary.png` upload, the `Flutter` group in `ASSET_GROUPS` and the index); after the build change 8 passed, 1 skipped (the fonts-absent case).
+- `node scripts/verify.mjs --changed`: first run failed `Claude Code hooks and scripts` (`turbo-inputs.test.mjs`: the new test reads `ui-web/scripts/bundle.ts` and `ui-web/design-system/`, undeclared; added to `turbo.json`); second run «verify: the checks of the change passed» (Dart analyze, Flutter tests, Turborepo lint, type check, build and tests, hooks and scripts; server tests skipped).
+- `pnpm baselines`: all 340 stories on phone and captain and the core_ui goldens updated and compared, «no image changed».
+- The two builds: `pnpm --filter @fox-drop/design-tokens design-system` then `pnpm --filter @fox-drop/ui-web design-system` wrote `packages/design-tokens/.design-system/system/` (uploads `Logos/`, `App icon/`, `Icons/`; `project/components/` the Cover and the ui-web cards; no `Flutter` or `Fox*` path); a `--blobs` pass with stand-in ids gave the groups `Logos`, `App icon`, `Icons` (that index deleted).
+- The republished Design System: after the merge (decision 1); the owner's look is pending.
+- Review: `reviewer` (T2, medium). Round 1: no blocking, four should-fix (the root `CLAUDE.md`, §9.1 and the reviewer's checklist still asked for a component's approval before its code; the roadmap), three minor (the overlay framing of the parity sheets, `["flutter"]` sides, the cards' origin date); all fixed. Round 2: none open.
 
 ## Before deploying
 

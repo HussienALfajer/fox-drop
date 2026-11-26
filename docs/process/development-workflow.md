@@ -50,7 +50,7 @@ Measured on 2026-11-25: slices of 115 to 320 files took 250 to 440 requests in o
 - Every definition-of-done item the slice closes is met and proven by a test or a staging demonstration.
 - `--changed` green locally; CI's full check green; no new lint suppression without a written reason.
 - Money: integer minor units, balances only through the ledger, every journal balanced per currency, repeated requests and timer jobs post once.
-- UI: built from an approved sheet or drawing, Arabic right to left, start and end, strings in translation files.
+- UI: a screen built from its approved drawing, a web component approved as its Design System card, a Flutter twin checked on its parity sheet (T14); Arabic right to left, start and end, strings in translation files.
 - No secrets or real personal data in code, fixtures, logs or screenshots.
 - `docs/code/<folder path>.md`, folder `CLAUDE.md` files and the slice file updated; the roadmap line ticked.
 
