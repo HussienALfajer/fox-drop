@@ -1,6 +1,6 @@
 # D.C1 The components canvas: generator, check and five pilot boards
 
-Status: Planned · Tier: T2 · Branch: `feat/components-canvas-generator`
+Status: Done · Tier: T2 · Branch: `feat/components-canvas-generator`
 Spec: architecture §9.8, §9.9, T14 · Definition of done: workflow §4; the owner approves the pilot boards' look
 
 Part of the components canvas plan (owner approval 2026-11-26, with every recommendation of the brief): the Design canvas "Component proposals" becomes "Fox Drop Components", one live board per `ui-web` component, generated from the code on the principle of the Shifa project's components canvas (its ADR-0048 and `packages/ui/scripts/design-system/canvas/`, read only). Four slices, T2, one merge at a time since they share the generator: D.C1 (this one), D.C2 the other non-overlay boards and the index, D.C3 the overlays drawn open, D.C4 the proposals page, the old boards out, decision T15 and the docs. Shared rules for the four:
@@ -43,7 +43,7 @@ Tests written first (locked in the red phase):
 
 ## Stopped at
 
-Built, reviewed (two rounds, no finding left), checked and published (canvas version 30); the pull request is a draft until the owner approves the five boards' look (checkpoint 0). Then: mark Done, merge, re-sync the Design System (Dialog `inline`) and republish the canvas with `ds/fox-drop/*` copied from it.
+Done. The owner approved the five boards' look on canvas version 30 (2026-11-26, checkpoint 0), with the report that listed the strengthened locked Dialog test. After the merge: re-sync the Design System (Dialog `inline`) and republish the canvas with `ds/fox-drop/*` copied from it.
 
 ## Evidence
 
