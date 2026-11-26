@@ -1,0 +1,52 @@
+{
+  "skeleton": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["skeleton"], "flutter": ["skeleton"] }
+    },
+    "background": {
+      "$type": "color",
+      "$value": "{color.neutral-subtle}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.xs}"
+    },
+    "line-height": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$description": "A line of text to come; the Flutter block's default height."
+    },
+    "web": {
+      "$type": "dimension",
+      "$description": "The web block's other shapes; a Flutter caller gives a block its height or a circle its size.",
+      "gap": {
+        "$value": "{space.sm}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "title-height": {
+        "$value": "{space.md}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "circle-size": {
+        "$value": "{space.xl}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "square-size": {
+        "$value": "{space.2xl}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "square-radius": {
+        "$value": "{radius.md}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "media-radius": {
+        "$value": "{radius.lg}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "pill-height": {
+        "$value": "{size.control}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    }
+  }
+}

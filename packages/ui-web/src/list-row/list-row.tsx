@@ -14,19 +14,24 @@ export const STATES = [
   'compact',
 ] as const;
 
+// The D.9 sheet (D.W3b): 56 on the phone with a 40 lead, 40 in the panel
+// with a 24 lead, on the raised surface.
 const row = formTv({
-  base: 'flex w-full items-center gap-sm px-md py-xs text-start transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
+  base: 'flex w-full items-center gap-(--fd-list-row-gap) bg-(--fd-list-row-color-background) py-(--fd-list-row-padding-block) text-start transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
   variants: {
     density: {
-      comfortable: 'min-h-(--fd-size-touch-target)',
-      compact: 'min-h-(--fd-size-control-compact) px-sm',
+      comfortable: 'min-h-(--fd-list-row-min-height) px-(--fd-list-row-padding-inline)',
+      compact: 'min-h-(--fd-list-row-compact-min-height) px-(--fd-list-row-compact-padding-inline)',
     },
-    tone: { default: 'text-on-surface', danger: 'text-danger' },
+    tone: {
+      default: 'text-(color:--fd-list-row-color-label)',
+      danger: 'text-(color:--fd-list-row-danger-label)',
+    },
     pressable: {
-      true: `cursor-pointer hover:bg-surface-raised-hover active:bg-surface-raised-pressed ${keyboardRing}`,
+      true: `cursor-pointer hover:bg-(--fd-list-row-color-background-hover) active:bg-(--fd-list-row-color-background-pressed) ${keyboardRing}`,
     },
     disabled: {
-      true: 'cursor-not-allowed text-on-disabled hover:bg-transparent active:bg-transparent',
+      true: 'cursor-not-allowed text-(color:--fd-list-row-color-disabled) hover:bg-(--fd-list-row-color-background) active:bg-(--fd-list-row-color-background)',
     },
   },
   defaultVariants: { density: 'comfortable', tone: 'default' },
@@ -35,9 +40,17 @@ const row = formTv({
 const lead = formTv({
   base: 'flex shrink-0 items-center justify-center rounded-full',
   variants: {
-    tone: { default: 'bg-info-subtle', danger: 'bg-danger-subtle' },
-    density: { comfortable: 'size-xl', compact: 'size-lg' },
+    tone: {
+      default: 'bg-(--fd-list-row-color-lead)',
+      danger: 'bg-(--fd-list-row-danger-lead)',
+    },
+    density: {
+      comfortable: 'size-(--fd-list-row-lead-size)',
+      compact: 'size-(--fd-list-row-compact-lead-size)',
+    },
   },
+  // Without them a row that names no density or tone drew no circle (D.W3b).
+  defaultVariants: { density: 'comfortable', tone: 'default' },
 });
 
 export interface ListRowProps {
@@ -81,7 +94,9 @@ export function ListRow(props: ListRowProps) {
           <span
             id={descriptionId}
             className={
-              disabled ? 'text-phone-secondary' : 'text-phone-secondary text-on-surface-muted'
+              disabled
+                ? 'text-phone-secondary'
+                : 'text-phone-secondary text-(color:--fd-list-row-color-description)'
             }
           >
             {description}
@@ -94,7 +109,7 @@ export function ListRow(props: ListRowProps) {
         </span>
       ) : null}
       {pressable && tone !== 'danger' ? (
-        <span className="inline-flex -scale-x-100 text-on-surface-muted">
+        <span className="inline-flex -scale-x-100 text-(color:--fd-list-row-color-chevron)">
           <Icon name="back" size="sm" />
         </span>
       ) : null}

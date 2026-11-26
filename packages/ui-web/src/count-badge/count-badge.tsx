@@ -10,23 +10,37 @@ export function badgeText(count: number, max = 99): string {
 }
 
 // Red by default, orange for the cart (the R4 exception), blue in a tab. A
-// ring of the raised surface separates it from the icon it sits on.
+// ring of the raised surface separates it from the icon it sits on; it is a
+// border inside the badge's size, as the D.9 sheet measures it (D.W3b).
 const badge = formTv({
-  base: 'inline-flex items-center justify-center rounded-full font-bold tabular-nums text-phone-caption ring-2 ring-surface-raised',
+  base: 'inline-flex items-center justify-center rounded-full border-(length:--fd-count-badge-ring-width) border-(--fd-count-badge-ring) font-bold tabular-nums text-phone-caption',
   variants: {
     tone: {
-      danger: 'bg-danger text-on-danger',
-      primary: 'bg-primary text-on-primary',
-      accent: 'bg-accent text-on-accent',
+      danger: 'bg-(--fd-count-badge-danger-background) text-(color:--fd-count-badge-danger-label)',
+      primary:
+        'bg-(--fd-count-badge-primary-background) text-(color:--fd-count-badge-primary-label)',
+      accent: 'bg-(--fd-count-badge-accent-background) text-(color:--fd-count-badge-accent-label)',
     },
-    dot: { true: 'size-xs', false: 'min-h-md min-w-md px-2xs' },
+    dot: {
+      true: 'size-(--fd-count-badge-dot-size)',
+      false:
+        'min-h-(--fd-count-badge-size) min-w-(--fd-count-badge-size) px-(--fd-count-badge-padding-inline)',
+    },
     corner: { true: 'absolute', false: '' },
   },
-  // A number sits half off the icon's corner so the icon still reads; the dot
+  // A number is centred on the icon's corner so the icon still reads; the dot
   // stays tucked on the corner.
   compoundVariants: [
-    { corner: true, dot: false, class: '-top-xs -end-xs' },
-    { corner: true, dot: true, class: '-top-2xs -end-2xs' },
+    {
+      corner: true,
+      dot: false,
+      class: '-top-(--fd-count-badge-offset) -end-(--fd-count-badge-offset)',
+    },
+    {
+      corner: true,
+      dot: true,
+      class: '-top-(--fd-count-badge-dot-offset) -end-(--fd-count-badge-dot-offset)',
+    },
   ],
   defaultVariants: { tone: 'danger' },
 });

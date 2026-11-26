@@ -43,8 +43,8 @@ describe('StatusChip', () => {
   it('draws the tone on its tint', () => {
     render(<StatusChip status="delivered" label="تم التسليم" />);
     const chip = screen.getByText('تم التسليم').closest('[data-tone]')!;
-    expect(chip.className).toContain('bg-success-subtle');
-    expect(chip.className).toContain('text-success');
+    expect(chip.className).toContain('bg-(--fd-status-chip-success-background)');
+    expect(chip.className).toContain('text-(color:--fd-status-chip-success-label)');
   });
 
   it('takes a tone and an icon without an order state (a restaurant badge)', () => {

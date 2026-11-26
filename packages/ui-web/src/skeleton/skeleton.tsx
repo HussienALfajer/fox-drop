@@ -8,15 +8,15 @@ export const STATES = ['default', 'listRows', 'orderCard'] as const;
 // styles.css, opacity 1 → 0.55 → 1 over duration.moment; still under reduced
 // motion. Drawn in the shape of what will come, never a spinner over content.
 const block = formTv({
-  base: 'block bg-neutral-subtle motion-safe:animate-skeleton',
+  base: 'block bg-(--fd-skeleton-background) motion-safe:animate-skeleton',
   variants: {
     shape: {
-      line: 'h-sm w-full rounded-xs',
-      title: 'h-md w-full rounded-xs',
-      circle: 'size-xl rounded-full',
-      square: 'size-2xl rounded-md',
-      media: 'aspect-cover w-full rounded-lg',
-      pill: 'h-(--fd-size-control) w-full rounded-full',
+      line: 'h-(--fd-skeleton-line-height) w-full rounded-(--fd-skeleton-radius)',
+      title: 'h-(--fd-skeleton-web-title-height) w-full rounded-(--fd-skeleton-radius)',
+      circle: 'size-(--fd-skeleton-web-circle-size) rounded-full',
+      square: 'size-(--fd-skeleton-web-square-size) rounded-(--fd-skeleton-web-square-radius)',
+      media: 'aspect-cover w-full rounded-(--fd-skeleton-web-media-radius)',
+      pill: 'h-(--fd-skeleton-web-pill-height) w-full rounded-full',
     },
   },
   defaultVariants: { shape: 'line' },
@@ -41,7 +41,12 @@ export interface SkeletonProps {
 /** The loading state of R6: blocks in the shape of the content. */
 function SkeletonRoot({ label, children }: SkeletonProps) {
   return (
-    <div role="status" aria-label={label} aria-busy="true" className="flex flex-col gap-sm">
+    <div
+      role="status"
+      aria-label={label}
+      aria-busy="true"
+      className="flex flex-col gap-(--fd-skeleton-web-gap)"
+    >
       {/* A live region announces its text, not its name. */}
       <span className="sr-only">{label}</span>
       {children}

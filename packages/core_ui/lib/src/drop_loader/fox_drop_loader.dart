@@ -94,23 +94,28 @@ class _FoxDropLoaderState extends State<FoxDropLoader>
     super.dispose();
   }
 
-  double get _side => switch (widget.size) {
-    FoxDropLoaderSize.sm => t.FoxSize.iconSm,
-    FoxDropLoaderSize.md => t.FoxSize.iconMd,
-    FoxDropLoaderSize.lg => t.FoxSize.touchTarget,
-  };
-
   @override
   Widget build(BuildContext context) {
-    final c = FoxTheme.of(context).colors;
+    final dropLoader = FoxTheme.of(context).components.dropLoader;
+    final side = switch (widget.size) {
+      FoxDropLoaderSize.sm => dropLoader.sizeSm,
+      FoxDropLoaderSize.md => dropLoader.sizeMd,
+      FoxDropLoaderSize.lg => dropLoader.sizeLg,
+    };
     final small = widget.size == FoxDropLoaderSize.sm;
     final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     // On light: an ivory drop under orange pieces (the fox shows ivory); on
-    // orange the other way round. The drop alone takes the mark's colour.
-    final markColour = widget.onPrimary ? c.onPrimary : c.brand;
-    final otherColour = widget.onPrimary ? c.primary : c.onPrimary;
+    // orange the other way round. The drop alone takes the pieces' colour.
+    final markColour = Color(
+      widget.onPrimary
+          ? dropLoader.colorOnPrimaryPieces
+          : dropLoader.colorPieces,
+    );
+    final otherColour = Color(
+      widget.onPrimary ? dropLoader.colorOnPrimaryDrop : dropLoader.colorDrop,
+    );
     Widget paint(double level, double opacity, double wave) => CustomPaint(
-      size: Size.square(_side),
+      size: Size.square(side),
       painter: MarkPainter(
         level: level,
         opacity: opacity,
