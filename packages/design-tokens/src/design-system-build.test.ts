@@ -7,8 +7,9 @@ import {
   fonts,
   FONTS,
   index,
+  inlineStyles,
   MAX_FONT,
-  MAX_SVG,
+  MAX_UPLOAD,
   systemFiles,
 } from './design-system-build.ts';
 import { designSystem, FONT_FILES } from './design-system.ts';
@@ -50,13 +51,55 @@ describe("the Design System's files (architecture §9.8)", () => {
     ]);
   });
 
-  it('uploads the logo, app icon and line icon SVGs within the caps, the broken-edges icons left out', () => {
+  it('uploads every logo and app icon of the brand pack and the line icons, within the caps', () => {
     expect([...uploads.keys()].filter((key) => key.startsWith('Icons/'))).toHaveLength(47);
+    // Owner, 2026-11-26: every logo and app icon in docs/brand shows.
+    expect([...uploads.keys()].filter((key) => key.startsWith('Logos/'))).toHaveLength(18);
+    expect([...uploads.keys()].filter((key) => key.startsWith('App icon/')).sort()).toEqual(
+      [
+        'android-primary-white-fox-on-orange.png',
+        'android-variant-b.png',
+        'android-variant-c.png',
+        'app-icon-08.svg',
+        'app-icon-09.svg',
+        'app-icon-10.svg',
+        'app-icon-broken-edges-1.svg',
+        'app-icon-broken-edges-2.svg',
+        'app-icon-broken-edges-3.svg',
+        'ios-primary-ivory-fox-on-orange.png',
+        'ios-variant-b.png',
+        'ios-variant-c.png',
+      ].map((file) => `App icon/${file}`),
+    );
     for (const [key, bytes] of uploads) {
-      expect(key).toMatch(/^(Logos|App icon|Icons)\/[\w.-]+\.svg$/);
-      expect(key).not.toMatch(/broken-edges/);
-      expect(bytes.length).toBeLessThanOrEqual(MAX_SVG);
+      expect(key).toMatch(/^(Logos|App icon|Icons)\/[\w.-]+\.(svg|png)$/);
+      expect(bytes.length).toBeLessThanOrEqual(MAX_UPLOAD);
     }
+  });
+
+  // The asset store strips <style> from an SVG, which left the lockups
+  // without their colours: the build writes each class rule as attributes.
+  it('uploads SVGs without <style> or classes, the lockups keeping their colours', () => {
+    for (const [key, bytes] of uploads) {
+      if (!key.endsWith('.svg')) continue;
+      const svg = bytes.toString('utf8');
+      expect(svg, key).not.toMatch(/<style|class="/);
+    }
+    for (const key of [...uploads.keys()].filter((k) => /^Logos\/lockup-.*\.svg$/.test(k))) {
+      const svg = uploads.get(key)!.toString('utf8');
+      expect(svg, key).toMatch(/fill="#ff6e31"/);
+      expect(svg, key).toMatch(/fill="#03428e"/);
+    }
+  });
+
+  it('inlines class rules and refuses a style it cannot inline', () => {
+    expect(
+      inlineStyles(
+        '<svg><defs><style>.a{fill:#fff;}.b{fill:#000;stroke:red}</style></defs><path class="a" d="M0"/><path class="b"/></svg>',
+      ),
+    ).toBe('<svg><path fill="#fff" d="M0"/><path fill="#000" stroke="red"/></svg>');
+    expect(() => inlineStyles('<svg><style>path{fill:red}</style></svg>')).toThrow(/class rule/);
+    expect(() => inlineStyles('<svg><path class="x"/></svg>')).toThrow(/class "x"/);
   });
 
   // Web first (architecture T14, §9.8): the system shows the live web
@@ -106,8 +149,14 @@ describe("the Design System's files (architecture §9.8)", () => {
       editing: string;
       createdOnFiles: { at: string };
       groups: string[];
-      assetGroups: Record<string, { order: string[]; files: Record<string, { blob: string }> }>;
+      assetGroups: Record<
+        string,
+        { order: string[]; files: Record<string, { blob: string; type: string }> }
+      >;
     };
+    for (const group of Object.values(value.assetGroups))
+      for (const [file, record] of Object.entries(group.files))
+        expect(record.type, file).toBe(file.endsWith('.png') ? 'image/png' : 'image/svg+xml');
     expect(value.editing).toBe('code');
     expect(value.createdOnFiles.at).toBe('2026-11-23T00:00:00Z');
     expect(value.groups).toEqual(['Logos', 'App icon', 'Icons']);
