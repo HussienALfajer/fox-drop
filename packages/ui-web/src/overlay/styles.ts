@@ -8,28 +8,30 @@ import { formTv, keyboardRing } from '../field/styles';
 /** The dim behind a dialog or a drawer. */
 export const backdrop = formTv({
   base: [
-    'fixed inset-none z-(--fd-layer-overlay) bg-(--fd-dialog-color-scrim)',
+    'inset-none bg-(--fd-dialog-color-scrim)',
     'transition-opacity duration-(--fd-duration-base) ease-(--fd-easing-standard)',
     'data-starting-style:opacity-0 data-ending-style:opacity-0',
   ],
   variants: {
-    // Inside a frame (`inline`: the components canvas): it dims that frame only.
-    inline: { true: 'absolute z-auto' },
+    // Over the page; inside a frame (`inline`: the components canvas) it dims that frame only.
+    inline: { false: 'fixed z-(--fd-layer-overlay)', true: 'absolute' },
   },
+  defaultVariants: { inline: false },
 });
 
 /** A centred dialog on its `dialog.*` tokens: raised, high elevation; it fades and grows from 96%. */
 export const dialogPanel = formTv({
   base: [
-    'fixed inset-md z-(--fd-layer-overlay) m-auto flex h-fit max-h-full max-w-(--fd-dialog-width) flex-col gap-(--fd-dialog-gap) overflow-y-auto',
+    'm-auto flex h-fit max-h-full max-w-(--fd-dialog-width) flex-col gap-(--fd-dialog-gap) overflow-y-auto',
     'rounded-(--fd-dialog-radius) bg-(--fd-dialog-color-background) p-(--fd-dialog-padding) text-(color:--fd-dialog-color-title) shadow-high outline-hidden',
     'transition duration-(--fd-duration-base) ease-(--fd-easing-standard) motion-reduce:transition-opacity',
     'data-starting-style:scale-96 data-starting-style:opacity-0 data-ending-style:scale-96 data-ending-style:opacity-0 motion-reduce:data-starting-style:scale-100 motion-reduce:data-ending-style:scale-100',
   ],
   variants: {
-    // Inside a frame (`inline`): in its flow, above the frame's scrim.
-    inline: { true: 'relative inset-auto z-auto' },
+    // Over the page, a margin from its edges; inside a frame (`inline`), in its flow above the frame's scrim.
+    inline: { false: 'fixed inset-md z-(--fd-layer-overlay)', true: 'relative' },
   },
+  defaultVariants: { inline: false },
 });
 
 /** The frame an inline overlay sits in: its scrim fills it, the panel centred with a margin. */

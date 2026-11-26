@@ -91,6 +91,9 @@ export const HYDRATE = `    const R = window.React;
       return Object.fromEntries(Object.entries(x).map(([k, y]) => [k, hydrate(y)]));
     };`;
 
+/** A value as JavaScript inside the board's `<script>`: `<` escaped, so no `</script` ends it. */
+export const js = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\u003c');
+
 /** `data-props` is an HTML attribute in single quotes: & and ' are escaped. */
 const propsAttr = (value: unknown) =>
   JSON.stringify(value).replaceAll('&', '&amp;').replaceAll("'", '&#39;');
@@ -132,7 +135,7 @@ ${body}
 class Component extends DCLogic {
   renderVals() {
 ${HYDRATE}
-    const v = hydrate(${JSON.stringify(vals)});
+    const v = hydrate(${js(vals)});
 ${logic}
   }
 }

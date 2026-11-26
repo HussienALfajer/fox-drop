@@ -7,6 +7,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@ui-sdk/react/alert-dialog';
+import {
+  Dialog as SdkDialog,
+  DialogBackdrop,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '@ui-sdk/react/dialog';
 import type { ReactElement, ReactNode } from 'react';
 import { buttonClasses } from '../button/button';
 import { formTv } from '../field/styles';
@@ -47,11 +56,35 @@ export interface DialogProps {
   onConfirm?: () => unknown;
   density?: 'comfortable' | 'compact';
   /**
-   * Keeps the open dialog and its scrim in a frame where it is written instead
-   * of over the page: the components canvas draws it open beside its trigger.
+   * Draws the open dialog and its scrim in a frame where it is written, beside
+   * the page instead of over it (the components canvas shows it open beside its
+   * trigger): it neither blocks the page, traps focus nor takes focus on opening.
    */
   inline?: boolean;
 }
+
+/**
+ * The SDK parts: the alert dialog, or, inline, the plain non-modal dialog
+ * beside the page (role `dialog`: an alert dialog is modal by definition).
+ */
+const ALERT = {
+  Root: AlertDialog,
+  Backdrop: AlertDialogBackdrop,
+  Content: AlertDialogContent,
+  Title: AlertDialogTitle,
+  Close: AlertDialogClose,
+  Description: AlertDialogDescription,
+  Trigger: AlertDialogTrigger,
+};
+const BESIDE = {
+  Root: SdkDialog,
+  Backdrop: DialogBackdrop,
+  Content: DialogContent,
+  Title: DialogTitle,
+  Close: DialogClose,
+  Description: DialogDescription,
+  Trigger: DialogTrigger,
+};
 
 /**
  * A question that blocks the page until it is answered (an alert dialog):
@@ -63,48 +96,48 @@ export function Dialog(props: DialogProps) {
   const { trigger, open, onOpenChange, title, children, confirmLabel, cancelLabel } = props;
   const { closeLabel, tone = 'primary', onConfirm, density = 'comfortable' } = props;
   const inline = props.inline ?? false;
+  const P = inline ? BESIDE : ALERT;
   const popup = (
     <>
-      <AlertDialogBackdrop data-scrim="" className={backdrop({ inline })} />
-      <AlertDialogContent
+      <P.Backdrop data-scrim="" className={backdrop({ inline })} />
+      <P.Content
         inline={inline}
         className={dialogPanel({ inline })}
-        initialFocus="[data-cancel]"
+        initialFocus={inline ? 'none' : '[data-cancel]'}
       >
         <div className={header()}>
-          <AlertDialogTitle className={titleClass()}>{title}</AlertDialogTitle>
-          <AlertDialogClose className={closeButton()} aria-label={closeLabel}>
+          <P.Title className={titleClass()}>{title}</P.Title>
+          <P.Close className={closeButton()} aria-label={closeLabel}>
             <Icon name="close" />
-          </AlertDialogClose>
+          </P.Close>
         </div>
         {props.description && (
-          <AlertDialogDescription className={description()}>
-            {props.description}
-          </AlertDialogDescription>
+          <P.Description className={description()}>{props.description}</P.Description>
         )}
         {children}
         <div className={actions()}>
-          <AlertDialogClose
+          <P.Close
             value="confirm"
             className={buttonClasses(tone, density)}
             {...(onConfirm && { action: () => onConfirm() })}
           >
             {confirmLabel}
-          </AlertDialogClose>
-          <AlertDialogClose data-cancel="" className={buttonClasses('secondary', density)}>
+          </P.Close>
+          <P.Close data-cancel="" className={buttonClasses('secondary', density)}>
             {cancelLabel}
-          </AlertDialogClose>
+          </P.Close>
         </div>
-      </AlertDialogContent>
+      </P.Content>
     </>
   );
   return (
-    <AlertDialog
+    <P.Root
       {...(open !== undefined && { open })}
       {...(onOpenChange && { onOpenChange: (next: boolean) => onOpenChange(next) })}
+      {...(inline && { modal: false, closeOnOutsidePress: false })}
     >
-      {trigger && <AlertDialogTrigger render={trigger} />}
+      {trigger && <P.Trigger render={trigger} />}
       {inline ? <div className={inlineFrame()}>{popup}</div> : popup}
-    </AlertDialog>
+    </P.Root>
   );
 }

@@ -7,7 +7,7 @@
 // The panel starts from the board's Tweaks (the saved, shared values) and keeps
 // its changes in the board's state: «إعادة الضبط» goes back to Tweaks.
 import { typesDoc } from '../docs.ts';
-import { esc, type Mounts, type TweakDef } from './page.ts';
+import { esc, js, type Mounts, type TweakDef } from './page.ts';
 import type { ComponentStories, Value } from './stories.ts';
 
 export interface Control {
@@ -156,16 +156,16 @@ export function playgroundLogic(c: ComponentStories, pg: Playground): string {
   const controls = pg.controls.map((k) => k.prop);
   return `    const p = this.props || {};
     const st = this.state || {};
-    const stories = hydrate(${JSON.stringify(stories)});
-    const story = st.story || ${JSON.stringify(pg.base)};
+    const stories = hydrate(${js(stories)});
+    const story = st.story || ${js(pg.base)};
     const chosen = stories[story] || {};
     const pgv = st.pg || {};
     const put = (k, x) => this.setState({ story, pg: { ...pgv, [k]: x } });
     const none = (x) => (x === '${NONE}' || x === '' ? undefined : x);
     const cur = (k) => (k in pgv ? pgv[k] : st.story ? chosen[k] : p[k] !== undefined ? p[k] : chosen[k]);
-    const controls = ${JSON.stringify(controls)};
+    const controls = ${js(controls)};
     const live = {};
-    for (const k of ${JSON.stringify(pg.keys)}) live[k] = controls.includes(k) ? none(cur(k)) : chosen[k];
+    for (const k of ${js(pg.keys)}) live[k] = controls.includes(k) ? none(cur(k)) : chosen[k];
     const enc = (x) => (x === undefined || x === null || x === '' ? '${NONE}' : String(x));
     const dk = {};
     for (const k of controls) {
@@ -178,9 +178,10 @@ export function playgroundLogic(c: ComponentStories, pg: Playground): string {
       };
     }
     const sc = {};
-    for (const s of ${JSON.stringify(pg.scenarios)}) sc[s] = () => this.setState({ story: s, pg: {} });
+    for (const s of ${js(pg.scenarios)}) sc[s] = () => this.setState({ story: s, pg: {} });
     const reset = () => this.setState({ story: undefined, pg: {} });
-    const pgKey = story + ':' + (st.n || 0);`;
+    // A prop read only at mount (defaultValue, defaultChecked) takes effect on a fresh copy.
+    const pgKey = story + ':' + JSON.stringify(controls.filter((k) => /^default[A-Z]/.test(k)).map((k) => cur(k)));`;
 }
 
 function control(k: Control, mounts: Mounts, words: (s: string) => string): string {
