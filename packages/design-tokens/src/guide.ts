@@ -101,10 +101,16 @@ return {};
   return { ...board, html };
 }
 
+/**
+ * English prose on the right-to-left canvas, isolated so its full stops and
+ * brackets stay where English puts them; the line keeps the page's alignment.
+ */
+export const en = (text: string) => `<span dir="ltr">${esc(text)}</span>`;
+
 export const heading = (themes: Themes, text: string, sub?: string) =>
   `<div style="display: flex; flex-direction: column; gap: ${v(themes, 'space.xs')}">
-<h1 style="margin: 0; font-size: ${v(themes, 'type.phone.large-title.size')}; line-height: 1.3; font-weight: 700; color: ${v(themes, 'color.heading')}">${esc(text)}</h1>
-${sub ? `<p style="margin: 0; font-size: ${v(themes, 'type.phone.secondary.size')}; line-height: 1.6; color: ${v(themes, 'color.on-surface-muted')}">${esc(sub)}</p>` : ''}
+<h1 style="margin: 0; font-size: ${v(themes, 'type.phone.large-title.size')}; line-height: 1.3; font-weight: 700; color: ${v(themes, 'color.heading')}">${en(text)}</h1>
+${sub ? `<p style="margin: 0; font-size: ${v(themes, 'type.phone.secondary.size')}; line-height: 1.6; color: ${v(themes, 'color.on-surface-muted')}">${en(sub)}</p>` : ''}
 </div>`;
 
 export const card = (themes: Themes, inner: string, extra = '') =>
@@ -125,8 +131,8 @@ function main(themes: Themes, config: GuideConfig, version: string): Board {
     ink = 'color.on-surface',
   ) =>
     `<div style="flex: 1 1 0; background: ${v(themes, fill)}; color: ${v(themes, ink)}; border-radius: ${v(themes, 'radius.lg')}; padding: ${v(themes, 'space.md')}; display: flex; flex-direction: column; gap: ${v(themes, 'space.2xs')}">
-<strong style="font-size: ${v(themes, 'type.panel.subtitle.size')}; font-weight: 700">${esc(title)}</strong>
-<span style="font-size: ${v(themes, 'type.panel.secondary.size')}; line-height: 1.6">${esc(text)}</span>
+<strong style="font-size: ${v(themes, 'type.panel.subtitle.size')}; font-weight: 700">${en(title)}</strong>
+<span style="font-size: ${v(themes, 'type.panel.secondary.size')}; line-height: 1.6">${en(text)}</span>
 </div>`;
   const arrow = `<span aria-hidden="true" style="align-self: center; font-size: ${v(themes, 'type.phone.title.size')}; color: ${v(themes, 'color.on-surface-muted')}">←</span>`;
   const row = (...items: string[]) =>
@@ -168,7 +174,7 @@ ${row(
   ),
   box(
     'Fox Drop Design System',
-    'Brand book, tokens, fonts, logos; components after they are built and tested.',
+    'Brand book, tokens, fonts, logos, icons and the live web components (T14).',
   ),
   box('Drawings', 'Component sheets and screens, approved by the owner before they are coded.'),
 )}`,
@@ -225,7 +231,8 @@ ${label(themes, `${r.ratio.toFixed(2)}:1`)}${label(themes, `≥ ${r.target}`)}
       `<strong style="font-size: ${v(themes, 'type.phone.subtitle.size')}">Contrast pairs (light and captain light)</strong>\n${pairs}`,
     ),
   ].join('\n');
-  const h = 400 + light.length * 48 + results.length * 44;
+  // Measured on the canvas: a colour row 48 px, a contrast row 56 px.
+  const h = 500 + light.length * 48 + results.length * 56;
   return page(themes, config, { file: 'Colour.dc.html', title: 'Colour', w: W, h }, body);
 }
 
@@ -281,9 +288,14 @@ ${label(themes, `${scale}-${role} · ${get('size')} / ${get('line-height')} / ${
 
 // Foundations: space, radius, size, elevation, motion -------------------------
 
+/** The widest size drawn as a circle; wider ones are bars. */
+const CIRCLE_MAX = 64;
+
 function foundations(themes: Themes, config: GuideConfig): Board {
   const group = (name: string) => groupOf(themes.light, name);
   const name = (t: Token) => t.path.join('.');
+  const described = (t: Token) =>
+    [`${name(t)} ${cssValue(t)}`, t.description].filter(Boolean).join(' · ');
   const space = group('space')
     .map(
       (t) =>
@@ -296,12 +308,23 @@ function foundations(themes: Themes, config: GuideConfig): Board {
         `<div style="display: flex; flex-direction: column; align-items: center; gap: ${v(themes, 'space.xs')}"><span style="width: 96px; height: 64px; background: ${v(themes, 'color.primary')}; border-radius: ${cssValue(t)}"></span>${label(themes, `${name(t)} ${cssValue(t)}`)}</div>`,
     )
     .join('\n');
-  const size = group('size')
-    .map(
-      (t) =>
-        `<div style="display: flex; align-items: center; gap: ${v(themes, 'space.md')}"><span style="width: ${cssValue(t)}; height: ${cssValue(t)}; border-radius: ${v(themes, 'radius.full')}; box-shadow: inset 0 0 0 2px ${v(themes, 'color.border-strong')}"></span>${label(themes, `${name(t)} ${cssValue(t)} · ${t.description ?? ''}`)}</div>`,
-    )
+  // A control-sized token shows as its circle; a wider one (a dialog, a
+  // drawer, a menu) as a bar of its width, as the space steps are.
+  const sizes = group('size');
+  const px = (t: Token) => parseFloat(cssValue(t));
+  const size = sizes
+    .map((t) => {
+      const sample =
+        px(t) <= CIRCLE_MAX
+          ? `<span style="flex: none; width: ${cssValue(t)}; height: ${cssValue(t)}; border-radius: ${v(themes, 'radius.full')}; box-shadow: inset 0 0 0 2px ${v(themes, 'color.border-strong')}"></span>`
+          : `<span style="flex: none; height: 16px; width: ${cssValue(t)}; background: ${v(themes, 'color.border-strong')}; border-radius: ${v(themes, 'radius.full')}"></span>`;
+      return `<div style="display: flex; align-items: center; gap: ${v(themes, 'space.md')}">${sample}${label(themes, described(t))}</div>`;
+    })
     .join('\n');
+  const sizeHeight = sizes.reduce(
+    (sum, t) => sum + Math.max(px(t) <= CIRCLE_MAX ? px(t) : 0, 20) + 24,
+    0,
+  );
   const elevation = group('elevation')
     .map(
       (t) =>
@@ -309,7 +332,7 @@ function foundations(themes: Themes, config: GuideConfig): Board {
     )
     .join('\n');
   const motion = [...group('duration'), ...group('easing')]
-    .map((t) => label(themes, `${name(t)} ${cssValue(t)} · ${t.description ?? ''}`))
+    .map((t) => label(themes, described(t)))
     .join('\n');
   const section = (title: string, inner: string, layout = 'column') =>
     card(
@@ -331,7 +354,7 @@ function foundations(themes: Themes, config: GuideConfig): Board {
   return page(
     themes,
     config,
-    { file: 'Foundations.dc.html', title: 'Foundations', w: W, h: 1500 },
+    { file: 'Foundations.dc.html', title: 'Foundations', w: W, h: 1660 + sizeHeight },
     body,
   );
 }
@@ -345,7 +368,7 @@ function shapes(themes: Themes, config: GuideConfig): Board {
   const blue = v(themes, 'color.accent');
   const raised = v(themes, 'color.surface-raised');
   const caption = (text: string) =>
-    `<span style="font-size: ${v(themes, 'type.phone.secondary.size')}; line-height: 1.6; color: ${v(themes, 'color.on-surface-muted')}">${esc(text)}</span>`;
+    `<span style="font-size: ${v(themes, 'type.phone.secondary.size')}; line-height: 1.6; color: ${v(themes, 'color.on-surface-muted')}">${en(text)}</span>`;
   const tile = (inner: string, text: string) =>
     card(
       themes,
@@ -402,7 +425,7 @@ function rulesBoard(themes: Themes, config: GuideConfig): Board {
   return page(
     themes,
     config,
-    { file: 'Rules.dc.html', title: 'Rules', w: W, h: 400 + list.length * 130 },
+    { file: 'Rules.dc.html', title: 'Rules', w: W, h: 400 + list.length * 105 },
     body,
   );
 }
