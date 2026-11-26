@@ -1,0 +1,63 @@
+{
+  "top-bar": {
+    "$description": "The bar at the top: the panel's and the portal's on the web (AP §7.2), the phone apps' with the round back button in Flutter (D.10). Two surfaces, so their spacing and ground differ by design; the shared part is the height and the inline padding.",
+    "$extensions": {
+      "app.foxdrop": { "web": ["top-bar"], "flutter": ["top_bar"] }
+    },
+    "min-height": {
+      "$type": "dimension",
+      "$value": "{size.bar}"
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.md}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.md}",
+      "$description": "Between the panel bar's slots.",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "title-gap": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$description": "The phone bar's back button to its title, and the title to its end action.",
+      "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+    },
+    "padding-block": {
+      "$type": "dimension",
+      "$value": "{space.xs}",
+      "$description": "The phone bar, on the screen's ground.",
+      "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+    },
+    "action-size": {
+      "$type": "dimension",
+      "$value": "{size.control-compact}",
+      "$description": "The panel bar's round icon actions.",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "border-width": {
+      "$type": "dimension",
+      "$value": "{border-width.thin}",
+      "$description": "The hairline under the panel bar.",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "color": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.surface-raised}",
+        "$description": "The panel bar is raised; the phone bar sits on the screen's ground.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "border": {
+        "$value": "{color.border}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "title": {
+        "$value": "{color.heading}",
+        "$description": "The phone bar's title.",
+        "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+      }
+    }
+  }
+}

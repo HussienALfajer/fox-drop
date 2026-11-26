@@ -2,6 +2,12 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.20.0 (2026-11-26, slice D.W4d: web restaurant bar, bottom navigation, sign-in hero and blocking heads)
+
+- New component files, each read on both sides unless a token says `sides`: `restaurant-bar` (ui-web `restaurant-bar`; core_ui `top_bar`), `bottom-navigation` (`bottom-navigation`; `navigation`), `sign-in-hero` (`sign-in-hero`; `sign_in_hero`) and `blocking-heads` (`blocking-heads`; `blocking_heads`), written from the Flutter twins' values; and `top-bar` (`top-bar`; `top_bar`) and `navigation-rail` (`sidebar`; `navigation`) for the twins whose surfaces differ by design: the panel's bar and sidebar on the web, the phone bar and the restaurant's tablet rail in Flutter. They share the height, the inline padding, the ground, the hairline and the item colours; what only one surface has is marked `sides`.
+- Semantic tokens of the same value are reused rather than new sizes: `bottom-navigation.item-size-selected` is `size.list-row` (56), `blocking-heads.sign.width` is `size.menu-min-width` (192, the drawing's board), `blocking-heads.sign.strings-height` is `size.control-compact` (40).
+- Web only: `blocking-heads.ticket.cut-offset` (`space.sm`, half the perforation's band) and `blocking-heads.sign.strings-lift` (`space.xs`); Flutter only: `blocking-heads.ticket.dash` (the web draws the browser's dashed border). No Flutter look change.
+
 ## 0.18.0 (2026-11-26, slice D.W3c: overlays, tabs and the icon on component tokens)
 
 - New component files, each read on both sides unless a token says `sides`: `dialog` (ui-web `dialog`, `confirm-dialog`, `overlay`; core_ui `dialog`), `toast` (`toaster`; `toast`), `banner` (`banner`, `banner-stack`; `banner`), `menu` (`menu`; `menu`), `tabs` (`tabs`; `tabs`) and `icon` (`icon`; `icon`, the three sizes); `blocking-banner`, `tooltip` and `drawer` are web only (every token `sides: ["web"]`, no Flutter folder). Web only besides: `banner.compact.*`, `menu.compact.item-height` and `tabs.compact.height` (Flutter has one density). Values are the ones either side used, except the parity gaps below.

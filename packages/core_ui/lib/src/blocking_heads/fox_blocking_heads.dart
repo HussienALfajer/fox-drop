@@ -36,8 +36,10 @@ class FoxVersionTicket extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    final muted = theme.text.secondary.copyWith(color: c.onSurfaceMuted);
+    final blockingHeads = theme.components.blockingHeads;
+    final label = Color(blockingHeads.colorLabel);
+    final muted = theme.text.secondary.copyWith(color: label);
+    final padding = EdgeInsetsDirectional.all(blockingHeads.ticketPadding);
     return Semantics(
       container: true,
       image: true,
@@ -46,12 +48,12 @@ class FoxVersionTicket extends StatelessWidget {
         child: ConstrainedBox(
           // Wider as the text grows, so the words keep their lines.
           constraints: BoxConstraints(
-            maxWidth: _scaled(context, t.FoxSize.tooltip),
+            maxWidth: _scaled(context, blockingHeads.ticketMaxWidth),
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: c.surfaceRaised,
-              borderRadius: BorderRadius.circular(t.FoxRadius.lg),
+              color: Color(blockingHeads.colorTicket),
+              borderRadius: BorderRadius.circular(blockingHeads.ticketRadius),
               boxShadow: [theme.shadows.offset],
             ),
             child: Column(
@@ -59,20 +61,20 @@ class FoxVersionTicket extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsetsDirectional.all(t.FoxSpace.md),
+                  padding: padding,
                   // A wrap: at large text the version moves under its label.
                   child: Wrap(
                     alignment: WrapAlignment.spaceBetween,
                     crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: t.FoxSpace.sm,
+                    spacing: blockingHeads.ticketGap,
                     children: [
                       Text(installedLabel, style: muted),
                       _Ltr(
                         installed,
                         theme.text.title.copyWith(
-                          color: c.onSurfaceMuted,
+                          color: label,
                           decoration: TextDecoration.lineThrough,
-                          decorationColor: c.onSurfaceMuted,
+                          decorationColor: label,
                         ),
                       ),
                     ],
@@ -80,7 +82,7 @@ class FoxVersionTicket extends StatelessWidget {
                 ),
                 const _Perforation(),
                 Padding(
-                  padding: const EdgeInsetsDirectional.all(t.FoxSpace.md),
+                  padding: padding,
                   child: Row(
                     children: [
                       Expanded(
@@ -88,16 +90,18 @@ class FoxVersionTicket extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(requiredLabel, style: muted),
-                            const SizedBox(height: t.FoxSpace.xxs),
+                            SizedBox(height: blockingHeads.ticketLineGap),
                             _Ltr(
                               required,
-                              theme.text.number.copyWith(color: c.heading),
+                              theme.text.number.copyWith(
+                                color: Color(blockingHeads.colorRequired),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: t.FoxSpace.sm),
-                      const BrandMark(size: t.FoxSize.touchTarget),
+                      SizedBox(width: blockingHeads.ticketGap),
+                      BrandMark(size: blockingHeads.ticketMarkSize),
                     ],
                   ),
                 ),
@@ -138,15 +142,16 @@ class _Perforation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final blockingHeads = FoxTheme.of(context).components.blockingHeads;
     return SizedBox(
-      height: t.FoxSpace.lg,
+      height: blockingHeads.ticketPerforationHeight,
       child: CustomPaint(
         painter: _PerforationPainter(
-          line: c.borderStrong,
-          ground: c.surface,
-          width: theme.input.borderWidth,
+          line: Color(blockingHeads.colorPerforation),
+          ground: Color(blockingHeads.colorCut),
+          width: blockingHeads.ticketPerforationWidth,
+          dash: blockingHeads.ticketDash,
+          inset: blockingHeads.ticketPadding,
         ),
       ),
     );
@@ -158,11 +163,19 @@ class _PerforationPainter extends CustomPainter {
     required this.line,
     required this.ground,
     required this.width,
+    required this.dash,
+    required this.inset,
   });
 
   final Color line;
   final Color ground;
   final double width;
+
+  /// A dash and the gap after it.
+  final double dash;
+
+  /// How far the dashes stay from each edge.
+  final double inset;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -170,8 +183,7 @@ class _PerforationPainter extends CustomPainter {
     final paint = Paint()
       ..color = line
       ..strokeWidth = width;
-    const dash = t.FoxSpace.xxs;
-    for (var x = t.FoxSpace.md; x < size.width - t.FoxSpace.md; x += 2 * dash) {
+    for (var x = inset; x < size.width - inset; x += 2 * dash) {
       canvas.drawLine(Offset(x, y), Offset(x + dash, y), paint);
     }
     final cut = Paint()..color = ground;
@@ -182,7 +194,11 @@ class _PerforationPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PerforationPainter old) =>
-      old.line != line || old.ground != ground || old.width != width;
+      old.line != line ||
+      old.ground != ground ||
+      old.width != width ||
+      old.dash != dash ||
+      old.inset != inset;
 }
 
 /// The maintenance head (D.11 screen 7, CU §4.7): an orange board hung by
@@ -211,10 +227,12 @@ class FoxShopSign extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    final ink = c.onPrimary;
+    final blockingHeads = theme.components.blockingHeads;
+    final ink = Color(blockingHeads.colorBoardInk);
+    final string = Color(blockingHeads.colorPerforation);
     final returnTime = this.returnTime;
-    final width = _scaled(context, t.FoxSize.touchTarget * 4);
+    final width = _scaled(context, blockingHeads.signWidth);
+    final lineGap = SizedBox(height: blockingHeads.signLineGap);
     return Semantics(
       container: true,
       image: true,
@@ -228,27 +246,32 @@ class FoxShopSign extends StatelessWidget {
               // The nail, over the strings' meeting point.
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: c.borderStrong,
+                  color: string,
                   shape: BoxShape.circle,
                 ),
-                child: const SizedBox.square(dimension: t.FoxSpace.sm),
+                child: SizedBox.square(dimension: blockingHeads.signNailSize),
               ),
               Transform.translate(
-                offset: const Offset(0, -t.FoxSpace.sm / 2),
+                offset: Offset(0, -blockingHeads.signNailSize / 2),
                 child: SizedBox(
-                  height: t.FoxSize.touchTarget - t.FoxSpace.xs,
+                  height: blockingHeads.signStringsHeight,
                   width: width,
-                  child: CustomPaint(painter: _Strings(colour: c.borderStrong)),
+                  child: CustomPaint(
+                    painter: _Strings(
+                      colour: string,
+                      width: blockingHeads.signStringWidth,
+                    ),
+                  ),
                 ),
               ),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: c.primary,
-                  borderRadius: BorderRadius.circular(t.FoxRadius.lg),
+                  color: Color(blockingHeads.colorBoard),
+                  borderRadius: BorderRadius.circular(blockingHeads.signRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: c.primaryPressed,
-                      offset: const Offset(0, t.FoxSpace.xs),
+                      color: Color(blockingHeads.colorBoardEdge),
+                      offset: Offset(0, blockingHeads.signEdge),
                     ),
                   ],
                 ),
@@ -256,25 +279,25 @@ class FoxShopSign extends StatelessWidget {
                   children: [
                     for (final start in [true, false])
                       PositionedDirectional(
-                        top: t.FoxSpace.xs,
-                        start: start ? t.FoxSpace.md : null,
-                        end: start ? null : t.FoxSpace.md,
+                        top: blockingHeads.signHoleInsetBlock,
+                        start: start ? blockingHeads.signHoleInsetInline : null,
+                        end: start ? null : blockingHeads.signHoleInsetInline,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: c.surface,
+                            color: Color(blockingHeads.colorCut),
                             shape: BoxShape.circle,
                           ),
-                          child: const SizedBox.square(
-                            dimension: t.FoxSpace.xs,
+                          child: SizedBox.square(
+                            dimension: blockingHeads.signHoleSize,
                           ),
                         ),
                       ),
                     Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                        t.FoxSpace.md,
-                        t.FoxSpace.lg,
-                        t.FoxSpace.md,
-                        t.FoxSpace.md,
+                      padding: EdgeInsetsDirectional.fromSTEB(
+                        blockingHeads.signPaddingInline,
+                        blockingHeads.signPaddingTop,
+                        blockingHeads.signPaddingInline,
+                        blockingHeads.signPaddingBottom,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -287,14 +310,14 @@ class FoxShopSign extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: t.FoxSpace.xxs),
+                          lineGap,
                           Text(
                             subtitle,
                             textAlign: TextAlign.center,
                             style: theme.text.secondary.copyWith(color: ink),
                           ),
                           if (returnTime != null) ...[
-                            const SizedBox(height: t.FoxSpace.xxs),
+                            lineGap,
                             Text(
                               returnTime,
                               textAlign: TextAlign.center,
@@ -321,15 +344,16 @@ class FoxShopSign extends StatelessWidget {
 /// Two strings from the nail to the board's corners (the drawing's
 /// 192 × 40 box: from 96,2 to 20,38 and 172,38).
 class _Strings extends CustomPainter {
-  _Strings({required this.colour});
+  _Strings({required this.colour, required this.width});
 
   final Color colour;
+  final double width;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = colour
-      ..strokeWidth = t.FoxSpace.xxs / 2
+      ..strokeWidth = width
       ..strokeCap = StrokeCap.round;
     final top = Offset(size.width / 2, size.height * 2 / 40);
     final y = size.height * 38 / 40;
@@ -339,5 +363,6 @@ class _Strings extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_Strings old) => old.colour != colour;
+  bool shouldRepaint(_Strings old) =>
+      old.colour != colour || old.width != width;
 }

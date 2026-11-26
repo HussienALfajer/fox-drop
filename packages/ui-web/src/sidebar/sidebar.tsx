@@ -49,22 +49,27 @@ export type SidebarProps = SidebarBase &
 // with a hairline at its end; links 40 high, the current one tinted with an
 // orange start edge; counts at the end; collapsed to 72, icons only, each
 // name in a tooltip.
+// The ground, the end hairline and the item colours are `navigation-rail.json`'s,
+// shared with the Flutter rail (slice D.W4d).
 const nav = formTv({
-  base: 'flex h-full shrink-0 flex-col gap-2xs bg-surface-raised py-xs text-on-surface',
+  base: 'flex h-full shrink-0 flex-col gap-(--fd-navigation-rail-gap) bg-(--fd-navigation-rail-color-background) py-(--fd-navigation-rail-padding-block) text-on-surface',
   variants: {
     collapsed: {
-      false: 'w-(--fd-size-sidebar)',
-      true: 'w-(--fd-size-sidebar-collapsed) items-center',
+      false: 'w-(--fd-navigation-rail-width)',
+      true: 'w-(--fd-navigation-rail-width-collapsed) items-center',
     },
-    form: { rail: 'border-e border-border', drawer: 'w-full' },
+    form: {
+      rail: 'border-e-(length:--fd-navigation-rail-border-width) border-(--fd-navigation-rail-color-border)',
+      drawer: 'w-full',
+    },
   },
 });
 
 const link = formTv({
-  base: `relative flex min-h-(--fd-size-control-compact) items-center gap-sm rounded-md text-panel-body font-medium no-underline hover:bg-surface-raised-hover active:bg-surface-raised-pressed ${keyboardRing}`,
+  base: `relative flex min-h-(--fd-navigation-rail-link-height) items-center gap-sm rounded-md text-panel-body font-medium no-underline hover:bg-(--fd-navigation-rail-color-item-hover) active:bg-(--fd-navigation-rail-color-item-pressed) ${keyboardRing}`,
   variants: {
     current: {
-      true: 'bg-primary-subtle font-bold text-on-primary-subtle border-s-(length:--fd-border-width-heavy) border-primary hover:bg-primary-subtle',
+      true: 'bg-(--fd-navigation-rail-color-item-selected) font-bold text-(color:--fd-navigation-rail-color-on-item-selected) border-s-(length:--fd-navigation-rail-current-edge) border-(--fd-navigation-rail-color-current-edge) hover:bg-(--fd-navigation-rail-color-item-selected)',
       false: 'text-on-surface',
     },
     collapsed: {
@@ -81,7 +86,7 @@ const toggle = formTv({
 function Links(props: SidebarProps & { collapsed: boolean }) {
   const { items, current, collapsed } = props;
   return (
-    <ul className="m-none flex list-none flex-col gap-2xs p-none">
+    <ul className="m-none flex list-none flex-col gap-(--fd-navigation-rail-gap) p-none">
       {items.map((item) => {
         const isCurrent = item.href === current;
         const mark = item.icon ? (

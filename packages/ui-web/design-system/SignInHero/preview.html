@@ -1,0 +1,86 @@
+<!-- @dsCard group="Navigation" height=560 -->
+<style>
+  /* The card paints the apps' own ground and text, whatever the page around it. */
+  :root {
+    color-scheme: light;
+  }
+  #root {
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+  }
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: 0 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fd-space-lg);
+  }
+  .cell {
+    width: 340px;
+  }
+  .frame {
+    height: 420px;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, SignInHero } = FoxDrop;
+  const h = React.createElement;
+  const origins = [
+    [
+      'From the cart',
+      {
+        kind: 'checkout',
+        restaurant: 'مطعم الشام',
+        details: '3 أصناف · إلى حي الجلاء',
+        amount: '18500',
+        symbol: '₺',
+        savedLabel: 'سلّتك محفوظة كما هي',
+      },
+      'سجّل دخولك لتكمل طلبك',
+      'سلّتك محفوظة. أدخل رقمك لنرسل لك رمز الدخول على واتساب.',
+    ],
+    [
+      'From the account',
+      {
+        kind: 'account',
+        perks: [
+          { icon: 'drop-pin', label: 'عناوينك' },
+          { icon: 'discount', label: 'أكوادك' },
+          { icon: 'heart', label: 'مفضّلتك' },
+        ],
+      },
+      'حسابك يحفظ لك كل شيء',
+      'أدخل رقمك لتحفظ عناوينك وأكوادك ومفضّلتك.',
+    ],
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h(
+      'div',
+      { className: 'row' },
+      origins.map(([name, origin, title, lead]) =>
+        h(
+          'div',
+          { className: 'cell', key: name },
+          h('h2', null, name),
+          h('div', { className: 'frame' }, h(SignInHero, { origin, title, lead })),
+        ),
+      ),
+    ),
+  );
+</script>
