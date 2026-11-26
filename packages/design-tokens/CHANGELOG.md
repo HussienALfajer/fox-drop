@@ -2,6 +2,12 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.17.0 (2026-11-26, slice D.W3c: overlays, tabs and the icon on component tokens)
+
+- New component files, each read on both sides unless a token says `sides`: `dialog` (ui-web `dialog`, `confirm-dialog`, `overlay`; core_ui `dialog`), `toast` (`toaster`; `toast`), `banner` (`banner`, `banner-stack`; `banner`), `menu` (`menu`; `menu`), `tabs` (`tabs`; `tabs`) and `icon` (`icon`; `icon`, the three sizes); `blocking-banner`, `tooltip` and `drawer` are web only (every token `sides: ["web"]`, no Flutter folder). Web only besides: `banner.compact.*`, `menu.compact.item-height` and `tabs.compact.height` (Flutter has one density). Values are the ones either side used, except the parity gaps below.
+- Parity gaps fixed (the D.10 or D.8 sheet where it shows the state, else the web): `menu.min-width` is the sheet's 240 (`size.tooltip`; Flutter was 192), with `menu.item-padding-inline` and `item-gap` xs and small icons on both sides; `tabs.indicator` is `border-width.indicator` (3, square) on the web too (was 4 and round), `tabs.gap` 2xs and `tabs.padding-inline` sm in Flutter (were 0 and md), `tabs.pill.height` 40 drawn inside the 48 target; `toast.gap` sm (Flutter was xs); `banner.padding-block` xs (Flutter was 2xs); `banner.stack.toggle-height` 32 (`size.step`) inside the Flutter 48 target; `dialog.gap` between every part, the actions too (Flutter put lg before them), `dialog.header-gap` sm (Flutter was xs); `dialog.confirm.chip-padding-inline` xs (Flutter was sm). The slice file lists every gap and its fix.
+- `size.menu-min-width` (192) is no longer read by any component; it stays until a later slice deprecates it.
+
 ## 0.16.0 (2026-11-26, slice D.W3b: data display on component tokens)
 
 - New component files, each read on both sides unless a token says `sides`: `money`, `status-chip`, `count-badge`, `card`, `list-row`, `amounts-summary`, `skeleton`, `empty-state`, `drop-loader` (ui-web and core_ui), and `data-table` (web only: every token `sides: ["web"]`, no Flutter folder). Values are the ones either side used, except the parity gaps below.
