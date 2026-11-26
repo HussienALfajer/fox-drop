@@ -1125,6 +1125,58 @@ abstract final class FoxCountBadge {
   );
 }
 
+/// The CountdownRing component tokens of one theme.
+final class CountdownRingTokens {
+  const CountdownRingTokens({
+    required this.size,
+    required this.strokeWidth,
+    required this.colorTrack,
+    required this.colorProgress,
+    required this.colorLast,
+  });
+
+  final double size;
+  final double strokeWidth;
+  final int colorTrack;
+  final int colorProgress;
+  final int colorLast;
+}
+
+/// The CountdownRing tokens per theme.
+abstract final class FoxCountdownRing {
+  static const CountdownRingTokens light = CountdownRingTokens(
+    size: 96.0,
+    strokeWidth: 6.0,
+    colorTrack: 0xFFEFE8DA,
+    colorProgress: 0xFFFF6E31,
+    colorLast: 0xFFBF2929,
+  );
+
+  static const CountdownRingTokens dark = CountdownRingTokens(
+    size: 96.0,
+    strokeWidth: 6.0,
+    colorTrack: 0xFFEFE8DA,
+    colorProgress: 0xFFFF6E31,
+    colorLast: 0xFFBF2929,
+  );
+
+  static const CountdownRingTokens captainLight = CountdownRingTokens(
+    size: 96.0,
+    strokeWidth: 6.0,
+    colorTrack: 0xFFEFE8DA,
+    colorProgress: 0xFFFF6E31,
+    colorLast: 0xFF8C1530,
+  );
+
+  static const CountdownRingTokens captainDark = CountdownRingTokens(
+    size: 96.0,
+    strokeWidth: 6.0,
+    colorTrack: 0xFFEFE8DA,
+    colorProgress: 0xFFFF6E31,
+    colorLast: 0xFF8C1530,
+  );
+}
+
 /// The CountrySheet component tokens of one theme.
 final class CountrySheetTokens {
   const CountrySheetTokens({
@@ -2365,6 +2417,52 @@ abstract final class FoxListRow {
   );
 }
 
+/// The Logo component tokens of one theme.
+final class LogoTokens {
+  const LogoTokens({
+    required this.size,
+    required this.radius,
+    required this.colorBackground,
+    required this.colorLetter,
+  });
+
+  final double size;
+  final double radius;
+  final int colorBackground;
+  final int colorLetter;
+}
+
+/// The Logo tokens per theme.
+abstract final class FoxLogo {
+  static const LogoTokens light = LogoTokens(
+    size: 48.0,
+    radius: 10.0,
+    colorBackground: 0xFFFFEDE3,
+    colorLetter: 0xFFC2410C,
+  );
+
+  static const LogoTokens dark = LogoTokens(
+    size: 48.0,
+    radius: 10.0,
+    colorBackground: 0xFFFFEDE3,
+    colorLetter: 0xFFC2410C,
+  );
+
+  static const LogoTokens captainLight = LogoTokens(
+    size: 48.0,
+    radius: 10.0,
+    colorBackground: 0xFFFFEDE3,
+    colorLetter: 0xFF03428E,
+  );
+
+  static const LogoTokens captainDark = LogoTokens(
+    size: 48.0,
+    radius: 10.0,
+    colorBackground: 0xFFFFEDE3,
+    colorLetter: 0xFF03428E,
+  );
+}
+
 /// The Menu component tokens of one theme.
 final class MenuTokens {
   const MenuTokens({
@@ -2538,6 +2636,122 @@ abstract final class FoxMoney {
     colorDanger: 0xFF8C1530,
     colorMuted: 0xFF4D473D,
     colorInverse: 0xFFFFFAED,
+  );
+}
+
+/// The OrderCard component tokens of one theme.
+final class OrderCardTokens {
+  const OrderCardTokens({
+    required this.gap,
+    required this.headGap,
+    required this.lineGap,
+    required this.colorNumber,
+    required this.colorItems,
+    required this.colorMuted,
+    required this.colorOpener,
+  });
+
+  final double gap;
+  final double headGap;
+  final double lineGap;
+  final int colorNumber;
+  final int colorItems;
+  final int colorMuted;
+  final int colorOpener;
+}
+
+/// The OrderCard tokens per theme.
+abstract final class FoxOrderCard {
+  static const OrderCardTokens light = OrderCardTokens(
+    gap: 12.0,
+    headGap: 8.0,
+    lineGap: 4.0,
+    colorNumber: 0xFF03428E,
+    colorItems: 0xFF03428E,
+    colorMuted: 0xFF416EA4,
+    colorOpener: 0xFF03428E,
+  );
+
+  static const OrderCardTokens dark = OrderCardTokens(
+    gap: 12.0,
+    headGap: 8.0,
+    lineGap: 4.0,
+    colorNumber: 0xFF03428E,
+    colorItems: 0xFF03428E,
+    colorMuted: 0xFF416EA4,
+    colorOpener: 0xFF03428E,
+  );
+
+  static const OrderCardTokens captainLight = OrderCardTokens(
+    gap: 12.0,
+    headGap: 8.0,
+    lineGap: 4.0,
+    colorNumber: 0xFF03428E,
+    colorItems: 0xFF03428E,
+    colorMuted: 0xFF4D473D,
+    colorOpener: 0xFF03428E,
+  );
+
+  static const OrderCardTokens captainDark = OrderCardTokens(
+    gap: 12.0,
+    headGap: 8.0,
+    lineGap: 4.0,
+    colorNumber: 0xFF03428E,
+    colorItems: 0xFF03428E,
+    colorMuted: 0xFF4D473D,
+    colorOpener: 0xFF03428E,
+  );
+}
+
+/// The OrderRow component tokens of one theme.
+final class OrderRowTokens {
+  const OrderRowTokens({
+    required this.gap,
+    required this.totalGap,
+    required this.statusGap,
+    required this.colorTitle,
+    required this.colorDate,
+  });
+
+  final double gap;
+  final double totalGap;
+  final double statusGap;
+  final int colorTitle;
+  final int colorDate;
+}
+
+/// The OrderRow tokens per theme.
+abstract final class FoxOrderRow {
+  static const OrderRowTokens light = OrderRowTokens(
+    gap: 12.0,
+    totalGap: 8.0,
+    statusGap: 8.0,
+    colorTitle: 0xFF03428E,
+    colorDate: 0xFF416EA4,
+  );
+
+  static const OrderRowTokens dark = OrderRowTokens(
+    gap: 12.0,
+    totalGap: 8.0,
+    statusGap: 8.0,
+    colorTitle: 0xFF03428E,
+    colorDate: 0xFF416EA4,
+  );
+
+  static const OrderRowTokens captainLight = OrderRowTokens(
+    gap: 12.0,
+    totalGap: 8.0,
+    statusGap: 8.0,
+    colorTitle: 0xFF03428E,
+    colorDate: 0xFF4D473D,
+  );
+
+  static const OrderRowTokens captainDark = OrderRowTokens(
+    gap: 12.0,
+    totalGap: 8.0,
+    statusGap: 8.0,
+    colorTitle: 0xFF03428E,
+    colorDate: 0xFF4D473D,
   );
 }
 
@@ -2953,6 +3167,94 @@ abstract final class FoxTextLink {
   );
 }
 
+/// The Timer component tokens of one theme.
+final class TimerTokens {
+  const TimerTokens({
+    required this.minHeight,
+    required this.paddingInline,
+    required this.paddingBlock,
+    required this.gap,
+    required this.compactMinHeight,
+    required this.calmBackground,
+    required this.calmText,
+    required this.soonBackground,
+    required this.soonText,
+    required this.lateBackground,
+    required this.lateText,
+  });
+
+  final double minHeight;
+  final double paddingInline;
+  final double paddingBlock;
+  final double gap;
+  final double compactMinHeight;
+  final int calmBackground;
+  final int calmText;
+  final int soonBackground;
+  final int soonText;
+  final int lateBackground;
+  final int lateText;
+}
+
+/// The Timer tokens per theme.
+abstract final class FoxTimer {
+  static const TimerTokens light = TimerTokens(
+    minHeight: 32.0,
+    paddingInline: 12.0,
+    paddingBlock: 4.0,
+    gap: 4.0,
+    compactMinHeight: 24.0,
+    calmBackground: 0xFFEEF4FC,
+    calmText: 0xFF03428E,
+    soonBackground: 0xFFFBEFD5,
+    soonText: 0xFF8A5A00,
+    lateBackground: 0xFFFBE9E9,
+    lateText: 0xFFBF2929,
+  );
+
+  static const TimerTokens dark = TimerTokens(
+    minHeight: 32.0,
+    paddingInline: 12.0,
+    paddingBlock: 4.0,
+    gap: 4.0,
+    compactMinHeight: 24.0,
+    calmBackground: 0xFFEEF4FC,
+    calmText: 0xFF03428E,
+    soonBackground: 0xFFFBEFD5,
+    soonText: 0xFF8A5A00,
+    lateBackground: 0xFFFBE9E9,
+    lateText: 0xFFBF2929,
+  );
+
+  static const TimerTokens captainLight = TimerTokens(
+    minHeight: 32.0,
+    paddingInline: 12.0,
+    paddingBlock: 4.0,
+    gap: 4.0,
+    compactMinHeight: 24.0,
+    calmBackground: 0xFFEEF4FC,
+    calmText: 0xFF03428E,
+    soonBackground: 0xFFFBEFD5,
+    soonText: 0xFF6B4500,
+    lateBackground: 0xFFFBE9E9,
+    lateText: 0xFF8C1530,
+  );
+
+  static const TimerTokens captainDark = TimerTokens(
+    minHeight: 32.0,
+    paddingInline: 12.0,
+    paddingBlock: 4.0,
+    gap: 4.0,
+    compactMinHeight: 24.0,
+    calmBackground: 0xFFEEF4FC,
+    calmText: 0xFF03428E,
+    soonBackground: 0xFFFBEFD5,
+    soonText: 0xFF6B4500,
+    lateBackground: 0xFFFBE9E9,
+    lateText: 0xFF8C1530,
+  );
+}
+
 /// The Toast component tokens of one theme.
 final class ToastTokens {
   const ToastTokens({
@@ -3093,6 +3395,118 @@ abstract final class FoxTooltip {
   );
 }
 
+/// The TrackingSteps component tokens of one theme.
+final class TrackingStepsTokens {
+  const TrackingStepsTokens({
+    required this.circle,
+    required this.labelGap,
+    required this.lineWidth,
+    required this.dash,
+    required this.colorDone,
+    required this.colorOnDone,
+    required this.colorDoneLabel,
+    required this.colorCurrent,
+    required this.colorOnCurrent,
+    required this.colorCurrentLabel,
+    required this.colorPulse,
+    required this.colorLater,
+    required this.colorOnLater,
+    required this.colorLaterLabel,
+    required this.colorLaterLine,
+  });
+
+  final double circle;
+  final double labelGap;
+  final double lineWidth;
+  final double dash;
+  final int colorDone;
+  final int colorOnDone;
+  final int colorDoneLabel;
+  final int colorCurrent;
+  final int colorOnCurrent;
+  final int colorCurrentLabel;
+  final int colorPulse;
+  final int colorLater;
+  final int colorOnLater;
+  final int colorLaterLabel;
+  final int colorLaterLine;
+}
+
+/// The TrackingSteps tokens per theme.
+abstract final class FoxTrackingSteps {
+  static const TrackingStepsTokens light = TrackingStepsTokens(
+    circle: 48.0,
+    labelGap: 8.0,
+    lineWidth: 2.0,
+    dash: 4.0,
+    colorDone: 0xFF03428E,
+    colorOnDone: 0xFFFFFFFF,
+    colorDoneLabel: 0xFF03428E,
+    colorCurrent: 0xFFFF6E31,
+    colorOnCurrent: 0xFFFFFAED,
+    colorCurrentLabel: 0xFFC2410C,
+    colorPulse: 0xFFFF6E31,
+    colorLater: 0xFFFEFEFE,
+    colorOnLater: 0xFF416EA4,
+    colorLaterLabel: 0xFF416EA4,
+    colorLaterLine: 0xFF6688B2,
+  );
+
+  static const TrackingStepsTokens dark = TrackingStepsTokens(
+    circle: 48.0,
+    labelGap: 8.0,
+    lineWidth: 2.0,
+    dash: 4.0,
+    colorDone: 0xFF03428E,
+    colorOnDone: 0xFFFFFFFF,
+    colorDoneLabel: 0xFF03428E,
+    colorCurrent: 0xFFFF6E31,
+    colorOnCurrent: 0xFFFFFAED,
+    colorCurrentLabel: 0xFFC2410C,
+    colorPulse: 0xFFFF6E31,
+    colorLater: 0xFFFEFEFE,
+    colorOnLater: 0xFF416EA4,
+    colorLaterLabel: 0xFF416EA4,
+    colorLaterLine: 0xFF6688B2,
+  );
+
+  static const TrackingStepsTokens captainLight = TrackingStepsTokens(
+    circle: 48.0,
+    labelGap: 8.0,
+    lineWidth: 2.0,
+    dash: 4.0,
+    colorDone: 0xFF03428E,
+    colorOnDone: 0xFFFFFFFF,
+    colorDoneLabel: 0xFF03428E,
+    colorCurrent: 0xFFFF6E31,
+    colorOnCurrent: 0xFFFFFAED,
+    colorCurrentLabel: 0xFFC2410C,
+    colorPulse: 0xFFFF6E31,
+    colorLater: 0xFFFEFEFE,
+    colorOnLater: 0xFF4D473D,
+    colorLaterLabel: 0xFF4D473D,
+    colorLaterLine: 0xFF6688B2,
+  );
+
+  static const TrackingStepsTokens captainDark = TrackingStepsTokens(
+    circle: 48.0,
+    labelGap: 8.0,
+    lineWidth: 2.0,
+    dash: 4.0,
+    colorDone: 0xFF03428E,
+    colorOnDone: 0xFFFFFFFF,
+    colorDoneLabel: 0xFF03428E,
+    colorCurrent: 0xFFFF6E31,
+    colorOnCurrent: 0xFFFFFAED,
+    colorCurrentLabel: 0xFFC2410C,
+    colorPulse: 0xFFFF6E31,
+    colorLater: 0xFFFEFEFE,
+    colorOnLater: 0xFF4D473D,
+    colorLaterLabel: 0xFF4D473D,
+    colorLaterLine: 0xFF6688B2,
+  );
+}
+
 /// Every component token of one theme, one field per file of tokens/component/.
 final class ComponentTokens {
   const ComponentTokens({
@@ -3103,6 +3517,7 @@ final class ComponentTokens {
     required this.card,
     required this.codePreview,
     required this.countBadge,
+    required this.countdownRing,
     required this.countrySheet,
     required this.dataTable,
     required this.dateField,
@@ -3113,14 +3528,19 @@ final class ComponentTokens {
     required this.icon,
     required this.input,
     required this.listRow,
+    required this.logo,
     required this.menu,
     required this.money,
+    required this.orderCard,
+    required this.orderRow,
     required this.skeleton,
     required this.statusChip,
     required this.tabs,
     required this.textLink,
+    required this.timer,
     required this.toast,
     required this.tooltip,
+    required this.trackingSteps,
   });
 
   final AmountsSummaryTokens amountsSummary;
@@ -3130,6 +3550,7 @@ final class ComponentTokens {
   final CardTokens card;
   final CodePreviewTokens codePreview;
   final CountBadgeTokens countBadge;
+  final CountdownRingTokens countdownRing;
   final CountrySheetTokens countrySheet;
   final DataTableTokens dataTable;
   final DateFieldTokens dateField;
@@ -3140,14 +3561,19 @@ final class ComponentTokens {
   final IconTokens icon;
   final InputTokens input;
   final ListRowTokens listRow;
+  final LogoTokens logo;
   final MenuTokens menu;
   final MoneyTokens money;
+  final OrderCardTokens orderCard;
+  final OrderRowTokens orderRow;
   final SkeletonTokens skeleton;
   final StatusChipTokens statusChip;
   final TabsTokens tabs;
   final TextLinkTokens textLink;
+  final TimerTokens timer;
   final ToastTokens toast;
   final TooltipTokens tooltip;
+  final TrackingStepsTokens trackingSteps;
 }
 
 /// The component tokens per theme.
@@ -3160,6 +3586,7 @@ abstract final class FoxComponents {
     card: FoxCard.light,
     codePreview: FoxCodePreview.light,
     countBadge: FoxCountBadge.light,
+    countdownRing: FoxCountdownRing.light,
     countrySheet: FoxCountrySheet.light,
     dataTable: FoxDataTable.light,
     dateField: FoxDateField.light,
@@ -3170,14 +3597,19 @@ abstract final class FoxComponents {
     icon: FoxIcon.light,
     input: FoxInput.light,
     listRow: FoxListRow.light,
+    logo: FoxLogo.light,
     menu: FoxMenu.light,
     money: FoxMoney.light,
+    orderCard: FoxOrderCard.light,
+    orderRow: FoxOrderRow.light,
     skeleton: FoxSkeleton.light,
     statusChip: FoxStatusChip.light,
     tabs: FoxTabs.light,
     textLink: FoxTextLink.light,
+    timer: FoxTimer.light,
     toast: FoxToast.light,
     tooltip: FoxTooltip.light,
+    trackingSteps: FoxTrackingSteps.light,
   );
 
   static const ComponentTokens dark = ComponentTokens(
@@ -3188,6 +3620,7 @@ abstract final class FoxComponents {
     card: FoxCard.dark,
     codePreview: FoxCodePreview.dark,
     countBadge: FoxCountBadge.dark,
+    countdownRing: FoxCountdownRing.dark,
     countrySheet: FoxCountrySheet.dark,
     dataTable: FoxDataTable.dark,
     dateField: FoxDateField.dark,
@@ -3198,14 +3631,19 @@ abstract final class FoxComponents {
     icon: FoxIcon.dark,
     input: FoxInput.dark,
     listRow: FoxListRow.dark,
+    logo: FoxLogo.dark,
     menu: FoxMenu.dark,
     money: FoxMoney.dark,
+    orderCard: FoxOrderCard.dark,
+    orderRow: FoxOrderRow.dark,
     skeleton: FoxSkeleton.dark,
     statusChip: FoxStatusChip.dark,
     tabs: FoxTabs.dark,
     textLink: FoxTextLink.dark,
+    timer: FoxTimer.dark,
     toast: FoxToast.dark,
     tooltip: FoxTooltip.dark,
+    trackingSteps: FoxTrackingSteps.dark,
   );
 
   static const ComponentTokens captainLight = ComponentTokens(
@@ -3216,6 +3654,7 @@ abstract final class FoxComponents {
     card: FoxCard.captainLight,
     codePreview: FoxCodePreview.captainLight,
     countBadge: FoxCountBadge.captainLight,
+    countdownRing: FoxCountdownRing.captainLight,
     countrySheet: FoxCountrySheet.captainLight,
     dataTable: FoxDataTable.captainLight,
     dateField: FoxDateField.captainLight,
@@ -3226,14 +3665,19 @@ abstract final class FoxComponents {
     icon: FoxIcon.captainLight,
     input: FoxInput.captainLight,
     listRow: FoxListRow.captainLight,
+    logo: FoxLogo.captainLight,
     menu: FoxMenu.captainLight,
     money: FoxMoney.captainLight,
+    orderCard: FoxOrderCard.captainLight,
+    orderRow: FoxOrderRow.captainLight,
     skeleton: FoxSkeleton.captainLight,
     statusChip: FoxStatusChip.captainLight,
     tabs: FoxTabs.captainLight,
     textLink: FoxTextLink.captainLight,
+    timer: FoxTimer.captainLight,
     toast: FoxToast.captainLight,
     tooltip: FoxTooltip.captainLight,
+    trackingSteps: FoxTrackingSteps.captainLight,
   );
 
   static const ComponentTokens captainDark = ComponentTokens(
@@ -3244,6 +3688,7 @@ abstract final class FoxComponents {
     card: FoxCard.captainDark,
     codePreview: FoxCodePreview.captainDark,
     countBadge: FoxCountBadge.captainDark,
+    countdownRing: FoxCountdownRing.captainDark,
     countrySheet: FoxCountrySheet.captainDark,
     dataTable: FoxDataTable.captainDark,
     dateField: FoxDateField.captainDark,
@@ -3254,14 +3699,19 @@ abstract final class FoxComponents {
     icon: FoxIcon.captainDark,
     input: FoxInput.captainDark,
     listRow: FoxListRow.captainDark,
+    logo: FoxLogo.captainDark,
     menu: FoxMenu.captainDark,
     money: FoxMoney.captainDark,
+    orderCard: FoxOrderCard.captainDark,
+    orderRow: FoxOrderRow.captainDark,
     skeleton: FoxSkeleton.captainDark,
     statusChip: FoxStatusChip.captainDark,
     tabs: FoxTabs.captainDark,
     textLink: FoxTextLink.captainDark,
+    timer: FoxTimer.captainDark,
     toast: FoxToast.captainDark,
     tooltip: FoxTooltip.captainDark,
+    trackingSteps: FoxTrackingSteps.captainDark,
   );
 }
 
@@ -3294,6 +3744,7 @@ abstract final class FoxBorderWidth {
   static const double thick = 2.0;
   static const double indicator = 3.0;
   static const double heavy = 4.0;
+  static const double ring = 6.0;
 }
 
 /// Motion durations (brand expression §3).
@@ -3480,4 +3931,5 @@ abstract final class FoxSize {
   static const double listRow = 56.0;
   static const double emptyArt = 120.0;
   static const double emptyArtCompact = 72.0;
+  static const double countdownRing = 96.0;
 }

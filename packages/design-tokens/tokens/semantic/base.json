@@ -604,6 +604,10 @@
     "empty-art-compact": {
       "$value": "72px",
       "$description": "The same drop in the panel and the portal (D.9 sheet)."
+    },
+    "countdown-ring": {
+      "$value": "96px",
+      "$description": "The captain's offer countdown ring (D.9 sheet: two touch targets)."
     }
   },
   "icon-stroke": {
@@ -635,6 +639,10 @@
     "heavy": {
       "$value": "4px",
       "$description": "The bar that marks the current item of the panel's sidebar."
+    },
+    "ring": {
+      "$value": "6px",
+      "$description": "The captain's countdown ring, its track and its arc."
     }
   }
 }

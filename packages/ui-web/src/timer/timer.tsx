@@ -28,16 +28,18 @@ export function timerTone(t: {
 }
 
 const pill = formTv({
-  base: 'inline-flex items-center gap-2xs whitespace-nowrap rounded-full px-sm font-bold tabular-nums',
+  base: 'inline-flex items-center gap-(--fd-timer-gap) whitespace-nowrap rounded-full px-(--fd-timer-padding-inline) font-bold tabular-nums',
   variants: {
     tone: {
-      calm: 'bg-info-subtle text-on-surface',
-      soon: 'bg-warning-subtle text-warning',
-      late: 'bg-danger-subtle text-danger',
+      calm: 'bg-(--fd-timer-calm-background) text-(color:--fd-timer-calm-text)',
+      soon: 'bg-(--fd-timer-soon-background) text-(color:--fd-timer-soon-text)',
+      late: 'bg-(--fd-timer-late-background) text-(color:--fd-timer-late-text)',
     },
     density: {
-      comfortable: 'min-h-(--fd-size-step) text-phone-subtitle',
-      compact: 'min-h-lg text-panel-body',
+      // The phone's 32: its text and padding come to 31.4 (Flutter's too).
+      comfortable:
+        'min-h-(--fd-timer-min-height) py-(--fd-timer-padding-block) text-phone-subtitle',
+      compact: 'min-h-(--fd-timer-compact-min-height) text-panel-body',
     },
   },
   defaultVariants: { density: 'comfortable' },

@@ -11,7 +11,11 @@ import type { DataTableProps } from '../src/data-table/data-table';
 import type { EmptyStateProps } from '../src/empty-state/empty-state';
 import type { ListRowProps } from '../src/list-row/list-row';
 import type { MoneyProps } from '../src/money/money';
+import type { CountdownRingProps } from '../src/countdown-ring/countdown-ring';
+import type { LogoProps } from '../src/logo/logo';
 import type { OrderCardProps } from '../src/order-card/order-card';
+import type { OrderRowProps } from '../src/order-row/order-row';
+import type { TrackingStepsProps } from '../src/tracking-steps/tracking-steps';
 import type { SkeletonProps } from '../src/skeleton/skeleton';
 import type { StatusChipProps } from '../src/status-chip/status-chip';
 import type { TimerProps } from '../src/timer/timer';
@@ -469,6 +473,28 @@ describe('the component docs', () => {
       lateLabel: true,
       onOpen: true,
     } satisfies Record<Keys<OrderCardProps>, true>,
+    CountdownRingProps: {
+      seconds: true,
+      total: true,
+      label: true,
+    } satisfies Record<Keys<CountdownRingProps>, true>,
+    LogoProps: { name: true, src: true } satisfies Record<Keys<LogoProps>, true>,
+    OrderRowProps: {
+      restaurant: true,
+      date: true,
+      status: true,
+      total: true,
+      logo: true,
+      trailing: true,
+      onPress: true,
+    } satisfies Record<Keys<OrderRowProps>, true>,
+    TrackingStepsProps: {
+      label: true,
+      steps: true,
+      current: true,
+      doneLabel: true,
+      nowLabel: true,
+    } satisfies Record<Keys<TrackingStepsProps>, true>,
     AmountsSummaryProps: {
       lines: true,
       total: true,
