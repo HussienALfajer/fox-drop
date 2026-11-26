@@ -69,6 +69,24 @@ describe('the Fox Drop Guide (architecture §9.8)', () => {
     ]);
   });
 
+  // The canvas is right to left: English prose is isolated, or its full
+  // stops and brackets jump to the start of the line.
+  it('isolates every English heading line and description', () => {
+    for (const b of list)
+      for (const [, text] of b.html.matchAll(/<(?:h1|p)\b[^>]*>([\s\S]*?)<\/(?:h1|p)>/g))
+        expect(text, b.file).toMatch(/^<span dir="ltr">[\s\S]*<\/span>$/);
+  });
+
+  // A board is a fixed frame: a size token is drawn at its own width, so a
+  // wide one (a dialog, a drawer) is a bar, never a circle as tall as it is.
+  it('draws only control-sized sizes as circles and grows Foundations with them', () => {
+    const html = list.find((b) => b.file === 'Foundations.dc.html')!.html;
+    for (const [, w, h] of html.matchAll(/width: (\d+)px; height: (\d+)px; border-radius: 9999px/g))
+      if (w === h) expect(Number(w)).toBeLessThanOrEqual(64);
+    expect(html).toMatch(/height: 16px; width: 460px/);
+    expect(index.boards['Foundations.dc.html']!.h).toBeGreaterThan(2500);
+  });
+
   it('installs the Fox Drop Design System', () => {
     expect(index.designSystems).toEqual([
       expect.objectContaining({ namespace: 'fox-drop', artifact: config.system }),
