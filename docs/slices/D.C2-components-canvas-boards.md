@@ -1,6 +1,6 @@
 # D.C2 The components canvas: the other boards, the index and the group notes
 
-Status: In progress · Tier: T2 · Branch: `feat/components-canvas-boards`
+Status: Done · Tier: T2 · Branch: `feat/components-canvas-boards`
 Spec: architecture §9.8, §9.9, T14 · Definition of done: workflow §4
 
 Part of the components canvas plan; its shared rules are in `D.C1-components-canvas-generator.md`. After D.C1 is merged and the owner approved the pilot boards' look.
@@ -24,13 +24,15 @@ Tests written first (locked in the red phase): `test/components-canvas.test.ts` 
 
 ## Stopped at
 
-Built: 41 component boards and the index, written, measured and checked; the unit test widened (12 of 12). Next: `--changed`, review, publish.
+Done: 42 component boards (the pilots among them) and the index, checked, reviewed (two rounds) and published (canvas version 32). The Design System is re-synced after D.C3.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- `components-canvas:check`:
-- Review:
+- `node scripts/verify.mjs --changed`: «the checks of the change passed».
+- `pnpm baselines`: «no image changed» (the DataTable story's args moved; its 6 stories compared).
+- `components-canvas:check`: «43 boards, 276 combinations, 0 with problems»; states sheets 2 to 33 KB.
+- `test/components-canvas.test.ts`: 15 of 15.
+- Review (reviewer, T2, medium): round 1, four should-fix (DataTable's cells and BannerStack's counter crossed as empty functions; gesture states drawn at rest under their names; Field's static input lost `disabled`) and three minor, fixed; round 2, DataTable's sort and selection callbacks added by its story wrapper (now in the meta args) and the static markup's server ids, fixed. Two items to the backlog (gesture states, the table's hover).
 
 ## Before deploying
 
