@@ -1,6 +1,6 @@
 # D.W4d Web versions: restaurant bar, bottom navigation, sign-in hero and blocking heads
 
-Status: Planned · Tier: T2 · Branch: `feat/web-bars-hero-heads`
+Status: Done · Tier: T2 · Branch: `feat/web-bars-hero-heads`
 Spec: architecture §9.5 R1, R3, R4, R5, R7, R9, R16, §9.6, §9.9; CU §4 (the blocking screens), CU §5.1 (the sign-in hero); D.10 and D.11b's slice files for the approved looks · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1 and D.W2 merged. Runs in parallel with any other D.W3 or D.W4 slice.

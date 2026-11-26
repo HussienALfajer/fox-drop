@@ -25,8 +25,8 @@ const dot: BottomNavigationItem[] = [
   { icon: 'more', label: 'المزيد' },
 ];
 
-function Demo({ items }: { items: readonly BottomNavigationItem[] }) {
-  const [selected, setSelected] = useState(0);
+function Demo({ items, first }: { items: readonly BottomNavigationItem[]; first: number }) {
+  const [selected, setSelected] = useState(first);
   return (
     <BottomNavigation
       label="التنقل الرئيسي"
@@ -41,7 +41,7 @@ const meta = {
   title: 'BottomNavigation',
   component: BottomNavigation,
   args: { label: 'التنقل الرئيسي', items: customer, selected: 0, onSelect: () => undefined },
-  render: (args) => <Demo items={args.items} />,
+  render: (args) => <Demo items={args.items} first={args.selected} />,
 } satisfies Meta<typeof BottomNavigation>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -49,6 +49,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Badge: Story = { args: { items: badge } };
 export const Dot: Story = { args: { items: dot } };
-// The first tab, the current one, under the pointer and with keyboard focus.
-export const Hover: Story = {};
-export const Focus: Story = {};
+// The first tab under the pointer and with keyboard focus, the second current
+// (a current tab has no hover look of its own).
+export const Hover: Story = { args: { selected: 1 } };
+export const Focus: Story = { args: { selected: 1 } };

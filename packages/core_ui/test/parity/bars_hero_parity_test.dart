@@ -58,17 +58,22 @@ void main() {
     ),
     FoxNavItem(icon: FoxIcons.more, label: 'المزيد'),
   ];
-  for (final (state, items) in [
-    ('default', customer),
-    ('badge', badge),
-    ('dot', dot),
-    ('hover', customer),
-    ('focus', customer),
+  // Hover and focus drive the first tab, with the second current, as the
+  // web stories do.
+  for (final (state, items, selected) in [
+    ('default', customer, 0),
+    ('badge', badge, 0),
+    ('dot', dot, 0),
+    ('hover', customer, 1),
+    ('focus', customer, 1),
   ]) {
     parityCase(
       'bottomnavigation--$state',
-      () =>
-          FoxBottomNavigation(items: items, selected: 0, onSelected: noop<int>),
+      () => FoxBottomNavigation(
+        items: items,
+        selected: selected,
+        onSelected: noop<int>,
+      ),
     );
   }
 

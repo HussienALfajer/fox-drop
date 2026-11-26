@@ -185,6 +185,15 @@ export function SignInHero({ origin, title, lead, keyboard = false }: SignInHero
     return () => observer.disconnect();
   }, []);
 
+  // New words or a new origin start again from everything shown, as the
+  // Flutter twin lays out afresh (reset while rendering, React's pattern for
+  // state that follows props).
+  const [shownFor, setShownFor] = useState({ lead, origin, title });
+  if (shownFor.lead !== lead || shownFor.origin !== origin || shownFor.title !== title) {
+    setShownFor({ lead, origin, title });
+    setFit('all');
+  }
+
   // While the content overflows, drop the next part.
   useLayoutEffect(() => {
     const element = root.current;
