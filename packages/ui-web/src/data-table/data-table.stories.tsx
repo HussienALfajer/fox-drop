@@ -88,6 +88,10 @@ const meta = {
     columns: columns as Column<unknown>[],
     rows: orders,
     rowKey: (o) => (o as Order).id,
+    // `Table` replaces both with its state; in the args too, so a reader of the
+    // args alone (the components canvas) draws the sort buttons and the selection.
+    onSortChange: () => undefined,
+    onSelectionChange: () => undefined,
   },
   render: (args) => <Table {...(args as DataTableProps<Order>)} />,
 } satisfies Meta<typeof DataTable>;

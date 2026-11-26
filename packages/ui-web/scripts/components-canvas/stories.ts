@@ -265,7 +265,10 @@ export async function readStories(
       const html = renderToStaticMarkup(
         createElement(type as string, { ...props, children: slot }),
       );
-      return /<fd-slot>([\s\S]*)<\/fd-slot>/.exec(html)?.[1] ?? '';
+      const inner = /<fd-slot>([\s\S]*)<\/fd-slot>/.exec(html)?.[1];
+      if (inner === undefined) throw new Error('a drawn component did not render its child');
+      // The ids of a render on the server name nothing on the canvas, and repeat on each copy.
+      return inner.replace(/\s(?:id|aria-labelledby|aria-describedby)="[^"]*"/g, '');
     };
   const out: ComponentStories[] = [];
   for (const name of components) {

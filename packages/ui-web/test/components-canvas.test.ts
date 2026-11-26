@@ -210,6 +210,16 @@ describe('the components canvas', () => {
     }
   });
 
+  it('draws DataTable sorted and selected with what makes them so', () => {
+    const table = stories.find((c) => c.name === 'DataTable');
+    for (const story of ['Sorted', 'Selected']) {
+      const args = table?.stories[story]?.args ?? {};
+      expect(Object.keys(args), story).toEqual(
+        expect.arrayContaining(['onSortChange', 'onSelectionChange']),
+      );
+    }
+  });
+
   it('says so when a state only a gesture reaches is drawn at rest', () => {
     for (const name of ['PullToRefresh', 'BannerStack']) {
       expect(board(name), name).toContain(TEXT.inPlay);
