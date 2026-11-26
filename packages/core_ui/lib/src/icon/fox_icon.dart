@@ -42,16 +42,8 @@ const iconStates = [
   'boldDuo',
 ];
 
-/// The three icon sizes (`size.icon-*`).
-enum FoxIconSize {
-  sm(t.FoxSize.iconSm),
-  md(t.FoxSize.iconMd),
-  lg(t.FoxSize.iconLg);
-
-  const FoxIconSize(this.pixels);
-
-  final double pixels;
-}
+/// The three icon sizes, read from the theme's `icon.size.*` tokens.
+enum FoxIconSize { sm, md, lg }
 
 /// One icon of the FOX DROP set v4 Madar (architecture §9.4) in one of its
 /// six [FoxIconStyle]s. The line styles stroke at the theme's icon weight
@@ -121,8 +113,14 @@ class FoxIcon extends StatelessWidget {
     };
     final mirrored =
         icon.mirror && Directionality.of(context) == TextDirection.rtl;
+    final components = theme.components;
+    final pixels = switch (size) {
+      FoxIconSize.sm => components.icon.sizeSm,
+      FoxIconSize.md => components.icon.sizeMd,
+      FoxIconSize.lg => components.icon.sizeLg,
+    };
     final drawing = CustomPaint(
-      size: Size.square(size.pixels),
+      size: Size.square(pixels),
       painter: _IconPainter(
         layers,
         style: style,

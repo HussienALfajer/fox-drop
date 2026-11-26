@@ -1,0 +1,95 @@
+{
+  "tabs": {
+    "$description": "Underline tabs (detail pages, boards) and pill tabs (the customer's menu sections), D.10.",
+    "$extensions": {
+      "app.foxdrop": { "web": ["tabs"], "flutter": ["tabs"] }
+    },
+    "height": {
+      "$type": "dimension",
+      "$value": "{size.touch-target}"
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.sm}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.2xs}",
+      "$description": "Between two underline tabs."
+    },
+    "label-gap": {
+      "$type": "dimension",
+      "$value": "{space.xs}",
+      "$description": "The label to its count."
+    },
+    "indicator": {
+      "$type": "dimension",
+      "$value": "{border-width.indicator}",
+      "$description": "The selected tab's line: the sheet's 3."
+    },
+    "border-width": {
+      "$type": "dimension",
+      "$value": "{border-width.thin}",
+      "$description": "The hairline under the list, and a pill's outline."
+    },
+    "compact": {
+      "height": {
+        "$type": "dimension",
+        "$value": "{size.control-compact}",
+        "$description": "The panel's and the portal's compact tabs; Flutter has one density.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
+    "pill": {
+      "height": {
+        "$type": "dimension",
+        "$value": "{size.control-compact}",
+        "$description": "The pill drawn; on Flutter it sits in a 48 target."
+      },
+      "padding-inline": {
+        "$type": "dimension",
+        "$value": "{space.md}"
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{space.xs}"
+      },
+      "color": {
+        "$type": "color",
+        "background": {
+          "$value": "{color.surface-raised}"
+        },
+        "background-hover": {
+          "$value": "{color.surface-raised-hover}"
+        },
+        "background-selected": {
+          "$value": "{color.primary}"
+        },
+        "text": {
+          "$value": "{color.on-surface}"
+        },
+        "text-selected": {
+          "$value": "{color.on-primary}"
+        }
+      }
+    },
+    "color": {
+      "$type": "color",
+      "text": {
+        "$value": "{color.on-surface-muted}"
+      },
+      "text-hover": {
+        "$value": "{color.on-surface}"
+      },
+      "text-selected": {
+        "$value": "{color.on-surface}"
+      },
+      "indicator": {
+        "$value": "{color.primary}"
+      },
+      "border": {
+        "$value": "{color.border}"
+      }
+    }
+  }
+}

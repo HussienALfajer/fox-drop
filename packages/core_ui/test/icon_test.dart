@@ -128,14 +128,19 @@ void main() {
   });
 
   group('FoxIcon', () {
-    testWidgets('is as large as its size', (tester) async {
+    testWidgets('is as large as its size, from the icon tokens', (
+      tester,
+    ) async {
+      final sizes = <double>[];
       for (final size in FoxIconSize.values) {
         await tester.pumpWidget(
           _app(Center(child: FoxIcon(t.FoxIcons.home, size: size))),
         );
-        expect(tester.getSize(find.byType(FoxIcon)), Size.square(size.pixels));
+        sizes.add(tester.getSize(find.byType(FoxIcon)).width);
       }
-      expect(FoxIconSize.values.map((s) => s.pixels), [16, 24, 32]);
+      final icon = t.FoxComponents.light.icon;
+      expect(sizes, [icon.sizeSm, icon.sizeMd, icon.sizeLg]);
+      expect(sizes, [16, 24, 32]);
     });
 
     testWidgets('flips only back, car and motorcycle in RTL', (tester) async {

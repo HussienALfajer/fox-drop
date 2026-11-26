@@ -784,4 +784,91 @@ void main() {
       expect(text.style?.color, FoxThemeData.phone().colors.danger);
     });
   });
+
+  // The parity gaps of D.W3c, each the web's or the D.10 sheet's look.
+  group('parity with the web (D.W3c)', () {
+    final tokens = FoxThemeData.phone().components;
+
+    testWidgets('a dialog shares its row between its two actions', (
+      tester,
+    ) async {
+      phoneScreen(tester);
+      await tester.pumpWidget(overlayApp(Center(child: _deleteDialog())));
+      final delete = tester.getRect(find.widgetWithText(FoxButton, 'حذف'));
+      final cancel = tester.getRect(find.widgetWithText(FoxButton, 'إلغاء'));
+      expect(delete.width, moreOrLessEquals(cancel.width));
+      expect(
+        (delete.left - cancel.right).abs(),
+        moreOrLessEquals(tokens.dialog.actionsGap),
+      );
+    });
+
+    testWidgets('a banner with two actions is as tall as its content', (
+      tester,
+    ) async {
+      phoneScreen(tester);
+      await tester.pumpWidget(
+        overlayApp(
+          Align(
+            alignment: Alignment.topCenter,
+            child: FoxBanner(
+              tone: FoxBannerTone.danger,
+              message: 'حسابك موقوف',
+              actionLabel: 'اتصال',
+              onAction: () {},
+              secondaryActionLabel: 'واتساب',
+              onSecondaryAction: () {},
+            ),
+          ),
+        ),
+      );
+      expect(
+        tester.getSize(find.byType(FoxBanner)).height,
+        lessThan(FoxSize.touchTarget * 3),
+      );
+    });
+
+    testWidgets('the menu is at least the sheet\'s 240 wide', (tester) async {
+      phoneScreen(tester);
+      await tester.pumpWidget(
+        overlayApp(
+          Align(
+            alignment: AlignmentDirectional.topStart,
+            child: FoxMenu(
+              label: 'المزيد',
+              initiallyOpen: true,
+              items: [FoxMenuItem(label: 'تعديل', onSelected: () {})],
+              builder: (context, open) =>
+                  FoxButton(label: 'المزيد', onPressed: open),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSize(find.byKey(FoxMenu.panelKey)).width,
+        greaterThanOrEqualTo(tokens.menu.minWidth),
+      );
+    });
+
+    testWidgets('a toast keeps sm between its icon and its words', (
+      tester,
+    ) async {
+      phoneScreen(tester);
+      await tester.pumpWidget(
+        overlayApp(
+          const Center(
+            child: FoxToast(
+              tone: FoxToastTone.info,
+              message: 'نُسخ رقم الطلب',
+              closeLabel: 'إغلاق',
+            ),
+          ),
+        ),
+      );
+      final icon = tester.getRect(find.byType(FoxIcon).first);
+      final words = tester.getRect(find.text('نُسخ رقم الطلب'));
+      expect(icon.left - words.right, moreOrLessEquals(tokens.toast.gap));
+    });
+  });
 }

@@ -12,7 +12,8 @@ export const TOOLTIP_DELAY = 500;
 // duration.fast. Pointer devices only: on touch the label is visible instead.
 const content = formTv({
   base: [
-    'z-(--fd-layer-tooltip) max-w-(--fd-size-tooltip) rounded-sm bg-on-surface px-xs py-2xs text-panel-secondary font-medium text-on-accent',
+    'z-(--fd-layer-tooltip) max-w-(--fd-tooltip-max-width) rounded-(--fd-tooltip-radius) px-(--fd-tooltip-padding-inline) py-(--fd-tooltip-padding-block)',
+    'bg-(--fd-tooltip-color-background) text-panel-secondary font-medium text-(color:--fd-tooltip-color-text)',
     'transition-opacity duration-(--fd-duration-fast) ease-(--fd-easing-standard) data-starting-style:opacity-0 data-ending-style:opacity-0',
   ],
 });

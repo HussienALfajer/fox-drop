@@ -16,8 +16,10 @@ import { backdrop, closeButton, dialogPanel, header, title as titleClass } from 
 /** The states the stories show (R3). Open is the dialog itself; focus starts on the safe action. */
 export const STATES = ['default', 'open', 'danger', 'primary', 'compact'] as const;
 
-const actions = formTv({ base: 'flex flex-wrap gap-sm *:flex-1' });
-const description = formTv({ base: 'm-none text-phone-body text-on-surface-muted' });
+const actions = formTv({ base: 'flex flex-wrap gap-(--fd-dialog-actions-gap) *:flex-1' });
+const description = formTv({
+  base: 'm-none text-phone-body text-(color:--fd-dialog-color-body)',
+});
 
 export interface DialogProps {
   /** The element that opens it, usually a Button. Focus returns to it on close. */
