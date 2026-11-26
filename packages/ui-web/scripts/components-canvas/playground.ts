@@ -103,7 +103,10 @@ export function playgroundOf(c: ComponentStories, types = parseTypes()): Playgro
   const start = c.stories[base]?.args ?? {};
   const mounted = mountOf(c, base);
   const controls: Control[] = [];
-  for (const m of membersOf(mounted.split('.').at(-1) ?? mounted, types)) {
+  const members = membersOf(mounted.split('.').at(-1) ?? mounted, types);
+  // A story that only a gesture reaches (`play`) loads nothing new, unless it opens a popup in place.
+  const reachable = (s: string) => !c.stories[s]?.play || members.some((m) => m.name === 'inline');
+  for (const m of members) {
     if (RESERVED.has(m.name) || m.type.includes('=>')) continue;
     const value = start[m.name];
     const choices = literals(m.type, types.aliases);
@@ -129,6 +132,7 @@ export function playgroundOf(c: ComponentStories, types = parseTypes()): Playgro
       s !== base &&
       !c.stories[s]?.render &&
       mountOf(c, s) === mounted &&
+      reachable(s) &&
       (c.variants ? !used.has(s) : true),
   );
   const keys = new Set<string>(controls.map((k) => k.prop));

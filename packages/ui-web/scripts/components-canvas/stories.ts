@@ -4,7 +4,7 @@
 // per state). The stories load in Node through Vite's SSR module loader; their
 // `play` functions are never run, only noticed (a story that opens its popup).
 import path from 'node:path';
-import type { ReactElement } from 'react';
+import { createElement, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer, type ViteDevServer } from 'vite';
 import { PACKAGE_DIR } from '../bundle.ts';
@@ -21,10 +21,30 @@ export type Value =
   | { $fn: true }
   | { $date: string }
   | { $set: Value[] }
-  | { $html: string };
+  | { $html: string }
+  | { $memo: [string, Value][] };
 
 /** Turns an element of a component outside the library into its static markup. */
 type Markup = (element: unknown) => string;
+
+/** The inputs a function prop is called with, by prop name: its results cross as a table. */
+type Samples = Record<string, unknown[]>;
+
+/**
+ * The props that are functions giving content, and what they are called
+ * with, by component (read from their types in docs.ts): a DataTable's cells,
+ * row keys and names over its rows; a BannerStack's counter over the hidden counts.
+ */
+const CALLS: Record<string, (args: Record<string, unknown>) => Samples> = {
+  DataTable: (args) => {
+    const rows = (args['rows'] as unknown[] | undefined) ?? [];
+    return { cell: rows, rowKey: rows, rowLabel: rows };
+  },
+  BannerStack: (args) => {
+    const banners = (args['banners'] as unknown[] | undefined) ?? [];
+    return { moreLabel: banners.map((_, i) => i + 1) };
+  },
+};
 
 export type Args = Record<string, Value>;
 
@@ -89,22 +109,37 @@ export function serialise(
   names: Map<unknown, string>,
   where: string,
   markup?: Markup,
+  samples: Samples = {},
 ): Value | undefined {
   if (value === undefined) return undefined;
   if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) {
     return value as Value;
   }
-  if (typeof value === 'function') return { $fn: true };
+  if (typeof value === 'function') {
+    // A function that gives content (a table cell, a counter's words): its
+    // results for the inputs the story gives it, looked up on the canvas.
+    const known = samples[where.split('.').at(-1) ?? ''];
+    if (!known) return { $fn: true };
+    const fn = value as (input: unknown) => unknown;
+    return {
+      $memo: known.map((input, i) => [
+        JSON.stringify(input),
+        serialise(fn(input), names, `${where}(${String(i)})`, markup, samples) ?? null,
+      ]),
+    };
+  }
   if (value instanceof Date) return { $date: value.toISOString() };
   if (value instanceof Set) {
     return {
       $set: [...value].map(
-        (item, i) => serialise(item, names, `${where}{${String(i)}}`, markup) ?? null,
+        (item, i) => serialise(item, names, `${where}{${String(i)}}`, markup, samples) ?? null,
       ),
     };
   }
   if (Array.isArray(value)) {
-    return value.map((item, i) => serialise(item, names, `${where}[${String(i)}]`, markup) ?? null);
+    return value.map(
+      (item, i) => serialise(item, names, `${where}[${String(i)}]`, markup, samples) ?? null,
+    );
   }
   const node = value as { $$typeof?: symbol; type?: unknown; props?: Record<string, unknown> };
   if (node.$$typeof === REACT_ELEMENT || node.$$typeof === REACT_ELEMENT_18) {
@@ -120,10 +155,13 @@ export function serialise(
       if (markup) return { $html: markup(node) };
       throw new Error(`${where}: an element of a component outside the library`);
     }
-    return { $el: type, props: serialiseProps(node.props ?? {}, names, `${where}.props`, markup) };
+    return {
+      $el: type,
+      props: serialiseProps(node.props ?? {}, names, `${where}.props`, markup, samples),
+    };
   }
   if (Object.getPrototypeOf(value) === Object.prototype) {
-    return serialiseProps(value as Record<string, unknown>, names, where, markup);
+    return serialiseProps(value as Record<string, unknown>, names, where, markup, samples);
   }
   throw new Error(`${where}: a value the canvas cannot carry`);
 }
@@ -133,10 +171,11 @@ function serialiseProps(
   names: Map<unknown, string>,
   where: string,
   markup?: Markup,
+  samples: Samples = {},
 ): Record<string, Value> {
   const out: Record<string, Value> = {};
   for (const [key, inner] of Object.entries(props)) {
-    const value = serialise(inner, names, `${where}.${key}`, markup);
+    const value = serialise(inner, names, `${where}.${key}`, markup, samples);
     if (value !== undefined) out[key] = value;
   }
   return out;
@@ -179,13 +218,20 @@ function drawnBy(
   render: unknown,
   args: Record<string, unknown>,
   names: Map<unknown, string>,
-): { name: string; props: Record<string, unknown> } | undefined {
+): { name: string; type: unknown; props: Record<string, unknown> } | 'args' | undefined {
   if (typeof render !== 'function') return undefined;
   let root: unknown;
   try {
     root = (render as (a: unknown, c: unknown) => unknown)(args, { args });
   } catch {
     return undefined;
+  }
+  // A wrapper of the story's own that gets the args as they are (QuantityStepper's
+  // counter): the args are the story.
+  const top = root as Element | null;
+  const props = top?.props ?? {};
+  if (Object.entries(args).every(([key, value]) => props[key] === value)) {
+    if (!names.get(top?.type)) return 'args';
   }
   const queue: unknown[] = [root];
   while (queue.length > 0) {
@@ -196,7 +242,7 @@ function drawnBy(
     }
     if (!node || (node.$$typeof !== REACT_ELEMENT && node.$$typeof !== REACT_ELEMENT_18)) continue;
     const name = names.get(node.type);
-    if (name) return { name, props: node.props ?? {} };
+    if (name) return { name, type: node.type, props: node.props ?? {} };
     queue.push(node.props?.['children']);
   }
   return undefined;
@@ -209,8 +255,18 @@ export async function readStories(
 ): Promise<ComponentStories[]> {
   const library = (await server.ssrLoadModule('/src/index.ts')) as Record<string, unknown>;
   const names = namesOf(library);
-  // Vite leaves React to Node, so this is the stories' own React.
-  const markup: Markup = (element) => renderToStaticMarkup(element as ReactElement);
+  // A child from outside the library is drawn inside the component it came from
+  // (a Field's input takes the field's disabled), then only the child's markup
+  // is kept. Vite leaves React to Node, so this is the stories' own React.
+  const markupIn =
+    (type: unknown, props: Record<string, unknown>): Markup =>
+    (element) => {
+      const slot = createElement('fd-slot', null, element as ReactElement);
+      const html = renderToStaticMarkup(
+        createElement(type as string, { ...props, children: slot }),
+      );
+      return /<fd-slot>([\s\S]*)<\/fd-slot>/.exec(html)?.[1] ?? '';
+    };
   const out: ComponentStories[] = [];
   for (const name of components) {
     const folder = folderOf(name);
@@ -233,14 +289,17 @@ export async function readStories(
       const value = exported as StoryExport;
       const merged = { ...metaArgs, ...value.args };
       const where = `${name}.${story}`;
-      const drawn = drawnBy(value.render ?? meta.render, merged, names);
+      const result = drawnBy(value.render ?? meta.render, merged, names);
+      const drawn = typeof result === 'object' ? result : undefined;
       const component = drawn?.name ?? metaName;
+      const props = drawn?.props ?? merged;
+      const samples = CALLS[name]?.(props) ?? {};
       stories[story] = {
         args: drawn
-          ? serialiseProps(drawn.props, names, where, markup)
-          : serialiseProps(merged, names, where),
+          ? serialiseProps(props, names, where, markupIn(drawn.type, props), samples)
+          : serialiseProps(props, names, where, undefined, samples),
         play: typeof value.play === 'function',
-        render: typeof value.render === 'function' && !drawn,
+        render: typeof value.render === 'function' && result === undefined,
         ...(component && component !== name && { component }),
       };
     }

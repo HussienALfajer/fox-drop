@@ -70,6 +70,7 @@ export const TEXT = {
   part: 'الجزء',
   rest: 'السكون',
   open: 'مفتوحة داخل اللوحة',
+  inPlay: 'بالإيماءة في Play، مرسومة هنا ساكنة',
   none: 'بلا',
   yes: 'نعم',
   no: 'لا',

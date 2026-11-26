@@ -75,7 +75,8 @@ interface PageInput {
 /**
  * The statements that rebuild the story values in the page: elements with the
  * page's React (the canvas's React 18; the bundle's bridge converts them) and
- * the bundle's components, functions as no-ops.
+ * the bundle's components, a function that gives content as its table of
+ * results, any other function as a 1.5 s wait (a request in flight).
  */
 export const HYDRATE = `    const R = window.React;
     const FD = window.FoxDrop;
@@ -84,7 +85,12 @@ export const HYDRATE = `    const R = window.React;
     const hydrate = (x) => {
       if (Array.isArray(x)) return x.map(hydrate);
       if (x === null || typeof x !== 'object') return x;
-      if (x.$fn) return () => undefined;
+      // A callback waits as a request would, so a press shows its pending state.
+      if (x.$fn) return () => new Promise((done) => setTimeout(done, 1500));
+      if (x.$memo) {
+        const table = new Map(x.$memo.map(([input, out]) => [input, hydrate(out)]));
+        return (input) => table.get(JSON.stringify(input));
+      }
       if (x.$date) return new Date(x.$date);
       if (x.$set) return new Set(x.$set);
       if (x.$html !== undefined) return R.createElement('div', { style: { display: 'contents' }, dangerouslySetInnerHTML: { __html: x.$html } });

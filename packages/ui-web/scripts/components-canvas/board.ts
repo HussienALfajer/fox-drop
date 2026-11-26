@@ -38,8 +38,8 @@ const FORCED: Record<string, keyof typeof PSEUDO> = {
 /** Groups whose copies take their cell's width (fields, bars, tabs that scroll, cards). */
 const FILL = new Set(['Forms', 'Navigation', 'Data']);
 
-/** Bars as wide as a panel page: their surfaces and states one a row. */
-const WIDE = new Set(['TopBar']);
+/** Bars and tables as wide as a panel page: their surfaces and states one a row. */
+const WIDE = new Set(['TopBar', 'DataTable']);
 
 /** The narrowest a state's copy is drawn, by Design System group. */
 const CELL_WIDTH: Record<string, number> = {
@@ -167,7 +167,11 @@ function copyCell(
   if (forced) {
     slot = `<div data-pseudo="${PSEUDO[forced]}" data-pseudo-outer style="display: block; min-width: 0;">${slot}</div>`;
   }
-  const under = captioned ? `<span style="${MUTED}">${esc(caption(state))}</span>` : '';
+  // A state only a gesture reaches (pulling a list) is drawn at rest and says so.
+  const info = input.stories.stories[story];
+  const gesture = info?.play === true && !input.members.has('inline');
+  const words = gesture ? `${caption(state)} · ${TEXT.inPlay}` : caption(state);
+  const under = captioned ? `<span style="${MUTED}">${esc(words)}</span>` : '';
   return `<div data-cell="${esc(story)}" style="display: flex; flex-direction: column; gap: var(--fd-space-xs); align-items: ${fill ? 'stretch' : 'flex-start'}; min-width: 0;">${slot}${under}</div>`;
 }
 

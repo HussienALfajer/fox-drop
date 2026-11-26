@@ -14,7 +14,7 @@ import {
   groupOf,
   LATER,
 } from '../scripts/components-canvas/canvas.ts';
-import { COMPONENTS as COPY, GROUPS } from '../scripts/components-canvas/copy-ar.ts';
+import { COMPONENTS as COPY, GROUPS, TEXT } from '../scripts/components-canvas/copy-ar.ts';
 import { classesOf, forcedStates } from '../scripts/components-canvas/states.ts';
 import {
   readStories,
@@ -202,6 +202,19 @@ describe('the components canvas', () => {
     expect(notes.sort()).toEqual(
       [...groups].map(([group, count]) => `${GROUPS[group] ?? group} · ${String(count)}`).sort(),
     );
+  });
+
+  it('carries what a function prop gives (table cells, counter words), not an empty function', () => {
+    for (const name of ['DataTable', 'BannerStack']) {
+      expect(board(name), name).toContain('"$memo"');
+    }
+  });
+
+  it('says so when a state only a gesture reaches is drawn at rest', () => {
+    for (const name of ['PullToRefresh', 'BannerStack']) {
+      expect(board(name), name).toContain(TEXT.inPlay);
+    }
+    expect(board('Dialog')).not.toContain(TEXT.inPlay);
   });
 
   it('names the canvas, its two pages and the page of every board', () => {
