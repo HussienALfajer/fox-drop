@@ -24,11 +24,11 @@ A slice is one pull request that one session can finish. It:
 - names the spec sections it implements and the definition-of-done items it closes;
 - states how it is verified: the tests and, for screens, what the owner can try;
 - leaves `main` working;
-- fits the size of `docs/process/development-workflow.md` §3.1: at most about 25 hand-written files or two layers, a component batch's sheet, web side and Flutter side as separate slices.
+- fits the size of `docs/process/development-workflow.md` §3.1: at most about 25 hand-written files or two layers, a component batch's web side and Flutter twin as separate slices (and a hand-written sheet, when one is needed).
 
 Estimate by counting: list in the plan, layer by layer, every file the slice creates or changes by hand (generated files, icons and image baselines apart), and write the count next to the plan. A slice over the limit is split now, before the owner approves it. No two slices in flight on the same hand-written file or dependency (name the files so parallel slices can be checked); a new dependency's version is pinned once, in the slice that adds it.
 
-Order the slices by dependency, then by risk: the money flows, the order state machine, timers and dispatch come before screens that only display data. Schema and API-contract changes are serialised. A slice with components starts with a design checkpoint: the Figma look and the owner's approval of its sheet (architecture §9.9). Screens come in UI batches after the API they use; a batch's slice file holds the screen inventory, and its first checkpoint is the screen cycle of §9.9: draw, prototype, analysis, designer pass, owner approval.
+Order the slices by dependency, then by risk: the money flows, the order state machine, timers and dispatch come before screens that only display data. Schema and API-contract changes are serialised. A slice with components has a design checkpoint (architecture §9.9, T14): web first, the Figma look, then the owner's approval of the built web components' Design System cards (they are the drawing); a Flutter twin is planned only when a screen needs it, as its own slice, and its checkpoint is its parity sheet, never a second drawing. Screens come in UI batches after the API they use; a batch's slice file holds the screen inventory, and its first checkpoint is the screen cycle of §9.9: draw, prototype, analysis, designer pass, owner approval.
 
 Give each slice a tier (`docs/process/development-workflow.md` §2): **T0** money, ledger, order states and timers, auth, migrations, secrets, deploy and CI; **T1** domain services, routes, contracts; **T2** UI, docs, tests.
 

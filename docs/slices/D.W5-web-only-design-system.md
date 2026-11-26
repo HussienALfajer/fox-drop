@@ -29,7 +29,18 @@ Tests written first (locked in the red phase):
 
 ## Stopped at
 
-Not started.
+Built: the Flutter cards removed, the build and its test, the docs and instructions. Next: the checks, the review, the pull request.
+
+## Decisions taken overnight (pending the owner)
+
+The owner was asleep and delegated decisions to the supervising session (2026-11-26); each took the recommended option.
+
+1. **The publish is left to the supervising session.** Plan step 4's two builds ran (both `design-system` commands, output in the ignored `packages/design-tokens/.design-system/system/`: uploads `Logos/`, `App icon/`, `Icons/` only, no `Flutter/` file or `Fox*` card, the index's groups `Logos`, `App icon`, `Icons` with stand-in blob ids, that index then deleted); the upload and publish run after the merge, outside this session. The publish must remove the old `project/components/Fox*/` files with `null` entries, since files left out of a publish are kept.
+2. **"Every `ui-web` component in `COMPONENTS` has its card" is checked from design-tokens' test without a package dependency:** the test reads `ui-web/scripts/bundle.ts` as text and checks each name's `design-system/<Name>/` README and preview. ui-web's own `test/design-system.test.ts` still checks each card's contents.
+3. **One file beyond the plan's list:** `turbo.json` lists the cards test, its images and `core_ui/design-system/**` as inputs of `design-tokens#test`; the three lines go with the files. `phone_harness.dart` and `core_ui/lib/src/**` stay (other tests read Flutter sources). The new test reads `ui-web/scripts/bundle.ts` and `ui-web/design-system/`, so `scripts/turbo-inputs.test.mjs` asked for them as inputs of the task: added.
+4. **Unused exports go with the Flutter group:** `flutterCards`, `pngSize` and `MAX_PNG` (every upload is an SVG now, so the index's type is `image/svg+xml` alone). `scripts/parity.mjs` keeps its own `pngSize`.
+5. **The three package `CLAUDE.md` files stay under 4 KB** by shortening lines elsewhere (the core_ui layout's export list, the forms harness line, the ui-web command line), meaning unchanged.
+6. **`classify-changes.test.mjs` is unchanged and green:** the card paths were globbed, not named.
 
 ## Evidence
 
