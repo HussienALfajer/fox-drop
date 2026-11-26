@@ -1,0 +1,31 @@
+{
+  "text-link": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["text-link"], "flutter": ["text_link"] }
+    },
+    "target": {
+      "$type": "dimension",
+      "$value": "{size.touch-target}",
+      "$description": "The box around the words, at least this wide and high; the words keep their size."
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.xs}"
+    },
+    "color": {
+      "$type": "color",
+      "text": {
+        "$value": "{color.primary}"
+      },
+      "text-hover": {
+        "$value": "{color.primary-hover}"
+      },
+      "text-pressed": {
+        "$value": "{color.primary-pressed}"
+      },
+      "focus-ring": {
+        "$value": "{color.focus-ring}"
+      }
+    }
+  }
+}

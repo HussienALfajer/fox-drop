@@ -47,7 +47,7 @@ class PickBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     return Interaction(
       enabled: enabled,
       onTap: enabled ? onTap : null,
@@ -58,15 +58,19 @@ class PickBox extends StatelessWidget {
       hint: description,
       expanded: expanded,
       builder: (context, state) {
-        final colour = !enabled ? i.onDisabled : i.text;
+        final colour = !enabled
+            ? Color(input.colorOnDisabled)
+            : Color(input.colorText);
         final text = Text(
           shown ?? placeholder ?? '',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: theme.text.body.copyWith(
             color: !enabled
-                ? i.onDisabled
-                : (shown == null ? i.placeholder : i.text),
+                ? Color(input.colorOnDisabled)
+                : (shown == null
+                      ? Color(input.colorPlaceholder)
+                      : Color(input.colorText)),
           ),
         );
         return FieldBox(
@@ -77,7 +81,7 @@ class PickBox extends StatelessWidget {
             children: [
               if (start != null) ...[
                 FoxIcon(start!, color: colour),
-                SizedBox(width: i.gap),
+                SizedBox(width: input.gap),
               ],
               Expanded(
                 child: ltrValue
@@ -91,8 +95,18 @@ class PickBox extends StatelessWidget {
                     : text,
               ),
               if (end != null) ...[
-                SizedBox(width: i.gap),
-                FoxIcon(end!, color: colour),
+                SizedBox(width: input.gap),
+                // Turned up while its menu is open, as on the web (parity,
+                // D.W3a); at once under reduced motion.
+                AnimatedRotation(
+                  turns: expanded == true ? 0.5 : 0,
+                  duration:
+                      (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+                      ? Duration.zero
+                      : t.FoxDuration.base,
+                  curve: theme.easing,
+                  child: FoxIcon(end!, color: colour),
+                ),
               ],
             ],
           ),

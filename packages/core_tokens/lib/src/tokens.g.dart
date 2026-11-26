@@ -1101,6 +1101,14 @@ final class InputTokens {
     required this.height,
     required this.compactHeight,
     required this.compactPaddingInline,
+    required this.messageGap,
+    required this.areaPaddingBlock,
+    required this.clearSize,
+    required this.clearTarget,
+    required this.clearColorBackground,
+    required this.clearColorBackgroundHover,
+    required this.clearColorBackgroundPressed,
+    required this.clearColorIcon,
     required this.paddingInline,
     required this.gap,
     required this.labelGap,
@@ -1124,6 +1132,8 @@ final class InputTokens {
     required this.colorOnDisabled,
     required this.checkSize,
     required this.checkTarget,
+    required this.checkGap,
+    required this.checkDot,
     required this.checkRadius,
     required this.checkBorderWidth,
     required this.checkColorBackground,
@@ -1137,6 +1147,8 @@ final class InputTokens {
     required this.checkColorMark,
     required this.switchWidth,
     required this.switchHeight,
+    required this.switchPadding,
+    required this.switchGap,
     required this.switchColorTrack,
     required this.switchColorTrackHover,
     required this.switchColorTrackPressed,
@@ -1145,6 +1157,7 @@ final class InputTokens {
     required this.switchColorTrackOnPressed,
     required this.switchColorThumb,
     required this.stepperSize,
+    required this.stepperValueWidth,
     required this.stepperTarget,
     required this.stepperColorBackground,
     required this.stepperColorBackgroundHover,
@@ -1152,6 +1165,7 @@ final class InputTokens {
     required this.stepperColorBorder,
     required this.stepperColorValue,
     required this.codeSize,
+    required this.codeCaretHeight,
     required this.codeColorDone,
     required this.codeColorOnDone,
   });
@@ -1159,6 +1173,14 @@ final class InputTokens {
   final double height;
   final double compactHeight;
   final double compactPaddingInline;
+  final double messageGap;
+  final double areaPaddingBlock;
+  final double clearSize;
+  final double clearTarget;
+  final int clearColorBackground;
+  final int clearColorBackgroundHover;
+  final int clearColorBackgroundPressed;
+  final int clearColorIcon;
   final double paddingInline;
   final double gap;
   final double labelGap;
@@ -1182,6 +1204,8 @@ final class InputTokens {
   final int colorOnDisabled;
   final double checkSize;
   final double checkTarget;
+  final double checkGap;
+  final double checkDot;
   final double checkRadius;
   final double checkBorderWidth;
   final int checkColorBackground;
@@ -1195,6 +1219,8 @@ final class InputTokens {
   final int checkColorMark;
   final double switchWidth;
   final double switchHeight;
+  final double switchPadding;
+  final double switchGap;
   final int switchColorTrack;
   final int switchColorTrackHover;
   final int switchColorTrackPressed;
@@ -1203,6 +1229,7 @@ final class InputTokens {
   final int switchColorTrackOnPressed;
   final int switchColorThumb;
   final double stepperSize;
+  final double stepperValueWidth;
   final double stepperTarget;
   final int stepperColorBackground;
   final int stepperColorBackgroundHover;
@@ -1210,6 +1237,7 @@ final class InputTokens {
   final int stepperColorBorder;
   final int stepperColorValue;
   final double codeSize;
+  final double codeCaretHeight;
   final int codeColorDone;
   final int codeColorOnDone;
 }
@@ -1220,6 +1248,14 @@ abstract final class FoxInput {
     height: 50.0,
     compactHeight: 40.0,
     compactPaddingInline: 12.0,
+    messageGap: 4.0,
+    areaPaddingBlock: 12.0,
+    clearSize: 32.0,
+    clearTarget: 48.0,
+    clearColorBackground: 0xFFFBF2E7,
+    clearColorBackgroundHover: 0xFFEEF4FC,
+    clearColorBackgroundPressed: 0xFFD6E4F7,
+    clearColorIcon: 0xFF03428E,
     paddingInline: 16.0,
     gap: 8.0,
     labelGap: 4.0,
@@ -1243,6 +1279,8 @@ abstract final class FoxInput {
     colorOnDisabled: 0xFF857D6E,
     checkSize: 24.0,
     checkTarget: 48.0,
+    checkGap: 4.0,
+    checkDot: 12.0,
     checkRadius: 8.0,
     checkBorderWidth: 2.0,
     checkColorBackground: 0xFFFEFEFE,
@@ -1256,6 +1294,8 @@ abstract final class FoxInput {
     checkColorMark: 0xFFFFFAED,
     switchWidth: 52.0,
     switchHeight: 32.0,
+    switchPadding: 4.0,
+    switchGap: 12.0,
     switchColorTrack: 0xFF6688B2,
     switchColorTrackHover: 0xFF03428E,
     switchColorTrackPressed: 0xFF032E62,
@@ -1264,6 +1304,7 @@ abstract final class FoxInput {
     switchColorTrackOnPressed: 0xFFC2410C,
     switchColorThumb: 0xFFFEFEFE,
     stepperSize: 32.0,
+    stepperValueWidth: 48.0,
     stepperTarget: 48.0,
     stepperColorBackground: 0xFFFEFEFE,
     stepperColorBackgroundHover: 0xFFD6E4F7,
@@ -1271,6 +1312,7 @@ abstract final class FoxInput {
     stepperColorBorder: 0xFFFF6E31,
     stepperColorValue: 0xFF03428E,
     codeSize: 48.0,
+    codeCaretHeight: 24.0,
     codeColorDone: 0xFFFF6E31,
     codeColorOnDone: 0xFFFFFAED,
   );
@@ -1279,6 +1321,14 @@ abstract final class FoxInput {
     height: 50.0,
     compactHeight: 40.0,
     compactPaddingInline: 12.0,
+    messageGap: 4.0,
+    areaPaddingBlock: 12.0,
+    clearSize: 32.0,
+    clearTarget: 48.0,
+    clearColorBackground: 0xFFFBF2E7,
+    clearColorBackgroundHover: 0xFFEEF4FC,
+    clearColorBackgroundPressed: 0xFFD6E4F7,
+    clearColorIcon: 0xFF03428E,
     paddingInline: 16.0,
     gap: 8.0,
     labelGap: 4.0,
@@ -1302,6 +1352,8 @@ abstract final class FoxInput {
     colorOnDisabled: 0xFF857D6E,
     checkSize: 24.0,
     checkTarget: 48.0,
+    checkGap: 4.0,
+    checkDot: 12.0,
     checkRadius: 8.0,
     checkBorderWidth: 2.0,
     checkColorBackground: 0xFFFEFEFE,
@@ -1315,6 +1367,8 @@ abstract final class FoxInput {
     checkColorMark: 0xFFFFFAED,
     switchWidth: 52.0,
     switchHeight: 32.0,
+    switchPadding: 4.0,
+    switchGap: 12.0,
     switchColorTrack: 0xFF6688B2,
     switchColorTrackHover: 0xFF03428E,
     switchColorTrackPressed: 0xFF032E62,
@@ -1323,6 +1377,7 @@ abstract final class FoxInput {
     switchColorTrackOnPressed: 0xFFC2410C,
     switchColorThumb: 0xFFFEFEFE,
     stepperSize: 32.0,
+    stepperValueWidth: 48.0,
     stepperTarget: 48.0,
     stepperColorBackground: 0xFFFEFEFE,
     stepperColorBackgroundHover: 0xFFD6E4F7,
@@ -1330,6 +1385,7 @@ abstract final class FoxInput {
     stepperColorBorder: 0xFFFF6E31,
     stepperColorValue: 0xFF03428E,
     codeSize: 48.0,
+    codeCaretHeight: 24.0,
     codeColorDone: 0xFFFF6E31,
     codeColorOnDone: 0xFFFFFAED,
   );
@@ -1338,6 +1394,14 @@ abstract final class FoxInput {
     height: 50.0,
     compactHeight: 40.0,
     compactPaddingInline: 12.0,
+    messageGap: 4.0,
+    areaPaddingBlock: 12.0,
+    clearSize: 32.0,
+    clearTarget: 48.0,
+    clearColorBackground: 0xFFFBF2E7,
+    clearColorBackgroundHover: 0xFFEEF4FC,
+    clearColorBackgroundPressed: 0xFFD6E4F7,
+    clearColorIcon: 0xFF03428E,
     paddingInline: 16.0,
     gap: 8.0,
     labelGap: 4.0,
@@ -1361,6 +1425,8 @@ abstract final class FoxInput {
     colorOnDisabled: 0xFF857D6E,
     checkSize: 24.0,
     checkTarget: 48.0,
+    checkGap: 4.0,
+    checkDot: 12.0,
     checkRadius: 8.0,
     checkBorderWidth: 2.0,
     checkColorBackground: 0xFFFEFEFE,
@@ -1374,6 +1440,8 @@ abstract final class FoxInput {
     checkColorMark: 0xFFFFFAED,
     switchWidth: 52.0,
     switchHeight: 32.0,
+    switchPadding: 4.0,
+    switchGap: 12.0,
     switchColorTrack: 0xFF6688B2,
     switchColorTrackHover: 0xFF03428E,
     switchColorTrackPressed: 0xFF032E62,
@@ -1382,6 +1450,7 @@ abstract final class FoxInput {
     switchColorTrackOnPressed: 0xFFC2410C,
     switchColorThumb: 0xFFFEFEFE,
     stepperSize: 32.0,
+    stepperValueWidth: 48.0,
     stepperTarget: 48.0,
     stepperColorBackground: 0xFFFEFEFE,
     stepperColorBackgroundHover: 0xFFD6E4F7,
@@ -1389,6 +1458,7 @@ abstract final class FoxInput {
     stepperColorBorder: 0xFFFF6E31,
     stepperColorValue: 0xFF03428E,
     codeSize: 48.0,
+    codeCaretHeight: 24.0,
     codeColorDone: 0xFFFF6E31,
     codeColorOnDone: 0xFFFFFAED,
   );
@@ -1397,6 +1467,14 @@ abstract final class FoxInput {
     height: 50.0,
     compactHeight: 40.0,
     compactPaddingInline: 12.0,
+    messageGap: 4.0,
+    areaPaddingBlock: 12.0,
+    clearSize: 32.0,
+    clearTarget: 48.0,
+    clearColorBackground: 0xFFFBF2E7,
+    clearColorBackgroundHover: 0xFFEEF4FC,
+    clearColorBackgroundPressed: 0xFFD6E4F7,
+    clearColorIcon: 0xFF03428E,
     paddingInline: 16.0,
     gap: 8.0,
     labelGap: 4.0,
@@ -1420,6 +1498,8 @@ abstract final class FoxInput {
     colorOnDisabled: 0xFF857D6E,
     checkSize: 24.0,
     checkTarget: 48.0,
+    checkGap: 4.0,
+    checkDot: 12.0,
     checkRadius: 8.0,
     checkBorderWidth: 2.0,
     checkColorBackground: 0xFFFEFEFE,
@@ -1433,6 +1513,8 @@ abstract final class FoxInput {
     checkColorMark: 0xFFFFFAED,
     switchWidth: 52.0,
     switchHeight: 32.0,
+    switchPadding: 4.0,
+    switchGap: 12.0,
     switchColorTrack: 0xFF6688B2,
     switchColorTrackHover: 0xFF03428E,
     switchColorTrackPressed: 0xFF032E62,
@@ -1441,6 +1523,7 @@ abstract final class FoxInput {
     switchColorTrackOnPressed: 0xFFC2410C,
     switchColorThumb: 0xFFFEFEFE,
     stepperSize: 32.0,
+    stepperValueWidth: 48.0,
     stepperTarget: 48.0,
     stepperColorBackground: 0xFFFEFEFE,
     stepperColorBackgroundHover: 0xFFD6E4F7,
@@ -1448,6 +1531,7 @@ abstract final class FoxInput {
     stepperColorBorder: 0xFFFF6E31,
     stepperColorValue: 0xFF03428E,
     codeSize: 48.0,
+    codeCaretHeight: 24.0,
     codeColorDone: 0xFFFF6E31,
     codeColorOnDone: 0xFFFFFAED,
   );
@@ -1847,6 +1931,64 @@ abstract final class FoxStatusChip {
   );
 }
 
+/// The TextLink component tokens of one theme.
+final class TextLinkTokens {
+  const TextLinkTokens({
+    required this.target,
+    required this.radius,
+    required this.colorText,
+    required this.colorTextHover,
+    required this.colorTextPressed,
+    required this.colorFocusRing,
+  });
+
+  final double target;
+  final double radius;
+  final int colorText;
+  final int colorTextHover;
+  final int colorTextPressed;
+  final int colorFocusRing;
+}
+
+/// The TextLink tokens per theme.
+abstract final class FoxTextLink {
+  static const TextLinkTokens light = TextLinkTokens(
+    target: 48.0,
+    radius: 4.0,
+    colorText: 0xFFFF6E31,
+    colorTextHover: 0xFFDA531B,
+    colorTextPressed: 0xFFC2410C,
+    colorFocusRing: 0xFF03428E,
+  );
+
+  static const TextLinkTokens dark = TextLinkTokens(
+    target: 48.0,
+    radius: 4.0,
+    colorText: 0xFFFF6E31,
+    colorTextHover: 0xFFDA531B,
+    colorTextPressed: 0xFFC2410C,
+    colorFocusRing: 0xFF03428E,
+  );
+
+  static const TextLinkTokens captainLight = TextLinkTokens(
+    target: 48.0,
+    radius: 4.0,
+    colorText: 0xFFFF6E31,
+    colorTextHover: 0xFFDA531B,
+    colorTextPressed: 0xFFC2410C,
+    colorFocusRing: 0xFF03428E,
+  );
+
+  static const TextLinkTokens captainDark = TextLinkTokens(
+    target: 48.0,
+    radius: 4.0,
+    colorText: 0xFFFF6E31,
+    colorTextHover: 0xFFDA531B,
+    colorTextPressed: 0xFFC2410C,
+    colorFocusRing: 0xFF03428E,
+  );
+}
+
 /// Every component token of one theme, one field per file of tokens/component/.
 final class ComponentTokens {
   const ComponentTokens({
@@ -1862,6 +2004,7 @@ final class ComponentTokens {
     required this.money,
     required this.skeleton,
     required this.statusChip,
+    required this.textLink,
   });
 
   final AmountsSummaryTokens amountsSummary;
@@ -1876,6 +2019,7 @@ final class ComponentTokens {
   final MoneyTokens money;
   final SkeletonTokens skeleton;
   final StatusChipTokens statusChip;
+  final TextLinkTokens textLink;
 }
 
 /// The component tokens per theme.
@@ -1893,6 +2037,7 @@ abstract final class FoxComponents {
     money: FoxMoney.light,
     skeleton: FoxSkeleton.light,
     statusChip: FoxStatusChip.light,
+    textLink: FoxTextLink.light,
   );
 
   static const ComponentTokens dark = ComponentTokens(
@@ -1908,6 +2053,7 @@ abstract final class FoxComponents {
     money: FoxMoney.dark,
     skeleton: FoxSkeleton.dark,
     statusChip: FoxStatusChip.dark,
+    textLink: FoxTextLink.dark,
   );
 
   static const ComponentTokens captainLight = ComponentTokens(
@@ -1923,6 +2069,7 @@ abstract final class FoxComponents {
     money: FoxMoney.captainLight,
     skeleton: FoxSkeleton.captainLight,
     statusChip: FoxStatusChip.captainLight,
+    textLink: FoxTextLink.captainLight,
   );
 
   static const ComponentTokens captainDark = ComponentTokens(
@@ -1938,6 +2085,7 @@ abstract final class FoxComponents {
     money: FoxMoney.captainDark,
     skeleton: FoxSkeleton.captainDark,
     statusChip: FoxStatusChip.captainDark,
+    textLink: FoxTextLink.captainDark,
   );
 }
 

@@ -1,4 +1,5 @@
 import 'package:core_ui/core_ui.dart';
+import 'package:core_ui/src/internal/interaction.dart' show FocusRing;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -116,15 +117,15 @@ void main() {
           ),
         ),
       );
-      bool ringed() {
-        final box = tester.widget<DecoratedBox>(
-          find.descendant(
-            of: find.byType(FoxTextLink),
-            matching: find.byType(DecoratedBox),
-          ),
-        );
-        return (box.decoration as BoxDecoration).border != null;
-      }
+      // The ring is painted round the 48 target (D.W3a), as on the web.
+      bool ringed() => tester
+          .widgetList<CustomPaint>(
+            find.descendant(
+              of: find.byType(FoxTextLink),
+              matching: find.byType(CustomPaint),
+            ),
+          )
+          .any((paint) => paint.foregroundPainter is FocusRing);
 
       await tester.tap(find.byType(FoxTextLink));
       await tester.pumpAndSettle();

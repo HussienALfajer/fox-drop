@@ -53,15 +53,22 @@ const icon = formTv({
     kind: {
       // Not a control: as wide as its icon, so a narrow field keeps its digits.
       valid: 'px-2xs text-success',
+      // The search field's 32 circle on `surface`, in a 48 target.
       clear: [
-        'size-(--fd-size-touch-target)',
+        'group/clear size-(--fd-input-clear-target)',
         'cursor-pointer text-(color:--fd-input-color-hint)',
-        'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
-        'hover:bg-surface-raised-hover active:bg-surface-raised-pressed',
         keyboardRing,
       ],
     },
   },
+});
+
+const clearCircle = formTv({
+  base: [
+    'flex size-(--fd-input-clear-size) items-center justify-center rounded-full',
+    'bg-(--fd-input-clear-color-background) group-hover/clear:bg-(--fd-input-clear-color-background-hover) group-active/clear:bg-(--fd-input-clear-color-background-pressed)',
+    'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
+  ],
 });
 
 // The country list: the listbox of the select (`select/menu.tsx`) with a
@@ -365,7 +372,9 @@ export function PhoneField(props: PhoneFieldProps) {
                   report('', readPhone('', country));
                 }}
               >
-                <Icon name="close" size="sm" />
+                <span className={clearCircle()}>
+                  <Icon name="close" size="sm" />
+                </span>
               </button>
             )}
           </>

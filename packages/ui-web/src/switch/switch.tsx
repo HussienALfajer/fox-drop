@@ -5,7 +5,7 @@ import { formTv, keyboardRing } from '../field/styles';
 export const STATES = ['default', 'hover', 'focus', 'pressed', 'on', 'disabled'] as const;
 
 const row = formTv({
-  base: 'group/row inline-flex min-h-(--fd-input-check-target) items-center gap-sm text-phone-body',
+  base: 'group/row inline-flex min-h-(--fd-input-check-target) items-center gap-(--fd-input-switch-gap) text-phone-body',
   variants: {
     disabled: {
       true: 'cursor-not-allowed text-(color:--fd-input-color-on-disabled)',
@@ -19,7 +19,7 @@ const row = formTv({
 // the slide uses logical directions only and animates.
 const track = formTv({
   base: [
-    'flex h-(--fd-input-switch-height) w-(--fd-input-switch-width) shrink-0 items-center rounded-full p-2xs',
+    'flex h-(--fd-input-switch-height) w-(--fd-input-switch-width) shrink-0 items-center rounded-full p-(--fd-input-switch-padding)',
     'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
     keyboardRing,
     'data-unchecked:bg-(--fd-input-switch-color-track) data-checked:bg-(--fd-input-switch-color-track-on)',

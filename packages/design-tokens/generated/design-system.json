@@ -949,7 +949,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.15.0",
+    "version": "0.16.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

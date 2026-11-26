@@ -56,7 +56,7 @@ class FoxQuantityStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final decrease = _atMin
         ? () => onDelete?.call()
         : () => onChanged(value - 1);
@@ -75,12 +75,12 @@ class FoxQuantityStepper extends StatelessWidget {
         onDecrease: _canDecrease && !_atMin ? () => onChanged(value - 1) : null,
         child: CustomPaint(
           painter: _BridgePainter(
-            fill: i.stepperBackground,
-            target: i.stepperTarget,
-            circle: i.stepperSize,
+            fill: Color(input.stepperColorBackground),
+            target: input.stepperTarget,
+            circle: input.stepperSize,
             // The ring the bridge keeps clear: the circle's border plus the
             // focus ring (the web sheet's 19 around a 16 radius).
-            clearance: i.borderWidth + i.focusWidth,
+            clearance: input.borderWidth + input.focusWidth,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -91,16 +91,18 @@ class FoxQuantityStepper extends StatelessWidget {
                 onTap: _canIncrease ? () => onChanged(value + 1) : null,
               ),
               ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: i.stepperTarget - t.FoxSpace.xxs,
-                ),
+                constraints: BoxConstraints(minWidth: input.stepperValueWidth),
                 child: ExcludeSemantics(
                   child: Text(
                     '$value',
                     textAlign: TextAlign.center,
-                    style: theme.text.number.copyWith(
+                    // The subtitle size, bold, as the D.8 sheet and the web
+                    // draw the count (parity, D.W3a).
+                    style: theme.text.subtitle.copyWith(
                       fontWeight: FoxTextTheme.fontWeight(700),
-                      color: enabled ? i.stepperValue : i.onDisabled,
+                      color: enabled
+                          ? Color(input.stepperColorValue)
+                          : Color(input.colorOnDisabled),
                     ),
                   ),
                 ),
@@ -134,7 +136,7 @@ class _StepButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final enabled = onTap != null;
     return Interaction(
       enabled: enabled,
@@ -142,30 +144,32 @@ class _StepButton extends StatelessWidget {
       isButton: true,
       label: label,
       builder: (context, state) {
-        final colour = enabled ? i.stepperBorder : i.onDisabled;
+        final colour = enabled
+            ? Color(input.stepperColorBorder)
+            : Color(input.colorOnDisabled);
         return SizedBox.square(
-          dimension: i.stepperTarget,
+          dimension: input.stepperTarget,
           child: Center(
             child: CustomPaint(
               foregroundPainter: FocusRing.of(
                 theme,
                 on: state.focused,
-                radius: i.stepperSize,
+                radius: input.stepperSize,
                 circle: true,
               ),
               child: AnimatedContainer(
                 duration: t.FoxDuration.base,
                 curve: theme.easing,
-                width: i.stepperSize,
-                height: i.stepperSize,
+                width: input.stepperSize,
+                height: input.stepperSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: state.pressed
-                      ? i.stepperBackgroundPressed
+                      ? Color(input.stepperColorBackgroundPressed)
                       : (state.hovered
-                            ? i.stepperBackgroundHover
-                            : i.stepperBackground),
-                  border: Border.all(color: colour, width: i.focusWidth),
+                            ? Color(input.stepperColorBackgroundHover)
+                            : Color(input.stepperColorBackground)),
+                  border: Border.all(color: colour, width: input.focusWidth),
                 ),
                 child: Center(
                   child: FoxIcon(icon, size: FoxIconSize.sm, color: colour),

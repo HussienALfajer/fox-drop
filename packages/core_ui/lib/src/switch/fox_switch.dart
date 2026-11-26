@@ -30,7 +30,7 @@ class FoxSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final enabled = onChanged != null;
     final slide = (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
         ? Duration.zero
@@ -42,23 +42,27 @@ class FoxSwitch extends StatelessWidget {
       label: label,
       toggled: value,
       builder: (context, state) {
-        final Color track;
+        final int track;
         if (!enabled) {
-          track = i.disabled;
+          track = input.colorDisabled;
         } else if (value) {
           track = state.pressed
-              ? i.switchTrackOnPressed
-              : (state.hovered ? i.switchTrackOnHover : i.switchTrackOn);
+              ? input.switchColorTrackOnPressed
+              : (state.hovered
+                    ? input.switchColorTrackOnHover
+                    : input.switchColorTrackOn);
         } else {
           track = state.pressed
-              ? i.switchTrackPressed
-              : (state.hovered ? i.switchTrackHover : i.switchTrack);
+              ? input.switchColorTrackPressed
+              : (state.hovered
+                    ? input.switchColorTrackHover
+                    : input.switchColorTrack);
         }
-        final radius = i.switchHeight / 2;
+        final radius = input.switchHeight / 2;
         return ConstrainedBox(
           constraints: BoxConstraints(
-            minHeight: t.FoxSize.touchTarget,
-            minWidth: i.switchWidth,
+            minHeight: input.checkTarget,
+            minWidth: input.switchWidth,
           ),
           child: Center(
             widthFactor: 1,
@@ -72,11 +76,11 @@ class FoxSwitch extends StatelessWidget {
               child: AnimatedContainer(
                 duration: t.FoxDuration.base,
                 curve: theme.easing,
-                width: i.switchWidth,
-                height: i.switchHeight,
-                padding: const EdgeInsets.all(t.FoxSpace.xxs),
+                width: input.switchWidth,
+                height: input.switchHeight,
+                padding: EdgeInsets.all(input.switchPadding),
                 decoration: BoxDecoration(
-                  color: track,
+                  color: Color(track),
                   borderRadius: BorderRadius.circular(radius),
                 ),
                 child: AnimatedAlign(
@@ -88,10 +92,14 @@ class FoxSwitch extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: enabled ? i.switchThumb : i.onDisabled,
+                      color: Color(
+                        enabled
+                            ? input.switchColorThumb
+                            : input.colorOnDisabled,
+                      ),
                     ),
                     child: SizedBox.square(
-                      dimension: i.switchHeight - 2 * t.FoxSpace.xxs,
+                      dimension: input.switchHeight - 2 * input.switchPadding,
                     ),
                   ),
                 ),

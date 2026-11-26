@@ -63,6 +63,21 @@ void main() {
       expect(label.dx, closeTo(box.dx, 1));
     });
 
+    // Parity gap (D.W3a): the chip ended in a hairline the web and the D.8
+    // sheet do not draw.
+    testWidgets('draws no hairline after the chip', (tester) async {
+      await tester.pumpWidget(phone());
+      final hairlines = tester
+          .widgetList<Container>(
+            find.descendant(
+              of: find.byType(FoxPhoneField),
+              matching: find.byType(Container),
+            ),
+          )
+          .where((c) => c.constraints?.maxWidth == _i.borderWidth);
+      expect(hairlines, isEmpty);
+    });
+
     // Reading, switching, the country list and every scale:
     // phone_field_test.dart and phone_rules_test.dart (D.11b).
 
@@ -303,6 +318,47 @@ void main() {
       await tester.pumpWidget(select(value: 2, onChanged: (_) {}));
       expect(find.text('المركز'), findsOneWidget);
       expect(find.text('اختر الحي'), findsNothing);
+    });
+
+    // Parity gap (D.W3a): the web turns the chevron up while the list is
+    // open; the Flutter one stayed down.
+    testWidgets('turns its chevron up while the menu is open', (tester) async {
+      double turns() => tester
+          .widget<AnimatedRotation>(
+            find.descendant(
+              of: find.byType(FieldBox),
+              matching: find.byType(AnimatedRotation),
+            ),
+          )
+          .turns;
+      await tester.pumpWidget(select(onChanged: (_) {}));
+      expect(turns(), 0);
+      await tester.tap(find.byType(FieldBox));
+      await tester.pumpAndSettle();
+      expect(turns(), 0.5);
+    });
+
+    testWidgets('turns its chevron at once under reduced motion', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        formApp(
+          FoxSelect<int>(
+            options: options,
+            value: null,
+            onChanged: (_) {},
+            label: 'الحي',
+          ),
+          disableAnimations: true,
+        ),
+      );
+      final rotation = tester.widget<AnimatedRotation>(
+        find.descendant(
+          of: find.byType(FieldBox),
+          matching: find.byType(AnimatedRotation),
+        ),
+      );
+      expect(rotation.duration, Duration.zero);
     });
 
     testWidgets('opens a menu under the field, as wide as it, and picks', (

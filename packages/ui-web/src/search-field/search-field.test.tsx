@@ -22,6 +22,17 @@ describe('SearchField', () => {
     expect(screen.getByRole('searchbox')).toHaveFocus();
   });
 
+  // Parity gap (D.W3a): the D.8 sheet draws the clear button as a 32 circle
+  // on `surface` at rest; the web left it transparent until hovered.
+  it('draws the clear button as the sheet’s circle on its own tokens', async () => {
+    render(<SearchField {...props} />);
+    await userEvent.type(screen.getByRole('searchbox'), 'شاورما');
+    const { className } = screen.getByRole('button', { name: 'مسح' });
+    expect(className).toContain('size-(--fd-input-clear-size)');
+    expect(className).toContain('bg-(--fd-input-clear-color-background)');
+    expect(className).toContain('hover:bg-(--fd-input-clear-color-background-hover)');
+  });
+
   it('is busy and swaps the clear button for a spinner while loading', () => {
     render(<SearchField {...props} defaultValue="شاورما" loading />);
     expect(screen.getByRole('searchbox')).toHaveAttribute('aria-busy', 'true');

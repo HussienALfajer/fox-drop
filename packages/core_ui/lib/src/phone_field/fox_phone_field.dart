@@ -178,7 +178,7 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
 
   @override
   Widget build(BuildContext context) {
-    final i = FoxTheme.of(context).input;
+    final input = FoxTheme.of(context).components.input;
     final s = widget.strings;
     return EntryHost(
       controller: widget.controller,
@@ -248,7 +248,7 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
                     label: s.chip(_name(widget.country), code),
                     enabled: !_locked,
                     focusNode: _chip,
-                    gap: i.gap,
+                    gap: input.gap,
                     onTap: () => _pickCountry(controller),
                   ),
                   end: Row(
@@ -262,7 +262,7 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
                           // narrow field keeps room for the digits.
                           child: Padding(
                             padding: EdgeInsetsDirectional.symmetric(
-                              horizontal: i.gap / 2,
+                              horizontal: input.gap / 2,
                             ),
                             child: FoxIcon(
                               t.FoxIcons.success,
@@ -292,7 +292,8 @@ class _FoxPhoneFieldState extends State<FoxPhoneField> {
   }
 }
 
-/// «SY +963 ⌄»: the country chip, with a hairline to its end.
+/// «SY +963 ⌄»: the country chip. No hairline to its end: the web and the
+/// D.8 sheet draw none (parity, D.W3a).
 class _Chip extends StatelessWidget {
   const _Chip({
     required this.iso,
@@ -315,8 +316,8 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
-    final colour = enabled ? i.text : i.onDisabled;
+    final input = theme.components.input;
+    final colour = Color(enabled ? input.colorText : input.colorOnDisabled);
     return Interaction(
       enabled: enabled,
       focusNode: focusNode,
@@ -350,12 +351,6 @@ class _Chip extends StatelessWidget {
                   size: FoxIconSize.sm,
                   color: colour,
                 ),
-                SizedBox(width: gap),
-                Container(
-                  width: i.borderWidth,
-                  height: t.FoxSpace.lg,
-                  color: enabled ? i.border : i.onDisabled,
-                ),
               ],
             ),
           ),
@@ -375,37 +370,41 @@ class _Clear extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final input = theme.components.input;
     return Interaction(
       label: label,
       isButton: true,
       onTap: onTap,
       builder: (context, state) => SizedBox.square(
-        dimension: t.FoxSize.touchTarget,
+        dimension: input.clearTarget,
         child: Center(
           child: CustomPaint(
             foregroundPainter: FocusRing.of(
               theme,
               on: state.focused,
-              radius: t.FoxSize.step,
+              radius: input.clearSize,
               circle: true,
             ),
             child: AnimatedContainer(
               duration: t.FoxDuration.base,
               curve: theme.easing,
-              width: t.FoxSize.step,
-              height: t.FoxSize.step,
+              width: input.clearSize,
+              height: input.clearSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: state.pressed
-                    ? c.surfacePressed
-                    : (state.hovered ? c.surfaceHover : c.surface),
+                color: Color(
+                  state.pressed
+                      ? input.clearColorBackgroundPressed
+                      : (state.hovered
+                            ? input.clearColorBackgroundHover
+                            : input.clearColorBackground),
+                ),
               ),
               child: Center(
                 child: FoxIcon(
                   t.FoxIcons.close,
                   size: FoxIconSize.sm,
-                  color: theme.input.hint,
+                  color: Color(input.colorHint),
                 ),
               ),
             ),

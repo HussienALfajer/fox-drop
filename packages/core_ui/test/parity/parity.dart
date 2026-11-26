@@ -67,30 +67,38 @@ void parityCase(
               data: theme,
               child: Directionality(
                 textDirection: TextDirection.rtl,
-                child: Align(
-                  alignment: AlignmentDirectional.topStart,
-                  child: RepaintBoundary(
-                    key: _frame,
-                    child: SizedBox(
-                      width: parityWidth,
-                      child: ColoredBox(
-                        color: theme.colors.surface,
-                        child: DefaultTextStyle(
-                          style: theme.text.body.copyWith(
-                            color: theme.colors.onSurface,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(parityInset),
-                            child: Align(
-                              alignment: AlignmentDirectional.topStart,
-                              heightFactor: 1,
-                              child: builder(),
+                // A focused text field needs an Overlay (its selection
+                // handles); a popup it opens lands outside the shot.
+                child: Overlay(
+                  initialEntries: [
+                    OverlayEntry(
+                      builder: (_) => Align(
+                        alignment: AlignmentDirectional.topStart,
+                        child: RepaintBoundary(
+                          key: _frame,
+                          child: SizedBox(
+                            width: parityWidth,
+                            child: ColoredBox(
+                              color: theme.colors.surface,
+                              child: DefaultTextStyle(
+                                style: theme.text.body.copyWith(
+                                  color: theme.colors.onSurface,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(parityInset),
+                                  child: Align(
+                                    alignment: AlignmentDirectional.topStart,
+                                    heightFactor: 1,
+                                    child: builder(),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -116,7 +124,29 @@ void parityCase(
         if (storyId.endsWith('-focus')) {
           FocusManager.instance.highlightStrategy =
               FocusHighlightStrategy.alwaysTraditional;
-          Focus.of(tester.element(control)).requestFocus();
+          // A text field's focus sits below its gesture detector (slice
+          // D.W3a), and the code field has no gesture detector at all: take
+          // the editable text's node when no Focus is above one.
+          ((find
+                          .descendant(
+                            of: find.byKey(_frame),
+                            matching: find.byType(GestureDetector),
+                          )
+                          .evaluate()
+                          .isEmpty
+                      ? null
+                      : Focus.maybeOf(tester.element(control))) ??
+                  tester
+                      .widget<EditableText>(
+                        find
+                            .descendant(
+                              of: find.byKey(_frame),
+                              matching: find.byType(EditableText),
+                            )
+                            .first,
+                      )
+                      .focusNode)
+              .requestFocus();
         }
         // Past every state's fade (duration.base), as the goldens wait.
         await tester.pump(const Duration(milliseconds: 200));

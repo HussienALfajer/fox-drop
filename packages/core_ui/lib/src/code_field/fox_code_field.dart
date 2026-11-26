@@ -159,8 +159,8 @@ class _Cells extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
-    final none = i.background.withValues(alpha: 0);
+    final input = theme.components.input;
+    final none = Color(input.colorBackground).withValues(alpha: 0);
     final hidden = theme.text.body.copyWith(color: none);
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -169,8 +169,8 @@ class _Cells extends StatelessWidget {
           listenable: Listenable.merge([controller, node]),
           builder: (context, _) {
             final digits = controller.text;
-            final spacing = done ? 0.0 : t.FoxSpace.xs;
-            final width = length * i.codeSize + (length - 1) * spacing;
+            final spacing = done ? 0.0 : input.gap;
+            final width = length * input.codeSize + (length - 1) * spacing;
             return Stack(
               alignment: Alignment.center,
               children: [
@@ -245,7 +245,7 @@ class _Cells extends StatelessWidget {
                   ),
                 ),
                 // Keeps the stack as wide as the cells.
-                SizedBox(width: width, height: i.codeSize),
+                SizedBox(width: width, height: input.codeSize),
               ],
             );
           },
@@ -273,36 +273,36 @@ class _Cell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final Color fill;
     final Color? border;
     final double width;
     if (done) {
-      fill = i.codeDone;
+      fill = Color(input.codeColorDone);
       border = null;
       width = 0;
     } else if (!enabled) {
-      fill = i.disabled;
+      fill = Color(input.colorDisabled);
       border = null;
       width = 0;
     } else if (error) {
-      fill = i.background;
-      border = i.borderInvalid;
-      width = i.focusWidth;
+      fill = Color(input.colorBackground);
+      border = Color(input.colorBorderInvalid);
+      width = input.focusWidth;
     } else if (current) {
-      fill = i.background;
-      border = i.borderFocus;
-      width = i.focusWidth;
+      fill = Color(input.colorBackground);
+      border = Color(input.colorBorderFocus);
+      width = input.focusWidth;
     } else {
-      fill = i.background;
-      border = i.border;
-      width = i.borderWidth;
+      fill = Color(input.colorBackground);
+      border = Color(input.colorBorder);
+      width = input.borderWidth;
     }
     return AnimatedContainer(
       duration: done ? t.FoxDuration.moment : t.FoxDuration.base,
       curve: theme.easing,
-      width: i.codeSize,
-      height: i.codeSize,
+      width: input.codeSize,
+      height: input.codeSize,
       decoration: BoxDecoration(shape: BoxShape.circle, color: fill),
       foregroundDecoration: border == null
           ? null
@@ -314,9 +314,9 @@ class _Cell extends StatelessWidget {
         child: digit.isEmpty
             ? (current
                   ? SizedBox(
-                      width: i.focusWidth,
-                      height: t.FoxSpace.lg,
-                      child: ColoredBox(color: i.accent),
+                      width: input.focusWidth,
+                      height: input.codeCaretHeight,
+                      child: ColoredBox(color: Color(input.colorAccent)),
                     )
                   : null)
             : FittedBox(
@@ -325,8 +325,10 @@ class _Cell extends StatelessWidget {
                   digit,
                   style: theme.text.title.copyWith(
                     color: done
-                        ? i.codeOnDone
-                        : (enabled ? i.text : i.onDisabled),
+                        ? Color(input.codeColorOnDone)
+                        : (enabled
+                              ? Color(input.colorText)
+                              : Color(input.colorOnDisabled)),
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),

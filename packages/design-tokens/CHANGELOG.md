@@ -2,12 +2,18 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
-## 0.15.0 (2026-11-26, slice D.W3b: data display on component tokens)
+## 0.16.0 (2026-11-26, slice D.W3b: data display on component tokens)
 
 - New component files, each read on both sides unless a token says `sides`: `money`, `status-chip`, `count-badge`, `card`, `list-row`, `amounts-summary`, `skeleton`, `empty-state`, `drop-loader` (ui-web and core_ui), and `data-table` (web only: every token `sides: ["web"]`, no Flutter folder). Values are the ones either side used, except the parity gaps below.
 - New semantic sizes from the approved D.9 data sheet: `size.list-row` (56px, a phone list row's least height), `size.empty-art` (120px) and `size.empty-art-compact` (72px), the drop that frames an empty state's icon.
 - Parity gaps fixed (the D.9 sheet where it shows the state, else the web): the count badge is 24 with its 2 px ring inside (web was 16 plus an outside ring) and is centred on its icon's corner (`offset` 12; the dot tucked at 4); the web list row is 56 with a 40 lead on the raised surface (was 48, 32, transparent), and its lead circle now draws without an explicit density; the Flutter row keeps one `gap` before the chevron (was 8); the Flutter status chip is at least `size.step` tall (was its text plus 8); the Flutter summary puts its equivalents one `gap` under the total (was 8); the empty state's drop is 120 (web 64, Flutter 128) with one `gap` between its parts on both sides, and the web drop is no longer cut at its round top. The web card's outline is an `inset-ring` read from `card.border-width`, so its keyboard focus ring now sits outside the kept outline (before, focus turned the shared ring inward and erased the outline).
 - The card keeps the foundation `elevation.offset` shadow: the component generator has no shadow type yet.
+
+## 0.15.0 (2026-11-26, slice D.W3a: forms and actions on component tokens)
+
+- `input.json` declares its readers: the web folders `field`, `text-field`, `text-area`, `search-field`, `phone-field`, `code-field`, `select`, `checkbox`, `radio-group`, `switch`, `quantity-stepper` and the Flutter folders `field`, `text_field`, `phone_field`, `code_field`, `select`, `checkbox`, `radio`, `switch`, `quantity_stepper`, `internal`. Web only: `input.compact.*` (Flutter has one density), `input.color.focus-ring` (Flutter paints every ring in the shared `FocusRing`) and `input.switch.gap` (the Flutter switch shows no label).
+- New in `input`, each the value a side wrote by hand: `message-gap` (`space.2xs`, the error's icon to its text), `area-padding-block` (`space.sm`), `clear.size` (`size.step`), `clear.target` (`size.touch-target`), `clear.color.background`, `-hover`, `-pressed` (`surface` and its states) and `clear.color.icon` (`on-surface`), `check.gap` (`space.2xs`), `check.dot` (`space.sm`), `switch.padding` (`space.2xs`), `switch.gap` (`space.sm`), `stepper.value-width` (`space.2xl`), `code.caret-height` (`size.icon-md`).
+- New file `text-link.json`: `target`, `radius`, `color.text`, `-hover`, `-pressed` and `color.focus-ring`, read by the web `text-link` and the Flutter `text_link`.
 
 ## 0.14.0 (2026-11-26, slice D.W1: the component token pipeline)
 

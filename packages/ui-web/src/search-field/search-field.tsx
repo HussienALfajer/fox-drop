@@ -20,12 +20,13 @@ const lens = formTv({
   variants: { disabled: { true: 'text-(color:--fd-input-color-on-disabled)' } },
 });
 
+// The D.8 sheet's clear button: a 32 circle on `surface` at rest.
 const clear = formTv({
   base: [
     'flex shrink-0 cursor-pointer items-center justify-center rounded-full',
-    'size-(--fd-size-icon-lg) text-(color:--fd-input-color-text)',
+    'size-(--fd-input-clear-size) text-(color:--fd-input-clear-color-icon)',
+    'bg-(--fd-input-clear-color-background) hover:bg-(--fd-input-clear-color-background-hover) active:bg-(--fd-input-clear-color-background-pressed)',
     'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
-    'hover:bg-surface-raised-hover active:bg-surface-raised-pressed',
     keyboardRing,
   ],
 });

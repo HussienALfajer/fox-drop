@@ -109,6 +109,17 @@ describe('PhoneField', () => {
     expect(onValueChange).toHaveBeenLastCalledWith('', expect.objectContaining({ country: 'SY' }));
   });
 
+  // Parity gap (D.W3a): the same 32 circle as the search field's clear
+  // button, in a 48 target, as the Flutter field draws it.
+  it('draws the clear circle on the clear tokens inside a 48 target', async () => {
+    render(<PhoneField {...props} />);
+    await userEvent.type(number(), '0944');
+    const button = screen.getByRole('button', { name: 'مسح الرقم' });
+    expect(button.className).toContain('size-(--fd-input-clear-target)');
+    expect(button.innerHTML).toContain('size-(--fd-input-clear-size)');
+    expect(button.innerHTML).toContain('bg-(--fd-input-clear-color-background)');
+  });
+
   it('is locked while busy', () => {
     render(<PhoneField {...props} busy defaultValue="+963944123456" />);
     expect(number()).toBeDisabled();

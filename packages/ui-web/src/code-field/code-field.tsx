@@ -157,7 +157,7 @@ export function CodeField(props: CodeFieldProps) {
                   <>
                     {slotState.char}
                     {slotState.hasFakeCaret && (
-                      <span className="absolute h-(--fd-size-icon-md) w-(--fd-input-focus-width) animate-pulse bg-(--fd-input-color-accent) motion-reduce:animate-none" />
+                      <span className="absolute h-(--fd-input-code-caret-height) w-(--fd-input-focus-width) animate-pulse bg-(--fd-input-color-accent) motion-reduce:animate-none" />
                     )}
                   </>
                 )}
