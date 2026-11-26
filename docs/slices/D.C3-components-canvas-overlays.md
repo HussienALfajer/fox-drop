@@ -30,14 +30,16 @@ Tests written first (locked in the red phase): `test/inline-overlays.test.tsx` â
 
 ## Stopped at
 
-Built; canvas being measured and checked.
+Done: pull request opened with auto-merge. After the merge: the Design System re-sync and the canvas publish (by the session that built it).
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- `components-canvas:check`:
-- `pnpm baselines` (no look change expected; `inline` defaults off):
-- Review:
+- Red phase: `src/overlay/inline.test.tsx` 11 of 12 failed (no listbox, tooltip, grid or dialog found; Menu already passed from the spike), `test/components-canvas.test.ts` 3 failed (43 boards of 54, no board to render). Green: `pnpm exec vitest run` in ui-web, 53 files, 571 tests passed; `pnpm typecheck` clean.
+- `node scripts/verify.mjs --changed`: passed (hooks and scripts, Prettier, lint, type check, build and smoke test, tests); 2 min 32 s.
+- `components-canvas:check`: 55 boards (54 and the index), 345 combinations, 0 with problems, after `--measure` and a second write. Screenshots read for every overlay board (scratchpad, outside the repository): each popup open in its cell, the page around it drawn. Two faults the check cannot see were found that way and fixed: PhoneField blank (a function prop gave React a Promise) and the Drawer and CountrySheet frames sized to their content.
+- `pnpm baselines`: 63 of 340 stories updated and compared, no image changed.
+- Review (T2, medium): no regression found; three findings fixed (evidence before Done, the test's fixed waits, two docs mismatches). Not verifiable by the reviewer: in-flow placement in a real browser (covered by the canvas check and its screenshots).
+- The owner can try, after the merge and the canvas publish: open each overlay board (Menu, Select, Tooltip, CountrySheet, DateField, PhoneField, ConfirmDialog, BlockingBanner, Drawer, Sidebar, Toaster) in Play: the open popup sits in its cell, pressing and typing outside it work; a closed copy opens in place.
 
 ## Before deploying
 
