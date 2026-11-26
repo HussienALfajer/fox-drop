@@ -665,6 +665,344 @@ abstract final class FoxBlockingBanner {
   );
 }
 
+/// The BlockingHeads component tokens of one theme.
+final class BlockingHeadsTokens {
+  const BlockingHeadsTokens({
+    required this.ticketMaxWidth,
+    required this.ticketRadius,
+    required this.ticketPadding,
+    required this.ticketGap,
+    required this.ticketLineGap,
+    required this.ticketPerforationHeight,
+    required this.ticketCutOffset,
+    required this.ticketPerforationWidth,
+    required this.ticketDash,
+    required this.ticketMarkSize,
+    required this.signWidth,
+    required this.signNailSize,
+    required this.signStringsHeight,
+    required this.signStringsLift,
+    required this.signStringWidth,
+    required this.signRadius,
+    required this.signEdge,
+    required this.signPaddingInline,
+    required this.signPaddingTop,
+    required this.signPaddingBottom,
+    required this.signHoleSize,
+    required this.signHoleInsetBlock,
+    required this.signHoleInsetInline,
+    required this.signLineGap,
+    required this.colorTicket,
+    required this.colorLabel,
+    required this.colorRequired,
+    required this.colorPerforation,
+    required this.colorCut,
+    required this.colorBoard,
+    required this.colorBoardEdge,
+    required this.colorBoardInk,
+  });
+
+  final double ticketMaxWidth;
+  final double ticketRadius;
+  final double ticketPadding;
+  final double ticketGap;
+  final double ticketLineGap;
+  final double ticketPerforationHeight;
+  final double ticketCutOffset;
+  final double ticketPerforationWidth;
+  final double ticketDash;
+  final double ticketMarkSize;
+  final double signWidth;
+  final double signNailSize;
+  final double signStringsHeight;
+  final double signStringsLift;
+  final double signStringWidth;
+  final double signRadius;
+  final double signEdge;
+  final double signPaddingInline;
+  final double signPaddingTop;
+  final double signPaddingBottom;
+  final double signHoleSize;
+  final double signHoleInsetBlock;
+  final double signHoleInsetInline;
+  final double signLineGap;
+  final int colorTicket;
+  final int colorLabel;
+  final int colorRequired;
+  final int colorPerforation;
+  final int colorCut;
+  final int colorBoard;
+  final int colorBoardEdge;
+  final int colorBoardInk;
+}
+
+/// The BlockingHeads tokens per theme.
+abstract final class FoxBlockingHeads {
+  static const BlockingHeadsTokens light = BlockingHeadsTokens(
+    ticketMaxWidth: 240.0,
+    ticketRadius: 15.0,
+    ticketPadding: 16.0,
+    ticketGap: 12.0,
+    ticketLineGap: 4.0,
+    ticketPerforationHeight: 24.0,
+    ticketCutOffset: 12.0,
+    ticketPerforationWidth: 1.0,
+    ticketDash: 4.0,
+    ticketMarkSize: 48.0,
+    signWidth: 192.0,
+    signNailSize: 12.0,
+    signStringsHeight: 40.0,
+    signStringsLift: 8.0,
+    signStringWidth: 2.0,
+    signRadius: 15.0,
+    signEdge: 8.0,
+    signPaddingInline: 16.0,
+    signPaddingTop: 24.0,
+    signPaddingBottom: 16.0,
+    signHoleSize: 8.0,
+    signHoleInsetBlock: 8.0,
+    signHoleInsetInline: 16.0,
+    signLineGap: 4.0,
+    colorTicket: 0xFFFEFEFE,
+    colorLabel: 0xFF416EA4,
+    colorRequired: 0xFF03428E,
+    colorPerforation: 0xFF6688B2,
+    colorCut: 0xFFFBF2E7,
+    colorBoard: 0xFFFF6E31,
+    colorBoardEdge: 0xFFC2410C,
+    colorBoardInk: 0xFFFFFAED,
+  );
+
+  static const BlockingHeadsTokens dark = BlockingHeadsTokens(
+    ticketMaxWidth: 240.0,
+    ticketRadius: 15.0,
+    ticketPadding: 16.0,
+    ticketGap: 12.0,
+    ticketLineGap: 4.0,
+    ticketPerforationHeight: 24.0,
+    ticketCutOffset: 12.0,
+    ticketPerforationWidth: 1.0,
+    ticketDash: 4.0,
+    ticketMarkSize: 48.0,
+    signWidth: 192.0,
+    signNailSize: 12.0,
+    signStringsHeight: 40.0,
+    signStringsLift: 8.0,
+    signStringWidth: 2.0,
+    signRadius: 15.0,
+    signEdge: 8.0,
+    signPaddingInline: 16.0,
+    signPaddingTop: 24.0,
+    signPaddingBottom: 16.0,
+    signHoleSize: 8.0,
+    signHoleInsetBlock: 8.0,
+    signHoleInsetInline: 16.0,
+    signLineGap: 4.0,
+    colorTicket: 0xFFFEFEFE,
+    colorLabel: 0xFF416EA4,
+    colorRequired: 0xFF03428E,
+    colorPerforation: 0xFF6688B2,
+    colorCut: 0xFFFBF2E7,
+    colorBoard: 0xFFFF6E31,
+    colorBoardEdge: 0xFFC2410C,
+    colorBoardInk: 0xFFFFFAED,
+  );
+
+  static const BlockingHeadsTokens captainLight = BlockingHeadsTokens(
+    ticketMaxWidth: 240.0,
+    ticketRadius: 15.0,
+    ticketPadding: 16.0,
+    ticketGap: 12.0,
+    ticketLineGap: 4.0,
+    ticketPerforationHeight: 24.0,
+    ticketCutOffset: 12.0,
+    ticketPerforationWidth: 1.0,
+    ticketDash: 4.0,
+    ticketMarkSize: 48.0,
+    signWidth: 192.0,
+    signNailSize: 12.0,
+    signStringsHeight: 40.0,
+    signStringsLift: 8.0,
+    signStringWidth: 2.0,
+    signRadius: 15.0,
+    signEdge: 8.0,
+    signPaddingInline: 16.0,
+    signPaddingTop: 24.0,
+    signPaddingBottom: 16.0,
+    signHoleSize: 8.0,
+    signHoleInsetBlock: 8.0,
+    signHoleInsetInline: 16.0,
+    signLineGap: 4.0,
+    colorTicket: 0xFFFEFEFE,
+    colorLabel: 0xFF4D473D,
+    colorRequired: 0xFF03428E,
+    colorPerforation: 0xFF6688B2,
+    colorCut: 0xFFFBF2E7,
+    colorBoard: 0xFFFF6E31,
+    colorBoardEdge: 0xFFC2410C,
+    colorBoardInk: 0xFFFFFAED,
+  );
+
+  static const BlockingHeadsTokens captainDark = BlockingHeadsTokens(
+    ticketMaxWidth: 240.0,
+    ticketRadius: 15.0,
+    ticketPadding: 16.0,
+    ticketGap: 12.0,
+    ticketLineGap: 4.0,
+    ticketPerforationHeight: 24.0,
+    ticketCutOffset: 12.0,
+    ticketPerforationWidth: 1.0,
+    ticketDash: 4.0,
+    ticketMarkSize: 48.0,
+    signWidth: 192.0,
+    signNailSize: 12.0,
+    signStringsHeight: 40.0,
+    signStringsLift: 8.0,
+    signStringWidth: 2.0,
+    signRadius: 15.0,
+    signEdge: 8.0,
+    signPaddingInline: 16.0,
+    signPaddingTop: 24.0,
+    signPaddingBottom: 16.0,
+    signHoleSize: 8.0,
+    signHoleInsetBlock: 8.0,
+    signHoleInsetInline: 16.0,
+    signLineGap: 4.0,
+    colorTicket: 0xFFFEFEFE,
+    colorLabel: 0xFF4D473D,
+    colorRequired: 0xFF03428E,
+    colorPerforation: 0xFF6688B2,
+    colorCut: 0xFFFBF2E7,
+    colorBoard: 0xFFFF6E31,
+    colorBoardEdge: 0xFFC2410C,
+    colorBoardInk: 0xFFFFFAED,
+  );
+}
+
+/// The BottomNavigation component tokens of one theme.
+final class BottomNavigationTokens {
+  const BottomNavigationTokens({
+    required this.margin,
+    required this.height,
+    required this.paddingInline,
+    required this.gap,
+    required this.itemSize,
+    required this.itemSizeSelected,
+    required this.haloWidth,
+    required this.colorFill,
+    required this.colorHalo,
+    required this.colorItem,
+    required this.colorItemHover,
+    required this.colorItemPressed,
+    required this.colorItemSelected,
+    required this.colorItemSelectedPressed,
+    required this.colorIcon,
+    required this.colorIconSelected,
+    required this.colorFocus,
+  });
+
+  final double margin;
+  final double height;
+  final double paddingInline;
+  final double gap;
+  final double itemSize;
+  final double itemSizeSelected;
+  final double haloWidth;
+  final int colorFill;
+  final int colorHalo;
+  final int colorItem;
+  final int colorItemHover;
+  final int colorItemPressed;
+  final int colorItemSelected;
+  final int colorItemSelectedPressed;
+  final int colorIcon;
+  final int colorIconSelected;
+  final int colorFocus;
+}
+
+/// The BottomNavigation tokens per theme.
+abstract final class FoxBottomNavigation {
+  static const BottomNavigationTokens light = BottomNavigationTokens(
+    margin: 16.0,
+    height: 64.0,
+    paddingInline: 8.0,
+    gap: 8.0,
+    itemSize: 48.0,
+    itemSizeSelected: 56.0,
+    haloWidth: 8.0,
+    colorFill: 0xFF03428E,
+    colorHalo: 0xFFE3DFD8,
+    colorItem: 0xFFFBF2E7,
+    colorItemHover: 0xFFEEF4FC,
+    colorItemPressed: 0xFFD6E4F7,
+    colorItemSelected: 0xFFFF6E31,
+    colorItemSelectedPressed: 0xFFC2410C,
+    colorIcon: 0xFF03428E,
+    colorIconSelected: 0xFFFFFAED,
+    colorFocus: 0xFFFFFFFF,
+  );
+
+  static const BottomNavigationTokens dark = BottomNavigationTokens(
+    margin: 16.0,
+    height: 64.0,
+    paddingInline: 8.0,
+    gap: 8.0,
+    itemSize: 48.0,
+    itemSizeSelected: 56.0,
+    haloWidth: 8.0,
+    colorFill: 0xFF03428E,
+    colorHalo: 0xFFE3DFD8,
+    colorItem: 0xFFFBF2E7,
+    colorItemHover: 0xFFEEF4FC,
+    colorItemPressed: 0xFFD6E4F7,
+    colorItemSelected: 0xFFFF6E31,
+    colorItemSelectedPressed: 0xFFC2410C,
+    colorIcon: 0xFF03428E,
+    colorIconSelected: 0xFFFFFAED,
+    colorFocus: 0xFFFFFFFF,
+  );
+
+  static const BottomNavigationTokens captainLight = BottomNavigationTokens(
+    margin: 16.0,
+    height: 64.0,
+    paddingInline: 8.0,
+    gap: 8.0,
+    itemSize: 48.0,
+    itemSizeSelected: 56.0,
+    haloWidth: 8.0,
+    colorFill: 0xFF03428E,
+    colorHalo: 0xFFE3DFD8,
+    colorItem: 0xFFFBF2E7,
+    colorItemHover: 0xFFEEF4FC,
+    colorItemPressed: 0xFFD6E4F7,
+    colorItemSelected: 0xFFFF6E31,
+    colorItemSelectedPressed: 0xFFC2410C,
+    colorIcon: 0xFF03428E,
+    colorIconSelected: 0xFFFFFAED,
+    colorFocus: 0xFFFFFFFF,
+  );
+
+  static const BottomNavigationTokens captainDark = BottomNavigationTokens(
+    margin: 16.0,
+    height: 64.0,
+    paddingInline: 8.0,
+    gap: 8.0,
+    itemSize: 48.0,
+    itemSizeSelected: 56.0,
+    haloWidth: 8.0,
+    colorFill: 0xFF03428E,
+    colorHalo: 0xFFE3DFD8,
+    colorItem: 0xFFFBF2E7,
+    colorItemHover: 0xFFEEF4FC,
+    colorItemPressed: 0xFFD6E4F7,
+    colorItemSelected: 0xFFFF6E31,
+    colorItemSelectedPressed: 0xFFC2410C,
+    colorIcon: 0xFF03428E,
+    colorIconSelected: 0xFFFFFAED,
+    colorFocus: 0xFFFFFFFF,
+  );
+}
+
 /// The BottomSheet component tokens of one theme.
 final class BottomSheetTokens {
   const BottomSheetTokens({
@@ -2857,6 +3195,142 @@ abstract final class FoxMoney {
   );
 }
 
+/// The NavigationRail component tokens of one theme.
+final class NavigationRailTokens {
+  const NavigationRailTokens({
+    required this.borderWidth,
+    required this.width,
+    required this.widthCollapsed,
+    required this.paddingBlock,
+    required this.gap,
+    required this.linkHeight,
+    required this.currentEdge,
+    required this.railPaddingBlock,
+    required this.railItemGap,
+    required this.railPillHeight,
+    required this.railLabelGap,
+    required this.colorBackground,
+    required this.colorBorder,
+    required this.colorItemHover,
+    required this.colorItemPressed,
+    required this.colorItemSelected,
+    required this.colorOnItemSelected,
+    required this.colorCurrentEdge,
+    required this.colorRailInk,
+  });
+
+  final double borderWidth;
+  final double width;
+  final double widthCollapsed;
+  final double paddingBlock;
+  final double gap;
+  final double linkHeight;
+  final double currentEdge;
+  final double railPaddingBlock;
+  final double railItemGap;
+  final double railPillHeight;
+  final double railLabelGap;
+  final int colorBackground;
+  final int colorBorder;
+  final int colorItemHover;
+  final int colorItemPressed;
+  final int colorItemSelected;
+  final int colorOnItemSelected;
+  final int colorCurrentEdge;
+  final int colorRailInk;
+}
+
+/// The NavigationRail tokens per theme.
+abstract final class FoxNavigationRail {
+  static const NavigationRailTokens light = NavigationRailTokens(
+    borderWidth: 1.0,
+    width: 248.0,
+    widthCollapsed: 72.0,
+    paddingBlock: 8.0,
+    gap: 4.0,
+    linkHeight: 40.0,
+    currentEdge: 4.0,
+    railPaddingBlock: 16.0,
+    railItemGap: 12.0,
+    railPillHeight: 32.0,
+    railLabelGap: 4.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorItemHover: 0xFFD6E4F7,
+    colorItemPressed: 0xFFADC9EE,
+    colorItemSelected: 0xFFFFEDE3,
+    colorOnItemSelected: 0xFFC2410C,
+    colorCurrentEdge: 0xFFFF6E31,
+    colorRailInk: 0xFF416EA4,
+  );
+
+  static const NavigationRailTokens dark = NavigationRailTokens(
+    borderWidth: 1.0,
+    width: 248.0,
+    widthCollapsed: 72.0,
+    paddingBlock: 8.0,
+    gap: 4.0,
+    linkHeight: 40.0,
+    currentEdge: 4.0,
+    railPaddingBlock: 16.0,
+    railItemGap: 12.0,
+    railPillHeight: 32.0,
+    railLabelGap: 4.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorItemHover: 0xFFD6E4F7,
+    colorItemPressed: 0xFFADC9EE,
+    colorItemSelected: 0xFFFFEDE3,
+    colorOnItemSelected: 0xFFC2410C,
+    colorCurrentEdge: 0xFFFF6E31,
+    colorRailInk: 0xFF416EA4,
+  );
+
+  static const NavigationRailTokens captainLight = NavigationRailTokens(
+    borderWidth: 1.0,
+    width: 248.0,
+    widthCollapsed: 72.0,
+    paddingBlock: 8.0,
+    gap: 4.0,
+    linkHeight: 40.0,
+    currentEdge: 4.0,
+    railPaddingBlock: 16.0,
+    railItemGap: 12.0,
+    railPillHeight: 32.0,
+    railLabelGap: 4.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorItemHover: 0xFFD6E4F7,
+    colorItemPressed: 0xFFD6E4F7,
+    colorItemSelected: 0xFFFFEDE3,
+    colorOnItemSelected: 0xFF03428E,
+    colorCurrentEdge: 0xFFFF6E31,
+    colorRailInk: 0xFF4D473D,
+  );
+
+  static const NavigationRailTokens captainDark = NavigationRailTokens(
+    borderWidth: 1.0,
+    width: 248.0,
+    widthCollapsed: 72.0,
+    paddingBlock: 8.0,
+    gap: 4.0,
+    linkHeight: 40.0,
+    currentEdge: 4.0,
+    railPaddingBlock: 16.0,
+    railItemGap: 12.0,
+    railPillHeight: 32.0,
+    railLabelGap: 4.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorItemHover: 0xFFD6E4F7,
+    colorItemPressed: 0xFFD6E4F7,
+    colorItemSelected: 0xFFFFEDE3,
+    colorOnItemSelected: 0xFF03428E,
+    colorCurrentEdge: 0xFFFF6E31,
+    colorRailInk: 0xFF4D473D,
+  );
+}
+
 /// The OrderCard component tokens of one theme.
 final class OrderCardTokens {
   const OrderCardTokens({
@@ -3019,6 +3493,100 @@ abstract final class FoxPullToRefresh {
   );
 }
 
+/// The RestaurantBar component tokens of one theme.
+final class RestaurantBarTokens {
+  const RestaurantBarTokens({
+    required this.minHeight,
+    required this.paddingInline,
+    required this.paddingBlock,
+    required this.gap,
+    required this.dotSize,
+    required this.dotGap,
+    required this.borderWidth,
+    required this.colorBackground,
+    required this.colorBorder,
+    required this.colorName,
+    required this.colorConnected,
+    required this.colorOffline,
+  });
+
+  final double minHeight;
+  final double paddingInline;
+  final double paddingBlock;
+  final double gap;
+  final double dotSize;
+  final double dotGap;
+  final double borderWidth;
+  final int colorBackground;
+  final int colorBorder;
+  final int colorName;
+  final int colorConnected;
+  final int colorOffline;
+}
+
+/// The RestaurantBar tokens per theme.
+abstract final class FoxRestaurantBar {
+  static const RestaurantBarTokens light = RestaurantBarTokens(
+    minHeight: 64.0,
+    paddingInline: 16.0,
+    paddingBlock: 4.0,
+    gap: 12.0,
+    dotSize: 12.0,
+    dotGap: 4.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorName: 0xFF03428E,
+    colorConnected: 0xFF067647,
+    colorOffline: 0xFFBF2929,
+  );
+
+  static const RestaurantBarTokens dark = RestaurantBarTokens(
+    minHeight: 64.0,
+    paddingInline: 16.0,
+    paddingBlock: 4.0,
+    gap: 12.0,
+    dotSize: 12.0,
+    dotGap: 4.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorName: 0xFF03428E,
+    colorConnected: 0xFF067647,
+    colorOffline: 0xFFBF2929,
+  );
+
+  static const RestaurantBarTokens captainLight = RestaurantBarTokens(
+    minHeight: 64.0,
+    paddingInline: 16.0,
+    paddingBlock: 4.0,
+    gap: 12.0,
+    dotSize: 12.0,
+    dotGap: 4.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorName: 0xFF03428E,
+    colorConnected: 0xFF055A37,
+    colorOffline: 0xFF8C1530,
+  );
+
+  static const RestaurantBarTokens captainDark = RestaurantBarTokens(
+    minHeight: 64.0,
+    paddingInline: 16.0,
+    paddingBlock: 4.0,
+    gap: 12.0,
+    dotSize: 12.0,
+    dotGap: 4.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorName: 0xFF03428E,
+    colorConnected: 0xFF055A37,
+    colorOffline: 0xFF8C1530,
+  );
+}
+
 /// The RestaurantCard component tokens of one theme.
 final class RestaurantCardTokens {
   const RestaurantCardTokens({
@@ -3152,6 +3720,136 @@ abstract final class FoxRestaurantCard {
     colorHeartFavourite: 0xFF8C1530,
     colorRating: 0xFFFF6E31,
     colorNew: 0xFF055A37,
+  );
+}
+
+/// The SignInHero component tokens of one theme.
+final class SignInHeroTokens {
+  const SignInHeroTokens({
+    required this.paddingInline,
+    required this.paddingBlock,
+    required this.artGap,
+    required this.leadGap,
+    required this.rowGap,
+    required this.detailGap,
+    required this.badgeSize,
+    required this.dishOverlap,
+    required this.dishRingWidth,
+    required this.colorTitle,
+    required this.colorLead,
+    required this.colorDetails,
+    required this.colorBadge,
+    required this.colorBadgeIcon,
+    required this.colorDish1,
+    required this.colorDish2,
+    required this.colorDish3,
+    required this.colorDishRing,
+  });
+
+  final double paddingInline;
+  final double paddingBlock;
+  final double artGap;
+  final double leadGap;
+  final double rowGap;
+  final double detailGap;
+  final double badgeSize;
+  final double dishOverlap;
+  final double dishRingWidth;
+  final int colorTitle;
+  final int colorLead;
+  final int colorDetails;
+  final int colorBadge;
+  final int colorBadgeIcon;
+  final int colorDish1;
+  final int colorDish2;
+  final int colorDish3;
+  final int colorDishRing;
+}
+
+/// The SignInHero tokens per theme.
+abstract final class FoxSignInHero {
+  static const SignInHeroTokens light = SignInHeroTokens(
+    paddingInline: 24.0,
+    paddingBlock: 12.0,
+    artGap: 16.0,
+    leadGap: 4.0,
+    rowGap: 12.0,
+    detailGap: 8.0,
+    badgeSize: 48.0,
+    dishOverlap: 12.0,
+    dishRingWidth: 2.0,
+    colorTitle: 0xFF03428E,
+    colorLead: 0xFF03428E,
+    colorDetails: 0xFF416EA4,
+    colorBadge: 0xFFFFEDE3,
+    colorBadgeIcon: 0xFFFF6E31,
+    colorDish1: 0xFFFFEDE3,
+    colorDish2: 0xFFEEF4FC,
+    colorDish3: 0xFFEFE8DA,
+    colorDishRing: 0xFFFEFEFE,
+  );
+
+  static const SignInHeroTokens dark = SignInHeroTokens(
+    paddingInline: 24.0,
+    paddingBlock: 12.0,
+    artGap: 16.0,
+    leadGap: 4.0,
+    rowGap: 12.0,
+    detailGap: 8.0,
+    badgeSize: 48.0,
+    dishOverlap: 12.0,
+    dishRingWidth: 2.0,
+    colorTitle: 0xFF03428E,
+    colorLead: 0xFF03428E,
+    colorDetails: 0xFF416EA4,
+    colorBadge: 0xFFFFEDE3,
+    colorBadgeIcon: 0xFFFF6E31,
+    colorDish1: 0xFFFFEDE3,
+    colorDish2: 0xFFEEF4FC,
+    colorDish3: 0xFFEFE8DA,
+    colorDishRing: 0xFFFEFEFE,
+  );
+
+  static const SignInHeroTokens captainLight = SignInHeroTokens(
+    paddingInline: 24.0,
+    paddingBlock: 12.0,
+    artGap: 16.0,
+    leadGap: 4.0,
+    rowGap: 12.0,
+    detailGap: 8.0,
+    badgeSize: 48.0,
+    dishOverlap: 12.0,
+    dishRingWidth: 2.0,
+    colorTitle: 0xFF03428E,
+    colorLead: 0xFF03428E,
+    colorDetails: 0xFF4D473D,
+    colorBadge: 0xFFFFEDE3,
+    colorBadgeIcon: 0xFFFF6E31,
+    colorDish1: 0xFFFFEDE3,
+    colorDish2: 0xFFEEF4FC,
+    colorDish3: 0xFFEFE8DA,
+    colorDishRing: 0xFFFEFEFE,
+  );
+
+  static const SignInHeroTokens captainDark = SignInHeroTokens(
+    paddingInline: 24.0,
+    paddingBlock: 12.0,
+    artGap: 16.0,
+    leadGap: 4.0,
+    rowGap: 12.0,
+    detailGap: 8.0,
+    badgeSize: 48.0,
+    dishOverlap: 12.0,
+    dishRingWidth: 2.0,
+    colorTitle: 0xFF03428E,
+    colorLead: 0xFF03428E,
+    colorDetails: 0xFF4D473D,
+    colorBadge: 0xFFFFEDE3,
+    colorBadgeIcon: 0xFFFF6E31,
+    colorDish1: 0xFFFFEDE3,
+    colorDish2: 0xFFEEF4FC,
+    colorDish3: 0xFFEFE8DA,
+    colorDishRing: 0xFFFEFEFE,
   );
 }
 
@@ -3795,6 +4493,88 @@ abstract final class FoxTooltip {
   );
 }
 
+/// The TopBar component tokens of one theme.
+final class TopBarTokens {
+  const TopBarTokens({
+    required this.minHeight,
+    required this.paddingInline,
+    required this.gap,
+    required this.titleGap,
+    required this.paddingBlock,
+    required this.actionSize,
+    required this.borderWidth,
+    required this.colorBackground,
+    required this.colorBorder,
+    required this.colorTitle,
+  });
+
+  final double minHeight;
+  final double paddingInline;
+  final double gap;
+  final double titleGap;
+  final double paddingBlock;
+  final double actionSize;
+  final double borderWidth;
+  final int colorBackground;
+  final int colorBorder;
+  final int colorTitle;
+}
+
+/// The TopBar tokens per theme.
+abstract final class FoxTopBar {
+  static const TopBarTokens light = TopBarTokens(
+    minHeight: 64.0,
+    paddingInline: 16.0,
+    gap: 16.0,
+    titleGap: 12.0,
+    paddingBlock: 8.0,
+    actionSize: 40.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorTitle: 0xFF03428E,
+  );
+
+  static const TopBarTokens dark = TopBarTokens(
+    minHeight: 64.0,
+    paddingInline: 16.0,
+    gap: 16.0,
+    titleGap: 12.0,
+    paddingBlock: 8.0,
+    actionSize: 40.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorTitle: 0xFF03428E,
+  );
+
+  static const TopBarTokens captainLight = TopBarTokens(
+    minHeight: 64.0,
+    paddingInline: 16.0,
+    gap: 16.0,
+    titleGap: 12.0,
+    paddingBlock: 8.0,
+    actionSize: 40.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorTitle: 0xFF03428E,
+  );
+
+  static const TopBarTokens captainDark = TopBarTokens(
+    minHeight: 64.0,
+    paddingInline: 16.0,
+    gap: 16.0,
+    titleGap: 12.0,
+    paddingBlock: 8.0,
+    actionSize: 40.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorTitle: 0xFF03428E,
+  );
+}
+
 /// The TrackingSteps component tokens of one theme.
 final class TrackingStepsTokens {
   const TrackingStepsTokens({
@@ -3913,6 +4693,8 @@ final class ComponentTokens {
     required this.amountsSummary,
     required this.banner,
     required this.blockingBanner,
+    required this.blockingHeads,
+    required this.bottomNavigation,
     required this.bottomSheet,
     required this.button,
     required this.card,
@@ -3933,10 +4715,13 @@ final class ComponentTokens {
     required this.logo,
     required this.menu,
     required this.money,
+    required this.navigationRail,
     required this.orderCard,
     required this.orderRow,
     required this.pullToRefresh,
+    required this.restaurantBar,
     required this.restaurantCard,
+    required this.signInHero,
     required this.skeleton,
     required this.statusChip,
     required this.tabs,
@@ -3944,12 +4729,15 @@ final class ComponentTokens {
     required this.timer,
     required this.toast,
     required this.tooltip,
+    required this.topBar,
     required this.trackingSteps,
   });
 
   final AmountsSummaryTokens amountsSummary;
   final BannerTokens banner;
   final BlockingBannerTokens blockingBanner;
+  final BlockingHeadsTokens blockingHeads;
+  final BottomNavigationTokens bottomNavigation;
   final BottomSheetTokens bottomSheet;
   final ButtonTokens button;
   final CardTokens card;
@@ -3970,10 +4758,13 @@ final class ComponentTokens {
   final LogoTokens logo;
   final MenuTokens menu;
   final MoneyTokens money;
+  final NavigationRailTokens navigationRail;
   final OrderCardTokens orderCard;
   final OrderRowTokens orderRow;
   final PullToRefreshTokens pullToRefresh;
+  final RestaurantBarTokens restaurantBar;
   final RestaurantCardTokens restaurantCard;
+  final SignInHeroTokens signInHero;
   final SkeletonTokens skeleton;
   final StatusChipTokens statusChip;
   final TabsTokens tabs;
@@ -3981,6 +4772,7 @@ final class ComponentTokens {
   final TimerTokens timer;
   final ToastTokens toast;
   final TooltipTokens tooltip;
+  final TopBarTokens topBar;
   final TrackingStepsTokens trackingSteps;
 }
 
@@ -3990,6 +4782,8 @@ abstract final class FoxComponents {
     amountsSummary: FoxAmountsSummary.light,
     banner: FoxBanner.light,
     blockingBanner: FoxBlockingBanner.light,
+    blockingHeads: FoxBlockingHeads.light,
+    bottomNavigation: FoxBottomNavigation.light,
     bottomSheet: FoxBottomSheet.light,
     button: FoxButton.light,
     card: FoxCard.light,
@@ -4010,10 +4804,13 @@ abstract final class FoxComponents {
     logo: FoxLogo.light,
     menu: FoxMenu.light,
     money: FoxMoney.light,
+    navigationRail: FoxNavigationRail.light,
     orderCard: FoxOrderCard.light,
     orderRow: FoxOrderRow.light,
     pullToRefresh: FoxPullToRefresh.light,
+    restaurantBar: FoxRestaurantBar.light,
     restaurantCard: FoxRestaurantCard.light,
+    signInHero: FoxSignInHero.light,
     skeleton: FoxSkeleton.light,
     statusChip: FoxStatusChip.light,
     tabs: FoxTabs.light,
@@ -4021,6 +4818,7 @@ abstract final class FoxComponents {
     timer: FoxTimer.light,
     toast: FoxToast.light,
     tooltip: FoxTooltip.light,
+    topBar: FoxTopBar.light,
     trackingSteps: FoxTrackingSteps.light,
   );
 
@@ -4028,6 +4826,8 @@ abstract final class FoxComponents {
     amountsSummary: FoxAmountsSummary.dark,
     banner: FoxBanner.dark,
     blockingBanner: FoxBlockingBanner.dark,
+    blockingHeads: FoxBlockingHeads.dark,
+    bottomNavigation: FoxBottomNavigation.dark,
     bottomSheet: FoxBottomSheet.dark,
     button: FoxButton.dark,
     card: FoxCard.dark,
@@ -4048,10 +4848,13 @@ abstract final class FoxComponents {
     logo: FoxLogo.dark,
     menu: FoxMenu.dark,
     money: FoxMoney.dark,
+    navigationRail: FoxNavigationRail.dark,
     orderCard: FoxOrderCard.dark,
     orderRow: FoxOrderRow.dark,
     pullToRefresh: FoxPullToRefresh.dark,
+    restaurantBar: FoxRestaurantBar.dark,
     restaurantCard: FoxRestaurantCard.dark,
+    signInHero: FoxSignInHero.dark,
     skeleton: FoxSkeleton.dark,
     statusChip: FoxStatusChip.dark,
     tabs: FoxTabs.dark,
@@ -4059,6 +4862,7 @@ abstract final class FoxComponents {
     timer: FoxTimer.dark,
     toast: FoxToast.dark,
     tooltip: FoxTooltip.dark,
+    topBar: FoxTopBar.dark,
     trackingSteps: FoxTrackingSteps.dark,
   );
 
@@ -4066,6 +4870,8 @@ abstract final class FoxComponents {
     amountsSummary: FoxAmountsSummary.captainLight,
     banner: FoxBanner.captainLight,
     blockingBanner: FoxBlockingBanner.captainLight,
+    blockingHeads: FoxBlockingHeads.captainLight,
+    bottomNavigation: FoxBottomNavigation.captainLight,
     bottomSheet: FoxBottomSheet.captainLight,
     button: FoxButton.captainLight,
     card: FoxCard.captainLight,
@@ -4086,10 +4892,13 @@ abstract final class FoxComponents {
     logo: FoxLogo.captainLight,
     menu: FoxMenu.captainLight,
     money: FoxMoney.captainLight,
+    navigationRail: FoxNavigationRail.captainLight,
     orderCard: FoxOrderCard.captainLight,
     orderRow: FoxOrderRow.captainLight,
     pullToRefresh: FoxPullToRefresh.captainLight,
+    restaurantBar: FoxRestaurantBar.captainLight,
     restaurantCard: FoxRestaurantCard.captainLight,
+    signInHero: FoxSignInHero.captainLight,
     skeleton: FoxSkeleton.captainLight,
     statusChip: FoxStatusChip.captainLight,
     tabs: FoxTabs.captainLight,
@@ -4097,6 +4906,7 @@ abstract final class FoxComponents {
     timer: FoxTimer.captainLight,
     toast: FoxToast.captainLight,
     tooltip: FoxTooltip.captainLight,
+    topBar: FoxTopBar.captainLight,
     trackingSteps: FoxTrackingSteps.captainLight,
   );
 
@@ -4104,6 +4914,8 @@ abstract final class FoxComponents {
     amountsSummary: FoxAmountsSummary.captainDark,
     banner: FoxBanner.captainDark,
     blockingBanner: FoxBlockingBanner.captainDark,
+    blockingHeads: FoxBlockingHeads.captainDark,
+    bottomNavigation: FoxBottomNavigation.captainDark,
     bottomSheet: FoxBottomSheet.captainDark,
     button: FoxButton.captainDark,
     card: FoxCard.captainDark,
@@ -4124,10 +4936,13 @@ abstract final class FoxComponents {
     logo: FoxLogo.captainDark,
     menu: FoxMenu.captainDark,
     money: FoxMoney.captainDark,
+    navigationRail: FoxNavigationRail.captainDark,
     orderCard: FoxOrderCard.captainDark,
     orderRow: FoxOrderRow.captainDark,
     pullToRefresh: FoxPullToRefresh.captainDark,
+    restaurantBar: FoxRestaurantBar.captainDark,
     restaurantCard: FoxRestaurantCard.captainDark,
+    signInHero: FoxSignInHero.captainDark,
     skeleton: FoxSkeleton.captainDark,
     statusChip: FoxStatusChip.captainDark,
     tabs: FoxTabs.captainDark,
@@ -4135,6 +4950,7 @@ abstract final class FoxComponents {
     timer: FoxTimer.captainDark,
     toast: FoxToast.captainDark,
     tooltip: FoxTooltip.captainDark,
+    topBar: FoxTopBar.captainDark,
     trackingSteps: FoxTrackingSteps.captainDark,
   );
 }

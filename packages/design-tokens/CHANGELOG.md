@@ -2,13 +2,19 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
-## 0.20.0 (2026-11-26, slice D.W4c: web restaurant and dish cards, bottom sheet, pull to refresh)
+## 0.21.0 (2026-11-26, slice D.W4c: web restaurant and dish cards, bottom sheet, pull to refresh)
 
 - New semantic sizes, each the value the Flutter twin computed by hand: `size.cover-logo` (72px, the logo on the tint of a card with no cover: touch target plus `space.lg`), `size.dish-photo` (96px, two touch targets) and `size.sheet-handle` (40px, `space.xl` plus `space.xs`).
 - New file `restaurant-card.json`, read by the web `restaurant-card` and the Flutter `restaurant_card`: `cover-radius` (`radius.lg`), `logo-size` (`size.cover-logo`), `heart-size` (`size.control-compact`), `heart-inset` (`space.2xs`), `state-inset`, `gap` (`space.sm`), `facts-gap` (`space.md`), `facts-row-gap`, `fact-gap` (`space.2xs`), `facts-top` (`space.xs`), `faded-opacity` (0.55, a `number`), `color.cover` (`primary-subtle`), `color.heart-background` and its `-hover`, `-pressed` (`surface-raised`), `color.heart` (`on-surface`), `color.heart-favourite` (`danger`), `color.rating` (`primary`) and `color.new` (`success`).
 - New file `dish-card.json`, read by the web `dish-card` and the Flutter `dish_card`: `photo-size` (`size.dish-photo`), `photo-radius` (`radius.md`), `gap` (`space.sm`), `add-gap`, `price-gap` (`space.xs`), `add-size` (`size.control-compact`), `faded-opacity` (0.55), `color.name` (`heading`), `color.add` and its `-hover`, `-pressed` (`primary`), `color.on-add` (`on-primary`), `color.count` (`accent`) and `color.on-count` (`on-accent`). The 0.55 of both cards was `foxFadedOpacity` in `core_ui`.
 - New file `bottom-sheet.json`, read by the web `bottom-sheet` and the Flutter `bottom_sheet`: `radius` (`radius.xl`), `padding-inline` (`space.lg`), `padding-top` (`space.sm`), `padding-bottom` (`space.md`), `handle.width` (`size.sheet-handle`), `handle.height` (`border-width.heavy`), `curve.width` (`space.2xl`), `curve.height` (`space.lg`), `color.background` (`surface-raised`), `color.background-s-curve` (`surface`), `color.handle` (`border-strong`), `color.title` (`on-surface`), `color.title-s-curve` (`heading`); web only `max-width` (`size.dialog`); Flutter only `curve.tab-share` (0.6; the web writes `basis-2/5`).
 - New file `pull-to-refresh.json`, read by the web `pull-to-refresh` and the Flutter `pull_to_refresh`: `drop-size` (`size.touch-target`), `mark-size` (`size.icon-lg`), `inset` (`space.md`) and `color.drop` (`surface-raised`). No Flutter look changes.
+
+## 0.20.0 (2026-11-26, slice D.W4d: web restaurant bar, bottom navigation, sign-in hero and blocking heads)
+
+- New component files, each read on both sides unless a token says `sides`: `restaurant-bar` (ui-web `restaurant-bar`; core_ui `top_bar`), `bottom-navigation` (`bottom-navigation`; `navigation`), `sign-in-hero` (`sign-in-hero`; `sign_in_hero`) and `blocking-heads` (`blocking-heads`; `blocking_heads`), written from the Flutter twins' values; and `top-bar` (`top-bar`; `top_bar`) and `navigation-rail` (`sidebar`; `navigation`) for the twins whose surfaces differ by design: the panel's bar and sidebar on the web, the phone bar and the restaurant's tablet rail in Flutter. They share the height, the inline padding, the ground, the hairline and the item colours; what only one surface has is marked `sides`.
+- Semantic tokens of the same value are reused rather than new sizes: `bottom-navigation.item-size-selected` is `size.list-row` (56), `blocking-heads.sign.width` is `size.menu-min-width` (192, the drawing's board), `blocking-heads.sign.strings-height` is `size.control-compact` (40).
+- Web only: `blocking-heads.ticket.cut-offset` (`space.sm`, half the perforation's band) and `blocking-heads.sign.strings-lift` (`space.xs`); Flutter only: `blocking-heads.ticket.dash` (the web draws the browser's dashed border). No Flutter look change.
 
 ## 0.19.0 (2026-11-26, slice D.W4b: the order parts on the web)
 

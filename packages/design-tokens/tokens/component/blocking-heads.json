@@ -1,0 +1,149 @@
+{
+  "blocking-heads": {
+    "$description": "The heads of the blocking screens (D.11 screen 7, CU §4): the forced update's version ticket and the maintenance shop sign.",
+    "$extensions": {
+      "app.foxdrop": { "web": ["blocking-heads"], "flutter": ["blocking_heads"] }
+    },
+    "ticket": {
+      "max-width": {
+        "$type": "dimension",
+        "$value": "{size.tooltip}"
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.lg}"
+      },
+      "padding": {
+        "$type": "dimension",
+        "$value": "{space.md}"
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{space.sm}",
+        "$description": "A label to its version, the required version to the mark."
+      },
+      "line-gap": {
+        "$type": "dimension",
+        "$value": "{space.2xs}"
+      },
+      "perforation-height": {
+        "$type": "dimension",
+        "$value": "{space.lg}",
+        "$description": "The perforation's band; its cut-outs are half circles of this height."
+      },
+      "cut-offset": {
+        "$type": "dimension",
+        "$value": "{space.sm}",
+        "$description": "Half the band: each cut-out's centre sits on the ticket's edge (Flutter draws it at the edge).",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "perforation-width": {
+        "$type": "dimension",
+        "$value": "{border-width.thin}"
+      },
+      "dash": {
+        "$type": "dimension",
+        "$value": "{space.2xs}",
+        "$description": "A dash and the gap after it. The web draws the browser's dashed border.",
+        "$extensions": { "app.foxdrop": { "sides": ["flutter"] } }
+      },
+      "mark-size": {
+        "$type": "dimension",
+        "$value": "{size.touch-target}"
+      }
+    },
+    "sign": {
+      "width": {
+        "$type": "dimension",
+        "$value": "{size.menu-min-width}",
+        "$description": "192, the drawing's board (four touch targets)."
+      },
+      "nail-size": {
+        "$type": "dimension",
+        "$value": "{space.sm}"
+      },
+      "strings-height": {
+        "$type": "dimension",
+        "$value": "{size.control-compact}",
+        "$description": "The strings' box under the nail (the drawing's 40)."
+      },
+      "strings-lift": {
+        "$type": "dimension",
+        "$value": "{space.xs}",
+        "$description": "How far the strings' box rises under the nail, so they meet behind it (Flutter: half the nail, drawn).",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "string-width": {
+        "$type": "dimension",
+        "$value": "{border-width.thick}"
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.lg}"
+      },
+      "edge": {
+        "$type": "dimension",
+        "$value": "{space.xs}",
+        "$description": "The board's solid pressed-orange edge under it."
+      },
+      "padding-inline": {
+        "$type": "dimension",
+        "$value": "{space.md}"
+      },
+      "padding-top": {
+        "$type": "dimension",
+        "$value": "{space.lg}"
+      },
+      "padding-bottom": {
+        "$type": "dimension",
+        "$value": "{space.md}"
+      },
+      "hole-size": {
+        "$type": "dimension",
+        "$value": "{space.xs}"
+      },
+      "hole-inset-block": {
+        "$type": "dimension",
+        "$value": "{space.xs}"
+      },
+      "hole-inset-inline": {
+        "$type": "dimension",
+        "$value": "{space.md}"
+      },
+      "line-gap": {
+        "$type": "dimension",
+        "$value": "{space.2xs}"
+      }
+    },
+    "color": {
+      "$type": "color",
+      "ticket": {
+        "$value": "{color.surface-raised}"
+      },
+      "label": {
+        "$value": "{color.on-surface-muted}",
+        "$description": "The ticket's labels and its struck installed version."
+      },
+      "required": {
+        "$value": "{color.heading}"
+      },
+      "perforation": {
+        "$value": "{color.border-strong}",
+        "$description": "The dashed line, the nail and the strings."
+      },
+      "cut": {
+        "$value": "{color.surface}",
+        "$description": "The ticket's cut-outs and the board's holes: the ground showing through."
+      },
+      "board": {
+        "$value": "{color.primary}"
+      },
+      "board-edge": {
+        "$value": "{color.primary-pressed}"
+      },
+      "board-ink": {
+        "$value": "{color.on-primary}"
+      }
+    }
+  }
+}

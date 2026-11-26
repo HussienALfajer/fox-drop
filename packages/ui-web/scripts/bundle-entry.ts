@@ -53,9 +53,19 @@ import {
   Tabs,
   TopBar,
   Sidebar,
+  RestaurantBar,
+  BottomNavigation,
+  SignInHero,
+  VersionTicket,
+  ShopSign,
   useToast,
 } from '../src/index.ts';
 import './bundle.css';
+
+// The two blocking heads share one Design System card, as one Flutter file:
+// FoxDrop.BlockingHeads.VersionTicket and FoxDrop.BlockingHeads.ShopSign (its
+// parts cross the bridge); BlockingHeads itself draws nothing.
+const BlockingHeads = Object.assign(() => null, { VersionTicket, ShopSign });
 
 const components = {
   Button,
@@ -108,6 +118,10 @@ const components = {
   Tabs,
   TopBar,
   Sidebar,
+  RestaurantBar,
+  BottomNavigation,
+  SignInHero,
+  BlockingHeads,
 };
 
 // The bridge to a page that renders with another React (the Design canvas

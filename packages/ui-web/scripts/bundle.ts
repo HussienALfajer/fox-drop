@@ -61,6 +61,10 @@ export const COMPONENTS = [
   'Tabs',
   'TopBar',
   'Sidebar',
+  'RestaurantBar',
+  'BottomNavigation',
+  'SignInHero',
+  'BlockingHeads',
 ] as const;
 
 export const MAX_JS = 6 * 1024 * 1024;

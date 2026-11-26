@@ -898,6 +898,82 @@ interface SidebarProps {
   onOpenChange?: (open: boolean) => void;
   closeLabel?: string;
 }
+
+interface RestaurantBarProps {
+  name: string;
+  /** The status pill: a StatusChip, or a button that opens the status sheet. */
+  status: ReactNode;
+  connected: boolean;
+  /** «متصل» or «غير متصل», shown beside the dot. */
+  connectionLabel: string;
+  supportLabel: string;
+  onSupport?: () => void;
+}
+
+interface BottomNavigationItem {
+  icon: IconName;
+  /** Read by screen readers: the bar shows icons only. */
+  label: string;
+  count?: number;
+  /** A dot instead of a count. */
+  dot?: boolean;
+  /** The badge in words, read with the name; needed with count or dot. */
+  countLabel?: string;
+}
+
+interface BottomNavigationProps {
+  label: string;
+  items: BottomNavigationItem[];
+  selected: number;
+  onSelect: (index: number) => void;
+}
+
+interface SignInPerk {
+  icon: IconName;
+  label: string;
+}
+
+type SignInOrigin =
+  | {
+      kind: 'checkout';
+      restaurant: string;
+      details: string;
+      /** Minor units. */
+      amount: string;
+      symbol: string;
+      decimals?: number;
+      savedLabel: string;
+    }
+  | { kind: 'orders'; title: string; statusLabel: string; steps: ReactNode }
+  | { kind: 'account'; perks: SignInPerk[] };
+
+interface SignInHeroProps {
+  origin: SignInOrigin;
+  title: string;
+  lead?: string;
+  /** The keyboard is up: the title alone. */
+  keyboard?: boolean;
+}
+
+/** BlockingHeads.VersionTicket: the forced update's head. */
+interface VersionTicketProps {
+  installedLabel: string;
+  installed: string;
+  requiredLabel: string;
+  required: string;
+  /** Read once, for the whole ticket. */
+  label: string;
+}
+
+/** BlockingHeads.ShopSign: the maintenance head. */
+interface ShopSignProps {
+  title: string;
+  subtitle: string;
+  /** «نعود الساعة 3:00 م», when the panel gave one. */
+  returnTime?: string;
+  /** Read once, for the whole sign. */
+  label: string;
+}
 `;
 }
 

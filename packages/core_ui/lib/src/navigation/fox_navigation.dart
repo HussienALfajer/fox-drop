@@ -75,31 +75,33 @@ class FoxBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final bottomNavigation = FoxTheme.of(context).components.bottomNavigation;
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.all(t.FoxSpace.md),
+        padding: EdgeInsets.all(bottomNavigation.margin),
         child: Center(
           heightFactor: 1,
           child: CustomPaint(
             key: outlineKey,
             painter: FoxNavOutlinePainter(
               count: items.length,
-              fill: c.accent,
-              halo: c.navHalo,
+              fill: Color(bottomNavigation.colorFill),
+              halo: Color(bottomNavigation.colorHalo),
+              haloWidth: bottomNavigation.haloWidth,
             ),
             child: SizedBox(
               key: pillKey,
-              height: t.FoxSize.bar,
+              height: bottomNavigation.height,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: t.FoxSpace.xs),
+                padding: EdgeInsets.symmetric(
+                  horizontal: bottomNavigation.paddingInline,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     for (var n = 0; n < items.length; n++) ...[
-                      if (n > 0) const SizedBox(width: t.FoxSpace.xs),
+                      if (n > 0) SizedBox(width: bottomNavigation.gap),
                       _BarItem(
                         item: items[n],
                         selected: n == selected,
@@ -127,11 +129,15 @@ class FoxNavOutlinePainter extends CustomPainter {
     required this.count,
     required this.fill,
     required this.halo,
+    this.haloWidth = t.FoxSpace.xs,
   });
 
   final int count;
   final Color fill;
   final Color halo;
+
+  /// The halo's stroke: `bottom-navigation.halo-width`.
+  final double haloWidth;
 
   /// The outline for [count] tabs in a box [size] high, from its start.
   static Path outline(int count, Size size) {
@@ -192,7 +198,7 @@ class FoxNavOutlinePainter extends CustomPainter {
         Paint()
           ..color = halo
           ..style = PaintingStyle.stroke
-          ..strokeWidth = t.FoxSpace.xs
+          ..strokeWidth = haloWidth
           ..strokeJoin = StrokeJoin.round,
       )
       ..drawPath(path, Paint()..color = fill);
@@ -200,7 +206,10 @@ class FoxNavOutlinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(FoxNavOutlinePainter old) =>
-      old.count != count || old.fill != fill || old.halo != halo;
+      old.count != count ||
+      old.fill != fill ||
+      old.halo != halo ||
+      old.haloWidth != haloWidth;
 }
 
 class _BarItem extends StatelessWidget {
@@ -217,7 +226,7 @@ class _BarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final bottomNavigation = theme.components.bottomNavigation;
     return Interaction(
       onTap: onTap,
       label: item.semanticLabel,
@@ -226,17 +235,23 @@ class _BarItem extends StatelessWidget {
       selected: selected,
       enabledState: false,
       builder: (context, state) {
-        final fill = selected
-            ? (state.pressed ? c.primaryPressed : c.primary)
-            : (state.pressed
-                  ? c.surfacePressed
-                  : (state.hovered ? c.surfaceHover : c.surface));
+        final fill = Color(
+          selected
+              ? (state.pressed
+                    ? bottomNavigation.colorItemSelectedPressed
+                    : bottomNavigation.colorItemSelected)
+              : (state.pressed
+                    ? bottomNavigation.colorItemPressed
+                    : (state.hovered
+                          ? bottomNavigation.colorItemHover
+                          : bottomNavigation.colorItem)),
+        );
         // The current tab is a larger orange circle, `space.xs` wider, that
         // reaches into its neighbours' gaps so the row keeps its width.
-        const big = t.FoxSize.touchTarget + t.FoxSpace.xs;
-        final side = selected ? big : t.FoxSize.touchTarget;
+        final big = bottomNavigation.itemSizeSelected;
+        final side = selected ? big : bottomNavigation.itemSize;
         return SizedBox.square(
-          dimension: t.FoxSize.touchTarget,
+          dimension: bottomNavigation.itemSize,
           child: OverflowBox(
             maxWidth: big,
             maxHeight: big,
@@ -253,7 +268,7 @@ class _BarItem extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: state.focused
                       ? Border.all(
-                          color: c.onAccent,
+                          color: Color(bottomNavigation.colorFocus),
                           width: theme.input.focusWidth,
                         )
                       : null,
@@ -264,7 +279,11 @@ class _BarItem extends StatelessWidget {
                 child: FoxIcon(
                   item.icon,
                   size: FoxIconSize.lg,
-                  color: selected ? c.onPrimary : c.accent,
+                  color: Color(
+                    selected
+                        ? bottomNavigation.colorIconSelected
+                        : bottomNavigation.colorIcon,
+                  ),
                 ),
               ),
             ),
@@ -312,12 +331,16 @@ class FoxNavigationRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final navigationRail = FoxTheme.of(context).components.navigationRail;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: c.surfaceRaised,
-        border: BorderDirectional(end: BorderSide(color: c.border)),
+        color: Color(navigationRail.colorBackground),
+        border: BorderDirectional(
+          end: BorderSide(
+            color: Color(navigationRail.colorBorder),
+            width: navigationRail.borderWidth,
+          ),
+        ),
       ),
       child: SizedBox(
         width: t.FoxSize.touchTarget + t.FoxSpace.xl + t.FoxSpace.xs,
@@ -328,11 +351,13 @@ class FoxNavigationRail extends StatelessWidget {
           },
           child: FocusTraversalGroup(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: t.FoxSpace.md),
+              padding: EdgeInsets.symmetric(
+                vertical: navigationRail.railPaddingBlock,
+              ),
               child: Column(
                 children: [
                   for (var n = 0; n < items.length; n++) ...[
-                    if (n > 0) const SizedBox(height: t.FoxSpace.sm),
+                    if (n > 0) SizedBox(height: navigationRail.railItemGap),
                     _RailItem(
                       item: items[n],
                       selected: n == selected,
@@ -363,8 +388,12 @@ class _RailItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    final ink = selected ? c.onPrimarySubtle : c.onSurfaceMuted;
+    final navigationRail = theme.components.navigationRail;
+    final ink = Color(
+      selected
+          ? navigationRail.colorOnItemSelected
+          : navigationRail.colorRailInk,
+    );
     return Interaction(
       onTap: onTap,
       label: item.semanticLabel,
@@ -383,19 +412,21 @@ class _RailItem extends StatelessWidget {
                 duration: t.FoxDuration.base,
                 curve: theme.easing,
                 width: t.FoxSpace.xxxl - t.FoxSpace.xs,
-                height: t.FoxSpace.xl,
+                height: navigationRail.railPillHeight,
                 decoration: BoxDecoration(
-                  color: selected
-                      ? c.primarySubtle
-                      : (state.pressed
-                            ? c.surfaceRaisedPressed
-                            : (state.hovered
-                                  ? c.surfaceRaisedHover
-                                  : c.surfaceRaised)),
+                  color: Color(
+                    selected
+                        ? navigationRail.colorItemSelected
+                        : (state.pressed
+                              ? navigationRail.colorItemPressed
+                              : (state.hovered
+                                    ? navigationRail.colorItemHover
+                                    : navigationRail.colorBackground)),
+                  ),
                   borderRadius: BorderRadius.circular(t.FoxRadius.full),
                   border: state.focused
                       ? Border.all(
-                          color: c.focusRing,
+                          color: theme.colors.focusRing,
                           width: theme.input.focusWidth,
                         )
                       : null,
@@ -404,7 +435,7 @@ class _RailItem extends StatelessWidget {
                 child: FoxIcon(item.icon, color: ink),
               ),
             ),
-            const SizedBox(height: t.FoxSpace.xxs),
+            SizedBox(height: navigationRail.railLabelGap),
             Text(
               item.label,
               textAlign: TextAlign.center,

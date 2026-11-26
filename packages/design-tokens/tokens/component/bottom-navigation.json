@@ -1,0 +1,73 @@
+{
+  "bottom-navigation": {
+    "$description": "The floating bottom bar of the three apps (D.10, the Figma shape of D.11b): an accent outline that swells round each tab in a nav-halo ring, an ivory circle per item and the current one a larger orange circle.",
+    "$extensions": {
+      "app.foxdrop": { "web": ["bottom-navigation"], "flutter": ["navigation"] }
+    },
+    "margin": {
+      "$type": "dimension",
+      "$value": "{space.md}",
+      "$description": "Round the bar, above the home indicator."
+    },
+    "height": {
+      "$type": "dimension",
+      "$value": "{size.bar}"
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.xs}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.xs}"
+    },
+    "item-size": {
+      "$type": "dimension",
+      "$value": "{size.touch-target}"
+    },
+    "item-size-selected": {
+      "$type": "dimension",
+      "$value": "{size.list-row}",
+      "$description": "The current circle, space.xs larger (56): it reaches into its neighbours' gaps, so the row keeps its width."
+    },
+    "halo-width": {
+      "$type": "dimension",
+      "$value": "{space.xs}",
+      "$description": "The nav-halo ring round the outline."
+    },
+    "color": {
+      "$type": "color",
+      "fill": {
+        "$value": "{color.accent}"
+      },
+      "halo": {
+        "$value": "{color.nav-halo}"
+      },
+      "item": {
+        "$value": "{color.surface}"
+      },
+      "item-hover": {
+        "$value": "{color.surface-hover}"
+      },
+      "item-pressed": {
+        "$value": "{color.surface-pressed}"
+      },
+      "item-selected": {
+        "$value": "{color.primary}"
+      },
+      "item-selected-pressed": {
+        "$value": "{color.primary-pressed}"
+      },
+      "icon": {
+        "$value": "{color.accent}"
+      },
+      "icon-selected": {
+        "$value": "{color.on-primary}"
+      },
+      "focus": {
+        "$value": "{color.on-accent}",
+        "$description": "The keyboard ring on the accent outline."
+      }
+    }
+  }
+}

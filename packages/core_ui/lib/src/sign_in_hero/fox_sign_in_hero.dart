@@ -124,7 +124,12 @@ class FoxSignInHero extends StatelessWidget {
 
   Widget _build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final signInHero = theme.components.signInHero;
+    final heading = Color(signInHero.colorTitle);
+    final padding = EdgeInsetsDirectional.symmetric(
+      horizontal: signInHero.paddingInline,
+      vertical: signInHero.paddingBlock,
+    );
     // The view's own insets too: a resizing Scaffold removes the keyboard
     // from its body's MediaQuery, so the body alone never sees it.
     final keyboardUp =
@@ -132,17 +137,14 @@ class FoxSignInHero extends StatelessWidget {
         (View.maybeOf(context)?.viewInsets.bottom ?? 0) > 0;
     if (keyboardUp) {
       return Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: t.FoxSpace.lg,
-          vertical: t.FoxSpace.sm,
-        ),
+        padding: padding,
         child: Align(
           alignment: AlignmentDirectional.bottomStart,
           child: Semantics(
             header: true,
             child: Text(
               title,
-              style: theme.text.title.copyWith(color: c.heading),
+              style: theme.text.title.copyWith(color: heading),
             ),
           ),
         ),
@@ -151,22 +153,26 @@ class FoxSignInHero extends StatelessWidget {
     final lead = this.lead;
     return ClipRect(
       child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: t.FoxSpace.lg,
-          vertical: t.FoxSpace.sm,
-        ),
+        padding: padding,
         child: _GiveWay(
+          artGap: signInHero.artGap,
+          leadGap: signInHero.leadGap,
           children: [
             ExcludeSemantics(child: _art(context)),
             Semantics(
               header: true,
               child: Text(
                 title,
-                style: theme.text.largeTitle.copyWith(color: c.heading),
+                style: theme.text.largeTitle.copyWith(color: heading),
               ),
             ),
             if (lead != null)
-              Text(lead, style: theme.text.body.copyWith(color: c.onSurface)),
+              Text(
+                lead,
+                style: theme.text.body.copyWith(
+                  color: Color(signInHero.colorLead),
+                ),
+              ),
           ],
         ),
       ),
@@ -191,14 +197,14 @@ class FoxSignInHero extends StatelessWidget {
                   ).text.secondary.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
-              const SizedBox(width: t.FoxSpace.xs),
+              SizedBox(width: _hero(context).detailGap),
               FoxStatusChip(
                 label: o.statusLabel,
                 status: FoxOrderStatus.pickedUp,
               ),
             ],
           ),
-          const SizedBox(height: t.FoxSpace.sm),
+          SizedBox(height: _hero(context).rowGap),
           FoxTrackingSteps(
             steps: o.steps,
             current: o.current,
@@ -212,13 +218,17 @@ class FoxSignInHero extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var n = 0; n < o.perks.length; n++) ...[
-          if (n > 0) const SizedBox(width: t.FoxSpace.sm),
+          if (n > 0) SizedBox(width: _hero(context).rowGap),
           Expanded(child: _Perk(perk: o.perks[n])),
         ],
       ],
     ),
   };
 }
+
+/// The hero's component tokens (`sign-in-hero.json`).
+t.SignInHeroTokens _hero(BuildContext context) =>
+    FoxTheme.of(context).components.signInHero;
 
 /// Rebuilds [builder] when the view's metrics change (the keyboard rising
 /// or falling): the `View` it reads does not notify on its own.
@@ -260,13 +270,20 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = FoxTheme.of(context).colors;
+    final signInHero = _hero(context);
     return DecoratedBox(
-      decoration: BoxDecoration(color: c.primarySubtle, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: Color(signInHero.colorBadge),
+        shape: BoxShape.circle,
+      ),
       child: SizedBox.square(
-        dimension: t.FoxSize.touchTarget,
+        dimension: signInHero.badgeSize,
         child: Center(
-          child: FoxIcon(icon, color: c.primary, style: FoxIconStyle.bold),
+          child: FoxIcon(
+            icon,
+            color: Color(signInHero.colorBadgeIcon),
+            style: FoxIconStyle.bold,
+          ),
         ),
       ),
     );
@@ -281,8 +298,12 @@ class _Cart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    final dishes = [c.primarySubtle, c.infoSubtle, c.neutralSubtle];
+    final signInHero = theme.components.signInHero;
+    final dishes = [
+      signInHero.colorDish1,
+      signInHero.colorDish2,
+      signInHero.colorDish3,
+    ];
     return FoxCard(
       elevation: FoxCardElevation.offset,
       child: Column(
@@ -292,7 +313,7 @@ class _Cart extends StatelessWidget {
           Row(
             children: [
               const _Badge(icon: t.FoxIcons.restaurant),
-              const SizedBox(width: t.FoxSpace.sm),
+              SizedBox(width: signInHero.rowGap),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,13 +327,13 @@ class _Cart extends StatelessWidget {
                     Text(
                       origin.details,
                       style: theme.text.caption.copyWith(
-                        color: c.onSurfaceMuted,
+                        color: Color(signInHero.colorDetails),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: t.FoxSpace.xs),
+              SizedBox(width: signInHero.detailGap),
               FoxMoney(
                 amount: origin.amount,
                 symbol: origin.symbol,
@@ -322,12 +343,12 @@ class _Cart extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: t.FoxSpace.sm),
+          SizedBox(height: signInHero.rowGap),
           Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: t.FoxSpace.xs,
-            runSpacing: t.FoxSpace.xs,
+            spacing: signInHero.detailGap,
+            runSpacing: signInHero.detailGap,
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -336,24 +357,24 @@ class _Cart extends StatelessWidget {
                     Align(
                       widthFactor: n == 0
                           ? 1
-                          : 1 - t.FoxSpace.sm / t.FoxSize.touchTarget,
+                          : 1 - signInHero.dishOverlap / signInHero.badgeSize,
                       alignment: AlignmentDirectional.centerEnd,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: dishes[n],
+                          color: Color(dishes[n]),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: c.surfaceRaised,
-                            width: theme.input.focusWidth,
+                            color: Color(signInHero.colorDishRing),
+                            width: signInHero.dishRingWidth,
                           ),
                         ),
                         child: SizedBox.square(
-                          dimension: t.FoxSize.touchTarget,
+                          dimension: signInHero.badgeSize,
                           child: Center(
                             child: FoxIcon(
                               t.FoxIcons.plate,
                               size: FoxIconSize.sm,
-                              color: c.primary,
+                              color: Color(signInHero.colorBadgeIcon),
                               style: FoxIconStyle.bold,
                             ),
                           ),
@@ -388,7 +409,7 @@ class _Perk extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _Badge(icon: perk.icon),
-          const SizedBox(height: t.FoxSpace.xs),
+          SizedBox(height: _hero(context).detailGap),
           Text(
             perk.label,
             textAlign: TextAlign.center,
@@ -404,10 +425,26 @@ class _Perk extends StatelessWidget {
 /// when they do not fit, the lead goes, then the illustration. A part that
 /// gave way is not painted, hit or read.
 class _GiveWay extends MultiChildRenderObjectWidget {
-  const _GiveWay({required super.children});
+  const _GiveWay({
+    required this.artGap,
+    required this.leadGap,
+    required super.children,
+  });
+
+  /// The illustration to the title, and the title to the lead.
+  final double artGap;
+  final double leadGap;
 
   @override
-  RenderObject createRenderObject(BuildContext context) => _RenderGiveWay();
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderGiveWay(artGap: artGap, leadGap: leadGap);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderGiveWay renderObject) {
+    renderObject
+      ..artGap = artGap
+      ..leadGap = leadGap;
+  }
 }
 
 class _GiveWayData extends ContainerBoxParentData<RenderBox> {
@@ -418,6 +455,26 @@ class _RenderGiveWay extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, _GiveWayData>,
         RenderBoxContainerDefaultsMixin<RenderBox, _GiveWayData> {
+  _RenderGiveWay({required double artGap, required double leadGap})
+    : _artGap = artGap,
+      _leadGap = leadGap;
+
+  double _artGap;
+  double get artGap => _artGap;
+  set artGap(double value) {
+    if (value == _artGap) return;
+    _artGap = value;
+    markNeedsLayout();
+  }
+
+  double _leadGap;
+  double get leadGap => _leadGap;
+  set leadGap(double value) {
+    if (value == _leadGap) return;
+    _leadGap = value;
+    markNeedsLayout();
+  }
+
   @override
   void setupParentData(RenderBox child) {
     if (child.parentData is! _GiveWayData) child.parentData = _GiveWayData();
@@ -447,9 +504,9 @@ class _RenderGiveWay extends RenderBox
     final lead = children.length > 2 ? children[2] : null;
     final available = constraints.maxHeight;
     double heightOf({required bool withArt, required bool withLead}) =>
-        (withArt ? art.size.height + t.FoxSpace.md : 0) +
+        (withArt ? art.size.height + artGap : 0) +
         title.size.height +
-        (withLead && lead != null ? t.FoxSpace.xxs + lead.size.height : 0);
+        (withLead && lead != null ? leadGap + lead.size.height : 0);
     var withArt = true;
     var withLead = lead != null;
     if (heightOf(withArt: true, withLead: withLead) > available) {
@@ -476,8 +533,8 @@ class _RenderGiveWay extends RenderBox
       y += child.size.height + gapAfter;
     }
 
-    place(art, withArt, t.FoxSpace.md);
-    place(title, true, t.FoxSpace.xxs);
+    place(art, withArt, artGap);
+    place(title, true, leadGap);
     if (lead != null) place(lead, withLead, 0);
   }
 

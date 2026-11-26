@@ -32,15 +32,16 @@ class FoxTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final topBar = theme.components.topBar;
     final backLabel = this.backLabel;
     final onBack = this.onBack;
     final end = this.end;
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: t.FoxSize.bar),
+      constraints: BoxConstraints(minHeight: topBar.minHeight),
       child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: t.FoxSpace.md,
-          vertical: t.FoxSpace.xs,
+        padding: EdgeInsetsDirectional.symmetric(
+          horizontal: topBar.paddingInline,
+          vertical: topBar.paddingBlock,
         ),
         child: Row(
           children: [
@@ -51,7 +52,7 @@ class FoxTopBar extends StatelessWidget {
                 variant: FoxButtonVariant.secondary,
                 onPressed: onBack,
               ),
-              const SizedBox(width: t.FoxSpace.sm),
+              SizedBox(width: topBar.titleGap),
             ],
             Expanded(
               child: Semantics(
@@ -59,13 +60,13 @@ class FoxTopBar extends StatelessWidget {
                 child: Text(
                   title,
                   style: theme.text.title.copyWith(
-                    color: theme.colors.heading,
+                    color: Color(topBar.colorTitle),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
-            if (end != null) ...[const SizedBox(width: t.FoxSpace.sm), end],
+            if (end != null) ...[SizedBox(width: topBar.titleGap), end],
           ],
         ),
       ),
@@ -101,19 +102,27 @@ class FoxRestaurantBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    final dot = connected ? c.success : c.danger;
+    final restaurantBar = theme.components.restaurantBar;
+    final dot = Color(
+      connected ? restaurantBar.colorConnected : restaurantBar.colorOffline,
+    );
+    final gap = SizedBox(width: restaurantBar.gap);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: c.surfaceRaised,
-        border: Border(bottom: BorderSide(color: c.border)),
+        color: Color(restaurantBar.colorBackground),
+        border: Border(
+          bottom: BorderSide(
+            color: Color(restaurantBar.colorBorder),
+            width: restaurantBar.borderWidth,
+          ),
+        ),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: t.FoxSize.bar),
+        constraints: BoxConstraints(minHeight: restaurantBar.minHeight),
         child: Padding(
-          padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: t.FoxSpace.md,
-            vertical: t.FoxSpace.xxs,
+          padding: EdgeInsetsDirectional.symmetric(
+            horizontal: restaurantBar.paddingInline,
+            vertical: restaurantBar.paddingBlock,
           ),
           child: Row(
             children: [
@@ -126,28 +135,28 @@ class FoxRestaurantBar extends StatelessWidget {
                         child: Text(
                           name,
                           style: theme.text.subtitle.copyWith(
-                            color: c.onSurface,
+                            color: Color(restaurantBar.colorName),
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: t.FoxSpace.sm),
+                    gap,
                     status,
-                    const SizedBox(width: t.FoxSpace.sm),
+                    gap,
                     Flexible(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: t.FoxSpace.sm,
-                            height: t.FoxSpace.sm,
+                            width: restaurantBar.dotSize,
+                            height: restaurantBar.dotSize,
                             decoration: BoxDecoration(
                               color: dot,
                               shape: BoxShape.circle,
                             ),
                           ),
-                          const SizedBox(width: t.FoxSpace.xxs),
+                          SizedBox(width: restaurantBar.dotGap),
                           Flexible(
                             child: Text(
                               connectionLabel,
@@ -163,7 +172,7 @@ class FoxRestaurantBar extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: t.FoxSpace.sm),
+              gap,
               FoxButton.icon(
                 icon: t.FoxIcons.chat,
                 label: supportLabel,
