@@ -942,6 +942,11 @@
         "name": "size-empty-art-compact",
         "value": "72px",
         "usage": "The same drop in the panel and the portal (D.9 sheet)."
+      },
+      {
+        "name": "size-countdown-ring",
+        "value": "96px",
+        "usage": "The captain's offer countdown ring (D.9 sheet: two touch targets)."
       }
     ]
   },
@@ -949,7 +954,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.16.0",
+    "version": "0.17.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"
