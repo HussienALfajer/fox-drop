@@ -719,6 +719,100 @@ abstract final class FoxCard {
   );
 }
 
+/// The CodePreview component tokens of one theme.
+final class CodePreviewTokens {
+  const CodePreviewTokens({
+    required this.avatarSize,
+    required this.markScale,
+    required this.gap,
+    required this.lineGap,
+    required this.bubbleRadius,
+    required this.bubbleRadiusTail,
+    required this.bubblePaddingInline,
+    required this.bubblePaddingBlock,
+    required this.colorAvatar,
+    required this.colorBubble,
+    required this.colorCode,
+    required this.colorTime,
+  });
+
+  final double avatarSize;
+  final double markScale;
+  final double gap;
+  final double lineGap;
+  final double bubbleRadius;
+  final double bubbleRadiusTail;
+  final double bubblePaddingInline;
+  final double bubblePaddingBlock;
+  final int colorAvatar;
+  final int colorBubble;
+  final int colorCode;
+  final int colorTime;
+}
+
+/// The CodePreview tokens per theme.
+abstract final class FoxCodePreview {
+  static const CodePreviewTokens light = CodePreviewTokens(
+    avatarSize: 32.0,
+    markScale: 0.62,
+    gap: 8.0,
+    lineGap: 4.0,
+    bubbleRadius: 15.0,
+    bubbleRadiusTail: 4.0,
+    bubblePaddingInline: 12.0,
+    bubblePaddingBlock: 8.0,
+    colorAvatar: 0xFFFF6E31,
+    colorBubble: 0xFFEEF4FC,
+    colorCode: 0xFFC2410C,
+    colorTime: 0xFF416EA4,
+  );
+
+  static const CodePreviewTokens dark = CodePreviewTokens(
+    avatarSize: 32.0,
+    markScale: 0.62,
+    gap: 8.0,
+    lineGap: 4.0,
+    bubbleRadius: 15.0,
+    bubbleRadiusTail: 4.0,
+    bubblePaddingInline: 12.0,
+    bubblePaddingBlock: 8.0,
+    colorAvatar: 0xFFFF6E31,
+    colorBubble: 0xFFEEF4FC,
+    colorCode: 0xFFC2410C,
+    colorTime: 0xFF416EA4,
+  );
+
+  static const CodePreviewTokens captainLight = CodePreviewTokens(
+    avatarSize: 32.0,
+    markScale: 0.62,
+    gap: 8.0,
+    lineGap: 4.0,
+    bubbleRadius: 15.0,
+    bubbleRadiusTail: 4.0,
+    bubblePaddingInline: 12.0,
+    bubblePaddingBlock: 8.0,
+    colorAvatar: 0xFFFF6E31,
+    colorBubble: 0xFFEEF4FC,
+    colorCode: 0xFFC2410C,
+    colorTime: 0xFF4D473D,
+  );
+
+  static const CodePreviewTokens captainDark = CodePreviewTokens(
+    avatarSize: 32.0,
+    markScale: 0.62,
+    gap: 8.0,
+    lineGap: 4.0,
+    bubbleRadius: 15.0,
+    bubbleRadiusTail: 4.0,
+    bubblePaddingInline: 12.0,
+    bubblePaddingBlock: 8.0,
+    colorAvatar: 0xFFFF6E31,
+    colorBubble: 0xFFEEF4FC,
+    colorCode: 0xFFC2410C,
+    colorTime: 0xFF4D473D,
+  );
+}
+
 /// The CountBadge component tokens of one theme.
 final class CountBadgeTokens {
   const CountBadgeTokens({
@@ -816,6 +910,64 @@ abstract final class FoxCountBadge {
     primaryLabel: 0xFFFFFAED,
     accentBackground: 0xFF03428E,
     accentLabel: 0xFFFFFFFF,
+  );
+}
+
+/// The CountrySheet component tokens of one theme.
+final class CountrySheetTokens {
+  const CountrySheetTokens({
+    required this.width,
+    required this.rowHeight,
+    required this.sectionGap,
+    required this.emptyPaddingBlock,
+    required this.colorCode,
+    required this.colorEmpty,
+  });
+
+  final double width;
+  final double rowHeight;
+  final double sectionGap;
+  final double emptyPaddingBlock;
+  final int colorCode;
+  final int colorEmpty;
+}
+
+/// The CountrySheet tokens per theme.
+abstract final class FoxCountrySheet {
+  static const CountrySheetTokens light = CountrySheetTokens(
+    width: 460.0,
+    rowHeight: 48.0,
+    sectionGap: 12.0,
+    emptyPaddingBlock: 24.0,
+    colorCode: 0xFF416EA4,
+    colorEmpty: 0xFF416EA4,
+  );
+
+  static const CountrySheetTokens dark = CountrySheetTokens(
+    width: 460.0,
+    rowHeight: 48.0,
+    sectionGap: 12.0,
+    emptyPaddingBlock: 24.0,
+    colorCode: 0xFF416EA4,
+    colorEmpty: 0xFF416EA4,
+  );
+
+  static const CountrySheetTokens captainLight = CountrySheetTokens(
+    width: 460.0,
+    rowHeight: 48.0,
+    sectionGap: 12.0,
+    emptyPaddingBlock: 24.0,
+    colorCode: 0xFF4D473D,
+    colorEmpty: 0xFF4D473D,
+  );
+
+  static const CountrySheetTokens captainDark = CountrySheetTokens(
+    width: 460.0,
+    rowHeight: 48.0,
+    sectionGap: 12.0,
+    emptyPaddingBlock: 24.0,
+    colorCode: 0xFF4D473D,
+    colorEmpty: 0xFF4D473D,
   );
 }
 
@@ -928,6 +1080,100 @@ abstract final class FoxDataTable {
     colorRowHover: 0xFFD6E4F7,
     colorRowSelected: 0xFFFFEDE3,
     colorLoading: 0xFFEFE8DA,
+  );
+}
+
+/// The DateField component tokens of one theme.
+final class DateFieldTokens {
+  const DateFieldTokens({
+    required this.popupRadius,
+    required this.popupPadding,
+    required this.popupGap,
+    required this.segmentMinSize,
+    required this.daySize,
+    required this.colorPopupBackground,
+    required this.colorToday,
+    required this.colorDaySelected,
+    required this.colorOnDaySelected,
+    required this.colorDayHover,
+    required this.colorDayOutside,
+    required this.colorSegment,
+  });
+
+  final double popupRadius;
+  final double popupPadding;
+  final double popupGap;
+  final double segmentMinSize;
+  final double daySize;
+  final int colorPopupBackground;
+  final int colorToday;
+  final int colorDaySelected;
+  final int colorOnDaySelected;
+  final int colorDayHover;
+  final int colorDayOutside;
+  final int colorSegment;
+}
+
+/// The DateField tokens per theme.
+abstract final class FoxDateField {
+  static const DateFieldTokens light = DateFieldTokens(
+    popupRadius: 15.0,
+    popupPadding: 12.0,
+    popupGap: 8.0,
+    segmentMinSize: 24.0,
+    daySize: 48.0,
+    colorPopupBackground: 0xFFFEFEFE,
+    colorToday: 0xFFFF6E31,
+    colorDaySelected: 0xFFFF6E31,
+    colorOnDaySelected: 0xFFFFFAED,
+    colorDayHover: 0xFFEEF4FC,
+    colorDayOutside: 0xFF416EA4,
+    colorSegment: 0xFFFBF2E7,
+  );
+
+  static const DateFieldTokens dark = DateFieldTokens(
+    popupRadius: 15.0,
+    popupPadding: 12.0,
+    popupGap: 8.0,
+    segmentMinSize: 24.0,
+    daySize: 48.0,
+    colorPopupBackground: 0xFFFEFEFE,
+    colorToday: 0xFFFF6E31,
+    colorDaySelected: 0xFFFF6E31,
+    colorOnDaySelected: 0xFFFFFAED,
+    colorDayHover: 0xFFEEF4FC,
+    colorDayOutside: 0xFF416EA4,
+    colorSegment: 0xFFFBF2E7,
+  );
+
+  static const DateFieldTokens captainLight = DateFieldTokens(
+    popupRadius: 15.0,
+    popupPadding: 12.0,
+    popupGap: 8.0,
+    segmentMinSize: 24.0,
+    daySize: 48.0,
+    colorPopupBackground: 0xFFFEFEFE,
+    colorToday: 0xFFFF6E31,
+    colorDaySelected: 0xFFFF6E31,
+    colorOnDaySelected: 0xFFFFFAED,
+    colorDayHover: 0xFFEEF4FC,
+    colorDayOutside: 0xFF4D473D,
+    colorSegment: 0xFFFBF2E7,
+  );
+
+  static const DateFieldTokens captainDark = DateFieldTokens(
+    popupRadius: 15.0,
+    popupPadding: 12.0,
+    popupGap: 8.0,
+    segmentMinSize: 24.0,
+    daySize: 48.0,
+    colorPopupBackground: 0xFFFEFEFE,
+    colorToday: 0xFFFF6E31,
+    colorDaySelected: 0xFFFF6E31,
+    colorOnDaySelected: 0xFFFFFAED,
+    colorDayHover: 0xFFEEF4FC,
+    colorDayOutside: 0xFF4D473D,
+    colorSegment: 0xFFFBF2E7,
   );
 }
 
@@ -1995,8 +2241,11 @@ final class ComponentTokens {
     required this.amountsSummary,
     required this.button,
     required this.card,
+    required this.codePreview,
     required this.countBadge,
+    required this.countrySheet,
     required this.dataTable,
+    required this.dateField,
     required this.dropLoader,
     required this.emptyState,
     required this.input,
@@ -2010,8 +2259,11 @@ final class ComponentTokens {
   final AmountsSummaryTokens amountsSummary;
   final ButtonTokens button;
   final CardTokens card;
+  final CodePreviewTokens codePreview;
   final CountBadgeTokens countBadge;
+  final CountrySheetTokens countrySheet;
   final DataTableTokens dataTable;
+  final DateFieldTokens dateField;
   final DropLoaderTokens dropLoader;
   final EmptyStateTokens emptyState;
   final InputTokens input;
@@ -2028,8 +2280,11 @@ abstract final class FoxComponents {
     amountsSummary: FoxAmountsSummary.light,
     button: FoxButton.light,
     card: FoxCard.light,
+    codePreview: FoxCodePreview.light,
     countBadge: FoxCountBadge.light,
+    countrySheet: FoxCountrySheet.light,
     dataTable: FoxDataTable.light,
+    dateField: FoxDateField.light,
     dropLoader: FoxDropLoader.light,
     emptyState: FoxEmptyState.light,
     input: FoxInput.light,
@@ -2044,8 +2299,11 @@ abstract final class FoxComponents {
     amountsSummary: FoxAmountsSummary.dark,
     button: FoxButton.dark,
     card: FoxCard.dark,
+    codePreview: FoxCodePreview.dark,
     countBadge: FoxCountBadge.dark,
+    countrySheet: FoxCountrySheet.dark,
     dataTable: FoxDataTable.dark,
+    dateField: FoxDateField.dark,
     dropLoader: FoxDropLoader.dark,
     emptyState: FoxEmptyState.dark,
     input: FoxInput.dark,
@@ -2060,8 +2318,11 @@ abstract final class FoxComponents {
     amountsSummary: FoxAmountsSummary.captainLight,
     button: FoxButton.captainLight,
     card: FoxCard.captainLight,
+    codePreview: FoxCodePreview.captainLight,
     countBadge: FoxCountBadge.captainLight,
+    countrySheet: FoxCountrySheet.captainLight,
     dataTable: FoxDataTable.captainLight,
+    dateField: FoxDateField.captainLight,
     dropLoader: FoxDropLoader.captainLight,
     emptyState: FoxEmptyState.captainLight,
     input: FoxInput.captainLight,
@@ -2076,8 +2337,11 @@ abstract final class FoxComponents {
     amountsSummary: FoxAmountsSummary.captainDark,
     button: FoxButton.captainDark,
     card: FoxCard.captainDark,
+    codePreview: FoxCodePreview.captainDark,
     countBadge: FoxCountBadge.captainDark,
+    countrySheet: FoxCountrySheet.captainDark,
     dataTable: FoxDataTable.captainDark,
+    dateField: FoxDateField.captainDark,
     dropLoader: FoxDropLoader.captainDark,
     emptyState: FoxEmptyState.captainDark,
     input: FoxInput.captainDark,

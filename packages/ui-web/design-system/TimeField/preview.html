@@ -1,0 +1,62 @@
+<!-- @dsCard group="Forms" height=420 -->
+<style>
+  /* The card paints the apps' own ground and text, whatever the page around it. */
+  :root {
+    color-scheme: light;
+  }
+  #root {
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+  }
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: var(--fd-space-lg) 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--fd-space-lg);
+    margin-block-end: var(--fd-space-sm);
+  }
+  .row > * {
+    min-width: 260px;
+    max-width: 320px;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, TimeField } = FoxDrop;
+  const h = React.createElement;
+  const base = { label: 'وقت الاستلام' };
+  const sections = (section) => [
+    ...section(
+      'Empty and filled',
+      h(TimeField, { ...base, hint: 'بين 9 ص و11 م' }),
+      h(TimeField, { ...base, defaultValue: '15:05' }),
+    ),
+    ...section(
+      'Invalid and disabled',
+      h(TimeField, { ...base, defaultValue: '03:00', error: 'المطعم مغلق في هذا الوقت' }),
+      h(TimeField, { ...base, disabled: true, defaultValue: '15:05' }),
+    ),
+  ];
+  const section = (title, ...items) => [
+    h('h2', { key: title }, title),
+    h('div', { className: 'row', key: title + 'row' }, ...items),
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render(sections(section));
+</script>
