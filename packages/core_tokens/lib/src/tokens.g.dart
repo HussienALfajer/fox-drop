@@ -824,6 +824,7 @@ final class DataTableTokens {
   const DataTableTokens({
     required this.rowHeight,
     required this.paddingInline,
+    required this.borderWidth,
     required this.radius,
     required this.sortGap,
     required this.innerRadius,
@@ -840,6 +841,7 @@ final class DataTableTokens {
 
   final double rowHeight;
   final double paddingInline;
+  final double borderWidth;
   final double radius;
   final double sortGap;
   final double innerRadius;
@@ -859,6 +861,7 @@ abstract final class FoxDataTable {
   static const DataTableTokens light = DataTableTokens(
     rowHeight: 40.0,
     paddingInline: 12.0,
+    borderWidth: 1.0,
     radius: 10.0,
     sortGap: 4.0,
     innerRadius: 4.0,
@@ -876,6 +879,7 @@ abstract final class FoxDataTable {
   static const DataTableTokens dark = DataTableTokens(
     rowHeight: 40.0,
     paddingInline: 12.0,
+    borderWidth: 1.0,
     radius: 10.0,
     sortGap: 4.0,
     innerRadius: 4.0,
@@ -893,6 +897,7 @@ abstract final class FoxDataTable {
   static const DataTableTokens captainLight = DataTableTokens(
     rowHeight: 40.0,
     paddingInline: 12.0,
+    borderWidth: 1.0,
     radius: 10.0,
     sortGap: 4.0,
     innerRadius: 4.0,
@@ -910,6 +915,7 @@ abstract final class FoxDataTable {
   static const DataTableTokens captainDark = DataTableTokens(
     rowHeight: 40.0,
     paddingInline: 12.0,
+    borderWidth: 1.0,
     radius: 10.0,
     sortGap: 4.0,
     innerRadius: 4.0,

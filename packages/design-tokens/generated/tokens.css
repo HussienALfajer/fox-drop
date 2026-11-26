@@ -214,6 +214,7 @@
   --fd-count-badge-accent-label: #FFFFFF;
   --fd-data-table-row-height: 40px;
   --fd-data-table-padding-inline: 12px;
+  --fd-data-table-border-width: 1px;
   --fd-data-table-radius: 10px;
   --fd-data-table-sort-gap: 4px;
   --fd-data-table-inner-radius: 4px;
