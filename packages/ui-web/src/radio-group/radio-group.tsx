@@ -14,7 +14,7 @@ export const STATES = [
 ] as const;
 
 const row = formTv({
-  base: 'group/row -ms-sm inline-flex min-h-(--fd-input-check-target) items-center gap-2xs text-phone-body',
+  base: 'group/row -ms-sm inline-flex min-h-(--fd-input-check-target) items-center gap-(--fd-input-check-gap) text-phone-body',
   variants: {
     disabled: {
       true: 'cursor-not-allowed text-(color:--fd-input-color-on-disabled)',
@@ -34,7 +34,10 @@ const circle = formTv({
     keyboardRing,
     'data-unchecked:bg-(--fd-input-check-color-background)',
     'data-checked:inset-ring-(color:--fd-input-check-color-checked)',
-    'data-disabled:bg-(--fd-input-color-disabled) data-disabled:inset-ring-(color:--fd-input-color-on-disabled)',
+    // Disabled by two attributes, as the checkbox: a lone `data-disabled:`
+    // lost to `data-unchecked:` and left the rest fill (parity, D.W3a).
+    'data-disabled:data-unchecked:bg-(--fd-input-color-disabled) data-disabled:data-unchecked:inset-ring-(color:--fd-input-color-on-disabled)',
+    'data-disabled:data-checked:bg-(--fd-input-color-disabled) data-disabled:data-checked:inset-ring-(color:--fd-input-color-on-disabled)',
   ],
   variants: {
     invalid: {
@@ -54,7 +57,7 @@ const circle = formTv({
 
 const dot = formTv({
   base: [
-    'size-sm rounded-full bg-(--fd-input-check-color-checked)',
+    'size-(--fd-input-check-dot) rounded-full bg-(--fd-input-check-color-checked)',
     'group-hover/row:bg-(--fd-input-check-color-checked-hover) group-active/row:bg-(--fd-input-check-color-checked-pressed)',
     'in-data-disabled:bg-(--fd-input-color-on-disabled)',
   ],

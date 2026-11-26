@@ -44,7 +44,7 @@ class FoxCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final enabled = onChanged != null;
     return Interaction(
       enabled: enabled,
@@ -58,39 +58,47 @@ class FoxCheckbox extends StatelessWidget {
         final Color fill;
         final Color border;
         if (!enabled) {
-          fill = i.disabled;
-          border = on ? i.disabled : i.onDisabled;
+          fill = Color(input.colorDisabled);
+          border = on
+              ? Color(input.colorDisabled)
+              : Color(input.colorOnDisabled);
         } else if (on) {
           fill = state.pressed
-              ? i.checkCheckedPressed
-              : (state.hovered ? i.checkCheckedHover : i.checkChecked);
+              ? Color(input.checkColorCheckedPressed)
+              : (state.hovered
+                    ? Color(input.checkColorCheckedHover)
+                    : Color(input.checkColorChecked));
           border = fill;
         } else {
           fill = state.pressed
-              ? i.checkBackgroundPressed
-              : (state.hovered ? i.checkBackgroundHover : i.checkBackground);
+              ? Color(input.checkColorBackgroundPressed)
+              : (state.hovered
+                    ? Color(input.checkColorBackgroundHover)
+                    : Color(input.checkColorBackground));
           border = invalid
-              ? i.borderInvalid
+              ? Color(input.colorBorderInvalid)
               : (state.hovered || state.pressed
-                    ? i.checkBorderHover
-                    : i.checkBorder);
+                    ? Color(input.checkColorBorderHover)
+                    : Color(input.checkColorBorder));
         }
-        final mark = !enabled ? i.onDisabled : i.checkMark;
+        final mark = !enabled
+            ? Color(input.colorOnDisabled)
+            : Color(input.checkColorMark);
         final box = CustomPaint(
           foregroundPainter: FocusRing.of(
             theme,
             on: state.focused,
-            radius: i.checkRadius,
+            radius: input.checkRadius,
           ),
           child: AnimatedContainer(
             duration: t.FoxDuration.base,
             curve: theme.easing,
-            width: i.checkSize,
-            height: i.checkSize,
+            width: input.checkSize,
+            height: input.checkSize,
             decoration: BoxDecoration(
               color: fill,
-              borderRadius: BorderRadius.circular(i.checkRadius),
-              border: Border.all(color: border, width: i.checkBorderWidth),
+              borderRadius: BorderRadius.circular(input.checkRadius),
+              border: Border.all(color: border, width: input.checkBorderWidth),
             ),
             child: on
                 ? Center(
@@ -106,7 +114,9 @@ class FoxCheckbox extends StatelessWidget {
         return ChoiceRow(
           box: box,
           label: label,
-          color: enabled ? theme.colors.onSurface : i.onDisabled,
+          color: enabled
+              ? Color(input.colorText)
+              : Color(input.colorOnDisabled),
         );
       },
     );

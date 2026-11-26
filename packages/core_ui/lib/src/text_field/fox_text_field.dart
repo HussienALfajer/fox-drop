@@ -84,7 +84,7 @@ class FoxTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final i = FoxTheme.of(context).input;
+    final input = FoxTheme.of(context).components.input;
     return FoxField(
       label: label,
       marker: marker,
@@ -114,7 +114,12 @@ class FoxTextField extends StatelessWidget {
           autofocus: autofocus,
           start: startIcon == null
               ? null
-              : FoxIcon(startIcon!, color: enabled ? i.text : i.onDisabled),
+              : FoxIcon(
+                  startIcon!,
+                  color: enabled
+                      ? Color(input.colorText)
+                      : Color(input.colorOnDisabled),
+                ),
         ),
       ),
     );
@@ -225,7 +230,7 @@ class FoxSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final i = FoxTheme.of(context).input;
+    final input = FoxTheme.of(context).components.input;
     return EntryHost(
       controller: controller,
       focusNode: focusNode,
@@ -262,7 +267,9 @@ class FoxSearchField extends StatelessWidget {
               onSubmitted: onSubmitted,
               start: FoxIcon(
                 t.FoxIcons.search,
-                color: enabled ? i.accent : i.onDisabled,
+                color: enabled
+                    ? Color(input.colorAccent)
+                    : Color(input.colorOnDisabled),
               ),
               end: end,
               trailingTarget: !loading && end != null,
@@ -284,37 +291,41 @@ class _ClearButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final input = theme.components.input;
     return Interaction(
       label: label,
       isButton: true,
       onTap: onTap,
       builder: (context, state) => SizedBox.square(
-        dimension: t.FoxSize.touchTarget,
+        dimension: input.clearTarget,
         child: Center(
           child: CustomPaint(
             foregroundPainter: FocusRing.of(
               theme,
               on: state.focused,
-              radius: t.FoxSize.step,
+              radius: input.clearSize,
               circle: true,
             ),
             child: AnimatedContainer(
               duration: t.FoxDuration.base,
               curve: theme.easing,
-              width: t.FoxSize.step,
-              height: t.FoxSize.step,
+              width: input.clearSize,
+              height: input.clearSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: state.pressed
-                    ? c.surfacePressed
-                    : (state.hovered ? c.surfaceHover : c.surface),
+                color: Color(
+                  state.pressed
+                      ? input.clearColorBackgroundPressed
+                      : (state.hovered
+                            ? input.clearColorBackgroundHover
+                            : input.clearColorBackground),
+                ),
               ),
               child: Center(
                 child: FoxIcon(
                   t.FoxIcons.close,
                   size: FoxIconSize.sm,
-                  color: c.onSurface,
+                  color: Color(input.clearColorIcon),
                 ),
               ),
             ),

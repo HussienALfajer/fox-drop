@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { formTv, keyboardRing } from '../field/styles';
+import { formTv } from '../field/styles';
 
 export const STATES = ['default', 'hover', 'focus', 'pressed'] as const;
 
@@ -7,11 +7,11 @@ export const STATES = ['default', 'hover', 'focus', 'pressed'] as const;
 // box keeps a 48 target around the words without changing their size.
 const link = formTv({
   base: [
-    'inline-flex min-h-(--fd-size-touch-target) min-w-(--fd-size-touch-target) cursor-pointer items-center justify-center rounded-xs',
+    'inline-flex min-h-(--fd-text-link-target) min-w-(--fd-text-link-target) cursor-pointer items-center justify-center rounded-(--fd-text-link-radius)',
     'text-phone-secondary font-bold underline underline-offset-4',
-    'text-(--fd-color-primary) hover:text-(--fd-color-primary-hover) active:text-(--fd-color-primary-pressed)',
+    'text-(--fd-text-link-color-text) hover:text-(--fd-text-link-color-text-hover) active:text-(--fd-text-link-color-text-pressed)',
     'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
-    keyboardRing,
+    'outline-hidden focus-visible:ring-2 focus-visible:ring-(color:--fd-text-link-color-focus-ring) focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
   ],
 });
 

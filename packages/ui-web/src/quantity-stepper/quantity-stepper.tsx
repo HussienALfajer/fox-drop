@@ -59,7 +59,7 @@ const circle = formTv({
 });
 
 const value = formTv({
-  base: 'relative w-2xl text-center text-phone-subtitle font-bold tabular-nums text-(color:--fd-input-stepper-color-value)',
+  base: 'relative w-(--fd-input-stepper-value-width) text-center text-phone-subtitle font-bold tabular-nums text-(color:--fd-input-stepper-color-value)',
   variants: { disabled: { true: 'text-(color:--fd-input-color-on-disabled)' } },
 });
 

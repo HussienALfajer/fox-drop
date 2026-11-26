@@ -88,6 +88,16 @@ void main() {
       semantics.dispose();
     });
 
+    // Parity gap (D.W3a): the label sat 16 after the box's 48 target; the
+    // D.8 sheet and the web put it 4 (space.2xs) after the target.
+    testWidgets('puts the label 4 after the 48 target', (tester) async {
+      await tester.pumpWidget(checkbox(false, (_) {}));
+      final box = tester.getRect(find.byType(AnimatedContainer));
+      final target = box.left - (48 - box.width) / 2;
+      final label = tester.getTopRight(find.text('أوافق على الشروط'));
+      expect(target - label.dx, closeTo(FoxSpace.xxs, 0.5));
+    });
+
     testWidgets('a tap on the label toggles; mixed becomes checked', (
       tester,
     ) async {
@@ -729,6 +739,28 @@ void main() {
           reason: '$direction',
         );
       }
+    });
+
+    // Parity gap (D.W3a): the count used the `number` role; the D.8 sheet
+    // and the web draw it at the subtitle size, bold, in a 48 wide cell.
+    testWidgets('draws the count as a bold subtitle in a 48 cell', (
+      tester,
+    ) async {
+      await tester.pumpWidget(stepper(2));
+      final count = tester.widget<Text>(find.text('2'));
+      expect(
+        count.style!.fontSize,
+        FoxThemeData.phone().text.subtitle.fontSize,
+      );
+      // The row of «+», the count and «−»: the widget itself is as wide as
+      // its parent lets it be.
+      final row = find
+          .descendant(
+            of: find.byType(FoxQuantityStepper),
+            matching: find.byType(Row),
+          )
+          .first;
+      expect(tester.getSize(row).width, 48.0 * 3);
     });
 
     testWidgets('changes the count and respects the maximum', (tester) async {

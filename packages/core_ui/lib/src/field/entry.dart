@@ -110,9 +110,9 @@ class Entry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final style = theme.text.body.copyWith(
-      color: enabled ? i.text : i.onDisabled,
+      color: enabled ? Color(input.colorText) : Color(input.colorOnDisabled),
     );
     return MaterialScope(
       child: ListenableBuilder(
@@ -131,7 +131,7 @@ class Entry extends StatelessWidget {
                   ? CrossAxisAlignment.start
                   : CrossAxisAlignment.center,
               children: [
-                if (start != null) ...[start!, SizedBox(width: i.gap)],
+                if (start != null) ...[start!, SizedBox(width: input.gap)],
                 Expanded(
                   child: MergeSemantics(
                     child: Semantics(
@@ -143,7 +143,7 @@ class Entry extends StatelessWidget {
                         enabled: enabled,
                         autofocus: autofocus,
                         style: style,
-                        cursorColor: i.accent,
+                        cursorColor: Color(input.colorAccent),
                         textAlign: TextAlign.start,
                         textDirection: textDirection,
                         keyboardType: keyboardType,
@@ -168,14 +168,16 @@ class Entry extends StatelessWidget {
                           border: m.InputBorder.none,
                           hintText: placeholder,
                           hintStyle: style.copyWith(
-                            color: enabled ? i.placeholder : i.onDisabled,
+                            color: enabled
+                                ? Color(input.colorPlaceholder)
+                                : Color(input.colorOnDisabled),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                if (end != null) ...[SizedBox(width: i.gap), end!],
+                if (end != null) ...[SizedBox(width: input.gap), end!],
               ],
             ),
           ),

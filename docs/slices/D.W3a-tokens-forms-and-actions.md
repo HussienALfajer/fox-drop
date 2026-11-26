@@ -1,6 +1,6 @@
 # D.W3a Component tokens and parity: forms and actions
 
-Status: Planned · Tier: T2 · Branch: `refactor/tokens-forms-actions`
+Status: Done · Tier: T2 · Branch: `refactor/tokens-forms-actions`
 Spec: architecture §9.2 (the component layer), §9.5 R1, R2, R9, R10, §9.9 · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1 and D.W2 merged. Runs in parallel with any other D.W3 or D.W4 slice except D.W4a, which edits `phone-field.tsx` after this slice.
@@ -32,15 +32,51 @@ Tests written first (locked in the red phase):
 - A test per agreed gap that changes behaviour or a size a test can see (a target, a height): in the component's existing test file (`*.test.tsx`, `test/text_field_test.dart`, `test/choice_test.dart`, `test/pick_test.dart`, `test/phone_field_test.dart`).
 - The rest is proven by the screenshots and goldens: an image moves only where a gap was fixed.
 
+## Gaps on the sheets (before the change)
+
+`pnpm parity Field TextField TextArea SearchField PhoneField CodeField Select Checkbox RadioGroup Switch QuantityStepper TextLink` (and Button): the Flutter cases were written first (`forms_parity_test.dart`), so the sheet before the change pairs every story with its twin. Rule: the D.8 sheet (`src/forms-sheet.ts`) wins where it shows the state, else the web.
+
+| #   | Component                                  | Gap                                                                                                              | Who wins                     | Fix                                                                                 |
+| --- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------- |
+| 1   | Checkbox, Radio                            | Flutter put the label 16 after the 48 target (the web 4)                                                         | D.8 sheet (`gap: space.2xs`) | Flutter: `input.check.gap`, no label padding                                        |
+| 2   | RadioGroup                                 | Web: a disabled unselected circle kept the rest fill and blue outline                                            | D.8 sheet (grey)             | Web: two-attribute `data-disabled:data-unchecked:`                                  |
+| 3   | QuantityStepper                            | Flutter drew the count in the `number` role (30) in a 44 cell                                                    | D.8 sheet (18 bold) and web  | Flutter: subtitle role, `input.stepper.value-width` (48, the web's; the sheet's 44) |
+| 4   | SearchField                                | Web: the clear button was transparent at rest                                                                    | D.8 sheet (32 on `surface`)  | Web: `input.clear.*`                                                                |
+| 5   | PhoneField                                 | Web: the clear button a 48 transparent circle; Flutter: the sheet's 32 on `surface`                              | D.8 sheet (as the search)    | Web: a 32 circle in a 48 target                                                     |
+| 6   | PhoneField                                 | Flutter drew a hairline after the chip                                                                           | D.8 sheet (none) and web     | Flutter: removed                                                                    |
+| 7   | Select                                     | Flutter kept the chevron down while open                                                                         | Web (turns up)               | Flutter: `AnimatedRotation` in `PickBox`                                            |
+| 8   | TextArea                                   | Web: with no hint the counter sat at the start                                                                   | D.8 sheet (end)              | Web: `ms-auto`                                                                      |
+| 9   | Field (error)                              | Flutter: the error icon at the top of its line                                                                   | Web (centred)                | Flutter: the row centres                                                            |
+| 10  | TextLink                                   | Flutter: the focus ring a 2 border tight on the words; the web a ring round the 48 target                        | Web                          | Flutter: `FocusRing` round the target                                               |
+| 11  | Switch                                     | Flutter shows no visible label (semantics only); the web draws it beside the track                               | Web                          | Left (decision 2)                                                                   |
+| 12  | RadioGroup                                 | Flutter's group title stays blue when every radio is disabled                                                    | Web                          | Left (decision 2)                                                                   |
+| 13  | TextLink                                   | The underline sits closer to the words in Flutter (no offset there)                                              | Web                          | Left: Flutter's `TextStyle` has no underline offset                                 |
+| 14  | SearchField                                | Web: the clear button is a 32 target inside the pill; Flutter a 32 circle in a 48 target (before this slice too) | Web (no sheet target)        | Left for the owner: a 48 target would push the pill's end padding                   |
+| —   | Button, CodeField, TextField, Field (rest) | No gap                                                                                                           | —                            | —                                                                                   |
+
+## Decisions taken overnight (pending the owner)
+
+The owner was asleep and delegated decisions to the supervising session (2026-11-26); each took the recommended option.
+
+1. **The gaps above were decided by the shared rule, without the owner marking the sheets.** The sheets before and after are published as a private artifact for the owner's review (link in the hand-over, never here).
+2. **Two gaps change an API, so they are left:** a visible label on `FoxSwitch` (the screens draw the setting's line around the bare track, as the D.8 sheet's `switchLine` does) and an `enabled` on `FoxRadioGroup`. Both are listed for the owner rather than built.
+3. **The stepper's count cell is 48 on both sides** (`space.2xl`, the web's), not the D.8 sheet's 44: no token states 44, and 4 pixels did not justify a new size.
+4. **Tokens a side reads elsewhere are marked one-sided:** `input.color.focus-ring` is web only in the usage check, since Flutter paints every ring in the shared `FocusRing` (`internal/interaction.dart`, outside this slice) from `theme.input.focusRing`; `input.compact.*` and `input.switch.gap` are web only (no compact density, no switch label in Flutter).
+5. **The parity harness changed (`test/parity/parity.dart`, outside the plan's list):** an `Overlay` above the frame (a focused text field needs one) and, for `-focus`, the first `EditableText`'s node when no `Focus` sits above the first `GestureDetector`. Without them no text field could be shot focused.
+6. **Two locked tests were corrected, not weakened:** the search field's clear-button test used `defaultValue`, which does not show the button (it now types, as the existing clear test does); the stepper's width test measured the stretched widget, not its row of three cells. Two older tests followed the change: `text-link.test.tsx` (the class names of the new tokens) and `frame_parts_review_test.dart` (the ring is now a `FocusRing` painter, still keyboard only).
+
 ## Stopped at
 
-Not started.
+Done: pull request open with auto-merge.
 
 ## Evidence
 
-- `pnpm parity …` before and after: the sheets shown to the owner
-- `node scripts/verify.mjs --changed`:
-- Review:
+- Red phase: `component-usage.test.ts` listed every `text-link` token and every `input` token unread on the side that did not read it yet (80 problems); the gap tests failed for their gaps (label 16 not 4, count 30 not 18, a hairline found, no `AnimatedRotation`; on the web no `ms-auto`, no `--fd-input-clear-*`, no two-attribute disabled radio, no `--fd-input-area-padding-block`).
+- `pnpm parity Button Field TextField TextArea SearchField PhoneField CodeField Select Checkbox RadioGroup Switch QuantityStepper TextLink` before and after: the sheets, before beside after, are a private artifact for the owner (link in the hand-over, not here).
+- Tests: ui-web 305 passed; core_ui 334 passed, `dart analyze` no issues; design-tokens `component-usage.test.ts` 11 passed.
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (twice, after the build and after the review's fixes).
+- `pnpm baselines`: 37 images moved, each a listed gap (23 goldens: the check and radio rows, with the country sheet's radio rows; the stepper's count; the phone hairline; the open select's chevron; the error icon on fields, dialogs and overlays; 14 screenshots: the phone and search clear buttons, the disabled radio); a second run after the review's fixes moved none.
+- Review (T2, `reviewer`, two rounds): no blocking finding. Fixed: the chevron's turn ignored reduced motion (now `Duration.zero`, with a test); the docs claimed more than the code (now list what stays semantic); the checkbox and radio labels read `input.colorText`; the clear icon colours and the search clear's 32 target are documented (gap 14). Open: the reviewer asks that the owner see the sheets before the merge (decision 1).
 
 ## Before deploying
 
@@ -52,4 +88,4 @@ Nothing new.
 
 ## Notes for the next session
 
-<the gaps found on the sheets, the owner's choice for each, and their fixes>
+The gaps and their fixes are in «Gaps on the sheets» above. For the owner: gaps 11, 12 and 14 wait for a decision; D.W4a builds the phone chip's and the country sheet's tokens (left semantic here).

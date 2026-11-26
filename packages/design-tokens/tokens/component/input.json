@@ -1,5 +1,34 @@
 {
   "input": {
+    "$extensions": {
+      "app.foxdrop": {
+        "web": [
+          "field",
+          "text-field",
+          "text-area",
+          "search-field",
+          "phone-field",
+          "code-field",
+          "select",
+          "checkbox",
+          "radio-group",
+          "switch",
+          "quantity-stepper"
+        ],
+        "flutter": [
+          "field",
+          "text_field",
+          "phone_field",
+          "code_field",
+          "select",
+          "checkbox",
+          "radio",
+          "switch",
+          "quantity_stepper",
+          "internal"
+        ]
+      }
+    },
     "height": {
       "$type": "dimension",
       "$value": "{size.control}"
@@ -7,11 +36,50 @@
     "compact": {
       "height": {
         "$type": "dimension",
-        "$value": "{size.control-compact}"
+        "$value": "{size.control-compact}",
+        "$description": "The panel's and the portal's compact density; the Flutter fields have none.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
       },
       "padding-inline": {
         "$type": "dimension",
-        "$value": "{space.sm}"
+        "$value": "{space.sm}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
+    "message-gap": {
+      "$type": "dimension",
+      "$value": "{space.2xs}",
+      "$description": "Between the error's icon and its text, below the control."
+    },
+    "area-padding-block": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$description": "Above and below the text of a long-text box."
+    },
+    "clear": {
+      "size": {
+        "$type": "dimension",
+        "$value": "{size.step}",
+        "$description": "The clear button's circle (the D.8 sheet's 32)."
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": "{size.touch-target}"
+      },
+      "color": {
+        "$type": "color",
+        "background": {
+          "$value": "{color.surface}"
+        },
+        "background-hover": {
+          "$value": "{color.surface-hover}"
+        },
+        "background-pressed": {
+          "$value": "{color.surface-pressed}"
+        },
+        "icon": {
+          "$value": "{color.on-surface}"
+        }
       }
     },
     "padding-inline": {
@@ -78,7 +146,9 @@
         "$value": "{color.primary}"
       },
       "focus-ring": {
-        "$value": "{color.focus-ring}"
+        "$value": "{color.focus-ring}",
+        "$description": "The keyboard ring of a control without an outline. Flutter paints it in the shared FocusRing (internal/interaction.dart, every component's ring), read as theme.input.focusRing.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
       },
       "disabled": {
         "$value": "{color.disabled}"
@@ -95,6 +165,16 @@
       "target": {
         "$type": "dimension",
         "$value": "{size.touch-target}"
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{space.2xs}",
+        "$description": "Between the 48 target and the label (the D.8 sheet)."
+      },
+      "dot": {
+        "$type": "dimension",
+        "$value": "{space.sm}",
+        "$description": "The selected radio's dot."
       },
       "radius": {
         "$type": "dimension",
@@ -144,6 +224,17 @@
         "$type": "dimension",
         "$value": "{size.switch-height}"
       },
+      "padding": {
+        "$type": "dimension",
+        "$value": "{space.2xs}",
+        "$description": "Around the thumb, inside the track."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{space.sm}",
+        "$description": "Between the track and its visible label; the Flutter switch shows no label (the screen's line does).",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
       "color": {
         "$type": "color",
         "track": {
@@ -174,6 +265,11 @@
         "$type": "dimension",
         "$value": "{size.step}"
       },
+      "value-width": {
+        "$type": "dimension",
+        "$value": "{space.2xl}",
+        "$description": "The count's cell between the two buttons."
+      },
       "target": {
         "$type": "dimension",
         "$value": "{size.touch-target}"
@@ -201,6 +297,11 @@
       "size": {
         "$type": "dimension",
         "$value": "{size.touch-target}"
+      },
+      "caret-height": {
+        "$type": "dimension",
+        "$value": "{size.icon-md}",
+        "$description": "The caret in the empty cell the next digit goes into."
       },
       "color": {
         "$type": "color",

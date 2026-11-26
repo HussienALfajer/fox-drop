@@ -1,4 +1,3 @@
-import 'package:core_tokens/core_tokens.dart' as t;
 import 'package:flutter/widgets.dart';
 
 import '../theme/fox_theme.dart';
@@ -21,32 +20,29 @@ class ChoiceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     // The 24 box sits in a 48 slot whose empty start half is pulled out, so
     // the box lines up with the form's edge while the target stays 48.
-    final inset = (i.checkTarget - i.checkSize) / 2;
+    final inset = (input.checkTarget - input.checkSize) / 2;
     return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: i.checkTarget),
+      constraints: BoxConstraints(minHeight: input.checkTarget),
       child: Row(
         children: [
           SizedBox(
-            width: i.checkSize + inset,
-            height: i.checkTarget,
+            width: input.checkSize + inset,
+            height: input.checkTarget,
             child: OverflowBox(
               alignment: AlignmentDirectional.centerEnd,
-              minWidth: i.checkTarget,
-              maxWidth: i.checkTarget,
+              minWidth: input.checkTarget,
+              maxWidth: input.checkTarget,
               child: Center(child: box),
             ),
           ),
-          const SizedBox(width: t.FoxSpace.md),
+          // The slot ends where the 48 target ends: the label sits 4 after
+          // it, as on the D.8 sheet and the web (parity, D.W3a; it was 16).
+          SizedBox(width: input.checkGap),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                vertical: t.FoxSpace.sm,
-              ),
-              child: Text(label, style: theme.text.body.copyWith(color: color)),
-            ),
+            child: Text(label, style: theme.text.body.copyWith(color: color)),
           ),
         ],
       ),
