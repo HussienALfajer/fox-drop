@@ -284,7 +284,8 @@ class _MenuPanelState extends State<_MenuPanel> {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final menu = theme.components.menu;
+    final line = Color(menu.colorBorder);
     var row = 0;
     return FocusScope(
       node: _scope,
@@ -294,20 +295,21 @@ class _MenuPanelState extends State<_MenuPanel> {
         scopesRoute: true,
         explicitChildNodes: true,
         label: widget.label,
+        // At least the sheet's 240, as the web (parity, D.W3c; it was 192).
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: t.FoxSize.menuMinWidth,
+          constraints: BoxConstraints(
+            minWidth: menu.minWidth,
             maxWidth: t.FoxSize.menuMaxWidth,
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: c.surfaceRaised,
-              borderRadius: BorderRadius.circular(t.FoxRadius.md),
-              border: Border.all(color: c.border),
+              color: Color(menu.colorBackground),
+              borderRadius: BorderRadius.circular(menu.radius),
+              border: Border.all(color: line, width: menu.borderWidth),
               boxShadow: [theme.shadows.medium],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(t.FoxSpace.xxs),
+              padding: EdgeInsets.all(menu.padding),
               child: IntrinsicWidth(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -316,13 +318,13 @@ class _MenuPanelState extends State<_MenuPanel> {
                     for (final item in widget.items)
                       if (item.separator)
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: t.FoxSpace.xxs,
-                            horizontal: t.FoxSpace.xs,
+                          padding: EdgeInsets.symmetric(
+                            vertical: menu.separatorMarginBlock,
+                            horizontal: menu.separatorMarginInline,
                           ),
                           child: Container(
-                            height: t.FoxBorderWidth.thin,
-                            color: c.border,
+                            height: menu.borderWidth,
+                            color: line,
                           ),
                         )
                       else
@@ -353,9 +355,12 @@ class _MenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final c = theme.colors;
-    final ink = item.destructive ? c.danger : c.onSurface;
+    final menu = theme.components.menu;
+    final ink = Color(item.destructive ? menu.colorDanger : menu.colorText);
     final icon = item.icon;
     final hint = item.hint;
+    // The web's row: a small icon, xs around it (parity, D.W3c; it was a
+    // medium icon with sm).
     return Interaction(
       focusNode: node,
       onTap: onTap,
@@ -364,25 +369,27 @@ class _MenuRow extends StatelessWidget {
       builder: (context, state) => AnimatedContainer(
         duration: t.FoxDuration.fast,
         curve: theme.easing,
-        constraints: const BoxConstraints(minHeight: t.FoxSize.touchTarget),
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: t.FoxSpace.sm,
+        constraints: BoxConstraints(minHeight: menu.itemHeight),
+        padding: EdgeInsetsDirectional.symmetric(
+          horizontal: menu.itemPaddingInline,
         ),
         decoration: BoxDecoration(
-          color: state.pressed
-              ? c.surfaceRaisedPressed
-              : (state.hovered || state.focused
-                    ? c.surfaceRaisedHover
-                    : c.surfaceRaised),
-          borderRadius: BorderRadius.circular(t.FoxRadius.sm),
+          color: Color(
+            state.pressed
+                ? menu.colorItemPressed
+                : (state.hovered || state.focused
+                      ? menu.colorItemHover
+                      : menu.colorBackground),
+          ),
+          borderRadius: BorderRadius.circular(menu.itemRadius),
         ),
         child: Row(
           children: [
             if (icon != null)
-              FoxIcon(icon, color: ink)
+              FoxIcon(icon, size: FoxIconSize.sm, color: ink)
             else
-              const SizedBox(width: t.FoxSize.iconMd),
-            const SizedBox(width: t.FoxSpace.sm),
+              SizedBox(width: theme.components.icon.sizeSm),
+            SizedBox(width: menu.itemGap),
             Expanded(
               child: Text(
                 item.label,

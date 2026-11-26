@@ -8,24 +8,24 @@ import { formTv, keyboardRing } from '../field/styles';
 /** The dim behind a dialog or a drawer. */
 export const backdrop = formTv({
   base: [
-    'fixed inset-none z-(--fd-layer-overlay) bg-scrim',
+    'fixed inset-none z-(--fd-layer-overlay) bg-(--fd-dialog-color-scrim)',
     'transition-opacity duration-(--fd-duration-base) ease-(--fd-easing-standard)',
     'data-starting-style:opacity-0 data-ending-style:opacity-0',
   ],
 });
 
-/** A centred dialog: raised surface, radius 15, high elevation; it fades and grows from 96%. */
+/** A centred dialog on its `dialog.*` tokens: raised, high elevation; it fades and grows from 96%. */
 export const dialogPanel = formTv({
   base: [
-    'fixed inset-md z-(--fd-layer-overlay) m-auto flex h-fit max-h-full max-w-(--fd-size-dialog) flex-col gap-md overflow-y-auto',
-    'rounded-lg bg-surface-raised p-lg text-on-surface shadow-high outline-hidden',
+    'fixed inset-md z-(--fd-layer-overlay) m-auto flex h-fit max-h-full max-w-(--fd-dialog-width) flex-col gap-(--fd-dialog-gap) overflow-y-auto',
+    'rounded-(--fd-dialog-radius) bg-(--fd-dialog-color-background) p-(--fd-dialog-padding) text-(color:--fd-dialog-color-title) shadow-high outline-hidden',
     'transition duration-(--fd-duration-base) ease-(--fd-easing-standard) motion-reduce:transition-opacity',
     'data-starting-style:scale-96 data-starting-style:opacity-0 data-ending-style:scale-96 data-ending-style:opacity-0 motion-reduce:data-starting-style:scale-100 motion-reduce:data-ending-style:scale-100',
   ],
 });
 
 /** A dialog's title and the × beside it. */
-export const header = formTv({ base: 'flex items-start gap-sm' });
+export const header = formTv({ base: 'flex items-start gap-(--fd-dialog-header-gap)' });
 export const title = formTv({
   base: 'm-none min-w-none flex-1 font-bold text-phone-title',
 });

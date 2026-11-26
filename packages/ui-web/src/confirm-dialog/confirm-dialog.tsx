@@ -16,13 +16,25 @@ import { TextField } from '../text-field/text-field';
 /** The states the stories show (R3): empty, refused without a reason, filled. */
 export const STATES = ['default', 'empty', 'invalid', 'filled'] as const;
 
-const section = formTv({ base: 'flex flex-col gap-xs' });
+const section = formTv({ base: 'flex flex-col gap-(--fd-dialog-confirm-section-gap)' });
 const sectionTitle = formTv({ base: 'm-none text-panel-secondary font-bold' });
-const effect = formTv({ base: 'flex flex-col gap-xs rounded-md bg-surface p-sm' });
-const chip = formTv({
-  base: 'inline-flex min-h-lg items-center gap-2xs rounded-full bg-info-subtle px-xs text-panel-secondary font-medium text-info',
+const effect = formTv({
+  base: [
+    'flex flex-col gap-(--fd-dialog-confirm-section-gap) rounded-(--fd-dialog-confirm-effect-radius)',
+    'bg-(--fd-dialog-confirm-color-effect-background) p-(--fd-dialog-confirm-effect-padding)',
+  ],
 });
-const actions = formTv({ base: 'flex flex-wrap gap-sm' });
+const chip = formTv({
+  base: [
+    'inline-flex min-h-(--fd-dialog-confirm-chip-height) items-center gap-(--fd-dialog-confirm-chip-gap) rounded-full',
+    'bg-(--fd-dialog-confirm-color-chip-background) px-(--fd-dialog-confirm-chip-padding-inline)',
+    'text-panel-secondary font-medium text-(color:--fd-dialog-confirm-color-chip-text)',
+  ],
+});
+const actions = formTv({ base: 'flex flex-wrap gap-(--fd-dialog-actions-gap)' });
+const notifiedList = formTv({
+  base: 'm-none flex list-none flex-wrap gap-(--fd-dialog-confirm-section-gap) p-none',
+});
 
 export interface ConfirmDialogProps {
   trigger?: ReactElement;
@@ -124,7 +136,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           <p id={notifyId} className={sectionTitle()}>
             {notifyTitle}
           </p>
-          <ul aria-labelledby={notifyId} className="m-none flex list-none flex-wrap gap-xs p-none">
+          <ul aria-labelledby={notifyId} className={notifiedList()}>
             {notified.map((who) => (
               <li key={who} className={chip()}>
                 <Icon name="bell" size="sm" />

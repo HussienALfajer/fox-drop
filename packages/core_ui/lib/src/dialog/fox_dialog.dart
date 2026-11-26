@@ -49,7 +49,7 @@ Future<T?> showFoxDialog<T>(
     RawDialogRoute<T>(
       barrierDismissible: dismissible,
       barrierLabel: dismissLabel,
-      barrierColor: theme.colors.scrim,
+      barrierColor: Color(theme.components.dialog.colorScrim),
       transitionDuration: t.FoxDuration.base,
       pageBuilder: (routeContext, _, _) => FoxTheme(
         data: theme,
@@ -114,6 +114,7 @@ class FoxDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final dialog = theme.components.dialog;
     final secondary = this.secondary;
     final safeIsSecondary = primary.destructive && secondary != null;
     final body = this.body;
@@ -121,11 +122,14 @@ class FoxDialog extends StatelessWidget {
       title: title,
       closeLabel: closeLabel,
       onClose: onClose,
+      // The two actions share the row, as the web and the D.10 sheet draw
+      // them (parity, D.W3c).
+      fillActions: true,
       sections: [
         if (body != null)
           Text(
             body,
-            style: theme.text.body.copyWith(color: theme.colors.onSurfaceMuted),
+            style: theme.text.body.copyWith(color: Color(dialog.colorBody)),
           ),
         ?content,
       ],
@@ -237,6 +241,7 @@ class _FoxConfirmDialogState extends State<FoxConfirmDialog> {
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final c = theme.colors;
+    final dialog = theme.components.dialog;
     final effect = widget.effect;
     final effectTitle = widget.effectTitle;
     final strong = theme.text.secondary.copyWith(
@@ -263,17 +268,17 @@ class _FoxConfirmDialogState extends State<FoxConfirmDialog> {
         if (effect != null)
           DecoratedBox(
             decoration: BoxDecoration(
-              color: c.surface,
-              borderRadius: BorderRadius.circular(t.FoxRadius.md),
+              color: Color(dialog.confirmColorEffectBackground),
+              borderRadius: BorderRadius.circular(dialog.confirmEffectRadius),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(t.FoxSpace.sm),
+              padding: EdgeInsets.all(dialog.confirmEffectPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (effectTitle != null) ...[
                     Text(effectTitle, style: strong),
-                    const SizedBox(height: t.FoxSpace.xs),
+                    SizedBox(height: dialog.confirmSectionGap),
                   ],
                   effect,
                 ],
@@ -284,10 +289,10 @@ class _FoxConfirmDialogState extends State<FoxConfirmDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(widget.notifiedTitle, style: strong),
-            const SizedBox(height: t.FoxSpace.xs),
+            SizedBox(height: dialog.confirmSectionGap),
             Wrap(
-              spacing: t.FoxSpace.xs,
-              runSpacing: t.FoxSpace.xs,
+              spacing: dialog.confirmSectionGap,
+              runSpacing: dialog.confirmSectionGap,
               children: [for (final who in widget.notified) _Notified(who)],
             ),
           ],
@@ -319,33 +324,32 @@ class _Notified extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    return DecoratedBox(
+    final dialog = theme.components.dialog;
+    final ink = Color(dialog.confirmColorChipText);
+    return Container(
+      constraints: BoxConstraints(minHeight: dialog.confirmChipHeight),
+      padding: EdgeInsetsDirectional.symmetric(
+        horizontal: dialog.confirmChipPaddingInline,
+      ),
       decoration: BoxDecoration(
-        color: c.infoSubtle,
+        color: Color(dialog.confirmColorChipBackground),
         borderRadius: BorderRadius.circular(t.FoxRadius.full),
       ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: t.FoxSpace.sm,
-          vertical: t.FoxSpace.xxs,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FoxIcon(t.FoxIcons.bell, size: FoxIconSize.sm, color: c.info),
-            const SizedBox(width: t.FoxSpace.xxs),
-            Flexible(
-              child: Text(
-                name,
-                style: theme.text.secondary.copyWith(
-                  color: c.info,
-                  fontWeight: FontWeight.w500,
-                ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FoxIcon(t.FoxIcons.bell, size: FoxIconSize.sm, color: ink),
+          SizedBox(width: dialog.confirmChipGap),
+          Flexible(
+            child: Text(
+              name,
+              style: theme.text.secondary.copyWith(
+                color: ink,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -362,6 +366,7 @@ class DialogPanel extends StatelessWidget {
     required this.sections,
     required this.actions,
     this.onClose,
+    this.fillActions = false,
   });
 
   final String title;
@@ -370,10 +375,14 @@ class DialogPanel extends StatelessWidget {
   final List<Widget> actions;
   final VoidCallback? onClose;
 
+  /// The actions share the row equally (the dialog); else each keeps its
+  /// own width and they wrap (the confirm dialog).
+  final bool fillActions;
+
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final dialog = theme.components.dialog;
     final column = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -388,13 +397,13 @@ class DialogPanel extends StatelessWidget {
                 child: Text(
                   title,
                   style: theme.text.title.copyWith(
-                    color: c.onSurface,
+                    color: Color(dialog.colorTitle),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: t.FoxSpace.xs),
+            SizedBox(width: dialog.headerGap),
             FoxButton.icon(
               icon: t.FoxIcons.close,
               label: closeLabel,
@@ -404,35 +413,30 @@ class DialogPanel extends StatelessWidget {
             ),
           ],
         ),
-        for (final child in sections) ...[
-          const SizedBox(height: t.FoxSpace.md),
+        // One gap between every part, the actions too (the web's, D.W3c).
+        for (final child in [...sections, _actions(dialog)]) ...[
+          SizedBox(height: dialog.gap),
           child,
         ],
-        const SizedBox(height: t.FoxSpace.lg),
-        Wrap(
-          spacing: t.FoxSpace.sm,
-          runSpacing: t.FoxSpace.sm,
-          children: actions,
-        ),
       ],
     );
     return Semantics(
       scopesRoute: true,
       explicitChildNodes: true,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: t.FoxSize.dialog),
+        constraints: BoxConstraints(maxWidth: dialog.width),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: c.surfaceRaised,
-            borderRadius: BorderRadius.circular(t.FoxRadius.lg),
+            color: Color(dialog.colorBackground),
+            borderRadius: BorderRadius.circular(dialog.radius),
             boxShadow: [theme.shadows.high],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(t.FoxRadius.lg),
+            borderRadius: BorderRadius.circular(dialog.radius),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final padded = Padding(
-                  padding: const EdgeInsets.all(t.FoxSpace.lg),
+                  padding: EdgeInsets.all(dialog.padding),
                   child: column,
                 );
                 return constraints.hasBoundedHeight
@@ -443,6 +447,24 @@ class DialogPanel extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _actions(t.DialogTokens dialog) {
+    if (!fillActions) {
+      return Wrap(
+        spacing: dialog.actionsGap,
+        runSpacing: dialog.actionsGap,
+        children: actions,
+      );
+    }
+    return Row(
+      children: [
+        for (var n = 0; n < actions.length; n++) ...[
+          if (n > 0) SizedBox(width: dialog.actionsGap),
+          Expanded(child: actions[n]),
+        ],
+      ],
     );
   }
 }

@@ -31,7 +31,7 @@ export interface BannerStackProps {
 }
 
 const toggle = formTv({
-  base: `inline-flex min-h-(--fd-size-step) cursor-pointer items-center gap-2xs rounded-full px-sm font-bold text-on-surface ${keyboardRing}`,
+  base: `inline-flex min-h-(--fd-banner-stack-toggle-height) cursor-pointer items-center gap-2xs rounded-full px-(--fd-banner-stack-toggle-padding-inline) font-bold text-on-surface ${keyboardRing}`,
   variants: {
     open: {
       false: 'bg-surface-raised inset-ring-1 inset-ring-border hover:bg-surface-raised-hover',

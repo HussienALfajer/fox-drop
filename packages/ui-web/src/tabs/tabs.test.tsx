@@ -60,4 +60,18 @@ describe('Tabs', () => {
     render(<Tabs label="الأقسام" items={items} defaultValue="details" variant="pill" />);
     expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'pill');
   });
+
+  // Parity gaps (D.W3c), the D.10 sheet's look.
+  it('draws the selected line 3 high, from its tabs token', () => {
+    const { container } = render(
+      <Tabs label="تفاصيل الطلب" items={items} defaultValue="details" />,
+    );
+    const line = container.querySelector('[role="tablist"] > :not([role="tab"])');
+    expect(line?.className).toContain('h-(--fd-tabs-indicator)');
+  });
+
+  it('shows the selected tab count in red, the others in blue', () => {
+    render(<Tabs label="تفاصيل الطلب" items={items} defaultValue="notes" />);
+    expect(screen.getByText('2').closest('[class*="bg-"]')?.className).toContain('bg-danger');
+  });
 });

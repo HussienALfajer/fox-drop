@@ -1,5 +1,5 @@
 import { Tabs as SdkTabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from '@ui-sdk/react/tabs';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CountBadge } from '../count-badge/count-badge';
 import { formTv, keyboardRing } from '../field/styles';
 
@@ -31,7 +31,8 @@ export interface TabsProps {
 }
 
 // The approved sheet: underline tabs with an orange 3 px line under the
-// selected one, a hairline under the list; pill tabs with the selected one
+// selected one (square, as the sheet draws it; it was 4 and rounded until
+// D.W3c), its count in red and the others' in blue, a hairline under the list; pill tabs with the selected one
 // orange on the offset shadow. The line slides in duration.fast; it jumps
 // under reduced motion. Overflow scrolls sideways and the SDK keeps the
 // selected tab in view.
@@ -42,44 +43,53 @@ export interface TabsProps {
 // is as wide as its tabs and never scrolls.
 const scroller = formTv({
   base: 'overflow-x-auto',
-  variants: { variant: { underline: 'border-b border-border', pill: '' } },
+  variants: {
+    variant: {
+      underline: 'border-b-(length:--fd-tabs-border-width) border-(color:--fd-tabs-color-border)',
+      pill: '',
+    },
+  },
 });
 
 const list = formTv({
   base: 'relative flex w-max min-w-full',
   variants: {
     variant: {
-      underline: 'gap-2xs',
-      pill: 'gap-xs py-2xs',
+      underline: 'gap-(--fd-tabs-gap)',
+      pill: 'gap-(--fd-tabs-pill-gap) py-2xs',
     },
   },
 });
 
 const tab = formTv({
-  base: `inline-flex shrink-0 cursor-pointer items-center gap-xs whitespace-nowrap font-medium outline-hidden ${keyboardRing} data-disabled:cursor-not-allowed data-disabled:text-on-disabled`,
+  base: `inline-flex shrink-0 cursor-pointer items-center gap-(--fd-tabs-label-gap) whitespace-nowrap font-medium outline-hidden ${keyboardRing} data-disabled:cursor-not-allowed data-disabled:text-on-disabled`,
   variants: {
     variant: {
       underline:
-        'px-sm text-on-surface-muted hover:text-on-surface data-selected:font-bold data-selected:text-on-surface',
-      pill: 'rounded-full bg-surface-raised px-md text-on-surface inset-ring-1 inset-ring-border hover:bg-surface-raised-hover data-selected:bg-primary data-selected:text-on-primary data-selected:shadow-offset data-selected:inset-ring-0',
+        'px-(--fd-tabs-padding-inline) text-(color:--fd-tabs-color-text) hover:text-(color:--fd-tabs-color-text-hover) data-selected:font-bold data-selected:text-(color:--fd-tabs-color-text-selected)',
+      pill: [
+        'rounded-full bg-(--fd-tabs-pill-color-background) px-(--fd-tabs-pill-padding-inline) text-(color:--fd-tabs-pill-color-text)',
+        'inset-ring-(length:--fd-tabs-border-width) inset-ring-(color:--fd-tabs-color-border) hover:bg-(--fd-tabs-pill-color-background-hover)',
+        'data-selected:bg-(--fd-tabs-pill-color-background-selected) data-selected:text-(color:--fd-tabs-pill-color-text-selected) data-selected:shadow-offset data-selected:inset-ring-0',
+      ],
     },
     density: {
-      comfortable: 'min-h-(--fd-size-touch-target) text-phone-body',
-      compact: 'min-h-(--fd-size-control-compact) text-panel-body',
+      comfortable: 'min-h-(--fd-tabs-height) text-phone-body',
+      compact: 'min-h-(--fd-tabs-compact-height) text-panel-body',
     },
   },
   compoundVariants: [
     {
       variant: 'pill',
       density: 'comfortable',
-      class: 'min-h-(--fd-size-control-compact) text-phone-secondary',
+      class: 'min-h-(--fd-tabs-pill-height) text-phone-secondary',
     },
   ],
 });
 
 const indicator = formTv({
   base: [
-    'absolute bottom-none start-(--active-tab-left) h-(--fd-space-2xs) w-(--active-tab-width) rounded-full bg-primary',
+    'absolute bottom-none start-(--active-tab-left) h-(--fd-tabs-indicator) w-(--active-tab-width) bg-(--fd-tabs-color-indicator)',
     // The SDK measures from the physical edges: the right one is the start in RTL.
     'rtl:start-(--active-tab-right)',
     'transition-all duration-(--fd-duration-fast) ease-(--fd-easing-standard) motion-reduce:transition-none',
@@ -95,6 +105,9 @@ export function Tabs(props: TabsProps) {
   const { label, items, value, defaultValue, onValueChange } = props;
   const { variant = 'underline', density = 'compact' } = props;
   const listRef = useRef<HTMLDivElement>(null);
+  // The selected tab, followed here for its count's red (the sheet).
+  const [inner, setInner] = useState(defaultValue ?? items[0]?.value);
+  const selected = value ?? inner;
   // The SDK scrolls a tab into view when it is chosen; this does it for the
   // tab selected on the first render too (an overflowing list on a phone),
   // and again each time the row's tabs change size until the person first
@@ -126,11 +139,11 @@ export function Tabs(props: TabsProps) {
       className="flex flex-col gap-md"
       {...(value !== undefined && { value })}
       {...(defaultValue !== undefined && { defaultValue })}
-      {...(onValueChange && {
-        onValueChange: (next: string | null) => {
-          if (next !== null) onValueChange(next);
-        },
-      })}
+      onValueChange={(next: string | null) => {
+        if (next === null) return;
+        setInner(next);
+        onValueChange?.(next);
+      }}
     >
       <div className={scroller({ variant })}>
         <TabsList
@@ -151,7 +164,7 @@ export function Tabs(props: TabsProps) {
                 <CountBadge
                   count={item.count}
                   label={item.countLabel ?? String(item.count)}
-                  tone="accent"
+                  tone={item.value === selected ? 'danger' : 'accent'}
                 />
               )}
             </TabsTab>

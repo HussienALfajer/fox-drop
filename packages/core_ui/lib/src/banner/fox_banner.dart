@@ -75,14 +75,36 @@ class FoxBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    final (fill, ink, toneIcon) = switch (tone) {
-      FoxBannerTone.danger => (c.danger, c.onDanger, t.FoxIcons.error),
-      FoxBannerTone.caution => (c.cautionSubtle, c.caution, t.FoxIcons.warning),
-      FoxBannerTone.warning => (c.warningSubtle, c.warning, t.FoxIcons.warning),
-      FoxBannerTone.info => (c.infoSubtle, c.info, t.FoxIcons.info),
-      FoxBannerTone.neutral => (c.neutralSubtle, c.neutral, t.FoxIcons.info),
+    final banner = theme.components.banner;
+    final (fillValue, inkValue, toneIcon) = switch (tone) {
+      FoxBannerTone.danger => (
+        banner.colorDangerBackground,
+        banner.colorDangerText,
+        t.FoxIcons.error,
+      ),
+      FoxBannerTone.caution => (
+        banner.colorCautionBackground,
+        banner.colorCautionText,
+        t.FoxIcons.warning,
+      ),
+      FoxBannerTone.warning => (
+        banner.colorWarningBackground,
+        banner.colorWarningText,
+        t.FoxIcons.warning,
+      ),
+      FoxBannerTone.info => (
+        banner.colorInfoBackground,
+        banner.colorInfoText,
+        t.FoxIcons.info,
+      ),
+      FoxBannerTone.neutral => (
+        banner.colorNeutralBackground,
+        banner.colorNeutralText,
+        t.FoxIcons.info,
+      ),
     };
+    final fill = Color(fillValue);
+    final ink = Color(inkValue);
     final style = theme.text.secondary.copyWith(
       color: ink,
       fontWeight: FontWeight.w500,
@@ -115,43 +137,43 @@ class FoxBanner extends StatelessWidget {
         color: fill,
         border: tone == FoxBannerTone.danger
             ? null
-            : Border(bottom: BorderSide(color: c.border)),
+            : Border(
+                bottom: BorderSide(
+                  color: Color(banner.colorBorder),
+                  width: banner.borderWidth,
+                ),
+              ),
       ),
       child: Semantics(
         container: true,
         liveRegion: true,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: t.FoxSize.touchTarget),
+          constraints: BoxConstraints(minHeight: banner.minHeight),
           child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: t.FoxSpace.md,
-              vertical: t.FoxSpace.xxs,
+            // xs above and below, the web's (parity, D.W3c; it was 2xs).
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: banner.paddingInline,
+              // Two actions under the words take sm, as the web's.
+              vertical: stacked ? t.FoxSpace.sm : banner.paddingBlock,
             ),
             child: Row(
               crossAxisAlignment: stacked
                   ? CrossAxisAlignment.start
                   : CrossAxisAlignment.center,
               children: [
-                Padding(
-                  padding: EdgeInsetsDirectional.only(
-                    top: stacked ? t.FoxSpace.sm : t.FoxSpace.none,
-                  ),
-                  child: FoxIcon(icon ?? toneIcon, color: ink),
-                ),
-                const SizedBox(width: t.FoxSpace.sm),
+                FoxIcon(icon ?? toneIcon, color: ink),
+                SizedBox(width: banner.gap),
                 if (stacked)
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        top: t.FoxSpace.sm,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(message, style: style),
-                          Wrap(spacing: t.FoxSpace.lg, children: actions),
-                        ],
-                      ),
+                    // As tall as its words and actions: it filled a tall
+                    // parent before (parity, D.W3c).
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(message, style: style),
+                        Wrap(spacing: banner.actionsGap, children: actions),
+                      ],
                     ),
                   )
                 else ...[
@@ -337,50 +359,74 @@ class _Counter extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final c = theme.colors;
+    final banner = theme.components.banner;
+    // Folded: a raised pill with its outline; opened: words alone, a tint on
+    // hover (the web's, parity D.W3c). The pill is drawn 32 high inside its
+    // 48 target.
     return Interaction(
       onTap: onTap,
       label: label,
       isButton: true,
       expanded: expanded,
-      builder: (context, state) => AnimatedContainer(
-        duration: t.FoxDuration.base,
-        curve: theme.easing,
+      builder: (context, state) => ConstrainedBox(
         constraints: const BoxConstraints(minHeight: t.FoxSize.touchTarget),
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: t.FoxSpace.sm,
-        ),
-        decoration: BoxDecoration(
-          color: state.pressed
-              ? c.surfaceRaisedPressed
-              : (state.hovered ? c.surfaceRaisedHover : c.surfaceRaised),
-          borderRadius: BorderRadius.circular(t.FoxRadius.full),
-          border: Border.all(
-            color: state.focused ? c.focusRing : c.border,
-            width: state.focused ? theme.input.focusWidth : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                label,
-                style: theme.text.secondary.copyWith(
-                  color: c.onSurface,
-                  fontWeight: FontWeight.w700,
+        child: Align(
+          widthFactor: 1,
+          heightFactor: 1,
+          child: AnimatedContainer(
+            duration: t.FoxDuration.base,
+            curve: theme.easing,
+            constraints: BoxConstraints(minHeight: banner.stackToggleHeight),
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: banner.stackTogglePaddingInline,
+            ),
+            decoration: BoxDecoration(
+              color: expanded
+                  ? (state.hovered || state.pressed
+                        ? c.surfaceHover
+                        : c.surface.withValues(alpha: 0))
+                  : (state.pressed
+                        ? c.surfaceRaisedPressed
+                        : (state.hovered
+                              ? c.surfaceRaisedHover
+                              : c.surfaceRaised)),
+              borderRadius: BorderRadius.circular(t.FoxRadius.full),
+              border: state.focused
+                  ? Border.all(
+                      color: c.focusRing,
+                      width: theme.input.focusWidth,
+                    )
+                  : (expanded
+                        ? null
+                        : Border.all(
+                            color: c.border,
+                            width: banner.borderWidth,
+                          )),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    style: theme.text.secondary.copyWith(
+                      color: c.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: t.FoxSpace.xxs),
+                RotatedBox(
+                  quarterTurns: expanded ? 2 : 0,
+                  child: FoxIcon(
+                    t.FoxIcons.chevronDown,
+                    size: FoxIconSize.sm,
+                    color: c.onSurface,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: t.FoxSpace.xxs),
-            RotatedBox(
-              quarterTurns: expanded ? 2 : 0,
-              child: FoxIcon(
-                t.FoxIcons.chevronDown,
-                size: FoxIconSize.sm,
-                color: c.onSurface,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

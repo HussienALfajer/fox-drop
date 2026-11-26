@@ -30,19 +30,23 @@ const ICON: Record<BannerTone, IconName> = {
 // The approved sheet (owner, 2026-11-24, question 4 «A»): red is solid, the
 // work stops; every other tone is its text on its tint, with a hairline under
 // it. The text and the icon say the tone, never the colour alone.
+const hairline =
+  'border-b-(length:--fd-banner-border-width) border-(color:--fd-banner-color-border)';
 const banner = formTv({
-  base: 'flex w-full items-center gap-sm px-md',
+  base: 'flex w-full items-center gap-(--fd-banner-gap) px-(--fd-banner-padding-inline)',
   variants: {
     tone: {
-      danger: 'bg-danger text-on-danger',
-      caution: 'bg-caution-subtle text-caution border-b border-border',
-      warning: 'bg-warning-subtle text-warning border-b border-border',
-      info: 'bg-info-subtle text-info border-b border-border',
-      neutral: 'bg-neutral-subtle text-neutral border-b border-border',
+      danger: 'bg-(--fd-banner-color-danger-background) text-(color:--fd-banner-color-danger-text)',
+      caution: `bg-(--fd-banner-color-caution-background) text-(color:--fd-banner-color-caution-text) ${hairline}`,
+      warning: `bg-(--fd-banner-color-warning-background) text-(color:--fd-banner-color-warning-text) ${hairline}`,
+      info: `bg-(--fd-banner-color-info-background) text-(color:--fd-banner-color-info-text) ${hairline}`,
+      neutral: `bg-(--fd-banner-color-neutral-background) text-(color:--fd-banner-color-neutral-text) ${hairline}`,
     },
     density: {
-      comfortable: 'min-h-(--fd-size-touch-target) py-xs text-phone-secondary font-medium',
-      compact: 'min-h-(--fd-size-control-compact) py-2xs text-panel-secondary font-medium',
+      comfortable:
+        'min-h-(--fd-banner-min-height) py-(--fd-banner-padding-block) text-phone-secondary font-medium',
+      compact:
+        'min-h-(--fd-banner-compact-min-height) py-(--fd-banner-compact-padding-block) text-panel-secondary font-medium',
     },
   },
   defaultVariants: { density: 'comfortable' },
@@ -113,7 +117,7 @@ export function Banner({
       {stacked ? (
         <div className="flex min-w-none flex-1 flex-col gap-xs">
           <span data-banner-text="">{children}</span>
-          <div className="flex flex-wrap gap-x-lg gap-y-xs">
+          <div className="flex flex-wrap gap-x-(--fd-banner-actions-gap) gap-y-xs">
             {act && <ActionButton act={act} />}
             {second && <ActionButton act={second} />}
           </div>

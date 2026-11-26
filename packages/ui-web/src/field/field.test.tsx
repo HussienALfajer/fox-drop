@@ -29,7 +29,7 @@ describe('Field', () => {
     );
     const error = screen.getByText('خطأ');
     expect(error.querySelector('svg')).not.toBeNull();
-    expect(container.querySelector('svg')?.getAttribute('class')).toContain('--fd-size-icon-sm');
+    expect(container.querySelector('svg')?.getAttribute('class')).toContain('--fd-icon-size-sm');
   });
 
   it('shows what is passed to the end of the line below', () => {

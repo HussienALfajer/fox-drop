@@ -14,7 +14,8 @@ export const STATES = ['default'] as const;
 // top, above everything (`layer.blocking`); white on alert reads at 9.3:1.
 const bar = formTv({
   base: [
-    'fixed inset-x-none top-none z-(--fd-layer-blocking) flex items-center gap-sm bg-alert px-lg py-sm text-on-alert outline-hidden',
+    'fixed inset-x-none top-none z-(--fd-layer-blocking) flex items-center gap-(--fd-blocking-banner-gap) outline-hidden',
+    'bg-(--fd-blocking-banner-color-background) px-(--fd-blocking-banner-padding-inline) py-(--fd-blocking-banner-padding-block) text-(color:--fd-blocking-banner-color-text)',
     'transition-opacity duration-(--fd-duration-base) ease-(--fd-easing-standard) data-starting-style:opacity-0 data-ending-style:opacity-0',
   ],
 });
@@ -24,7 +25,7 @@ const scrim = formTv({
 });
 
 const action = formTv({
-  base: `inline-flex min-h-(--fd-size-control-compact) shrink-0 cursor-pointer items-center rounded-full bg-on-alert px-md text-panel-body font-bold text-alert ${keyboardRing}`,
+  base: `inline-flex min-h-(--fd-blocking-banner-action-height) shrink-0 cursor-pointer items-center rounded-full bg-(--fd-blocking-banner-color-text) px-(--fd-blocking-banner-action-padding-inline) text-panel-body font-bold text-(color:--fd-blocking-banner-color-background) ${keyboardRing}`,
 });
 
 export interface BlockingBannerProps {

@@ -1,0 +1,20 @@
+{
+  "icon": {
+    "$description": "The three sizes of an icon of set v4 Madar (architecture §9.4).",
+    "$extensions": {
+      "app.foxdrop": { "web": ["icon"], "flutter": ["icon"] }
+    },
+    "size": {
+      "$type": "dimension",
+      "sm": {
+        "$value": "{size.icon-sm}"
+      },
+      "md": {
+        "$value": "{size.icon-md}"
+      },
+      "lg": {
+        "$value": "{size.icon-lg}"
+      }
+    }
+  }
+}

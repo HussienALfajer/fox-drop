@@ -64,9 +64,30 @@ for (const surface of surfaces)
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
         await page.mouse.down();
       }
-      await page
-        .locator('#storybook-root > *')
-        .first()
-        .screenshot({ path: `${out}/${story.id}-${surface}.png`, animations: 'disabled' });
+      // An open overlay renders outside the story's root (slice D.W3c): a
+      // dialog is shot alone, as its Flutter case draws the panel; the toasts
+      // as their list; an open menu with its trigger, as the case opens it.
+      const path = `${out}/${story.id}-${surface}.png`;
+      const root = page.locator('#storybook-root > *').first();
+      const panel = page.locator('[role="dialog"]:visible, [role="alertdialog"]:visible').first();
+      const toasts = page.locator('section:has([data-toast])').first();
+      const menu = page.locator('[role="menu"]:visible').first();
+      if ((await panel.count()) > 0) {
+        await panel.screenshot({ path, animations: 'disabled' });
+      } else if ((await toasts.count()) > 0) {
+        await toasts.screenshot({ path, animations: 'disabled' });
+      } else if ((await menu.count()) > 0) {
+        const a = (await root.boundingBox())!;
+        const b = (await menu.boundingBox())!;
+        const x = Math.min(a.x, b.x);
+        const y = Math.min(a.y, b.y);
+        const clip = {
+          x,
+          y,
+          width: Math.max(a.x + a.width, b.x + b.width) - x,
+          height: Math.max(a.y + a.height, b.y + b.height) + 16 - y,
+        };
+        await page.screenshot({ path, clip, animations: 'disabled' });
+      } else await root.screenshot({ path, animations: 'disabled' });
     });
   }

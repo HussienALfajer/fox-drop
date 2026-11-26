@@ -67,4 +67,12 @@ describe('Menu', () => {
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(trigger).toHaveFocus());
   });
+
+  // Parity gap (D.W3c): the D.10 sheet sets the rows in medium weight.
+  it('sets its rows in medium weight', async () => {
+    render(<UserMenu />);
+    await userEvent.click(screen.getByRole('button', { name: 'سارة م.' }));
+    await waitFor(() => expect(items()).toHaveLength(3));
+    for (const item of items()) expect(item.className).toContain('font-medium');
+  });
 });
