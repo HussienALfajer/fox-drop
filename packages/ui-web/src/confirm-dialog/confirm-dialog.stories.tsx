@@ -62,14 +62,19 @@ const inDialog = <T extends Element>(selector: string) =>
 
 export const Default: Story = {};
 export const Empty: Story = { play: ({ canvasElement }) => open(canvasElement) };
+// The components canvas draws these open, before what their play types or presses.
+const gesture = { canvas: { gesture: true } };
+
 // A try without a reason: the error under the field, «تأكيد» still refused.
 export const Invalid: Story = {
+  parameters: gesture,
   play: async ({ canvasElement }) => {
     open(canvasElement);
     (await inDialog<HTMLButtonElement>('button[aria-disabled="true"]')).click();
   },
 };
 export const Filled: Story = {
+  parameters: gesture,
   play: async ({ canvasElement }) => {
     open(canvasElement);
     const input = await inDialog<HTMLInputElement>('input');

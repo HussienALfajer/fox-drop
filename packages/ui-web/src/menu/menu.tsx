@@ -8,6 +8,7 @@ import {
 import type { ReactNode } from 'react';
 import { formTv, keyboardRing } from '../field/styles';
 import { Icon, type IconName } from '../icon/icon';
+import { IN_FLOW, inFlowFrame, useInFlow } from '../overlay/in-flow';
 
 /** The states the stories show (R3): closed, open, with a destructive item, compact. */
 export const STATES = ['default', 'open', 'destructive', 'comfortable'] as const;
@@ -31,6 +32,14 @@ export interface MenuProps {
   items: readonly (MenuAction | 'separator')[];
   /** `compact` rows are 40 (panel and portal), `comfortable` 48. */
   density?: 'comfortable' | 'compact';
+  /** Open. */
+  open?: boolean;
+  /**
+   * Draws the open list under its trigger in the page's flow, beside the page
+   * (the components canvas): it does not block the page; with `open` it stays
+   * open.
+   */
+  inline?: boolean;
 }
 
 // The approved sheet: a raised surface with the medium elevation, radius 15,
@@ -86,46 +95,56 @@ export function Menu({
   triggerIcon,
   items,
   density = 'compact',
+  open,
+  inline = false,
 }: MenuProps) {
+  const inFlow = useInFlow(inline);
   return (
-    <SdkMenu>
-      <MenuTrigger
-        className={trigger({ iconOnly: triggerIcon !== undefined, density })}
-        {...(triggerIcon && { 'aria-label': triggerLabel })}
-      >
-        {triggerIcon ? (
-          <Icon name={triggerIcon} />
-        ) : (
-          <>
-            {triggerStart}
-            {triggerLabel}
-            <Icon name="chevron-down" size="sm" />
-          </>
-        )}
-      </MenuTrigger>
-      <MenuContent className={content()} side="bottom" align="start">
-        {items.map((entry, index) =>
-          entry === 'separator' ? (
-            <MenuSeparator key={index} className={separator()} />
+    <SdkMenu {...(open !== undefined && { open })} {...(inline && { modal: false })}>
+      <div className={inFlowFrame({ inline })}>
+        <MenuTrigger
+          className={trigger({ iconOnly: triggerIcon !== undefined, density })}
+          {...(triggerIcon && { 'aria-label': triggerLabel })}
+        >
+          {triggerIcon ? (
+            <Icon name={triggerIcon} />
           ) : (
-            <MenuItem
-              key={entry.label}
-              label={entry.label}
-              className={item({ density })}
-              onSelect={() => entry.onSelect()}
-              {...(entry.destructive && { destructive: true })}
-              {...(entry.disabled && { disabled: true })}
-            >
-              {entry.icon ? (
-                <Icon name={entry.icon} size="sm" />
-              ) : (
-                <span className="size-(--fd-size-icon-sm)" />
-              )}
-              {entry.label}
-            </MenuItem>
-          ),
-        )}
-      </MenuContent>
+            <>
+              {triggerStart}
+              {triggerLabel}
+              <Icon name="chevron-down" size="sm" />
+            </>
+          )}
+        </MenuTrigger>
+        <MenuContent
+          ref={inFlow}
+          className={content({ class: inline && IN_FLOW })}
+          side="bottom"
+          align="start"
+        >
+          {items.map((entry, index) =>
+            entry === 'separator' ? (
+              <MenuSeparator key={index} className={separator()} />
+            ) : (
+              <MenuItem
+                key={entry.label}
+                label={entry.label}
+                className={item({ density })}
+                onSelect={() => entry.onSelect()}
+                {...(entry.destructive && { destructive: true })}
+                {...(entry.disabled && { disabled: true })}
+              >
+                {entry.icon ? (
+                  <Icon name={entry.icon} size="sm" />
+                ) : (
+                  <span className="size-(--fd-size-icon-sm)" />
+                )}
+                {entry.label}
+              </MenuItem>
+            ),
+          )}
+        </MenuContent>
+      </div>
     </SdkMenu>
   );
 }

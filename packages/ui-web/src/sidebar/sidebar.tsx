@@ -36,12 +36,14 @@ interface SidebarBase {
 /** `rail` beside the page; `drawer` below the tablet width (AP §7.5), whose × needs its name. */
 export type SidebarProps = SidebarBase &
   (
-    | { form?: 'rail'; open?: never; onOpenChange?: never; closeLabel?: never }
+    | { form?: 'rail'; open?: never; onOpenChange?: never; closeLabel?: never; inline?: never }
     | {
         form: 'drawer';
         open?: boolean;
         onOpenChange?: (open: boolean) => void;
         closeLabel: string;
+        /** The open drawer in its frame, beside the page (the components canvas). */
+        inline?: boolean;
       }
   );
 
@@ -149,6 +151,7 @@ export function Sidebar(props: SidebarProps) {
         side="start"
         {...(props.open !== undefined && { open: props.open })}
         {...(props.onOpenChange && { onOpenChange: props.onOpenChange })}
+        {...(props.inline && { inline: true })}
       >
         <nav aria-label={label} className={nav({ collapsed: false, form })}>
           <Links {...props} collapsed={false} />

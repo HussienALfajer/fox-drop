@@ -16,7 +16,7 @@ import {
   playgroundTweaks,
 } from './playground.ts';
 import { PSEUDO } from './states.ts';
-import { type Args, type ComponentStories, pascal } from './stories.ts';
+import { type Args, type ComponentStories, opens, pascal } from './stories.ts';
 
 const MUTED = 'font-size: 13px; line-height: 1.6; color: var(--fd-color-on-surface-muted);';
 const PANEL =
@@ -88,12 +88,16 @@ export interface BoardInput {
   fonts: Fonts;
 }
 
-/** A story's props for a copy: an open popup is drawn open in its cell, when it can be. */
+/**
+ * A story's props for a copy: a component that can be drawn in place
+ * (`inline`) always is, so the popups it opens in Play stay in their cell, and
+ * a story that opens its popup is drawn open.
+ */
 function propsOf(input: BoardInput, story: string, extra: Args = {}): Args {
   const info = input.stories.stories[story];
   const args = { ...(info?.args ?? {}), ...extra };
-  if (info?.play && input.members.has('inline')) return { ...args, open: true, inline: true };
-  return args;
+  if (!input.members.has('inline')) return args;
+  return { ...args, ...(opens(info) && { open: true }), inline: true };
 }
 
 function header(input: BoardInput): string {
@@ -167,9 +171,9 @@ function copyCell(
   if (forced) {
     slot = `<div data-pseudo="${PSEUDO[forced]}" data-pseudo-outer style="display: block; min-width: 0;">${slot}</div>`;
   }
-  // A state only a gesture reaches (pulling a list) is drawn at rest and says so.
+  // A state only a gesture reaches (pulling a list, typing) is drawn before it and says so.
   const info = input.stories.stories[story];
-  const gesture = info?.play === true && !input.members.has('inline');
+  const gesture = info?.canvas?.gesture ?? (info?.play === true && !input.members.has('inline'));
   const words = gesture ? `${caption(state)} · ${TEXT.inPlay}` : caption(state);
   const under = captioned ? `<span style="${MUTED}">${esc(words)}</span>` : '';
   return `<div data-cell="${esc(story)}" style="display: flex; flex-direction: column; gap: var(--fd-space-xs); align-items: ${fill ? 'stretch' : 'flex-start'}; min-width: 0;">${slot}${under}</div>`;

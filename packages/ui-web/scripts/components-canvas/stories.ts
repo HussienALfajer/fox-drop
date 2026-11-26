@@ -56,7 +56,24 @@ export interface StoryInfo {
   render: boolean;
   /** What it mounts when not its board's component (`BlockingHeads.ShopSign`). */
   component?: string;
+  /** The story's `parameters.canvas`: how its board draws a `play` it cannot run. */
+  canvas?: CanvasParameters;
 }
+
+/**
+ * A story's `parameters.canvas`. By default a `play` opens its popup, drawn open
+ * in place (`inline`) when the component can be. `open: false` says the play
+ * opens nothing (it types into a field); `gesture: true` that the play does
+ * more than the drawing shows (types a reason after opening), said in its caption.
+ */
+export interface CanvasParameters {
+  open?: boolean;
+  gesture?: boolean;
+}
+
+/** The story opens its popup (`play`), unless its parameters say otherwise. */
+export const opens = (info: StoryInfo | undefined) =>
+  info?.play === true && info.canvas?.open !== false;
 
 export interface ComponentStories {
   name: string;
@@ -200,6 +217,7 @@ interface StoryExport {
   args?: Record<string, unknown>;
   play?: unknown;
   render?: unknown;
+  parameters?: { canvas?: CanvasParameters };
 }
 
 interface Element {
@@ -213,11 +231,14 @@ interface Element {
  * it returns, with its props, so a story that frames its component or draws one
  * part keeps its look. None when `render` only wraps state in a component of
  * the story's own (its args are then the story) or uses hooks outside React.
+ * A wrapper of the story's own given the meta component's props (Sidebar's
+ * phone drawer, which holds its open state) draws the meta component with them.
  */
 function drawnBy(
   render: unknown,
   args: Record<string, unknown>,
   names: Map<unknown, string>,
+  meta: { name: string | undefined; type: unknown },
 ): { name: string; type: unknown; props: Record<string, unknown> } | 'args' | undefined {
   if (typeof render !== 'function') return undefined;
   let root: unknown;
@@ -230,8 +251,12 @@ function drawnBy(
   // counter): the args are the story.
   const top = root as Element | null;
   const props = top?.props ?? {};
+  const own = typeof top?.type === 'function' && !names.get(top.type);
+  if (own && Object.keys(args).length === 0 && Object.keys(props).length > 0 && meta.name) {
+    return { name: meta.name, type: meta.type, props };
+  }
   if (Object.entries(args).every(([key, value]) => props[key] === value)) {
-    if (!names.get(top?.type)) return 'args';
+    if (own) return 'args';
   }
   const queue: unknown[] = [root];
   while (queue.length > 0) {
@@ -292,7 +317,10 @@ export async function readStories(
       const value = exported as StoryExport;
       const merged = { ...metaArgs, ...value.args };
       const where = `${name}.${story}`;
-      const result = drawnBy(value.render ?? meta.render, merged, names);
+      const result = drawnBy(value.render ?? meta.render, merged, names, {
+        name: metaName,
+        type: meta.component,
+      });
       const drawn = typeof result === 'object' ? result : undefined;
       const component = drawn?.name ?? metaName;
       const props = drawn?.props ?? merged;
@@ -304,6 +332,7 @@ export async function readStories(
         play: typeof value.play === 'function',
         render: typeof value.render === 'function' && result === undefined,
         ...(component && component !== name && { component }),
+        ...(value.parameters?.canvas && { canvas: value.parameters.canvas }),
       };
     }
     const states = [...(module.STATES ?? [])];

@@ -85,13 +85,20 @@ function Toast({
   item,
   closeLabel,
   onClose,
+  stays,
 }: {
   item: Item;
   closeLabel: string;
   onClose: (id: number) => void;
+  /** Until it is closed, whatever its tone. */
+  stays: boolean;
 }) {
   const duration =
-    item.tone === 'danger' ? null : item.action ? TOAST_DURATION.action : TOAST_DURATION[item.tone];
+    stays || item.tone === 'danger'
+      ? null
+      : item.action
+        ? TOAST_DURATION.action
+        : TOAST_DURATION[item.tone];
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const remaining = useRef(duration ?? 0);
@@ -154,17 +161,36 @@ export interface ToasterProps {
   closeLabel: string;
   /** How many show at once; the newest wins. The web shows three. */
   max?: number;
+  /** Toasts shown from the start, as if shown on mounting. */
+  toasts?: readonly ToastOptions[];
+  /**
+   * Draws the toasts where it is written instead of at the screen's corner,
+   * each staying until it is closed (the components canvas).
+   */
+  inline?: boolean;
   children: ReactNode;
 }
+
+const region = formTv({
+  base: 'pointer-events-none flex flex-col gap-xs',
+  variants: {
+    // Across the screen less md on each side, each toast at the end of it: a
+    // screen narrower than a toast keeps both margins (D.W3c).
+    inline: { false: 'fixed inset-x-md bottom-md z-(--fd-layer-toast)', true: '' },
+  },
+});
 
 /**
  * Holds the toasts of an app: at the bottom end corner (left in RTL), away
  * from the sidebar, up to three. A toast is announced in a polite live region,
  * a danger one in an assertive region; hover and focus pause its timer.
  */
-export function Toaster({ label, closeLabel, max = 3, children }: ToasterProps) {
-  const [items, setItems] = useState<Item[]>([]);
-  const next = useRef(0);
+export function Toaster(props: ToasterProps) {
+  const { label, closeLabel, max = 3, children, inline = false } = props;
+  const [items, setItems] = useState<Item[]>(() =>
+    (props.toasts ?? []).slice(-max).map((options, i) => ({ ...options, id: i + 1 })),
+  );
+  const next = useRef(items.length);
   const show = useCallback(
     (options: ToastOptions) => {
       next.current += 1;
@@ -194,19 +220,20 @@ export function Toaster({ label, closeLabel, max = 3, children }: ToasterProps) 
       {items
         .filter((item) => (item.tone === 'danger') === assertive)
         .map((item) => (
-          <Toast key={item.id} item={item} closeLabel={closeLabel} onClose={remove} />
+          <Toast
+            key={item.id}
+            item={item}
+            closeLabel={closeLabel}
+            onClose={remove}
+            stays={inline}
+          />
         ))}
     </ul>
   );
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <section
-        aria-label={label}
-        // Across the screen less md on each side, each toast at the end of
-        // it: a screen narrower than a toast keeps both margins (D.W3c).
-        className="pointer-events-none fixed inset-x-md bottom-md z-(--fd-layer-toast) flex flex-col gap-xs"
-      >
+      <section aria-label={label} className={region({ inline })}>
         {list(false)}
         {list(true)}
       </section>

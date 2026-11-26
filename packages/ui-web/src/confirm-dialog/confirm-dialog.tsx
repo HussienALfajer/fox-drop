@@ -6,11 +6,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@ui-sdk/react/alert-dialog';
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from '@ui-sdk/react/dialog';
 import { useId, useState, type ReactElement, type ReactNode } from 'react';
 import { buttonClasses } from '../button/button';
 import { formTv } from '../field/styles';
 import { Icon } from '../icon/icon';
-import { backdrop, closeButton, dialogPanel, header, title as titleClass } from '../overlay/styles';
+import {
+  backdrop,
+  closeButton,
+  dialogPanel,
+  header,
+  inlineFrame,
+  title as titleClass,
+} from '../overlay/styles';
 import { TextField } from '../text-field/text-field';
 
 /** The states the stories show (R3): empty, refused without a reason, filled. */
@@ -56,7 +71,31 @@ export interface ConfirmDialogProps {
   closeLabel: string;
   /** Runs with the reason, trimmed; a Promise keeps the dialog open until it settles. */
   onConfirm: (reason: string) => unknown;
+  /**
+   * Draws the open dialog and its scrim in a frame where it is written, beside
+   * the page (the components canvas): a plain dialog that neither blocks the
+   * page, traps focus nor takes focus on opening.
+   */
+  inline?: boolean;
 }
+
+/** The SDK parts: the alert dialog, or, inline, the plain non-modal dialog (as Dialog's). */
+const ALERT = {
+  Root: AlertDialog,
+  Backdrop: AlertDialogBackdrop,
+  Content: AlertDialogContent,
+  Title: AlertDialogTitle,
+  Close: AlertDialogClose,
+  Trigger: AlertDialogTrigger,
+};
+const BESIDE = {
+  Root: Dialog,
+  Backdrop: DialogBackdrop,
+  Content: DialogContent,
+  Title: DialogTitle,
+  Close: DialogClose,
+  Trigger: DialogTrigger,
+};
 
 /**
  * The confirmation of every destructive or financial action in the panel
@@ -96,24 +135,21 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     }
   };
   const showError = tried && reason.trim() === '';
-  return (
-    <AlertDialog
-      open={open}
-      // While the command runs nothing closes it, so it cannot settle twice.
-      dismissible={!pending}
-      onOpenChange={(next: boolean, details) => {
-        if (pending && !next) details.cancel();
-        else setOpen(next);
-      }}
-    >
-      {trigger && <AlertDialogTrigger render={trigger} />}
-      <AlertDialogBackdrop className={backdrop()} />
-      <AlertDialogContent className={dialogPanel()} initialFocus="[data-reason] input">
+  const inline = props.inline ?? false;
+  const P = inline ? BESIDE : ALERT;
+  const popup = (
+    <>
+      <P.Backdrop data-scrim="" className={backdrop({ inline })} />
+      <P.Content
+        inline={inline}
+        className={dialogPanel({ inline })}
+        initialFocus={inline ? 'none' : '[data-reason] input'}
+      >
         <div className={header()}>
-          <AlertDialogTitle className={titleClass()}>{title}</AlertDialogTitle>
-          <AlertDialogClose className={closeButton()} aria-label={closeLabel}>
+          <P.Title className={titleClass()}>{title}</P.Title>
+          <P.Close className={closeButton()} aria-label={closeLabel}>
             <Icon name="close" />
-          </AlertDialogClose>
+          </P.Close>
         </div>
         <div data-reason="">
           <TextField
@@ -155,11 +191,24 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           >
             {confirmLabel}
           </button>
-          <AlertDialogClose className={buttonClasses('secondary', 'compact')}>
-            {cancelLabel}
-          </AlertDialogClose>
+          <P.Close className={buttonClasses('secondary', 'compact')}>{cancelLabel}</P.Close>
         </div>
-      </AlertDialogContent>
-    </AlertDialog>
+      </P.Content>
+    </>
+  );
+  return (
+    <P.Root
+      open={open}
+      // While the command runs nothing closes it, so it cannot settle twice.
+      dismissible={!pending}
+      onOpenChange={(next: boolean, details: { cancel: () => void }) => {
+        if (pending && !next) details.cancel();
+        else setOpen(next);
+      }}
+      {...(inline && { modal: false, closeOnOutsidePress: false })}
+    >
+      {trigger && <P.Trigger render={trigger} />}
+      {inline ? <div className={inlineFrame()}>{popup}</div> : popup}
+    </P.Root>
   );
 }

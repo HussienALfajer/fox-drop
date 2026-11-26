@@ -222,6 +222,10 @@ interface PhoneFieldProps {
   required?: boolean;
   disabled?: boolean;
   density?: Density;
+  /** The country list, open. */
+  open?: boolean;
+  /** The open list under the field, in the page's flow (the components canvas). */
+  inline?: boolean;
 }
 
 interface CodeFieldProps {
@@ -256,6 +260,11 @@ interface CountrySheetProps {
   defaultQuery?: string;
   /** The button that opens the list: a CountrySheet.Trigger. */
   children: ReactNode;
+  open?: boolean;
+  /** The open list in the page's flow, its search unfocused (the components canvas). */
+  inline?: boolean;
+  /** Where the inline list draws, when not under its trigger. */
+  container?: HTMLElement | null;
 }
 
 interface DateFieldProps {
@@ -277,6 +286,10 @@ interface DateFieldProps {
   name?: string;
   required?: boolean;
   disabled?: boolean;
+  /** The calendar, open. */
+  open?: boolean;
+  /** The open calendar under the field, in the page's flow (the components canvas). */
+  inline?: boolean;
 }
 
 interface TimeFieldProps {
@@ -394,6 +407,9 @@ interface SelectProps {
   required?: boolean;
   disabled?: boolean;
   density?: Density;
+  open?: boolean;
+  /** The open list under the field, in the page's flow (the components canvas). */
+  inline?: boolean;
 }
 
 interface CheckboxProps {
@@ -735,6 +751,8 @@ interface BlockingBannerProps {
   actionLabel: string;
   /** Runs inside the press, so the browser lets audio start. */
   onEnable: () => void;
+  /** In its frame with its scrim instead of over the page (the components canvas). */
+  inline?: boolean;
 }
 
 interface DialogProps {
@@ -776,6 +794,8 @@ interface ConfirmDialogProps {
   closeLabel: string;
   /** Receives the reason, trimmed. */
   onConfirm: (reason: string) => unknown;
+  /** Open, it stays in its frame with its scrim instead of over the page (the components canvas). */
+  inline?: boolean;
 }
 
 interface DrawerProps {
@@ -788,6 +808,8 @@ interface DrawerProps {
   side?: 'start' | 'end';
   headerAction?: ReactNode;
   children: ReactNode;
+  /** Open, it stays in its frame with its scrim, at its side (the components canvas). */
+  inline?: boolean;
 }
 
 type ToastTone = 'success' | 'info' | 'warning' | 'danger';
@@ -804,6 +826,10 @@ interface ToasterProps {
   closeLabel: string;
   /** How many show at once. Default 3. */
   max?: number;
+  /** Toasts shown from the start. */
+  toasts?: ToastOptions[];
+  /** The toasts where it is written, each until closed, not at the screen's corner (the components canvas). */
+  inline?: boolean;
   children: ReactNode;
 }
 
@@ -823,6 +849,9 @@ interface MenuProps {
   /** Actions and 'separator'. */
   items: (MenuAction | 'separator')[];
   density?: Density;
+  open?: boolean;
+  /** The open list under its trigger, in the page's flow (the components canvas). */
+  inline?: boolean;
 }
 
 interface TooltipProps {
@@ -830,6 +859,10 @@ interface TooltipProps {
   /** A button or a link with a name of its own. */
   children: ReactNode;
   side?: 'top' | 'bottom' | 'start' | 'end';
+  /** Shown. */
+  open?: boolean;
+  /** Shown under its trigger, in the page's flow (the components canvas). */
+  inline?: boolean;
 }
 
 interface TabItem {
@@ -899,6 +932,8 @@ interface SidebarProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   closeLabel?: string;
+  /** The open drawer in its frame (the components canvas). */
+  inline?: boolean;
 }
 
 interface RestaurantBarProps {

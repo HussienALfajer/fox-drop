@@ -16,6 +16,7 @@ import { useId } from 'react';
 import { Field } from '../field/field';
 import { box, boxState, formTv } from '../field/styles';
 import { Icon } from '../icon/icon';
+import { IN_FLOW, useInFlow } from '../overlay/in-flow';
 import { SIDE_OFFSET } from '../select/menu';
 
 /** The states the stories show (R3), the Flutter twin's and the open calendar. */
@@ -106,6 +107,13 @@ export interface DateFieldProps {
   name?: string;
   required?: boolean;
   disabled?: boolean;
+  /** The calendar, open. */
+  open?: boolean;
+  /**
+   * Draws the open calendar under the field in the page's flow, beside the
+   * page (the components canvas).
+   */
+  inline?: boolean;
 }
 
 /** The pill that opens the calendar, the field's control. */
@@ -158,7 +166,9 @@ function Trigger({
  */
 export function DateField(props: DateFieldProps) {
   const { label, optionalLabel, hint, error, placeholder, onValueChange } = props;
-  const { value, defaultValue, min, max, today, name, required, disabled } = props;
+  const { value, defaultValue, min, max, today, name, required, disabled, open } = props;
+  const inline = props.inline ?? false;
+  const inFlow = useInFlow(inline);
   return (
     <Field
       label={label}
@@ -182,6 +192,7 @@ export function DateField(props: DateFieldProps) {
         {...(today && { today })}
         {...(required && { required })}
         {...(disabled && { disabled })}
+        {...(open !== undefined && { open })}
       >
         {(state: { value: unknown }) => (
           <>
@@ -192,10 +203,12 @@ export function DateField(props: DateFieldProps) {
               disabled={!!disabled}
             />
             <DatePickerContent
+              ref={inFlow}
               sideOffset={SIDE_OFFSET}
               align="start"
               dir="rtl"
-              className={parts.content()}
+              className={parts.content({ class: inline && IN_FLOW })}
+              {...(inline && { initialFocus: 'none' as const })}
             >
               <div className={parts.header()}>
                 <CalendarPrevious aria-label={props.previousLabel} className={parts.step()}>

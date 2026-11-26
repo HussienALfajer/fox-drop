@@ -1,6 +1,7 @@
 import { SelectContent, SelectItem, SelectItemIndicator } from '@ui-sdk/react/select';
 import { formTv } from '../field/styles';
 import { Icon } from '../icon/icon';
+import { IN_FLOW, useInFlow } from '../overlay/in-flow';
 
 // The listbox drawn on the sheet (`listbox()` in design-tokens
 // `src/forms-sheet.ts`): the field's width, `surface-raised`, radius 15, padding
@@ -37,10 +38,21 @@ export const SIDE_OFFSET = 4;
 /**
  * The popup list of a select and of the phone field's country chip. Internal.
  */
-export function Menu({ items, dir }: { items: readonly MenuItem[]; dir?: 'rtl' | 'ltr' }) {
+export function Menu({
+  items,
+  dir,
+  inline = false,
+}: {
+  items: readonly MenuItem[];
+  dir?: 'rtl' | 'ltr';
+  /** In the page's flow under the field (the components canvas). */
+  inline?: boolean;
+}) {
+  const inFlow = useInFlow(inline);
   return (
     <SelectContent
-      className={content()}
+      ref={inFlow}
+      className={content({ class: inline && IN_FLOW })}
       sideOffset={SIDE_OFFSET}
       align="start"
       {...(dir && { dir })}

@@ -45,6 +45,13 @@ export interface SelectProps {
   required?: boolean;
   disabled?: boolean;
   density?: Density;
+  /** Open. */
+  open?: boolean;
+  /**
+   * Draws the open list under the field in the page's flow, beside the page
+   * (the components canvas): it does not block the page; with `open` it stays open.
+   */
+  inline?: boolean;
 }
 
 /**
@@ -54,6 +61,7 @@ export interface SelectProps {
 export function Select(props: SelectProps) {
   const { label, optionalLabel, hint, error, placeholder, items, density } = props;
   const { value: selected, defaultValue, onValueChange, name, required, disabled } = props;
+  const { open, inline = false } = props;
   const list: MenuItem[] = items.map(({ value: itemValue, label: itemLabel, disabled: off }) => ({
     value: itemValue,
     label: itemLabel,
@@ -80,6 +88,8 @@ export function Select(props: SelectProps) {
           },
         })}
         {...(required && { required })}
+        {...(open !== undefined && { open })}
+        {...(inline && { modal: false })}
       >
         <SelectTrigger
           className={trigger({
@@ -93,7 +103,7 @@ export function Select(props: SelectProps) {
             <Icon name="chevron-down" size={density === 'compact' ? 'sm' : 'md'} />
           </span>
         </SelectTrigger>
-        <Menu items={list} />
+        <Menu items={list} inline={inline} />
       </SdkSelect>
     </Field>
   );

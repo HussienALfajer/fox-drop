@@ -23,7 +23,7 @@ const measure = flags.includes('--measure');
 // --shots <dir>: a picture of each board at its Tweaks, for the owner (outside the repository).
 const shotsAt = flags.indexOf('--shots');
 const shots = shotsAt === -1 ? undefined : flags[shotsAt + 1];
-const only = flags.filter((f, i) => !f.startsWith('--') && i !== shotsAt + 1);
+const only = flags.filter((f, i) => !f.startsWith('--') && (shotsAt === -1 || i !== shotsAt + 1));
 
 /** .fonts/ of this checkout, or of the main one from a worktree (never committed). */
 function fontsDir(): string {

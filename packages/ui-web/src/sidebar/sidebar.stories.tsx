@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type ReactNode } from 'react';
 import { Button } from '../button/button';
-import { Sidebar, type SidebarItem } from './sidebar';
+import { Sidebar, type SidebarItem, type SidebarProps } from './sidebar';
 
 // AP §7.1: the panel's sixteen modules; a module without an icon in batch 1
 // shows a dot until the panel's icon batch (owner, 2026-11-24).
@@ -66,7 +66,10 @@ export const Portal: Story = {
   render: () => frame(<Sidebar {...base} items={portal} current="#menu" />),
 };
 
-function PhoneDrawer() {
+type DrawerForm = Extract<SidebarProps, { form: 'drawer' }>;
+
+// The drawer's props are the story's, so the components canvas draws it with them.
+function PhoneDrawer(props: Omit<DrawerForm, 'open' | 'onOpenChange'>) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -77,21 +80,16 @@ function PhoneDrawer() {
         label="القائمة"
         onClick={() => setOpen(true)}
       />
-      <Sidebar
-        {...base}
-        items={modules.slice(0, 8)}
-        form="drawer"
-        open={open}
-        onOpenChange={setOpen}
-        closeLabel="إغلاق"
-      />
+      <Sidebar {...props} open={open} onOpenChange={setOpen} />
     </>
   );
 }
 
 // Below the tablet width: a popup never starts open, so the story presses the menu button.
 export const Drawer: Story = {
-  render: () => <PhoneDrawer />,
+  render: () => (
+    <PhoneDrawer {...base} items={modules.slice(0, 8)} form="drawer" closeLabel="إغلاق" />
+  ),
   play: ({ canvasElement }) => {
     canvasElement.querySelector<HTMLButtonElement>('button')!.click();
   },

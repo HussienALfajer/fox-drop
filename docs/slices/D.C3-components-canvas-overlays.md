@@ -20,9 +20,17 @@ Files (hand-written count, about 18): web 12 (`src/{confirm-dialog,drawer,menu,s
 
 Tests written first (locked in the red phase): `test/inline-overlays.test.tsx` — each popup with `inline` and open renders inside its container, not at `document.body`, and keeps its name and role; `test/components-canvas.test.ts` — all 54 components have a board, each open state is drawn open.
 
+## Plan as built (refined 2026-11-27)
+
+- **Spike first (anchored popups):** a jsdom test rendered Menu, Select, Tooltip, Combobox and DatePicker content with `open`, `modal={false}` and `inline` (and `container`): every one still got `popover="manual"` and `position: fixed` from its trigger (the SDK reads `inline` only for its dialogs), so the popup took no room. Chosen: draw it in flow, `src/overlay/in-flow.ts` (a ref that removes the `popover` attribute each time the SDK sets it, `!important` classes over the SDK's placement styles, a frame stacking trigger and popup). Checked in Chromium on the Menu board before the rest.
+- **Toaster:** a `toasts` prop (shown from the start) plus `inline`, not the SDK's toast parts (`Toaster` does not use them); the stories pass `toasts` as args instead of a `play`.
+- **Generator:** `inline` on every copy of a component that has it (the playground too); a `play` story drawn open unless `parameters.canvas.open` is false; `parameters.canvas.gesture` captions a state finished by typing. Sidebar's phone-drawer story passes the Sidebar's props to its wrapper so the board can read them.
+- **Files beyond the plan:** `src/overlay/in-flow.ts`, `src/blocking-banner/*`, `scripts/components-canvas/{board,playground,stories,canvas,check}.ts`, the stories of ConfirmDialog, PhoneField, Toaster and Sidebar. The test moved to `src/overlay/inline.test.tsx` (vitest takes `.tsx` tests only under `src/`).
+- **A locked test corrected:** the two Toaster cases of `inline.test.tsx` advanced fake timers outside `act`, so React never applied the timer's removal (the existing Toaster tests wrap it in `act`); after the component passed every other case, the file was unlocked, both advances wrapped in `act`, and locked again. No assertion changed.
+
 ## Stopped at
 
-Planned.
+Built; canvas being measured and checked.
 
 ## Evidence
 
