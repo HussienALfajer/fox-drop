@@ -9,7 +9,8 @@ export const STATES = ['default', 'hover', 'focus', 'filled', 'invalid', 'disabl
 
 const segment = formTv({
   base: [
-    'rounded-xs bg-transparent px-2xs text-center tabular-nums outline-hidden',
+    // As wide as its text, so the run reads `03:05 م` as the Flutter twin's.
+    'field-sizing-content rounded-xs bg-transparent text-center outline-hidden',
     'focus:bg-(--fd-date-field-color-segment) data-empty:text-(color:--fd-input-color-placeholder)',
     'disabled:cursor-not-allowed disabled:text-(color:--fd-input-color-on-disabled)',
   ],

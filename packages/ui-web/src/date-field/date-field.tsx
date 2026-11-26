@@ -130,14 +130,15 @@ function Trigger({
       className={trigger({ state: boxState(disabled, invalid), class: 'group' })}
     >
       <Icon name="calendar" />
-      {/* Digits and slashes keep their order in Arabic. */}
+      {/* Digits and slashes keep their order in Arabic, from the left, as
+          the Flutter twin shows them (no tabular figures: they space the slashes). */}
       <span
         id={valueId}
         dir={shown ? 'ltr' : undefined}
         className={formTv({
-          base: 'min-w-none flex-1 truncate text-end tabular-nums',
+          base: 'min-w-none flex-1 truncate text-start',
           variants: {
-            empty: { true: 'text-start text-(color:--fd-input-color-placeholder)' },
+            empty: { true: 'text-(color:--fd-input-color-placeholder)' },
           },
         })({ empty: !shown })}
       >

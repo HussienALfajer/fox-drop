@@ -2,6 +2,12 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.17.0 (2026-11-26, slice D.W4a: web date, time, country sheet and code preview)
+
+- New file `date-field.json`, read by the web `date-field` and `time-field` and the Flutter `date_field` (the pickers' theme): `popup.radius` (`radius.lg`), `color.popup-background` (`surface-raised`), `color.today`, `color.day-selected` (`primary`), `color.on-day-selected` (`on-primary`) and `color.segment` (`surface`, the time boxes); web only `popup.padding` (`space.sm`), `popup.gap` (`space.xs`), `day.size` (`size.touch-target`), `color.day-hover` (`surface-hover`) and `color.day-outside` (`on-surface-muted`).
+- New file `country-sheet.json`, read by the web `country-sheet` and the Flutter `phone_field`: `row-height` (`size.touch-target`), `section-gap` (`space.sm`), `empty-padding-block` (`space.lg`), `color.code` and `color.empty` (`on-surface-muted`); web only `width` (`size.dialog`).
+- New file `code-preview.json`, read by the web `code-preview` and the Flutter `code_preview`: `avatar-size` (`size.icon-lg`), `mark-scale` (0.62, a `number`), `gap` (`space.xs`), `line-gap` (`space.2xs`), `bubble.radius` (`radius.lg`), `bubble.radius-tail` (`radius.xs`), `bubble.padding-inline` (`space.sm`), `bubble.padding-block` (`space.xs`), `color.avatar` (`primary`), `color.bubble` (`info-subtle`), `color.code` (`primary-pressed`) and `color.time` (`on-surface-muted`). Every value is the one the Flutter twin wrote by hand: no Flutter look changes.
+
 ## 0.16.0 (2026-11-26, slice D.W3b: data display on component tokens)
 
 - New component files, each read on both sides unless a token says `sides`: `money`, `status-chip`, `count-badge`, `card`, `list-row`, `amounts-summary`, `skeleton`, `empty-state`, `drop-loader` (ui-web and core_ui), and `data-table` (web only: every token `sides: ["web"]`, no Flutter folder). Values are the ones either side used, except the parity gaps below.

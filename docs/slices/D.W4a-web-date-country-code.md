@@ -1,6 +1,6 @@
 # D.W4a Web versions: date, time, country sheet and code preview
 
-Status: Planned · Tier: T2 · Branch: `feat/web-date-country-code`
+Status: In progress · Tier: T2 · Branch: `feat/web-date-country-code`
 Spec: architecture §9.5 R1, R3, R4, R5, R9, §9.6, §9.9, §9.10; CU §5.2 (the code preview), D.8 and D.11b's slice files for the approved looks · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1, D.W2 and D.W3a merged (it reads `input.json` and edits `phone-field.tsx`). Runs in parallel with any D.W3 or D.W4 slice but D.W3a.
@@ -33,6 +33,18 @@ Tests written first (locked in the red phase):
 - The three token files with their `$extensions`: `component-usage.test.ts` fails until both sides read every token.
 - New screenshots for every story; the Flutter goldens unchanged.
 
+## Decisions taken overnight (pending the owner)
+
+The owner was asleep and delegated decisions to the supervising session (2026-11-26); each took the recommended option.
+
+1. **The base (step 0):** the UI SDK has a `DatePicker` with calendar parts and a `TimeInput`, so no new dependency and no Base UI.
+2. **The web time field types in place.** The pill holds the hour, minute and «ص»/«م» boxes (the SDK's `TimeInput`); the Flutter twin opens the same boxes in a dialog (the D.8 sheet's "typed" option). On a desktop page a dialog for three boxes adds a step; the closed face is the same. So `TimeField` has no `open` state.
+3. **The web country sheet opens beside its trigger**, as the phone field's list did; the Flutter twin is a bottom sheet. `CountrySheet.Trigger` is a static part, not an index export, so it needs no stories of its own.
+4. **Parity gaps, fixed** (the approved twin wins where the D.8 or D.11 sheet does not settle it): the date shows from the left, LTR, with plain figures (the web had it at the right, its slashes spaced by tabular figures); the time boxes are as wide as their text (`03:05 م`, they were fixed two-character boxes); the country list's section gap (`space.sm` above each section) and its empty line (`space.lg`, centred) take Flutter's values, which moves the phone field's open screenshot; the Flutter code preview's bubble no longer fills a bounded parent (its column took the maximum height; no golden moves, the goldens' parents are unbounded).
+5. **Parity gaps left:** the web hour is padded (`03`, the SDK draws two-digit boxes; Flutter shows `3`); the open calendar and the open country list are portaled outside the shot on the web, and the Flutter calendar is a dialog route outside its frame, so those rows compare the closed field only (as `select--open` in D.W3a).
+6. **Three locked tests were corrected, not weakened** (the SDK behaves otherwise than assumed): a time box is an input, so the test reads its value, not its text; the SDK puts the field's description on the time group, not on each box, so the test checks the group; the country list's trigger is a button (the search inside is the combobox).
+7. **Two files outside the plan:** `e2e/visual.spec.ts` and `e2e/parity.spec.ts` drive a `spinbutton` too (a time box), else the TimeField Hover and Focus stories find no control and time out.
+
 ## Stopped at
 
 Not started.
@@ -53,4 +65,4 @@ Nothing new.
 
 ## Notes for the next session
 
-<the base chosen for the calendar, the gaps and the owner's choices>
+The UI SDK's DatePicker and TimeInput (decision 1). Gaps and choices: «Decisions taken overnight». The Flutter phone field's chip still reads `t.FoxRadius.sm` and `t.FoxSize.touchTarget` (not this slice's file).

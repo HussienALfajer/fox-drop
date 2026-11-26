@@ -117,6 +117,13 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 - Gaps fixed: the status chip is at least `minHeight` with the label centred (was its text plus 4 above and below); the count badge is offset by `offset` (12), the dot by `dotOffset` (4); the list row keeps one `gap` before the chevron; the summary's equivalents sit one `gap` under the total; the empty state's drop is `artSize` (120, was 128) with one `gap` between drop, title, line and action (was 12, 4, 16), the edge `artEdgeWidth` wide.
 - `test/parity/data_parity_test.dart`: the cases of the nine twins, with each story's arguments; the web-only densities have none.
 
+## Date, time, country sheet and code preview on component tokens (D.W4a)
+
+- `pickerHost` (in `fox_date_field.dart`) adds `_PickerTheme` under `MaterialScope`: the date and time pickers' background, corner, today, selected day and time boxes come from `components.dateField`, with Material's own state rules (selected, disabled at 38%) restated so nothing moves. `fox_time_field.dart` is unchanged (it opens through `pickerHost`).
+- `FoxCountrySheet` reads `components.countrySheet` (section gap, empty padding, code and empty colours, a 48 minimum row); `FoxCodePreview` reads `components.codePreview` for every size, corner and colour, the mark at `avatarSize * markScale` (the same 19.84). Same values: no golden moves.
+- `test/parity/sign_in_forms_parity_test.dart`: one case per DateField, TimeField, CountrySheet and CodePreview story; none for `datefield--open` (the calendar is a dialog route, outside the frame). The country cases use the test regions of `phone_harness.dart`.
+- Still on semantic tokens, in `fox_phone_field.dart` (not this slice's file): the chip's ring radius and 48 height.
+
 ## Left out
 
 Wiring into the apps and bundling CoFo there (each app's screen slice, which also adds the app to `enforcedPackages`); compact density in Flutter; dark mode; the fox scenes inside the empty state's drop; Cupertino localizations for the iOS text toolbar (apps provide them); a hosted widgetbook.

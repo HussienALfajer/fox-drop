@@ -79,7 +79,10 @@ class FoxCodePreview extends StatelessWidget {
                     horizontal: codePreview.bubblePaddingInline,
                     vertical: codePreview.bubblePaddingBlock,
                   ),
+                  // As tall as its lines: in a bounded parent it filled it
+                  // (the parity sheet, D.W4a).
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (!compact) ...[
