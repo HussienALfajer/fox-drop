@@ -1,0 +1,37 @@
+{
+  "country-sheet": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["country-sheet"], "flutter": ["phone_field"] }
+    },
+    "width": {
+      "$type": "dimension",
+      "$value": "{size.dialog}",
+      "$description": "The web list's popup; in Flutter the bottom sheet spans the screen.",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "row-height": {
+      "$type": "dimension",
+      "$value": "{size.touch-target}"
+    },
+    "section-gap": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$description": "Above each section's title."
+    },
+    "empty-padding-block": {
+      "$type": "dimension",
+      "$value": "{space.lg}",
+      "$description": "Above and below «لا دولة بهذا الاسم أو الرمز»."
+    },
+    "color": {
+      "$type": "color",
+      "code": {
+        "$value": "{color.on-surface-muted}",
+        "$description": "The calling code after each name."
+      },
+      "empty": {
+        "$value": "{color.on-surface-muted}"
+      }
+    }
+  }
+}

@@ -75,7 +75,7 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 6. **Web-only files** (`blocking-banner`, `tooltip`, `drawer`) declare `"flutter": []` and mark every token `sides: ["web"]`, as D.W3b's `data-table`.
 7. **Tests that named the old classes follow the change:** `icon/icon.test.tsx`, `button/button.test.tsx`, `field/field.test.tsx` (`--fd-icon-size-*`) and `test/design-system.test.ts` (`--fd-dialog-width`); `test/icon_test.dart` reads the sizes from the icon tokens (`FoxIconSize.pixels` is gone: no app used it).
 8. **Component tokens reuse a semantic token of the same value:** `menu.min-width` is `size.tooltip` (240, the sheet's menu and tooltip width), `banner.stack.toggle-height` is `size.step` (32), `dialog.confirm.chip-height` is `space.lg` (24), rather than new semantic sizes; `size.menu-min-width` (192) is no longer read. A later retune of one of those semantic tokens moves these too (review, D.W3c).
-9. **The version is 0.17.0:** D.W3b merged first with 0.16.0; main was merged into the branch (force pushes are refused), the outputs regenerated.
+9. **The version is 0.18.0:** D.W3b (0.16.0) and D.W4a (0.17.0) merged first; main was merged into the branch each time (force pushes are refused), the shared append-only files kept both sides and the outputs were regenerated.
 
 ## Stopped at
 

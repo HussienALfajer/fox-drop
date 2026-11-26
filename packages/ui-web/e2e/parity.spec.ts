@@ -53,6 +53,8 @@ for (const surface of surfaces)
         .or(page.getByRole('checkbox'))
         .or(page.getByRole('switch'))
         .or(page.getByRole('radio'))
+        // The time field's boxes.
+        .or(page.getByRole('spinbutton'))
         .first();
       if (story.name.endsWith('Hover')) await control.hover();
       if (story.name.endsWith('Focus')) {

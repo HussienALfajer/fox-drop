@@ -1,0 +1,71 @@
+{
+  "date-field": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["date-field", "time-field"], "flutter": ["date_field"] }
+    },
+    "popup": {
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.lg}",
+        "$description": "The calendar's popup on the web, the picker's dialog in Flutter."
+      },
+      "padding": {
+        "$type": "dimension",
+        "$value": "{space.sm}",
+        "$description": "Around the web calendar; the Flutter dialog keeps Material's layout.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{space.xs}",
+        "$description": "Between the web calendar's heading row and its grid.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
+    "segment": {
+      "min-size": {
+        "$type": "dimension",
+        "$value": "{size.selection}",
+        "$description": "A web time box's least width and height, the WCAG 2.2 target (24); Flutter's boxes are Material's.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
+    "day": {
+      "size": {
+        "$type": "dimension",
+        "$value": "{size.touch-target}",
+        "$description": "A web day's square, one touch target; Flutter's grid is Material's.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
+    "color": {
+      "$type": "color",
+      "popup-background": {
+        "$value": "{color.surface-raised}"
+      },
+      "today": {
+        "$value": "{color.primary}",
+        "$description": "Today's number and its ring."
+      },
+      "day-selected": {
+        "$value": "{color.primary}"
+      },
+      "on-day-selected": {
+        "$value": "{color.on-primary}"
+      },
+      "day-hover": {
+        "$value": "{color.surface-hover}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "day-outside": {
+        "$value": "{color.on-surface-muted}",
+        "$description": "The days of the months around, and the weekday names.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "segment": {
+        "$value": "{color.surface}",
+        "$description": "Behind a time's hour, minute and «ص»/«م»: the web's focused segment, the Flutter dialog's boxes."
+      }
+    }
+  }
+}

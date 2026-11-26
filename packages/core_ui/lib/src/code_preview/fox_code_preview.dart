@@ -1,4 +1,3 @@
-import 'package:core_tokens/core_tokens.dart' as t;
 import 'package:flutter/widgets.dart';
 
 import '../internal/brand_mark.dart';
@@ -39,7 +38,7 @@ class FoxCodePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final codePreview = theme.components.codePreview;
     return Semantics(
       container: true,
       label: semanticLabel,
@@ -49,38 +48,41 @@ class FoxCodePreview extends StatelessWidget {
           children: [
             DecoratedBox(
               decoration: BoxDecoration(
-                color: c.primary,
+                color: Color(codePreview.colorAvatar),
                 shape: BoxShape.circle,
               ),
-              child: const SizedBox.square(
-                dimension: t.FoxSize.iconLg,
+              child: SizedBox.square(
+                dimension: codePreview.avatarSize,
                 child: Center(
-                  // The mark at 62% of the circle, as drawn.
+                  // The mark's share of the circle, as drawn.
                   child: BrandMark(
-                    size: t.FoxSize.iconLg * 0.62,
+                    size: codePreview.avatarSize * codePreview.markScale,
                     onPrimary: true,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: t.FoxSpace.xs),
+            SizedBox(width: codePreview.gap),
             Expanded(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: c.infoSubtle,
-                  borderRadius: const BorderRadiusDirectional.only(
-                    topStart: Radius.circular(t.FoxRadius.lg),
-                    topEnd: Radius.circular(t.FoxRadius.lg),
-                    bottomEnd: Radius.circular(t.FoxRadius.lg),
-                    bottomStart: Radius.circular(t.FoxRadius.xs),
+                  color: Color(codePreview.colorBubble),
+                  borderRadius: BorderRadiusDirectional.only(
+                    topStart: Radius.circular(codePreview.bubbleRadius),
+                    topEnd: Radius.circular(codePreview.bubbleRadius),
+                    bottomEnd: Radius.circular(codePreview.bubbleRadius),
+                    bottomStart: Radius.circular(codePreview.bubbleRadiusTail),
                   ).resolve(Directionality.of(context)),
                 ),
                 child: Padding(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: t.FoxSpace.sm,
-                    vertical: t.FoxSpace.xs,
+                  padding: EdgeInsetsDirectional.symmetric(
+                    horizontal: codePreview.bubblePaddingInline,
+                    vertical: codePreview.bubblePaddingBlock,
                   ),
+                  // As tall as its lines: in a bounded parent it filled it
+                  // (the parity sheet, D.W4a).
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (!compact) ...[
@@ -90,7 +92,7 @@ class FoxCodePreview extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: t.FoxSpace.xxs),
+                        SizedBox(height: codePreview.lineGap),
                       ],
                       Text.rich(
                         TextSpan(
@@ -100,20 +102,20 @@ class FoxCodePreview extends StatelessWidget {
                               text: mask,
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
-                                color: c.primaryPressed,
+                                color: Color(codePreview.colorCode),
                               ),
                             ),
                           ],
                         ),
                         style: theme.text.secondary,
                       ),
-                      const SizedBox(height: t.FoxSpace.xxs),
+                      SizedBox(height: codePreview.lineGap),
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
                         child: Text(
                           time,
                           style: theme.text.caption.copyWith(
-                            color: c.onSurfaceMuted,
+                            color: Color(codePreview.colorTime),
                           ),
                         ),
                       ),

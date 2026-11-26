@@ -240,6 +240,70 @@ interface CodeFieldProps {
   disabled?: boolean;
 }
 
+interface CountrySheetProps {
+  /** ISO code, such as 'SY'. */
+  value: string;
+  onValueChange: (country: string) => void;
+  /** Listed after Syria and Turkey. */
+  lastUsed?: string;
+  searchLabel: string;
+  pinnedLabel: string;
+  lastUsedLabel: string;
+  allLabel: string;
+  emptyLabel: string;
+  disabled?: boolean;
+  /** The search already typed. */
+  defaultQuery?: string;
+  /** The button that opens the list: a CountrySheet.Trigger. */
+  children: ReactNode;
+}
+
+interface DateFieldProps {
+  label: string;
+  optionalLabel?: string;
+  hint?: string;
+  error?: string;
+  placeholder?: string;
+  /** ISO 'YYYY-MM-DD', or null. Shown as dd/mm/yyyy. */
+  value?: string | null;
+  defaultValue?: string | null;
+  onValueChange?: (value: string | null) => void;
+  min?: string;
+  max?: string;
+  previousLabel: string;
+  nextLabel: string;
+  /** ISO; the browser's by default. */
+  today?: string;
+  name?: string;
+  required?: boolean;
+  disabled?: boolean;
+}
+
+interface TimeFieldProps {
+  label: string;
+  optionalLabel?: string;
+  hint?: string;
+  error?: string;
+  /** 'HH:mm', 24-hour, or null. Shown 12-hour with «ص» and «م». */
+  value?: string | null;
+  defaultValue?: string | null;
+  onValueChange?: (value: string | null) => void;
+  name?: string;
+  required?: boolean;
+  disabled?: boolean;
+}
+
+interface CodePreviewProps {
+  sender: string;
+  /** The words before the code; the code itself is never shown, six dots stand in. */
+  message: string;
+  time: string;
+  /** Read once, for the whole preview. */
+  label: string;
+  /** The keyboard is up: no sender line. */
+  compact?: boolean;
+}
+
 type SelectItem = Record<'value' | 'label', string>;
 
 interface SelectProps {

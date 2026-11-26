@@ -124,6 +124,13 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 - Left, pending the owner: the dialog's × keeps its full 48 target inside the padding (the web pulls it into the padding, so the web title sits closer to the body); the confirm button looks enabled before a reason is written (the web and the sheet grey it while it still shows the error on a press: `FoxButton` has no such state); the toast is 56 high (its × keeps a 48 target; the web's is 32); the toaster shows one toast at a time (the web up to three); no compact density.
 - `test/parity/overlays_parity_test.dart`: Dialog, ConfirmDialog, Toaster, Banner, BannerStack, Menu, Tabs and Icon, one case per story they can show; an open dialog or toast is its panel in the frame, an open menu opens over an `Overlay` of its own under its trigger.
 
+## Date, time, country sheet and code preview on component tokens (D.W4a)
+
+- `pickerHost` (in `fox_date_field.dart`) adds `_PickerTheme` under `MaterialScope`: the date and time pickers' background, corner, today, selected day and time boxes come from `components.dateField`, with Material's own state rules (selected, disabled at 38%) restated. One visible fix: a selected today drew its number in the accent on the accent fill (`todayForegroundColor` was one colour for every state); it now takes `on-day-selected`, and a disabled today is at 38%. No golden opens the picker. `fox_time_field.dart` is unchanged (it opens through `pickerHost`).
+- `FoxCountrySheet` reads `components.countrySheet` (section gap, empty padding, code and empty colours, a 48 minimum row); `FoxCodePreview` reads `components.codePreview` for every size, corner and colour, the mark at `avatarSize * markScale` (the same 19.84). Same values: no golden moves.
+- `test/parity/sign_in_forms_parity_test.dart`: one case per DateField, TimeField, CountrySheet and CodePreview story; none for `datefield--open` (the calendar is a dialog route, outside the frame). The country cases use the test regions of `phone_harness.dart`.
+- Still on semantic tokens, in `fox_phone_field.dart` (not this slice's file): the chip's ring radius and 48 height.
+
 ## Left out
 
 Wiring into the apps and bundling CoFo there (each app's screen slice, which also adds the app to `enforcedPackages`); compact density in Flutter; dark mode; the fox scenes inside the empty state's drop; Cupertino localizations for the iOS text toolbar (apps provide them); a hosted widgetbook.
