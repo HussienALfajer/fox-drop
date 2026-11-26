@@ -43,7 +43,7 @@ Tests written first (locked in the red phase):
 
 ## Stopped at
 
-Planned.
+Built: the generator, the check and the five boards written, measured and checked (0 problems in 41 combinations); the unit tests pass. Next: `--changed`, review, publish for the owner's look.
 
 ## Evidence
 
@@ -63,3 +63,10 @@ Nothing new.
 ## Notes for the next session
 
 - The approved brief is the source for the design; do not re-ask its decisions.
+- **Spike (a), open overlay:** Dialog with `open` and `inline` mounted through the bundle under React 18 UMD (the check's page, as the canvas) opens inside its cell with its scrim, beside its closed trigger, with no error; the AlertDialog is always modal, yet the controls around it stay usable (unit test: nothing outside is `inert` or `aria-hidden`). To confirm in Play on the canvas itself.
+- **Spike (b), stories in Node:** Vite's `ssrLoadModule` reads every component's module and stories in about 14 s; 53 of 54 at once, DataTable's `selection` (a `Set`) now carried as `{ $set }`.
+- **The system's files:** the Design System has `components/bundle.{js,css}` and `tokens.json`, no `tokens.css`: its `bundle.css` carries the `--fd-*` variables (`scripts/bundle.css`), so boards link the bundle only.
+- **States sheets:** Shifa's frames multiply each rule about 26 times (962 KB for every rule); the boards use only `data-pseudo-outer`, so a board's sheet keeps that frame and only its own classes: 5 to 13 KB.
+- **Copies fill their cell** in the forms, navigation and data groups (a scrolling Tabs row overflowed its cell otherwise).
+- **Order of work:** the tests were written after the generator's first run (the spike shaped its API), then locked; the locked canvas test was unlocked once to drop an unused lint directive, no assertion changed. The Figma look was skipped: the canvas presents the coded components, it draws none.
+- **Publish before the Design System re-sync:** Dialog's `inline` reaches the Design System only after the merge, so the pilot publish sends this branch's bundle as files; after the merge the system is re-synced and the canvas republished with its `ds/fox-drop/` copied from it.

@@ -12,6 +12,10 @@ export const backdrop = formTv({
     'transition-opacity duration-(--fd-duration-base) ease-(--fd-easing-standard)',
     'data-starting-style:opacity-0 data-ending-style:opacity-0',
   ],
+  variants: {
+    // Inside a frame (`inline`: the components canvas): it dims that frame only.
+    inline: { true: 'absolute z-auto' },
+  },
 });
 
 /** A centred dialog on its `dialog.*` tokens: raised, high elevation; it fades and grows from 96%. */
@@ -22,7 +26,14 @@ export const dialogPanel = formTv({
     'transition duration-(--fd-duration-base) ease-(--fd-easing-standard) motion-reduce:transition-opacity',
     'data-starting-style:scale-96 data-starting-style:opacity-0 data-ending-style:scale-96 data-ending-style:opacity-0 motion-reduce:data-starting-style:scale-100 motion-reduce:data-ending-style:scale-100',
   ],
+  variants: {
+    // Inside a frame (`inline`): in its flow, above the frame's scrim.
+    inline: { true: 'relative inset-auto z-auto' },
+  },
 });
+
+/** The frame an inline overlay sits in: its scrim fills it, the panel centred with a margin. */
+export const inlineFrame = formTv({ base: 'relative isolate flex p-md' });
 
 /** A dialog's title and the × beside it. */
 export const header = formTv({ base: 'flex items-start gap-(--fd-dialog-header-gap)' });

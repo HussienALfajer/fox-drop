@@ -753,6 +753,8 @@ interface DialogProps {
   /** A Promise keeps it open, pending, until it settles. */
   onConfirm?: () => unknown;
   density?: Density;
+  /** Open, it stays in its frame with its scrim instead of over the page (the components canvas). */
+  inline?: boolean;
 }
 
 interface ConfirmDialogProps {

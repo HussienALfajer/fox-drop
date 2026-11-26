@@ -63,6 +63,31 @@ describe('Dialog', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
+
+  // D.C1: the components canvas draws it open inside its board, scrim included.
+  it('stays in its frame when inline, its scrim with it, and the page around stays usable', async () => {
+    render(
+      <div>
+        <button type="button">خارج النافذة</button>
+        <div data-testid="frame">
+          <Dialog
+            open
+            inline
+            title="حذف هذا العنوان؟"
+            confirmLabel="حذف"
+            cancelLabel="إلغاء"
+            closeLabel="إغلاق"
+          />
+        </div>
+      </div>,
+    );
+    const dialog = await screen.findByRole('alertdialog', { name: 'حذف هذا العنوان؟' });
+    const frame = screen.getByTestId('frame');
+    expect(frame).toContainElement(dialog);
+    expect(frame.querySelector('[data-scrim]')).not.toBeNull();
+    const outside = screen.getByRole('button', { name: 'خارج النافذة' });
+    expect(outside.closest('[inert], [aria-hidden="true"]')).toBeNull();
+  });
 });
 
 function CancelOrder({ onConfirm = vi.fn() }: { onConfirm?: (reason: string) => void }) {

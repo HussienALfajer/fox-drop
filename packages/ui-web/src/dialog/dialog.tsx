@@ -11,7 +11,14 @@ import type { ReactElement, ReactNode } from 'react';
 import { buttonClasses } from '../button/button';
 import { formTv } from '../field/styles';
 import { Icon } from '../icon/icon';
-import { backdrop, closeButton, dialogPanel, header, title as titleClass } from '../overlay/styles';
+import {
+  backdrop,
+  closeButton,
+  dialogPanel,
+  header,
+  inlineFrame,
+  title as titleClass,
+} from '../overlay/styles';
 
 /** The states the stories show (R3). Open is the dialog itself; focus starts on the safe action. */
 export const STATES = ['default', 'open', 'danger', 'primary', 'compact'] as const;
@@ -39,6 +46,11 @@ export interface DialogProps {
   /** Runs before it closes; a Promise keeps it open, pending, until it settles. */
   onConfirm?: () => unknown;
   density?: 'comfortable' | 'compact';
+  /**
+   * Keeps the open dialog and its scrim in a frame where it is written instead
+   * of over the page: the components canvas draws it open beside its trigger.
+   */
+  inline?: boolean;
 }
 
 /**
@@ -50,14 +62,15 @@ export interface DialogProps {
 export function Dialog(props: DialogProps) {
   const { trigger, open, onOpenChange, title, children, confirmLabel, cancelLabel } = props;
   const { closeLabel, tone = 'primary', onConfirm, density = 'comfortable' } = props;
-  return (
-    <AlertDialog
-      {...(open !== undefined && { open })}
-      {...(onOpenChange && { onOpenChange: (next: boolean) => onOpenChange(next) })}
-    >
-      {trigger && <AlertDialogTrigger render={trigger} />}
-      <AlertDialogBackdrop className={backdrop()} />
-      <AlertDialogContent className={dialogPanel()} initialFocus="[data-cancel]">
+  const inline = props.inline ?? false;
+  const popup = (
+    <>
+      <AlertDialogBackdrop data-scrim="" className={backdrop({ inline })} />
+      <AlertDialogContent
+        inline={inline}
+        className={dialogPanel({ inline })}
+        initialFocus="[data-cancel]"
+      >
         <div className={header()}>
           <AlertDialogTitle className={titleClass()}>{title}</AlertDialogTitle>
           <AlertDialogClose className={closeButton()} aria-label={closeLabel}>
@@ -83,6 +96,15 @@ export function Dialog(props: DialogProps) {
           </AlertDialogClose>
         </div>
       </AlertDialogContent>
+    </>
+  );
+  return (
+    <AlertDialog
+      {...(open !== undefined && { open })}
+      {...(onOpenChange && { onOpenChange: (next: boolean) => onOpenChange(next) })}
+    >
+      {trigger && <AlertDialogTrigger render={trigger} />}
+      {inline ? <div className={inlineFrame()}>{popup}</div> : popup}
     </AlertDialog>
   );
 }
