@@ -65,32 +65,66 @@ class FoxStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final statusChip = theme.components.statusChip;
     final look = status?.tone ?? tone!;
     final glyph = status?.icon ?? icon;
-    final fg = look.strong(theme.colors);
+    final (fill, fg) = _colours(statusChip, look);
     final style = (compact ? theme.text.caption : theme.text.secondary)
         .copyWith(color: fg, fontWeight: FontWeight.w500);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: look.subtle(theme.colors),
-        borderRadius: BorderRadius.circular(t.FoxRadius.full),
+    // At least min-height tall, the label centred in it, as the web's
+    // (D.W3b); a larger text grows it.
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: compact ? statusChip.compactMinHeight : statusChip.minHeight,
       ),
-      child: Padding(
-        padding: EdgeInsetsDirectional.symmetric(
-          horizontal: compact ? t.FoxSpace.xs : t.FoxSpace.sm,
-          vertical: t.FoxSpace.xxs,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: BorderRadius.circular(statusChip.radius),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (glyph != null) ...[
-              FoxIcon(glyph, size: FoxIconSize.sm, color: fg),
-              const SizedBox(width: t.FoxSpace.xxs),
+        child: Padding(
+          padding: EdgeInsetsDirectional.symmetric(
+            horizontal: compact
+                ? statusChip.compactPaddingInline
+                : statusChip.paddingInline,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (glyph != null) ...[
+                FoxIcon(glyph, size: FoxIconSize.sm, color: fg),
+                SizedBox(width: statusChip.gap),
+              ],
+              Flexible(child: Text(label, style: style)),
             ],
-            Flexible(child: Text(label, style: style)),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  /// The tint and the text of a tone.
+  static (Color, Color) _colours(t.StatusChipTokens statusChip, FoxTone tone) {
+    final (fill, ink) = switch (tone) {
+      FoxTone.warning => (
+        statusChip.warningBackground,
+        statusChip.warningLabel,
+      ),
+      FoxTone.info => (statusChip.infoBackground, statusChip.infoLabel),
+      FoxTone.success => (
+        statusChip.successBackground,
+        statusChip.successLabel,
+      ),
+      FoxTone.primary => (
+        statusChip.primaryBackground,
+        statusChip.primaryLabel,
+      ),
+      FoxTone.danger => (statusChip.dangerBackground, statusChip.dangerLabel),
+      FoxTone.neutral => (
+        statusChip.neutralBackground,
+        statusChip.neutralLabel,
+      ),
+    };
+    return (Color(fill), Color(ink));
   }
 }

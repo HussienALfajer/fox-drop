@@ -40,19 +40,25 @@ export const STATUS_LOOK: Record<OrderStatus, { tone: Tone; icon: IconName }> = 
 // The tone's text on its tint; orange text is `on-primary-subtle` (blue for
 // the captain, whose app has no orange text).
 const chip = formTv({
-  base: 'inline-flex items-center gap-2xs whitespace-nowrap rounded-full font-medium',
+  base: 'inline-flex items-center gap-(--fd-status-chip-gap) whitespace-nowrap rounded-(--fd-status-chip-radius) font-medium',
   variants: {
     tone: {
-      warning: 'bg-warning-subtle text-warning',
-      info: 'bg-info-subtle text-info',
-      success: 'bg-success-subtle text-success',
-      primary: 'bg-primary-subtle text-on-primary-subtle',
-      danger: 'bg-danger-subtle text-danger',
-      neutral: 'bg-neutral-subtle text-neutral',
+      warning:
+        'bg-(--fd-status-chip-warning-background) text-(color:--fd-status-chip-warning-label)',
+      info: 'bg-(--fd-status-chip-info-background) text-(color:--fd-status-chip-info-label)',
+      success:
+        'bg-(--fd-status-chip-success-background) text-(color:--fd-status-chip-success-label)',
+      primary:
+        'bg-(--fd-status-chip-primary-background) text-(color:--fd-status-chip-primary-label)',
+      danger: 'bg-(--fd-status-chip-danger-background) text-(color:--fd-status-chip-danger-label)',
+      neutral:
+        'bg-(--fd-status-chip-neutral-background) text-(color:--fd-status-chip-neutral-label)',
     },
     density: {
-      comfortable: 'min-h-(--fd-size-step) px-sm text-phone-secondary',
-      compact: 'min-h-lg px-xs text-panel-caption',
+      comfortable:
+        'min-h-(--fd-status-chip-min-height) px-(--fd-status-chip-padding-inline) text-phone-secondary',
+      compact:
+        'min-h-(--fd-status-chip-compact-min-height) px-(--fd-status-chip-compact-padding-inline) text-panel-caption',
     },
   },
   defaultVariants: { density: 'comfortable' },

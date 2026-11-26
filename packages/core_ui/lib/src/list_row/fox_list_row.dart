@@ -67,18 +67,22 @@ class FoxListRow extends StatelessWidget {
 
   Widget _row(BuildContext context, InteractionState? state) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final listRow = theme.components.listRow;
     final danger = tone == FoxListRowTone.danger;
-    final ink = !enabled
-        ? c.onDisabled
-        : danger
-        ? c.danger
-        : c.onSurface;
-    final fill = state?.pressed ?? false
-        ? c.surfaceRaisedPressed
-        : state?.hovered ?? false
-        ? c.surfaceRaisedHover
-        : c.surfaceRaised;
+    final ink = Color(
+      !enabled
+          ? listRow.colorDisabled
+          : danger
+          ? listRow.dangerLabel
+          : listRow.colorLabel,
+    );
+    final fill = Color(
+      state?.pressed ?? false
+          ? listRow.colorBackgroundPressed
+          : state?.hovered ?? false
+          ? listRow.colorBackgroundHover
+          : listRow.colorBackground,
+    );
     final leading = this.leading;
     final description = this.description;
     final end = this.end;
@@ -96,28 +100,26 @@ class FoxListRow extends StatelessWidget {
             ? Duration.zero
             : t.FoxDuration.base,
         curve: theme.easing,
-        constraints: const BoxConstraints(
-          minHeight: t.FoxSize.touchTarget + t.FoxSpace.xs,
-        ),
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: t.FoxSpace.md,
-          vertical: t.FoxSpace.xs,
+        constraints: BoxConstraints(minHeight: listRow.minHeight),
+        padding: EdgeInsetsDirectional.symmetric(
+          horizontal: listRow.paddingInline,
+          vertical: listRow.paddingBlock,
         ),
         color: fill,
         child: Row(
           children: [
             if (leading != null) ...[
               Container(
-                width: t.FoxSize.touchTarget - t.FoxSpace.xs,
-                height: t.FoxSize.touchTarget - t.FoxSpace.xs,
+                width: listRow.leadSize,
+                height: listRow.leadSize,
                 decoration: BoxDecoration(
-                  color: danger ? c.dangerSubtle : c.infoSubtle,
+                  color: Color(danger ? listRow.dangerLead : listRow.colorLead),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
                 child: FoxIcon(leading, color: ink),
               ),
-              const SizedBox(width: t.FoxSpace.sm),
+              SizedBox(width: listRow.gap),
             ],
             Expanded(
               child: Column(
@@ -135,19 +137,17 @@ class FoxListRow extends StatelessWidget {
                     Text(
                       description,
                       style: theme.text.secondary.copyWith(
-                        color: enabled ? c.onSurfaceMuted : ink,
+                        color: enabled ? Color(listRow.colorDescription) : ink,
                       ),
                     ),
                   if (end != null && stacked) end,
                 ],
               ),
             ),
-            if (end != null && !stacked) ...[
-              const SizedBox(width: t.FoxSpace.sm),
-              end,
-            ],
+            if (end != null && !stacked) ...[SizedBox(width: listRow.gap), end],
             if (onPressed != null && !danger) ...[
-              const SizedBox(width: t.FoxSpace.xs),
+              // One gap before the chevron, as every other part (D.W3b).
+              SizedBox(width: listRow.gap),
               // `back` mirrors under RTL; flipped once more it points along
               // the reading direction (to the left in Arabic).
               Transform.flip(
@@ -155,7 +155,7 @@ class FoxListRow extends StatelessWidget {
                 child: FoxIcon(
                   t.FoxIcons.back,
                   size: FoxIconSize.sm,
-                  color: c.onSurfaceMuted,
+                  color: Color(listRow.colorChevron),
                 ),
               ),
             ],

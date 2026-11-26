@@ -88,6 +88,16 @@ class FoxMoney extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final money = theme.components.money;
+    final tone = this.tone;
+    final ink =
+        color ??
+        switch (tone) {
+          null => Color(money.colorDefault),
+          FoxTone.success => Color(money.colorSuccess),
+          FoxTone.danger => Color(money.colorDanger),
+          _ => tone.strong(theme.colors),
+        };
     final base = switch (role) {
       FoxMoneyRole.secondary => theme.text.secondary,
       FoxMoneyRole.body => theme.text.body,
@@ -101,7 +111,7 @@ class FoxMoney extends StatelessWidget {
       textDirection: TextDirection.rtl,
       softWrap: false,
       style: base.copyWith(
-        color: color ?? tone?.strong(theme.colors) ?? theme.colors.onSurface,
+        color: ink,
         fontWeight: bold ? FontWeight.w700 : null,
         fontFeatures: const [FontFeature.tabularFigures()],
       ),

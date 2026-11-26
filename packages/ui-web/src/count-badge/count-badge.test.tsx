@@ -42,4 +42,34 @@ describe('CountBadge', () => {
     const { container } = render(<CountBadge count={0} label="لا شيء" />);
     expect(container).toBeEmptyDOMElement();
   });
+
+  // D.W3b, the D.9 sheet: the ring is inside the badge's size, and a count
+  // is centred on its icon's corner.
+  it('draws its ring inside its size and sits off the corner by its offset', () => {
+    render(
+      <CountBadge count={3} label="3 إشعارات">
+        <span />
+      </CountBadge>,
+    );
+    const badge = screen.getByText('3');
+    for (const name of [
+      'min-h-(--fd-count-badge-size)',
+      'min-w-(--fd-count-badge-size)',
+      'border-(length:--fd-count-badge-ring-width)',
+      '-top-(--fd-count-badge-offset)',
+      '-end-(--fd-count-badge-offset)',
+    ])
+      expect(badge).toHaveClass(name);
+  });
+
+  it('tucks the dot on the corner', () => {
+    const { container } = render(
+      <CountBadge label="إشعارات جديدة">
+        <span />
+      </CountBadge>,
+    );
+    const dot = container.querySelector('[data-dot]');
+    expect(dot).toHaveClass('size-(--fd-count-badge-dot-size)');
+    expect(dot).toHaveClass('-top-(--fd-count-badge-dot-offset)');
+  });
 });

@@ -1,0 +1,51 @@
+{
+  "empty-state": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["empty-state"], "flutter": ["empty_state"] }
+    },
+    "padding": {
+      "$type": "dimension",
+      "$value": "{space.lg}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$description": "Between the drop, the title, the line and the action (the D.9 sheet)."
+    },
+    "art": {
+      "$type": "dimension",
+      "size": {
+        "$value": "{size.empty-art}",
+        "$description": "The logo's drop that frames the icon."
+      },
+      "lift": {
+        "$value": "{space.xl}",
+        "$description": "How far the icon sits above the drop's centre, into its round head: a quarter of the drop."
+      },
+      "edge-width": {
+        "$value": "{border-width.thick}"
+      }
+    },
+    "compact": {
+      "$type": "dimension",
+      "$description": "The panel's and the portal's density; the Flutter state has none.",
+      "art-size": {
+        "$value": "{size.empty-art-compact}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "art-lift": {
+        "$value": "{space.md}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
+    "color": {
+      "$type": "color",
+      "art-fill": { "$value": "{color.primary-subtle}" },
+      "art-edge": { "$value": "{color.primary}" },
+      "icon": { "$value": "{color.on-primary-subtle}" },
+      "title": { "$value": "{color.heading}" },
+      "error-title": { "$value": "{color.danger}" },
+      "description": { "$value": "{color.on-surface-muted}" }
+    }
+  }
+}

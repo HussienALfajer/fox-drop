@@ -53,6 +53,6 @@ describe('Money', () => {
   it('colours a tone and keeps the symbol in the run', () => {
     render(<Money amount="-2500" symbol="₺" tone="success" />);
     const run = screen.getByText('−25 ₺');
-    expect(run.className).toContain('text-success');
+    expect(run.className).toContain('text-(color:--fd-money-color-success)');
   });
 });

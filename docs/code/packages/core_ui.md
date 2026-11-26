@@ -105,6 +105,12 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 - The cases are tagged `parity`, skipped in `dart_test.yaml`; only `pnpm parity` (`scripts/parity.mjs`) passes `--tags parity --run-skipped`. The golden run passes `--tags golden`, so it never runs them.
 - `button_parity_test.dart`: one case per Button story it can show (variants × `buttonStates`, the icon stories, the icon-only stories). The densities and the press-counting stories have none: one density here, and the counter is a keyboard test; the sheet marks their rows «no Flutter case».
 
+## Data display on component tokens (D.W3b)
+
+- FoxMoney, FoxStatusChip, FoxCountBadge, FoxCard, FoxListRow, FoxAmountsSummary, FoxSkeleton(Block), FoxEmptyState and FoxDropLoader read `FoxTheme.of(context).components.<component>` (colours as ARGB, wrapped in `Color`), each into a local named as the component (`final listRow = …`), since the usage check looks for `listRow.<field>`. FoxMoney's success and danger tones read `money.*`; its other tones keep `FoxTone.strong`. `FoxSkeletonBlock`'s height is now optional (`skeleton.lineHeight`).
+- Gaps fixed: the status chip is at least `minHeight` with the label centred (was its text plus 4 above and below); the count badge is offset by `offset` (12), the dot by `dotOffset` (4); the list row keeps one `gap` before the chevron; the summary's equivalents sit one `gap` under the total; the empty state's drop is `artSize` (120, was 128) with one `gap` between drop, title, line and action (was 12, 4, 16), the edge `artEdgeWidth` wide.
+- `test/parity/data_parity_test.dart`: the cases of the nine twins, with each story's arguments; the web-only densities have none.
+
 ## Left out
 
 Wiring into the apps and bundling CoFo there (each app's screen slice, which also adds the app to `enforcedPackages`); compact density in Flutter; dark mode; the fox scenes inside the empty state's drop; Cupertino localizations for the iOS text toolbar (apps provide them); a hosted widgetbook.

@@ -20,26 +20,29 @@ export interface Sort {
 }
 
 const cell = formTv({
-  base: 'h-(--fd-size-control-compact) border-t border-border px-sm text-panel-body whitespace-nowrap text-on-surface',
+  base: 'h-(--fd-data-table-row-height) border-t border-(--fd-data-table-color-border) px-(--fd-data-table-padding-inline) text-panel-body whitespace-nowrap text-(color:--fd-data-table-color-text)',
   variants: { numeric: { true: 'text-end tabular-nums', false: 'text-start' } },
 });
 
 const head = formTv({
-  base: 'sticky top-none z-10 h-(--fd-size-control-compact) bg-surface px-sm text-panel-secondary font-medium whitespace-nowrap text-on-surface-muted',
+  base: 'sticky top-none z-10 h-(--fd-data-table-row-height) bg-(--fd-data-table-color-head-background) px-(--fd-data-table-padding-inline) text-panel-secondary font-medium whitespace-nowrap text-(color:--fd-data-table-color-head-text)',
   variants: { numeric: { true: 'text-end', false: 'text-start' } },
 });
 
 const row = formTv({
   base: 'transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
   variants: {
-    selected: { true: 'bg-primary-subtle', false: 'hover:bg-surface-raised-hover' },
+    selected: {
+      true: 'bg-(--fd-data-table-color-row-selected)',
+      false: 'hover:bg-(--fd-data-table-color-row-hover)',
+    },
     opens: { true: `cursor-pointer ${keyboardRing}` },
   },
 });
 
 const sortButton = formTv({
-  base: `inline-flex cursor-pointer items-center gap-2xs rounded-xs ${keyboardRing}`,
-  variants: { sorted: { true: 'text-on-surface' } },
+  base: `inline-flex cursor-pointer items-center gap-(--fd-data-table-sort-gap) rounded-(--fd-data-table-inner-radius) ${keyboardRing}`,
+  variants: { sorted: { true: 'text-(color:--fd-data-table-color-text)' } },
 });
 
 export interface DataTableProps<Row> {
@@ -84,7 +87,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
       direction: sort?.key === key && sort.direction === 'descending' ? 'ascending' : 'descending',
     });
   return (
-    <div className="overflow-x-auto rounded-md bg-surface-raised ring-1 ring-inset ring-border">
+    <div className="overflow-x-auto rounded-(--fd-data-table-radius) bg-(--fd-data-table-color-background) ring-1 ring-inset ring-(--fd-data-table-color-border)">
       <table aria-label={label} aria-busy={loading || undefined} className="w-full border-collapse">
         <thead>
           <tr>
@@ -169,7 +172,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
                     <td key={j} className={cell({ numeric: false })}>
                       <span
                         aria-hidden="true"
-                        className="block h-sm w-full rounded-xs bg-neutral-subtle motion-safe:animate-skeleton"
+                        className="block h-(--fd-data-table-loading-line-height) w-full rounded-(--fd-data-table-inner-radius) bg-(--fd-data-table-color-loading) motion-safe:animate-skeleton"
                       />
                     </td>
                   ))}

@@ -55,24 +55,29 @@ class FoxCard extends StatelessWidget {
 
   Widget _box(BuildContext context, InteractionState? state) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final card = theme.components.card;
     final late = tone == FoxCardTone.danger;
-    final fill = late
-        ? c.dangerSubtle
-        : state?.pressed ?? false
-        ? c.surfaceRaisedPressed
-        : state?.hovered ?? false
-        ? c.surfaceRaisedHover
-        : c.surfaceRaised;
+    final fill = Color(
+      late
+          ? card.dangerBackground
+          : state?.pressed ?? false
+          ? card.colorBackgroundPressed
+          : state?.hovered ?? false
+          ? card.colorBackgroundHover
+          : card.colorBackground,
+    );
     final border = late
-        ? Border.all(color: c.danger, width: theme.input.focusWidth)
+        ? Border.all(
+            color: Color(card.dangerBorder),
+            width: card.dangerBorderWidth,
+          )
         : elevation == FoxCardElevation.outline
-        ? Border.all(color: c.border, width: theme.input.borderWidth)
+        ? Border.all(color: Color(card.colorBorder), width: card.borderWidth)
         : null;
     final ring = FocusRing.of(
       theme,
       on: state?.focused ?? false,
-      radius: t.FoxRadius.lg,
+      radius: card.radius,
     );
     return CustomPaint(
       foregroundPainter: ring,
@@ -81,10 +86,10 @@ class FoxCard extends StatelessWidget {
             ? Duration.zero
             : t.FoxDuration.base,
         curve: theme.easing,
-        padding: const EdgeInsetsDirectional.all(t.FoxSpace.md),
+        padding: EdgeInsetsDirectional.all(card.padding),
         decoration: BoxDecoration(
           color: fill,
-          borderRadius: BorderRadius.circular(t.FoxRadius.lg),
+          borderRadius: BorderRadius.circular(card.radius),
           border: border,
           boxShadow: elevation == FoxCardElevation.offset && !late
               ? [theme.shadows.offset]

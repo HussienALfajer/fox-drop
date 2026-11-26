@@ -49,12 +49,14 @@ class FoxAmountsSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    final body = theme.text.body.copyWith(color: c.onSurface);
+    final amountsSummary = theme.components.amountsSummary;
+    final text = Color(amountsSummary.colorText);
+    final body = theme.text.body.copyWith(color: text);
     final prominent = variant == FoxAmountsVariant.prominent;
+    final onBar = Color(amountsSummary.prominentLabel);
     final equivalents = this.equivalents;
     final totalLabel = theme.text.subtitle.copyWith(
-      color: prominent ? c.onPrimary : c.onSurface,
+      color: prominent ? onBar : text,
       fontWeight: FontWeight.w700,
     );
     final totalAmount = FoxMoney(
@@ -62,7 +64,7 @@ class FoxAmountsSummary extends StatelessWidget {
       symbol: symbol,
       decimals: decimals,
       role: prominent ? FoxMoneyRole.subtitle : FoxMoneyRole.number,
-      color: prominent ? c.onPrimary : null,
+      color: prominent ? onBar : null,
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -72,25 +74,28 @@ class FoxAmountsSummary extends StatelessWidget {
           CustomPaint(
             // The Figma cart parts its lines with dashed rules.
             foregroundPainter: i < lines.length - 1
-                ? _DashedRule(c.border, theme.input.borderWidth)
+                ? _DashedRule(
+                    Color(amountsSummary.lineRule),
+                    amountsSummary.lineRuleWidth,
+                  )
                 : null,
             child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                vertical: t.FoxSpace.xs,
+              padding: EdgeInsetsDirectional.symmetric(
+                vertical: amountsSummary.linePaddingBlock,
               ),
               // A Wrap keeps the amount at the end, and puts it on its own
               // line when large text leaves no room beside the label.
               child: Wrap(
                 alignment: WrapAlignment.spaceBetween,
                 crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: t.FoxSpace.sm,
+                spacing: amountsSummary.gap,
                 children: [
                   Text(line.label, style: body),
                   line.text != null
                       ? Text(
                           line.text!,
                           style: body.copyWith(
-                            color: c.success,
+                            color: Color(amountsSummary.lineFree),
                             fontWeight: FontWeight.w500,
                           ),
                         )
@@ -104,31 +109,33 @@ class FoxAmountsSummary extends StatelessWidget {
               ),
             ),
           ),
-        const SizedBox(height: t.FoxSpace.sm),
+        SizedBox(height: amountsSummary.gap),
         Container(
           padding: prominent
-              ? const EdgeInsetsDirectional.symmetric(
-                  horizontal: t.FoxSpace.lg,
-                  vertical: t.FoxSpace.sm,
+              ? EdgeInsetsDirectional.symmetric(
+                  horizontal: amountsSummary.prominentPaddingInline,
+                  vertical: amountsSummary.prominentPaddingBlock,
                 )
-              : const EdgeInsetsDirectional.only(top: t.FoxSpace.sm),
+              : EdgeInsetsDirectional.only(top: amountsSummary.totalPaddingTop),
           decoration: prominent
               ? BoxDecoration(
-                  color: c.primary,
-                  borderRadius: BorderRadius.circular(t.FoxRadius.lg),
+                  color: Color(amountsSummary.prominentBackground),
+                  borderRadius: BorderRadius.circular(
+                    amountsSummary.prominentRadius,
+                  ),
                 )
               : BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: c.onSurface,
-                      width: theme.input.focusWidth,
+                      color: Color(amountsSummary.totalRule),
+                      width: amountsSummary.totalRuleWidth,
                     ),
                   ),
                 ),
           child: Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: t.FoxSpace.sm,
+            spacing: amountsSummary.gap,
             children: [
               Text(total.label, style: totalLabel),
               totalAmount,
@@ -136,10 +143,13 @@ class FoxAmountsSummary extends StatelessWidget {
           ),
         ),
         if (equivalents != null) ...[
-          const SizedBox(height: t.FoxSpace.xs),
+          // One gap under the total, as the web's (D.W3b).
+          SizedBox(height: amountsSummary.gap),
           Text(
             equivalents,
-            style: theme.text.secondary.copyWith(color: c.onSurfaceMuted),
+            style: theme.text.secondary.copyWith(
+              color: Color(amountsSummary.colorEquivalents),
+            ),
           ),
         ],
       ],
