@@ -174,16 +174,18 @@ class FoxBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
     final media = MediaQuery.of(context);
     final close = onClose ?? () => Navigator.maybeOf(context)?.maybePop();
-    final background = sCurve ? c.surface : c.surfaceRaised;
+    final bottomSheet = theme.components.bottomSheet;
+    final background = Color(
+      sCurve ? bottomSheet.colorBackgroundSCurve : bottomSheet.colorBackground,
+    );
     final handle = Center(
       child: Container(
-        width: t.FoxSpace.xl + t.FoxSpace.xs,
-        height: t.FoxSpace.xxs,
+        width: bottomSheet.handleWidth,
+        height: bottomSheet.handleHeight,
         decoration: BoxDecoration(
-          color: c.borderStrong,
+          color: Color(bottomSheet.colorHandle),
           borderRadius: BorderRadius.circular(t.FoxRadius.full),
         ),
       ),
@@ -191,7 +193,9 @@ class FoxBottomSheet extends StatelessWidget {
     final titleText = Text(
       title,
       style: (sCurve ? theme.text.subtitle : theme.text.title).copyWith(
-        color: sCurve ? c.heading : c.onSurface,
+        color: Color(
+          sCurve ? bottomSheet.colorTitleSCurve : bottomSheet.colorTitle,
+        ),
         fontWeight: FontWeight.w700,
       ),
     );
@@ -201,10 +205,14 @@ class FoxBottomSheet extends StatelessWidget {
               painter: _SCurvePainter(
                 color: background,
                 direction: Directionality.of(context),
+                tabShare: bottomSheet.curveTabShare,
+                curveWidth: bottomSheet.curveWidth,
+                curveHeight: bottomSheet.curveHeight,
+                radius: bottomSheet.radius,
               ),
               child: Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  start: t.FoxSpace.lg,
+                padding: EdgeInsetsDirectional.only(
+                  start: bottomSheet.paddingInline,
                   top: t.FoxSpace.xs,
                 ),
                 child: Column(
@@ -215,7 +223,7 @@ class FoxBottomSheet extends StatelessWidget {
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
                           maxWidth:
-                              constraints.maxWidth * _SCurvePainter.tabShare -
+                              constraints.maxWidth * bottomSheet.curveTabShare -
                               t.FoxSpace.xl,
                         ),
                         child: titleText,
@@ -232,10 +240,10 @@ class FoxBottomSheet extends StatelessWidget {
         : ColoredBox(
             color: background,
             child: Padding(
-              padding: const EdgeInsetsDirectional.only(
-                start: t.FoxSpace.lg,
+              padding: EdgeInsetsDirectional.only(
+                start: bottomSheet.paddingInline,
                 end: t.FoxSpace.sm,
-                top: t.FoxSpace.sm,
+                top: bottomSheet.paddingTop,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -257,7 +265,7 @@ class FoxBottomSheet extends StatelessWidget {
             ),
           );
     final radius = BorderRadius.vertical(
-      top: Radius.circular(sCurve ? 0 : t.FoxRadius.xl),
+      top: Radius.circular(sCurve ? 0 : bottomSheet.radius),
     );
     return Semantics(
       container: true,
@@ -280,10 +288,10 @@ class FoxBottomSheet extends StatelessWidget {
                   color: background,
                   child: SingleChildScrollView(
                     padding: EdgeInsetsDirectional.only(
-                      start: t.FoxSpace.lg,
-                      end: t.FoxSpace.lg,
+                      start: bottomSheet.paddingInline,
+                      end: bottomSheet.paddingInline,
                       bottom:
-                          t.FoxSpace.md +
+                          bottomSheet.paddingBottom +
                           math.max(
                             media.viewPadding.bottom,
                             media.viewInsets.bottom,
@@ -304,23 +312,37 @@ class FoxBottomSheet extends StatelessWidget {
 /// The S-curve tab (brand expression §2): a soft bump rising from the top
 /// edge on the start side, the rest of the edge lower by the tab's height.
 class _SCurvePainter extends CustomPainter {
-  _SCurvePainter({required this.color, required this.direction});
+  _SCurvePainter({
+    required this.color,
+    required this.direction,
+    required this.tabShare,
+    required this.curveWidth,
+    required this.curveHeight,
+    required this.radius,
+  });
 
   final Color color;
   final TextDirection direction;
 
   /// The share of the width the tab takes.
-  static const double tabShare = 0.6;
+  final double tabShare;
+
+  /// The curve's width (from `s` before the tab's line to `s / 2` after it).
+  final double curveWidth;
+
+  /// How much lower the edge beside the tab sits.
+  final double curveHeight;
+  final double radius;
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
     // The full-width edge sits under the title, at the handle's band.
-    final edge = math.max(0.0, h - t.FoxSpace.lg);
-    const r = t.FoxRadius.xl;
+    final edge = math.max(0.0, h - curveHeight);
+    final r = radius;
     final tab = w * (1 - tabShare);
-    const s = t.FoxSpace.xl;
+    final s = curveWidth / 1.5;
     // Drawn with the tab at the right (RTL's start), mirrored for LTR.
     final path = Path()
       ..moveTo(0, edge + r)
@@ -342,5 +364,10 @@ class _SCurvePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SCurvePainter old) =>
-      old.color != color || old.direction != direction;
+      old.color != color ||
+      old.direction != direction ||
+      old.tabShare != tabShare ||
+      old.curveWidth != curveWidth ||
+      old.curveHeight != curveHeight ||
+      old.radius != radius;
 }

@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import '../card/fox_card.dart';
 import '../icon/fox_icon.dart';
-import '../internal/faded.dart';
 import '../internal/interaction.dart';
 import '../order_card/fox_order_card.dart';
 import '../theme/fox_theme.dart';
@@ -64,24 +63,25 @@ class FoxRestaurantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final c = theme.colors;
+    final restaurantCard = theme.components.restaurantCard;
     final muted = theme.text.secondary.copyWith(color: c.onSurfaceMuted);
     final cover = this.cover;
     final state = this.state;
     final rating = this.rating;
     final newLabel = this.newLabel;
     final picture = ClipRRect(
-      borderRadius: BorderRadius.circular(t.FoxRadius.lg),
+      borderRadius: BorderRadius.circular(restaurantCard.coverRadius),
       child: AspectRatio(
         aspectRatio: 16 / 9,
         child: cover != null
             ? Image(image: cover, fit: BoxFit.cover)
             : ColoredBox(
-                color: c.primarySubtle,
+                color: Color(restaurantCard.colorCover),
                 child: Center(
                   child: FoxLogo(
                     name: name,
                     image: logo,
-                    size: t.FoxSize.touchTarget + t.FoxSpace.lg,
+                    size: restaurantCard.logoSize,
                   ),
                 ),
               ),
@@ -96,14 +96,16 @@ class FoxRestaurantCard extends StatelessWidget {
         dimension: t.FoxSize.touchTarget,
         child: Center(
           child: Container(
-            width: t.FoxSize.touchTarget - t.FoxSpace.xs,
-            height: t.FoxSize.touchTarget - t.FoxSpace.xs,
+            width: restaurantCard.heartSize,
+            height: restaurantCard.heartSize,
             decoration: BoxDecoration(
-              color: s.pressed
-                  ? c.surfaceRaisedPressed
-                  : s.hovered
-                  ? c.surfaceRaisedHover
-                  : c.surfaceRaised,
+              color: Color(
+                s.pressed
+                    ? restaurantCard.colorHeartBackgroundPressed
+                    : s.hovered
+                    ? restaurantCard.colorHeartBackgroundHover
+                    : restaurantCard.colorHeartBackground,
+              ),
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -111,7 +113,11 @@ class FoxRestaurantCard extends StatelessWidget {
             // Madar sheet, §9.4).
             child: FoxIcon(
               t.FoxIcons.heart,
-              color: favourite ? c.danger : c.onSurface,
+              color: Color(
+                favourite
+                    ? restaurantCard.colorHeartFavourite
+                    : restaurantCard.colorHeart,
+              ),
               style: favourite ? FoxIconStyle.bold : FoxIconStyle.linear,
             ),
           ),
@@ -119,21 +125,21 @@ class FoxRestaurantCard extends StatelessWidget {
       ),
     );
     final facts = Wrap(
-      spacing: t.FoxSpace.md,
-      runSpacing: t.FoxSpace.xxs,
+      spacing: restaurantCard.factsGap,
+      runSpacing: restaurantCard.factsRowGap,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         if (rating != null)
           _Fact(
             icon: t.FoxIcons.star,
-            iconColor: c.primary,
+            iconColor: Color(restaurantCard.colorRating),
             child: Text(rating, style: muted.copyWith(color: c.onSurface)),
           )
         else if (newLabel != null)
           Text(
             newLabel,
             style: muted.copyWith(
-              color: c.success,
+              color: Color(restaurantCard.colorNew),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -151,8 +157,10 @@ class FoxRestaurantCard extends StatelessWidget {
     );
     // U6: a closed card fades, but its state chip and the heart keep their
     // full contrast, so «مغلق — يفتح …» still reads (owner, 2026-11-24).
-    Widget fade(Widget child) =>
-        Opacity(opacity: closed ? foxFadedOpacity : 1, child: child);
+    Widget fade(Widget child) => Opacity(
+      opacity: closed ? restaurantCard.fadedOpacity : 1,
+      child: child,
+    );
     return FoxCard(
       elevation: FoxCardElevation.offset,
       onPressed: onPressed,
@@ -166,15 +174,15 @@ class FoxRestaurantCard extends StatelessWidget {
             children: [
               fade(picture),
               PositionedDirectional(
-                top: t.FoxSpace.xxs,
-                start: t.FoxSpace.xxs,
+                top: restaurantCard.heartInset,
+                start: restaurantCard.heartInset,
                 child: heart,
               ),
               if (state != null)
                 PositionedDirectional(
-                  top: t.FoxSpace.sm,
-                  end: t.FoxSpace.sm,
-                  start: t.FoxSize.touchTarget + t.FoxSpace.sm,
+                  top: restaurantCard.stateInset,
+                  end: restaurantCard.stateInset,
+                  start: t.FoxSize.touchTarget + restaurantCard.stateInset,
                   child: Align(
                     alignment: AlignmentDirectional.topEnd,
                     child: state,
@@ -182,13 +190,13 @@ class FoxRestaurantCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: t.FoxSpace.sm),
+          SizedBox(height: restaurantCard.gap),
           fade(
             Row(
               children: [
                 if (cover != null) ...[
                   FoxLogo(name: name, image: logo),
-                  const SizedBox(width: t.FoxSpace.sm),
+                  SizedBox(width: restaurantCard.gap),
                 ],
                 Expanded(
                   child: Column(
@@ -208,7 +216,7 @@ class FoxRestaurantCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: t.FoxSpace.xs),
+          SizedBox(height: restaurantCard.factsTop),
           fade(facts),
         ],
       ),
@@ -232,7 +240,7 @@ class _Fact extends StatelessWidget {
     mainAxisSize: MainAxisSize.min,
     children: [
       FoxIcon(icon, size: FoxIconSize.sm, color: iconColor),
-      const SizedBox(width: t.FoxSpace.xxs),
+      SizedBox(width: FoxTheme.of(context).components.restaurantCard.factGap),
       Flexible(child: child),
     ],
   );

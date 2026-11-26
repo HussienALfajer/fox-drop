@@ -1,0 +1,64 @@
+<!-- @dsCard group="Overlays" height=460 -->
+<style>
+  /* The card paints the apps' own ground and text, whatever the page around it. */
+  :root {
+    color-scheme: light;
+  }
+  #root {
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+  }
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: var(--fd-space-lg) 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--fd-space-lg);
+    margin-block-end: var(--fd-space-sm);
+  }
+  .row > * {
+    width: 340px;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, BottomSheet, Button } = FoxDrop;
+  const h = React.createElement;
+  const content = h('p', null, 'قطعتان مع بطاطس ومشروب');
+  const sheet = (props) =>
+    h(
+      'div',
+      null,
+      h(BottomSheet, {
+        inline: true,
+        title: 'وجبة كريسبي',
+        closeLabel: 'إغلاق',
+        trigger: h(Button, { variant: 'secondary' }, 'افتح'),
+        children: content,
+        ...props,
+      }),
+    );
+  const section = (title, ...items) => [
+    h('h2', { key: title }, title),
+    h('div', { className: 'row', key: title + 'row' }, ...items),
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render([
+    ...section('Plain top and the S-curve tab (press «افتح»)', sheet({}), sheet({ sCurve: true })),
+  ]);
+</script>
