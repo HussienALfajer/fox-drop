@@ -58,7 +58,8 @@ Tests written first (locked in the red phase):
 | 18  | Tabs                | Web: the selected tab's count blue                                                                                | D.10 sheet (red) and Flutter    | Web: `danger` on the selected tab                                         |
 | 19  | Tabs                | Flutter underline tabs touching, md inside, hover tinting the tab, the count 2xs from its label                   | Web (2xs, sm, words, xs)        | Flutter: `tabs.gap`, `padding-inline`, `color.text-hover`, `label-gap`    |
 | 20  | Tabs (pill)         | Flutter pills 48 high                                                                                             | D.10 sheet (40)                 | Flutter: a 40 pill (`tabs.pill.height`) in a 48 target                    |
-| 21  | Tabs                | The sheet draws an unselected count on `neutral-subtle`; both sides draw it blue                                  | —                               | Left: both sides agree                                                    |
+| 21  | Tabs                | The sheet draws an unselected count on `neutral-subtle`; both sides draw it blue                                  | D.10 sheet                      | Left (decision 5): the count badge has no neutral tone on either side     |
+| 22  | Dialog              | Long labels: the web moves the second action to its own full row; Flutter's two stay half width, words wrapping   | Web                             | Left: a row that wraps and fills needs a custom layout; listed for later  |
 | —   | every overlay, tabs | Flutter has no compact density (the web's `*-compact` stories)                                                    | —                               | Left (as D.W3a)                                                           |
 | —   | Icon                | No gap (the web story draws in Storybook's black ink, the component's `currentColor`)                             | —                               | —                                                                         |
 
@@ -70,10 +71,11 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 2. **The parity spec changed (`packages/ui-web/e2e/parity.spec.ts`, outside the plan's list):** an open dialog renders outside the story root, so the web side shot only the trigger under the scrim. It now shoots an open dialog alone, the toasts as their region, and an open menu with its trigger; the Flutter cases draw the same (the panel in the frame; the menu over an `Overlay` of its own).
 3. **The Select's open list reads `input`, not `menu.json`.** The plan expected the web select's list to use the menu tokens; it reads `input` (`select/menu.tsx`, D.W3a's). So `anchored_menu.dart` reads the same `input` tokens and takes the web list's look (gap 16); `menu.json` serves the action menu only.
 4. **Flutter keeps its 48 targets (R13):** the dialog's × (gap 3) and the toast's × (gap 8) stay 48 inside the panel rather than overlap the padding as the web's pointer targets do; where a pill is drawn smaller (the stack's counter, the pill tabs) it sits inside a 48 target.
-5. **Gap 4 changes an API, so it is left:** greying the confirm action while it stays pressable needs a `FoxButton` state that does not exist.
+5. **Gaps 4 and 21 change an API, so they are left:** greying the confirm action while it stays pressable needs a `FoxButton` state that does not exist; a neutral unselected count needs a neutral tone on both count badges.
 6. **Web-only files** (`blocking-banner`, `tooltip`, `drawer`) declare `"flutter": []` and mark every token `sides: ["web"]`, as D.W3b's `data-table`.
 7. **Tests that named the old classes follow the change:** `icon/icon.test.tsx`, `button/button.test.tsx`, `field/field.test.tsx` (`--fd-icon-size-*`) and `test/design-system.test.ts` (`--fd-dialog-width`); `test/icon_test.dart` reads the sizes from the icon tokens (`FoxIconSize.pixels` is gone: no app used it).
-8. **The version is 0.17.0:** D.W3b merged first with 0.16.0; main was merged into the branch (force pushes are refused), the outputs regenerated.
+8. **Component tokens reuse a semantic token of the same value:** `menu.min-width` is `size.tooltip` (240, the sheet's menu and tooltip width), `banner.stack.toggle-height` is `size.step` (32), `dialog.confirm.chip-height` is `space.lg` (24), rather than new semantic sizes; `size.menu-min-width` (192) is no longer read. A later retune of one of those semantic tokens moves these too (review, D.W3c).
+9. **The version is 0.17.0:** D.W3b merged first with 0.16.0; main was merged into the branch (force pushes are refused), the outputs regenerated.
 
 ## Stopped at
 

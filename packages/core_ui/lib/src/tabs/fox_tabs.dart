@@ -302,12 +302,18 @@ class _TabState extends State<_Tab> {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: widget.onTap,
-              child: _Ring(
-                show: widget.node.hasFocus && _focusRing,
-                pill: widget.pill,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: tabs.height),
-                  child: Align(widthFactor: 1, heightFactor: 1, child: body),
+              // The ring hugs what is drawn (the pill), the box around it is
+              // the 48 target only.
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: tabs.height),
+                child: Align(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: _Ring(
+                    show: widget.node.hasFocus && _focusRing,
+                    pill: widget.pill,
+                    child: body,
+                  ),
                 ),
               ),
               onTapDown: (_) => _focusRing = false,

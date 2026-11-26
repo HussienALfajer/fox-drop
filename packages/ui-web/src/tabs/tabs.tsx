@@ -106,7 +106,8 @@ export function Tabs(props: TabsProps) {
   const { variant = 'underline', density = 'compact' } = props;
   const listRef = useRef<HTMLDivElement>(null);
   // The selected tab, followed here for its count's red (the sheet).
-  const [inner, setInner] = useState(defaultValue ?? items[0]?.value);
+  // Without a default the SDK selects the first enabled tab.
+  const [inner, setInner] = useState(defaultValue ?? items.find((item) => !item.disabled)?.value);
   const selected = value ?? inner;
   // The SDK scrolls a tab into view when it is chosen; this does it for the
   // tab selected on the first render too (an overflowing list on a phone),
