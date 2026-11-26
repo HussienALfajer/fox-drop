@@ -89,8 +89,8 @@ Short motion that shows what changed: 100 ms press, 200 ms appear, 300 ms screen
 ## Iconography
 
 - **Icons, set v4 "Madar"** (assets, Icons): FOX DROP's own 47 icons on Solar's construction: a 24 grid, stroke 1.5 in `currentColor` (1.75 in the captain app), continuous corners, round caps and joins, one body and one meaning element. Six styles come from each drawing: Linear by default; Bold for the selected tab and a chosen favourite; Brand Duo, the meaning element in `brand` orange, for empty states, promo cards and settings chips; Bold Duo for coloured cards and important notices; Duotone and Broken (a bite cut in the body) for marketing. The `Icon` component's `variant` picks one. Sizes `size-icon-sm` 16, `size-icon-md` 24, `size-icon-lg` 32. Blue (`on-surface`) by default; active, ivory (`on-primary`) inside an orange (`primary`) circle of `size-control`. `back`, `motorcycle` and `car` flip in RTL. The drop appears only in `drop-pin` and `map`. A missing icon waits for the next batch or uses text; never borrow one from another library.
-- **Logos** (assets, Logos): the fox mark alone in orange, ivory or blue, on a square or a drop backing, and the four lockups (horizontal and vertical, Arabic and Latin), each as SVG and PNG. Use the ready lockups; never change the order of the mark and the name, never rotate, stretch, shadow or recolour. Arabic lockups on Arabic screens. Minimum: the mark 24 px, the horizontal lockup 120 px wide.
-- **App icon** (assets, App icon): every icon of the brand pack, the SVG artwork (the `broken-edges` ones included, their use not named yet) and the iOS and Android PNGs. The ivory fox on orange is the official icon; the others are alternatives.
+- **Logos** (assets, Logos): the fox mark alone in orange, ivory or blue, on a square or a drop backing, and the four lockups (horizontal and vertical, Arabic and Latin). Use the ready lockups; never change the order of the mark and the name, never rotate, stretch, shadow or recolour. Arabic lockups on Arabic screens. Minimum: the mark 24 px, the horizontal lockup 120 px wide.
+- **App icon** (assets, App icon): every icon SVG of the brand pack, the `broken-edges` ones included (their use not named yet). The ivory fox on orange is the official icon; the others are alternatives.
 
 ## Usage rules
 
@@ -105,6 +105,7 @@ Short motion that shows what changed: 100 ms press, 200 ms appear, 300 ms screen
 ## Not synced
 
 - Components are the web ones (`packages/ui-web`); the Flutter widgets (`packages/core_ui`) draw the same design and are not carried.
+- The brand pack's PNG logos and app icons are not carried: they copy the SVG drawings (owner, 2026-11-26).
 - YR-Speed (marketing only) and Emad-Diana (not used) are not carried; only the three CoFo weights are.
 - Durations and easing are not a token family here; they are listed under Motion.
 - The dark themes copy Light until dark mode is designed.

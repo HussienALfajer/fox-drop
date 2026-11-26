@@ -9,7 +9,7 @@ import {
   index,
   inlineStyles,
   MAX_FONT,
-  MAX_UPLOAD,
+  MAX_SVG,
   systemFiles,
 } from './design-system-build.ts';
 import { designSystem, FONT_FILES } from './design-system.ts';
@@ -53,27 +53,21 @@ describe("the Design System's files (architecture §9.8)", () => {
 
   it('uploads every logo and app icon of the brand pack and the line icons, within the caps', () => {
     expect([...uploads.keys()].filter((key) => key.startsWith('Icons/'))).toHaveLength(47);
-    // Owner, 2026-11-26: every logo and app icon in docs/brand shows.
-    expect([...uploads.keys()].filter((key) => key.startsWith('Logos/'))).toHaveLength(18);
+    // Owner, 2026-11-26: every logo and app icon SVG in docs/brand shows, no PNG.
+    expect([...uploads.keys()].filter((key) => key.startsWith('Logos/'))).toHaveLength(14);
     expect([...uploads.keys()].filter((key) => key.startsWith('App icon/')).sort()).toEqual(
       [
-        'android-primary-white-fox-on-orange.png',
-        'android-variant-b.png',
-        'android-variant-c.png',
         'app-icon-08.svg',
         'app-icon-09.svg',
         'app-icon-10.svg',
         'app-icon-broken-edges-1.svg',
         'app-icon-broken-edges-2.svg',
         'app-icon-broken-edges-3.svg',
-        'ios-primary-ivory-fox-on-orange.png',
-        'ios-variant-b.png',
-        'ios-variant-c.png',
       ].map((file) => `App icon/${file}`),
     );
     for (const [key, bytes] of uploads) {
-      expect(key).toMatch(/^(Logos|App icon|Icons)\/[\w.-]+\.(svg|png)$/);
-      expect(bytes.length).toBeLessThanOrEqual(MAX_UPLOAD);
+      expect(key).toMatch(/^(Logos|App icon|Icons)\/[\w.-]+\.svg$/);
+      expect(bytes.length).toBeLessThanOrEqual(MAX_SVG);
     }
   });
 
@@ -156,7 +150,7 @@ describe("the Design System's files (architecture §9.8)", () => {
     };
     for (const group of Object.values(value.assetGroups))
       for (const [file, record] of Object.entries(group.files))
-        expect(record.type, file).toBe(file.endsWith('.png') ? 'image/png' : 'image/svg+xml');
+        expect(record.type, file).toBe('image/svg+xml');
     expect(value.editing).toBe('code');
     expect(value.createdOnFiles.at).toBe('2026-11-23T00:00:00Z');
     expect(value.groups).toEqual(['Logos', 'App icon', 'Icons']);
