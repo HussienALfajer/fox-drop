@@ -11,13 +11,13 @@ import { formTv } from '../field/styles';
 export const IN_FLOW = 'static! m-none! max-h-fit!';
 
 /**
- * The trigger and its popup: in flow (`inline`) stacked at the start, the
+ * The trigger and its popup: in flow (`inline`) stacked at the start of the full width, the
  * popup the select's gap (4) under it and the trigger at its own width;
  * otherwise no box at all.
  */
 export const inFlowFrame = formTv({
   base: '',
-  variants: { inline: { true: 'flex flex-col items-start gap-2xs', false: 'contents' } },
+  variants: { inline: { true: 'flex w-full flex-col items-start gap-2xs', false: 'contents' } },
 });
 
 /**

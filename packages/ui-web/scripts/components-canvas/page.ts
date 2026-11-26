@@ -89,7 +89,8 @@ export const HYDRATE = `    const R = window.React;
       if (x.$fn) return () => new Promise((done) => setTimeout(done, 1500));
       if (x.$memo) {
         const table = new Map(x.$memo.map(([input, out]) => [input, hydrate(out)]));
-        return (input) => table.get(JSON.stringify(input));
+        // A call with more than one argument (a chip name and code) is keyed by their list.
+        return (...input) => table.get(JSON.stringify(input.length > 1 ? input : input[0]));
       }
       if (x.$date) return new Date(x.$date);
       if (x.$set) return new Set(x.$set);

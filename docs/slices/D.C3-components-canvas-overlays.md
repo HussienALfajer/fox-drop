@@ -1,6 +1,6 @@
 # D.C3 The components canvas: overlays drawn open in their boards
 
-Status: Planned · Tier: T2 · Branch: `feat/components-canvas-overlays`
+Status: Done · Tier: T2 · Branch: `feat/components-canvas-overlays`
 Spec: architecture §9.8, §9.9, T14 · Definition of done: workflow §4
 
 Part of the components canvas plan; its shared rules are in `D.C1-components-canvas-generator.md`. After D.C2 is merged.
@@ -26,7 +26,7 @@ Tests written first (locked in the red phase): `test/inline-overlays.test.tsx` �
 - **Toaster:** a `toasts` prop (shown from the start) plus `inline`, not the SDK's toast parts (`Toaster` does not use them); the stories pass `toasts` as args instead of a `play`.
 - **Generator:** `inline` on every copy of a component that has it (the playground too); a `play` story drawn open unless `parameters.canvas.open` is false; `parameters.canvas.gesture` captions a state finished by typing. Sidebar's phone-drawer story passes the Sidebar's props to its wrapper so the board can read them.
 - **Files beyond the plan:** `src/overlay/in-flow.ts`, `src/blocking-banner/*`, `scripts/components-canvas/{board,playground,stories,canvas,check}.ts`, the stories of ConfirmDialog, PhoneField, Toaster and Sidebar. The test moved to `src/overlay/inline.test.tsx` (vitest takes `.tsx` tests only under `src/`).
-- **A locked test corrected:** the two Toaster cases of `inline.test.tsx` advanced fake timers outside `act`, so React never applied the timer's removal (the existing Toaster tests wrap it in `act`); after the component passed every other case, the file was unlocked, both advances wrapped in `act`, and locked again. No assertion changed.
+- **A locked test corrected:** the two Toaster cases of `inline.test.tsx` advanced fake timers outside `act`, so React never applied the timer's removal (the existing Toaster tests wrap it in `act`); after the component passed every other case, the file was unlocked, both advances wrapped in `act`, and locked again. No assertion changed. After the review, the same file's fixed 300 ms waits became `findByRole` (unlocked, edited, relocked).
 
 ## Stopped at
 

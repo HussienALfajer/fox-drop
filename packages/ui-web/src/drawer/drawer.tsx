@@ -109,7 +109,7 @@ export function Drawer(props: DrawerProps) {
       {inline ? (
         <div
           className={inlineFrame({
-            class: ['p-none', side === 'end' ? 'justify-end' : 'justify-start'],
+            class: ['w-full p-none', side === 'end' ? 'justify-end' : 'justify-start'],
           })}
         >
           {popup}

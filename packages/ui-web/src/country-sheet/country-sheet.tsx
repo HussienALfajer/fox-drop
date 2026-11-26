@@ -57,8 +57,8 @@ const listTv = formTv({
 });
 const list = listTv();
 
-/** Inline, the list has no window edge to stop at: it scrolls past a menu's height. */
-const INLINE_HEIGHT = 'max-h-(--fd-size-menu-max-height)!';
+/** Inline, the list has no window edge to stop at: as wide as its frame at most, it scrolls past a menu's height. */
+const INLINE_SIZE = 'max-w-full! max-h-(--fd-size-menu-max-height)!';
 
 const Anchor = createContext<((button: HTMLButtonElement | null) => void) | null>(null);
 
@@ -177,7 +177,7 @@ export function CountrySheet(props: CountrySheetProps) {
               sideOffset={SIDE_OFFSET}
               align="start"
               dir="rtl"
-              className={list.content({ class: inline && [IN_FLOW, INLINE_HEIGHT] })}
+              className={list.content({ class: inline && [IN_FLOW, INLINE_SIZE] })}
               {...(container && { container })}
             >
               <div className={list.search()}>

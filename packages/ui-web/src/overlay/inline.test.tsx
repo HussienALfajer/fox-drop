@@ -18,8 +18,6 @@ import { Sidebar } from '../sidebar/sidebar';
 import { Toaster } from '../toaster/toaster';
 import { Tooltip } from '../tooltip/tooltip';
 
-const settle = () => new Promise((done) => setTimeout(done, 300));
-
 /** Renders `popup` in a frame beside a button and a field of the page. */
 function inFrame(popup: ReactElement) {
   const outsidePresses = vi.fn();
@@ -69,8 +67,7 @@ describe('a popup drawn inline', () => {
         items={[{ label: 'الملف الشخصي', onSelect: () => undefined }]}
       />,
     );
-    await settle();
-    const menu = screen.getByRole('menu');
+    const menu = await screen.findByRole('menu');
     expect(within(menu).getByRole('menuitem', { name: 'الملف الشخصي' })).toBeInTheDocument();
     await besideThePage(menu, outsidePresses);
     expect(screen.getByRole('menu')).toBeInTheDocument();
@@ -88,8 +85,7 @@ describe('a popup drawn inline', () => {
         ]}
       />,
     );
-    await settle();
-    const list = screen.getByRole('listbox');
+    const list = await screen.findByRole('listbox');
     expect(within(list).getByRole('option', { name: 'أنثى' })).toBeInTheDocument();
     await besideThePage(list, outsidePresses);
     expect(screen.getByRole('listbox')).toBeInTheDocument();
@@ -101,8 +97,7 @@ describe('a popup drawn inline', () => {
         <button type="button">التنبيهات</button>
       </Tooltip>,
     );
-    await settle();
-    const tip = screen.getByRole('tooltip');
+    const tip = await screen.findByRole('tooltip');
     expect(tip).toHaveTextContent('التنبيهات المفتوحة: 4');
     expect(screen.getByRole('button', { name: 'التنبيهات' })).toHaveAccessibleDescription(
       'التنبيهات المفتوحة: 4',
@@ -116,8 +111,7 @@ describe('a popup drawn inline', () => {
         <CountrySheet.Trigger>الدولة: سوريا</CountrySheet.Trigger>
       </CountrySheet>,
     );
-    await settle();
-    const list = screen.getByRole('listbox');
+    const list = await screen.findByRole('listbox');
     expect(within(list).getByRole('option', { name: /سوريا/ })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: countryLabels.searchLabel })).not.toHaveFocus();
     await besideThePage(list, outsidePresses);
@@ -135,8 +129,7 @@ describe('a popup drawn inline', () => {
         defaultValue="2027-03-05"
       />,
     );
-    await settle();
-    const grid = screen.getByRole('grid');
+    const grid = await screen.findByRole('grid');
     expect(screen.getByRole('button', { name: 'الشهر التالي' })).toBeInTheDocument();
     await besideThePage(grid, outsidePresses);
     expect(screen.getByRole('grid')).toBeInTheDocument();
@@ -163,8 +156,7 @@ describe('a popup drawn inline', () => {
         {...countryLabels}
       />,
     );
-    await settle();
-    const list = screen.getByRole('listbox');
+    const list = await screen.findByRole('listbox');
     const box = screen.getByRole('textbox', { name: 'رقم الهاتف' });
     expect(box.parentElement).not.toContainElement(list);
     await besideThePage(list, outsidePresses);
@@ -186,8 +178,7 @@ describe('a popup drawn inline', () => {
         onConfirm={() => undefined}
       />,
     );
-    await settle();
-    const dialog = screen.getByRole('dialog', { name: 'إلغاء الطلب #10423' });
+    const dialog = await screen.findByRole('dialog', { name: 'إلغاء الطلب #10423' });
     expect(frame.querySelector('[data-scrim]')).not.toBeNull();
     await besideThePage(dialog, outsidePresses);
     expect(screen.getByRole('dialog', { name: 'إلغاء الطلب #10423' })).toBeInTheDocument();
@@ -203,8 +194,7 @@ describe('a popup drawn inline', () => {
         onEnable={() => undefined}
       />,
     );
-    await settle();
-    const bar = screen.getByRole('dialog', { name: 'اضغط لتفعيل صوت التنبيهات' });
+    const bar = await screen.findByRole('dialog', { name: 'اضغط لتفعيل صوت التنبيهات' });
     expect(frame.querySelector('[data-scrim]')).not.toBeNull();
     await besideThePage(bar, outsidePresses);
   });
@@ -215,8 +205,7 @@ describe('a popup drawn inline', () => {
         <p>كنافة أعزاز</p>
       </Drawer>,
     );
-    await settle();
-    const drawer = screen.getByRole('dialog', { name: 'الطلب #10421' });
+    const drawer = await screen.findByRole('dialog', { name: 'الطلب #10421' });
     expect(frame.querySelector('[data-scrim]')).not.toBeNull();
     await besideThePage(drawer, outsidePresses);
     expect(screen.getByRole('dialog', { name: 'الطلب #10421' })).toBeInTheDocument();
@@ -236,8 +225,7 @@ describe('a popup drawn inline', () => {
         closeLabel="إغلاق"
       />,
     );
-    await settle();
-    const nav = screen.getByRole('navigation', { name: 'التنقل الرئيسي' });
+    const nav = await screen.findByRole('navigation', { name: 'التنقل الرئيسي' });
     await besideThePage(nav, outsidePresses);
   });
 
