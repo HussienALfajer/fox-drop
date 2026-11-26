@@ -22,6 +22,14 @@
         "$extensions": { "app.foxdrop": { "sides": ["web"] } }
       }
     },
+    "segment": {
+      "min-size": {
+        "$type": "dimension",
+        "$value": "{size.selection}",
+        "$description": "A web time box's least width and height, the WCAG 2.2 target (24); Flutter's boxes are Material's.",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
     "day": {
       "size": {
         "$type": "dimension",

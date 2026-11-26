@@ -1089,6 +1089,7 @@ final class DateFieldTokens {
     required this.popupRadius,
     required this.popupPadding,
     required this.popupGap,
+    required this.segmentMinSize,
     required this.daySize,
     required this.colorPopupBackground,
     required this.colorToday,
@@ -1102,6 +1103,7 @@ final class DateFieldTokens {
   final double popupRadius;
   final double popupPadding;
   final double popupGap;
+  final double segmentMinSize;
   final double daySize;
   final int colorPopupBackground;
   final int colorToday;
@@ -1118,6 +1120,7 @@ abstract final class FoxDateField {
     popupRadius: 15.0,
     popupPadding: 12.0,
     popupGap: 8.0,
+    segmentMinSize: 24.0,
     daySize: 48.0,
     colorPopupBackground: 0xFFFEFEFE,
     colorToday: 0xFFFF6E31,
@@ -1132,6 +1135,7 @@ abstract final class FoxDateField {
     popupRadius: 15.0,
     popupPadding: 12.0,
     popupGap: 8.0,
+    segmentMinSize: 24.0,
     daySize: 48.0,
     colorPopupBackground: 0xFFFEFEFE,
     colorToday: 0xFFFF6E31,
@@ -1146,6 +1150,7 @@ abstract final class FoxDateField {
     popupRadius: 15.0,
     popupPadding: 12.0,
     popupGap: 8.0,
+    segmentMinSize: 24.0,
     daySize: 48.0,
     colorPopupBackground: 0xFFFEFEFE,
     colorToday: 0xFFFF6E31,
@@ -1160,6 +1165,7 @@ abstract final class FoxDateField {
     popupRadius: 15.0,
     popupPadding: 12.0,
     popupGap: 8.0,
+    segmentMinSize: 24.0,
     daySize: 48.0,
     colorPopupBackground: 0xFFFEFEFE,
     colorToday: 0xFFFF6E31,

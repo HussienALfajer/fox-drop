@@ -60,7 +60,7 @@ const calendar = formTv({
     heading: 'text-phone-subtitle font-bold',
     step: [
       'flex size-(--fd-date-field-day-size) cursor-pointer items-center justify-center rounded-full',
-      'hover:bg-(--fd-date-field-color-day-hover) data-disabled:cursor-not-allowed data-disabled:text-(color:--fd-input-color-on-disabled)',
+      'not-data-disabled:hover:bg-(--fd-date-field-color-day-hover) data-disabled:cursor-not-allowed data-disabled:text-(color:--fd-input-color-on-disabled)',
       'outline-hidden focus-visible:ring-2 focus-visible:ring-(color:--fd-input-color-focus-ring)',
     ],
     grid: 'border-collapse',
@@ -70,7 +70,8 @@ const calendar = formTv({
     ],
     day: [
       'size-(--fd-date-field-day-size) cursor-pointer rounded-full text-center text-phone-body tabular-nums outline-hidden',
-      'hover:bg-(--fd-date-field-color-day-hover)',
+      // Only a day that can be picked lights up (R10).
+      'not-data-disabled:not-data-unavailable:hover:bg-(--fd-date-field-color-day-hover)',
       'data-outside:text-(color:--fd-date-field-color-day-outside)',
       'data-today:font-bold data-today:text-(color:--fd-date-field-color-today)',
       'data-today:inset-ring-(length:--fd-input-border-width) data-today:inset-ring-(color:--fd-date-field-color-today)',

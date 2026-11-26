@@ -248,6 +248,7 @@
   --fd-date-field-popup-radius: 15px;
   --fd-date-field-popup-padding: 12px;
   --fd-date-field-popup-gap: 8px;
+  --fd-date-field-segment-min-size: 24px;
   --fd-date-field-day-size: 48px;
   --fd-date-field-color-popup-background: #FEFEFE;
   --fd-date-field-color-today: #FF6E31;

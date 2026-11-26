@@ -10,7 +10,9 @@ export const STATES = ['default', 'hover', 'focus', 'filled', 'invalid', 'disabl
 const segment = formTv({
   base: [
     // As wide as its text, so the run reads `03:05 م` as the Flutter twin's.
-    'field-sizing-content rounded-xs bg-transparent text-center outline-hidden',
+    // At least the WCAG 2.2 target (24) each way.
+    'field-sizing-content min-w-(--fd-date-field-segment-min-size) min-h-(--fd-date-field-segment-min-size)',
+    'rounded-xs bg-transparent text-center outline-hidden',
     'focus:bg-(--fd-date-field-color-segment) data-empty:text-(color:--fd-input-color-placeholder)',
     'disabled:cursor-not-allowed disabled:text-(color:--fd-input-color-on-disabled)',
   ],
@@ -69,7 +71,12 @@ export function TimeField(props: TimeFieldProps) {
             const digits = state.segments.filter((part) => part.type !== 'dayPeriod');
             const period = state.segments.filter((part) => part.type === 'dayPeriod');
             const shown = (part: Segment) => (
-              <TimeInputSegment key={part.key} segment={part as never} className={segment()} />
+              <TimeInputSegment
+                key={part.key}
+                segment={part as never}
+                // The text between boxes (the colon, the space) takes no box.
+                className={part.type === 'literal' ? '' : segment()}
+              />
             );
             return (
               <>
