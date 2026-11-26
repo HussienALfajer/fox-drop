@@ -43,14 +43,16 @@ Tests written first (locked in the red phase):
 
 ## Stopped at
 
-Built: the generator, the check and the five boards written, measured and checked (0 problems in 41 combinations); the unit tests pass. Next: `--changed`, review, publish for the owner's look.
+Built, reviewed (two rounds, no finding left), checked and published (canvas version 30); the pull request is a draft until the owner approves the five boards' look (checkpoint 0). Then: mark Done, merge, re-sync the Design System (Dialog `inline`) and republish the canvas with `ds/fox-drop/*` copied from it.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- `components-canvas:check`:
-- Screenshots (outside the repository):
-- Review:
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (a first run's two captain-offboarding server tests timed out at 5 s under load and passed alone, 4 of 4; the rerun passed).
+- `pnpm baselines`: «no image changed» (340 stories, phone and captain), after the review fixes too.
+- `components-canvas:check`: «5 boards, 41 combinations, 0 with problems»; states sheets 5 to 13 KB.
+- Unit tests: `test/components-canvas.test.ts` 9 of 9, `src/dialog/dialog.test.tsx` 9 of 9.
+- Screenshots (outside the repository): the check's `--shots` in the session scratchpad.
+- Review (reviewer, T2, medium): round 1, three findings fixed (the inline alert dialog still modal and its test passing falsely; `inset-md` kept by tailwind-merge; `<` unescaped in script JSON); round 2, none.
 
 ## Before deploying
 
