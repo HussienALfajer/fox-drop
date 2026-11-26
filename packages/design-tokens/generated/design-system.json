@@ -927,6 +927,21 @@
         "name": "size-menu-max-height",
         "value": "288px",
         "usage": "The tallest anchored list before it scrolls (select, date and time)."
+      },
+      {
+        "name": "size-list-row",
+        "value": "56px",
+        "usage": "A list row's least height on the phone, as the approved data sheet draws it (D.9)."
+      },
+      {
+        "name": "size-empty-art",
+        "value": "120px",
+        "usage": "The drop that frames an empty state's icon on the phone (D.9 sheet)."
+      },
+      {
+        "name": "size-empty-art-compact",
+        "value": "72px",
+        "usage": "The same drop in the panel and the portal (D.9 sheet)."
       }
     ]
   },
@@ -934,7 +949,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.15.0",
+    "version": "0.16.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

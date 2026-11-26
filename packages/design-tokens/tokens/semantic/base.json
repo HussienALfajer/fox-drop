@@ -592,6 +592,18 @@
     "menu-max-height": {
       "$value": "288px",
       "$description": "The tallest anchored list before it scrolls (select, date and time)."
+    },
+    "list-row": {
+      "$value": "56px",
+      "$description": "A list row's least height on the phone, as the approved data sheet draws it (D.9)."
+    },
+    "empty-art": {
+      "$value": "120px",
+      "$description": "The drop that frames an empty state's icon on the phone (D.9 sheet)."
+    },
+    "empty-art-compact": {
+      "$value": "72px",
+      "$description": "The same drop in the panel and the portal (D.9 sheet)."
     }
   },
   "icon-stroke": {

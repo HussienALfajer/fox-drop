@@ -1,0 +1,59 @@
+{
+  "list-row": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["list-row"], "flutter": ["list_row"] }
+    },
+    "min-height": {
+      "$type": "dimension",
+      "$value": "{size.list-row}"
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.md}"
+    },
+    "padding-block": {
+      "$type": "dimension",
+      "$value": "{space.xs}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.sm}"
+    },
+    "lead-size": {
+      "$type": "dimension",
+      "$value": "{size.control-compact}"
+    },
+    "compact": {
+      "$type": "dimension",
+      "$description": "The panel's and the portal's density (the D.9 sheet: 40 and a 24 lead); the Flutter row has none.",
+      "min-height": {
+        "$value": "{size.control-compact}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "padding-inline": {
+        "$value": "{space.sm}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "lead-size": {
+        "$value": "{space.lg}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    },
+    "color": {
+      "$type": "color",
+      "background": { "$value": "{color.surface-raised}" },
+      "background-hover": { "$value": "{color.surface-raised-hover}" },
+      "background-pressed": { "$value": "{color.surface-raised-pressed}" },
+      "label": { "$value": "{color.on-surface}" },
+      "description": { "$value": "{color.on-surface-muted}" },
+      "chevron": { "$value": "{color.on-surface-muted}" },
+      "lead": { "$value": "{color.info-subtle}" },
+      "disabled": { "$value": "{color.on-disabled}" }
+    },
+    "danger": {
+      "$type": "color",
+      "label": { "$value": "{color.danger}" },
+      "lead": { "$value": "{color.danger-subtle}" }
+    }
+  }
+}

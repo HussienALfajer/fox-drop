@@ -1,0 +1,61 @@
+{
+  "status-chip": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["status-chip"], "flutter": ["status_chip"] }
+    },
+    "min-height": {
+      "$type": "dimension",
+      "$value": "{size.step}"
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.sm}"
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.2xs}"
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.full}"
+    },
+    "compact": {
+      "$type": "dimension",
+      "min-height": { "$value": "{space.lg}" },
+      "padding-inline": { "$value": "{space.xs}" }
+    },
+    "warning": {
+      "$type": "color",
+      "background": { "$value": "{color.warning-subtle}" },
+      "label": { "$value": "{color.warning}" }
+    },
+    "info": {
+      "$type": "color",
+      "background": { "$value": "{color.info-subtle}" },
+      "label": { "$value": "{color.info}" }
+    },
+    "success": {
+      "$type": "color",
+      "background": { "$value": "{color.success-subtle}" },
+      "label": { "$value": "{color.success}" }
+    },
+    "primary": {
+      "$type": "color",
+      "background": { "$value": "{color.primary-subtle}" },
+      "label": {
+        "$value": "{color.on-primary-subtle}",
+        "$description": "The deepest orange; blue for the captain, whose app has no orange text."
+      }
+    },
+    "danger": {
+      "$type": "color",
+      "background": { "$value": "{color.danger-subtle}" },
+      "label": { "$value": "{color.danger}" }
+    },
+    "neutral": {
+      "$type": "color",
+      "background": { "$value": "{color.neutral-subtle}" },
+      "label": { "$value": "{color.neutral}" }
+    }
+  }
+}

@@ -8,18 +8,19 @@ export const STATES = ['default', 'offset', 'hover', 'focus', 'pressed', 'danger
 // Figma file's offset shadow, every other surface a thin outline. A card that
 // opens something is one button and takes the raised surface's R10 states.
 const card = formTv({
-  base: 'flex flex-col gap-sm rounded-lg bg-surface-raised p-md text-start text-on-surface transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
+  base: 'flex flex-col gap-(--fd-card-gap) rounded-(--fd-card-radius) bg-(--fd-card-color-background) p-(--fd-card-padding) text-start text-(color:--fd-card-color-text) transition-colors duration-(--fd-duration-base) ease-(--fd-easing-standard)',
   variants: {
     elevation: {
-      outline: 'ring-1 ring-inset ring-border',
+      outline: 'inset-ring-(length:--fd-card-border-width) inset-ring-(--fd-card-color-border)',
       offset: 'shadow-offset',
     },
     tone: {
       default: '',
-      danger: 'bg-danger-subtle ring-2 ring-inset ring-danger',
+      danger:
+        'bg-(--fd-card-danger-background) inset-ring-(length:--fd-card-danger-border-width) inset-ring-(--fd-card-danger-border)',
     },
     pressable: {
-      true: `w-full cursor-pointer hover:bg-surface-raised-hover active:bg-surface-raised-pressed ${keyboardRing}`,
+      true: `w-full cursor-pointer hover:bg-(--fd-card-color-background-hover) active:bg-(--fd-card-color-background-pressed) ${keyboardRing}`,
     },
   },
   // A late card keeps its red tint under the pointer: the tint is its state.
@@ -27,7 +28,7 @@ const card = formTv({
     {
       pressable: true,
       tone: 'danger',
-      class: 'hover:bg-danger-subtle active:bg-danger-subtle',
+      class: 'hover:bg-(--fd-card-danger-background) active:bg-(--fd-card-danger-background)',
     },
   ],
   defaultVariants: { elevation: 'outline', tone: 'default' },

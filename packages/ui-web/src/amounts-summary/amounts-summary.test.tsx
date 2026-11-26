@@ -18,7 +18,9 @@ describe('AmountsSummary', () => {
     const list = screen.getByRole('list');
     expect(within(list).getAllByRole('listitem')).toHaveLength(4);
     expect(within(list).getByText('452 ₺')).toBeInTheDocument();
-    expect(within(list).getByText('−25 ₺').className).toContain('text-success');
+    expect(within(list).getByText('−25 ₺').className).toContain(
+      'text-(color:--fd-money-color-success)',
+    );
   });
 
   it('shows the total after the lines', () => {
@@ -50,7 +52,9 @@ describe('AmountsSummary', () => {
         equivalents="أو 11.50 $ · 3,300,000 ل.س"
       />,
     );
-    expect(screen.getByText('470 ₺').closest('[data-total]')!.className).toContain('bg-primary');
+    expect(screen.getByText('470 ₺').closest('[data-total]')!.className).toContain(
+      'bg-(--fd-amounts-summary-prominent-background)',
+    );
     expect(screen.getByText('أو 11.50 $ · 3,300,000 ل.س')).toBeInTheDocument();
   });
 });

@@ -42,13 +42,15 @@ class FoxEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final emptyState = theme.components.emptyState;
     final description = this.description;
     final action = this.action;
     final error = tone == FoxEmptyTone.error;
-    const drop = t.FoxSpace.xxxl * 2;
+    // The D.9 sheet's drop and one gap between every part (D.W3b).
+    final drop = emptyState.artSize;
+    final gap = SizedBox(height: emptyState.gap);
     return Padding(
-      padding: const EdgeInsetsDirectional.all(t.FoxSpace.lg),
+      padding: EdgeInsetsDirectional.all(emptyState.padding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -58,45 +60,51 @@ class FoxEmptyState extends StatelessWidget {
               height: drop,
               child: CustomPaint(
                 painter: _Drop(
-                  fill: c.primarySubtle,
-                  edge: c.primary,
-                  width: theme.input.borderWidth,
+                  fill: Color(emptyState.colorArtFill),
+                  edge: Color(emptyState.colorArtEdge),
+                  width: emptyState.artEdgeWidth,
                 ),
                 child: Padding(
-                  padding: const EdgeInsetsDirectional.only(bottom: drop / 4),
+                  padding: EdgeInsetsDirectional.only(
+                    bottom: emptyState.artLift,
+                  ),
                   child: Center(
                     child: FoxIcon(
                       icon,
                       size: FoxIconSize.lg,
                       style: FoxIconStyle.brandDuo,
-                      color: c.onPrimarySubtle,
+                      color: Color(emptyState.colorIcon),
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: t.FoxSpace.sm),
+          gap,
           Semantics(
             header: true,
             child: Text(
               title,
               textAlign: TextAlign.center,
               style: theme.text.title.copyWith(
-                color: error ? c.danger : c.heading,
+                color: Color(
+                  error ? emptyState.colorErrorTitle : emptyState.colorTitle,
+                ),
               ),
             ),
           ),
           if (description != null) ...[
-            const SizedBox(height: t.FoxSpace.xxs),
+            gap,
             Text(
               description,
               textAlign: TextAlign.center,
-              style: theme.text.secondary.copyWith(color: c.onSurfaceMuted),
+              style: theme.text.secondary.copyWith(
+                color: Color(emptyState.colorDescription),
+              ),
             ),
           ],
           if (action != null) ...[
-            const SizedBox(height: t.FoxSpace.md),
+            gap,
             FoxButton(
               label: action.label,
               onPressed: action.onPressed,
@@ -141,10 +149,11 @@ class _Drop extends CustomPainter {
         Paint()
           ..color = edge
           ..style = PaintingStyle.stroke
-          ..strokeWidth = width * 2,
+          ..strokeWidth = width,
       );
   }
 
   @override
-  bool shouldRepaint(_Drop old) => old.fill != fill || old.edge != edge;
+  bool shouldRepaint(_Drop old) =>
+      old.fill != fill || old.edge != edge || old.width != width;
 }

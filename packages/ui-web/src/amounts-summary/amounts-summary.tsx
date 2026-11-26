@@ -18,16 +18,18 @@ export interface AmountLine {
 // writes it bold under a rule (the panel, the portal, the order detail).
 // The lines are parted by the dashed rules of the Figma cart.
 const lineRow = formTv({
-  base: 'flex items-center justify-between gap-sm border-b border-dashed border-border py-xs last:border-b-0',
+  base: 'flex items-center justify-between gap-(--fd-amounts-summary-gap) border-b-(length:--fd-amounts-summary-line-rule-width) border-dashed border-(--fd-amounts-summary-line-rule) py-(--fd-amounts-summary-line-padding-block) last:border-b-0',
   variants: { compact: { true: 'text-panel-body', false: 'text-phone-body' } },
 });
 
 const totalRow = formTv({
-  base: 'flex items-center justify-between gap-sm',
+  base: 'flex items-center justify-between gap-(--fd-amounts-summary-gap)',
   variants: {
     variant: {
-      plain: 'border-t-(length:--fd-border-width-thick) border-on-surface pt-sm',
-      prominent: 'rounded-lg bg-primary px-lg py-sm text-on-primary',
+      plain:
+        'border-t-(length:--fd-amounts-summary-total-rule-width) border-(--fd-amounts-summary-total-rule) pt-(--fd-amounts-summary-total-padding-top)',
+      prominent:
+        'rounded-(--fd-amounts-summary-prominent-radius) bg-(--fd-amounts-summary-prominent-background) px-(--fd-amounts-summary-prominent-padding-inline) py-(--fd-amounts-summary-prominent-padding-block) text-(color:--fd-amounts-summary-prominent-label)',
     },
   },
 });
@@ -50,13 +52,15 @@ export function AmountsSummary(props: AmountsSummaryProps) {
   const compact = density === 'compact';
   const item = lineRow({ compact });
   return (
-    <div className="flex flex-col gap-sm text-on-surface">
+    <div className="flex flex-col gap-(--fd-amounts-summary-gap) text-(color:--fd-amounts-summary-color-text)">
       <ul className="m-none flex list-none flex-col p-none">
         {lines.map((line) => (
           <li key={line.label} className={item}>
             <span>{line.label}</span>
             {line.text ? (
-              <span className="font-medium text-success">{line.text}</span>
+              <span className="font-medium text-(color:--fd-amounts-summary-line-free)">
+                {line.text}
+              </span>
             ) : (
               <Money
                 amount={line.amount}
@@ -80,7 +84,9 @@ export function AmountsSummary(props: AmountsSummaryProps) {
         />
       </div>
       {equivalents ? (
-        <p className="m-none text-phone-secondary text-on-surface-muted">{equivalents}</p>
+        <p className="m-none text-phone-secondary text-(color:--fd-amounts-summary-color-equivalents)">
+          {equivalents}
+        </p>
       ) : null}
     </div>
   );

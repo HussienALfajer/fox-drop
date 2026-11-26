@@ -1,0 +1,62 @@
+{
+  "count-badge": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["count-badge"], "flutter": ["count_badge"] }
+    },
+    "size": {
+      "$type": "dimension",
+      "$value": "{space.lg}",
+      "$description": "A count's least height and width, its ring included (the D.9 sheet: 20 and a 2 px ring)."
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.2xs}"
+    },
+    "offset": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$description": "How far a count sits off its icon's corner: half its size, centred on the corner."
+    },
+    "ring-width": {
+      "$type": "dimension",
+      "$value": "{border-width.thick}"
+    },
+    "dot": {
+      "$type": "dimension",
+      "size": {
+        "$value": "{space.sm}",
+        "$description": "The dot, its ring included."
+      },
+      "offset": {
+        "$value": "{space.2xs}",
+        "$description": "The dot stays tucked on the corner."
+      }
+    },
+    "ring": {
+      "$type": "color",
+      "$value": "{color.surface-raised}",
+      "$description": "Parts the badge from the icon under it."
+    },
+    "danger": {
+      "$type": "color",
+      "background": { "$value": "{color.danger}" },
+      "label": { "$value": "{color.on-danger}" }
+    },
+    "primary": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.primary}",
+        "$description": "The cart's count (the R4 exception)."
+      },
+      "label": { "$value": "{color.on-primary}" }
+    },
+    "accent": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.accent}",
+        "$description": "A count in a tab."
+      },
+      "label": { "$value": "{color.on-accent}" }
+    }
+  }
+}
