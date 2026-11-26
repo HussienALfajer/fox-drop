@@ -1,26 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ReactNode } from 'react';
-import { Icon, type IconName } from '../icon/icon';
+import { TrackingSteps } from '../tracking-steps/tracking-steps';
 import { SignInHero, type SignInOrigin } from './sign-in-hero';
 
-// The tracking steps on the sample order. The web TrackingSteps comes with
-// slice D.W4b; until then the story draws the four steps plainly (a known
-// parity gap, listed in slice D.W4d).
-const STEPS: [IconName, string][] = [
-  ['receipt', 'استلام'],
-  ['restaurant', 'تحضير'],
-  ['motorcycle', 'في الطريق'],
-  ['house', 'وصل'],
-];
+// The tracking steps on the sample order, as the Flutter twin's use case.
 const steps = (
-  <span className="flex justify-between text-phone-caption text-on-surface-muted">
-    {STEPS.map(([icon, label]) => (
-      <span key={label} className="flex flex-col items-center gap-2xs">
-        <Icon name={icon} size="sm" />
-        {label}
-      </span>
-    ))}
-  </span>
+  <TrackingSteps
+    label="مراحل الطلب"
+    steps={[
+      { icon: 'receipt', label: 'استلام' },
+      { icon: 'restaurant', label: 'تحضير' },
+      { icon: 'motorcycle', label: 'في الطريق' },
+      { icon: 'house', label: 'وصل' },
+    ]}
+    current={2}
+    doneLabel="تم"
+    nowLabel="الآن"
+  />
 );
 
 // The three origins, as the sign-in screen passes them (the Flutter twin's use cases).
