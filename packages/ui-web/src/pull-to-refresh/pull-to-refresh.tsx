@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type PointerEvent, type ReactNode }
 import { buttonClasses } from '../button/button';
 import { DropLoader } from '../drop-loader/drop-loader';
 import { DROP, PIECES, VIEW_BOX } from '../drop-loader/mark';
-import { formTv } from '../field/styles';
+import { formTv, keyboardRing } from '../field/styles';
 
 /** The states the stories show (R3): at rest, pulling (the mark half full), refreshing. */
 export const STATES = ['default', 'pulling', 'refreshing'] as const;
@@ -21,7 +21,7 @@ const drop = formTv({
 });
 
 const scroller = formTv({
-  base: 'size-full overflow-y-auto overscroll-y-contain',
+  base: `size-full overflow-y-auto overscroll-y-contain ${keyboardRing}`,
   variants: {
     // At the top a finger moving down is the pull, not the browser's scroll.
     atTop: { true: 'touch-pan-x touch-pan-down', false: 'touch-pan-x touch-pan-y' },
@@ -154,6 +154,8 @@ export function PullToRefresh({ children, onRefresh, refreshLabel }: PullToRefre
       </span>
       <div
         ref={list}
+        // A list that scrolls is reachable by the keyboard (axe: scrollable-region-focusable).
+        tabIndex={0}
         data-pull-scroller=""
         onScroll={(event) => setAtTop(event.currentTarget.scrollTop <= 0)}
         onPointerDown={down}

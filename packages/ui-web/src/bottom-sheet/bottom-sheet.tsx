@@ -47,7 +47,7 @@ const panel = formTv({
 });
 
 const body = formTv({
-  base: 'flex min-h-none flex-1 flex-col overflow-y-auto px-(--fd-bottom-sheet-padding-inline) pb-(--fd-bottom-sheet-padding-bottom)',
+  base: 'flex min-h-none flex-1 flex-col overflow-y-auto px-(--fd-bottom-sheet-padding-inline) pb-(--fd-bottom-sheet-padding-bottom) outline-hidden focus-visible:inset-ring-2 focus-visible:inset-ring-(color:--fd-input-color-focus-ring)',
   variants: {
     sCurve: {
       false: 'bg-(--fd-bottom-sheet-color-background)',
@@ -163,7 +163,10 @@ export function BottomSheet(props: BottomSheetProps) {
       <DialogContent inline={inline} className={frame({ inline })}>
         <div className={panel({ sCurve })}>
           {top}
-          <div className={body({ sCurve })}>{children}</div>
+          {/* Reachable by the keyboard when it scrolls (axe: scrollable-region-focusable). */}
+          <div tabIndex={0} className={body({ sCurve })}>
+            {children}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
