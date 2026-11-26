@@ -304,6 +304,79 @@ interface CodePreviewProps {
   compact?: boolean;
 }
 
+interface RestaurantCardProps {
+  name: string;
+  /** «برجر · وجبات سريعة». */
+  categories: string;
+  /** The estimate as a range: «20–30 د». */
+  eta: string;
+  /** A Money, or the words «توصيل مجاني». */
+  fee: ReactNode;
+  /** The restaurant's page: the card is one link to it. */
+  href: string;
+  favourite: boolean;
+  /** The heart's name: «المفضلة». */
+  favouriteLabel: string;
+  onFavourite: () => void;
+  /** The cover photo, 16:9. Missing or failing, the logo shows on a tint. */
+  cover?: string;
+  logo?: string;
+  /** «4.5»; without it, newLabel («جديد»). */
+  rating?: string;
+  newLabel?: string;
+  /** «مشغول», «مغلق — يفتح السبت 10:00 ص»: a chip on the cover, read with the name. */
+  state?: { label: string; tone: Tone };
+  /** Fades the card but its state and the heart. */
+  closed?: boolean;
+}
+
+interface DishCardProps {
+  name: string;
+  /** A Money. */
+  price: ReactNode;
+  /** «أضف {الطبق}»: the «+» button's name. */
+  addLabel: string;
+  onAdd: () => void;
+  /** The dish's item sheet or page: the card is one link to it. */
+  href: string;
+  description?: string;
+  /** The square photo; without one the card is a text row. */
+  photo?: string;
+  /** «من» before the lowest price. */
+  fromLabel?: string;
+  /** How many are in the cart; above zero it replaces «+». */
+  count?: number;
+  /** «يتوفر غداً»: the dish cannot be added nor opened, and fades. */
+  unavailableLabel?: string;
+}
+
+interface BottomSheetProps {
+  /** The element that opens it, usually a Button. Focus returns to it on close. */
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Shown, and the sheet's accessible name. */
+  title: string;
+  /** The plain top's ×. */
+  closeLabel: string;
+  children: ReactNode;
+  /** The brand's S-curve tab holding the title: the customer's item sheet. No ×. */
+  sCurve?: boolean;
+  /** False keeps it open on Escape and the scrim. */
+  dismissible?: boolean;
+  /** Keeps the sheet in its frame instead of over the page, as on this card. */
+  inline?: boolean;
+}
+
+interface PullToRefreshProps {
+  /** The list; the component is its scroll container and fills its parent. */
+  children: ReactNode;
+  /** Runs once per pull on a touch screen; a Promise keeps the loader until it settles. */
+  onRefresh: () => unknown;
+  /** The refresh button for screen readers and keyboards: «تحديث». */
+  refreshLabel: string;
+}
+
 type SelectItem = Record<'value' | 'label', string>;
 
 interface SelectProps {

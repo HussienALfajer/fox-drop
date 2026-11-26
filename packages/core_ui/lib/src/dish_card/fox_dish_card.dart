@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import '../card/fox_card.dart';
 import '../icon/fox_icon.dart';
-import '../internal/faded.dart';
 import '../internal/interaction.dart';
 import '../theme/fox_theme.dart';
 
@@ -57,6 +56,7 @@ class FoxDishCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final c = theme.colors;
+    final dishCard = theme.components.dishCard;
     final photo = this.photo;
     final description = this.description;
     final fromLabel = this.fromLabel;
@@ -74,17 +74,19 @@ class FoxDishCard extends StatelessWidget {
             duration: MediaQuery.disableAnimationsOf(context)
                 ? Duration.zero
                 : t.FoxDuration.base,
-            width: t.FoxSize.touchTarget - t.FoxSpace.xs,
-            height: t.FoxSize.touchTarget - t.FoxSpace.xs,
+            width: dishCard.addSize,
+            height: dishCard.addSize,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: count > 0
-                  ? c.accent
-                  : s.pressed
-                  ? c.primaryPressed
-                  : s.hovered
-                  ? c.primaryHover
-                  : c.primary,
+              color: Color(
+                count > 0
+                    ? dishCard.colorCount
+                    : s.pressed
+                    ? dishCard.colorAddPressed
+                    : s.hovered
+                    ? dishCard.colorAddHover
+                    : dishCard.colorAdd,
+              ),
               shape: BoxShape.circle,
             ),
             child: count > 0
@@ -92,19 +94,19 @@ class FoxDishCard extends StatelessWidget {
                     '$count',
                     textDirection: TextDirection.ltr,
                     style: theme.text.body.copyWith(
-                      color: c.onAccent,
+                      color: Color(dishCard.colorOnCount),
                       fontWeight: FontWeight.w700,
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   )
-                : FoxIcon(t.FoxIcons.add, color: c.onPrimary),
+                : FoxIcon(t.FoxIcons.add, color: Color(dishCard.colorOnAdd)),
           ),
         ),
       ),
     );
     // An unavailable dish fades (U7), but its reason keeps full contrast.
     Widget fade(Widget child) => Opacity(
-      opacity: unavailable != null ? foxFadedOpacity : 1,
+      opacity: unavailable != null ? dishCard.fadedOpacity : 1,
       child: child,
     );
     final text = Column(
@@ -115,15 +117,15 @@ class FoxDishCard extends StatelessWidget {
           Text(
             name,
             style: theme.text.subtitle.copyWith(
-              color: c.heading,
+              color: Color(dishCard.colorName),
               fontWeight: FontWeight.w700,
             ),
           ),
         ),
         if (description != null) fade(Text(description, style: muted)),
-        const SizedBox(height: t.FoxSpace.xs),
+        SizedBox(height: dishCard.priceGap),
         Wrap(
-          spacing: t.FoxSpace.xs,
+          spacing: dishCard.priceGap,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             if (fromLabel != null)
@@ -147,21 +149,18 @@ class FoxDishCard extends StatelessWidget {
         children: [
           Expanded(child: text),
           if (photo != null) ...[
-            const SizedBox(width: t.FoxSpace.sm),
+            SizedBox(width: dishCard.gap),
             fade(
               ClipRRect(
-                borderRadius: BorderRadius.circular(t.FoxRadius.md),
+                borderRadius: BorderRadius.circular(dishCard.photoRadius),
                 child: SizedBox.square(
-                  dimension: t.FoxSize.touchTarget * 2,
+                  dimension: dishCard.photoSize,
                   child: Image(image: photo, fit: BoxFit.cover),
                 ),
               ),
             ),
           ],
-          if (unavailable == null) ...[
-            const SizedBox(width: t.FoxSpace.xs),
-            add,
-          ],
+          if (unavailable == null) ...[SizedBox(width: dishCard.addGap), add],
         ],
       ),
     );

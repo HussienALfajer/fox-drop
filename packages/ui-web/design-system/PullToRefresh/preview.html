@@ -1,0 +1,57 @@
+<!-- @dsCard group="Data" height=340 -->
+<style>
+  /* The card paints the apps' own ground and text, whatever the page around it. */
+  :root {
+    color-scheme: light;
+  }
+  #root {
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+  }
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+  }
+  h2 {
+    margin: var(--fd-space-lg) 0 var(--fd-space-xs);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fd-color-on-surface);
+  }
+  .frame {
+    width: 320px;
+    height: 240px;
+    border: 1px solid var(--fd-color-border);
+    border-radius: var(--fd-radius-lg);
+    overflow: hidden;
+  }
+  .frame p {
+    margin: 0;
+    padding: var(--fd-space-md);
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, PullToRefresh } = FoxDrop;
+  const h = React.createElement;
+  const rows = ['كنافة أعزاز', 'برجر كبصو', 'فطائر الشام', 'مشاوي حلب', 'حلويات الشمال'];
+  ReactDOM.createRoot(document.getElementById('root')).render([
+    h('h2', { key: 'title' }, 'Pull down on a touch screen'),
+    h(
+      'div',
+      { className: 'frame', key: 'frame' },
+      h(PullToRefresh, {
+        refreshLabel: 'تحديث',
+        onRefresh: () => new Promise((done) => setTimeout(done, 1500)),
+        children: rows.map((name) => h('p', { key: name }, name)),
+      }),
+    ),
+  ]);
+</script>

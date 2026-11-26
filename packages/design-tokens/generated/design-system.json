@@ -944,6 +944,21 @@
         "usage": "The same drop in the panel and the portal (D.9 sheet)."
       },
       {
+        "name": "size-cover-logo",
+        "value": "72px",
+        "usage": "A restaurant's logo on its tint when the card has no cover photo (R7, D.9 sheet: touch target plus space.lg)."
+      },
+      {
+        "name": "size-dish-photo",
+        "value": "96px",
+        "usage": "A dish card's square photo (D.9 sheet, option A: two touch targets)."
+      },
+      {
+        "name": "size-sheet-handle",
+        "value": "40px",
+        "usage": "The width of a bottom sheet's handle (D.10 sheet)."
+      },
+      {
         "name": "size-countdown-ring",
         "value": "96px",
         "usage": "The captain's offer countdown ring (D.9 sheet: two touch targets)."
@@ -954,7 +969,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.20.0",
+    "version": "0.21.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"

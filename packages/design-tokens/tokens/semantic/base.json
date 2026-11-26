@@ -605,6 +605,18 @@
       "$value": "72px",
       "$description": "The same drop in the panel and the portal (D.9 sheet)."
     },
+    "cover-logo": {
+      "$value": "72px",
+      "$description": "A restaurant's logo on its tint when the card has no cover photo (R7, D.9 sheet: touch target plus space.lg)."
+    },
+    "dish-photo": {
+      "$value": "96px",
+      "$description": "A dish card's square photo (D.9 sheet, option A: two touch targets)."
+    },
+    "sheet-handle": {
+      "$value": "40px",
+      "$description": "The width of a bottom sheet's handle (D.10 sheet)."
+    },
     "countdown-ring": {
       "$value": "96px",
       "$description": "The captain's offer countdown ring (D.9 sheet: two touch targets)."

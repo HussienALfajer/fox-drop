@@ -1,0 +1,26 @@
+{
+  "pull-to-refresh": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["pull-to-refresh"], "flutter": ["pull_to_refresh"] }
+    },
+    "drop-size": {
+      "$type": "dimension",
+      "$value": "{size.touch-target}",
+      "$description": "The raised circle that holds the mark."
+    },
+    "mark-size": {
+      "$type": "dimension",
+      "$value": "{size.icon-lg}",
+      "$description": "The mark inside the circle, filling as the list is pulled."
+    },
+    "inset": {
+      "$type": "dimension",
+      "$value": "{space.md}",
+      "$description": "The circle from the list's top."
+    },
+    "color": {
+      "$type": "color",
+      "drop": { "$value": "{color.surface-raised}" }
+    }
+  }
+}

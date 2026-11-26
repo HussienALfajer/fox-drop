@@ -1003,6 +1003,118 @@ abstract final class FoxBottomNavigation {
   );
 }
 
+/// The BottomSheet component tokens of one theme.
+final class BottomSheetTokens {
+  const BottomSheetTokens({
+    required this.radius,
+    required this.maxWidth,
+    required this.paddingInline,
+    required this.paddingTop,
+    required this.paddingBottom,
+    required this.handleWidth,
+    required this.handleHeight,
+    required this.curveWidth,
+    required this.curveHeight,
+    required this.curveTabShare,
+    required this.colorBackground,
+    required this.colorBackgroundSCurve,
+    required this.colorHandle,
+    required this.colorTitle,
+    required this.colorTitleSCurve,
+  });
+
+  final double radius;
+  final double maxWidth;
+  final double paddingInline;
+  final double paddingTop;
+  final double paddingBottom;
+  final double handleWidth;
+  final double handleHeight;
+  final double curveWidth;
+  final double curveHeight;
+  final double curveTabShare;
+  final int colorBackground;
+  final int colorBackgroundSCurve;
+  final int colorHandle;
+  final int colorTitle;
+  final int colorTitleSCurve;
+}
+
+/// The BottomSheet tokens per theme.
+abstract final class FoxBottomSheet {
+  static const BottomSheetTokens light = BottomSheetTokens(
+    radius: 30.0,
+    maxWidth: 460.0,
+    paddingInline: 24.0,
+    paddingTop: 12.0,
+    paddingBottom: 16.0,
+    handleWidth: 40.0,
+    handleHeight: 4.0,
+    curveWidth: 48.0,
+    curveHeight: 24.0,
+    curveTabShare: 0.6,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundSCurve: 0xFFFBF2E7,
+    colorHandle: 0xFF6688B2,
+    colorTitle: 0xFF03428E,
+    colorTitleSCurve: 0xFF03428E,
+  );
+
+  static const BottomSheetTokens dark = BottomSheetTokens(
+    radius: 30.0,
+    maxWidth: 460.0,
+    paddingInline: 24.0,
+    paddingTop: 12.0,
+    paddingBottom: 16.0,
+    handleWidth: 40.0,
+    handleHeight: 4.0,
+    curveWidth: 48.0,
+    curveHeight: 24.0,
+    curveTabShare: 0.6,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundSCurve: 0xFFFBF2E7,
+    colorHandle: 0xFF6688B2,
+    colorTitle: 0xFF03428E,
+    colorTitleSCurve: 0xFF03428E,
+  );
+
+  static const BottomSheetTokens captainLight = BottomSheetTokens(
+    radius: 30.0,
+    maxWidth: 460.0,
+    paddingInline: 24.0,
+    paddingTop: 12.0,
+    paddingBottom: 16.0,
+    handleWidth: 40.0,
+    handleHeight: 4.0,
+    curveWidth: 48.0,
+    curveHeight: 24.0,
+    curveTabShare: 0.6,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundSCurve: 0xFFFBF2E7,
+    colorHandle: 0xFF6688B2,
+    colorTitle: 0xFF03428E,
+    colorTitleSCurve: 0xFF03428E,
+  );
+
+  static const BottomSheetTokens captainDark = BottomSheetTokens(
+    radius: 30.0,
+    maxWidth: 460.0,
+    paddingInline: 24.0,
+    paddingTop: 12.0,
+    paddingBottom: 16.0,
+    handleWidth: 40.0,
+    handleHeight: 4.0,
+    curveWidth: 48.0,
+    curveHeight: 24.0,
+    curveTabShare: 0.6,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundSCurve: 0xFFFBF2E7,
+    colorHandle: 0xFF6688B2,
+    colorTitle: 0xFF03428E,
+    colorTitleSCurve: 0xFF03428E,
+  );
+}
+
 /// The Button component tokens of one theme.
 final class ButtonTokens {
   const ButtonTokens({
@@ -1912,6 +2024,112 @@ abstract final class FoxDialog {
     confirmColorEffectBackground: 0xFFFBF2E7,
     confirmColorChipBackground: 0xFFEEF4FC,
     confirmColorChipText: 0xFF03428E,
+  );
+}
+
+/// The DishCard component tokens of one theme.
+final class DishCardTokens {
+  const DishCardTokens({
+    required this.photoSize,
+    required this.photoRadius,
+    required this.gap,
+    required this.addGap,
+    required this.addSize,
+    required this.priceGap,
+    required this.fadedOpacity,
+    required this.colorName,
+    required this.colorAdd,
+    required this.colorAddHover,
+    required this.colorAddPressed,
+    required this.colorOnAdd,
+    required this.colorCount,
+    required this.colorOnCount,
+  });
+
+  final double photoSize;
+  final double photoRadius;
+  final double gap;
+  final double addGap;
+  final double addSize;
+  final double priceGap;
+  final double fadedOpacity;
+  final int colorName;
+  final int colorAdd;
+  final int colorAddHover;
+  final int colorAddPressed;
+  final int colorOnAdd;
+  final int colorCount;
+  final int colorOnCount;
+}
+
+/// The DishCard tokens per theme.
+abstract final class FoxDishCard {
+  static const DishCardTokens light = DishCardTokens(
+    photoSize: 96.0,
+    photoRadius: 10.0,
+    gap: 12.0,
+    addGap: 8.0,
+    addSize: 40.0,
+    priceGap: 8.0,
+    fadedOpacity: 0.55,
+    colorName: 0xFF03428E,
+    colorAdd: 0xFFFF6E31,
+    colorAddHover: 0xFFDA531B,
+    colorAddPressed: 0xFFC2410C,
+    colorOnAdd: 0xFFFFFAED,
+    colorCount: 0xFF03428E,
+    colorOnCount: 0xFFFFFFFF,
+  );
+
+  static const DishCardTokens dark = DishCardTokens(
+    photoSize: 96.0,
+    photoRadius: 10.0,
+    gap: 12.0,
+    addGap: 8.0,
+    addSize: 40.0,
+    priceGap: 8.0,
+    fadedOpacity: 0.55,
+    colorName: 0xFF03428E,
+    colorAdd: 0xFFFF6E31,
+    colorAddHover: 0xFFDA531B,
+    colorAddPressed: 0xFFC2410C,
+    colorOnAdd: 0xFFFFFAED,
+    colorCount: 0xFF03428E,
+    colorOnCount: 0xFFFFFFFF,
+  );
+
+  static const DishCardTokens captainLight = DishCardTokens(
+    photoSize: 96.0,
+    photoRadius: 10.0,
+    gap: 12.0,
+    addGap: 8.0,
+    addSize: 40.0,
+    priceGap: 8.0,
+    fadedOpacity: 0.55,
+    colorName: 0xFF03428E,
+    colorAdd: 0xFFFF6E31,
+    colorAddHover: 0xFFDA531B,
+    colorAddPressed: 0xFFC2410C,
+    colorOnAdd: 0xFFFFFAED,
+    colorCount: 0xFF03428E,
+    colorOnCount: 0xFFFFFFFF,
+  );
+
+  static const DishCardTokens captainDark = DishCardTokens(
+    photoSize: 96.0,
+    photoRadius: 10.0,
+    gap: 12.0,
+    addGap: 8.0,
+    addSize: 40.0,
+    priceGap: 8.0,
+    fadedOpacity: 0.55,
+    colorName: 0xFF03428E,
+    colorAdd: 0xFFFF6E31,
+    colorAddHover: 0xFFDA531B,
+    colorAddPressed: 0xFFC2410C,
+    colorOnAdd: 0xFFFFFAED,
+    colorCount: 0xFF03428E,
+    colorOnCount: 0xFFFFFFFF,
   );
 }
 
@@ -3229,6 +3447,52 @@ abstract final class FoxOrderRow {
   );
 }
 
+/// The PullToRefresh component tokens of one theme.
+final class PullToRefreshTokens {
+  const PullToRefreshTokens({
+    required this.dropSize,
+    required this.markSize,
+    required this.inset,
+    required this.colorDrop,
+  });
+
+  final double dropSize;
+  final double markSize;
+  final double inset;
+  final int colorDrop;
+}
+
+/// The PullToRefresh tokens per theme.
+abstract final class FoxPullToRefresh {
+  static const PullToRefreshTokens light = PullToRefreshTokens(
+    dropSize: 48.0,
+    markSize: 32.0,
+    inset: 16.0,
+    colorDrop: 0xFFFEFEFE,
+  );
+
+  static const PullToRefreshTokens dark = PullToRefreshTokens(
+    dropSize: 48.0,
+    markSize: 32.0,
+    inset: 16.0,
+    colorDrop: 0xFFFEFEFE,
+  );
+
+  static const PullToRefreshTokens captainLight = PullToRefreshTokens(
+    dropSize: 48.0,
+    markSize: 32.0,
+    inset: 16.0,
+    colorDrop: 0xFFFEFEFE,
+  );
+
+  static const PullToRefreshTokens captainDark = PullToRefreshTokens(
+    dropSize: 48.0,
+    markSize: 32.0,
+    inset: 16.0,
+    colorDrop: 0xFFFEFEFE,
+  );
+}
+
 /// The RestaurantBar component tokens of one theme.
 final class RestaurantBarTokens {
   const RestaurantBarTokens({
@@ -3320,6 +3584,142 @@ abstract final class FoxRestaurantBar {
     colorName: 0xFF03428E,
     colorConnected: 0xFF055A37,
     colorOffline: 0xFF8C1530,
+  );
+}
+
+/// The RestaurantCard component tokens of one theme.
+final class RestaurantCardTokens {
+  const RestaurantCardTokens({
+    required this.coverRadius,
+    required this.logoSize,
+    required this.heartSize,
+    required this.heartInset,
+    required this.stateInset,
+    required this.gap,
+    required this.factsGap,
+    required this.factsRowGap,
+    required this.factsTop,
+    required this.factGap,
+    required this.fadedOpacity,
+    required this.colorCover,
+    required this.colorHeartBackground,
+    required this.colorHeartBackgroundHover,
+    required this.colorHeartBackgroundPressed,
+    required this.colorHeart,
+    required this.colorHeartFavourite,
+    required this.colorRating,
+    required this.colorNew,
+  });
+
+  final double coverRadius;
+  final double logoSize;
+  final double heartSize;
+  final double heartInset;
+  final double stateInset;
+  final double gap;
+  final double factsGap;
+  final double factsRowGap;
+  final double factsTop;
+  final double factGap;
+  final double fadedOpacity;
+  final int colorCover;
+  final int colorHeartBackground;
+  final int colorHeartBackgroundHover;
+  final int colorHeartBackgroundPressed;
+  final int colorHeart;
+  final int colorHeartFavourite;
+  final int colorRating;
+  final int colorNew;
+}
+
+/// The RestaurantCard tokens per theme.
+abstract final class FoxRestaurantCard {
+  static const RestaurantCardTokens light = RestaurantCardTokens(
+    coverRadius: 15.0,
+    logoSize: 72.0,
+    heartSize: 40.0,
+    heartInset: 4.0,
+    stateInset: 12.0,
+    gap: 12.0,
+    factsGap: 16.0,
+    factsRowGap: 4.0,
+    factsTop: 8.0,
+    factGap: 4.0,
+    fadedOpacity: 0.55,
+    colorCover: 0xFFFFEDE3,
+    colorHeartBackground: 0xFFFEFEFE,
+    colorHeartBackgroundHover: 0xFFD6E4F7,
+    colorHeartBackgroundPressed: 0xFFADC9EE,
+    colorHeart: 0xFF03428E,
+    colorHeartFavourite: 0xFFBF2929,
+    colorRating: 0xFFFF6E31,
+    colorNew: 0xFF067647,
+  );
+
+  static const RestaurantCardTokens dark = RestaurantCardTokens(
+    coverRadius: 15.0,
+    logoSize: 72.0,
+    heartSize: 40.0,
+    heartInset: 4.0,
+    stateInset: 12.0,
+    gap: 12.0,
+    factsGap: 16.0,
+    factsRowGap: 4.0,
+    factsTop: 8.0,
+    factGap: 4.0,
+    fadedOpacity: 0.55,
+    colorCover: 0xFFFFEDE3,
+    colorHeartBackground: 0xFFFEFEFE,
+    colorHeartBackgroundHover: 0xFFD6E4F7,
+    colorHeartBackgroundPressed: 0xFFADC9EE,
+    colorHeart: 0xFF03428E,
+    colorHeartFavourite: 0xFFBF2929,
+    colorRating: 0xFFFF6E31,
+    colorNew: 0xFF067647,
+  );
+
+  static const RestaurantCardTokens captainLight = RestaurantCardTokens(
+    coverRadius: 15.0,
+    logoSize: 72.0,
+    heartSize: 40.0,
+    heartInset: 4.0,
+    stateInset: 12.0,
+    gap: 12.0,
+    factsGap: 16.0,
+    factsRowGap: 4.0,
+    factsTop: 8.0,
+    factGap: 4.0,
+    fadedOpacity: 0.55,
+    colorCover: 0xFFFFEDE3,
+    colorHeartBackground: 0xFFFEFEFE,
+    colorHeartBackgroundHover: 0xFFD6E4F7,
+    colorHeartBackgroundPressed: 0xFFD6E4F7,
+    colorHeart: 0xFF03428E,
+    colorHeartFavourite: 0xFF8C1530,
+    colorRating: 0xFFFF6E31,
+    colorNew: 0xFF055A37,
+  );
+
+  static const RestaurantCardTokens captainDark = RestaurantCardTokens(
+    coverRadius: 15.0,
+    logoSize: 72.0,
+    heartSize: 40.0,
+    heartInset: 4.0,
+    stateInset: 12.0,
+    gap: 12.0,
+    factsGap: 16.0,
+    factsRowGap: 4.0,
+    factsTop: 8.0,
+    factGap: 4.0,
+    fadedOpacity: 0.55,
+    colorCover: 0xFFFFEDE3,
+    colorHeartBackground: 0xFFFEFEFE,
+    colorHeartBackgroundHover: 0xFFD6E4F7,
+    colorHeartBackgroundPressed: 0xFFD6E4F7,
+    colorHeart: 0xFF03428E,
+    colorHeartFavourite: 0xFF8C1530,
+    colorRating: 0xFFFF6E31,
+    colorNew: 0xFF055A37,
   );
 }
 
@@ -4295,6 +4695,7 @@ final class ComponentTokens {
     required this.blockingBanner,
     required this.blockingHeads,
     required this.bottomNavigation,
+    required this.bottomSheet,
     required this.button,
     required this.card,
     required this.codePreview,
@@ -4304,6 +4705,7 @@ final class ComponentTokens {
     required this.dataTable,
     required this.dateField,
     required this.dialog,
+    required this.dishCard,
     required this.drawer,
     required this.dropLoader,
     required this.emptyState,
@@ -4316,7 +4718,9 @@ final class ComponentTokens {
     required this.navigationRail,
     required this.orderCard,
     required this.orderRow,
+    required this.pullToRefresh,
     required this.restaurantBar,
+    required this.restaurantCard,
     required this.signInHero,
     required this.skeleton,
     required this.statusChip,
@@ -4334,6 +4738,7 @@ final class ComponentTokens {
   final BlockingBannerTokens blockingBanner;
   final BlockingHeadsTokens blockingHeads;
   final BottomNavigationTokens bottomNavigation;
+  final BottomSheetTokens bottomSheet;
   final ButtonTokens button;
   final CardTokens card;
   final CodePreviewTokens codePreview;
@@ -4343,6 +4748,7 @@ final class ComponentTokens {
   final DataTableTokens dataTable;
   final DateFieldTokens dateField;
   final DialogTokens dialog;
+  final DishCardTokens dishCard;
   final DrawerTokens drawer;
   final DropLoaderTokens dropLoader;
   final EmptyStateTokens emptyState;
@@ -4355,7 +4761,9 @@ final class ComponentTokens {
   final NavigationRailTokens navigationRail;
   final OrderCardTokens orderCard;
   final OrderRowTokens orderRow;
+  final PullToRefreshTokens pullToRefresh;
   final RestaurantBarTokens restaurantBar;
+  final RestaurantCardTokens restaurantCard;
   final SignInHeroTokens signInHero;
   final SkeletonTokens skeleton;
   final StatusChipTokens statusChip;
@@ -4376,6 +4784,7 @@ abstract final class FoxComponents {
     blockingBanner: FoxBlockingBanner.light,
     blockingHeads: FoxBlockingHeads.light,
     bottomNavigation: FoxBottomNavigation.light,
+    bottomSheet: FoxBottomSheet.light,
     button: FoxButton.light,
     card: FoxCard.light,
     codePreview: FoxCodePreview.light,
@@ -4385,6 +4794,7 @@ abstract final class FoxComponents {
     dataTable: FoxDataTable.light,
     dateField: FoxDateField.light,
     dialog: FoxDialog.light,
+    dishCard: FoxDishCard.light,
     drawer: FoxDrawer.light,
     dropLoader: FoxDropLoader.light,
     emptyState: FoxEmptyState.light,
@@ -4397,7 +4807,9 @@ abstract final class FoxComponents {
     navigationRail: FoxNavigationRail.light,
     orderCard: FoxOrderCard.light,
     orderRow: FoxOrderRow.light,
+    pullToRefresh: FoxPullToRefresh.light,
     restaurantBar: FoxRestaurantBar.light,
+    restaurantCard: FoxRestaurantCard.light,
     signInHero: FoxSignInHero.light,
     skeleton: FoxSkeleton.light,
     statusChip: FoxStatusChip.light,
@@ -4416,6 +4828,7 @@ abstract final class FoxComponents {
     blockingBanner: FoxBlockingBanner.dark,
     blockingHeads: FoxBlockingHeads.dark,
     bottomNavigation: FoxBottomNavigation.dark,
+    bottomSheet: FoxBottomSheet.dark,
     button: FoxButton.dark,
     card: FoxCard.dark,
     codePreview: FoxCodePreview.dark,
@@ -4425,6 +4838,7 @@ abstract final class FoxComponents {
     dataTable: FoxDataTable.dark,
     dateField: FoxDateField.dark,
     dialog: FoxDialog.dark,
+    dishCard: FoxDishCard.dark,
     drawer: FoxDrawer.dark,
     dropLoader: FoxDropLoader.dark,
     emptyState: FoxEmptyState.dark,
@@ -4437,7 +4851,9 @@ abstract final class FoxComponents {
     navigationRail: FoxNavigationRail.dark,
     orderCard: FoxOrderCard.dark,
     orderRow: FoxOrderRow.dark,
+    pullToRefresh: FoxPullToRefresh.dark,
     restaurantBar: FoxRestaurantBar.dark,
+    restaurantCard: FoxRestaurantCard.dark,
     signInHero: FoxSignInHero.dark,
     skeleton: FoxSkeleton.dark,
     statusChip: FoxStatusChip.dark,
@@ -4456,6 +4872,7 @@ abstract final class FoxComponents {
     blockingBanner: FoxBlockingBanner.captainLight,
     blockingHeads: FoxBlockingHeads.captainLight,
     bottomNavigation: FoxBottomNavigation.captainLight,
+    bottomSheet: FoxBottomSheet.captainLight,
     button: FoxButton.captainLight,
     card: FoxCard.captainLight,
     codePreview: FoxCodePreview.captainLight,
@@ -4465,6 +4882,7 @@ abstract final class FoxComponents {
     dataTable: FoxDataTable.captainLight,
     dateField: FoxDateField.captainLight,
     dialog: FoxDialog.captainLight,
+    dishCard: FoxDishCard.captainLight,
     drawer: FoxDrawer.captainLight,
     dropLoader: FoxDropLoader.captainLight,
     emptyState: FoxEmptyState.captainLight,
@@ -4477,7 +4895,9 @@ abstract final class FoxComponents {
     navigationRail: FoxNavigationRail.captainLight,
     orderCard: FoxOrderCard.captainLight,
     orderRow: FoxOrderRow.captainLight,
+    pullToRefresh: FoxPullToRefresh.captainLight,
     restaurantBar: FoxRestaurantBar.captainLight,
+    restaurantCard: FoxRestaurantCard.captainLight,
     signInHero: FoxSignInHero.captainLight,
     skeleton: FoxSkeleton.captainLight,
     statusChip: FoxStatusChip.captainLight,
@@ -4496,6 +4916,7 @@ abstract final class FoxComponents {
     blockingBanner: FoxBlockingBanner.captainDark,
     blockingHeads: FoxBlockingHeads.captainDark,
     bottomNavigation: FoxBottomNavigation.captainDark,
+    bottomSheet: FoxBottomSheet.captainDark,
     button: FoxButton.captainDark,
     card: FoxCard.captainDark,
     codePreview: FoxCodePreview.captainDark,
@@ -4505,6 +4926,7 @@ abstract final class FoxComponents {
     dataTable: FoxDataTable.captainDark,
     dateField: FoxDateField.captainDark,
     dialog: FoxDialog.captainDark,
+    dishCard: FoxDishCard.captainDark,
     drawer: FoxDrawer.captainDark,
     dropLoader: FoxDropLoader.captainDark,
     emptyState: FoxEmptyState.captainDark,
@@ -4517,7 +4939,9 @@ abstract final class FoxComponents {
     navigationRail: FoxNavigationRail.captainDark,
     orderCard: FoxOrderCard.captainDark,
     orderRow: FoxOrderRow.captainDark,
+    pullToRefresh: FoxPullToRefresh.captainDark,
     restaurantBar: FoxRestaurantBar.captainDark,
+    restaurantCard: FoxRestaurantCard.captainDark,
     signInHero: FoxSignInHero.captainDark,
     skeleton: FoxSkeleton.captainDark,
     statusChip: FoxStatusChip.captainDark,
@@ -4747,5 +5171,8 @@ abstract final class FoxSize {
   static const double listRow = 56.0;
   static const double emptyArt = 120.0;
   static const double emptyArtCompact = 72.0;
+  static const double coverLogo = 72.0;
+  static const double dishPhoto = 96.0;
+  static const double sheetHandle = 40.0;
   static const double countdownRing = 96.0;
 }

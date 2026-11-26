@@ -117,7 +117,7 @@ class _FoxPullToRefreshState extends State<FoxPullToRefresh> {
             ),
             if (showing)
               PositionedDirectional(
-                top: t.FoxSpace.md,
+                top: FoxTheme.of(context).components.pullToRefresh.inset,
                 start: 0,
                 end: 0,
                 child: Center(
@@ -149,12 +149,12 @@ class FoxRefreshDrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final pullToRefresh = theme.components.pullToRefresh;
     return Container(
-      width: t.FoxSize.touchTarget,
-      height: t.FoxSize.touchTarget,
+      width: pullToRefresh.dropSize,
+      height: pullToRefresh.dropSize,
       decoration: BoxDecoration(
-        color: c.surfaceRaised,
+        color: Color(pullToRefresh.colorDrop),
         shape: BoxShape.circle,
         boxShadow: [theme.shadows.medium],
       ),
@@ -162,7 +162,7 @@ class FoxRefreshDrop extends StatelessWidget {
       // The project's one loader (D.11b): it fills as you pull, and cycles
       // while the refresh runs (still, half full, under reduced motion).
       child: SizedBox.square(
-        dimension: t.FoxSize.iconLg,
+        dimension: pullToRefresh.markSize,
         child: FittedBox(
           child: refreshing
               ? const FoxDropLoader(size: FoxDropLoaderSize.lg)
