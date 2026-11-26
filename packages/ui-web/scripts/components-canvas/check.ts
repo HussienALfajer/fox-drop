@@ -12,7 +12,14 @@
 // classes.json, which canvas.ts reads. Usage:
 //   pnpm --filter @fox-drop/ui-web components-canvas:check [--measure] [Name…]
 import { execFileSync } from 'node:child_process';
-import { createReadStream, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  createReadStream,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
@@ -61,7 +68,8 @@ const server = createServer((req, res) => {
     : url.startsWith('/_umd/')
       ? path.join(UMD, url.slice('/_umd/'.length))
       : path.join(PROJECT, url);
-  if (!existsSync(file)) {
+  // A link pressed in Play asks for a folder: nothing is served but files.
+  if (!existsSync(file) || !statSync(file).isFile()) {
     res.writeHead(404).end();
     return;
   }
@@ -147,7 +155,12 @@ for (const f of files) {
     });
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
+    // A broken asset by its address (the console names only the status).
+    page.on('response', (r) => {
+      if (r.status() >= 400) errors.push(`${String(r.status())} ${r.url().replace(base, '/')}`);
+    });
     page.on('console', (m) => {
+      if (m.text().startsWith('Failed to load resource')) return;
       if (m.type() === 'error' || m.type() === 'warning') {
         errors.push(`${m.type()}: ${m.text().slice(0, 200)}`);
       }

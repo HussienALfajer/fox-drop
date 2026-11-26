@@ -262,6 +262,8 @@ async function panel(page: Page, stage: Locator, found: string[]): Promise<void>
   for (let i = 0; i < fields; i += 1) {
     const field = dock.locator('input[type=text], input:not([type]), textarea').nth(i);
     const label = await nameOf(field);
+    // An address (a photo's, a link's) is no text to play with: '7' would only fail to load.
+    if (/photo|cover|logo|image|src|href|url/i.test(label)) continue;
     await field.fill('7');
     await check(label);
   }
@@ -279,6 +281,16 @@ async function panel(page: Page, stage: Locator, found: string[]): Promise<void>
 /** Plays the board's playground; returns what did not work. */
 export async function playBoard(page: Page): Promise<string[]> {
   const found: string[] = [];
+  // A pressed link stays on the board, as on the canvas, where its href leads nowhere.
+  await page.evaluate(() => {
+    document.addEventListener(
+      'click',
+      (event) => {
+        if ((event.target as Element | null)?.closest('a[href]')) event.preventDefault();
+      },
+      true,
+    );
+  });
   const stage = page.locator('[data-stage]');
   if ((await stage.count()) === 0) return ['no playground'];
   await tabThrough(page, stage, found);
