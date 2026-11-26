@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@ui-sdk/react/dialog';
-import type { ReactElement, ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { formTv } from '../field/styles';
 import { Icon } from '../icon/icon';
 import { backdrop, closeButton } from '../overlay/styles';
@@ -90,6 +90,31 @@ const CURVE = 'M0,0 C26.667,0 26.667,24 48,24 L0,24 Z';
 const plainTop =
   'flex flex-col bg-(--fd-bottom-sheet-color-background) ps-(--fd-bottom-sheet-padding-inline) pe-sm pt-(--fd-bottom-sheet-padding-top)';
 
+/**
+ * The sheet's content. Only while it overflows is it a keyboard stop (axe:
+ * scrollable-region-focusable): otherwise it would take the sheet's first
+ * focus from the controls inside it.
+ */
+function ScrollBody({ className, children }: { className: string; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [scrolls, setScrolls] = useState(false);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const measure = () => setScrolls(element.scrollHeight > element.clientHeight);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={ref} {...(scrolls && { tabIndex: 0 })} className={className}>
+      {children}
+    </div>
+  );
+}
+
 export interface BottomSheetProps {
   /** The element that opens it, usually a Button. Focus returns to it on close. */
   trigger?: ReactElement;
@@ -163,10 +188,7 @@ export function BottomSheet(props: BottomSheetProps) {
       <DialogContent inline={inline} className={frame({ inline })}>
         <div className={panel({ sCurve })}>
           {top}
-          {/* Reachable by the keyboard when it scrolls (axe: scrollable-region-focusable). */}
-          <div tabIndex={0} className={body({ sCurve })}>
-            {children}
-          </div>
+          <ScrollBody className={body({ sCurve })}>{children}</ScrollBody>
         </div>
       </DialogContent>
     </Dialog>
