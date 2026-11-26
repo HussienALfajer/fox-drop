@@ -6,6 +6,7 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 
 ## Waiting for the owner
 
+- **The bottom navigation's focus ring on an unselected tab** (D.W4d review): the ring is `bottom-navigation.color.focus` (`on-accent`, white) inside the item's circle, about 1.1:1 against an ivory tab (plain on the orange current tab), on both sides as the D.10/D.11b twin draws it. Options: a `focus-ring` or `accent` ring on unselected tabs (one more token; the Focus screenshot and parity shots move), or keep it.
 - **Codes abroad while App Check is off** (D.11a security review): `otp.number_daily_max_abroad` limits one number, not a script that sends one code to each of many foreign numbers (held only by `otp.ip_hourly_max` and a client-chosen device id) while `otp.app_check_required` is off. Options: refuse numbers abroad until App Check is on, or a global daily cap on codes sent abroad. The apps offer foreign numbers only from D.11's components slice.
 - **The address's contact number abroad** (D.11a review): it stays Syrian or Turkish (`syrianOrTurkishPhone`); the owner widened sign-in only (U3). Widen it too? A captain calls it from Syria.
 

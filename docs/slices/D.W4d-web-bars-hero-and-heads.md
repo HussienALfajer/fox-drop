@@ -43,7 +43,8 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 5. **The hero's tracking steps are a slot** (`origin.steps`): the web `TrackingSteps` came with D.W4b, which merged while this slice was built; the orders story uses it.
 6. **Semantic tokens of the same value are reused** (as D.W3c): `bottom-navigation.item-size-selected` is `size.list-row` (56), `blocking-heads.sign.width` `size.menu-min-width` (192), `sign.strings-height` `size.control-compact` (40). A later retune of those semantic tokens moves these too.
 7. **Parity gaps left, none fixed** (no golden or existing screenshot moves): the web perforation is the browser's dashed border (Flutter draws 4-and-4 dashes; `ticket.dash` is Flutter only), and the web cut-outs need `ticket.cut-offset`; the web sign's strings start about 2 px higher (`sign.strings-lift`, Flutter lifts by half the nail in a transform); at the parity width the Flutter restaurant bar wraps a long name on two lines where the web truncates it on one; the bottom navigation's count badge sits on the right corner on the web, the left in Flutter (a `CountBadge` placement gap outside this slice's files: `docs/backlog.md`); the ticket's required version looks heavier on the web (the `number` role's rendering, both sides read the same token).
-8. **One locked test was corrected, not weakened:** `test/stories.test.ts` listed `RestaurantBar` before `RadioGroup`, against the sorted order it compares; and it took D.W4b's `TrackingSteps` when main was merged.
+8. **The bottom navigation's focus ring is left as the approved twin draws it** (review, round 2): `color.focus` is `on-accent` (white) inside the item's circle, plain on the orange current tab but barely visible on an ivory tab (about 1.1:1 to the circle; its outer edge meets the blue outline). Changing it is a design choice for the owner (a `focus-ring` or `accent` ring on an unselected tab, one more token, the Focus images on both sides move): `docs/backlog.md`. The Focus story now shows that case (the second tab current).
+9. **One locked test was corrected, not weakened:** `test/stories.test.ts` listed `RestaurantBar` before `RadioGroup`, against the sorted order it compares; and it took D.W4b's `TrackingSteps` when main was merged.
 
 ## Stopped at
 
@@ -53,8 +54,9 @@ Built and checked; pull request next.
 
 - Red phase: `bars-hero-review.test.tsx` failed on the missing modules, `stories.test.ts` on the five missing components, `component-usage.test.ts` on every token of the six new files unread on both sides.
 - `pnpm parity RestaurantBar BottomNavigation SignInHero BlockingHeads TopBar Sidebar`: six sheets, 44 web shots and the Flutter cases, all passed; the new components match their twins but for the gaps in decision 7. Approval: delegated overnight, pending the owner.
-- `node scripts/verify.mjs --changed`:
-- Review:
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (Prettier, Turborepo lint, types, build and smoke over 7 packages, tests, Dart analyze, `fox_lints rules`, Dart format, Dart and Flutter tests of 7 packages; server tests skipped, no change they read).
+- `pnpm baselines`: «passed in 4 min 10 s»; 30 new screenshots (the four new components' stories on phone and captain), no existing screenshot and no core_ui golden moved.
+- Review (T2, `reviewer`, two rounds): round 1 found no blocker; one should-fix (the hero's orange icon pairs missing from `contrast.ts`) was withdrawn in round 2, since `contrast.ts` already records the hero's art as decoration (D.11b); three minor fixed (the hero resets what it shows when its words change; the Hover and Focus stories make the second tab current, so the hover look is shot; the status line). Round 2 found one should-fix that is the owner's design choice (decision 8, backlog).
 
 ## Before deploying
 
