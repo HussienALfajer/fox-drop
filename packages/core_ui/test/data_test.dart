@@ -737,4 +737,128 @@ void main() {
       );
     });
   });
+
+  // The parity gaps of slice D.W3b, each as the web or the D.9 sheet has it.
+  group('parity with the web (D.W3b)', () {
+    final tokens = _phone.components;
+
+    testWidgets('a count badge is its size, ring included, centred on the '
+        'corner; the dot is tucked on it', (tester) async {
+      Future<(Rect, Rect)> badge(int? count) async {
+        await tester.pumpWidget(
+          formApp(
+            Center(
+              child: FoxCountBadge(
+                count: count,
+                semanticLabel: 'إشعارات',
+                child: const FoxIcon(FoxIcons.bell),
+              ),
+            ),
+          ),
+        );
+        final icon = tester.getRect(find.byType(FoxIcon));
+        final mark = tester.getRect(
+          find
+              .descendant(
+                of: find.byType(Stack),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+        return (icon, mark);
+      }
+
+      final (icon, count) = await badge(3);
+      expect(count.height, tokens.countBadge.size);
+      expect(count.width, tokens.countBadge.size);
+      // RTL: the end corner is the icon's left.
+      expect(icon.top - count.top, tokens.countBadge.offset);
+      expect(icon.left - count.left, tokens.countBadge.offset);
+
+      final (_, dot) = await badge(null);
+      expect(dot.size, Size.square(tokens.countBadge.dotSize));
+      expect(icon.top - dot.top, tokens.countBadge.dotOffset);
+    });
+
+    testWidgets('a status chip is at least min-height tall', (tester) async {
+      await tester.pumpWidget(
+        formApp(
+          const Align(
+            alignment: AlignmentDirectional.topStart,
+            child: FoxStatusChip(
+              status: FoxOrderStatus.placed,
+              label: 'بانتظار المطعم',
+            ),
+          ),
+        ),
+      );
+      expect(
+        tester.getSize(find.byType(FoxStatusChip)).height,
+        tokens.statusChip.minHeight,
+      );
+    });
+
+    testWidgets('a list row keeps one gap before its chevron', (tester) async {
+      await tester.pumpWidget(
+        formApp(FoxListRow(title: 'المنزل', onPressed: () {})),
+      );
+      final text = tester.getRect(find.byType(Expanded));
+      final chevron = tester.getRect(find.byType(FoxIcon));
+      // RTL: the chevron sits at the end, to the text's left.
+      expect(text.left - chevron.right, tokens.listRow.gap);
+    });
+
+    testWidgets('the equivalents sit one gap under the total', (tester) async {
+      await tester.pumpWidget(
+        formApp(
+          const FoxAmountsSummary(
+            lines: [FoxAmountLine('قيمة الأصناف', '45200')],
+            total: FoxAmountLine('المجموع', '45200'),
+            symbol: '₺',
+            equivalents: r'أو 11.50 $',
+          ),
+        ),
+      );
+      final total = tester.getRect(
+        find
+            .ancestor(
+              of: find.text('المجموع'),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final equivalents = tester.getRect(find.text(r'أو 11.50 $'));
+      expect(equivalents.top - total.bottom, tokens.amountsSummary.gap);
+    });
+
+    testWidgets('an empty state frames its icon in the sheet\'s drop and '
+        'keeps one gap between its parts', (tester) async {
+      await tester.pumpWidget(
+        formApp(
+          FoxEmptyState(
+            icon: FoxIcons.orders,
+            title: 'لا طلبات',
+            description: 'غيّر الفترة',
+            action: FoxEmptyAction('مسح الفلاتر', () {}),
+          ),
+        ),
+      );
+      final drop = tester.getRect(
+        find
+            .ancestor(
+              of: find.byType(FoxIcon),
+              matching: find.byType(CustomPaint),
+            )
+            .first,
+      );
+      expect(drop.size, Size.square(tokens.emptyState.artSize));
+      final title = tester.getRect(find.text('لا طلبات'));
+      final line = tester.getRect(find.text('غيّر الفترة'));
+      final action = tester.getRect(find.byType(FoxButton));
+      final gap = tokens.emptyState.gap;
+      expect(title.top - drop.bottom, gap);
+      expect(line.top - title.bottom, gap);
+      expect(action.top - line.bottom, gap);
+    });
+  });
 }

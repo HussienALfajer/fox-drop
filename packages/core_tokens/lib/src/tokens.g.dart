@@ -341,6 +341,118 @@ abstract final class FoxColors {
   );
 }
 
+/// The AmountsSummary component tokens of one theme.
+final class AmountsSummaryTokens {
+  const AmountsSummaryTokens({
+    required this.gap,
+    required this.linePaddingBlock,
+    required this.lineRuleWidth,
+    required this.lineRule,
+    required this.lineFree,
+    required this.totalPaddingTop,
+    required this.totalRuleWidth,
+    required this.totalRule,
+    required this.prominentPaddingInline,
+    required this.prominentPaddingBlock,
+    required this.prominentRadius,
+    required this.prominentBackground,
+    required this.prominentLabel,
+    required this.colorText,
+    required this.colorEquivalents,
+  });
+
+  final double gap;
+  final double linePaddingBlock;
+  final double lineRuleWidth;
+  final int lineRule;
+  final int lineFree;
+  final double totalPaddingTop;
+  final double totalRuleWidth;
+  final int totalRule;
+  final double prominentPaddingInline;
+  final double prominentPaddingBlock;
+  final double prominentRadius;
+  final int prominentBackground;
+  final int prominentLabel;
+  final int colorText;
+  final int colorEquivalents;
+}
+
+/// The AmountsSummary tokens per theme.
+abstract final class FoxAmountsSummary {
+  static const AmountsSummaryTokens light = AmountsSummaryTokens(
+    gap: 12.0,
+    linePaddingBlock: 8.0,
+    lineRuleWidth: 1.0,
+    lineRule: 0xFFD3D6D9,
+    lineFree: 0xFF067647,
+    totalPaddingTop: 12.0,
+    totalRuleWidth: 2.0,
+    totalRule: 0xFF03428E,
+    prominentPaddingInline: 24.0,
+    prominentPaddingBlock: 12.0,
+    prominentRadius: 15.0,
+    prominentBackground: 0xFFFF6E31,
+    prominentLabel: 0xFFFFFAED,
+    colorText: 0xFF03428E,
+    colorEquivalents: 0xFF416EA4,
+  );
+
+  static const AmountsSummaryTokens dark = AmountsSummaryTokens(
+    gap: 12.0,
+    linePaddingBlock: 8.0,
+    lineRuleWidth: 1.0,
+    lineRule: 0xFFD3D6D9,
+    lineFree: 0xFF067647,
+    totalPaddingTop: 12.0,
+    totalRuleWidth: 2.0,
+    totalRule: 0xFF03428E,
+    prominentPaddingInline: 24.0,
+    prominentPaddingBlock: 12.0,
+    prominentRadius: 15.0,
+    prominentBackground: 0xFFFF6E31,
+    prominentLabel: 0xFFFFFAED,
+    colorText: 0xFF03428E,
+    colorEquivalents: 0xFF416EA4,
+  );
+
+  static const AmountsSummaryTokens captainLight = AmountsSummaryTokens(
+    gap: 12.0,
+    linePaddingBlock: 8.0,
+    lineRuleWidth: 1.0,
+    lineRule: 0xFFD3D6D9,
+    lineFree: 0xFF055A37,
+    totalPaddingTop: 12.0,
+    totalRuleWidth: 2.0,
+    totalRule: 0xFF03428E,
+    prominentPaddingInline: 24.0,
+    prominentPaddingBlock: 12.0,
+    prominentRadius: 15.0,
+    prominentBackground: 0xFFFF6E31,
+    prominentLabel: 0xFFFFFAED,
+    colorText: 0xFF03428E,
+    colorEquivalents: 0xFF4D473D,
+  );
+
+  static const AmountsSummaryTokens captainDark = AmountsSummaryTokens(
+    gap: 12.0,
+    linePaddingBlock: 8.0,
+    lineRuleWidth: 1.0,
+    lineRule: 0xFFD3D6D9,
+    lineFree: 0xFF055A37,
+    totalPaddingTop: 12.0,
+    totalRuleWidth: 2.0,
+    totalRule: 0xFF03428E,
+    prominentPaddingInline: 24.0,
+    prominentPaddingBlock: 12.0,
+    prominentRadius: 15.0,
+    prominentBackground: 0xFFFF6E31,
+    prominentLabel: 0xFFFFFAED,
+    colorText: 0xFF03428E,
+    colorEquivalents: 0xFF4D473D,
+  );
+}
+
 /// The Button component tokens of one theme.
 final class ButtonTokens {
   const ButtonTokens({
@@ -513,6 +625,100 @@ abstract final class FoxButton {
   );
 }
 
+/// The Card component tokens of one theme.
+final class CardTokens {
+  const CardTokens({
+    required this.radius,
+    required this.padding,
+    required this.gap,
+    required this.borderWidth,
+    required this.colorBackground,
+    required this.colorBackgroundHover,
+    required this.colorBackgroundPressed,
+    required this.colorBorder,
+    required this.colorText,
+    required this.dangerBorderWidth,
+    required this.dangerBackground,
+    required this.dangerBorder,
+  });
+
+  final double radius;
+  final double padding;
+  final double gap;
+  final double borderWidth;
+  final int colorBackground;
+  final int colorBackgroundHover;
+  final int colorBackgroundPressed;
+  final int colorBorder;
+  final int colorText;
+  final double dangerBorderWidth;
+  final int dangerBackground;
+  final int dangerBorder;
+}
+
+/// The Card tokens per theme.
+abstract final class FoxCard {
+  static const CardTokens light = CardTokens(
+    radius: 15.0,
+    padding: 16.0,
+    gap: 12.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundHover: 0xFFD6E4F7,
+    colorBackgroundPressed: 0xFFADC9EE,
+    colorBorder: 0xFFD3D6D9,
+    colorText: 0xFF03428E,
+    dangerBorderWidth: 2.0,
+    dangerBackground: 0xFFFBE9E9,
+    dangerBorder: 0xFFBF2929,
+  );
+
+  static const CardTokens dark = CardTokens(
+    radius: 15.0,
+    padding: 16.0,
+    gap: 12.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundHover: 0xFFD6E4F7,
+    colorBackgroundPressed: 0xFFADC9EE,
+    colorBorder: 0xFFD3D6D9,
+    colorText: 0xFF03428E,
+    dangerBorderWidth: 2.0,
+    dangerBackground: 0xFFFBE9E9,
+    dangerBorder: 0xFFBF2929,
+  );
+
+  static const CardTokens captainLight = CardTokens(
+    radius: 15.0,
+    padding: 16.0,
+    gap: 12.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundHover: 0xFFD6E4F7,
+    colorBackgroundPressed: 0xFFD6E4F7,
+    colorBorder: 0xFFD3D6D9,
+    colorText: 0xFF03428E,
+    dangerBorderWidth: 2.0,
+    dangerBackground: 0xFFFBE9E9,
+    dangerBorder: 0xFF8C1530,
+  );
+
+  static const CardTokens captainDark = CardTokens(
+    radius: 15.0,
+    padding: 16.0,
+    gap: 12.0,
+    borderWidth: 1.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundHover: 0xFFD6E4F7,
+    colorBackgroundPressed: 0xFFD6E4F7,
+    colorBorder: 0xFFD3D6D9,
+    colorText: 0xFF03428E,
+    dangerBorderWidth: 2.0,
+    dangerBackground: 0xFFFBE9E9,
+    dangerBorder: 0xFF8C1530,
+  );
+}
+
 /// The CodePreview component tokens of one theme.
 final class CodePreviewTokens {
   const CodePreviewTokens({
@@ -607,6 +813,106 @@ abstract final class FoxCodePreview {
   );
 }
 
+/// The CountBadge component tokens of one theme.
+final class CountBadgeTokens {
+  const CountBadgeTokens({
+    required this.size,
+    required this.paddingInline,
+    required this.offset,
+    required this.ringWidth,
+    required this.dotSize,
+    required this.dotOffset,
+    required this.ring,
+    required this.dangerBackground,
+    required this.dangerLabel,
+    required this.primaryBackground,
+    required this.primaryLabel,
+    required this.accentBackground,
+    required this.accentLabel,
+  });
+
+  final double size;
+  final double paddingInline;
+  final double offset;
+  final double ringWidth;
+  final double dotSize;
+  final double dotOffset;
+  final int ring;
+  final int dangerBackground;
+  final int dangerLabel;
+  final int primaryBackground;
+  final int primaryLabel;
+  final int accentBackground;
+  final int accentLabel;
+}
+
+/// The CountBadge tokens per theme.
+abstract final class FoxCountBadge {
+  static const CountBadgeTokens light = CountBadgeTokens(
+    size: 24.0,
+    paddingInline: 4.0,
+    offset: 12.0,
+    ringWidth: 2.0,
+    dotSize: 12.0,
+    dotOffset: 4.0,
+    ring: 0xFFFEFEFE,
+    dangerBackground: 0xFFBF2929,
+    dangerLabel: 0xFFFFFFFF,
+    primaryBackground: 0xFFFF6E31,
+    primaryLabel: 0xFFFFFAED,
+    accentBackground: 0xFF03428E,
+    accentLabel: 0xFFFFFFFF,
+  );
+
+  static const CountBadgeTokens dark = CountBadgeTokens(
+    size: 24.0,
+    paddingInline: 4.0,
+    offset: 12.0,
+    ringWidth: 2.0,
+    dotSize: 12.0,
+    dotOffset: 4.0,
+    ring: 0xFFFEFEFE,
+    dangerBackground: 0xFFBF2929,
+    dangerLabel: 0xFFFFFFFF,
+    primaryBackground: 0xFFFF6E31,
+    primaryLabel: 0xFFFFFAED,
+    accentBackground: 0xFF03428E,
+    accentLabel: 0xFFFFFFFF,
+  );
+
+  static const CountBadgeTokens captainLight = CountBadgeTokens(
+    size: 24.0,
+    paddingInline: 4.0,
+    offset: 12.0,
+    ringWidth: 2.0,
+    dotSize: 12.0,
+    dotOffset: 4.0,
+    ring: 0xFFFEFEFE,
+    dangerBackground: 0xFF8C1530,
+    dangerLabel: 0xFFFFFFFF,
+    primaryBackground: 0xFFFF6E31,
+    primaryLabel: 0xFFFFFAED,
+    accentBackground: 0xFF03428E,
+    accentLabel: 0xFFFFFFFF,
+  );
+
+  static const CountBadgeTokens captainDark = CountBadgeTokens(
+    size: 24.0,
+    paddingInline: 4.0,
+    offset: 12.0,
+    ringWidth: 2.0,
+    dotSize: 12.0,
+    dotOffset: 4.0,
+    ring: 0xFFFEFEFE,
+    dangerBackground: 0xFF8C1530,
+    dangerLabel: 0xFFFFFFFF,
+    primaryBackground: 0xFFFF6E31,
+    primaryLabel: 0xFFFFFAED,
+    accentBackground: 0xFF03428E,
+    accentLabel: 0xFFFFFFFF,
+  );
+}
+
 /// The CountrySheet component tokens of one theme.
 final class CountrySheetTokens {
   const CountrySheetTokens({
@@ -662,6 +968,118 @@ abstract final class FoxCountrySheet {
     emptyPaddingBlock: 24.0,
     colorCode: 0xFF4D473D,
     colorEmpty: 0xFF4D473D,
+  );
+}
+
+/// The DataTable component tokens of one theme.
+final class DataTableTokens {
+  const DataTableTokens({
+    required this.rowHeight,
+    required this.paddingInline,
+    required this.borderWidth,
+    required this.radius,
+    required this.sortGap,
+    required this.innerRadius,
+    required this.loadingLineHeight,
+    required this.colorBackground,
+    required this.colorBorder,
+    required this.colorHeadBackground,
+    required this.colorHeadText,
+    required this.colorText,
+    required this.colorRowHover,
+    required this.colorRowSelected,
+    required this.colorLoading,
+  });
+
+  final double rowHeight;
+  final double paddingInline;
+  final double borderWidth;
+  final double radius;
+  final double sortGap;
+  final double innerRadius;
+  final double loadingLineHeight;
+  final int colorBackground;
+  final int colorBorder;
+  final int colorHeadBackground;
+  final int colorHeadText;
+  final int colorText;
+  final int colorRowHover;
+  final int colorRowSelected;
+  final int colorLoading;
+}
+
+/// The DataTable tokens per theme.
+abstract final class FoxDataTable {
+  static const DataTableTokens light = DataTableTokens(
+    rowHeight: 40.0,
+    paddingInline: 12.0,
+    borderWidth: 1.0,
+    radius: 10.0,
+    sortGap: 4.0,
+    innerRadius: 4.0,
+    loadingLineHeight: 12.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorHeadBackground: 0xFFFBF2E7,
+    colorHeadText: 0xFF416EA4,
+    colorText: 0xFF03428E,
+    colorRowHover: 0xFFD6E4F7,
+    colorRowSelected: 0xFFFFEDE3,
+    colorLoading: 0xFFEFE8DA,
+  );
+
+  static const DataTableTokens dark = DataTableTokens(
+    rowHeight: 40.0,
+    paddingInline: 12.0,
+    borderWidth: 1.0,
+    radius: 10.0,
+    sortGap: 4.0,
+    innerRadius: 4.0,
+    loadingLineHeight: 12.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorHeadBackground: 0xFFFBF2E7,
+    colorHeadText: 0xFF416EA4,
+    colorText: 0xFF03428E,
+    colorRowHover: 0xFFD6E4F7,
+    colorRowSelected: 0xFFFFEDE3,
+    colorLoading: 0xFFEFE8DA,
+  );
+
+  static const DataTableTokens captainLight = DataTableTokens(
+    rowHeight: 40.0,
+    paddingInline: 12.0,
+    borderWidth: 1.0,
+    radius: 10.0,
+    sortGap: 4.0,
+    innerRadius: 4.0,
+    loadingLineHeight: 12.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorHeadBackground: 0xFFFBF2E7,
+    colorHeadText: 0xFF4D473D,
+    colorText: 0xFF03428E,
+    colorRowHover: 0xFFD6E4F7,
+    colorRowSelected: 0xFFFFEDE3,
+    colorLoading: 0xFFEFE8DA,
+  );
+
+  static const DataTableTokens captainDark = DataTableTokens(
+    rowHeight: 40.0,
+    paddingInline: 12.0,
+    borderWidth: 1.0,
+    radius: 10.0,
+    sortGap: 4.0,
+    innerRadius: 4.0,
+    loadingLineHeight: 12.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBorder: 0xFFD3D6D9,
+    colorHeadBackground: 0xFFFBF2E7,
+    colorHeadText: 0xFF4D473D,
+    colorText: 0xFF03428E,
+    colorRowHover: 0xFFD6E4F7,
+    colorRowSelected: 0xFFFFEDE3,
+    colorLoading: 0xFFEFE8DA,
   );
 }
 
@@ -750,6 +1168,170 @@ abstract final class FoxDateField {
     colorDayHover: 0xFFEEF4FC,
     colorDayOutside: 0xFF4D473D,
     colorSegment: 0xFFFBF2E7,
+  );
+}
+
+/// The DropLoader component tokens of one theme.
+final class DropLoaderTokens {
+  const DropLoaderTokens({
+    required this.sizeSm,
+    required this.sizeMd,
+    required this.sizeLg,
+    required this.colorDrop,
+    required this.colorPieces,
+    required this.colorOnPrimaryDrop,
+    required this.colorOnPrimaryPieces,
+  });
+
+  final double sizeSm;
+  final double sizeMd;
+  final double sizeLg;
+  final int colorDrop;
+  final int colorPieces;
+  final int colorOnPrimaryDrop;
+  final int colorOnPrimaryPieces;
+}
+
+/// The DropLoader tokens per theme.
+abstract final class FoxDropLoader {
+  static const DropLoaderTokens light = DropLoaderTokens(
+    sizeSm: 16.0,
+    sizeMd: 24.0,
+    sizeLg: 48.0,
+    colorDrop: 0xFFFFFAED,
+    colorPieces: 0xFFFF6E31,
+    colorOnPrimaryDrop: 0xFFFF6E31,
+    colorOnPrimaryPieces: 0xFFFFFAED,
+  );
+
+  static const DropLoaderTokens dark = DropLoaderTokens(
+    sizeSm: 16.0,
+    sizeMd: 24.0,
+    sizeLg: 48.0,
+    colorDrop: 0xFFFFFAED,
+    colorPieces: 0xFFFF6E31,
+    colorOnPrimaryDrop: 0xFFFF6E31,
+    colorOnPrimaryPieces: 0xFFFFFAED,
+  );
+
+  static const DropLoaderTokens captainLight = DropLoaderTokens(
+    sizeSm: 16.0,
+    sizeMd: 24.0,
+    sizeLg: 48.0,
+    colorDrop: 0xFFFFFAED,
+    colorPieces: 0xFFFF6E31,
+    colorOnPrimaryDrop: 0xFFFF6E31,
+    colorOnPrimaryPieces: 0xFFFFFAED,
+  );
+
+  static const DropLoaderTokens captainDark = DropLoaderTokens(
+    sizeSm: 16.0,
+    sizeMd: 24.0,
+    sizeLg: 48.0,
+    colorDrop: 0xFFFFFAED,
+    colorPieces: 0xFFFF6E31,
+    colorOnPrimaryDrop: 0xFFFF6E31,
+    colorOnPrimaryPieces: 0xFFFFFAED,
+  );
+}
+
+/// The EmptyState component tokens of one theme.
+final class EmptyStateTokens {
+  const EmptyStateTokens({
+    required this.padding,
+    required this.gap,
+    required this.artSize,
+    required this.artLift,
+    required this.artEdgeWidth,
+    required this.compactArtSize,
+    required this.compactArtLift,
+    required this.colorArtFill,
+    required this.colorArtEdge,
+    required this.colorIcon,
+    required this.colorTitle,
+    required this.colorErrorTitle,
+    required this.colorDescription,
+  });
+
+  final double padding;
+  final double gap;
+  final double artSize;
+  final double artLift;
+  final double artEdgeWidth;
+  final double compactArtSize;
+  final double compactArtLift;
+  final int colorArtFill;
+  final int colorArtEdge;
+  final int colorIcon;
+  final int colorTitle;
+  final int colorErrorTitle;
+  final int colorDescription;
+}
+
+/// The EmptyState tokens per theme.
+abstract final class FoxEmptyState {
+  static const EmptyStateTokens light = EmptyStateTokens(
+    padding: 24.0,
+    gap: 12.0,
+    artSize: 120.0,
+    artLift: 32.0,
+    artEdgeWidth: 2.0,
+    compactArtSize: 72.0,
+    compactArtLift: 16.0,
+    colorArtFill: 0xFFFFEDE3,
+    colorArtEdge: 0xFFFF6E31,
+    colorIcon: 0xFFC2410C,
+    colorTitle: 0xFF03428E,
+    colorErrorTitle: 0xFFBF2929,
+    colorDescription: 0xFF416EA4,
+  );
+
+  static const EmptyStateTokens dark = EmptyStateTokens(
+    padding: 24.0,
+    gap: 12.0,
+    artSize: 120.0,
+    artLift: 32.0,
+    artEdgeWidth: 2.0,
+    compactArtSize: 72.0,
+    compactArtLift: 16.0,
+    colorArtFill: 0xFFFFEDE3,
+    colorArtEdge: 0xFFFF6E31,
+    colorIcon: 0xFFC2410C,
+    colorTitle: 0xFF03428E,
+    colorErrorTitle: 0xFFBF2929,
+    colorDescription: 0xFF416EA4,
+  );
+
+  static const EmptyStateTokens captainLight = EmptyStateTokens(
+    padding: 24.0,
+    gap: 12.0,
+    artSize: 120.0,
+    artLift: 32.0,
+    artEdgeWidth: 2.0,
+    compactArtSize: 72.0,
+    compactArtLift: 16.0,
+    colorArtFill: 0xFFFFEDE3,
+    colorArtEdge: 0xFFFF6E31,
+    colorIcon: 0xFF03428E,
+    colorTitle: 0xFF03428E,
+    colorErrorTitle: 0xFF8C1530,
+    colorDescription: 0xFF4D473D,
+  );
+
+  static const EmptyStateTokens captainDark = EmptyStateTokens(
+    padding: 24.0,
+    gap: 12.0,
+    artSize: 120.0,
+    artLift: 32.0,
+    artEdgeWidth: 2.0,
+    compactArtSize: 72.0,
+    compactArtLift: 16.0,
+    colorArtFill: 0xFFFFEDE3,
+    colorArtEdge: 0xFFFF6E31,
+    colorIcon: 0xFF03428E,
+    colorTitle: 0xFF03428E,
+    colorErrorTitle: 0xFF8C1530,
+    colorDescription: 0xFF4D473D,
   );
 }
 
@@ -1195,6 +1777,400 @@ abstract final class FoxInput {
   );
 }
 
+/// The ListRow component tokens of one theme.
+final class ListRowTokens {
+  const ListRowTokens({
+    required this.minHeight,
+    required this.paddingInline,
+    required this.paddingBlock,
+    required this.gap,
+    required this.leadSize,
+    required this.compactMinHeight,
+    required this.compactPaddingInline,
+    required this.compactLeadSize,
+    required this.colorBackground,
+    required this.colorBackgroundHover,
+    required this.colorBackgroundPressed,
+    required this.colorLabel,
+    required this.colorDescription,
+    required this.colorChevron,
+    required this.colorLead,
+    required this.colorDisabled,
+    required this.dangerLabel,
+    required this.dangerLead,
+  });
+
+  final double minHeight;
+  final double paddingInline;
+  final double paddingBlock;
+  final double gap;
+  final double leadSize;
+  final double compactMinHeight;
+  final double compactPaddingInline;
+  final double compactLeadSize;
+  final int colorBackground;
+  final int colorBackgroundHover;
+  final int colorBackgroundPressed;
+  final int colorLabel;
+  final int colorDescription;
+  final int colorChevron;
+  final int colorLead;
+  final int colorDisabled;
+  final int dangerLabel;
+  final int dangerLead;
+}
+
+/// The ListRow tokens per theme.
+abstract final class FoxListRow {
+  static const ListRowTokens light = ListRowTokens(
+    minHeight: 56.0,
+    paddingInline: 16.0,
+    paddingBlock: 8.0,
+    gap: 12.0,
+    leadSize: 40.0,
+    compactMinHeight: 40.0,
+    compactPaddingInline: 12.0,
+    compactLeadSize: 24.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundHover: 0xFFD6E4F7,
+    colorBackgroundPressed: 0xFFADC9EE,
+    colorLabel: 0xFF03428E,
+    colorDescription: 0xFF416EA4,
+    colorChevron: 0xFF416EA4,
+    colorLead: 0xFFEEF4FC,
+    colorDisabled: 0xFF857D6E,
+    dangerLabel: 0xFFBF2929,
+    dangerLead: 0xFFFBE9E9,
+  );
+
+  static const ListRowTokens dark = ListRowTokens(
+    minHeight: 56.0,
+    paddingInline: 16.0,
+    paddingBlock: 8.0,
+    gap: 12.0,
+    leadSize: 40.0,
+    compactMinHeight: 40.0,
+    compactPaddingInline: 12.0,
+    compactLeadSize: 24.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundHover: 0xFFD6E4F7,
+    colorBackgroundPressed: 0xFFADC9EE,
+    colorLabel: 0xFF03428E,
+    colorDescription: 0xFF416EA4,
+    colorChevron: 0xFF416EA4,
+    colorLead: 0xFFEEF4FC,
+    colorDisabled: 0xFF857D6E,
+    dangerLabel: 0xFFBF2929,
+    dangerLead: 0xFFFBE9E9,
+  );
+
+  static const ListRowTokens captainLight = ListRowTokens(
+    minHeight: 56.0,
+    paddingInline: 16.0,
+    paddingBlock: 8.0,
+    gap: 12.0,
+    leadSize: 40.0,
+    compactMinHeight: 40.0,
+    compactPaddingInline: 12.0,
+    compactLeadSize: 24.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundHover: 0xFFD6E4F7,
+    colorBackgroundPressed: 0xFFD6E4F7,
+    colorLabel: 0xFF03428E,
+    colorDescription: 0xFF4D473D,
+    colorChevron: 0xFF4D473D,
+    colorLead: 0xFFEEF4FC,
+    colorDisabled: 0xFF857D6E,
+    dangerLabel: 0xFF8C1530,
+    dangerLead: 0xFFFBE9E9,
+  );
+
+  static const ListRowTokens captainDark = ListRowTokens(
+    minHeight: 56.0,
+    paddingInline: 16.0,
+    paddingBlock: 8.0,
+    gap: 12.0,
+    leadSize: 40.0,
+    compactMinHeight: 40.0,
+    compactPaddingInline: 12.0,
+    compactLeadSize: 24.0,
+    colorBackground: 0xFFFEFEFE,
+    colorBackgroundHover: 0xFFD6E4F7,
+    colorBackgroundPressed: 0xFFD6E4F7,
+    colorLabel: 0xFF03428E,
+    colorDescription: 0xFF4D473D,
+    colorChevron: 0xFF4D473D,
+    colorLead: 0xFFEEF4FC,
+    colorDisabled: 0xFF857D6E,
+    dangerLabel: 0xFF8C1530,
+    dangerLead: 0xFFFBE9E9,
+  );
+}
+
+/// The Money component tokens of one theme.
+final class MoneyTokens {
+  const MoneyTokens({
+    required this.colorDefault,
+    required this.colorSuccess,
+    required this.colorDanger,
+    required this.colorMuted,
+    required this.colorInverse,
+  });
+
+  final int colorDefault;
+  final int colorSuccess;
+  final int colorDanger;
+  final int colorMuted;
+  final int colorInverse;
+}
+
+/// The Money tokens per theme.
+abstract final class FoxMoney {
+  static const MoneyTokens light = MoneyTokens(
+    colorDefault: 0xFF03428E,
+    colorSuccess: 0xFF067647,
+    colorDanger: 0xFFBF2929,
+    colorMuted: 0xFF416EA4,
+    colorInverse: 0xFFFFFAED,
+  );
+
+  static const MoneyTokens dark = MoneyTokens(
+    colorDefault: 0xFF03428E,
+    colorSuccess: 0xFF067647,
+    colorDanger: 0xFFBF2929,
+    colorMuted: 0xFF416EA4,
+    colorInverse: 0xFFFFFAED,
+  );
+
+  static const MoneyTokens captainLight = MoneyTokens(
+    colorDefault: 0xFF03428E,
+    colorSuccess: 0xFF055A37,
+    colorDanger: 0xFF8C1530,
+    colorMuted: 0xFF4D473D,
+    colorInverse: 0xFFFFFAED,
+  );
+
+  static const MoneyTokens captainDark = MoneyTokens(
+    colorDefault: 0xFF03428E,
+    colorSuccess: 0xFF055A37,
+    colorDanger: 0xFF8C1530,
+    colorMuted: 0xFF4D473D,
+    colorInverse: 0xFFFFFAED,
+  );
+}
+
+/// The Skeleton component tokens of one theme.
+final class SkeletonTokens {
+  const SkeletonTokens({
+    required this.background,
+    required this.radius,
+    required this.lineHeight,
+    required this.webGap,
+    required this.webTitleHeight,
+    required this.webCircleSize,
+    required this.webSquareSize,
+    required this.webSquareRadius,
+    required this.webMediaRadius,
+    required this.webPillHeight,
+  });
+
+  final int background;
+  final double radius;
+  final double lineHeight;
+  final double webGap;
+  final double webTitleHeight;
+  final double webCircleSize;
+  final double webSquareSize;
+  final double webSquareRadius;
+  final double webMediaRadius;
+  final double webPillHeight;
+}
+
+/// The Skeleton tokens per theme.
+abstract final class FoxSkeleton {
+  static const SkeletonTokens light = SkeletonTokens(
+    background: 0xFFEFE8DA,
+    radius: 4.0,
+    lineHeight: 12.0,
+    webGap: 12.0,
+    webTitleHeight: 16.0,
+    webCircleSize: 32.0,
+    webSquareSize: 48.0,
+    webSquareRadius: 10.0,
+    webMediaRadius: 15.0,
+    webPillHeight: 50.0,
+  );
+
+  static const SkeletonTokens dark = SkeletonTokens(
+    background: 0xFFEFE8DA,
+    radius: 4.0,
+    lineHeight: 12.0,
+    webGap: 12.0,
+    webTitleHeight: 16.0,
+    webCircleSize: 32.0,
+    webSquareSize: 48.0,
+    webSquareRadius: 10.0,
+    webMediaRadius: 15.0,
+    webPillHeight: 50.0,
+  );
+
+  static const SkeletonTokens captainLight = SkeletonTokens(
+    background: 0xFFEFE8DA,
+    radius: 4.0,
+    lineHeight: 12.0,
+    webGap: 12.0,
+    webTitleHeight: 16.0,
+    webCircleSize: 32.0,
+    webSquareSize: 48.0,
+    webSquareRadius: 10.0,
+    webMediaRadius: 15.0,
+    webPillHeight: 50.0,
+  );
+
+  static const SkeletonTokens captainDark = SkeletonTokens(
+    background: 0xFFEFE8DA,
+    radius: 4.0,
+    lineHeight: 12.0,
+    webGap: 12.0,
+    webTitleHeight: 16.0,
+    webCircleSize: 32.0,
+    webSquareSize: 48.0,
+    webSquareRadius: 10.0,
+    webMediaRadius: 15.0,
+    webPillHeight: 50.0,
+  );
+}
+
+/// The StatusChip component tokens of one theme.
+final class StatusChipTokens {
+  const StatusChipTokens({
+    required this.minHeight,
+    required this.paddingInline,
+    required this.gap,
+    required this.radius,
+    required this.compactMinHeight,
+    required this.compactPaddingInline,
+    required this.warningBackground,
+    required this.warningLabel,
+    required this.infoBackground,
+    required this.infoLabel,
+    required this.successBackground,
+    required this.successLabel,
+    required this.primaryBackground,
+    required this.primaryLabel,
+    required this.dangerBackground,
+    required this.dangerLabel,
+    required this.neutralBackground,
+    required this.neutralLabel,
+  });
+
+  final double minHeight;
+  final double paddingInline;
+  final double gap;
+  final double radius;
+  final double compactMinHeight;
+  final double compactPaddingInline;
+  final int warningBackground;
+  final int warningLabel;
+  final int infoBackground;
+  final int infoLabel;
+  final int successBackground;
+  final int successLabel;
+  final int primaryBackground;
+  final int primaryLabel;
+  final int dangerBackground;
+  final int dangerLabel;
+  final int neutralBackground;
+  final int neutralLabel;
+}
+
+/// The StatusChip tokens per theme.
+abstract final class FoxStatusChip {
+  static const StatusChipTokens light = StatusChipTokens(
+    minHeight: 32.0,
+    paddingInline: 12.0,
+    gap: 4.0,
+    radius: 9999.0,
+    compactMinHeight: 24.0,
+    compactPaddingInline: 8.0,
+    warningBackground: 0xFFFBEFD5,
+    warningLabel: 0xFF8A5A00,
+    infoBackground: 0xFFEEF4FC,
+    infoLabel: 0xFF03428E,
+    successBackground: 0xFFE3F3EA,
+    successLabel: 0xFF067647,
+    primaryBackground: 0xFFFFEDE3,
+    primaryLabel: 0xFFC2410C,
+    dangerBackground: 0xFFFBE9E9,
+    dangerLabel: 0xFFBF2929,
+    neutralBackground: 0xFFEFE8DA,
+    neutralLabel: 0xFF4D473D,
+  );
+
+  static const StatusChipTokens dark = StatusChipTokens(
+    minHeight: 32.0,
+    paddingInline: 12.0,
+    gap: 4.0,
+    radius: 9999.0,
+    compactMinHeight: 24.0,
+    compactPaddingInline: 8.0,
+    warningBackground: 0xFFFBEFD5,
+    warningLabel: 0xFF8A5A00,
+    infoBackground: 0xFFEEF4FC,
+    infoLabel: 0xFF03428E,
+    successBackground: 0xFFE3F3EA,
+    successLabel: 0xFF067647,
+    primaryBackground: 0xFFFFEDE3,
+    primaryLabel: 0xFFC2410C,
+    dangerBackground: 0xFFFBE9E9,
+    dangerLabel: 0xFFBF2929,
+    neutralBackground: 0xFFEFE8DA,
+    neutralLabel: 0xFF4D473D,
+  );
+
+  static const StatusChipTokens captainLight = StatusChipTokens(
+    minHeight: 32.0,
+    paddingInline: 12.0,
+    gap: 4.0,
+    radius: 9999.0,
+    compactMinHeight: 24.0,
+    compactPaddingInline: 8.0,
+    warningBackground: 0xFFFBEFD5,
+    warningLabel: 0xFF6B4500,
+    infoBackground: 0xFFEEF4FC,
+    infoLabel: 0xFF03428E,
+    successBackground: 0xFFE3F3EA,
+    successLabel: 0xFF055A37,
+    primaryBackground: 0xFFFFEDE3,
+    primaryLabel: 0xFF03428E,
+    dangerBackground: 0xFFFBE9E9,
+    dangerLabel: 0xFF8C1530,
+    neutralBackground: 0xFFEFE8DA,
+    neutralLabel: 0xFF4D473D,
+  );
+
+  static const StatusChipTokens captainDark = StatusChipTokens(
+    minHeight: 32.0,
+    paddingInline: 12.0,
+    gap: 4.0,
+    radius: 9999.0,
+    compactMinHeight: 24.0,
+    compactPaddingInline: 8.0,
+    warningBackground: 0xFFFBEFD5,
+    warningLabel: 0xFF6B4500,
+    infoBackground: 0xFFEEF4FC,
+    infoLabel: 0xFF03428E,
+    successBackground: 0xFFE3F3EA,
+    successLabel: 0xFF055A37,
+    primaryBackground: 0xFFFFEDE3,
+    primaryLabel: 0xFF03428E,
+    dangerBackground: 0xFFFBE9E9,
+    dangerLabel: 0xFF8C1530,
+    neutralBackground: 0xFFEFE8DA,
+    neutralLabel: 0xFF4D473D,
+  );
+}
+
 /// The TextLink component tokens of one theme.
 final class TextLinkTokens {
   const TextLinkTokens({
@@ -1256,57 +2232,117 @@ abstract final class FoxTextLink {
 /// Every component token of one theme, one field per file of tokens/component/.
 final class ComponentTokens {
   const ComponentTokens({
+    required this.amountsSummary,
     required this.button,
+    required this.card,
     required this.codePreview,
+    required this.countBadge,
     required this.countrySheet,
+    required this.dataTable,
     required this.dateField,
+    required this.dropLoader,
+    required this.emptyState,
     required this.input,
+    required this.listRow,
+    required this.money,
+    required this.skeleton,
+    required this.statusChip,
     required this.textLink,
   });
 
+  final AmountsSummaryTokens amountsSummary;
   final ButtonTokens button;
+  final CardTokens card;
   final CodePreviewTokens codePreview;
+  final CountBadgeTokens countBadge;
   final CountrySheetTokens countrySheet;
+  final DataTableTokens dataTable;
   final DateFieldTokens dateField;
+  final DropLoaderTokens dropLoader;
+  final EmptyStateTokens emptyState;
   final InputTokens input;
+  final ListRowTokens listRow;
+  final MoneyTokens money;
+  final SkeletonTokens skeleton;
+  final StatusChipTokens statusChip;
   final TextLinkTokens textLink;
 }
 
 /// The component tokens per theme.
 abstract final class FoxComponents {
   static const ComponentTokens light = ComponentTokens(
+    amountsSummary: FoxAmountsSummary.light,
     button: FoxButton.light,
+    card: FoxCard.light,
     codePreview: FoxCodePreview.light,
+    countBadge: FoxCountBadge.light,
     countrySheet: FoxCountrySheet.light,
+    dataTable: FoxDataTable.light,
     dateField: FoxDateField.light,
+    dropLoader: FoxDropLoader.light,
+    emptyState: FoxEmptyState.light,
     input: FoxInput.light,
+    listRow: FoxListRow.light,
+    money: FoxMoney.light,
+    skeleton: FoxSkeleton.light,
+    statusChip: FoxStatusChip.light,
     textLink: FoxTextLink.light,
   );
 
   static const ComponentTokens dark = ComponentTokens(
+    amountsSummary: FoxAmountsSummary.dark,
     button: FoxButton.dark,
+    card: FoxCard.dark,
     codePreview: FoxCodePreview.dark,
+    countBadge: FoxCountBadge.dark,
     countrySheet: FoxCountrySheet.dark,
+    dataTable: FoxDataTable.dark,
     dateField: FoxDateField.dark,
+    dropLoader: FoxDropLoader.dark,
+    emptyState: FoxEmptyState.dark,
     input: FoxInput.dark,
+    listRow: FoxListRow.dark,
+    money: FoxMoney.dark,
+    skeleton: FoxSkeleton.dark,
+    statusChip: FoxStatusChip.dark,
     textLink: FoxTextLink.dark,
   );
 
   static const ComponentTokens captainLight = ComponentTokens(
+    amountsSummary: FoxAmountsSummary.captainLight,
     button: FoxButton.captainLight,
+    card: FoxCard.captainLight,
     codePreview: FoxCodePreview.captainLight,
+    countBadge: FoxCountBadge.captainLight,
     countrySheet: FoxCountrySheet.captainLight,
+    dataTable: FoxDataTable.captainLight,
     dateField: FoxDateField.captainLight,
+    dropLoader: FoxDropLoader.captainLight,
+    emptyState: FoxEmptyState.captainLight,
     input: FoxInput.captainLight,
+    listRow: FoxListRow.captainLight,
+    money: FoxMoney.captainLight,
+    skeleton: FoxSkeleton.captainLight,
+    statusChip: FoxStatusChip.captainLight,
     textLink: FoxTextLink.captainLight,
   );
 
   static const ComponentTokens captainDark = ComponentTokens(
+    amountsSummary: FoxAmountsSummary.captainDark,
     button: FoxButton.captainDark,
+    card: FoxCard.captainDark,
     codePreview: FoxCodePreview.captainDark,
+    countBadge: FoxCountBadge.captainDark,
     countrySheet: FoxCountrySheet.captainDark,
+    dataTable: FoxDataTable.captainDark,
     dateField: FoxDateField.captainDark,
+    dropLoader: FoxDropLoader.captainDark,
+    emptyState: FoxEmptyState.captainDark,
     input: FoxInput.captainDark,
+    listRow: FoxListRow.captainDark,
+    money: FoxMoney.captainDark,
+    skeleton: FoxSkeleton.captainDark,
+    statusChip: FoxStatusChip.captainDark,
     textLink: FoxTextLink.captainDark,
   );
 }
@@ -1523,4 +2559,7 @@ abstract final class FoxSize {
   static const double menuMinWidth = 192.0;
   static const double menuMaxWidth = 336.0;
   static const double menuMaxHeight = 288.0;
+  static const double listRow = 56.0;
+  static const double emptyArt = 120.0;
+  static const double emptyArtCompact = 72.0;
 }

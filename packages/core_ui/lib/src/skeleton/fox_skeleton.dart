@@ -77,28 +77,28 @@ class _FoxSkeletonState extends State<FoxSkeleton>
 /// One grey block of a [FoxSkeleton]: a line of [height] across its width, or
 /// a circle.
 class FoxSkeletonBlock extends StatelessWidget {
-  const FoxSkeletonBlock({super.key, this.height = t.FoxSpace.sm, this.width})
-    : circle = false;
+  /// A line; without [height], `skeleton.line-height`.
+  const FoxSkeletonBlock({super.key, this.height, this.width}) : circle = false;
 
   const FoxSkeletonBlock.circle(double size, {super.key})
     : height = size,
       width = size,
       circle = true;
 
-  final double height;
+  final double? height;
   final double? width;
   final bool circle;
 
   @override
   Widget build(BuildContext context) {
-    final colors = FoxTheme.of(context).colors;
+    final skeleton = FoxTheme.of(context).components.skeleton;
     return Container(
-      height: height,
+      height: height ?? skeleton.lineHeight,
       width: width ?? double.infinity,
       decoration: BoxDecoration(
-        color: colors.neutralSubtle,
+        color: Color(skeleton.background),
         shape: circle ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: circle ? null : BorderRadius.circular(t.FoxRadius.xs),
+        borderRadius: circle ? null : BorderRadius.circular(skeleton.radius),
       ),
     );
   }

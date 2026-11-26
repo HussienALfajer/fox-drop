@@ -30,7 +30,7 @@ describe('Card', () => {
   it('turns red for a late order', () => {
     render(<Card tone="danger">محتوى</Card>);
     const card = screen.getByText('محتوى');
-    expect(card.className).toContain('bg-danger-subtle');
-    expect(card.className).toContain('ring-danger');
+    expect(card.className).toContain('bg-(--fd-card-danger-background)');
+    expect(card.className).toContain('inset-ring-(--fd-card-danger-border)');
   });
 });

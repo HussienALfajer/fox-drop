@@ -36,39 +36,50 @@ class FoxCountBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final countBadge = theme.components.countBadge;
     final count = this.count;
     final child = this.child;
     if (count == 0) return child ?? const SizedBox.shrink();
     final (fill, ink) = switch (tone) {
-      FoxBadgeTone.danger => (theme.colors.danger, theme.colors.onDanger),
-      FoxBadgeTone.primary => (theme.colors.primary, theme.colors.onPrimary),
-      FoxBadgeTone.accent => (theme.colors.accent, theme.colors.onAccent),
+      FoxBadgeTone.danger => (
+        countBadge.dangerBackground,
+        countBadge.dangerLabel,
+      ),
+      FoxBadgeTone.primary => (
+        countBadge.primaryBackground,
+        countBadge.primaryLabel,
+      ),
+      FoxBadgeTone.accent => (
+        countBadge.accentBackground,
+        countBadge.accentLabel,
+      ),
     };
-    // A ring of the raised surface parts the badge from the icon under it.
+    // A ring of the raised surface parts the badge from the icon under it;
+    // the size holds it, as the D.9 sheet measures the badge.
     final ring = Border.all(
-      color: theme.colors.surfaceRaised,
-      width: theme.input.focusWidth,
+      color: Color(countBadge.ring),
+      width: countBadge.ringWidth,
     );
     final mark = count == null
         ? Container(
-            width: t.FoxSpace.sm,
-            height: t.FoxSpace.sm,
+            width: countBadge.dotSize,
+            height: countBadge.dotSize,
             decoration: BoxDecoration(
-              color: fill,
+              color: Color(fill),
               shape: BoxShape.circle,
               border: ring,
             ),
           )
         : Container(
-            constraints: const BoxConstraints(
-              minWidth: t.FoxSpace.lg,
-              minHeight: t.FoxSpace.lg,
+            constraints: BoxConstraints(
+              minWidth: countBadge.size,
+              minHeight: countBadge.size,
             ),
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: t.FoxSpace.xxs,
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: countBadge.paddingInline,
             ),
             decoration: BoxDecoration(
-              color: fill,
+              color: Color(fill),
               borderRadius: BorderRadius.circular(t.FoxRadius.full),
               border: ring,
             ),
@@ -81,7 +92,7 @@ class FoxCountBadge extends StatelessWidget {
                 foxBadgeText(count, max),
                 textDirection: TextDirection.ltr,
                 style: theme.text.caption.copyWith(
-                  color: ink,
+                  color: Color(ink),
                   fontWeight: FontWeight.w700,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
@@ -98,9 +109,14 @@ class FoxCountBadge extends StatelessWidget {
                 clipBehavior: Clip.none,
                 children: [
                   child,
+                  // A count is centred on the corner, the dot tucked on it.
                   PositionedDirectional(
-                    top: -t.FoxSpace.xs,
-                    end: -t.FoxSpace.xs,
+                    top: -(count == null
+                        ? countBadge.dotOffset
+                        : countBadge.offset),
+                    end: -(count == null
+                        ? countBadge.dotOffset
+                        : countBadge.offset),
                     child: mark,
                   ),
                 ],

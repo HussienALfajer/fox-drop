@@ -24,6 +24,6 @@ describe('Skeleton', () => {
     );
     const block = container.querySelector('[data-skeleton-block]')!;
     expect(block.className).toContain('motion-safe:animate-');
-    expect(block.className).toContain('bg-neutral-subtle');
+    expect(block.className).toContain('bg-(--fd-skeleton-background)');
   });
 });

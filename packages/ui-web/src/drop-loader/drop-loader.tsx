@@ -37,24 +37,35 @@ const box = tv({
   base: 'inline-flex shrink-0',
   variants: {
     size: {
-      sm: 'size-(--fd-size-icon-sm)',
-      md: 'size-(--fd-size-icon-md)',
-      lg: 'size-(--fd-size-touch-target)',
+      sm: 'size-(--fd-drop-loader-size-sm)',
+      md: 'size-(--fd-drop-loader-size-md)',
+      lg: 'size-(--fd-drop-loader-size-lg)',
     },
   },
 });
 
 const fill = tv({
   slots: {
-    drop: 'fill-on-primary',
-    piece: 'fill-brand',
+    drop: 'fill-(--fd-drop-loader-color-drop)',
+    piece: 'fill-(--fd-drop-loader-color-pieces)',
   },
   variants: {
-    onPrimary: { true: { drop: 'fill-primary', piece: 'fill-on-primary' } },
+    onPrimary: {
+      true: {
+        drop: 'fill-(--fd-drop-loader-color-on-primary-drop)',
+        piece: 'fill-(--fd-drop-loader-color-on-primary-pieces)',
+      },
+    },
     // The drop alone takes the mark's colour.
-    small: { true: { drop: 'fill-brand' } },
+    small: { true: { drop: 'fill-(--fd-drop-loader-color-pieces)' } },
   },
-  compoundVariants: [{ onPrimary: true, small: true, class: { drop: 'fill-on-primary' } }],
+  compoundVariants: [
+    {
+      onPrimary: true,
+      small: true,
+      class: { drop: 'fill-(--fd-drop-loader-color-on-primary-pieces)' },
+    },
+  ],
 });
 
 export interface DropLoaderProps {

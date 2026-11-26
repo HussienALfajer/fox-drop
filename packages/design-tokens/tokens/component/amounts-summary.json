@@ -1,0 +1,74 @@
+{
+  "amounts-summary": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["amounts-summary"], "flutter": ["amounts_summary"] }
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$description": "Between a label and its amount, and between the lines, the total and the equivalents."
+    },
+    "line": {
+      "padding-block": {
+        "$type": "dimension",
+        "$value": "{space.xs}"
+      },
+      "rule-width": {
+        "$type": "dimension",
+        "$value": "{border-width.thin}",
+        "$description": "The dashed rule between the lines (the Figma cart)."
+      },
+      "rule": {
+        "$type": "color",
+        "$value": "{color.border}"
+      },
+      "free": {
+        "$type": "color",
+        "$value": "{color.success}",
+        "$description": "Words instead of an amount: «مجاني»."
+      }
+    },
+    "total": {
+      "padding-top": {
+        "$type": "dimension",
+        "$value": "{space.sm}"
+      },
+      "rule-width": {
+        "$type": "dimension",
+        "$value": "{border-width.thick}"
+      },
+      "rule": {
+        "$type": "color",
+        "$value": "{color.on-surface}"
+      }
+    },
+    "prominent": {
+      "$description": "The orange total bar of the Figma cart (the customer's cart and checkout).",
+      "padding-inline": {
+        "$type": "dimension",
+        "$value": "{space.lg}"
+      },
+      "padding-block": {
+        "$type": "dimension",
+        "$value": "{space.sm}"
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.lg}"
+      },
+      "background": {
+        "$type": "color",
+        "$value": "{color.primary}"
+      },
+      "label": {
+        "$type": "color",
+        "$value": "{color.on-primary}"
+      }
+    },
+    "color": {
+      "$type": "color",
+      "text": { "$value": "{color.on-surface}" },
+      "equivalents": { "$value": "{color.on-surface-muted}" }
+    }
+  }
+}

@@ -12,15 +12,25 @@ const DROP = 'M12 23s9-8.4 9-14.5a9 9 0 0 0-18 0C3 14.6 12 23 12 23Z';
 const title = formTv({
   base: 'm-none font-bold',
   variants: {
-    tone: { default: 'text-heading', error: 'text-danger' },
+    tone: {
+      default: 'text-(color:--fd-empty-state-color-title)',
+      error: 'text-(color:--fd-empty-state-color-error-title)',
+    },
     density: { comfortable: 'text-phone-title', compact: 'text-panel-title' },
   },
   defaultVariants: { tone: 'default', density: 'comfortable' },
 });
 
+// The D.9 sheet's drop (D.W3b): 120 on the phone, 72 in the panel; a bottom
+// padding lifts the icon by half of it into the drop's round head.
 const drop = formTv({
-  base: 'relative flex items-center justify-center text-on-primary-subtle',
-  variants: { density: { comfortable: 'size-3xl', compact: 'size-2xl' } },
+  base: 'relative flex items-center justify-center text-(color:--fd-empty-state-color-icon)',
+  variants: {
+    density: {
+      comfortable: 'size-(--fd-empty-state-art-size) pb-(--fd-empty-state-art-lift)',
+      compact: 'size-(--fd-empty-state-compact-art-size) pb-(--fd-empty-state-compact-art-lift)',
+    },
+  },
   defaultVariants: { density: 'comfortable' },
 });
 
@@ -39,18 +49,26 @@ export interface EmptyStateProps {
 export function EmptyState(props: EmptyStateProps) {
   const { icon, description, action, tone, density = 'comfortable' } = props;
   return (
-    <div className="flex flex-col items-center gap-sm p-lg text-center">
+    <div className="flex flex-col items-center gap-(--fd-empty-state-gap) p-(--fd-empty-state-padding) text-center">
       <span data-drop="" aria-hidden="true" className={drop({ density })}>
-        <svg viewBox="0 0 24 24" className="absolute inset-none size-full">
-          <path d={DROP} className="fill-primary-subtle stroke-primary" strokeWidth={0.6} />
+        {/* The drop's round head reaches above the 24 grid: overflow-visible
+            draws it whole; the edge keeps its width at every size. */}
+        <svg viewBox="0 0 24 24" className="absolute inset-none size-full overflow-visible">
+          <path
+            d={DROP}
+            vectorEffect="non-scaling-stroke"
+            className="fill-(--fd-empty-state-color-art-fill) stroke-(--fd-empty-state-color-art-edge) stroke-(length:--fd-empty-state-art-edge-width)"
+          />
         </svg>
-        <span className="relative -mt-md">
+        <span className="relative">
           <Icon name={icon} size="lg" variant="brand-duo" />
         </span>
       </span>
       <h2 className={title({ tone, density })}>{props.title}</h2>
       {description ? (
-        <p className="m-none text-phone-secondary text-on-surface-muted">{description}</p>
+        <p className="m-none text-phone-secondary text-(color:--fd-empty-state-color-description)">
+          {description}
+        </p>
       ) : null}
       {action ? (
         <Button
