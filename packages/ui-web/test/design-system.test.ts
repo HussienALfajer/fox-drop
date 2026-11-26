@@ -172,7 +172,7 @@ describe('the Design System bundle', () => {
     expect(bundle.css).toContain('skeleton-pulse');
     expect(bundle.css).toContain('--aspect-cover');
     // shared classes in a .ts module, such as the overlays' (src/overlay/styles.ts)
-    expect(bundle.css).toContain(String.raw`max-w-\(--fd-size-dialog\)`);
+    expect(bundle.css).toContain(String.raw`max-w-\(--fd-dialog-width\)`);
     expect(bundle.css.toLowerCase()).not.toContain('</style');
     expect(bundle.css).not.toContain('@font-face');
     expect(bundle.css).not.toContain('.fonts');

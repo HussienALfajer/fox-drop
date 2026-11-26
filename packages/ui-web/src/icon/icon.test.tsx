@@ -87,11 +87,11 @@ describe('Icon', () => {
     const sizes = (['sm', 'md', 'lg'] as const).map((size) =>
       svg(render(<Icon name="cart" size={size} />).container).getAttribute('class')!,
     );
-    expect(sizes[0]).toContain('size-(--fd-size-icon-sm)');
-    expect(sizes[1]).toContain('size-(--fd-size-icon-md)');
-    expect(sizes[2]).toContain('size-(--fd-size-icon-lg)');
+    expect(sizes[0]).toContain('size-(--fd-icon-size-sm)');
+    expect(sizes[1]).toContain('size-(--fd-icon-size-md)');
+    expect(sizes[2]).toContain('size-(--fd-icon-size-lg)');
     expect(svg(render(<Icon name="cart" />).container).getAttribute('class')).toContain(
-      'size-(--fd-size-icon-md)',
+      'size-(--fd-icon-size-md)',
     );
   });
 

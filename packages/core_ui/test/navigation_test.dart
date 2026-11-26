@@ -529,4 +529,53 @@ void main() {
       await tester.pumpAndSettle();
     });
   });
+
+  // The parity gaps of D.W3c, each the web's or the D.10 sheet's look.
+  group('FoxTabs parity with the web (D.W3c)', () {
+    final tokens = FoxThemeData.phone().components.tabs;
+
+    Future<void> pump(WidgetTester tester, FoxTabsStyle style) async {
+      phoneScreen(tester);
+      await tester.pumpWidget(
+        overlayApp(
+          Align(
+            alignment: Alignment.topCenter,
+            child: _Tabs(
+              style: style,
+              tabs: const [
+                FoxTab(label: 'الكل'),
+                FoxTab(label: 'برجر'),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('underline tabs stand 2xs apart, sm inside each', (
+      tester,
+    ) async {
+      await pump(tester, FoxTabsStyle.underline);
+      final first = tester.getRect(find.bySemanticsLabel('الكل'));
+      final second = tester.getRect(find.bySemanticsLabel('برجر'));
+      expect(first.left - second.right, moreOrLessEquals(tokens.gap));
+      final words = tester.getRect(find.text('الكل'));
+      expect(first.right - words.right, moreOrLessEquals(tokens.paddingInline));
+    });
+
+    testWidgets('a pill is drawn 40 high inside its 48 target', (tester) async {
+      await pump(tester, FoxTabsStyle.pill);
+      expect(
+        tester.getSize(find.bySemanticsLabel('الكل')).height,
+        greaterThanOrEqualTo(FoxSize.touchTarget),
+      );
+      final pill = find
+          .ancestor(
+            of: find.text('الكل'),
+            matching: find.byType(AnimatedContainer),
+          )
+          .first;
+      expect(tester.getSize(pill).height, moreOrLessEquals(tokens.pillHeight));
+    });
+  });
 }

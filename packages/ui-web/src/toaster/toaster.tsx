@@ -44,7 +44,8 @@ const ICON: Record<ToastTone, IconName> = {
 // words. It rises 8 px as it fades in; under reduced motion it only fades.
 const toast = formTv({
   base: [
-    'pointer-events-auto flex w-full items-center gap-sm rounded-md bg-accent px-sm py-sm text-on-accent shadow-medium',
+    'pointer-events-auto flex w-full max-w-(--fd-toast-width) items-center gap-(--fd-toast-gap) rounded-(--fd-toast-radius) py-sm shadow-medium',
+    'bg-(--fd-toast-color-background) px-(--fd-toast-padding-inline) text-(color:--fd-toast-color-text)',
     'text-phone-secondary font-medium',
     'transition duration-(--fd-duration-base) ease-(--fd-easing-standard)',
     'starting:translate-y-xs starting:opacity-0 motion-reduce:starting:translate-y-none',
@@ -55,10 +56,10 @@ const iconTone = formTv({
   base: 'flex shrink-0',
   variants: {
     tone: {
-      success: 'text-success-subtle',
-      info: 'text-info-subtle',
-      warning: 'text-warning-subtle',
-      danger: 'text-danger-subtle',
+      success: 'text-(color:--fd-toast-color-icon-success)',
+      info: 'text-(color:--fd-toast-color-icon-info)',
+      warning: 'text-(color:--fd-toast-color-icon-warning)',
+      danger: 'text-(color:--fd-toast-color-icon-danger)',
     },
   },
 });
@@ -188,7 +189,7 @@ export function Toaster({ label, closeLabel, max = 3, children }: ToasterProps) 
   const list = (assertive: boolean) => (
     <ul
       aria-live={assertive ? 'assertive' : 'polite'}
-      className="m-none flex list-none flex-col gap-xs p-none"
+      className="m-none flex list-none flex-col items-end gap-xs p-none"
     >
       {items
         .filter((item) => (item.tone === 'danger') === assertive)
@@ -202,7 +203,9 @@ export function Toaster({ label, closeLabel, max = 3, children }: ToasterProps) 
       {children}
       <section
         aria-label={label}
-        className="pointer-events-none fixed end-md bottom-md z-(--fd-layer-toast) flex w-(--fd-size-toast) max-w-full flex-col gap-xs"
+        // Across the screen less md on each side, each toast at the end of
+        // it: a screen narrower than a toast keeps both margins (D.W3c).
+        className="pointer-events-none fixed inset-x-md bottom-md z-(--fd-layer-toast) flex flex-col gap-xs"
       >
         {list(false)}
         {list(true)}

@@ -1,4 +1,3 @@
-import 'package:core_tokens/core_tokens.dart' as t;
 import 'package:flutter/widgets.dart';
 
 import '../bottom_sheet/fox_bottom_sheet.dart';
@@ -156,6 +155,7 @@ class _FoxCountrySheetState extends State<FoxCountrySheet> {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
+    final countrySheet = theme.components.countrySheet;
     final s = widget.strings;
     return FoxBottomSheet(
       title: s.title,
@@ -172,7 +172,9 @@ class _FoxCountrySheetState extends State<FoxCountrySheet> {
               list.isEmpty
               ? const SizedBox.shrink()
               : Padding(
-                  padding: const EdgeInsetsDirectional.only(top: t.FoxSpace.sm),
+                  padding: EdgeInsetsDirectional.only(
+                    top: countrySheet.sectionGap,
+                  ),
                   child: FoxRadioGroup(
                     label: title,
                     child: Column(
@@ -202,14 +204,14 @@ class _FoxCountrySheetState extends State<FoxCountrySheet> {
               ),
               if (nothing)
                 Padding(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    vertical: t.FoxSpace.lg,
+                  padding: EdgeInsetsDirectional.symmetric(
+                    vertical: countrySheet.emptyPaddingBlock,
                   ),
                   child: Text(
                     s.none,
                     textAlign: TextAlign.center,
                     style: theme.text.secondary.copyWith(
-                      color: theme.colors.onSurfaceMuted,
+                      color: Color(countrySheet.colorEmpty),
                     ),
                   ),
                 ),
@@ -239,28 +241,32 @@ class _CountryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    return Row(
-      children: [
-        Expanded(
-          child: FoxRadio<String>(
-            value: country.iso,
-            groupValue: selected,
-            onChanged: onSelected,
-            label: country.ar,
+    final countrySheet = theme.components.countrySheet;
+    return ConstrainedBox(
+      constraints: BoxConstraints(minHeight: countrySheet.rowHeight),
+      child: Row(
+        children: [
+          Expanded(
+            child: FoxRadio<String>(
+              value: country.iso,
+              groupValue: selected,
+              onChanged: onSelected,
+              label: country.ar,
+            ),
           ),
-        ),
-        ExcludeSemantics(
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Text(
-              '+${country.code}',
-              style: theme.text.body.copyWith(
-                color: theme.colors.onSurfaceMuted,
+          ExcludeSemantics(
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Text(
+                '+${country.code}',
+                style: theme.text.body.copyWith(
+                  color: Color(countrySheet.colorCode),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

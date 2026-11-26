@@ -1,0 +1,62 @@
+{
+  "code-preview": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["code-preview"], "flutter": ["code_preview"] }
+    },
+    "avatar-size": {
+      "$type": "dimension",
+      "$value": "{size.icon-lg}",
+      "$description": "The brand's round mark beside the bubble."
+    },
+    "mark-scale": {
+      "$type": "number",
+      "$value": 0.62,
+      "$description": "The mark's share of its circle, as drawn (D.11b)."
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.xs}",
+      "$description": "Between the mark and the bubble."
+    },
+    "line-gap": {
+      "$type": "dimension",
+      "$value": "{space.2xs}",
+      "$description": "Between the sender, the message and the time."
+    },
+    "bubble": {
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.lg}"
+      },
+      "radius-tail": {
+        "$type": "dimension",
+        "$value": "{radius.xs}",
+        "$description": "The bubble's bottom corner on the mark's side."
+      },
+      "padding-inline": {
+        "$type": "dimension",
+        "$value": "{space.sm}"
+      },
+      "padding-block": {
+        "$type": "dimension",
+        "$value": "{space.xs}"
+      }
+    },
+    "color": {
+      "$type": "color",
+      "avatar": {
+        "$value": "{color.primary}"
+      },
+      "bubble": {
+        "$value": "{color.info-subtle}"
+      },
+      "code": {
+        "$value": "{color.primary-pressed}",
+        "$description": "The masked code (4.68:1 on info-subtle, CHANGELOG 0.12.0)."
+      },
+      "time": {
+        "$value": "{color.on-surface-muted}"
+      }
+    }
+  }
+}

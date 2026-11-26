@@ -1,0 +1,44 @@
+{
+  "blocking-banner": {
+    "$description": "The panel's blocking sound banner (AP §7.3): web only, so every token says so.",
+    "$extensions": {
+      "app.foxdrop": { "web": ["blocking-banner"], "flutter": [] }
+    },
+    "padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.lg}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "padding-block": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "action-height": {
+      "$type": "dimension",
+      "$value": "{size.control-compact}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "action-padding-inline": {
+      "$type": "dimension",
+      "$value": "{space.md}",
+      "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+    },
+    "color": {
+      "$type": "color",
+      "background": {
+        "$value": "{color.alert}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      },
+      "text": {
+        "$value": "{color.on-alert}",
+        "$extensions": { "app.foxdrop": { "sides": ["web"] } }
+      }
+    }
+  }
+}

@@ -30,9 +30,73 @@ Widget pickerHost(FoxThemeData theme, TextDirection direction, Widget? child) =>
       data: theme,
       child: Directionality(
         textDirection: direction,
-        child: MaterialScope(child: child ?? const SizedBox.shrink()),
+        child: MaterialScope(
+          child: _PickerTheme(child: child ?? const SizedBox.shrink()),
+        ),
       ),
     );
+
+/// The pickers' colours and corners from the `date-field` component tokens,
+/// the ones the web calendar and time boxes read (D.W4a).
+class _PickerTheme extends StatelessWidget {
+  const _PickerTheme({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final dateField = FoxTheme.of(context).components.dateField;
+    final base = m.Theme.of(context);
+    final scheme = base.colorScheme;
+    final shape = m.RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(dateField.popupRadius),
+    );
+    final today = Color(dateField.colorToday);
+    final selected = Color(dateField.colorDaySelected);
+    final onSelected = Color(dateField.colorOnDaySelected);
+    final segment = Color(dateField.colorSegment);
+    return m.Theme(
+      data: base.copyWith(
+        datePickerTheme: base.datePickerTheme.copyWith(
+          backgroundColor: Color(dateField.colorPopupBackground),
+          shape: shape,
+          headerBackgroundColor: Color(dateField.colorPopupBackground),
+          // Material's own state rules, on the tokens' colours.
+          todayForegroundColor: m.WidgetStateProperty.resolveWith((states) {
+            if (states.contains(m.WidgetState.selected)) return onSelected;
+            if (states.contains(m.WidgetState.disabled)) {
+              return scheme.onSurface.withValues(alpha: 0.38);
+            }
+            return today;
+          }),
+          todayBackgroundColor: m.WidgetStateProperty.resolveWith(
+            (states) =>
+                states.contains(m.WidgetState.selected) ? selected : null,
+          ),
+          todayBorder: BorderSide(color: today),
+          dayForegroundColor: m.WidgetStateProperty.resolveWith((states) {
+            if (states.contains(m.WidgetState.selected)) return onSelected;
+            if (states.contains(m.WidgetState.disabled)) {
+              return scheme.onSurface.withValues(alpha: 0.38);
+            }
+            return scheme.onSurface;
+          }),
+          dayBackgroundColor: m.WidgetStateProperty.resolveWith(
+            (states) =>
+                states.contains(m.WidgetState.selected) ? selected : null,
+          ),
+        ),
+        timePickerTheme: base.timePickerTheme.copyWith(
+          backgroundColor: Color(dateField.colorPopupBackground),
+          shape: shape,
+          hourMinuteColor: segment,
+          dayPeriodColor: segment,
+        ),
+      ),
+      child: child,
+    );
+  }
+}
 
 /// A date field (D.8): the pill shows the date as `dd/mm/yyyy` (digits
 /// Western) or the [placeholder], with a calendar icon at the start; a tap

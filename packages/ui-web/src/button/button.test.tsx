@@ -138,7 +138,7 @@ describe('Button', () => {
     const classes = () => screen.getByRole('button').className;
     expect(classes()).toContain('min-h-(--fd-button-height)');
     expect(screen.getByRole('button').querySelector('svg')!.getAttribute('class')).toContain(
-      'size-(--fd-size-icon-md)',
+      'size-(--fd-icon-size-md)',
     );
     rerender(
       <Button icon="cart" density="compact">
@@ -147,7 +147,7 @@ describe('Button', () => {
     );
     expect(classes()).toContain('min-h-(--fd-button-compact-height)');
     expect(screen.getByRole('button').querySelector('svg')!.getAttribute('class')).toContain(
-      'size-(--fd-size-icon-sm)',
+      'size-(--fd-icon-size-sm)',
     );
   });
 });

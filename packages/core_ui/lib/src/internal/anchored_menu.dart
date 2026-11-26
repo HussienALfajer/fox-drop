@@ -210,7 +210,7 @@ class _MenuListState<T> extends State<_MenuList<T>> {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
+    final input = theme.input;
     return Shortcuts(
       shortcuts: const {
         SingleActivator(LogicalKeyboardKey.arrowDown): NextFocusIntent(),
@@ -246,20 +246,23 @@ class _MenuListState<T> extends State<_MenuList<T>> {
             scopesRoute: true,
             explicitChildNodes: true,
             label: widget.label,
+            // The web select's list and the D.8 sheet's: the field's
+            // background and long radius, 2xs inside, no outline (parity,
+            // D.W3c; it had an outline and square rows).
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: c.surfaceRaised,
-                borderRadius: BorderRadius.circular(t.FoxRadius.lg),
-                border: Border.all(color: theme.input.border),
+                color: input.background,
+                borderRadius: BorderRadius.circular(input.areaRadius),
                 boxShadow: [theme.shadows.medium],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(t.FoxRadius.lg),
+                borderRadius: BorderRadius.circular(input.areaRadius),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     maxHeight: t.FoxSize.menuMaxHeight,
                   ),
                   child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(t.FoxSpace.xxs),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -302,6 +305,9 @@ class _MenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
     final c = theme.colors;
+    final input = theme.input;
+    // The web's row: rounded, sm inside, the highlight on `surface-hover`,
+    // the chosen one in medium weight with a small check (parity, D.W3c).
     return Interaction(
       focusNode: node,
       onTap: onTap,
@@ -311,29 +317,38 @@ class _MenuRow extends StatelessWidget {
       builder: (context, state) => AnimatedContainer(
         duration: t.FoxDuration.base,
         curve: theme.easing,
-        constraints: const BoxConstraints(minHeight: t.FoxSize.touchTarget),
-        padding: EdgeInsetsDirectional.symmetric(
-          horizontal: theme.input.paddingInline,
+        constraints: BoxConstraints(minHeight: input.checkTarget),
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: t.FoxSpace.sm,
           vertical: t.FoxSpace.xs,
         ),
-        color: state.pressed
-            ? c.surfaceRaisedPressed
-            : (state.hovered || state.focused
-                  ? c.surfaceRaisedHover
-                  : c.surfaceRaised),
+        decoration: BoxDecoration(
+          color: state.pressed
+              ? c.surfacePressed
+              : (state.hovered || state.focused
+                    ? c.surfaceHover
+                    : c.surface.withValues(alpha: 0)),
+          borderRadius: BorderRadius.circular(t.FoxRadius.md),
+        ),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 label,
                 style: theme.text.body.copyWith(
-                  color: c.onSurface,
-                  fontWeight: FoxTextTheme.fontWeight(selected ? 700 : 400),
+                  color: input.text,
+                  fontWeight: FoxTextTheme.fontWeight(selected ? 500 : 400),
                 ),
               ),
             ),
-            if (selected)
-              FoxIcon(t.FoxIcons.confirm, color: theme.input.accent),
+            if (selected) ...[
+              SizedBox(width: input.gap),
+              FoxIcon(
+                t.FoxIcons.confirm,
+                size: FoxIconSize.sm,
+                color: input.accent,
+              ),
+            ],
           ],
         ),
       ),

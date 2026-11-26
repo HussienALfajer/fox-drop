@@ -50,14 +50,14 @@ class FoxToast extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final c = theme.colors;
-    final ink = c.onAccent;
+    final toast = theme.components.toast;
+    final ink = Color(toast.colorText);
     // Light steps of each tone, readable on the dark blue (icons, 3:1).
     final (icon, iconColour) = switch (tone) {
-      FoxToastTone.success => (t.FoxIcons.success, c.successSubtle),
-      FoxToastTone.info => (t.FoxIcons.info, c.infoSubtle),
-      FoxToastTone.warning => (t.FoxIcons.warning, c.warningSubtle),
-      FoxToastTone.danger => (t.FoxIcons.error, c.dangerSubtle),
+      FoxToastTone.success => (t.FoxIcons.success, toast.colorIconSuccess),
+      FoxToastTone.info => (t.FoxIcons.info, toast.colorIconInfo),
+      FoxToastTone.warning => (t.FoxIcons.warning, toast.colorIconWarning),
+      FoxToastTone.danger => (t.FoxIcons.error, toast.colorIconDanger),
     };
     final actionLabel = this.actionLabel;
     final style = theme.text.secondary.copyWith(
@@ -65,23 +65,25 @@ class FoxToast extends StatelessWidget {
       fontWeight: FontWeight.w500,
     );
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: t.FoxSize.toast),
+      constraints: BoxConstraints(maxWidth: toast.width),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: c.accent,
-          borderRadius: BorderRadius.circular(t.FoxRadius.md),
+          color: Color(toast.colorBackground),
+          borderRadius: BorderRadius.circular(toast.radius),
           boxShadow: [theme.shadows.medium],
         ),
         child: Padding(
-          padding: const EdgeInsetsDirectional.only(
-            start: t.FoxSpace.sm,
+          // The × keeps its 48 target at the end, so no end padding.
+          padding: EdgeInsetsDirectional.only(
+            start: toast.paddingInline,
             top: t.FoxSpace.xxs,
             bottom: t.FoxSpace.xxs,
           ),
           child: Row(
             children: [
-              FoxIcon(icon, color: iconColour),
-              const SizedBox(width: t.FoxSpace.xs),
+              FoxIcon(icon, color: Color(iconColour)),
+              // sm, the web's (parity, D.W3c; it was xs).
+              SizedBox(width: toast.gap),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: t.FoxSpace.xs),
