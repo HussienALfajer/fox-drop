@@ -172,6 +172,14 @@
   --fd-input-height: 50px;
   --fd-input-compact-height: 40px;
   --fd-input-compact-padding-inline: 12px;
+  --fd-input-message-gap: 4px;
+  --fd-input-area-padding-block: 12px;
+  --fd-input-clear-size: 32px;
+  --fd-input-clear-target: 48px;
+  --fd-input-clear-color-background: #FBF2E7;
+  --fd-input-clear-color-background-hover: #EEF4FC;
+  --fd-input-clear-color-background-pressed: #D6E4F7;
+  --fd-input-clear-color-icon: #03428E;
   --fd-input-padding-inline: 16px;
   --fd-input-gap: 8px;
   --fd-input-label-gap: 4px;
@@ -195,6 +203,8 @@
   --fd-input-color-on-disabled: #857D6E;
   --fd-input-check-size: 24px;
   --fd-input-check-target: 48px;
+  --fd-input-check-gap: 4px;
+  --fd-input-check-dot: 12px;
   --fd-input-check-radius: 8px;
   --fd-input-check-border-width: 2px;
   --fd-input-check-color-background: #FEFEFE;
@@ -208,6 +218,8 @@
   --fd-input-check-color-mark: #FFFAED;
   --fd-input-switch-width: 52px;
   --fd-input-switch-height: 32px;
+  --fd-input-switch-padding: 4px;
+  --fd-input-switch-gap: 12px;
   --fd-input-switch-color-track: #6688B2;
   --fd-input-switch-color-track-hover: #03428E;
   --fd-input-switch-color-track-pressed: #032E62;
@@ -216,6 +228,7 @@
   --fd-input-switch-color-track-on-pressed: #C2410C;
   --fd-input-switch-color-thumb: #FEFEFE;
   --fd-input-stepper-size: 32px;
+  --fd-input-stepper-value-width: 48px;
   --fd-input-stepper-target: 48px;
   --fd-input-stepper-color-background: #FEFEFE;
   --fd-input-stepper-color-background-hover: #D6E4F7;
@@ -223,8 +236,15 @@
   --fd-input-stepper-color-border: #FF6E31;
   --fd-input-stepper-color-value: #03428E;
   --fd-input-code-size: 48px;
+  --fd-input-code-caret-height: 24px;
   --fd-input-code-color-done: #FF6E31;
   --fd-input-code-color-on-done: #FFFAED;
+  --fd-text-link-target: 48px;
+  --fd-text-link-radius: 4px;
+  --fd-text-link-color-text: #FF6E31;
+  --fd-text-link-color-text-hover: #DA531B;
+  --fd-text-link-color-text-pressed: #C2410C;
+  --fd-text-link-color-focus-ring: #03428E;
   --fd-color-surface: #FBF2E7;
   --fd-color-surface-raised: #FEFEFE;
   --fd-color-surface-hover: #EEF4FC;
@@ -302,6 +322,10 @@
   --fd-button-ghost-label: #03428E;
   --fd-button-disabled-background: #E8E1D2;
   --fd-button-disabled-label: #857D6E;
+  --fd-input-clear-color-background: #FBF2E7;
+  --fd-input-clear-color-background-hover: #EEF4FC;
+  --fd-input-clear-color-background-pressed: #D6E4F7;
+  --fd-input-clear-color-icon: #03428E;
   --fd-input-color-background: #FEFEFE;
   --fd-input-color-border: #6688B2;
   --fd-input-color-border-hover: #03428E;
@@ -339,6 +363,10 @@
   --fd-input-stepper-color-value: #03428E;
   --fd-input-code-color-done: #FF6E31;
   --fd-input-code-color-on-done: #FFFAED;
+  --fd-text-link-color-text: #FF6E31;
+  --fd-text-link-color-text-hover: #DA531B;
+  --fd-text-link-color-text-pressed: #C2410C;
+  --fd-text-link-color-focus-ring: #03428E;
   --fd-color-surface: #FBF2E7;
   --fd-color-surface-raised: #FEFEFE;
   --fd-color-surface-hover: #EEF4FC;
