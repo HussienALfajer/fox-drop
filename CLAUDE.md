@@ -30,7 +30,7 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 - **Transactions:** a state change and its timers are written in one transaction, and events leave through the outbox (E3, E4).
 - **Clients:** API clients are generated from the OpenAPI document, never written by hand (E6). No secret ships inside an app or a web bundle (E7).
 - **Arabic, right to left:** every user-facing string lives in translation files; layouts use start and end, never left and right; Western digits (AP §4.7).
-- **Design first:** the design system is architecture §9 (Phase D). Code a component or a screen only after the owner approved its drawing (§9.9); screens use semantic tokens and `core_ui` or `ui-web` only (§9.5).
+- **Design first:** the design system is architecture §9. Code a screen only after the owner approved its drawing (§9.9; components: web first, T14); screens use semantic tokens and `core_ui` or `ui-web` only (§9.5).
 - **Public repository:** no secrets, keys, signing files, `google-services.json`, `GoogleService-Info.plist` or real personal data. `.env.example` holds fake values only.
 - **Private research:** the BeeOrder research stays outside this repository.
 - A rule a machine can check belongs in a test, a lint rule or a hook, not in prose.

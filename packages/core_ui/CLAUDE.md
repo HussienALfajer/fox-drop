@@ -4,7 +4,7 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 
 ## Rules
 
-- **Layout:** `lib/src/theme/fox_theme.dart` (`FoxThemeData.phone()` for customer and merchant, `.captain()`; `FoxTheme` and `FoxTheme.of`), `lib/src/<component>/fox_<component>.dart`, `lib/testing.dart` (`loadFoxFonts`). `lib/core_ui.dart` exports the components and re-exports the token types an app passes (`FoxIcons`, `FoxIconData`, `FoxSpace`, `FoxSize`, `FoxRadius`, `FoxDuration`).
+- **Layout:** `lib/src/theme/fox_theme.dart` (`FoxThemeData.phone()` for customer and merchant, `.captain()`; `FoxTheme` and `FoxTheme.of`), `lib/src/<component>/fox_<component>.dart`, `lib/testing.dart` (`loadFoxFonts`). `lib/core_ui.dart` exports the components and re-exports the token types an app passes (`FoxIcons`, `FoxSpace`, `FoxSize`, …).
 - **Tokens come in with a prefix:** `import 'package:core_tokens/core_tokens.dart' as t;` since it also declares `FoxButton` and `FoxIcons`. A widget reads colours, sizes and type from `FoxTheme.of(context)`, never from `t.` directly, so the captain theme reaches it.
 - **Widgets layer first** (§9.10): a simple component is built on `package:flutter/widgets.dart`; only a complex one (date picker, sheet) may wrap `material_ui` here. No Material `ThemeData`.
 - **The lints** (`packages/fox_lints`) run here: no colour or length literals in `EdgeInsets*`, `SizedBox`, `TextStyle`, no `left`/`right`. Add a token instead of a literal.
@@ -12,7 +12,7 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 - **States follow R10:** hover (a mouse) and pressed (touch) paint the component's own `-hover` and `-pressed` tokens; colours fade over `FoxDuration.base`, nothing moves; the focus ring shows for keyboard focus only. Disabled is `onPressed: null` and is not focusable; loading keeps the size and the name, stays focusable, ignores presses.
 - **RTL and text scale:** directional insets and alignment only; a test pumps each component in RTL and at text scale 1.3 and 2.0 without overflow.
 - **Goldens (R9)** live in `test/golden/`, tagged `golden`, skipped by plain `flutter test`; Linux only, in Docker: `pnpm baselines` updates and compares them (`--check` only compares). They need `.fonts/` (`pnpm fonts:fetch`). Never update a baseline to make a failure pass without looking at `test/golden/failures/`. `--run-skipped` un-skips every test here: never use `skip:`.
-- **Parity cases** (`test/parity/`, tag `parity`): one `parityCase('<story id>', …)` per web story of a twin; `pnpm parity <Component>`.
+- **Twins (T14)** follow their web component, on its component tokens: one `parityCase('<story id>', …)` per web story drawn (`test/parity/`, tag `parity`); the parity sheet (`pnpm parity <Component>`) is the drawing.
 
 ## Inputs and forms (D.8)
 
@@ -22,7 +22,7 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 - **Mixed direction is explicit:** the phone pill and code cells sit under `Directionality(ltr)`, the label and error stay RTL; dates and times show LTR.
 - **A control is as small as its content** (`Align` with factors).
 - **The code field's `done` ignores reduced motion** (`FoxDuration.moment`); every other fade respects it.
-- Tests: `test/forms_harness.dart` (`expectNoOverflow`: directions, themes, scales); overlays use `test/overlays_harness.dart` (a WidgetsApp, for Escape and back). Phone rules: add a row to ui-web's `phone-cases.json` first.
+- Tests: `test/forms_harness.dart` (`expectNoOverflow`); overlays `test/overlays_harness.dart` (a WidgetsApp: Escape, back). Phone rules: add a row to ui-web's `phone-cases.json` first.
 - **Overlays (D.10):** `showFox*` push routes; the panels also render inline (widgetbook, goldens) and close through `Navigator.maybeOf`.
 
 ## More

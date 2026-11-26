@@ -35,7 +35,7 @@ The tier you were given sets the list (no tier given: ask for it in the report a
 - **Arabic and strings:** every user-facing string in the translation files; start and end, never left and right; mirrored directional icons; Western digits.
 - **Accessibility:** a name for every control, contrast through the tokens, 48 dp targets, visible focus, never colour alone, layouts intact at 130% text.
 - **Tests exist and are honest:** each new behaviour has a test that fails without it; no skip, retry or sleep; an image baseline changed only where the change explains it.
-- **Project rules a machine does not check:** the owner's approval of the sheet or drawing recorded before the code (architecture §9.9); components only from `ui-web` and `core_ui`; no secrets or real personal data; the slice file and `docs/code` say only what is true.
+- **Project rules a machine does not check:** the owner's approval recorded: a screen's drawing before its code, a web component's Design System card, a Flutter twin's parity sheet (architecture §9.9, T14); components only from `ui-web` and `core_ui`; no secrets or real personal data; the slice file and `docs/code` say only what is true.
 
 **T1 and T0: the full list.**
 
