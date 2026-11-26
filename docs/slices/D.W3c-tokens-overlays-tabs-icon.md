@@ -1,6 +1,6 @@
 # D.W3c Component tokens and parity: overlays, tabs and the icon
 
-Status: Planned · Tier: T2 · Branch: `refactor/tokens-overlays`
+Status: Done · Tier: T2 · Branch: `refactor/tokens-overlays`
 Spec: architecture §9.2 (the component layer), §9.4, §9.5 R1, R2, R4, R9, §9.9 · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1 and D.W2 merged. Runs in parallel with any other D.W3 or D.W4 slice.
@@ -79,13 +79,16 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 
 ## Stopped at
 
-Build done on both sides; checks, images, review and pull request next.
+Done: pull request open with auto-merge.
 
 ## Evidence
 
-- `pnpm parity …` before and after: the sheets shown to the owner
-- `node scripts/verify.mjs --changed`:
-- Review:
+- Red phase: `component-usage.test.ts` listed every token of the nine new files unread (196 problems, 9 failing tests); the gap tests failed for their gaps (dialog actions 86 not 122 wide apart, underline tabs 0 not 4 apart, a paired banner 844 high, a pill 48 not 40, the menu 192 not 240, the toast's icon 8 not 12 from its words; on the web no `--fd-tabs-indicator`, the selected count not red, the toaster without `inset-x-md`, menu rows not medium).
+- `pnpm parity Dialog ConfirmDialog Toaster Banner BannerStack Menu Tabs Icon` before and after: the sheets are on the host (`.parity/before/` and `.parity/`, git-ignored) for the owner.
+- Tests: ui-web 434 passed; core_ui 341 passed, `dart analyze` no issues; design-tokens 460 passed (`component-usage.test.ts` 20).
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» after the build. A first run failed on the tabs count test (D.W3b's badge now writes a token class; the test named `bg-danger`) and on `core_auth`'s refresh retry test under load (passes alone; in `docs/backlog.md`).
+- `pnpm baselines` (under the machine lock for port 6007): 34 images moved, each a listed gap (18 goldens, 16 screenshots); a stacked banner's web screenshot moved too and showed a dead `py-sm` override (gap 10), fixed so it no longer moves; a last run found the tree checked.
+- Review (T2, `reviewer`): no blocking finding in the code; its blocking item was the uncommitted images (committed since). Fixed: the pill tab's ring hugs the pill; the web tabs follow the first enabled tab; gap 21's reason; the reused semantic tokens recorded (decision 8). Recorded: the dialog's long labels (gap 22).
 
 ## Before deploying
 
@@ -97,4 +100,4 @@ Nothing new.
 
 ## Notes for the next session
 
-<the gaps found on the sheets, the owner's choice for each, and their fixes>
+The gaps and their fixes are in «Gaps on the sheets» above. For the owner: gaps 3, 4, 8, 9, 21 and 22 wait for a decision. Every command that serves Storybook on port 6007 (`pnpm baselines`, `pnpm parity`, the e2e part of `verify`) collides with a parallel worktree's run; on the owner's machine they ran under a shared lock script.
