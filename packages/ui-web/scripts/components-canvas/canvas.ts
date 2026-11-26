@@ -170,7 +170,7 @@ export async function buildCanvas(input: {
     is_interactive: true,
   };
   order.push('Index.dc.html');
-  const groupNotes: Record<string, unknown> = {};
+  const groupNotes: Record<string, { page?: string; [key: string]: unknown }> = {};
   let y = indexH + 520;
   for (const group of groups) {
     const count = placed.filter((p) => p.group === group).length;
