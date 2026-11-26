@@ -54,9 +54,11 @@ Done: pull request open with auto-merge.
 
 ## Evidence
 
-- `pnpm parity …`: the sheets shown to the owner and the approval
-- `node scripts/verify.mjs --changed`:
-- Review:
+- Red phase: `order-parts-review.test.tsx` failed on the missing modules, `stories.test.ts` on the four missing titles, `component-usage.test.ts` on every token of the six new files («no web file in countdown-ring reads --fd-countdown-ring-size», «no Flutter file in timer reads countdownRing.size», …).
+- `pnpm parity CountdownRing OrderRow Logo TrackingSteps Timer OrderCard`, before the Flutter changes and after (48 web shots, 46 Flutter): before, the order card's spacing, the timer's height, the Latin logo letter and the web's missing still ring differed (and a web bug: a shadowed name dropped the card number's bold); after, each pair matches but for decision 10. The sheets are on the host for the owner (`.parity/*.html`, not published).
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (Turborepo lint, types, build and smoke; tests; Dart analyze, `fox_lints rules`, format, Dart and Flutter tests), before and after the review's fixes.
+- `pnpm baselines`: «passed in 2 min 23 s»; 26 new web screenshots, six Flutter goldens moved (decisions 2 and 3 only), web Timer and OrderCard screenshots unchanged; each looked at.
+- Review (T2, `reviewer`, two rounds): round 1 found the baselines not updated (two blocking), the slice record, decision 4's wording, the Flutter ring's missing words and the order row's missing focus story; round 2 asked for a test of the ring's label and floor (added to `core_ui/test/data_review_test.dart`) and for the corrected locked test to be named in the pull request.
 
 ## Before deploying
 

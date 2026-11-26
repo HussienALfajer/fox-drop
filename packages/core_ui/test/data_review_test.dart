@@ -9,6 +9,25 @@ import 'forms_harness.dart';
 // its reason readable, and every widget fits at 130% and 200%.
 
 void main() {
+  // D.W4b: the ring reads as the web's `timer`, and never counts below 0.
+  testWidgets('the countdown ring reads its seconds with their words', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      formApp(
+        const FoxCountdownRing(seconds: 38, total: 45, label: 'ثانية متبقية'),
+      ),
+    );
+    expect(find.bySemanticsLabel('38 ثانية متبقية'), findsOneWidget);
+    expect(find.bySemanticsLabel('38'), findsNothing);
+    await tester.pumpWidget(
+      formApp(const FoxCountdownRing(seconds: -3, total: 45)),
+    );
+    expect(find.text('0'), findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('a pressable order card keeps its content and button reachable', (
     tester,
   ) async {
