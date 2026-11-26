@@ -48,7 +48,7 @@ class FoxField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final below = error ?? hint;
     final name = label == null
         ? null
@@ -71,47 +71,49 @@ class FoxField extends StatelessWidget {
                       text: ' $marker',
                       style: TextStyle(
                         fontWeight: FoxTextTheme.fontWeight(400),
-                        color: i.hint,
+                        color: Color(input.colorHint),
                       ),
                     ),
                 ],
               ),
               style: theme.text.secondary.copyWith(
                 fontWeight: FoxTextTheme.fontWeight(500),
-                color: enabled ? i.label : i.onDisabled,
+                color: enabled
+                    ? Color(input.colorLabel)
+                    : Color(input.colorOnDisabled),
               ),
             ),
           ),
-          const SizedBox(height: t.FoxSpace.xxs),
+          SizedBox(height: input.labelGap),
         ],
         control,
         if (below != null || counter != null) ...[
-          const SizedBox(height: t.FoxSpace.xxs),
+          SizedBox(height: input.labelGap),
           ExcludeSemantics(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: error != null
+                      // The icon centred on the text's line, as on the web
+                      // (parity, D.W3a).
                       ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsetsDirectional.only(
-                                top: 0,
-                                end: t.FoxSpace.xxs,
+                              padding: EdgeInsetsDirectional.only(
+                                end: input.messageGap,
                               ),
                               child: FoxIcon(
                                 t.FoxIcons.error,
                                 size: FoxIconSize.sm,
-                                color: i.error,
+                                color: Color(input.colorError),
                               ),
                             ),
                             Expanded(
                               child: Text(
                                 error!,
                                 style: theme.text.caption.copyWith(
-                                  color: i.error,
+                                  color: Color(input.colorError),
                                 ),
                               ),
                             ),
@@ -122,18 +124,18 @@ class FoxField extends StatelessWidget {
                             : Text(
                                 hint!,
                                 style: theme.text.caption.copyWith(
-                                  color: i.hint,
+                                  color: Color(input.colorHint),
                                 ),
                               )),
                 ),
                 if (counter != null) ...[
-                  const SizedBox(width: t.FoxSpace.xs),
+                  SizedBox(width: input.gap),
                   Directionality(
                     textDirection: TextDirection.ltr,
                     child: Text(
                       counter!,
                       style: theme.text.caption.copyWith(
-                        color: i.hint,
+                        color: Color(input.colorHint),
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
@@ -184,38 +186,54 @@ class _FieldBoxState extends State<FieldBox> {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final BoxBorder? border;
     if (!widget.enabled) {
       border = null;
     } else if (widget.invalid) {
-      border = Border.all(color: i.borderInvalid, width: i.focusWidth);
+      border = Border.all(
+        color: Color(input.colorBorderInvalid),
+        width: input.focusWidth,
+      );
     } else if (widget.focused) {
-      border = Border.all(color: i.borderFocus, width: i.focusWidth);
+      border = Border.all(
+        color: Color(input.colorBorderFocus),
+        width: input.focusWidth,
+      );
     } else if (_hovered) {
-      border = Border.all(color: i.borderHover, width: i.borderWidth);
+      border = Border.all(
+        color: Color(input.colorBorderHover),
+        width: input.borderWidth,
+      );
     } else {
-      border = Border.all(color: i.border, width: i.borderWidth);
+      border = Border.all(
+        color: Color(input.colorBorder),
+        width: input.borderWidth,
+      );
     }
-    final radius = BorderRadius.circular(widget.area ? i.areaRadius : i.radius);
+    final radius = BorderRadius.circular(
+      widget.area ? input.areaRadius : input.radius,
+    );
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
         duration: t.FoxDuration.base,
         curve: theme.easing,
-        constraints: BoxConstraints(minHeight: i.height),
+        constraints: BoxConstraints(minHeight: input.height),
         alignment: widget.area
             ? AlignmentDirectional.topStart
             : AlignmentDirectional.center,
         padding: EdgeInsetsDirectional.only(
-          start: i.paddingInline,
-          end: widget.trailingTarget ? i.gap : i.paddingInline,
-          top: widget.area ? t.FoxSpace.sm : 0,
-          bottom: widget.area ? t.FoxSpace.sm : 0,
+          start: input.paddingInline,
+          end: widget.trailingTarget ? input.gap : input.paddingInline,
+          top: widget.area ? input.areaPaddingBlock : 0,
+          bottom: widget.area ? input.areaPaddingBlock : 0,
         ),
         decoration: BoxDecoration(
-          color: widget.enabled ? i.background : i.disabled,
+          color: widget.enabled
+              ? Color(input.colorBackground)
+              : Color(input.colorDisabled),
           borderRadius: radius,
         ),
         foregroundDecoration: BoxDecoration(

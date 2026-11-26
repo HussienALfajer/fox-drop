@@ -16,6 +16,14 @@ describe('RadioGroup', () => {
     expect(screen.getAllByRole('radio')).toHaveLength(3);
   });
 
+  // Parity gap (D.W3a): a disabled unselected circle kept the rest fill,
+  // since `data-unchecked:` outranked a lone `data-disabled:`.
+  it('greys a disabled unselected circle as the checkbox does', () => {
+    render(<RadioGroup label="الدفع" options={options} />);
+    const off = screen.getByRole('radio', { name: 'بطاقة' });
+    expect(off.className).toContain('data-disabled:data-unchecked:bg-(--fd-input-color-disabled)');
+  });
+
   it('selects by a click on the label text and reports the value', async () => {
     const onValueChange = vi.fn();
     render(<RadioGroup label="الدفع" options={options} onValueChange={onValueChange} />);

@@ -136,9 +136,6 @@ class FoxRadio<T> extends StatefulWidget {
   final String label;
   final bool invalid;
 
-  /// The dot's diameter inside the 24 circle.
-  static const double _dot = t.FoxSpace.sm;
-
   @override
   State<FoxRadio<T>> createState() => _FoxRadioState<T>();
 }
@@ -236,7 +233,7 @@ class _FoxRadioState<T> extends State<FoxRadio<T>> implements RadioEntry {
   @override
   Widget build(BuildContext context) {
     final theme = FoxTheme.of(context);
-    final i = theme.input;
+    final input = theme.components.input;
     final selected = widget.value == widget.groupValue;
     return Focus(
       canRequestFocus: false,
@@ -256,42 +253,49 @@ class _FoxRadioState<T> extends State<FoxRadio<T>> implements RadioEntry {
           final Color fill;
           Color border;
           if (!enabled) {
-            accent = i.onDisabled;
-            fill = i.disabled;
-            border = i.onDisabled;
+            accent = Color(input.colorOnDisabled);
+            fill = Color(input.colorDisabled);
+            border = Color(input.colorOnDisabled);
           } else {
             accent = state.pressed
-                ? i.checkCheckedPressed
-                : (state.hovered ? i.checkCheckedHover : i.checkChecked);
+                ? Color(input.checkColorCheckedPressed)
+                : (state.hovered
+                      ? Color(input.checkColorCheckedHover)
+                      : Color(input.checkColorChecked));
             fill = state.pressed
-                ? i.checkBackgroundPressed
-                : (state.hovered ? i.checkBackgroundHover : i.checkBackground);
+                ? Color(input.checkColorBackgroundPressed)
+                : (state.hovered
+                      ? Color(input.checkColorBackgroundHover)
+                      : Color(input.checkColorBackground));
             if (selected) {
               border = accent;
             } else if (widget.invalid) {
-              border = i.borderInvalid;
+              border = Color(input.colorBorderInvalid);
             } else {
               border = state.hovered || state.pressed
-                  ? i.checkBorderHover
-                  : i.checkBorder;
+                  ? Color(input.checkColorBorderHover)
+                  : Color(input.checkColorBorder);
             }
           }
           final box = CustomPaint(
             foregroundPainter: FocusRing.of(
               theme,
               on: state.focused,
-              radius: i.checkSize,
+              radius: input.checkSize,
               circle: true,
             ),
             child: AnimatedContainer(
               duration: t.FoxDuration.base,
               curve: theme.easing,
-              width: i.checkSize,
-              height: i.checkSize,
+              width: input.checkSize,
+              height: input.checkSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: fill,
-                border: Border.all(color: border, width: i.checkBorderWidth),
+                border: Border.all(
+                  color: border,
+                  width: input.checkBorderWidth,
+                ),
               ),
               child: selected
                   ? Center(
@@ -300,7 +304,7 @@ class _FoxRadioState<T> extends State<FoxRadio<T>> implements RadioEntry {
                           shape: BoxShape.circle,
                           color: accent,
                         ),
-                        child: const SizedBox.square(dimension: FoxRadio._dot),
+                        child: SizedBox.square(dimension: input.checkDot),
                       ),
                     )
                   : null,
@@ -309,7 +313,9 @@ class _FoxRadioState<T> extends State<FoxRadio<T>> implements RadioEntry {
           return ChoiceRow(
             box: box,
             label: widget.label,
-            color: enabled ? theme.colors.onSurface : i.onDisabled,
+            color: enabled
+                ? theme.colors.onSurface
+                : Color(input.colorOnDisabled),
           );
         },
       ),

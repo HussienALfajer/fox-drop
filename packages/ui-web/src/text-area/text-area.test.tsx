@@ -23,6 +23,18 @@ describe('TextArea', () => {
     expect(screen.getByRole('textbox')).toBeInvalid();
   });
 
+  // Parity gap (D.W3a): with no hint the counter sat at the start; the D.8
+  // sheet puts it at the end of the line below.
+  it('keeps the counter at the end of the line, with or without a hint', () => {
+    render(<TextArea label="ملاحظات" maxLength={20} />);
+    expect(screen.getByText('0/20').className).toContain('ms-auto');
+  });
+
+  it('pads the area by its own token', () => {
+    const { container } = render(<TextArea label="ملاحظات" />);
+    expect(container.innerHTML).toContain('py-(--fd-input-area-padding-block)');
+  });
+
   it('uses the area radius, not the pill', () => {
     const { container } = render(<TextArea label="ملاحظات" />);
     expect(container.innerHTML).toContain('rounded-(--fd-input-area-radius)');

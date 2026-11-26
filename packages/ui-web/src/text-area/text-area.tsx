@@ -20,11 +20,12 @@ export const MIN_LINES = 3;
 export const MAX_LINES = 6;
 
 const area = formTv({
-  base: [inputClass(), 'resize-none py-sm'],
+  base: [inputClass(), 'resize-none py-(--fd-input-area-padding-block)'],
 });
 
+// At the end of the line below, with or without a hint (the D.8 sheet).
 const counter = formTv({
-  base: 'shrink-0 text-phone-caption text-(color:--fd-input-color-hint) tabular-nums',
+  base: 'ms-auto shrink-0 text-phone-caption text-(color:--fd-input-color-hint) tabular-nums',
   variants: { full: { true: 'text-(color:--fd-input-color-error)' } },
 });
 

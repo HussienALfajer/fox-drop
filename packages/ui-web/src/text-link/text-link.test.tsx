@@ -22,12 +22,12 @@ describe('TextLink', () => {
   it('keeps a 48 target, underlined primary ink with its hover and pressed tokens', () => {
     render(<TextLink onClick={() => {}}>الشروط</TextLink>);
     const classes = screen.getByRole('link').className;
-    expect(classes).toContain('min-h-(--fd-size-touch-target)');
-    expect(classes).toContain('min-w-(--fd-size-touch-target)');
+    expect(classes).toContain('min-h-(--fd-text-link-target)');
+    expect(classes).toContain('min-w-(--fd-text-link-target)');
     expect(classes).toContain('underline');
-    expect(classes).toContain('text-(--fd-color-primary)');
-    expect(classes).toContain('hover:text-(--fd-color-primary-hover)');
-    expect(classes).toContain('active:text-(--fd-color-primary-pressed)');
+    expect(classes).toContain('text-(--fd-text-link-color-text)');
+    expect(classes).toContain('hover:text-(--fd-text-link-color-text-hover)');
+    expect(classes).toContain('active:text-(--fd-text-link-color-text-pressed)');
     expect(classes).toContain('focus-visible:');
   });
 });

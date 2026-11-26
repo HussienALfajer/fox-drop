@@ -2,6 +2,12 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.15.0 (2026-11-26, slice D.W3a: forms and actions on component tokens)
+
+- `input.json` declares its readers: the web folders `field`, `text-field`, `text-area`, `search-field`, `phone-field`, `code-field`, `select`, `checkbox`, `radio-group`, `switch`, `quantity-stepper` and the Flutter folders `field`, `text_field`, `phone_field`, `code_field`, `select`, `checkbox`, `radio`, `switch`, `quantity_stepper`, `internal`. Web only: `input.compact.*` (Flutter has one density), `input.color.focus-ring` (Flutter paints every ring in the shared `FocusRing`) and `input.switch.gap` (the Flutter switch shows no label).
+- New in `input`, each the value a side wrote by hand: `message-gap` (`space.2xs`, the error's icon to its text), `area-padding-block` (`space.sm`), `clear.size` (`size.step`), `clear.target` (`size.touch-target`), `clear.color.background`, `-hover`, `-pressed` (`surface` and its states) and `clear.color.icon` (`on-surface`), `check.gap` (`space.2xs`), `check.dot` (`space.sm`), `switch.padding` (`space.2xs`), `switch.gap` (`space.sm`), `stepper.value-width` (`space.2xl`), `code.caret-height` (`size.icon-md`).
+- New file `text-link.json`: `target`, `radius`, `color.text`, `-hover`, `-pressed` and `color.focus-ring`, read by the web `text-link` and the Flutter `text_link`.
+
 ## 0.14.0 (2026-11-26, slice D.W1: the component token pipeline)
 
 - Dart: every file of `tokens/component/` now comes out with no change to the generator, and a new `ComponentTokens` per theme (`FoxComponents.light.button`, …) bundles them; `core_ui` exposes it as `FoxThemeData.components`. `FoxButton` and `FoxInput` keep their names.
