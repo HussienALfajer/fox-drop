@@ -137,6 +137,12 @@ From the approved sheet «Overlays and navigation — batch 4» (owner, 2026-11-
 - `FoxBottomSheet` reads `components.bottomSheet`; `_SCurvePainter` takes the tab share, the curve's width (its `s` is `curveWidth / 1.5`, the old 32), the band's height and the radius as fields. `FoxPullToRefresh` and `FoxRefreshDrop` read `components.pullToRefresh`. Same values: no golden moves.
 - `test/parity/cards_sheets_parity_test.dart`: one case per RestaurantCard, DishCard, BottomSheet and PullToRefresh story. The open sheets render inline and alone, as the web side shoots an open dialog (the long one under a `size.menu-max-height` bound, so it scrolls as its story does); the pulling and refreshing cases put `FoxRefreshDrop` over the list (half full, refreshing), as a pull leaves it.
 
+## The order parts on component tokens (D.W4b)
+
+- FoxTimer and FoxCountdownRing (`timer/`) read `components.timer` and `components.countdownRing`; FoxOrderCard, FoxOrderRow and FoxLogo (`order_card/`) read `orderCard`, `orderRow` and `logo`; FoxTrackingSteps reads `trackingSteps` (its painters take the line width, dash and centre line as arguments). Their web twins are the reference since this slice (`ui-web` CountdownRing, OrderRow, Logo, TrackingSteps, Timer, OrderCard).
+- Gaps fixed: the order card spaces every part by one `orderCard.gap` (12; was 8, 4, 8 and 12), as the D.9 sheet and the web; the timer is at least `timer.minHeight` (32; its text and padding came to 31.4). The countdown ring's arc now eases between ticks over `FoxDuration.base` (`TweenAnimationBuilder`, instant under `disableAnimations`), as the web's. `foxLogoInitial` trims the name and capitalises a Latin letter, as the web's `logoInitial`. `FoxCountdownRing.diameter` and `FoxLogo.size` are nullable now, defaulting to their tokens. `FoxCountdownRing.label` («ثانية متبقية») makes the ring read «38 ثانية متبقية», as the web's `timer`; a negative count shows 0.
+- `test/parity/order_parts_parity_test.dart`: the cases of the six twins with each story's arguments; the timer's web-only `compact` has none. The tracking strip takes the frame's inner width, as the web list fills its frame.
+
 ## Left out
 
 Wiring into the apps and bundling CoFo there (each app's screen slice, which also adds the app to `enforcedPackages`); compact density in Flutter; dark mode; the fox scenes inside the empty state's drop; Cupertino localizations for the iOS text toolbar (apps provide them); a hosted widgetbook.

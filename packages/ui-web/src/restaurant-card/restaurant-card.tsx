@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { formTv, keyboardRing } from '../field/styles';
 import { Icon, type IconName } from '../icon/icon';
+import { Logo } from '../logo/logo';
 import { StatusChip, type Tone } from '../status-chip/status-chip';
 
 /** The states the stories show (R3). */
@@ -63,38 +64,9 @@ const coverBox = 'aspect-cover overflow-hidden rounded-(--fd-restaurant-card-cov
 const facts =
   'mt-(--fd-restaurant-card-facts-top) flex flex-wrap items-center gap-x-(--fd-restaurant-card-facts-gap) gap-y-(--fd-restaurant-card-facts-row-gap) text-phone-secondary text-on-surface-muted';
 
-const logoBox = formTv({
-  base: 'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary-subtle text-phone-title text-on-primary-subtle',
-  variants: {
-    large: {
-      true: 'size-(--fd-restaurant-card-logo-size)',
-      false: 'size-(--fd-size-touch-target)',
-    },
-  },
-});
-
-/**
- * The logo, or the name's first letter on a tint (the Flutter FoxLogo). Local
- * until the web Logo of D.W4b is on main.
- */
-function Logo({ name, image, large = false }: { name: string; image?: string; large?: boolean }) {
-  const [failed, setFailed] = useState(false);
-  const letter = Array.from(name)[0] ?? '';
-  return (
-    <span aria-hidden="true" className={logoBox({ large })}>
-      {image && !failed ? (
-        <img
-          src={image}
-          alt={DECORATIVE}
-          onError={() => setFailed(true)}
-          className="size-full object-cover"
-        />
-      ) : (
-        letter
-      )}
-    </span>
-  );
-}
+// The logo on the tint of a missing cover is larger than `logo.size`, as the
+// Flutter twin draws it: the wrapper sets its child's size.
+const largeLogo = 'inline-flex *:size-(--fd-restaurant-card-logo-size)';
 
 function Fact({ icon, tone, children }: { icon: IconName; tone?: string; children: ReactNode }) {
   return (
@@ -161,7 +133,9 @@ export function RestaurantCard(props: RestaurantCardProps) {
                 data-cover-fallback=""
                 className="flex size-full items-center justify-center bg-(--fd-restaurant-card-color-cover)"
               >
-                <Logo name={name} {...(logo !== undefined && { image: logo })} large />
+                <span className={largeLogo}>
+                  <Logo name={name} {...(logo !== undefined && { src: logo })} />
+                </span>
               </div>
             )}
           </div>
@@ -179,7 +153,7 @@ export function RestaurantCard(props: RestaurantCardProps) {
         <div className="mt-(--fd-restaurant-card-gap) flex items-center gap-(--fd-restaurant-card-gap)">
           {showCover && (
             <span className={fade({ faded: closed, class: 'inline-flex' })}>
-              <Logo name={name} {...(logo !== undefined && { image: logo })} />
+              <Logo name={name} {...(logo !== undefined && { src: logo })} />
             </span>
           )}
           <div className="flex min-w-none flex-1 flex-col">

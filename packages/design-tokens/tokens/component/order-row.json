@@ -1,0 +1,27 @@
+{
+  "order-row": {
+    "$extensions": {
+      "app.foxdrop": { "web": ["order-row"], "flutter": ["order_card"] }
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": "{space.sm}",
+      "$description": "The logo to the names, and the head to the status line."
+    },
+    "total-gap": {
+      "$type": "dimension",
+      "$value": "{space.xs}",
+      "$description": "The names to the total."
+    },
+    "status-gap": {
+      "$type": "dimension",
+      "$value": "{space.xs}",
+      "$description": "The status chip to the reorder action, and between their lines when they wrap."
+    },
+    "color": {
+      "$type": "color",
+      "title": { "$value": "{color.on-surface}" },
+      "date": { "$value": "{color.on-surface-muted}" }
+    }
+  }
+}

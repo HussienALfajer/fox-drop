@@ -30,6 +30,7 @@ describe('stories cover every state (R3)', () => {
       'CodePreview',
       'ConfirmDialog',
       'CountBadge',
+      'CountdownRing',
       'CountrySheet',
       'DataTable',
       'DateField',
@@ -41,9 +42,11 @@ describe('stories cover every state (R3)', () => {
       'Field',
       'Icon',
       'ListRow',
+      'Logo',
       'Menu',
       'Money',
       'OrderCard',
+      'OrderRow',
       'PhoneField',
       'PullToRefresh',
       'QuantityStepper',
@@ -64,6 +67,7 @@ describe('stories cover every state (R3)', () => {
       'Toaster',
       'Tooltip',
       'TopBar',
+      'TrackingSteps',
     ]);
   });
 

@@ -1,0 +1,60 @@
+<!-- @dsCard group="Data" height=420 -->
+<style>
+  /* The card paints the apps' own ground and text, whatever the page around it. */
+  :root {
+    color-scheme: light;
+  }
+  #root {
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: var(--fd-color-surface);
+    color: var(--fd-color-on-surface);
+  }
+  html,
+  body {
+    margin: 0;
+    background: var(--fd-color-surface);
+    font-family: var(--fd-font-family-sans);
+  }
+  #root {
+    padding: var(--fd-space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fd-space-md);
+    max-width: 360px;
+  }
+</style>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+  const { React, ReactDOM, OrderRow, StatusChip, Money, Button } = FoxDrop;
+  const h = React.createElement;
+  const none = () => {};
+  const total = (amount) => h(Money, { amount, symbol: '₺', bold: true });
+  ReactDOM.createRoot(document.getElementById('root')).render([
+    h(OrderRow, {
+      key: 1,
+      restaurant: 'برجر كبصو',
+      date: 'اليوم · 9:45 م',
+      status: h(StatusChip, { status: 'picked_up', label: 'في الطريق إليك' }),
+      total: total('47000'),
+      onPress: none,
+    }),
+    h(OrderRow, {
+      key: 2,
+      restaurant: 'فطائر الريف',
+      date: '21/11/2026',
+      status: h(StatusChip, { status: 'delivered', label: 'تم التسليم' }),
+      total: total('23500'),
+      trailing: h(Button, { variant: 'ghost', onClick: none }, 'اطلب مرة أخرى'),
+      onPress: none,
+    }),
+    h(OrderRow, {
+      key: 3,
+      restaurant: 'شاورما الشام',
+      date: '20/11/2026',
+      status: h(StatusChip, { status: 'cancelled', label: 'أُلغي الطلب' }),
+      total: total('12000'),
+      onPress: none,
+    }),
+  ]);
+</script>

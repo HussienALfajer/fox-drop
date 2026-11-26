@@ -957,6 +957,11 @@
         "name": "size-sheet-handle",
         "value": "40px",
         "usage": "The width of a bottom sheet's handle (D.10 sheet)."
+      },
+      {
+        "name": "size-countdown-ring",
+        "value": "96px",
+        "usage": "The captain's offer countdown ring (D.9 sheet: two touch targets)."
       }
     ]
   },
@@ -964,7 +969,7 @@
     "source": "github",
     "repo": "HussienALfajer/fox-drop",
     "package": "packages/design-tokens",
-    "version": "0.19.0",
+    "version": "0.20.0",
     "paths": {
       "tokens": [
         "packages/design-tokens/tokens"
