@@ -37,6 +37,8 @@ GoogleService-Info.plist
 .fonts/
 # The Design System and Guide artifact files, built by packages/design-tokens (they carry the fonts)
 .design-system/
+# The Fox Drop Components canvas, written by packages/ui-web (components-canvas)
+.components-canvas/
 
 # Tests
 .verify/

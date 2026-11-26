@@ -1,6 +1,6 @@
 # D.C1 The components canvas: generator, check and five pilot boards
 
-Status: Planned · Tier: T2 · Branch: `feat/components-canvas-generator`
+Status: Done · Tier: T2 · Branch: `feat/components-canvas-generator`
 Spec: architecture §9.8, §9.9, T14 · Definition of done: workflow §4; the owner approves the pilot boards' look
 
 Part of the components canvas plan (owner approval 2026-11-26, with every recommendation of the brief): the Design canvas "Component proposals" becomes "Fox Drop Components", one live board per `ui-web` component, generated from the code on the principle of the Shifa project's components canvas (its ADR-0048 and `packages/ui/scripts/design-system/canvas/`, read only). Four slices, T2, one merge at a time since they share the generator: D.C1 (this one), D.C2 the other non-overlay boards and the index, D.C3 the overlays drawn open, D.C4 the proposals page, the old boards out, decision T15 and the docs. Shared rules for the four:
@@ -43,14 +43,16 @@ Tests written first (locked in the red phase):
 
 ## Stopped at
 
-Planned.
+Done. The owner approved the five boards' look on canvas version 30 (2026-11-26, checkpoint 0), with the report that listed the strengthened locked Dialog test. After the merge: re-sync the Design System (Dialog `inline`) and republish the canvas with `ds/fox-drop/*` copied from it.
 
 ## Evidence
 
-- `node scripts/verify.mjs --changed`:
-- `components-canvas:check`:
-- Screenshots (outside the repository):
-- Review:
+- `node scripts/verify.mjs --changed`: «the checks of the change passed» (a first run's two captain-offboarding server tests timed out at 5 s under load and passed alone, 4 of 4; the rerun passed).
+- `pnpm baselines`: «no image changed» (340 stories, phone and captain), after the review fixes too.
+- `components-canvas:check`: «5 boards, 41 combinations, 0 with problems»; states sheets 5 to 13 KB.
+- Unit tests: `test/components-canvas.test.ts` 9 of 9, `src/dialog/dialog.test.tsx` 9 of 9.
+- Screenshots (outside the repository): the check's `--shots` in the session scratchpad.
+- Review (reviewer, T2, medium): round 1, three findings fixed (the inline alert dialog still modal and its test passing falsely; `inset-md` kept by tailwind-merge; `<` unescaped in script JSON); round 2, none.
 
 ## Before deploying
 
@@ -63,3 +65,11 @@ Nothing new.
 ## Notes for the next session
 
 - The approved brief is the source for the design; do not re-ask its decisions.
+- **Spike (a), open overlay:** Dialog with `open` and `inline` mounted through the bundle under React 18 UMD (the check's page, as the canvas) opens inside its cell with its scrim, beside its closed trigger, with no error. The review found the first version false: the SDK's alert dialog is always modal (it swallowed presses, trapped focus and locked scroll; the first test only looked for `inert`). Inline it is now the plain SDK Dialog with `modal: false`, no outside-press close and no initial focus, role `dialog`; the test presses and types outside after it settles. To confirm in Play on the canvas itself.
+- **Decision taken pending the owner:** the locked `dialog.test.tsx` case was strengthened after the review (presses and typing outside, page scroll, role `dialog` instead of `alertdialog` for the inline copy, since an alert dialog is modal by definition); no assertion was removed. The non-inline Dialog keeps `alertdialog` and its modality.
+- **Spike (b), stories in Node:** Vite's `ssrLoadModule` reads every component's module and stories in about 14 s; 53 of 54 at once, DataTable's `selection` (a `Set`) now carried as `{ $set }`.
+- **The system's files:** the Design System has `components/bundle.{js,css}` and `tokens.json`, no `tokens.css`: its `bundle.css` carries the `--fd-*` variables (`scripts/bundle.css`), so boards link the bundle only.
+- **States sheets:** Shifa's frames multiply each rule about 26 times (962 KB for every rule); the boards use only `data-pseudo-outer`, so a board's sheet keeps that frame and only its own classes: 5 to 13 KB.
+- **Copies fill their cell** in the forms, navigation and data groups (a scrolling Tabs row overflowed its cell otherwise).
+- **Order of work:** the tests were written after the generator's first run (the spike shaped its API), then locked; the locked canvas test was unlocked once to drop an unused lint directive, no assertion changed. The Figma look was skipped: the canvas presents the coded components, it draws none.
+- **Publish before the Design System re-sync:** Dialog's `inline` reaches the Design System only after the merge, so the pilot publish sends this branch's bundle as files; after the merge the system is re-synced and the canvas republished with its `ds/fox-drop/` copied from it.

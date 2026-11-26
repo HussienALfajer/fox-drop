@@ -572,6 +572,7 @@ describe('the component docs', () => {
       tone: true,
       onConfirm: true,
       density: true,
+      inline: true,
     } satisfies Record<Keys<DialogProps>, true>,
     ConfirmDialogProps: {
       trigger: true,

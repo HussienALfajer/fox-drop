@@ -612,6 +612,9 @@ importers:
       jsdom:
         specifier: 31.0.1
         version: 31.0.1(@noble/hashes@2.4.0)
+      postcss:
+        specifier: 8.5.32
+        version: 8.5.32
       react-18:
         specifier: npm:react@18.3.1
         version: react@18.3.1

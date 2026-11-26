@@ -63,6 +63,46 @@ describe('Dialog', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
+
+  // D.C1: the components canvas draws it open inside its board, scrim included.
+  it('stays in its frame when inline, its scrim with it, and the page around stays usable', async () => {
+    const outsidePresses = vi.fn();
+    render(
+      <div>
+        <button type="button" onClick={outsidePresses}>
+          خارج النافذة
+        </button>
+        <input aria-label="حقل خارج النافذة" />
+        <div data-testid="frame">
+          <Dialog
+            open
+            inline
+            title="حذف هذا العنوان؟"
+            confirmLabel="حذف"
+            cancelLabel="إلغاء"
+            closeLabel="إغلاق"
+          />
+        </div>
+      </div>,
+    );
+    // Beside the page, not modal: a plain dialog (an alert dialog is modal by definition).
+    const dialog = await screen.findByRole('dialog', { name: 'حذف هذا العنوان؟' });
+    const frame = screen.getByTestId('frame');
+    expect(frame).toContainElement(dialog);
+    expect(frame.querySelector('[data-scrim]')).not.toBeNull();
+    const outside = screen.getByRole('button', { name: 'خارج النافذة' });
+    expect(outside.closest('[inert], [aria-hidden="true"]')).toBeNull();
+    // After it has settled: presses and typing outside work, the page still scrolls, it stays open.
+    await new Promise((done) => setTimeout(done, 300));
+    await userEvent.click(outside);
+    expect(outsidePresses).toHaveBeenCalledTimes(1);
+    const field = screen.getByRole('textbox', { name: 'حقل خارج النافذة' });
+    await userEvent.click(field);
+    await userEvent.keyboard('abc');
+    expect(field).toHaveValue('abc');
+    expect(document.documentElement.style.overflow).not.toBe('hidden');
+    expect(screen.getByRole('dialog', { name: 'حذف هذا العنوان؟' })).toBeInTheDocument();
+  });
 });
 
 function CancelOrder({ onConfirm = vi.fn() }: { onConfirm?: (reason: string) => void }) {
