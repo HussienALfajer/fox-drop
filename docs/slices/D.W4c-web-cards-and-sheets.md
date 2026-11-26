@@ -1,6 +1,6 @@
 # D.W4c Web versions: restaurant and dish cards, bottom sheet, pull to refresh
 
-Status: Planned · Tier: T2 · Branch: `feat/web-cards-sheets`
+Status: Done · Tier: T2 · Branch: `feat/web-cards-sheets`
 Spec: architecture §9.5 R1, R3, R4, R5, R7, R9, R13, §9.6, §9.9, §9.10; D.9, D.10 and D.11b's slice files for the approved looks · Definition of done: workflow §4 (UI items)
 
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1 and D.W2 merged. Runs in parallel with any other D.W3 or D.W4 slice.
@@ -51,13 +51,16 @@ The owner was asleep and delegated decisions to the supervising session (2026-11
 
 ## Stopped at
 
-Building: the four web components, the tokens and the Flutter twins on them are committed; the parity sheets are next.
+Done: pull request open with auto-merge; the owner's approval of the sheets and of the overnight decisions is pending.
 
 ## Evidence
 
-- `pnpm parity …`: the sheets shown to the owner and the approval
-- `node scripts/verify.mjs --changed`:
-- Review:
+- Red phase: `cards-sheets-review.test.tsx` failed on the missing modules, `stories.test.ts` on the four missing components, `component-usage.test.ts` on every token of the four new files (no folder, nothing read).
+- `pnpm parity RestaurantCard DishCard BottomSheet PullToRefresh`: four sheets in `.parity/` (git-ignored, on disk for the owner). The first run showed the gaps of decision 9, fixed; the third run, after the review fixes, matched but for the gaps of decision 10. Approval: delegated overnight, pending the owner.
+- `pnpm baselines`: «baselines: passed»; only the new stories' screenshots were added, no existing screenshot and no `core_ui` golden moved.
+- ui-web `vitest run`: 47 files, 488 tests passed (before the review's new test file); `cards-sheets-review.test.tsx` 17 and `pull-to-refresh.test.tsx` 3 passed after the fixes. design-tokens `component-usage.test.ts`: 28 passed. core_ui `flutter test`: all passed; `dart analyze`: no issues.
+- `node scripts/verify.mjs --changed`: see the pull request.
+- Review (T2, `reviewer`, two rounds): round 1 found one blocking item (the new screenshots not committed) and three should-fix (the dish card's outline lost under hover and press; no story where the long sheet or the pull list overflows, REVIEW item 15; WebKit has no `pan-down`, so the pull would not work on iOS), with four minor (the state chip under the heart, an unhandled rejected refresh, the `inline` sheet trapping Tab, three stale doc lines); all fixed. Round 2: one new minor (no test for the touch listener), fixed with `pull-to-refresh.test.tsx`.
 
 ## Before deploying
 
@@ -69,4 +72,4 @@ Nothing new.
 
 ## Notes for the next session
 
-<the bases chosen, the gaps and the owner's choices>
+The bases: the UI SDK's `Dialog` for the sheet, pointer events plus a non-passive `touchmove` for the pull (decision 1). Gaps and choices: «Decisions taken overnight». Owner to try after the merge: `pnpm --filter @fox-drop/ui-web storybook`, the four new titles in Arabic RTL; on a phone browser, pull the PullToRefresh story's list down from its top.
