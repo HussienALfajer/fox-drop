@@ -2,10 +2,10 @@
 // phases 4 and 5). CI's `changes` job and `node scripts/verify.mjs --changed`
 // both use it, so the two never disagree about what a path sets.
 //
-//   node scripts/classify-changes.mjs <base>   prints code=…, dart=…, native=…,
-//                                              build=…, visual=…, golden=…
-//                                              and hand_written=<count> (with
-//                                              a base) for $GITHUB_OUTPUT
+//   node scripts/classify-changes.mjs <base> [--push]
+//     prints code=…, dart=…, native=…, build=…, visual=…, golden=…, the jobs
+//     typescript=…, server=…, contract=… (ciJobs; --push: main, every job
+//     `code` runs) and hand_written=<count> (with a base) for $GITHUB_OUTPUT
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -107,6 +107,32 @@ const DART_ONLY =
 const CONTRACT =
   /^(scripts\/generate-api\.mjs|openapitools\.json|apps\/server\/scripts\/write-openapi\.mjs|apps\/server\/src\/http\/|packages\/(api-schema|core_api)\/)|^apps\/server\/src\/.*\.controller\.ts$/;
 const SERVER_SOURCE = /^apps\/server\/src\/.*\.ts$/;
+// The check engine: CI's workflow, Turborepo's task graph, verify.mjs and the
+// scripts it runs or imports. A change to one runs every CI job (ciJobs).
+export const CHECK_ENGINE =
+  /^(\.github\/workflows\/ci\.yml|turbo\.json|scripts\/(verify(-support|-watchdog)?|classify-changes|green-tree|server-test-readers|outside-reads|baselines)\.mjs)$/;
+
+// The files outside a package that a package's Turborepo task reads, from
+// turbo.json (`$TURBO_ROOT$/…`, which turbo-inputs.test.mjs keeps complete):
+// `name` is the package, or null for a task every package runs. Turborepo's
+// `...[base]` filter cannot see a change to one, so turboScope names them.
+// Its globalDependencies count for every package.
+const TURBO = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../turbo.json', import.meta.url)), 'utf8'),
+);
+export const TURBO_ROOT_INPUTS = [
+  ...(TURBO.globalDependencies ?? []).map((glob) => ({ name: null, glob })),
+  ...Object.entries(TURBO.tasks).flatMap(([task, { inputs = [] }]) =>
+    inputs
+      .filter((input) => input.startsWith('$TURBO_ROOT$/'))
+      .map((input) => ({
+        name: task.includes('#') && !task.startsWith('//#') ? task.split('#')[0] : null,
+        glob: input.slice('$TURBO_ROOT$/'.length),
+      })),
+  ),
+];
+const readByTurboTask = (file) =>
+  TURBO_ROOT_INPUTS.filter((each) => path.posix.matchesGlob(file, each.glob));
 // What CI's own image jobs depend on besides their inputs: the workflow and
 // this classifier, so a change to either runs both.
 const CI_ITSELF = /^(\.github\/workflows\/ci\.yml|scripts\/classify-changes\.mjs)$/;
@@ -199,10 +225,9 @@ export const handWritten = (files) =>
  *   (docs/archive/claude-code-workflow.md, phase 5): the checks, the Dart
  *   checks, the native release builds of a pull request, the images and the
  *   staging builds and deploy, the ui-web screenshots, the core_ui goldens.
- * - typescript: Turborepo's affected packages; server: the server's tests;
- *   contract: regenerate the API contract; tokenDocs: a doc the design tokens'
- *   tests read changed, so they run though no package file did; dartScope:
- *   null, 'changed' or 'all'.
+ * - typescript: Turborepo's affected packages (turboScope says which); server:
+ *   the server's tests; contract: regenerate the API contract; dartScope:
+ *   null, 'changed' or 'all'. ciJobs turns the first three into CI's jobs.
  * `readBase(file)` returns a file's text at the base commit, or null; without
  * it, the root package.json counts for `visual` whatever changed in it.
  */
@@ -219,12 +244,19 @@ export function classify(files, read = readText, readBase = null) {
   const native = files.some(
     (file) => !DOCS.test(file) && (NATIVE.test(file) || nativePackage(file)),
   );
-  const typescript = specRead || files.some((file) => !DOCS.test(file) && !DART_ONLY.test(file));
+  // A Dart file a TypeScript task reads (turbo.json) counts too.
+  const typescript =
+    specRead ||
+    files.some(
+      (file) => (!DOCS.test(file) && !DART_ONLY.test(file)) || readByTurboTask(file).length > 0,
+    );
   const server = files.some(
     (file) =>
       readByServerTests(file) ||
       (file.startsWith('apps/server/') && !DOCS.test(file)) ||
-      /^(package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig[\w.]*\.json)$/.test(file),
+      /^(package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|\.npmrc|\.node-version|tsconfig[\w.]*\.json)$/.test(
+        file,
+      ),
   );
   const contract = files.some(
     (file) =>
@@ -256,9 +288,52 @@ export function classify(files, read = readText, readBase = null) {
     typescript,
     server,
     contract,
-    tokenDocs: files.some(readByTokenTests),
     dartScope: dartScope(files),
   };
+}
+
+/**
+ * Which of CI's TypeScript, server and contract jobs run for the changed
+ * `files`, from their classification `touched`. On main (`push`) and for a
+ * change to the check engine, every one that `code` runs, as before; on a pull
+ * request only those the change can break. The contract job runs for every
+ * server change: a schema can read a constant from a file that never imports
+ * zod, which `contract` alone (the fast local check) cannot see. It runs too
+ * for what the Dart client is formatted and built with (dartScope 'all').
+ */
+export function ciJobs(files, touched, { push = false } = {}) {
+  if (push || files.some((file) => CHECK_ENGINE.test(file)))
+    return { typescript: touched.code, server: touched.code, contract: touched.code };
+  return {
+    typescript: touched.typescript,
+    server: touched.server,
+    contract: touched.contract || touched.server || touched.dartScope === 'all',
+  };
+}
+
+// A root file the root lint (`lint:root`) checks.
+const ROOT_SCRIPT = /^(?!(apps|packages|tools)\/)[^]*\.[cm]?[jt]sx?$/;
+
+/**
+ * The packages Turborepo must check besides `...[base]` (the changed packages
+ * and their dependents) for the changed `files`, given the workspace package
+ * folders `packageDirs`: each package whose task reads a changed file outside
+ * it (TURBO_ROOT_INPUTS), to run with its dependents, or 'all' for a change
+ * outside every package that none of them declares (a manifest, the lock, a
+ * shared configuration, a root script), which Turborepo cannot place.
+ * Markdown and Dart files outside the packages count only where a task reads them.
+ */
+export function turboScope(files, packageDirs) {
+  const names = new Set();
+  for (const file of files) {
+    const readers = readByTurboTask(file);
+    if (readers.some((each) => each.name === null)) return 'all';
+    for (const each of readers) names.add(each.name);
+    if (packageDirs.some((dir) => file.startsWith(`${dir}/`))) continue;
+    if (ROOT_SCRIPT.test(file)) return 'all';
+    if (readers.length === 0 && !DOCS.test(file) && !DART_ONLY.test(file)) return 'all';
+  }
+  return [...names].sort();
 }
 
 // Which Dart packages the fast check covers: none, the changed ones and their
@@ -292,7 +367,7 @@ function readText(file) {
 function git(args) {
   const result = spawnSync('git', args, { encoding: 'utf8' });
   if (result.status !== 0) throw new Error(`git ${args.join(' ')}: ${result.stderr.trim()}`);
-  return result.stdout.split(/\r?\n/).filter(Boolean);
+  return result.stdout.split('\0').filter(Boolean);
 }
 
 /**
@@ -301,26 +376,37 @@ function git(args) {
  * path too.
  */
 export function changedFiles(base, { workingTree = true } = {}) {
-  // Paths as they are, not quoted when they hold non-ASCII characters.
-  const raw = ['-c', 'core.quotePath=false'];
-  const committed = git([...raw, 'diff', '--name-only', '--no-renames', base, 'HEAD']);
+  // Paths as they are (-z): never quoted, even with a tab, quote or backslash.
+  const committed = git(['diff', '--name-only', '-z', '--no-renames', base, 'HEAD']);
   if (!workingTree) return committed;
-  const uncommitted = git([...raw, 'diff', '--name-only', '--no-renames', 'HEAD']);
-  const untracked = git([...raw, 'ls-files', '--others', '--exclude-standard']);
+  const uncommitted = git(['diff', '--name-only', '-z', '--no-renames', 'HEAD']);
+  const untracked = git(['ls-files', '-z', '--others', '--exclude-standard']);
   return [...new Set([...committed, ...uncommitted, ...untracked])].sort();
 }
 
 function main() {
   const base = process.argv[2];
-  const all = { code: true, dart: true, native: true, build: true, visual: true, golden: true };
+  const push = process.argv.includes('--push');
+  const all = {
+    code: true,
+    dart: true,
+    native: true,
+    build: true,
+    visual: true,
+    golden: true,
+    typescript: true,
+    server: true,
+    contract: true,
+  };
   let flags = all;
   if (base && spawnSync('git', ['cat-file', '-e', `${base}^{commit}`]).status === 0) {
     const files = changedFiles(base, { workingTree: false });
     console.error(files.join('\n'));
-    flags = classify(files, readText, (file) => {
+    const touched = classify(files, readText, (file) => {
       const shown = spawnSync('git', ['show', `${base}:${file}`], { encoding: 'utf8' });
       return shown.status === 0 ? shown.stdout : null;
     });
+    flags = { ...touched, ...ciJobs(files, touched, { push }) };
     console.log(`hand_written=${handWritten(files).length}`);
   } else {
     // No commit to compare with (a new branch): check everything.

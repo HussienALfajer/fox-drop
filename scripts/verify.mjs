@@ -17,7 +17,8 @@
 // `--changed` a server or Dart step whose inputs are unchanged since it passed
 // is skipped (`--fresh` runs everything again). In CI (`CI` set) the output
 // streams as it comes, the first failing step stops the run and nothing is
-// skipped or replayed: CI is the gate.
+// skipped or replayed: CI is the gate. On a pull request its lint and e2e jobs
+// pass `--affected=<base>`, which checks only the packages the change affects.
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
@@ -36,7 +37,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { imageStatus } from './baselines.mjs';
-import { changedFiles, classify, READ_BY_SERVER_TESTS } from './classify-changes.mjs';
+import { changedFiles, classify, READ_BY_SERVER_TESTS, turboScope } from './classify-changes.mjs';
 import { recordGreen, treeState } from './green-tree.mjs';
 import { serverTestScope } from './server-test-readers.mjs';
 import {
@@ -76,7 +77,7 @@ const startedAt = Date.now();
 const PARTS = ['contract', 'format', 'typescript', 'lint', 'e2e', 'server', 'dart', 'flutter'];
 const USAGE =
   `Usage: node scripts/verify.mjs [${PARTS.join('|')}]... [--shard=<index>/<count>] [--package=<name>]` +
-  ' | --changed[=<ref>]; and --serial, --no-wait, --fresh';
+  ' [--affected=<commit>] | --changed[=<ref>]; and --serial, --no-wait, --fresh';
 const args = process.argv.slice(2);
 const SWITCHES = ['--serial', '--no-wait', '--fresh'];
 const serial = CI || args.includes('--serial');
@@ -84,12 +85,16 @@ const fresh = args.includes('--fresh');
 const changed = args.find((arg) => /^--changed(=[\w./^~-]+)?$/.test(arg));
 const shard = args.find((arg) => arg.startsWith('--shard='))?.slice('--shard='.length);
 const e2ePackage = args.find((arg) => arg.startsWith('--package='))?.slice('--package='.length);
+// CI's lint and e2e jobs on a pull request: only the packages its change
+// since this commit affects (affectedFilters).
+const affectedBase = args.find((arg) => arg.startsWith('--affected='))?.slice('--affected='.length);
 const named = args.filter(
   (arg) =>
     !SWITCHES.includes(arg) &&
     arg !== changed &&
     !arg.startsWith('--shard=') &&
-    !arg.startsWith('--package='),
+    !arg.startsWith('--package=') &&
+    !arg.startsWith('--affected='),
 );
 
 function usage(message) {
@@ -110,6 +115,15 @@ if (shard !== undefined && !(parts.size === 1 && (parts.has('server') || parts.h
   usage('--shard needs exactly one of the parts server and flutter.');
 if (e2ePackage !== undefined && !(parts.size === 1 && parts.has('e2e')))
   usage('--package needs exactly the part e2e.');
+if (
+  affectedBase !== undefined &&
+  !(
+    /^[\w./^~-]+$/.test(affectedBase) &&
+    parts.size === 1 &&
+    (parts.has('lint') || parts.has('e2e'))
+  )
+)
+  usage('--affected=<commit> needs exactly one of the parts lint and e2e.');
 
 // ---------------------------------------------------------------- the lock
 
@@ -531,7 +545,7 @@ function checkInstructionSizes() {
 const SCRIPT_TESTS = {
   name: 'Claude Code hooks and scripts',
   command:
-    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/baselines.test.mjs scripts/dependency-pins.test.mjs scripts/parity.test.mjs',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/baselines.test.mjs scripts/dependency-pins.test.mjs scripts/parity.test.mjs scripts/generate-api.test.mjs',
 };
 
 function formatSteps(files) {
@@ -599,7 +613,8 @@ const contractSteps = () =>
     'The committed OpenAPI document or a generated client was stale. It is regenerated' +
       ' now: review the changes in packages/api-schema and packages/core_api and commit them.' +
       ' A second run passes locally, but CI fails until they are committed.',
-    // 4 min on 2026-11-25 (the server's build, then the Java generator).
+    // 4 min on 2026-11-25 (the server's build, then the Java generator); the
+    // Dart half is skipped when the document is unchanged (generate-api.mjs).
     { paths: ['apps/server', 'packages/api-schema', 'packages/core_api', ...ROOT_FILES] },
   );
 
@@ -647,6 +662,38 @@ const turbo = (name, tasks, filters = '') => ({
 });
 
 const NOT_SERVER = '--filter="!@fox-drop/server"';
+
+/**
+ * The Turborepo filters for the packages the change since `base` (its changed
+ * `files`) affects: the changed packages and their dependents (`...[base]`),
+ * and each package whose task reads a changed file outside it, with its
+ * dependents (turboScope); '' (every package) for a change Turborepo cannot place.
+ */
+async function affectedFilters(base, files) {
+  const { packages } = JSON.parse(await capture('pnpm exec turbo ls --output=json'));
+  const dirs = packages.items.map((each) => each.path.replaceAll('\\', '/'));
+  const scope = turboScope(files, dirs);
+  if (scope === 'all') return '';
+  return [`--filter="...[${base}]"`, ...scope.map((name) => `--filter="...${name}"`)].join(' ');
+}
+
+/** The package names Turborepo `filters` select. */
+async function selectedPackages(filters) {
+  const { packages } = JSON.parse(await capture(`pnpm exec turbo ls ${filters} --output=json`));
+  return packages.items.map((each) => each.name);
+}
+
+// In CI with --affected: the change since the base commit, and its filters.
+const affectedChange = async () => {
+  const files = changedFiles(affectedBase, { workingTree: false });
+  const filters = await affectedFilters(affectedBase, files);
+  console.log(
+    `verify: ${files.length} files changed since ${affectedBase.slice(0, 9)}; Turborepo checks ${
+      filters ? (await selectedPackages(filters)).join(', ') || 'no package' : 'every package'
+    }`,
+  );
+  return filters;
+};
 const OTHER_TESTS = "Tests other than the server's (Turborepo)";
 // `typescript` is `lint` and `e2e` together, run as today: one Turborepo run
 // for the lint, type check, build and smoke tests, then the other tests.
@@ -655,18 +702,24 @@ const typescriptSteps = () => [
   turbo('Lint, type check, build and smoke test (Turborepo)', `${LINT_TASKS} ${E2E_TASKS}`),
   turbo(OTHER_TESTS, 'test', NOT_SERVER),
 ];
-const lintSteps = () => [
-  turbo('Lint and type check (Turborepo)', LINT_TASKS),
-  turbo(OTHER_TESTS, 'test', NOT_SERVER),
-];
-const e2eSteps = () => [
-  playwrightStep,
-  turbo(
-    `Build and smoke test${e2ePackage ? `, ${e2ePackage}` : ''} (Turborepo)`,
-    E2E_TASKS,
-    e2ePackage ? `--filter="${e2ePackage}"` : '',
-  ),
-];
+const lintSteps = async () => {
+  const filters = affectedBase === undefined ? '' : await affectedChange();
+  return [
+    turbo('Lint and type check (Turborepo)', LINT_TASKS, filters),
+    turbo(OTHER_TESTS, 'test', `${filters} ${NOT_SERVER}`.trim()),
+  ];
+};
+const e2eSteps = async () => {
+  const name = `Build and smoke test${e2ePackage ? `, ${e2ePackage}` : ''} (Turborepo)`;
+  if (affectedBase !== undefined) {
+    const filters = await affectedChange();
+    if (filters && !(await selectedPackages(filters)).includes(e2ePackage)) {
+      console.log(`verify: ${e2ePackage} is not affected by the change: nothing to build or test`);
+      return [];
+    }
+  }
+  return [playwrightStep, turbo(name, E2E_TASKS, e2ePackage ? `--filter="${e2ePackage}"` : '')];
+};
 
 // ---------------------------------------------------------------- Dart
 
@@ -797,11 +850,10 @@ async function verifyChanged(since) {
   if (touched.contract) await sequence(contractSteps());
 
   // The changed packages and every package that depends on one, committed or
-  // not. A doc the design tokens' tests read lies outside every package, so
-  // Turborepo sees no change: name the package and its dependents (PR 274,
-  // a §9.5 change that passed here and failed the guide test in CI).
-  const tokenDocs = touched.tokenDocs ? ' --filter="...@fox-drop/design-tokens"' : '';
-  const affected = `--filter="...[${base}]"${tokenDocs}`;
+  // not, and the packages whose tasks read a changed file outside them, which
+  // Turborepo cannot see (PR 274, a §9.5 change that passed here and failed
+  // the guide test in CI): affectedFilters.
+  const affected = touched.typescript ? await affectedFilters(base, files) : '';
   const scope = serverTestScope(files, base, (file) => classify([file]).server);
   await together([
     () =>
@@ -971,8 +1023,8 @@ async function verifyParts() {
         ]);
       }
       if (typescript) return sequence(typescriptSteps());
-      if (parts.has('lint')) await sequence(lintSteps());
-      if (parts.has('e2e')) await sequence(e2eSteps());
+      if (parts.has('lint')) await sequence(await lintSteps());
+      if (parts.has('e2e')) await sequence(await e2eSteps());
     },
     async () => {
       if (!parts.has('server') || (CI && typescript && shard === undefined)) return;

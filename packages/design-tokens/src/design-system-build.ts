@@ -127,9 +127,65 @@ export function systemFiles(tokens: string, fontFiles: Map<string, Buffer>): Fil
 export interface Blobs {
   /** When the system was first indexed; kept on every later sync. */
   created: string;
-  /** `<Group>/<file>` to the blob id and the size the upload reply gave. */
-  assets: Record<string, { blob: string; size: number }>;
+  /**
+   * `<Group>/<file>` to the blob id and the size the upload reply gave, and,
+   * in the record (RECORD), the SHA-256 of the bytes uploaded.
+   */
+  assets: Record<string, { blob: string; size: number; sha256?: string }>;
 }
+
+/** The blobs of the last sync, beside the emptied system folder. */
+export const RECORD = path.join(OUT, '..', 'blobs.json');
+/** The hash of each file the first pass wrote to uploads/. */
+const UPLOADED = path.join(OUT, 'uploads.json');
+
+export const assetHash = (bytes: Buffer): string =>
+  createHash('sha256').update(bytes).digest('hex');
+
+/** The uploads that are new or changed since the `record` (null: every one). */
+export function toUpload(uploads: Map<string, Buffer>, record: Blobs | null): Map<string, Buffer> {
+  return new Map(
+    [...uploads].filter(([key, bytes]) => record?.assets[key]?.sha256 !== assetHash(bytes)),
+  );
+}
+
+/**
+ * The record after a sync: the upload `replies` (null when nothing was
+ * uploaded) over the old `record`, each current upload with its hash, the
+ * removed ones dropped. An upload still unchanged since the record keeps its
+ * blob; a new or changed one needs its reply. `uploaded` holds the hash of
+ * each file written to uploads/ (UPLOADED): a reply for bytes that changed
+ * since would record the old drawing under the new hash.
+ */
+export function mergeBlobs(
+  record: Blobs | null,
+  replies: Blobs | null,
+  uploads: Map<string, Buffer>,
+  uploaded?: Record<string, string>,
+): Blobs {
+  const created = record?.created ?? replies?.created;
+  if (!created) throw new Error('No blob id: upload the files in uploads/ first');
+  const assets: Blobs['assets'] = {};
+  for (const [key, bytes] of uploads) {
+    const sha256 = assetHash(bytes);
+    const reply = replies?.assets[key];
+    if (reply && uploaded && uploaded[key] !== sha256)
+      throw new Error(`${key} changed since uploads/ was written: rebuild and upload it again`);
+    const kept = record?.assets[key];
+    const upload = reply ?? (kept?.sha256 === sha256 ? kept : undefined);
+    if (!upload) throw new Error(`No blob id for ${key}: upload it from uploads/ first`);
+    assets[key] = { blob: upload.blob, size: upload.size, sha256 };
+  }
+  return { created, assets };
+}
+
+const readBlobs = (file: string): Blobs | null => {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8')) as Blobs;
+  } catch {
+    return null;
+  }
+};
 
 /** The index (the type's «A system kept in files»), written last. */
 export function index(blobs: Blobs, uploads: Map<string, Buffer>, now: string): string {
@@ -195,21 +251,37 @@ function write(files: Files) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const blobsAt = process.argv.indexOf('--blobs');
   const uploads = assets();
+  // `--all` uploads every asset again, as a first sync does.
+  const record = process.argv.includes('--all') ? null : readBlobs(RECORD);
   if (blobsAt === -1) {
     rmSync(OUT, { recursive: true, force: true });
     write(systemFiles(designSystem(await resolveAll()), fonts()));
     // The uploads sit beside project/, not in it: they go to the asset store.
-    for (const [key, bytes] of uploads) {
+    // Only the new and changed ones: the others keep their blobs (RECORD).
+    const changed = toUpload(uploads, record);
+    for (const [key, bytes] of changed) {
       const target = path.join(OUT, 'uploads', key);
       mkdirSync(path.dirname(target), { recursive: true });
       writeFileSync(target, bytes);
     }
-    console.log(`wrote ${OUT}: upload uploads/*, then rerun with --blobs <file>`);
+    const hashes = Object.fromEntries([...changed].map(([key, bytes]) => [key, assetHash(bytes)]));
+    writeFileSync(UPLOADED, `${JSON.stringify(hashes, null, 2)}\n`);
+    console.log(
+      changed.size === 0
+        ? `wrote ${OUT}: every asset is unchanged since the last sync; rerun with --blobs`
+        : `wrote ${OUT}: upload the ${changed.size} of ${uploads.size} assets in uploads/*, then rerun with --blobs <file>`,
+    );
   } else {
-    const blobs = JSON.parse(readFileSync(process.argv[blobsAt + 1]!, 'utf8')) as Blobs;
+    // `--blobs <file>`: the replies of this sync's uploads; `--blobs` alone: none.
+    const file = process.argv[blobsAt + 1];
+    const replies = file && !file.startsWith('--') ? readBlobs(file) : null;
+    if (file && !file.startsWith('--') && !replies) throw new Error(`Cannot read ${file}`);
+    const uploaded = JSON.parse(readFileSync(UPLOADED, 'utf8')) as Record<string, string>;
+    const blobs = mergeBlobs(record, replies, uploads, uploaded);
     write(
       new Map([['project/design-system.json', index(blobs, uploads, new Date().toISOString())]]),
     );
-    console.log(`wrote ${path.join(OUT, 'project/design-system.json')}`);
+    writeFileSync(RECORD, `${JSON.stringify(blobs, null, 2)}\n`);
+    console.log(`wrote ${path.join(OUT, 'project/design-system.json')} and ${RECORD}`);
   }
 }
