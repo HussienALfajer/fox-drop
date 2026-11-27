@@ -29,7 +29,7 @@ A row is an item, or one bullet of an item that has bullets (AP-31 to AP-33, RA-
 
 L.1c (`feat/dod-offline-browsing`) built CU-28's cached browsing offline and the address save's `Idempotency-Key`. Since 2026-11-27:
 
-- **CU-1:** the sign-in at «تأكيد الطلب»; it returns with the sign-in screen, the first customer screen (`docs/roadmap.md`, customer screens).
+- **CU-1:** the sign-in at «تأكيد الطلب»; it returns with the sign-in screen, the first customer screen (`docs/roadmap.md`, Phase 0).
 
 ### Built, test missing (test)
 

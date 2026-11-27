@@ -1,6 +1,6 @@
 ---
 name: build-slice
-description: Build one planned FOX DROP slice from its slice file in one session, test-first and layer by layer, to a pull request with auto-merge. Use when asked to build, start or continue a roadmap slice such as "D.8" or "the next slice".
+description: Build one planned FOX DROP slice from its slice file in one session, test-first and layer by layer, to a pull request with auto-merge. Use when asked to build, start or continue a roadmap slice such as "2.40" or "the next slice".
 argument-hint: '<slice id or slice file path>'
 ---
 
@@ -36,17 +36,17 @@ In the same slice: a rule an agent editing a folder would get wrong goes in that
 - `node scripts/verify.mjs --changed` passes on the final tree (in the background, as in §3). Run the full `pnpm verify` the same way as well when the slice changes `scripts/verify.mjs`, `scripts/classify-changes.mjs`, `.github/` or the generators; CI is the gate (everything on main).
 - For screens: run them in the app in Arabic, right to left.
 - Write the evidence into the slice file: the commands and their summary lines, what the owner can try. Fill "Before deploying" and "To check on staging".
-- Review by tier (workflow §6): the `reviewer` agent with the branch, the slice file and the tier in its prompt, and the Agent tool's `effort` set to `medium` for T2 and T1 or `high` for T0 (it applies `REVIEW.md` from `main`); for T0 also the `security-reviewer`, in the same message. Fix every blocking and should-fix finding and run the check again (§4); send the fixes' diff to the same reviewer (SendMessage) for the next round. After three rounds with a blocking finding still open, stop and ask the owner. Non-blocking findings go to `docs/backlog.md` with their source.
+- Review by tier (workflow §6): the `reviewer` agent with the branch, the slice file and the tier in its prompt, and the Agent tool's `effort` set to `medium` for T2 and T1 or `high` for T0 (it applies `REVIEW.md` from `main`); for T0 also the `security-reviewer`, in the same message. Fix every blocking and should-fix finding and run the check again (§3); send the fixes' diff to the same reviewer (SendMessage) for the next round. After three rounds with a blocking finding still open, stop and ask the owner. Non-blocking findings go to `docs/backlog.md` with their source.
 
-## 6. Pull request
+## 5. Pull request
 
 - Empty `.claude/state/locked-tests.txt`.
 - Mark the slice `[x]` in `docs/roadmap.md`, set the slice file's status to Done, and commit. These land with the merge; never write that the slice was merged or is on `main` before it is.
 - `gh pr create --base main`: `## Summary` (what and why, the slice file, the spec sections, the tier), `## Test plan` (the evidence and what the owner can try), and `## Checks changed` when it touches `ci.yml`, `scripts/verify.mjs` or `REVIEW.md`. A pull request opened earlier for CI on a checkpoint is a draft (`--draft`) without auto-merge; now `gh pr ready` it.
 - Only now: auto-merge with squash (`gh pr merge --auto --squash --delete-branch`) and the app's Auto-fix. If CI fails, fix the cause on the branch and push once; never skip or silence a check.
 
-## 7. Report
+## 6. Report
 
-In the format of "Reporting" in the root `CLAUDE.md`. Under «ما المطلوب منك», the slice's acceptance steps as numbered steps to run after the merge; under «الخطوة التالية», the next slice from `docs/roadmap.md`: whether its slice file exists (else `/slice-plan` first, in plan mode), its tier and effort, and its first message, such as `/build-slice D.9`.
+In the format of "Reporting" in the root `CLAUDE.md`. Under «ما المطلوب منك», the slice's acceptance steps as numbered steps to run after the merge; under «الخطوة التالية», the next slice from `docs/roadmap.md`: whether its slice file exists (else `/slice-plan` first, in plan mode), its tier and effort, and its first message, such as `/build-slice 2.41`.
 
 If the session ends with work open instead: update "Stopped at" and "Notes for the next session" in the slice file, commit what is green and push once; a pull request, if one is open, stays a draft.

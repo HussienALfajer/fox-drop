@@ -32,6 +32,12 @@ build/
 *.keystore
 google-services.json
 GoogleService-Info.plist
+# Font files: licensed fonts never enter this public repository
+*.ttf
+*.otf
+*.ttc
+*.woff
+*.woff2
 
 # Tests
 coverage/

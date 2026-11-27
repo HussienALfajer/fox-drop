@@ -1,5 +1,5 @@
 {
-  "$comment": "An invisible mark is written {U+XXXX}; the tests put the character in its place. D.11's normalisation table (owner, 2026-11-24), one row per case: what is typed or pasted (`input`) under the picked country (`picked`, ISO). `country` is the country the field ends on; `e164` when the number is a complete mobile, else `problem` (`empty`, `missingDigits` with `missing`, `tooLong`, `landline`, `notMobilePrefix` with `prefix`, `unknownCode`); `switchedFrom` when the country changed by itself; `grouped` the national digits as the field shows them. Read by `phone_test.dart`.",
+  "$comment": "An invisible mark is written {U+XXXX}; the tests put the character in its place. D.11's normalisation table (owner, 2026-11-24), one row per case: what is typed or pasted (`input`) under the picked country (`picked`, ISO). `country` is the country the field ends on; `e164` when the number is a complete mobile, else `problem` (`empty`, `missingDigits` with `missing`, `tooLong`, `landline`, `notMobilePrefix` with `prefix`, `unknownCode`); `switchedFrom` when the country changed by itself; `grouped` the national digits as the field shows them. Read by `phone_rules_test.dart`.",
   "cases": [
     {
       "name": "Syrian national with its 0",
