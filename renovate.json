@@ -41,11 +41,7 @@
     },
     {
       "description": "The Playwright packages move together: the smoke tests run the browsers of one @playwright/test version.",
-      "matchPackageNames": [
-        "@playwright/test",
-        "playwright",
-        "playwright-core"
-      ],
+      "matchPackageNames": ["@playwright/test", "playwright", "playwright-core"],
       "groupName": "Playwright",
       "separateMajorMinor": false
     },
