@@ -21,7 +21,7 @@
 | `order:{order_id}`       | The customer's devices while the order is active | Status, ETA, captain position after pickup         |
 | `customer:{customer_id}` | The customer's devices                           | Account state, codes, banners                      |
 
-- **Captain positions are not events (slice 2.29b, decided by us, to confirm with the owner):** a position is no state change, so it does not go through the outbox (E4, §5.5). The API that receives a captain's point publishes it at once, best effort, to `order:{order_id}` of the order the captain carries after the pickup (§7.3); a lost one is followed by the next point 10 seconds later, and the app reads the position again on reconnecting. State changes still leave only through the outbox.
+- **Captain positions are not events (slice 2.29b; owner decision 2026-11-27):** a position is no state change, so it does not go through the outbox (E4, §5.5). The API that receives a captain's point publishes it at once, best effort, to `order:{order_id}` of the order the captain carries after the pickup (§7.3); a lost one is followed by the next point 10 seconds later, and the app reads the position again on reconnecting. State changes still leave only through the outbox.
 
 ## 6.3 Heartbeats and fallbacks
 
