@@ -37,7 +37,7 @@
 - **PostgreSQL**, latest stable and at least 18 (the migrations use its built-in `uuidv7()`), self-managed in its container on the shared server, with no standby and no read replica in V1 (T9, §17.2).
 - **PostGIS** for zones (polygons), point-in-zone checks, distance checks and the vote heatmap.
 - **Partitioning** by month for orders, order events, location history, ledger entries and the audit log.
-- **Search in V1:** PostgreSQL full text plus `pg_trgm`, on a normalised Arabic column. Normalisation removes diacritics and tatweel and unifies «أ إ آ ا», «ة ه» and «ى ي».
+- **Search in V1:** every word compared in one normalised form that removes diacritics and tatweel and unifies «أ إ آ ا ٱ», «ة ه» and «ى ي» (`searchText`, owner decision 2026-11-18, CU §8.3); the panel's name searches use `ILIKE`. PostgreSQL full text and a `pg_trgm` index come when the catalogue or the customers outgrow it (when needed).
 - **Backups:** §17.2 (continuous WAL archiving with pgBackRest before launch, slice L.5; staging has a nightly `pg_dump` until then, `infra/server/backup.sh`).
 - The reporting module reads the primary in V1; it moves to a read replica once one is needed (§17.4).
 
@@ -60,7 +60,7 @@
 - Accounts per party and purpose: captain custody per currency, captain earnings, restaurant account, platform revenue, platform cash per drawer, discounts, compensation and so on (AP §8.5, §8.7, §8.11).
 - Entry types are enum values (for example `custody.pay_merchant`, `earn.order_pay`, CA §0).
 - **Append-only, enforced in the database:** the application role has `INSERT` and `SELECT` on ledger tables, never `UPDATE` or `DELETE`. Corrections are reversing journals with a reason (AP §1.3 item 5).
-- Balances are computed from entries. Cached balances are rebuilt from entries and checked by a nightly reconciliation job that alerts on any difference.
+- Balances are computed from entries; V1 caches none. The first cached balance brings its nightly reconciliation job, which rebuilds it from the entries and alerts on any difference.
 - The ledger is designed for V5 from day one: a wallet is one more account type, and an e-payment is one more journal type.
 
 ## 5.7 Valkey (E2)

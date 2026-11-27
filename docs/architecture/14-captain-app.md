@@ -25,5 +25,5 @@
 
 ## 14.4 Light data (CA §4.6)
 
-- Map tiles cached; the route line fetched once per leg; document photos compressed on the device (`flutter_image_compress`) before upload; JSON responses compressed (gzip or Brotli).
-- A CI check measures the data used by a scripted delivery against the 2 MB target.
+- Map tiles cached; the route line fetched once per leg; photos taken with `image_picker`'s size and quality limits (1600 pixels, quality 80) before upload.
+- Not built yet (`docs/backlog.md`): compressed JSON responses (gzip or Brotli on `/v1`), and a measurement of the data a scripted delivery uses against the 2 MB target.

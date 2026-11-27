@@ -17,7 +17,7 @@
 | **Sign-in codes**                             | WhatsApp through a third-party library, isolated in the `otp-sender` worker (§8.3)                                                            |
 | **App integrity**                             | Firebase App Check (Play Integrity on Android, App Attest on iOS)                                                                             |
 | **Files and images**                          | S3-compatible object storage self-hosted on the server, with imgproxy behind nginx (T9)                                                       |
-| **Admin panel and owner portal**              | React, TypeScript, Vite (single-page apps), TanStack Router, Query and Table, Base UI, Tailwind CSS                                           |
+| **Admin panel and owner portal**              | React, TypeScript, Vite (single-page apps), TanStack Router and Query, `ui-web` on UI SDK and Tailwind CSS (T11, §10)                         |
 | **Restaurant app**                            | Flutter for Android and Windows, with native Kotlin and Win32 layers for ringing                                                              |
 | **Customer app**                              | Flutter for Android and iOS                                                                                                                   |
 | **Captain app**                               | Flutter for Android and iOS, with `flutter_background_geolocation` and native Kotlin and Swift layers for offers                              |
