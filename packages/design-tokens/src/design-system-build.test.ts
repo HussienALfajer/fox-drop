@@ -3,6 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   ASSET_GROUPS,
+  assetHash,
   assets,
   fonts,
   FONTS,
@@ -10,7 +11,9 @@ import {
   inlineStyles,
   MAX_FONT,
   MAX_SVG,
+  mergeBlobs,
   systemFiles,
+  toUpload,
 } from './design-system-build.ts';
 import { designSystem, FONT_FILES } from './design-system.ts';
 import { PACKAGE_DIR, resolveAll } from './resolve.ts';
@@ -159,5 +162,78 @@ describe("the Design System's files (architecture §9.8)", () => {
     );
     expect(named.sort()).toEqual([...uploads.keys()].sort());
     expect(() => index({ created: 'x', assets: {} }, uploads, 'y')).toThrow(/No blob id/);
+  });
+});
+
+describe('the uploads a sync reuses', () => {
+  const now = new Map([
+    ['Icons/home.svg', Buffer.from('<svg>home</svg>')],
+    ['Icons/cart.svg', Buffer.from('<svg>cart v2</svg>')],
+    ['Logos/mark.svg', Buffer.from('<svg>mark</svg>')],
+  ]);
+  const record = {
+    created: '2026-11-23T00:00:00Z',
+    assets: {
+      'Icons/home.svg': {
+        blob: 'b-home',
+        size: 15,
+        sha256: assetHash(Buffer.from('<svg>home</svg>')),
+      },
+      'Icons/cart.svg': {
+        blob: 'b-cart',
+        size: 15,
+        sha256: assetHash(Buffer.from('<svg>cart</svg>')),
+      },
+      // Uploaded before the content hashes were recorded: sent again.
+      'Logos/mark.svg': { blob: 'b-mark', size: 15 },
+      'Icons/gone.svg': { blob: 'b-gone', size: 1, sha256: 'x' },
+    },
+  };
+
+  it('uploads only what is new or changed since the record', () => {
+    expect([...toUpload(now, record).keys()].sort()).toEqual(['Icons/cart.svg', 'Logos/mark.svg']);
+    expect([...toUpload(now, null).keys()].sort()).toEqual([...now.keys()].sort());
+  });
+
+  it('merges the replies into the record, with each asset’s hash, and drops the removed', () => {
+    const replies = {
+      created: '2026-11-27T00:00:00Z',
+      assets: {
+        'Icons/cart.svg': { blob: 'b-cart2', size: 18 },
+        'Logos/mark.svg': { blob: 'b-mark2', size: 15 },
+      },
+    };
+    const merged = mergeBlobs(record, replies, now);
+    expect(merged.created).toBe('2026-11-23T00:00:00Z');
+    expect(Object.keys(merged.assets).sort()).toEqual([...now.keys()].sort());
+    expect(merged.assets['Icons/home.svg']!.blob).toBe('b-home');
+    expect(merged.assets['Icons/cart.svg']!.blob).toBe('b-cart2');
+    for (const [key, bytes] of now) expect(merged.assets[key]!.sha256).toBe(assetHash(bytes));
+    // Nothing to upload: the record alone.
+    expect(mergeBlobs(mergeBlobs(record, replies, now), null, now)).toEqual(merged);
+  });
+
+  it('refuses a reply for bytes that changed after uploads/ was written', () => {
+    const replies = {
+      created: 'x',
+      assets: {
+        'Icons/cart.svg': { blob: 'b-cart2', size: 18 },
+        'Logos/mark.svg': { blob: 'b-mark2', size: 15 },
+      },
+    };
+    const uploaded = {
+      'Icons/cart.svg': assetHash(Buffer.from('<svg>cart v1.5</svg>')),
+      'Logos/mark.svg': assetHash(now.get('Logos/mark.svg')!),
+    };
+    expect(() => mergeBlobs(record, replies, now, uploaded)).toThrow(/Icons\/cart\.svg changed/);
+    uploaded['Icons/cart.svg'] = assetHash(now.get('Icons/cart.svg')!);
+    expect(mergeBlobs(record, replies, now, uploaded).assets['Icons/cart.svg']!.blob).toBe(
+      'b-cart2',
+    );
+  });
+
+  it('refuses a changed asset whose new upload is missing', () => {
+    expect(() => mergeBlobs(record, null, now)).toThrow(/Icons\/cart\.svg/);
+    expect(() => mergeBlobs(null, null, now)).toThrow(/No blob id/);
   });
 });

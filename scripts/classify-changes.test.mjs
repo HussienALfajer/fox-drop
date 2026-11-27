@@ -5,6 +5,8 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
+  CHECK_ENGINE,
+  ciJobs,
   classify,
   DART_PACKAGE_SOURCES,
   dartPackagesSourcedBy,
@@ -13,6 +15,8 @@ import {
   NOT_HAND_WRITTEN,
   READ_BY_SERVER_TESTS,
   SPEC_FILES_READ_BY_TESTS,
+  TURBO_ROOT_INPUTS,
+  turboScope,
   VISUAL_ROOT_SCRIPTS,
 } from './classify-changes.mjs';
 
@@ -62,7 +66,7 @@ describe('the change classifier', () => {
       'docs/brand/logo/mark/mark-orange.svg',
       'docs/brand/app-icon/svg/app-icon-08.svg',
     ])
-      assert.equal(flags([file]), 'code typescript tokenDocs', file);
+      assert.equal(flags([file]), 'code typescript', file);
     assert.equal(flags(['docs/brand/expression.md']), '');
   });
 
@@ -73,7 +77,7 @@ describe('the change classifier', () => {
     );
     assert.equal(
       flags(['docs/brand/logo/mark/mark-orange-on-ivory-drop.svg']),
-      'code dart typescript tokenDocs dartScope:all',
+      'code dart typescript dartScope:all',
     );
   });
 
@@ -125,6 +129,23 @@ describe('the change classifier', () => {
     ]) {
       assert.equal(flags([file]), 'code dart build dartScope:changed', file);
     }
+  });
+
+  it('sets TypeScript for the Dart files a TypeScript task reads (turbo.json)', () => {
+    // design-tokens' tests read core_ui's sources; ui-web's read core_l10n's countries.
+    assert.equal(
+      flags(['packages/core_ui/lib/src/button/fox_button.dart']),
+      'code dart build typescript dartScope:changed',
+    );
+    assert.equal(
+      flags(['packages/core_l10n/lib/src/countries.g.dart']),
+      'code dart build typescript dartScope:changed',
+    );
+  });
+
+  it('sets the server tests for the Node and pnpm settings they run on', () => {
+    assert.equal(flags(['.node-version']), 'code build typescript server');
+    assert.equal(flags(['.npmrc']), 'code build typescript server');
   });
 
   it('sets TypeScript and Dart for the design tokens, which generate both outputs', () => {
@@ -200,7 +221,7 @@ describe('the change classifier', () => {
   });
 
   it('runs the goldens for the fonts and the scripts that fetch them', () => {
-    assert.equal(flags(['docs/brand/fonts-manifest.json']), 'code dart typescript tokenDocs');
+    assert.equal(flags(['docs/brand/fonts-manifest.json']), 'code dart typescript');
     for (const file of [
       'scripts/fonts.mjs',
       'scripts/fonts-fetch.mjs',
@@ -538,7 +559,10 @@ describe('the change classifier', () => {
     };
     visit('scripts/verify.mjs');
     assert.ok(engine.size > 4, [...engine].join(' '));
-    for (const file of engine) assert.ok(classify([file], plain).dart, file);
+    for (const file of engine) {
+      assert.ok(classify([file], plain).dart, file);
+      assert.ok(CHECK_ENGINE.test(file), `CHECK_ENGINE has ${file}`);
+    }
   });
 });
 
@@ -600,11 +624,159 @@ describe('the TypeScript jobs of ci.yml', () => {
       .map(({ name }) => name);
     assert.ok(withE2e.length >= 3, withE2e.join(' '));
     assert.deepEqual(inMatrix.sort(), withE2e.sort());
-    // The same condition as the jobs that need the TypeScript checks.
+    // Each job runs on its own output of the classifier (ciJobs), and the gate needs it.
     const gate = job('verify');
-    for (const name of ['lint', 'e2e']) {
-      assert.match(job(name), /^ {4}if: needs\.changes\.outputs\.code == 'true'$/m, name);
+    for (const [name, output] of [
+      ['lint', 'typescript'],
+      ['e2e', 'typescript'],
+      ['server', 'server'],
+      ['contract', 'contract'],
+    ]) {
+      assert.match(
+        job(name),
+        new RegExp(`^ {4}if: needs\\.changes\\.outputs\\.${output} == 'true'$`, 'm'),
+        name,
+      );
       assert.match(gate, new RegExp(`^ +${name},$`, 'm'), `the gate needs ${name}`);
     }
+    // On a pull request lint and e2e check the packages its change affects;
+    // main (a push) checks every package.
+    for (const name of ['lint', 'e2e']) {
+      assert.match(
+        job(name),
+        /\$\{\{ github\.event_name == 'pull_request' && format\('--affected=\{0\}', github\.event\.pull_request\.base\.sha\) \|\| '' \}\}/,
+        `${name} passes the base to verify`,
+      );
+      assert.match(job(name), /fetch-depth: 0/, `${name} fetches the base commit`);
+    }
+    const changes = job('changes');
+    for (const output of ['typescript', 'server', 'contract'])
+      assert.match(
+        changes,
+        new RegExp(`^ {6}${output}: \\$\\{\\{ steps\\.paths\\.outputs\\.${output} \\}\\}$`, 'm'),
+      );
+    assert.match(
+      changes,
+      /classify-changes\.mjs "\$BASE" \$\{\{ github\.event_name == 'push' && '--push' \|\| '' \}\}/,
+    );
+  });
+});
+
+describe('the jobs CI runs for a change (ciJobs)', () => {
+  const jobs = (files, options = {}) => {
+    const result = ciJobs(files, classify(files, plain), options);
+    return Object.keys(result)
+      .filter((key) => result[key])
+      .join(' ');
+  };
+
+  it('runs neither TypeScript, the server nor the contract for a Flutter change', () => {
+    assert.equal(jobs(['apps/customer/lib/main.dart']), '');
+    assert.equal(jobs(['packages/core_l10n/lib/l10n/app_ar.arb']), '');
+  });
+
+  it('runs the TypeScript jobs alone for a web change', () => {
+    assert.equal(jobs(['apps/admin/src/App.tsx']), 'typescript');
+    assert.equal(jobs(['packages/ui-web/src/button/button.tsx']), 'typescript');
+  });
+
+  it('regenerates the contract for every server change, schema or not', () => {
+    // A constant a schema reads need not import zod.
+    assert.equal(
+      jobs(['apps/server/src/modules/ordering/order-states.ts']),
+      'typescript server contract',
+    );
+    // What the Dart client is formatted and built with.
+    assert.equal(jobs(['.fvmrc']), 'contract');
+    assert.equal(jobs(['pubspec.lock']), 'contract');
+    assert.match(jobs(['packages/core_api/pubspec.yaml']), /contract/);
+  });
+
+  it('knows every file the server builds from: it has no workspace dependency', () => {
+    // The `server` flag counts apps/server and READ_BY_SERVER_TESTS only. A
+    // workspace package the server imports would need its folder there, or a
+    // change to it alone would skip the server's tests on a pull request.
+    const manifest = JSON.parse(readFileSync('apps/server/package.json', 'utf8'));
+    const workspace = Object.entries({
+      ...manifest.dependencies,
+      ...manifest.devDependencies,
+    }).filter(([, version]) => String(version).startsWith('workspace:'));
+    assert.deepEqual(workspace, []);
+  });
+
+  it('runs everything for the check engine, and on main', () => {
+    for (const file of [
+      '.github/workflows/ci.yml',
+      'turbo.json',
+      'scripts/verify.mjs',
+      'scripts/classify-changes.mjs',
+    ]) {
+      assert.ok(CHECK_ENGINE.test(file), file);
+      assert.equal(jobs([file]), 'typescript server contract', file);
+    }
+    assert.equal(
+      jobs(['apps/customer/lib/main.dart'], { push: true }),
+      'typescript server contract',
+    );
+    // Markdown is nothing, even on main.
+    assert.equal(jobs(['docs/roadmap.md'], { push: true }), '');
+  });
+});
+
+describe('the packages Turborepo checks for a change (turboScope)', () => {
+  const DIRS = [
+    'apps/admin',
+    'apps/merchant-portal',
+    'apps/server',
+    'infra',
+    'packages/api-schema',
+    'packages/design-tokens',
+    'packages/ui-web',
+  ];
+  const scope = (files) => turboScope(files, DIRS);
+
+  it('counts turbo.json’s global dependencies for every package', () => {
+    const turbo = JSON.parse(readFileSync('turbo.json', 'utf8'));
+    for (const glob of turbo.globalDependencies)
+      assert.ok(
+        TURBO_ROOT_INPUTS.some((each) => each.name === null && each.glob === glob),
+        glob,
+      );
+  });
+
+  it('reads every input outside a package from turbo.json', () => {
+    assert.ok(TURBO_ROOT_INPUTS.length > 10, String(TURBO_ROOT_INPUTS.length));
+    assert.ok(
+      TURBO_ROOT_INPUTS.some(
+        (each) => each.name === '@fox-drop/design-tokens' && each.glob === 'packages/ui-web/src/**',
+      ),
+    );
+  });
+
+  it('adds nothing for a package file: Turborepo sees it', () => {
+    assert.deepEqual(scope(['apps/admin/src/App.tsx']), []);
+    assert.deepEqual(scope(['docs/roadmap.md', 'apps/customer/lib/main.dart']), []);
+  });
+
+  it('adds the packages whose tasks read a changed file outside them', () => {
+    assert.deepEqual(scope(['packages/ui-web/src/button/button.tsx']), ['@fox-drop/design-tokens']);
+    assert.deepEqual(scope(['packages/core_l10n/lib/src/countries.g.dart']), ['@fox-drop/ui-web']);
+    assert.deepEqual(scope(['docs/architecture/09-design-system.md']), ['@fox-drop/design-tokens']);
+    assert.deepEqual(scope(['compose.yaml']).sort(), ['@fox-drop/infra', '@fox-drop/server']);
+  });
+
+  it('checks every package for a change outside them it cannot place', () => {
+    for (const file of [
+      'package.json',
+      'pnpm-lock.yaml',
+      'pnpm-workspace.yaml',
+      'turbo.json',
+      'tsconfig.base.json',
+      'eslint.config.mjs',
+      '.node-version',
+      'scripts/verify.mjs',
+      'scripts/fonts.mjs',
+    ])
+      assert.equal(scope([file]), 'all', file);
   });
 });

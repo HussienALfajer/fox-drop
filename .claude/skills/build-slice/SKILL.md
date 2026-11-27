@@ -42,7 +42,7 @@ In the same slice: a rule an agent editing a folder would get wrong goes in that
 
 ## 5. Before the pull request
 
-- `node scripts/verify.mjs --changed` passes on the final tree (in the background, as in §4). Run the full `pnpm verify` the same way as well when the slice changes `scripts/verify.mjs`, `scripts/classify-changes.mjs`, `.github/` or the generators; CI runs everything and is the gate.
+- `node scripts/verify.mjs --changed` passes on the final tree (in the background, as in §4). Run the full `pnpm verify` the same way as well when the slice changes `scripts/verify.mjs`, `scripts/classify-changes.mjs`, `.github/` or the generators; CI is the gate (everything on main).
 - For screens and components: run them (Storybook, widgetbook, the app) in Arabic, right to left, and compare each with its approved drawing (a Flutter twin with its web component, on the parity sheet); fix a difference or explain it in the slice file.
 - Check the images before the pull request (workflow §5): when `node scripts/baselines.mjs --status` fails, run `pnpm baselines` (in the background, as in §4: it updates what the change can move, then compares) and look at the images it lists as changed; commit them on their own. The shell guard refuses to open a pull request with unchecked images. Never push while `visual` or `golden` is known to fail.
 - Write the evidence into the slice file: the commands and their summary lines, screenshots' paths outside the repository, what the owner can try. Fill "Before deploying" and "To check on staging".

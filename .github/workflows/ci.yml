@@ -10,8 +10,11 @@ on:
 permissions:
   contents: read
 
+# Each push to main in its own group: GitHub cancels a pending run when a
+# newer one joins its group, and main's full run is the net for what a pull
+# request's narrower run skips, so no merge may lose it.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event_name == 'push' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -30,8 +33,13 @@ jobs:
   # The screenshot jobs run only for what can change their images: `visual`
   # for ui-web, the design tokens and what its Storybook and Playwright read,
   # `golden` for core_ui, its tokens and the Dart workspace; both for this
-  # workflow and the classifier. A pull request of more than 25 hand-written
-  # files gets a warning, never a failure.
+  # workflow and the classifier. On a pull request the TypeScript jobs (`lint`,
+  # `e2e`), the server's tests and the contract run only for a change they can
+  # break (`typescript`, `server`, `contract`: ciJobs in the classifier), and
+  # Turborepo checks only the packages the change affects (`--affected`); on
+  # main, and for a change to the check engine, every one runs as for any
+  # code change, every package forced. A pull request of more than 25
+  # hand-written files gets a warning, never a failure.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -42,6 +50,9 @@ jobs:
       build: ${{ steps.paths.outputs.build }}
       visual: ${{ steps.paths.outputs.visual }}
       golden: ${{ steps.paths.outputs.golden }}
+      typescript: ${{ steps.paths.outputs.typescript }}
+      server: ${{ steps.paths.outputs.server }}
+      contract: ${{ steps.paths.outputs.contract }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -52,7 +63,7 @@ jobs:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         # The classifier that `node scripts/verify.mjs --changed` uses too;
         # with no base commit (a new branch) everything counts as changed.
-        run: node scripts/classify-changes.mjs "$BASE" >> "$GITHUB_OUTPUT"
+        run: node scripts/classify-changes.mjs "$BASE" ${{ github.event_name == 'push' && '--push' || '' }} >> "$GITHUB_OUTPUT"
 
       # The slice size rule (docs/process/development-workflow.md): a notice,
       # not a gate. Generated files, lock files, images and snapshots do not
@@ -72,7 +83,7 @@ jobs:
   # `verify` job below is the one check main requires.
   contract:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.contract == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -162,11 +173,14 @@ jobs:
   # `lint` plus every `e2e` package is `typescript`.
   lint:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.typescript == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      # The whole history: Turborepo compares the pull request with its base.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
@@ -177,13 +191,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: node scripts/verify.mjs lint
+      - run: node scripts/verify.mjs lint ${{ github.event_name == 'pull_request' && format('--affected={0}', github.event.pull_request.base.sha) || '' }}
 
   # Each package's build and smoke tests. classify-changes.test.mjs fails when
   # a workspace package with a build or test:e2e script is missing here.
   e2e:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.typescript == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -192,7 +206,10 @@ jobs:
         # The server has a build and no smoke tests.
         package: [admin, merchant-portal, server, ui-web]
     steps:
+      # The whole history: Turborepo compares the pull request with its base.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
@@ -214,7 +231,7 @@ jobs:
       - if: matrix.package != 'server'
         run: pnpm --filter @fox-drop/admin exec playwright install-deps chromium
 
-      - run: node scripts/verify.mjs e2e --package=@fox-drop/${{ matrix.package }}
+      - run: node scripts/verify.mjs e2e --package=@fox-drop/${{ matrix.package }} ${{ github.event_name == 'pull_request' && format('--affected={0}', github.event.pull_request.base.sha) || '' }}
 
       # The traces of a failed smoke test (playwright.config.ts).
       - if: failure()
@@ -286,7 +303,7 @@ jobs:
   # shards balanced by the files' measured times (apps/server/test/timed-shards.ts).
   server:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.server == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -417,7 +434,8 @@ jobs:
 
   # The check main requires: every part passed, or was skipped for a change
   # of docs only, of no Dart, of nothing native or of nothing a screenshot or
-  # golden reads. A part skipped because `changes` failed still fails here,
+  # golden reads, or, on a pull request, of no TypeScript, nothing the
+  # server's tests read or nothing the contract is built from (ciJobs). A part skipped because `changes` failed still fails here,
   # through `changes`' own result.
   verify:
     if: always()
