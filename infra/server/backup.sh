@@ -7,8 +7,8 @@
 # /var/backups/foxdrop-<environment>, and copied encrypted (rclone crypt) to
 # Backblaze B2, where dumps older than 30 days are deleted; then the
 # public-media and private-docs buckets, copied encrypted to B2 under their
-# names. The B2 key and
-# the encryption password are in the environment's shared/.env; without them
+# names. The B2 key and the encryption password are in the environment's
+# shared/.env; without them
 # the local copy is still made and the run fails, so the journal shows it.
 set -euo pipefail
 
