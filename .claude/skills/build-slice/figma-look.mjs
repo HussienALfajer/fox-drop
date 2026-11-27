@@ -3,7 +3,8 @@
 //
 //   node .claude/skills/build-slice/figma-look.mjs <out dir> [node id ...]
 //
-// The token comes from FIGMA_TOKEN or ~/.figma-token and never enters the repository.
+// The token comes from FIGMA_TOKEN or ~/.figma-token, and the file's key from FIGMA_FILE_KEY or
+// ~/.figma-file-key: neither enters the repository (architecture §9.8).
 // Figma's own render endpoint is rate limited for days on the owner's plan, so this
 // draws the vector paths itself: fills, strokes, masks and image fills, then rasterises
 // the SVG with the Chromium that ui-web's Playwright tests already use.
@@ -14,8 +15,11 @@ import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
-const FILE_KEY = 'lkeZAwDmzNcJDqzScXtDtp';
 const COMPONENTS_PAGE = '1:3';
+
+/** A value from the environment, else from a file in the home folder. */
+const local = (variable, file) =>
+  (process.env[variable] ?? readFileSync(join(homedir(), file), 'utf8')).trim();
 
 const [outArg, ...wanted] = process.argv.slice(2);
 if (!outArg) {
@@ -25,9 +29,8 @@ if (!outArg) {
 const outDir = resolve(outArg);
 mkdirSync(outDir, { recursive: true });
 
-const token = (
-  process.env.FIGMA_TOKEN ?? readFileSync(join(homedir(), '.figma-token'), 'utf8')
-).trim();
+const token = local('FIGMA_TOKEN', '.figma-token');
+const FILE_KEY = local('FIGMA_FILE_KEY', '.figma-file-key');
 
 async function api(path) {
   const response = await fetch(`https://api.figma.com/v1/files/${FILE_KEY}${path}`, {
