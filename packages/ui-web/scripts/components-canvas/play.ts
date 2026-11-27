@@ -107,10 +107,14 @@ async function pressEach(page: Page, stage: Locator, found: string[]): Promise<v
     const before = await snapshot(page, el);
     if (field) {
       await el.click({ timeout: 2000 }).catch(() => found.push(`${name}: cannot be pressed`));
-      await page.keyboard.type('12');
+      // A spin field (TimeField's ص/م) steps with the arrows; any other field takes digits.
+      const spin = (await el.getAttribute('role')) === 'spinbutton';
+      if (spin) await page.keyboard.press('ArrowUp');
+      else await page.keyboard.type('12');
       await page.waitForTimeout(SETTLE);
       const after = await snapshot(page, el);
-      if (after.value === before.value) found.push(`${name}: typing changed nothing`);
+      if (after.value === before.value)
+        found.push(`${name}: ${spin ? 'ArrowUp' : 'typing'} changed nothing`);
       await page.keyboard.press('Escape');
       continue;
     }
@@ -240,9 +244,16 @@ async function panel(page: Page, stage: Locator, found: string[]): Promise<void>
     const label = await nameOf(sw);
     const before = await sw.getAttribute('aria-checked');
     await sw.click({ timeout: 2000 }).catch(() => found.push(`panel ${label}: cannot be pressed`));
-    await check(label);
+    await page.waitForTimeout(SETTLE * 2);
     const after = await dock.locator('[role=switch]').nth(i).getAttribute('aria-checked');
     if (after === before) found.push(`panel ${label}: the switch did not change`);
+    // `open` switched off closes the popup: nothing to draw is right then. It goes back on,
+    // so the rest of the panel plays on the open popup (Sidebar's drawer, BlockingBanner).
+    if (label.includes('«open»') && after === 'false') {
+      await page.waitForTimeout(SETTLE * 2);
+      await dock.locator('[role=switch]').nth(i).click({ timeout: 2000 });
+    }
+    await check(label);
   }
   const choices = await dock.locator('[role=combobox]').count();
   for (let i = 0; i < choices; i += 1) {
@@ -292,7 +303,8 @@ export async function playBoard(page: Page): Promise<string[]> {
     );
   });
   const stage = page.locator('[data-stage]');
-  if ((await stage.count()) === 0) return ['no playground'];
+  // The index board (Main) has no copy to play.
+  if ((await stage.count()) === 0) return found;
   await tabThrough(page, stage, found);
   await arrows(page, stage, found);
   await pressEach(page, stage, found);

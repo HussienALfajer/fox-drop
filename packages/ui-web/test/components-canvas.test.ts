@@ -301,6 +301,15 @@ describe('the components canvas', () => {
     expect(board('Dialog')).not.toContain(TEXT.inPlay);
   });
 
+  it('lets the panel open a popup that has no trigger of its own (the audit)', () => {
+    // Sidebar's drawer and BlockingBanner open from outside: the panel's switch stands in.
+    for (const name of ['Sidebar', 'BlockingBanner']) {
+      expect(board(name), name).toMatch(/data-props='[^']*"open":\{"editor":"boolean"/);
+    }
+    // Dialog opens from its trigger: no switch.
+    expect(board('Dialog')).not.toMatch(/data-props='[^']*"open":\{/);
+  });
+
   it('draws the states a gesture reaches from their props (the audit, 2026-11-27)', () => {
     for (const name of ['PullToRefresh', 'BannerStack']) {
       expect(board(name), name).not.toContain(TEXT.inPlay);
