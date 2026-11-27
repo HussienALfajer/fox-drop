@@ -47,7 +47,6 @@ final termsPendingProvider = Provider<bool>((ref) {
 bool _promptWaits(String path) =>
     const {
       '/starting',
-      '/sign-in',
       '/complete-profile',
       '/blocked',
       '/terms',

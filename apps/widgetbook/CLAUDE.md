@@ -1,6 +1,6 @@
 # apps/widgetbook
 
-The `core_ui` catalogue (architecture §9.5 R3, §9.9) as a Windows app: every state of every component, RTL Arabic, the phone and captain themes, text scale 1 to 2. The owner reviews components here.
+The `core_ui` catalogue (architecture §9.5 R3, §9.9) as a Windows app: every state of every component, RTL Arabic, the phone and captain themes, text scale 1 to 2. Empty since D.R1 (2026-11-27, T16): each twin's use cases return with it, and the coverage test accepts zero widgets.
 
 ## Rules
 

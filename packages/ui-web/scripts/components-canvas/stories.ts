@@ -38,50 +38,14 @@ class Spread {
   }
 }
 
-/** The phone field's helpers, loaded with the stories (`src/phone-field/`). */
-interface PhoneLib {
-  countryName: (iso: string) => { ar: string } | undefined;
-  callingCode: (iso: string) => string | undefined;
-  readPhone: (input: string, picked: string) => { country: string };
-}
-
 /**
  * The props that are functions giving content, and what they are called
- * with, by component (read from their types in docs.ts): a DataTable's cells,
- * row keys and names over its rows; a BannerStack's counter over the hidden
- * counts; a PhoneField's chip name over the countries its story shows (Syria
- * and Turkey first) and its messages over what a person may type in Play. A
- * call the table lacks gives nothing, never a Promise React cannot draw.
+ * with, by component (read from their types in docs.ts): a table's cells over
+ * its rows, say, or `new Spread([...])` for a call with more than one
+ * argument. A call the table lacks gives nothing, never a Promise React
+ * cannot draw. Empty since D.R1 (2026-11-27).
  */
-const CALLS: Record<string, (args: Record<string, unknown>, phone: PhoneLib) => Samples> = {
-  DataTable: (args) => {
-    const rows = (args['rows'] as unknown[] | undefined) ?? [];
-    return { cell: rows, rowKey: rows, rowLabel: rows };
-  },
-  BannerStack: (args) => {
-    const banners = (args['banners'] as unknown[] | undefined) ?? [];
-    return { moreLabel: banners.map((_, i) => i + 1) };
-  },
-  PhoneField: (args, phone) => {
-    const isos = new Set(['SY', 'TR']);
-    for (const key of ['country', 'defaultCountry', 'lastUsedCountry']) {
-      if (typeof args[key] === 'string') isos.add(args[key]);
-    }
-    for (const key of ['value', 'defaultValue']) {
-      const value = args[key];
-      if (typeof value === 'string' && value) isos.add(phone.readPhone(value, 'SY').country);
-    }
-    const names = [...isos].map((iso) => phone.countryName(iso)?.ar ?? iso);
-    return {
-      chipLabel: [...isos].map(
-        (iso, i) => new Spread([names[i], ['+', phone.callingCode(iso) ?? ''].join('')]),
-      ),
-      missingDigits: Array.from({ length: 12 }, (_, i) => i + 1),
-      notMobilePrefix: Array.from({ length: 10 }, (_, i) => String(i)),
-      switched: names,
-    };
-  },
-};
+const CALLS: Record<string, (args: Record<string, unknown>) => Samples> = {};
 
 export type Args = Record<string, Value>;
 
@@ -129,12 +93,8 @@ export interface ComponentStories {
   openSwitch?: true;
 }
 
-/** The blocking heads share one folder, as their Flutter file (test/stories.test.ts). */
-const FOLDERS: Record<string, string> = {
-  BlockingHeads: 'blocking-heads',
-  VersionTicket: 'blocking-heads',
-  ShopSign: 'blocking-heads',
-};
+/** A component whose folder is not its kebab-case name (parts sharing one folder). */
+const FOLDERS: Record<string, string> = {};
 export const folderOf = (name: string) =>
   FOLDERS[name] ?? name.replace(/(?!^)([A-Z])/g, '-$1').toLowerCase();
 export const pascal = (state: string) => state.charAt(0).toUpperCase() + state.slice(1);
@@ -144,10 +104,7 @@ const REACT_ELEMENT_18 = Symbol.for('react.element');
 const REACT_FRAGMENT = Symbol.for('react.fragment');
 
 /** Components the bundle exposes only as parts of another (scripts/bundle-entry.ts). */
-const PARTS: Record<string, string> = {
-  VersionTicket: 'BlockingHeads.VersionTicket',
-  ShopSign: 'BlockingHeads.ShopSign',
-};
+const PARTS: Record<string, string> = {};
 
 /** Names of the library's components, as the bundle calls them, by identity (parts too). */
 function namesOf(library: Record<string, unknown>): Map<unknown, string> {
@@ -331,10 +288,6 @@ export async function readStories(
 ): Promise<ComponentStories[]> {
   const library = (await server.ssrLoadModule('/src/index.ts')) as Record<string, unknown>;
   const names = namesOf(library);
-  const phone = {
-    ...(await server.ssrLoadModule('/src/phone-field/country-list.ts')),
-    ...(await server.ssrLoadModule('/src/phone-field/phone.ts')),
-  } as unknown as PhoneLib;
   // A child from outside the library is drawn inside the component it came from
   // (a Field's input takes the field's disabled), then only the child's markup
   // is kept. Vite leaves React to Node, so this is the stories' own React.
@@ -379,7 +332,7 @@ export async function readStories(
       const drawn = typeof result === 'object' ? result : undefined;
       const component = drawn?.name ?? metaName;
       const props = drawn?.props ?? merged;
-      const samples = CALLS[name]?.(props, phone) ?? {};
+      const samples = CALLS[name]?.(props) ?? {};
       stories[story] = {
         args: drawn
           ? serialiseProps(props, names, where, markupIn(drawn.type, props), samples)

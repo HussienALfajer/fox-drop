@@ -3,6 +3,8 @@
 Status: Done · Tier: T0 (sign-in, a migration) · Branch: `claude/clever-fermi-q9m9ot` (the session's branch, in place of `feat/every-country-sign-in`)
 Spec: CU U3, CU §4.2, §4.7, §5.2; RA §5; CA §5, C13; AP §9.12.1, §9.14, Appendix A (`otp.*`, `app.<app>.*`); architecture §8.3.3 item 2 · Definition of done: the D.11a line of `docs/roadmap.md`; it closes the server items 1 to 4 of D.11's «Code changes recorded for step 8» and the server parts of D.11's «Owner's answers» (b) and (d).
 
+> **D.R1 (2026-11-27):** D.11's slice file, named here, was deleted with D.12 to D.17's (each customer screen is planned anew), and so were the sign-in screen and the phone field the clients' parts below refer to; all are in git history before the D.R1 merge. The phone rules now live in `packages/core_auth/lib/src/phone_rules.dart`, with `packages/core_auth/test/phone-cases.json`.
+
 ## Goal
 
 The three apps' sign-in, a restaurant user added in the panel or the restaurant app, and a customer's number change take a mobile number of any country. `GET platform` answers the platform hours, the minimum version and the maintenance return time; sign-in tells used-up attempts apart from an expired code; the office has a landmark description. D.11's screens then have every field they show.

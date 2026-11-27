@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
@@ -164,29 +164,6 @@ describe('which stories a change reaches', () => {
       'packages/ui-web/src/old/old.tsx',
     ])
       assert.equal(select('packages/ui-web/src/button/button.tsx', file).all, true, file);
-  });
-
-  it('follows the real imports: a field style reaches ConfirmDialog, ConfirmDialog only itself', () => {
-    const dir = path.join(ROOT, 'packages/ui-web/src');
-    const real = new Map(
-      readdirSync(dir, { recursive: true })
-        .map((each) => `packages/ui-web/src/${String(each).replaceAll('\\', '/')}`)
-        .filter((file) => /\.tsx?$/.test(file))
-        .map((file) => [file, readFileSync(path.join(ROOT, file), 'utf8')]),
-    );
-    const realEntries = [...real.keys()]
-      .filter((file) => file.endsWith('.stories.tsx'))
-      .map((file) => ({
-        id: path.posix.basename(file, '.stories.tsx'),
-        importPath: `./${file.slice('packages/ui-web/'.length)}`,
-      }));
-    const pick = (file) =>
-      selectStories([file], { sources: real, entries: realEntries }).stories.sort();
-    assert.deepEqual(pick('packages/ui-web/src/confirm-dialog/confirm-dialog.tsx'), [
-      'confirm-dialog',
-    ]);
-    const field = pick('packages/ui-web/src/field/styles.ts');
-    assert.ok(field.includes('confirm-dialog') && field.includes('text-field'), field.join(' '));
   });
 
   it('resolves relative imports only, to known modules', () => {

@@ -3,6 +3,8 @@
 Status: Done · Tier: T2 · Branch: `feat/sign-in-frame-components` (A, B), `feat/sign-in-frame-components-c` (C)
 Spec: architecture §9.4, §9.5 (R1 to R10), §9.7, §9.9 (the component cycle), §9.10; brand expression §2 (the mark, the filling drop), §3 (motion), §9 (device budgets); CU §4.2, §5.2, §5.5, §6.1, §6.2; D.11's slice file: «Owner's answers» (e), the screen review (screens 2, 3, 6, 7, 8), «Design-system audit of screen 2» and «Code changes recorded for step 8» items 5, 6, 7, 11 and 12 (the components' part) · Definition of done: the D.11b line of `docs/roadmap.md`; D.11's screens can then be coded on `core_ui` only.
 
+> **D.R1 (2026-11-27):** every component this slice built was deleted, and so were D.11's slice file and D.12 to D.17's, named here (each customer screen is planned anew); all are in git history before the D.R1 merge. The phone rules and `phone-cases.json` moved to `packages/core_auth` (`lib/src/phone_rules.dart`, `test/phone-cases.json`).
+
 ## Goal
 
 Every component D.11's approved screens draw exists in code, with its states, stories or widgetbook use cases and goldens: the mark-filling loader (the project's one loader) in `Button`, the search fields and pull to refresh; the sign-in hero and the WhatsApp code preview; the text link; a phone field for every country with its searchable country list; the bottom navigation in the Figma shape; `FoxBanner`'s close and second action; the blocking screens' heads; and the two motion tokens they move by. The owner sees them in Storybook and widgetbook. The only screens that change are the three that take a phone number today (owner's answer 1), and only their number field; D.11 wires the rest.

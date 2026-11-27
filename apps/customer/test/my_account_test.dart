@@ -1,5 +1,6 @@
 import 'package:core_auth/testing.dart';
 import 'package:customer/src/account/my_account_screen.dart';
+import 'package:customer/src/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -95,7 +96,9 @@ void main() {
       app.server.to('/v1/customer/auth/sign-out-everywhere'),
       hasLength(1),
     );
-    expect(find.text('تسجيل الدخول'), findsWidgets);
+    // Signed out: home, with no «حسابي» (its sign-in left in D.R1).
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byKey(const Key('open-account')), findsNothing);
   });
 
   // CU §5.6 «حذف الحساب» (slice 2.25c): the explanation, a fresh code, then
@@ -131,7 +134,8 @@ void main() {
     final sent = app.server.to('/v1/customer/account/close');
     expect(sent, hasLength(2));
     expect((sent.last.data as Map)['code'], '123456');
-    expect(find.text('تسجيل الدخول'), findsWidgets);
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byKey(const Key('open-account')), findsNothing);
   });
 
   testWidgets('says no while an order is active', (tester) async {

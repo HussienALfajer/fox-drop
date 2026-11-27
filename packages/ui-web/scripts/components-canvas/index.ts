@@ -34,6 +34,10 @@ export function makeIndex(
     </section>`;
     })
     .join('\n');
+  const content =
+    total > 0
+      ? lists
+      : `    <p style="margin: 0; font-size: 18px; line-height: 1.8; ${MUTED}">${esc(INDEX.empty)}</p>`;
   return page({
     title: 'Fox Drop Components',
     w: WIDTH,
@@ -51,7 +55,7 @@ export function makeIndex(
 ${cards}
   </div>
   <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--fd-space-lg); align-items: start;">
-${lists}
+${content}
   </div>
 </div>`,
   });

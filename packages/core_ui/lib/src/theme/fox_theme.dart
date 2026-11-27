@@ -63,107 +63,6 @@ final class FoxColorScheme {
   Color get chart6 => Color(_tokens.chart6);
 }
 
-/// The Button tokens of one theme, as Flutter values.
-@immutable
-final class FoxButtonTheme {
-  const FoxButtonTheme(this._tokens);
-
-  final t.ButtonTokens _tokens;
-
-  double get height => _tokens.height;
-  double get paddingInline => _tokens.paddingInline;
-  double get gap => _tokens.gap;
-  double get radius => _tokens.radius;
-  Color get focusRing => Color(_tokens.focusRing);
-  Color get primaryBackground => Color(_tokens.primaryBackground);
-  Color get primaryBackgroundHover => Color(_tokens.primaryBackgroundHover);
-  Color get primaryBackgroundPressed => Color(_tokens.primaryBackgroundPressed);
-  Color get primaryLabel => Color(_tokens.primaryLabel);
-  Color get secondaryBackground => Color(_tokens.secondaryBackground);
-  Color get secondaryBackgroundHover => Color(_tokens.secondaryBackgroundHover);
-  Color get secondaryBackgroundPressed =>
-      Color(_tokens.secondaryBackgroundPressed);
-  Color get secondaryBorder => Color(_tokens.secondaryBorder);
-  Color get secondaryBorderHover => Color(_tokens.secondaryBorderHover);
-  Color get secondaryLabel => Color(_tokens.secondaryLabel);
-  Color get dangerBackground => Color(_tokens.dangerBackground);
-  Color get dangerBackgroundHover => Color(_tokens.dangerBackgroundHover);
-  Color get dangerBackgroundPressed => Color(_tokens.dangerBackgroundPressed);
-  Color get dangerLabel => Color(_tokens.dangerLabel);
-  Color get ghostBackgroundHover => Color(_tokens.ghostBackgroundHover);
-  Color get ghostBackgroundPressed => Color(_tokens.ghostBackgroundPressed);
-  Color get ghostLabel => Color(_tokens.ghostLabel);
-  Color get disabledBackground => Color(_tokens.disabledBackground);
-  Color get disabledLabel => Color(_tokens.disabledLabel);
-}
-
-/// The input tokens of one theme (D.8): the field, the check and radio, the
-/// switch, the quantity stepper and the code cells, as Flutter values.
-@immutable
-final class FoxInputTheme {
-  const FoxInputTheme(this._tokens);
-
-  final t.InputTokens _tokens;
-
-  double get height => _tokens.height;
-  double get paddingInline => _tokens.paddingInline;
-  double get gap => _tokens.gap;
-  double get labelGap => _tokens.labelGap;
-  double get radius => _tokens.radius;
-  double get areaRadius => _tokens.areaRadius;
-  double get borderWidth => _tokens.borderWidth;
-  double get focusWidth => _tokens.focusWidth;
-  Color get background => Color(_tokens.colorBackground);
-  Color get border => Color(_tokens.colorBorder);
-  Color get borderHover => Color(_tokens.colorBorderHover);
-  Color get borderFocus => Color(_tokens.colorBorderFocus);
-  Color get borderInvalid => Color(_tokens.colorBorderInvalid);
-  Color get text => Color(_tokens.colorText);
-  Color get placeholder => Color(_tokens.colorPlaceholder);
-  Color get label => Color(_tokens.colorLabel);
-  Color get hint => Color(_tokens.colorHint);
-  Color get error => Color(_tokens.colorError);
-  Color get accent => Color(_tokens.colorAccent);
-  Color get focusRing => Color(_tokens.colorFocusRing);
-  Color get disabled => Color(_tokens.colorDisabled);
-  Color get onDisabled => Color(_tokens.colorOnDisabled);
-  double get checkSize => _tokens.checkSize;
-  double get checkTarget => _tokens.checkTarget;
-  double get checkRadius => _tokens.checkRadius;
-  double get checkBorderWidth => _tokens.checkBorderWidth;
-  Color get checkBackground => Color(_tokens.checkColorBackground);
-  Color get checkBackgroundHover => Color(_tokens.checkColorBackgroundHover);
-  Color get checkBackgroundPressed =>
-      Color(_tokens.checkColorBackgroundPressed);
-  Color get checkBorder => Color(_tokens.checkColorBorder);
-  Color get checkBorderHover => Color(_tokens.checkColorBorderHover);
-  Color get checkChecked => Color(_tokens.checkColorChecked);
-  Color get checkCheckedHover => Color(_tokens.checkColorCheckedHover);
-  Color get checkCheckedPressed => Color(_tokens.checkColorCheckedPressed);
-  Color get checkMark => Color(_tokens.checkColorMark);
-  double get switchWidth => _tokens.switchWidth;
-  double get switchHeight => _tokens.switchHeight;
-  Color get switchTrack => Color(_tokens.switchColorTrack);
-  Color get switchTrackHover => Color(_tokens.switchColorTrackHover);
-  Color get switchTrackPressed => Color(_tokens.switchColorTrackPressed);
-  Color get switchTrackOn => Color(_tokens.switchColorTrackOn);
-  Color get switchTrackOnHover => Color(_tokens.switchColorTrackOnHover);
-  Color get switchTrackOnPressed => Color(_tokens.switchColorTrackOnPressed);
-  Color get switchThumb => Color(_tokens.switchColorThumb);
-  double get stepperSize => _tokens.stepperSize;
-  double get stepperTarget => _tokens.stepperTarget;
-  Color get stepperBackground => Color(_tokens.stepperColorBackground);
-  Color get stepperBackgroundHover =>
-      Color(_tokens.stepperColorBackgroundHover);
-  Color get stepperBackgroundPressed =>
-      Color(_tokens.stepperColorBackgroundPressed);
-  Color get stepperBorder => Color(_tokens.stepperColorBorder);
-  Color get stepperValue => Color(_tokens.stepperColorValue);
-  double get codeSize => _tokens.codeSize;
-  Color get codeDone => Color(_tokens.codeColorDone);
-  Color get codeOnDone => Color(_tokens.codeColorOnDone);
-}
-
 /// The type scale of one surface as [TextStyle]s in CoFo (brand expression
 /// §7). `number` uses tabular figures so money and timers do not jump (R5).
 @immutable
@@ -235,40 +134,26 @@ final class FoxShadows {
 /// `FoxRadius` and `FoxSize`, which are the same on every surface.
 @immutable
 final class FoxThemeData {
-  FoxThemeData._(
-    t.ColorTokens colors,
-    this.components,
-    t.TypeScale type,
-    this.iconWeight,
-  ) : colors = FoxColorScheme(colors),
-      button = FoxButtonTheme(components.button),
-      input = FoxInputTheme(components.input),
+  FoxThemeData._(t.ColorTokens colors, t.TypeScale type, this.iconWeight)
+    : colors = FoxColorScheme(colors),
       text = FoxTextTheme(type);
 
   /// The customer and restaurant apps.
-  factory FoxThemeData.phone() => FoxThemeData._(
-    t.FoxColors.light,
-    t.FoxComponents.light,
-    t.FoxType.phone,
-    t.FoxIconWeight.phone,
-  );
+  factory FoxThemeData.phone() =>
+      FoxThemeData._(t.FoxColors.light, t.FoxType.phone, t.FoxIconWeight.phone);
 
   /// The captain app: sunlight contrast and a larger scale (R7).
   factory FoxThemeData.captain() => FoxThemeData._(
     t.FoxColors.captainLight,
-    t.FoxComponents.captainLight,
     t.FoxType.captain,
     t.FoxIconWeight.captain,
   );
 
-  /// Every component's tokens of this theme, generated from
-  /// `tokens/component/` (slice D.W1): a component without a theme class of
-  /// its own reads them here (`components.card.padding`), colours as ARGB.
-  final t.ComponentTokens components;
+  // A component's tokens (`tokens/component/`) come back with the first
+  // approved component, read here as `components.<name>` (none since D.R1,
+  // 2026-11-27).
 
   final FoxColorScheme colors;
-  final FoxButtonTheme button;
-  final FoxInputTheme input;
   final FoxTextTheme text;
 
   /// The icon stroke (architecture §9.4): 1.5 on the phone, 1.75 for the

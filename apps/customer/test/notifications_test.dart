@@ -98,11 +98,12 @@ void main() {
     expect(find.text('لا توجد إشعارات'), findsOneWidget);
   });
 
-  testWidgets('a guest signs in first', (tester) async {
+  // Until the sign-in screen returns (deleted in D.R1), a guest stays home.
+  testWidgets('a guest is sent home', (tester) async {
     final app = TestApp();
     await app.pump(tester);
     app.container.read(routerProvider).go('/notifications');
     await tester.pumpAndSettle();
-    expect(_location(app), '/sign-in?from=%2Fnotifications');
+    expect(_location(app), '/');
   });
 }

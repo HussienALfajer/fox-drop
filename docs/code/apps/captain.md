@@ -4,6 +4,8 @@
 
 The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, §14). It follows the rules of `.claude/rules/flutter-apps.md`.
 
+**D.R1 (2026-11-27):** with every UI component, the owner deleted the sign-in screen (core_auth's `sign_in_screen.dart`): the `/sign-in` and `/join` routes, the captain's sign-in wrapper with «سُجّل دخولك من جهاز آخر» (CA §4.9) and the welcome screen's two buttons went with their UI tests. Signed out, every route leads to `/welcome`, an empty screen, until the new sign-in and join screens are built. History: git before the D.R1 merge (`docs/slices/D.R1-delete-components-screen-first.md`).
+
 ## The work cycle (slice 1.14g; CA §4.3–4.6, §7–§9, §14–§15)
 
 - **Layout:** `lib/src/work/`.
@@ -92,8 +94,7 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
   `photo_check.dart` the blur and darkness check (`photoQuality`: the mean brightness under `darkBelow`, the variance of the Laplacian under `blurryBelow`, on the photo read `photoCheckWidth` wide; thresholds decided by us);
   `texts.dart` every string mapping;
   `welcome_screen.dart` and `application_screen.dart` only show that state and call it (the design stop).
-- **The entry (CA §5.1):** signed out, every route leads to `/welcome` («انضم ككابتن», «تسجيل الدخول»), except a device signed out elsewhere, which goes to `/sign-in` with «سُجّل دخولك من جهاز آخر».
-  `/join` is core_auth's `SignInScreen` with `join: true`, so the code request carries `join` and reaches a new number.
+- **The entry (CA §5.1):** signed out, every route leads to `/welcome` (its «انضم ككابتن» and «تسجيل الدخول», the `/sign-in` and `/join` routes and the other-device notice were deleted in D.R1 and return with the new sign-in screen; a join calls `requestCode(input, join: true)`, so the code request carries `join` and reaches a new number).
   After the sign-in the router waits on `/starting` until `GET /v1/captain/auth/session` first answers (a read again keeps the last answer; a failed read is tried again after 5 seconds): `captainId` null is an applicant, kept to `/application`, `/terms` and `/work-rules` (maintenance and a required update still block it);
   the work feed and the captain channel stay off for it;
   the push token registers for it too (slice 2.34b), and a push with `target: application` opens `/application` and, tapped or received in the foreground, reads the application again.

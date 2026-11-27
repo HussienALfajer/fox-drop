@@ -1,6 +1,6 @@
 // Draws the icon sheet for the owner's review (architecture §9.9 step 3) as
-// the «Icons — batch 1» artboard of the «Component proposals» Design canvas,
-// with «Button and Icon — batch 1» (src/button-sheet.ts) beside it,
+// the «Icons — batch 1» artboard of the «Component proposals» Design canvas
+// (the component sheets beside it were deleted with the components in D.R1),
 // into the ignored .design-system/icons/:
 //   pnpm --filter @fox-drop/design-tokens icon-sheet --config <file>
 // The config (kept outside the repository) holds the Design System's link and
@@ -30,11 +30,6 @@ import {
   type Icon,
   type IconStyle,
 } from './icons.ts';
-import { buttonSheet } from './button-sheet.ts';
-import { dataSheet } from './data-sheet.ts';
-import { overlaysSheet } from './overlays-sheet.ts';
-import { formsSheet } from './forms-sheet.ts';
-import { stateSheet } from './state-sheet.ts';
 import { designSystem } from './design-system.ts';
 import { PACKAGE_DIR, resolveAll, type Theme, type Token } from './resolve.ts';
 
@@ -222,14 +217,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const config = JSON.parse(readFileSync(process.argv[at + 1]!, 'utf8')) as GuideConfig;
   const themes = await resolveAll();
   const icons = await bakeIcons(readIcons());
-  const list = [
-    sheet(themes, config, icons),
-    buttonSheet(themes, config, icons),
-    stateSheet(themes, config, icons),
-    formsSheet(themes, config, icons),
-    dataSheet(themes, config, icons),
-    overlaysSheet(themes, config, icons),
-  ];
+  const list = [sheet(themes, config, icons)];
   rmSync(OUT, { recursive: true, force: true });
   const files = new Map<string, string>([
     ['project/canvas.json', canvas(list, config, new Date().toISOString(), 'Component proposals')],

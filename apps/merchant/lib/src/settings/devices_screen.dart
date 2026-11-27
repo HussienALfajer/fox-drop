@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'staff.dart';
-import 'staff_screen.dart';
+import 'settings_parts.dart';
 
 /// «الأجهزة» (RA §14.2), the owners': each device with its user, platform,
 /// version and whether someone is signed in on it, renamed or signed out

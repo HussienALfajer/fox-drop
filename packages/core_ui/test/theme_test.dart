@@ -5,31 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FoxThemeData', () {
-    for (final (name, theme, colors, button, type, components) in [
-      (
-        'phone',
-        FoxThemeData.phone(),
-        t.FoxColors.light,
-        t.FoxButton.light,
-        t.FoxType.phone,
-        t.FoxComponents.light,
-      ),
+    for (final (name, theme, colors, type) in [
+      ('phone', FoxThemeData.phone(), t.FoxColors.light, t.FoxType.phone),
       (
         'captain',
         FoxThemeData.captain(),
         t.FoxColors.captainLight,
-        t.FoxButton.captainLight,
         t.FoxType.captain,
-        t.FoxComponents.captainLight,
       ),
     ]) {
-      // Slice D.W1: every component's tokens, from the generated bundle.
-      test('$name: the component tokens are the generated bundle', () {
-        expect(theme.components, same(components));
-        expect(theme.components.button, same(components.button));
-        expect(theme.components.button, same(button));
-      });
-
       test('$name: every colour equals its token', () {
         final c = theme.colors;
         final pairs = <(Color, int)>[
@@ -76,39 +60,6 @@ void main() {
         ];
         for (final (i, (color, token)) in pairs.indexed) {
           expect(color.toARGB32(), token, reason: 'colour $i');
-        }
-      });
-
-      test('$name: every button token is carried over', () {
-        final b = theme.button;
-        expect(
-          [b.height, b.paddingInline, b.gap, b.radius],
-          [button.height, button.paddingInline, button.gap, button.radius],
-        );
-        final pairs = <(Color, int)>[
-          (b.focusRing, button.focusRing),
-          (b.primaryBackground, button.primaryBackground),
-          (b.primaryBackgroundHover, button.primaryBackgroundHover),
-          (b.primaryBackgroundPressed, button.primaryBackgroundPressed),
-          (b.primaryLabel, button.primaryLabel),
-          (b.secondaryBackground, button.secondaryBackground),
-          (b.secondaryBackgroundHover, button.secondaryBackgroundHover),
-          (b.secondaryBackgroundPressed, button.secondaryBackgroundPressed),
-          (b.secondaryBorder, button.secondaryBorder),
-          (b.secondaryBorderHover, button.secondaryBorderHover),
-          (b.secondaryLabel, button.secondaryLabel),
-          (b.dangerBackground, button.dangerBackground),
-          (b.dangerBackgroundHover, button.dangerBackgroundHover),
-          (b.dangerBackgroundPressed, button.dangerBackgroundPressed),
-          (b.dangerLabel, button.dangerLabel),
-          (b.ghostBackgroundHover, button.ghostBackgroundHover),
-          (b.ghostBackgroundPressed, button.ghostBackgroundPressed),
-          (b.ghostLabel, button.ghostLabel),
-          (b.disabledBackground, button.disabledBackground),
-          (b.disabledLabel, button.disabledLabel),
-        ];
-        for (final (i, (color, token)) in pairs.indexed) {
-          expect(color.toARGB32(), token, reason: 'button colour $i');
         }
       });
 

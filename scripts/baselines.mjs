@@ -574,7 +574,9 @@ async function runVisual({ check, all, files, runDir }) {
 
   // Baselines of no story (a story renamed or removed): an update removes
   // them, a compare fails on them after comparing the rest.
-  const stray = orphans(readdirSync(path.join(ROOT, SCREENSHOTS)), entries);
+  // The folder is gone while no story has a baseline (git keeps no empty folder).
+  const shots = path.join(ROOT, SCREENSHOTS);
+  const stray = orphans(existsSync(shots) ? readdirSync(shots) : [], entries);
   if (stray.length > 0) {
     console.log(
       stepLine({

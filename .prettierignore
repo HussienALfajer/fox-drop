@@ -16,7 +16,5 @@ apps/*/windows/
 infra/maps/style.json
 # Local measuring copies of the screens canvas, kept out of git by .git/info/exclude.
 .harness/
-# Written by node scripts/countries.mjs; ui-web's countries.test.ts fails when it is stale.
-packages/ui-web/src/phone-field/countries.generated.ts
 # Written by pnpm --filter @fox-drop/design-tokens generate; pnpm verify fails when they are stale.
 packages/design-tokens/generated/

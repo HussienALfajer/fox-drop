@@ -14,7 +14,6 @@ import '../location/pin.dart';
 import '../location/position.dart';
 import '../notifications/permission.dart';
 import '../profile/profile.dart';
-import '../router.dart';
 import 'checkout.dart';
 import 'codes.dart';
 import 'place_order.dart';
@@ -105,11 +104,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Future<void> _confirm(Quote quote, Cart cart, PointChecked point) async {
     final session = ref.read(customerAuth.session).value;
-    if (session is! SignedIn) {
-      // CU §10.7 item 2: a guest signs in here and comes back.
-      context.go(signInFrom('/checkout'));
-      return;
-    }
+    // CU §10.7 item 2: a guest signs in here and comes back. Until the
+    // sign-in screen returns (deleted in D.R1) the guest stays on checkout.
+    if (session is! SignedIn) return;
     // «أكمل بياناتك» comes before the first order (CU §5.3): the terms are
     // accepted there, and the server does not check them yet.
     final bool completed;

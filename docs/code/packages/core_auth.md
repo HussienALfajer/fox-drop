@@ -5,14 +5,19 @@
 Phone sign-in and the app session of the three Flutter apps (architecture §11.2, §15.1; CU §5.2–5.4, RA §5.2–5.3, CA §4.9).
 The server side is the identity module (`apps/server/src/modules/identity/CLAUDE.md`).
 
+## D.R1 (2026-11-27): the sign-in screen deleted
+
+With every UI component, the owner deleted the unstyled sign-in screen (`sign_in_screen.dart`, its refusal strings, `signInMessage`, `phoneFieldStrings` and their UI tests, `sign_in_message_test.dart`). No app can sign in until a new sign-in screen is drawn, approved and built. The logic stays: `SignInController`, the session, App Check and the phone rules. core_ui's phone rules moved here as `lib/src/phone_rules.dart` with `test/phone_rules_test.dart` and `test/phone-cases.json` (the web's copy of the rules went). History: git before the D.R1 merge (`docs/slices/D.R1-delete-components-screen-first.md`).
+
 ## Layout
 
 - `auth_party.dart`: `AuthParty`, one app's sign-in routes on the generated client (`CustomerAuth`, `MerchantAuth`, `CaptainAuth`), and `AuthRefusal`, a refused call with the server's `error`.
 - `auth_scope.dart`: `AuthScope`, one app's providers (the party, the secure store, the session, the sign-in steps, the support numbers, the link launcher).
   Each app makes one as a top-level `final` in `lib/src/auth.dart`.
 - `session.dart`: `SessionController` (the tokens and the device id in `core_storage`) and `AuthInterceptor`.
-- `sign_in.dart`: `SignInController`, the steps' logic; `sign_in_screen.dart`: the unstyled screen that shows them.
-- `phone.dart`: the number rules of CU §5.2 item 1.
+- `sign_in.dart`: `SignInController`, the steps' logic (no screen shows them since D.R1).
+- `phone.dart`: the number rules of CU §5.2 item 1 (`e164Phone`, `westernDigits`), over `phone_rules.dart`.
+- `phone_rules.dart` (from core_ui in D.R1; `phone_numbers_parser` 9.0.29, MIT, pure Dart): `foxReadPhone(input, picked)` gives a `FoxPhoneReading` (country, national digits, `grouped`, `e164` or one `FoxPhoneProblem`, `missing`, `prefix`, `switchedFrom`) on Google's metadata: clean (Western digits, separators and the bidi marks built from code points, a number out of pasted text), `+`/`00` or the bare code (after a 0 too), the picked region first among those sharing a code, the national prefix dropped unless it belongs to a valid number, then mobile, landline, short, long or a wrong prefix. A region whose mobile pattern is empty (Canada) treats its one pattern as mobile. It passes every row of `test/phone-cases.json` (an invisible mark is written `{U+XXXX}` there); a rebuilt web phone field must read the same file.
 - `app_check.dart`: `startAppCheck`, Firebase and App Check from the build's values, and the token source `AppCheckToken`.
 
 ## Rules
@@ -38,13 +43,12 @@ The server side is the identity module (`apps/server/src/modules/identity/CLAUDE
   The device id is its own key and outlives sign-outs.
 - **Never stuck:** Dio does not await an interceptor's handlers, so every path of `AuthInterceptor` calls its handler, errors included;
   `SignInController` turns any failure into a refusal (`AuthRefusal.failed`), never a busy screen.
-- **Presentation apart from logic** (design stop): the screen only reads `SignInState` and calls `SignInController`;
-  every string comes from `core_l10n`.
-  Refusal codes map to strings in `sign_in_screen.dart`.
+- **Presentation apart from logic** (design stop): a sign-in screen only reads `SignInState` and calls `SignInController`;
+  every string comes from `core_l10n`, refusal codes included (the new screen maps them).
 - **«لديّ رمز من العمليات»** (RA §5.2, CA §4.9; owner decisions 2026-11-07): `offersOperationsCode` in the captain and restaurant apps;
   after `503 unavailable` it opens the code step with no code sent, with «اتصال بالعمليات» from `GET /v1/{party}/contact`.
   A `429 resend_wait` at the number opens the code step too: a code is still open, such as an emergency code, which a request never replaces.
-- **«انضم ككابتن»** (CA §5.1; slice 2.34a): `SignInScreen(join: true)` titles the steps so and calls `requestCode(input, join: true)`, which `SignInController` keeps for «إعادة الإرسال»;
+- **«انضم ككابتن»** (CA §5.1; slice 2.34a): the join flow calls `requestCode(input, join: true)` (the deleted `SignInScreen(join: true)` also titled the steps so), which `SignInController` keeps for «إعادة الإرسال»;
   `AuthParty.requestCode`'s `join` reaches only `CaptainAuth` (the body's `join`), so a number without an account gets the code and its sign-in makes the applicant's account.
   The other apps never pass it.
 - **App Check** (architecture §8.3.3 item 1; slice 1.14c, owner decisions 2026-11-07): each app's `main` awaits `startAppCheck()` and overrides `scope.appCheck` with its token source;

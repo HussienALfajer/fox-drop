@@ -2,6 +2,8 @@
 
 The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `core_tokens` and the `Fox*` components. The three apps import this package only, never `core_tokens` or Material.
 
+**Only the theme since D.R1 (T16).**
+
 ## Rules
 
 - **Layout:** `lib/src/theme/fox_theme.dart` (`FoxThemeData.phone()` for customer and merchant, `.captain()`; `FoxTheme` and `FoxTheme.of`), `lib/src/<component>/fox_<component>.dart`, `lib/testing.dart` (`loadFoxFonts`). `lib/core_ui.dart` exports the components and re-exports the token types an app passes (`FoxIcons`, `FoxSpace`, `FoxSize`, …).
@@ -16,13 +18,13 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 
 ## Inputs and forms (D.8)
 
-- **Material only through `MaterialScope`** (`lib/src/internal`): `m.TextField` and the pickers import `material_ui` with the prefix `m`, never `package:flutter/material.dart`. Nothing Material is drawn: no ripple, no `InputDecoration` look, no counter. A focused field, a menu or a picker needs an Overlay (a Navigator); a test without one throws.
+- **Material only through a `MaterialScope`** (`lib/src/internal`): `m.TextField` and the pickers import `material_ui` with the prefix `m`, never `package:flutter/material.dart`. Nothing Material is drawn: no ripple, no `InputDecoration` look, no counter. A focused field, a menu or a picker needs an Overlay (a Navigator); a test without one throws.
 - **Name and describe a control once:** entries merge the label and error into the text field's node (`MergeSemantics`); select, date and time pass `namesControl: false`. Check with `tester.getSemantics`.
-- **Strings come in as props.** The only ones here are the Syriac months and «ص»/«م» in `FoxMaterialLocalizations` (AP §4.7), whose delegate must load synchronously.
+- **Strings come in as props**, except the pickers' Syriac months and «ص»/«م» (AP §4.7), loaded synchronously.
 - **Mixed direction is explicit:** the phone pill and code cells sit under `Directionality(ltr)`, the label and error stay RTL; dates and times show LTR.
 - **A control is as small as its content** (`Align` with factors).
 - **The code field's `done` ignores reduced motion** (`FoxDuration.moment`); every other fade respects it.
-- Tests: `test/forms_harness.dart` (`expectNoOverflow`); overlays `test/overlays_harness.dart` (a WidgetsApp: Escape, back). Phone rules: add a row to ui-web's `phone-cases.json` first.
+- Tests: `test/forms_harness.dart` (`expectNoOverflow`); overlays `test/overlays_harness.dart` (a WidgetsApp: Escape, back). Phone rules: add a row to `packages/core_auth/test/phone-cases.json` first.
 - **Overlays (D.10):** `showFox*` push routes; the panels also render inline (widgetbook, goldens) and close through `Navigator.maybeOf`.
 
 ## More

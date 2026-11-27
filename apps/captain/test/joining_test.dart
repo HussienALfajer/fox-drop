@@ -170,53 +170,6 @@ void main() {
     });
   });
 
-  testWidgets('«انضم ككابتن» sends the join code and opens the form', (
-    tester,
-  ) async {
-    final app = _applicant([
-      {'application': null},
-    ]);
-    await app.pump(tester, stored: {});
-    await tester.tap(find.byKey(const Key('welcome-join')));
-    await tester.pumpAndSettle();
-    expect(find.text('انضم ككابتن'), findsWidgets);
-
-    app.server.on('/v1/captain/auth/code', [
-      FakeAnswer(200, {
-        'channel': 'whatsapp',
-        'resendAfterSec': 60,
-        'expiresAt': DateTime.now()
-            .add(const Duration(minutes: 5))
-            .toUtc()
-            .toIso8601String(),
-      }),
-    ]);
-    app.server.on('/v1/captain/auth/sign-in', [
-      FakeAnswer(200, {
-        'accountId': accountId,
-        'captainId': null,
-        ...tokens('1', DateTime.now().add(const Duration(minutes: 15))),
-      }),
-    ]);
-    await tester.enterText(find.byKey(const Key('sign-in-phone')), '944123456');
-    await tester.tap(find.text('إرسال الرمز'));
-    await tester.pumpAndSettle();
-    expect(
-      (app.server.to('/v1/captain/auth/code').single.data as Map)['join'],
-      true,
-    );
-    await tester.enterText(find.byKey(const Key('sign-in-code')), '123456');
-    await app.settle(tester);
-
-    expect(find.text('طلب الانضمام'), findsOneWidget);
-    expect(find.byKey(const Key('application-name')), findsOneWidget);
-    // No captain call is made for an applicant, but its push token is
-    // registered (CA §5.4: a push at every change; slice 2.34b).
-    expect(app.server.to('/v1/captain/availability'), isEmpty);
-    expect(app.server.to('/v1/captain/push-token'), hasLength(1));
-    await app.done(tester);
-  });
-
   testWidgets('saves step 1 and moves on', (tester) async {
     final app = _applicant([
       {'application': null},

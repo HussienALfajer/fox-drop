@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { openStory, stories, type Surface } from './stories';
 
@@ -18,6 +18,18 @@ test.beforeAll(() => {
     throw new Error(
       'CoFo Sans Pro Arabic is missing from the built Storybook: run `pnpm fonts:fetch`, then `pnpm --filter @fox-drop/ui-web build`.',
     );
+});
+
+// Every baseline belongs to a story and a surface: a removed story's images
+// go with it (`pnpm baselines` removes them). This also keeps the project
+// running while no story exists (none since D.R1, 2026-11-27).
+test('every baseline belongs to a story', () => {
+  const dir = `${import.meta.dirname}/__screenshots__`;
+  const names = new Set(
+    stories().flatMap((story) => surfaces.map((surface) => `${story.id}-${surface}.png`)),
+  );
+  const files = existsSync(dir) ? readdirSync(dir).filter((file) => file.endsWith('.png')) : [];
+  expect(files.filter((file) => !names.has(file))).toEqual([]);
 });
 
 for (const surface of surfaces)

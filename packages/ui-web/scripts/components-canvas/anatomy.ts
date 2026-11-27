@@ -91,7 +91,8 @@ export function sourcesOf(folder: string): string {
 export function anatomy(folder: string, values = lightValues()): TokenFile[] {
   const sources = sourcesOf(folder);
   const out: TokenFile[] = [];
-  for (const file of readdirSync(TOKENS_DIR)
+  // The folder is gone while no component file exists (D.R1).
+  for (const file of (existsSync(TOKENS_DIR) ? readdirSync(TOKENS_DIR) : [])
     .filter((f) => f.endsWith('.json'))
     .sort()) {
     const json = JSON.parse(readFileSync(path.join(TOKENS_DIR, file), 'utf8')) as Record<

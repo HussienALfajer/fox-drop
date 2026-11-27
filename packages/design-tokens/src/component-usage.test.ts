@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -7,15 +7,11 @@ import { COMPONENT_DIR, componentUsage, ROOTS } from './component-usage.ts';
 // Every token of a component file that declares its folders is read on both
 // sides (slice D.W1, architecture §9.2): no unread tokens.
 describe('the component tokens are read where they are declared', () => {
-  const declaring = readdirSync(COMPONENT_DIR).filter(
-    (file) => componentUsage(path.join(COMPONENT_DIR, file), ROOTS).declared,
-  );
+  // No component file since D.R1 (2026-11-27): the folder returns with the
+  // first approved component, and git keeps no empty folder.
+  const files = existsSync(COMPONENT_DIR) ? readdirSync(COMPONENT_DIR) : [];
 
-  it('covers button.json', () => {
-    expect(declaring).toContain('button.json');
-  });
-
-  it.each(readdirSync(COMPONENT_DIR))('%s: every declared token is read', (file) => {
+  it.each(files)('%s: every declared token is read', (file) => {
     expect(componentUsage(path.join(COMPONENT_DIR, file), ROOTS).problems).toEqual([]);
   });
 

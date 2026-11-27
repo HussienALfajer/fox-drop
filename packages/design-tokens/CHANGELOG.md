@@ -2,6 +2,11 @@
 
 Every token change bumps `version` in `package.json` and gets an entry here (architecture §9.2). A token is marked `$deprecated` for one release before it is removed.
 
+## 0.23.0 (2026-11-27, slice D.R1: every component deleted)
+
+- Removed every file of `tokens/component/` (41 files, every component token), with no deprecation release: the owner deleted every web and Flutter component on 2026-11-27 (none was approved by the designer), so no reader remains. Components return one approved screen at a time (architecture §9.9), each with a new component file. The Dart `ComponentTokens`, `FoxComponents` and per-component classes are no longer written while no component file exists; the CSS keeps only the semantic `--fd-*` variables. Semantic and primitive tokens are unchanged.
+- The proposal-sheet generators that drew the deleted components (`src/button-sheet.ts`, `state-sheet.ts`, `forms-sheet.ts`, `data-sheet.ts`, `overlays-sheet.ts`) were deleted; `icon-sheet.ts` keeps the icon sheet.
+
 ## 0.22.0 (2026-11-27, the components canvas audit)
 
 - Deprecated `data-table.loading-line-height` (use `skeleton.line-height`) and `data-table.color.loading` (use `skeleton.background`): a loading cell of the web table now draws the system's Skeleton block, whose values are the same (12px, `neutral-subtle`). Both go in the next release. A deprecated token no longer has to be read (`src/component-usage.ts`). No look change.

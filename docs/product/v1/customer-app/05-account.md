@@ -24,7 +24,7 @@
 
 1. **Phone number:**
    - A mobile of any country (U3). A searchable country picker (Arabic name, English name or calling code, no flags) pins «سوريا +963» and «تركيا +90» first, then the last one used, then the rest in Arabic order. The default is `customer.phone_default_country` (SY or TR).
-   - The field reads a national number with or without its leading 0, a number typed or pasted with `+`, `00` or its calling code (which switches the country), and Arabic-Indic digits; it refuses a landline, a number too short or too long, with the fix in its message. The field's full rules are D.11's (`docs/slices/D.11-customer-frame-and-sign-in.md`, items 5 and 6).
+   - The field reads a national number with or without its leading 0, a number typed or pasted with `+`, `00` or its calling code (which switches the country), and Arabic-Indic digits; it refuses a landline, a number too short or too long, with the fix in its message. The field's full rules are D.11's (items 5 and 6 of D.11's slice file, deleted in D.R1 and kept in git history); the cases are tested in `packages/core_auth/test/phone-cases.json`.
    - Syrian mobiles have 9 digits after +963 and start with 9; Turkish mobiles have 10 digits after +90 and start with 5.
    - The number is sent and stored in E.164 format; the server refuses anything that is not a mobile.
 2. **Code:**

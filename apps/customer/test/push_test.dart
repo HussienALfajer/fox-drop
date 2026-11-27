@@ -2,6 +2,7 @@ import 'package:core_auth/testing.dart';
 import 'package:core_push/testing.dart';
 import 'package:customer/src/notifications/push.dart';
 import 'package:customer/src/router.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support.dart';
@@ -68,7 +69,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('تسجيل الخروج'));
     await tester.pumpAndSettle();
-    expect(find.text('تسجيل الدخول'), findsWidgets);
+    expect(_location(app), '/');
+    expect(find.byKey(const Key('open-account')), findsNothing);
     push.renew('push-token-1');
     await tester.pumpAndSettle();
     expect(app.server.to('/v1/customer/push-token'), hasLength(1));

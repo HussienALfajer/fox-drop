@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../router.dart';
-import '../settings/staff_screen.dart';
+import '../settings/settings_parts.dart';
 
 /// RA §4.3 on Windows (slice 2.44): the tray and the window, set up by
 /// `main` before the first screen. Quitting asks first, over whatever screen

@@ -5,6 +5,8 @@
 The customer app «تطبيق الزبون» (Android, iOS), a Flutter app in the Dart pub workspace (architecture §11, §13).
 `apps/captain` (Android, iOS) and `apps/merchant` (Android, Windows) follow the same rules.
 
+**D.R1 (2026-11-27):** with every UI component, the owner deleted the sign-in screen (core_auth's `sign_in_screen.dart`, the `/sign-in` route, home's «تسجيل الدخول» button and the UI tests that signed in through it). No customer can sign in until a new sign-in screen is drawn, approved and built; `signInFrom` returns `/`, so a guest who opens a screen that needs sign-in stays on home. The slice files D.11 to D.17 were deleted too: each customer screen is planned anew, one at a time, drawn with only the components it needs. History: git before the D.R1 merge (`docs/slices/D.R1-delete-components-screen-first.md`).
+
 ## Layout
 
 - `lib/main.dart`: starts App Check (`startAppCheck`, `packages/core_auth/CLAUDE.md`) and push (`startPush`, `packages/core_push/CLAUDE.md`), then runs the app inside a Riverpod `ProviderScope` that gives the scope its token source.
@@ -31,11 +33,11 @@ The customer app «تطبيق الزبون» (Android, iOS), a Flutter app in th
   never Dio or `http` by hand, but for the one `PUT` of a report's photo to the storage's signed URL (`photoPutProvider`, «Reports» below).
   `authApiProvider`, without the interceptor, serves only the app's `AuthParty`.
   Tests replace both with `FakeServer` clients (`package:core_auth/testing.dart`) and the scope's `store` with `MemorySecureStore`, so they need no server or device.
-- **Session and routes (slice 1.14b):** the router redirects on the scope's session: `/starting` while it is read, `/sign-in` when signed out (the customer app lets guests stay, CU §5.1), home once signed in.
-  In the customer app a screen that needs sign-in sends the guest to `signInFrom(<its path>)`, and sign-in returns to that `from` (only a path of the app);
+- **Session and routes (slice 1.14b):** the router redirects on the scope's session: `/starting` while it is read, then home (the customer app lets guests stay, CU §5.1; the `/sign-in` route left in D.R1).
+  In the customer app a screen that needs sign-in sends the guest to `signInFrom(<its path>)` (home since D.R1; with the new sign-in screen it leads there and back to that `from`, only a path of the app);
   while `GET /v1/customer/profile` answers `completed: false` every route goes to `/complete-profile` («أكمل بياناتك», CU §5.3) with the same `from` (slice 1.14d).
   The restaurant app sends a signed-in device without a name to `/device-name` (RA §5.2 item 5);
-  the captain's sign-in screen shows «سُجّل دخولك من جهاز آخر» after `other_device` (CA §4.9).
+  the captain's «سُجّل دخولك من جهاز آخر» after `other_device` (CA §4.9) left with the sign-in screen in D.R1.
 - **Ordering (customer, slice 1.14d; CU §7, §10):** the delivery point (`deliveryPointProvider`) comes from the phone through `positionSourceProvider` (`geolocator`; tests use a fake), a pin set on the map (`usePin`) or a saved address's pin, and lives while the app runs;
   the last request wins, and the checkout's chosen address is the point's `addressId` (null for the point as an unsaved address).
   Sign-in from checkout and «أكمل بياناتك» use `context.go`, so the router's redirect sees them;
@@ -121,7 +123,7 @@ The customer app «تطبيق الزبون» (Android, iOS), a Flutter app in th
 - **Favourites (customer, slice 2.28b; CU §9.6, U18, owner decisions 2026-11-18):** `browsing/favourites.dart`.
   `HeartButton` sits on `RestaurantTile` (the list, the home, the category page, the search, «المفضلة») and in the restaurant page's app bar;
   it shows the card's or page's `favourite` unless this device changed it since (`heartsProvider`, by restaurant, started again on a sign-in or sign-out).
-  A guest's tap goes to sign-in and back (`signInFrom` the current location);
+  A guest's tap goes to `signInFrom` the current location (home since D.R1);
   a signed-in tap changes the heart at once and sends `PUT` or `DELETE /v1/customer/favourites/{restaurantId}` without a confirmation, puts it back with «حدث خطأ» when the call fails, and reads «المفضلة» again.
   «حسابي» → «المفضلة» opens `/account/favourites` (`FavouritesScreen`): `favouritesProvider` (`GET /v1/customer/favourites` at `browsingPoint`, its cards turned into the list's with `cardOfSearch`), only those that deliver to the point, «لا توجد مطاعم مفضلة توصل إلى هذا العنوان» without one.
 - **«طلباتي» (customer, slice 2.28b; CU §12.3, U18):** home (signed in) and «حسابي» open `/orders` (signed in only; `orders/my_orders_screen.dart`): `myOrdersProvider` reads `GET /v1/customer/orders`, «الطلبات الجارية» first, then «الطلبات السابقة», each row the restaurant, «#{رقم}», the date, the status (`historyStatusText`) and the total, opening `/orders/:id`;
