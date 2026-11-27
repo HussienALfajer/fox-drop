@@ -76,11 +76,6 @@ class HomeScreen extends ConsumerWidget {
               key: const Key('open-account'),
               onPressed: () => context.push('/account'),
               child: Text(l10n.customerMyAccountTitle),
-            )
-          else
-            TextButton(
-              onPressed: () => context.go('/sign-in'),
-              child: Text(l10n.signInTitle),
             ),
         ],
       ),

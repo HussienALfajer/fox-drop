@@ -70,17 +70,6 @@ describe('the change classifier', () => {
     assert.equal(flags(['docs/brand/expression.md']), '');
   });
 
-  it('runs every Dart check for the files outside Dart that core_ui’s tests read', () => {
-    assert.equal(
-      flags(['packages/ui-web/src/phone-field/phone-cases.json']),
-      'code dart build typescript dartScope:all',
-    );
-    assert.equal(
-      flags(['docs/brand/logo/mark/mark-orange-on-ivory-drop.svg']),
-      'code dart typescript dartScope:all',
-    );
-  });
-
   it('sets the server tests and not Dart for a server change', () => {
     assert.equal(
       flags(['apps/server/src/modules/ledger/ledger.service.ts']),
@@ -302,8 +291,6 @@ describe('the change classifier', () => {
       // The Node both jobs run on, the line endings they check out with.
       '.node-version',
       '.gitattributes',
-      'packages/ui-web/src/phone-field/phone-cases.json',
-      'docs/brand/logo/mark/mark-orange-on-ivory-drop.svg',
     ])
       assert.equal(images([file]), 'visual golden', file);
   });

@@ -1,32 +1,9 @@
 import 'package:core_auth/testing.dart';
 import 'package:customer/src/profile/profile.dart';
-import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support.dart';
-
-Future<void> _signIn(WidgetTester tester, TestApp app) async {
-  app.server.on('/v1/customer/auth/code', [
-    FakeAnswer(200, {
-      'channel': 'whatsapp',
-      'resendAfterSec': 60,
-      'expiresAt': DateTime.now().toUtc().toIso8601String(),
-    }),
-  ]);
-  app.server.on('/v1/customer/auth/sign-in', [
-    FakeAnswer(200, {
-      'accountId': accountId,
-      'newAccount': true,
-      ...tokens('1', DateTime.now().add(const Duration(minutes: 15))),
-    }),
-  ]);
-  await tester.enterText(find.byKey(const Key('sign-in-phone')), '0944123456');
-  await tester.tap(find.text('إرسال الرمز'));
-  await tester.pumpAndSettle();
-  await tester.enterText(find.byKey(const Key('sign-in-code')), '123456');
-  await tester.pumpAndSettle();
-}
 
 const _saved = FakeAnswer(200, {
   'completed': true,
@@ -53,10 +30,12 @@ void main() {
     expect(validName(' - '), isFalse);
   });
 
+  // The sign-in itself left with its screen in D.R1 (2026-11-27): the
+  // account starts signed in, its details not completed.
   testWidgets(
     'a new account completes its details, then returns where it was',
     (tester) async {
-      final app = TestApp();
+      final app = TestApp(signedIn: true);
       app.server.on('/v1/customer/profile', [
         const FakeAnswer(200, {
           'completed': false,
@@ -66,9 +45,6 @@ void main() {
         _saved,
       ]);
       await app.pump(tester);
-      app.container.read(routerProvider).go(signInFrom('/'));
-      await tester.pumpAndSettle();
-      await _signIn(tester, app);
 
       expect(find.text('أكمل بياناتك'), findsOneWidget);
       await tester.tap(find.text('حفظ'));
@@ -106,18 +82,6 @@ void main() {
       expect(find.text('أين نوصل طلبك؟'), findsOneWidget);
     },
   );
-
-  testWidgets('a returning customer goes straight back', (tester) async {
-    final app = TestApp();
-    app.completedProfile();
-    await app.pump(tester);
-    app.container.read(routerProvider).go(signInFrom('/'));
-    await tester.pumpAndSettle();
-    await _signIn(tester, app);
-
-    expect(find.text('أكمل بياناتك'), findsNothing);
-    expect(find.text('أين نوصل طلبك؟'), findsOneWidget);
-  });
 
   testWidgets('an app stopped before the details shows them again', (
     tester,

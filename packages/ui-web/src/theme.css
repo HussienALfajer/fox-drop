@@ -1,84 +1,11 @@
 /* The theme extensions the components use beyond the tokens. Imported by
    styles.css (Storybook, the apps) and scripts/bundle.css (the Design System),
-   so a card draws what a story draws. */
+   so a card draws what a story draws. A component's own keyframes and SVG
+   geometry left with it in D.R1 (2026-11-27) and come back with it. */
 
-/* The SVG geometry of the drawn components, beside them. */
-@import './countdown-ring/countdown-ring.css';
-@import './tracking-steps/tracking-steps.css';
-
-/* The skeleton's calm pulse (D.9, owner 2026-11-24): opacity 1 → 0.55 → 1
-   over duration.moment; `motion-safe:` keeps it still under reduced motion. */
 @theme {
-  --animate-skeleton: skeleton-pulse var(--fd-duration-moment) var(--fd-easing-standard) infinite;
   /* The fixed photo ratios of brand expression §5 (R7): a restaurant cover
      16:9, a dish 1:1. The token theme resets Tailwind's own `aspect-video`. */
   --aspect-cover: 16 / 9;
   --aspect-dish: 1 / 1;
-
-  @keyframes skeleton-pulse {
-    50% {
-      opacity: 0.55;
-    }
-  }
-
-  /* The drop loader (D.11b, `motion.mark-fill.*`): the liquid rises from
-     below the mark to above it over the first `rise` (70%) of the cycle; the
-     full mark fades back over the last `fade` (18%: from 82%); the surface
-     sways one wavelength per `wave-period`. A keyframe cannot read a
-     variable, so the shares are written here and drop-loader.test.tsx keeps
-     them on the tokens. 870 is half the mark's box plus the wave's height, in
-     the brand file's units; 830 is one wavelength (drop-loader.tsx). */
-  --animate-mark-rise: mark-rise var(--fd-motion-mark-fill-duration) var(--fd-easing-standard)
-    infinite;
-  --animate-mark-fade: mark-fade var(--fd-motion-mark-fill-duration) linear infinite;
-  --animate-mark-wave: mark-wave var(--fd-motion-mark-fill-wave-period) linear infinite;
-
-  @keyframes mark-rise {
-    0% {
-      transform: translateY(870px);
-    }
-    70%,
-    100% {
-      transform: translateY(-870px);
-    }
-  }
-
-  @keyframes mark-fade {
-    0%,
-    82% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-
-  @keyframes mark-wave {
-    to {
-      transform: translateX(830px);
-    }
-  }
-
-  /* The current tracking step's rings (D.11b, `motion.pulse.*`): each grows
-     and fades over one cycle with the calm easing; the second starts half a
-     cycle late (tracking-steps.tsx). Under reduced motion one ring stands
-     still at the `still-*` values. */
-  --animate-step-pulse: step-pulse var(--fd-motion-pulse-duration) var(--fd-easing-standard)
-    infinite;
-
-  @keyframes step-pulse {
-    from {
-      scale: var(--fd-motion-pulse-scale-from);
-      opacity: var(--fd-motion-pulse-opacity-from);
-    }
-    to {
-      scale: var(--fd-motion-pulse-scale-to);
-      opacity: var(--fd-motion-pulse-opacity-to);
-    }
-  }
-}
-
-/* The second ring of the current tracking step starts half a cycle late. */
-@utility step-pulse-late {
-  animation-delay: calc(var(--fd-motion-pulse-duration) / -2);
 }

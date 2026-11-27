@@ -57,11 +57,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onTap: () => context.push('/device'),
             ),
             ListTile(
-              key: const Key('open-staff'),
-              title: Text(l10n.merchantStaff),
-              onTap: () => context.push('/settings/staff'),
-            ),
-            ListTile(
               key: const Key('open-devices'),
               title: Text(l10n.merchantDevices),
               onTap: () => context.push('/settings/devices'),

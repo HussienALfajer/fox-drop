@@ -24,7 +24,6 @@ import 'reports/reports_screen.dart';
 import 'reports/summary_screen.dart';
 import 'settings/devices_screen.dart';
 import 'settings/settings_screen.dart';
-import 'settings/staff_screen.dart';
 import 'starting_screen.dart';
 import 'status/hours_screen.dart';
 import 'support/report_screen.dart';
@@ -35,7 +34,8 @@ import 'terms.dart';
 import 'windows/pairing_screen.dart';
 import 'windows/registration.dart';
 
-/// Signed out, every route leads to sign-in; signed in on a device without a
+/// Signed out, every route leads to the starting screen (the sign-in screen
+/// returns with its drawing, D.R1); signed in on a device without a
 /// name, to «سمِّ هذا الجهاز» (RA §5.2 item 5); then home. Maintenance or
 /// a required update leads every device to `/blocked` (RA §4.2, §4.10). An
 /// owner with a pending version of the terms reaches only Orders and the
@@ -60,14 +60,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Windows (slice 2.44): once the server refused its signature, the
         // owner's code registers the PC before sign-in.
         if (ref.read(pairingNeededProvider)) return to('/windows-pairing');
-        return to('/sign-in');
+        // The sign-in screen left in D.R1 (2026-11-27): signed out, the
+        // device waits on the starting screen until it returns.
+        return to('/starting');
       }
       final user = ref.read(merchantSessionProvider);
       // Until the session's details come, or when they fail, the board waits
       // for them.
       if (user.value?.deviceNamed == false) return to('/device-name');
       if (const {
-        '/sign-in',
         '/starting',
         '/device-name',
         '/windows-pairing',
@@ -160,10 +161,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SettingsScreen(),
         routes: [
           GoRoute(
-            path: 'staff',
-            builder: (context, state) => const StaffScreen(),
-          ),
-          GoRoute(
             path: 'devices',
             builder: (context, state) => const DevicesScreen(),
           ),
@@ -243,10 +240,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/starting',
         builder: (context, state) => const StartingScreen(),
-      ),
-      GoRoute(
-        path: '/sign-in',
-        builder: (context, state) => SignInScreen(scope: merchantAuth),
       ),
       GoRoute(
         path: '/device-name',

@@ -7,64 +7,9 @@ import 'package:fox_widgetbook/catalogue.dart';
 import 'package:widgetbook/widgetbook.dart';
 
 /// The states of each core_ui widget, from core_ui itself. A widget added to
-/// core_ui without an entry here fails the first test.
-final _states = <String, (List<String>, List<String>)>{
-  'FoxButton': (buttonVariants, buttonStates),
-  'FoxIcon': ([''], iconStates),
-  'FoxField': ([''], fieldStates),
-  'FoxTextField': ([''], textFieldStates),
-  'FoxTextArea': ([''], textAreaStates),
-  'FoxSearchField': ([''], searchFieldStates),
-  'FoxPhoneField': ([''], phoneFieldStates),
-  'FoxCodeField': ([''], codeFieldStates),
-  'FoxSelect': ([''], selectStates),
-  'FoxCheckbox': (checkboxValues, checkboxStates),
-  'FoxRadio': (radioValues, radioStates),
-  'FoxRadioGroup': ([''], radioGroupStates),
-  'FoxSwitch': (switchValues, switchStates),
-  'FoxQuantityStepper': ([''], quantityStepperStates),
-  'FoxDateField': ([''], dateFieldStates),
-  'FoxTimeField': ([''], timeFieldStates),
-  'FoxMoney': ([''], moneyStates),
-  'FoxStatusChip': ([''], statusChipStates),
-  'FoxCountBadge': ([''], countBadgeStates),
-  'FoxCard': ([''], cardStates),
-  'FoxListRow': ([''], listRowStates),
-  'FoxTimer': ([''], timerStates),
-  'FoxCountdownRing': ([''], countdownRingStates),
-  'FoxOrderCard': ([''], orderCardStates),
-  'FoxOrderRow': ([''], orderRowStates),
-  'FoxLogo': ([''], logoStates),
-  'FoxAmountsSummary': ([''], amountsSummaryStates),
-  'FoxRestaurantCard': ([''], restaurantCardStates),
-  'FoxDishCard': ([''], dishCardStates),
-  'FoxSkeleton': ([''], skeletonStates),
-  'FoxSkeletonBlock': ([''], skeletonBlockStates),
-  'FoxEmptyState': ([''], emptyStateStates),
-  'FoxDialog': ([''], dialogStates),
-  'FoxConfirmDialog': ([''], confirmDialogStates),
-  'FoxBottomSheet': ([''], bottomSheetStates),
-  'FoxToast': ([''], toastStates),
-  'FoxToaster': ([''], toasterStates),
-  'FoxBanner': ([''], bannerStates),
-  'FoxBannerStack': ([''], bannerStackStates),
-  'FoxMenu': ([''], menuStates),
-  'FoxTabs': ([''], tabsStates),
-  'FoxTopBar': ([''], topBarStates),
-  'FoxRestaurantBar': ([''], restaurantBarStates),
-  'FoxBottomNavigation': ([''], bottomNavigationStates),
-  'FoxNavigationRail': ([''], navigationRailStates),
-  'FoxPullToRefresh': ([''], pullToRefreshStates),
-  'FoxRefreshDrop': ([''], refreshDropStates),
-  'FoxDropLoader': ([''], dropLoaderStates),
-  'FoxCountrySheet': ([''], countrySheetStates),
-  'FoxTextLink': ([''], textLinkStates),
-  'FoxTrackingSteps': ([''], trackingStepsStates),
-  'FoxSignInHero': ([''], signInHeroStates),
-  'FoxCodePreview': ([''], codePreviewStates),
-  'FoxVersionTicket': ([''], versionTicketStates),
-  'FoxShopSign': ([''], shopSignStates),
-};
+/// core_ui without an entry here fails the first test. None since D.R1
+/// (2026-11-27): each returns with the approved screen that needs it.
+final _states = <String, (List<String>, List<String>)>{};
 
 void main() {
   // R3 (architecture §9.5): every public widget of core_ui appears in the
@@ -80,7 +25,8 @@ void main() {
           ).allMatches(file.readAsStringSync()))
             match[1]!,
     };
-    expect(widgets, isNotEmpty);
+    // The scan reads the folder: it must exist, even with no widget in it.
+    expect(source.existsSync(), isTrue);
     expect(_states.keys.toSet(), widgets);
   });
 

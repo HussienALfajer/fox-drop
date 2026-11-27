@@ -54,13 +54,11 @@ const readByServerTests = (file) =>
 // or windows/ folder), checked by classify-changes.test.mjs.
 export const NATIVE_PACKAGES = ['packages/core_alerts'];
 
-// Files outside the Dart packages that Dart tests read: core_ui's phone cases
-// shared with ui-web and the brand mark the loader draws (D.11b). A path
-// ending in /** is a folder. A change to one runs every Dart package's checks.
-export const READ_BY_DART_TESTS = [
-  'packages/ui-web/src/phone-field/phone-cases.json',
-  'docs/brand/logo/mark/mark-orange-on-ivory-drop.svg',
-];
+// Files outside the Dart packages that Dart tests read. A path ending in /**
+// is a folder. A change to one runs every Dart package's checks. None since
+// D.R1 (2026-11-27): the phone cases moved into core_auth, and no component
+// draws the brand mark any more.
+export const READ_BY_DART_TESTS = [];
 
 // Files outside a Dart package that count as a change to that package (its
 // folder) and so to its dependents: core_tokens' Dart is generated from the

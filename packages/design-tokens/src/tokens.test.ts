@@ -1,4 +1,4 @@
-import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -235,6 +235,8 @@ describe('the chart palette (brand expression §6)', () => {
 const withFixtureComponent = () => {
   const root = mkdtempSync(path.join(tmpdir(), 'fd-tokens-'));
   cpSync(path.join(PACKAGE_DIR, 'tokens'), path.join(root, 'tokens'), { recursive: true });
+  // The folder is gone while no component exists (D.R1).
+  mkdirSync(path.join(root, 'tokens/component'), { recursive: true });
   writeFileSync(
     path.join(root, 'tokens/component/fixture-card.json'),
     JSON.stringify({
@@ -262,12 +264,10 @@ describe('the component layer (slice D.W1, architecture §9.2)', () => {
     expect(code).toMatch(/abstract final class FoxFixtureCard \{/);
     expect(code).toMatch(/final class ComponentTokens \{/);
     expect(code).toContain('final FixtureCardTokens fixtureCard;');
-    expect(code).toContain('final ButtonTokens button;');
     expect(code).toMatch(/abstract final class FoxComponents \{/);
     for (const theme of THEMES) {
       expect(code).toContain(`static const ComponentTokens ${theme} = ComponentTokens(`);
       expect(code).toContain(`fixtureCard: FoxFixtureCard.${theme},`);
-      expect(code).toContain(`button: FoxButton.${theme},`);
     }
   });
 
@@ -276,9 +276,8 @@ describe('the component layer (slice D.W1, architecture §9.2)', () => {
       expect(output).not.toMatch(/extensions|app\.foxdrop|flutter/i);
   });
 
-  it('gives the committed Dart a ComponentTokens per theme', () => {
-    const code = read(OUTPUTS.dart);
-    for (const theme of THEMES)
-      expect(code).toContain(`static const ComponentTokens ${theme} = ComponentTokens(`);
+  // No component file since D.R1 (2026-11-27): no component class either.
+  it('writes no ComponentTokens while no component file exists', () => {
+    expect(read(OUTPUTS.dart)).not.toContain('ComponentTokens');
   });
 });

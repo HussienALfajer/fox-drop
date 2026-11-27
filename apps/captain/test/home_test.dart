@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:captain/src/auth.dart';
+import 'package:captain/src/joining/welcome_screen.dart';
 import 'package:captain/src/work/location.dart';
 import 'package:captain/src/work/order_view.dart';
 import 'package:captain/src/work/work.dart';
@@ -628,7 +629,7 @@ void main() {
     // Not awaited: the sign-out completes while the frames are pumped.
     unawaited(app.container.read(captainAuth.session.notifier).signOut());
     await app.settle(tester);
-    expect(find.text('انضم ككابتن'), findsOneWidget);
+    expect(find.byType(WelcomeScreen), findsOneWidget);
     expect(tracker.tracking, isFalse);
     expect(await tracker.queued, 0);
     await app.done(tester);

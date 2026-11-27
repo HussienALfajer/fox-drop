@@ -9,7 +9,7 @@
 // `node scripts/golden-docker.mjs --update-goldens`; `pnpm baselines` runs it.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const UBUNTU =
@@ -17,6 +17,17 @@ const UBUNTU =
 const repo = resolve(import.meta.dirname, '..');
 const flutter = JSON.parse(readFileSync(resolve(repo, '.fvmrc'), 'utf8')).flutter;
 const image = `fox-drop-golden:${flutter}`;
+
+// No golden test means nothing to compare (none since D.R1, 2026-11-27: the
+// components return one approved screen at a time). `flutter test` would stop
+// with "No tests ran" and the goldens folder would not exist to copy back.
+const goldenTests = readdirSync(resolve(repo, 'packages/core_ui/test/golden')).filter((file) =>
+  file.endsWith('_golden_test.dart'),
+);
+if (goldenTests.length === 0) {
+  console.log('No core_ui golden test: nothing to compare.');
+  process.exit(0);
+}
 
 if (!existsSync(resolve(repo, '.fonts/cofo-sans-pro-arabic'))) {
   console.error('CoFo is missing: run `pnpm fonts:fetch` first.');

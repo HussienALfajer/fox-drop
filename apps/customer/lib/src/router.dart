@@ -35,10 +35,11 @@ import 'search/suggest_screen.dart';
 import 'starting_screen.dart';
 import 'terms.dart';
 
-/// Where a screen that needs sign-in sends a guest: the sign-in screen, then
-/// back to [from] (CU §5.1).
-String signInFrom(String from) =>
-    Uri(path: '/sign-in', queryParameters: {'from': from}).toString();
+/// Where a screen that needs sign-in sends a guest. The sign-in screen was
+/// deleted with the components in D.R1 (2026-11-27) and returns with its
+/// approved drawing, then back to [from] (CU §5.1); until then a guest stays
+/// on home.
+String signInFrom(String from) => '/';
 
 // Only a path of this app, never another address.
 String _safeFrom(String? from) =>
@@ -79,15 +80,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final profile = ref.read(profileProvider).value;
       final completing = signedIn && profile != null && !profile.completed;
       if (completing && at != '/complete-profile' && at != '/terms') {
-        final next = at == '/sign-in' || at == '/starting'
-            ? from
-            : state.uri.toString();
+        final next = at == '/starting' ? from : state.uri.toString();
         return Uri(
           path: '/complete-profile',
           queryParameters: {'from': next},
         ).toString();
       }
-      if (at == '/starting' || (signedIn && at == '/sign-in')) return from;
+      if (at == '/starting') return from;
       if (at == '/complete-profile' && !completing) return from;
       return null;
     },
@@ -96,10 +95,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/starting',
         builder: (context, state) => const StartingScreen(),
-      ),
-      GoRoute(
-        path: '/sign-in',
-        builder: (context, state) => SignInScreen(scope: customerAuth),
       ),
       GoRoute(
         path: '/restaurants/:id',

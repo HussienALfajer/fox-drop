@@ -9,63 +9,12 @@ import { build } from 'vite';
 
 export const PACKAGE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The components the bundle exposes, in the index's order. */
-export const COMPONENTS = [
-  'Button',
-  'DropLoader',
-  'TextLink',
-  'Icon',
-  'Field',
-  'TextField',
-  'TextArea',
-  'SearchField',
-  'PhoneField',
-  'CodeField',
-  'CountrySheet',
-  'DateField',
-  'TimeField',
-  'CodePreview',
-  'RestaurantCard',
-  'DishCard',
-  'BottomSheet',
-  'PullToRefresh',
-  'Select',
-  'Checkbox',
-  'RadioGroup',
-  'Switch',
-  'QuantityStepper',
-  'Money',
-  'StatusChip',
-  'CountBadge',
-  'Card',
-  'ListRow',
-  'Timer',
-  'CountdownRing',
-  'OrderCard',
-  'OrderRow',
-  'Logo',
-  'TrackingSteps',
-  'AmountsSummary',
-  'Skeleton',
-  'EmptyState',
-  'DataTable',
-  'Dialog',
-  'ConfirmDialog',
-  'Drawer',
-  'Toaster',
-  'Banner',
-  'BannerStack',
-  'BlockingBanner',
-  'Menu',
-  'Tooltip',
-  'Tabs',
-  'TopBar',
-  'Sidebar',
-  'RestaurantBar',
-  'BottomNavigation',
-  'SignInHero',
-  'BlockingHeads',
-] as const;
+/**
+ * The components the bundle exposes, in the index's order. Empty since D.R1
+ * (2026-11-27): an approved component joins it with its entry in
+ * bundle-entry.ts and its types in docs.ts.
+ */
+export const COMPONENTS: readonly string[] = [];
 
 export const MAX_JS = 6 * 1024 * 1024;
 export const MAX_CSS = 2 * 1024 * 1024;

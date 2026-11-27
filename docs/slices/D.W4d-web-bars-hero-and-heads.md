@@ -3,6 +3,8 @@
 Status: Done · Tier: T2 · Branch: `feat/web-bars-hero-heads`
 Spec: architecture §9.5 R1, R3, R4, R5, R7, R9, R16, §9.6, §9.9; CU §4 (the blocking screens), CU §5.1 (the sign-in hero); D.10 and D.11b's slice files for the approved looks · Definition of done: workflow §4 (UI items)
 
+> **D.R1 (2026-11-27):** the components this slice built were deleted, and so was D.11's slice file; both are in git history before the D.R1 merge.
+
 Part of the web-first plan (its table and shared rules: `D.W1-component-token-pipeline.md`). Needs D.W1 and D.W2 merged. Runs in parallel with any other D.W3 or D.W4 slice.
 
 ## Goal

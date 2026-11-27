@@ -349,14 +349,17 @@ void main() {
     await app.done(tester);
   });
 
-  testWidgets('a guest signs in at «تأكيد الطلب» and comes back', (
+  // The sign-in screen left in D.R1 (2026-11-27): a guest's «تأكيد الطلب»
+  // stays on checkout, what they typed kept, and orders nothing.
+  testWidgets('a guest at «تأكيد الطلب» stays and orders nothing', (
     tester,
   ) async {
     final app = await _checkout(tester, signedIn: false);
     await _fillAddress(tester);
     await _confirm(tester);
 
-    expect(find.byKey(const Key('sign-in-phone')), findsOneWidget);
+    expect(find.byKey(const Key('confirm-order')), findsOneWidget);
+    expect(find.text('قرب جامع النور'), findsOneWidget);
     expect(app.server.to('/v1/customer/orders'), isEmpty);
     await app.done(tester);
   });
@@ -917,45 +920,6 @@ void main() {
     await _confirm(tester);
 
     expect(find.text('العنوان خارج منطقة التوصيل'), findsOneWidget);
-  });
-
-  testWidgets('a guest signs in at checkout and gets the account\'s quote', (
-    tester,
-  ) async {
-    final app = await _checkout(tester, signedIn: false);
-    await _fillAddress(tester);
-    await _confirm(tester);
-    app.completedProfile();
-    app.server.on('/v1/customer/auth/code', [
-      FakeAnswer(200, {
-        'channel': 'whatsapp',
-        'resendAfterSec': 60,
-        'expiresAt': DateTime.now().toUtc().toIso8601String(),
-      }),
-    ]);
-    app.server.on('/v1/customer/auth/sign-in', [
-      FakeAnswer(200, {
-        'accountId': accountId,
-        'newAccount': false,
-        ...tokens('1', DateTime.now().add(const Duration(minutes: 15))),
-      }),
-    ]);
-    await tester.enterText(
-      find.byKey(const Key('sign-in-phone')),
-      '0944123456',
-    );
-    await tester.tap(find.text('إرسال الرمز'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('sign-in-code')), '123456');
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('confirm-order')), findsOneWidget);
-    final quotes = app.server.to('/v1/customer/quote');
-    expect(quotes.first.headers['Authorization'], isNull);
-    expect(quotes.last.headers['Authorization'], 'Bearer access-1');
-    // What the guest typed is still there.
-    expect(find.text('قرب جامع النور'), findsOneWidget);
-    await app.done(tester);
   });
 
   testWidgets('no order before the profile can be read', (tester) async {

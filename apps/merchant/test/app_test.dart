@@ -17,6 +17,7 @@ import 'package:merchant/src/push.dart';
 import 'package:merchant/src/board/alerts.dart';
 import 'package:merchant/src/board/board_screen.dart';
 import 'package:merchant/src/router.dart';
+import 'package:merchant/src/starting_screen.dart';
 
 import 'board_fixtures.dart';
 
@@ -60,9 +61,12 @@ class _App {
   );
   late final ProviderContainer container;
 
+  /// [settle] is false for a signed-out start: the device then waits on the
+  /// starting screen's spinner, since the sign-in screen left in D.R1.
   Future<void> pump(
     WidgetTester tester, {
     Map<String, String> stored = const {},
+    bool settle = true,
   }) async {
     server.on('/v1/merchant/orders', [FakeAnswer(200, boardJson([]))]);
     if (!server.routes.containsKey('/v1/merchant/terms')) {
@@ -118,7 +122,11 @@ class _App {
         child: const MerchantApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump(const Duration(seconds: 1));
+    }
   }
 }
 
@@ -168,24 +176,12 @@ void main() {
     },
   );
 
+  // The sign-in itself left with its screen in D.R1 (2026-11-27): the device
+  // starts signed in, not named yet.
   testWidgets('the first sign-in on a device names it (RA §5.2 item 5)', (
     tester,
   ) async {
     final app = _App();
-    await app.pump(tester);
-    app.server.on('/v1/merchant/auth/code', [
-      FakeAnswer(200, {
-        'channel': 'whatsapp',
-        'resendAfterSec': 60,
-        'expiresAt': DateTime.now().toUtc().toIso8601String(),
-      }),
-    ]);
-    app.server.on('/v1/merchant/auth/sign-in', [
-      FakeAnswer(200, {
-        ..._session(deviceNamed: false)..remove('sessionId'),
-        ...tokens('1', DateTime.now().add(const Duration(minutes: 15))),
-      }),
-    ]);
     app.server.on('/v1/merchant/auth/session', [
       FakeAnswer(200, _session(deviceNamed: false)),
       FakeAnswer(200, _session(deviceNamed: true)),
@@ -193,19 +189,7 @@ void main() {
     app.server.on('/v1/merchant/auth/device', [
       const FakeAnswer(200, {'status': 'saved'}),
     ]);
-
-    await tester.enterText(
-      find.byKey(const Key('sign-in-phone')),
-      '0944123456',
-    );
-    await tester.tap(find.text('إرسال الرمز'));
-    await tester.pumpAndSettle();
-    expect(
-      (app.server.to('/v1/merchant/auth/code').single.data as Map)['platform'],
-      'android',
-    );
-    await tester.enterText(find.byKey(const Key('sign-in-code')), '123456');
-    await tester.pumpAndSettle();
+    await app.pump(tester, stored: _signedIn());
 
     expect(find.text('سمِّ هذا الجهاز'), findsOneWidget);
     await tester.enterText(find.byKey(const Key('device-name')), 'كاشير 1');
@@ -218,61 +202,8 @@ void main() {
       'platform': 'android',
       'appVersion': '0.1.0',
     });
-    expect(saved.headers['Authorization'], 'Bearer access-1');
+    expect(saved.headers['Authorization'], 'Bearer access-0');
     expect(find.text('جديدة (0)'), findsOneWidget);
-    await app.done(tester);
-  });
-
-  testWidgets('a number of no restaurant offers to call or write the team', (
-    tester,
-  ) async {
-    final app = _App();
-    await app.pump(tester);
-    app.server.on('/v1/merchant/auth/code', [
-      const FakeAnswer(403, {'error': 'not_registered'}),
-    ]);
-    app.server.on('/v1/merchant/contact', [
-      const FakeAnswer(200, {
-        'phone': '+963944000000',
-        'whatsapp': '+963955000000',
-      }),
-    ]);
-    await tester.enterText(
-      find.byKey(const Key('sign-in-phone')),
-      '0944123456',
-    );
-    await tester.tap(find.text('إرسال الرمز'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('هذا الرقم غير مسجّل لدى أي مطعم في FOX DROP'),
-      findsOneWidget,
-    );
-    expect(find.text('لديّ رمز من العمليات'), findsNothing);
-    await tester.tap(find.text('واتساب العمليات'));
-    expect(app.launched.single.toString(), 'https://wa.me/963955000000');
-    await app.done(tester);
-  });
-
-  testWidgets('a draft restaurant is told its account is being set up', (
-    tester,
-  ) async {
-    final app = _App();
-    await app.pump(tester);
-    app.server.on('/v1/merchant/auth/code', [
-      const FakeAnswer(403, {'error': 'restaurant_draft'}),
-    ]);
-    await tester.enterText(
-      find.byKey(const Key('sign-in-phone')),
-      '0944123456',
-    );
-    await tester.tap(find.text('إرسال الرمز'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('حساب مطعمك قيد الإعداد. سنتواصل معك عند جاهزيته.'),
-      findsOneWidget,
-    );
     await app.done(tester);
   });
 
@@ -323,9 +254,10 @@ void main() {
     testWidgets('signed out, nothing is registered or asked', (tester) async {
       final app = _App()
         ..permission = FakeNotificationPermission(allowed: false);
-      await app.pump(tester);
+      await app.pump(tester, settle: false);
       app.push.renew('push-token-1');
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byType(StartingScreen), findsOneWidget);
       expect(app.server.to('/v1/merchant/push-token'), isEmpty);
       expect(app.permission.requests, 0);
       await app.done(tester);

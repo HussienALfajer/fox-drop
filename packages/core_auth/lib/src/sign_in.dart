@@ -1,9 +1,9 @@
-import 'package:core_ui/core_ui.dart' show foxReadPhone;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_party.dart';
 import 'auth_scope.dart';
 import 'phone.dart' show westernDigits;
+import 'phone_rules.dart' show foxReadPhone;
 
 enum SignInStep { phone, code }
 

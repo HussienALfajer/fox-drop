@@ -2,127 +2,12 @@
 // ReactDOM so a canvas can mount them (`libraries` is empty in the index).
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import {
-  AmountsSummary,
-  Button,
-  Card,
-  Checkbox,
-  CodeField,
-  CodePreview,
-  RestaurantCard,
-  DishCard,
-  BottomSheet,
-  PullToRefresh,
-  CountBadge,
-  CountdownRing,
-  CountrySheet,
-  DateField,
-  TimeField,
-  DataTable,
-  DropLoader,
-  EmptyState,
-  Field,
-  Icon,
-  ListRow,
-  Logo,
-  Money,
-  OrderCard,
-  OrderRow,
-  PhoneField,
-  QuantityStepper,
-  RadioGroup,
-  SearchField,
-  Select,
-  Skeleton,
-  StatusChip,
-  Switch,
-  TextArea,
-  TextField,
-  TextLink,
-  Timer,
-  TrackingSteps,
-  Dialog,
-  ConfirmDialog,
-  Drawer,
-  Toaster,
-  Banner,
-  BannerStack,
-  BlockingBanner,
-  Menu,
-  Tooltip,
-  Tabs,
-  TopBar,
-  Sidebar,
-  RestaurantBar,
-  BottomNavigation,
-  SignInHero,
-  VersionTicket,
-  ShopSign,
-  useToast,
-} from '../src/index.ts';
 import './bundle.css';
 
-// The two blocking heads share one Design System card, as one Flutter file:
-// FoxDrop.BlockingHeads.VersionTicket and FoxDrop.BlockingHeads.ShopSign (its
-// parts cross the bridge); BlockingHeads itself draws nothing.
-const BlockingHeads = Object.assign(() => null, { VersionTicket, ShopSign });
-
-const components = {
-  Button,
-  DropLoader,
-  TextLink,
-  Icon,
-  Field,
-  TextField,
-  TextArea,
-  SearchField,
-  PhoneField,
-  CodeField,
-  CountrySheet,
-  DateField,
-  TimeField,
-  CodePreview,
-  RestaurantCard,
-  DishCard,
-  BottomSheet,
-  PullToRefresh,
-  Select,
-  Checkbox,
-  RadioGroup,
-  Switch,
-  QuantityStepper,
-  Money,
-  StatusChip,
-  CountBadge,
-  Card,
-  ListRow,
-  Timer,
-  CountdownRing,
-  OrderCard,
-  OrderRow,
-  Logo,
-  TrackingSteps,
-  AmountsSummary,
-  Skeleton,
-  EmptyState,
-  DataTable,
-  Dialog,
-  ConfirmDialog,
-  Drawer,
-  Toaster,
-  Banner,
-  BannerStack,
-  BlockingBanner,
-  Menu,
-  Tooltip,
-  Tabs,
-  TopBar,
-  Sidebar,
-  RestaurantBar,
-  BottomNavigation,
-  SignInHero,
-  BlockingHeads,
-};
+// Every component the bundle exposes, in the order of COMPONENTS in
+// scripts/bundle.ts. Empty since D.R1 (2026-11-27): components are rebuilt
+// one approved screen at a time (architecture §9.9).
+const components: Record<string, React.ComponentType<object>> = {};
 
 // The bridge to a page that renders with another React (the Design canvas
 // runs React 18; the components need 19, as the UI SDK does). Each export
@@ -261,7 +146,7 @@ function bridge<P extends object>(
   return Bridged;
 }
 
-const api: Record<string, unknown> = { useToast, React, ReactDOM };
+const api: Record<string, unknown> = { React, ReactDOM };
 for (const [name, component] of Object.entries(components)) {
   api[name] = bridge(component as React.ComponentType<object>, name);
 }

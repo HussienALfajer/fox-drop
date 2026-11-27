@@ -7,4 +7,4 @@
 3. **Lending devices.** Will FOX DROP lend a tablet to restaurants without a suitable device, and on what terms (deposit, return, damage)?
 4. **Full-screen alerts on Android 14+.** Google Play limits full-screen notifications to some app types. Verify the policy at submission. The fallback is a heads-up notification with the looping sound, which the device check prepares (§4.5).
 5. **Printer survey for V2.** Which printers restaurants in Azaz use (Bluetooth or USB thermal, paper width), so V2 printing fits them.
-6. **The sign-in screen until the restaurant's screens are drawn.** As CA §18 item 7: D.11 drew only the customer's form of the shared sign-in (owner, 2026-11-24); open whether the restaurant app keeps today's sign-in until its own batch (asked 2026-11-24).
+6. **The sign-in screen until the restaurant's screens are drawn.** As CA §18 item 7: D.11 drew only the customer's form of the shared sign-in (owner, 2026-11-24); open whether the restaurant app keeps today's sign-in until its own batch (asked 2026-11-24). D.R1 (2026-11-27) deleted today's sign-in screen and D.11's slice file (git history).

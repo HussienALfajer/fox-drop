@@ -113,9 +113,9 @@ describe("the Design System's files (architecture §9.8)", () => {
 
   it('leaves project/components/ to ui-web, whose every component has its card', () => {
     const bundle = readFileSync(path.join(PACKAGE_DIR, '../ui-web/scripts/bundle.ts'), 'utf8');
-    const list = /export const COMPONENTS = \[([^\]]*)\]/.exec(bundle)![1]!;
+    const list = /export const COMPONENTS(?::[^=]*)? = \[([^\]]*)\]/.exec(bundle)![1]!;
     const components = [...list.matchAll(/'(\w+)'/g)].map((match) => match[1]!);
-    expect(components.length).toBeGreaterThan(40);
+    // None since D.R1 (2026-11-27): each returns with its approved screen.
     expect(new Set(components).size).toBe(components.length);
     for (const name of components) {
       expect(name).not.toBe('Cover');

@@ -44,6 +44,12 @@ export const RETIRED: readonly string[] = [
   'Overlays.dc.html',
 ];
 
+/**
+ * An approved screen's drawing on the approved page (T16, D.R1): drawn by the
+ * session with the owner, never generated, so a rebuild keeps it there.
+ */
+export const SCREEN_PREFIX = 'Screen-';
+
 /** Every component of the bundle has its board (D.C3: the popups drawn open in theirs). */
 export const BOARDS: readonly string[] = COMPONENTS;
 
@@ -204,9 +210,16 @@ export async function buildCanvas(input: {
     y += rowH + 520;
   }
   // Proposals drawn on the proposals page stay until their board is built
-  // from the bundle; the retired hand-drawn boards go.
+  // from the bundle, and the approved screens on the approved page stay
+  // (T16); the retired hand-drawn boards and the boards of components that
+  // left the bundle go.
   const kept = Object.entries(current.boards ?? {})
-    .filter(([file, b]) => b.page !== 'components' && !RETIRED.includes(file) && !files.has(file))
+    .filter(
+      ([file, b]) =>
+        (b.page !== 'components' || file.startsWith(SCREEN_PREFIX)) &&
+        !RETIRED.includes(file) &&
+        !files.has(file),
+    )
     .map(([file, b]) => [file, { ...b, page: b.page ?? 'proposals' }] as const);
   const notes = {
     ...groupNotes,

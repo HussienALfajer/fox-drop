@@ -2,10 +2,8 @@ import 'package:core_auth/core_auth.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../auth.dart';
-import '../router.dart';
 import 'favourites.dart';
 
 /// The heart on a restaurant card and page (CU §9.6). A guest is sent to
@@ -34,10 +32,9 @@ class HeartButton extends ConsumerWidget {
       tooltip: shown ? l10n.customerRemoveFavourite : l10n.customerAddFavourite,
       icon: Icon(shown ? Icons.favorite : Icons.favorite_border),
       onPressed: () async {
-        if (ref.read(customerAuth.session).value is! SignedIn) {
-          context.go(signInFrom(GoRouterState.of(context).uri.toString()));
-          return;
-        }
+        // A guest's heart does nothing until the sign-in screen returns
+        // (deleted in D.R1); the guest stays where they are.
+        if (ref.read(customerAuth.session).value is! SignedIn) return;
         final messenger = ScaffoldMessenger.of(context);
         final done = await ref
             .read(heartsProvider.notifier)

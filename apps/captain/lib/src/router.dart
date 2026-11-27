@@ -3,7 +3,6 @@ import 'dart:async';
 
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/core_auth.dart';
-import 'package:core_l10n/core_l10n.dart';
 import 'package:core_platform/core_platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,15 +92,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return at == '/blocked' ? null : '/blocked';
       }
       if (known && at == '/blocked') return '/';
-      if (!signedIn) {
-        if (_signedOutRoutes.contains(at)) return null;
-        // CA §4.9: «سُجّل دخولك من جهاز آخر» shows on the sign-in.
-        final ended = current.value;
-        return ended is SignedOut &&
-                ended.reason == SessionEndReason.otherDevice
-            ? '/sign-in'
-            : '/welcome';
-      }
+      // The sign-in and join screens left in D.R1 (2026-11-27); CA §4.9's
+      // «سُجّل دخولك من جهاز آخر» returns with them.
+      if (!signedIn) return _signedOutRoutes.contains(at) ? null : '/welcome';
       return _signedOutRoutes.contains(at) ||
               at == '/starting' ||
               at == '/application'
@@ -239,20 +232,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/starting',
         builder: (context, state) => const StartingScreen(),
       ),
-      GoRoute(
-        path: '/sign-in',
-        builder: (context, state) => const _CaptainSignInScreen(),
-      ),
       // CA §5.1–5.4 (slice 2.34a): the entry, «انضم ككابتن» and the
       // applicant's application.
       GoRoute(
         path: '/welcome',
         builder: (context, state) => const WelcomeScreen(),
-      ),
-      GoRoute(
-        path: '/join',
-        builder: (context, state) =>
-            SignInScreen(scope: captainAuth, join: true),
       ),
       GoRoute(
         path: '/application',
@@ -271,23 +255,5 @@ final routerProvider = Provider<GoRouter>((ref) {
   return router;
 });
 
-const _signedOutRoutes = {'/welcome', '/sign-in', '/join'};
+const _signedOutRoutes = {'/welcome'};
 const _applicantRoutes = {'/application', '/terms', '/work-rules'};
-
-/// CA §4.9: after a sign-in on another device, «سُجّل دخولك من جهاز آخر».
-class _CaptainSignInScreen extends ConsumerWidget {
-  const _CaptainSignInScreen();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(captainAuth.session).value;
-    final elsewhere =
-        session is SignedOut && session.reason == SessionEndReason.otherDevice;
-    return SignInScreen(
-      scope: captainAuth,
-      notice: elsewhere
-          ? AppLocalizations.of(context).captainSignedInElsewhere
-          : null,
-    );
-  }
-}

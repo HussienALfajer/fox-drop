@@ -10,8 +10,6 @@ resolution: workspace
 dependencies:
   core_api: any
   core_l10n: any
-  # The phone field for every country (D.11b).
-  core_ui: any
   core_storage: any
   dio: 5.11.1
   firebase_app_check: 0.5.1
@@ -19,6 +17,9 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_riverpod: 3.4.3
+  # Every country's phone rules (D.11b), MIT; the same metadata as the web's
+  # libphonenumber-js. Moved from core_ui with them in D.R1.
+  phone_numbers_parser: 9.0.29
   url_launcher: 6.3.3
 
 dev_dependencies:

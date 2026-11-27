@@ -9,11 +9,8 @@ import * as library from '../src/index';
 // `Hover` or ending in `Hover`. A module that also exports VARIANTS needs the
 // exact name <Variant><State> (`PrimaryHover`) for every pair. Components that
 // share one folder and one Storybook title, as their Flutter file does, are
-// listed in FOLDERS (the blocking heads, D.W4d).
-const FOLDERS: Record<string, string> = {
-  VersionTicket: 'blocking-heads',
-  ShopSign: 'blocking-heads',
-};
+// listed in FOLDERS.
+const FOLDERS: Record<string, string> = {};
 const kebab = (name: string) => FOLDERS[name] ?? name.replace(/(?!^)([A-Z])/g, '-$1').toLowerCase();
 const pascal = (state: string) => state.charAt(0).toUpperCase() + state.slice(1);
 
@@ -22,76 +19,9 @@ const components = Object.entries(library).filter(
 );
 
 describe('stories cover every state (R3)', () => {
+  // None since D.R1 (2026-11-27): an approved component joins this list.
   it('finds the components', () => {
-    expect(components.map(([name]) => name).sort()).toEqual([
-      'AmountsSummary',
-      'Banner',
-      'BannerStack',
-      'BlockingBanner',
-      'BottomNavigation',
-      'BottomSheet',
-      'Button',
-      'Card',
-      'Checkbox',
-      'CodeField',
-      'CodePreview',
-      'ConfirmDialog',
-      'CountBadge',
-      'CountdownRing',
-      'CountrySheet',
-      'DataTable',
-      'DateField',
-      'Dialog',
-      'DishCard',
-      'Drawer',
-      'DropLoader',
-      'EmptyState',
-      'Field',
-      'Icon',
-      'ListRow',
-      'Logo',
-      'Menu',
-      'Money',
-      'OrderCard',
-      'OrderRow',
-      'PhoneField',
-      'PullToRefresh',
-      'QuantityStepper',
-      'RadioGroup',
-      'RestaurantBar',
-      'RestaurantCard',
-      'SearchField',
-      'Select',
-      'ShopSign',
-      'Sidebar',
-      'SignInHero',
-      'Skeleton',
-      'StatusChip',
-      'Switch',
-      'Tabs',
-      'TextArea',
-      'TextField',
-      'TextLink',
-      'TimeField',
-      'Timer',
-      'Toaster',
-      'Tooltip',
-      'TopBar',
-      'TrackingSteps',
-      'VersionTicket',
-    ]);
-  });
-
-  it.each([
-    ['restaurant-bar', 'RestaurantBar'],
-    ['bottom-navigation', 'BottomNavigation'],
-    ['sign-in-hero', 'SignInHero'],
-    ['blocking-heads', 'BlockingHeads'],
-  ])('src/%s has the Storybook title %s', async (dir, title) => {
-    const stories = (await import(`../src/${dir}/${dir}.stories.tsx`)) as {
-      default: { title: string };
-    };
-    expect(stories.default.title).toBe(title);
+    expect(components.map(([name]) => name).sort()).toEqual([]);
   });
 
   it.each(components.map(([name]) => [name, kebab(name)]))('%s', async (_, dir) => {

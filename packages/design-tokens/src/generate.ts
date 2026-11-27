@@ -261,24 +261,32 @@ export function dart(themes: Record<Theme, Tokens>): string {
     ),
     '}',
     '',
-    ...components.flatMap((each) => [component(each), '']),
-    dartClass(
-      'ComponentTokens',
-      'Every component token of one theme, one field per file of tokens/component/.',
-      components.map(({ label, field }): [string, string] => [field, `${label}Tokens`]),
-    ),
-    '',
-    '/// The component tokens per theme.',
-    'abstract final class FoxComponents {',
-    DART_THEMES.map((theme) =>
-      dartInstance(
-        'ComponentTokens',
-        theme,
-        components.map(({ label, field }): [string, string] => [field, `Fox${label}.${theme}`]),
-      ),
-    ).join('\n\n'),
-    '}',
-    '',
+    // No component file, no component class (none since D.R1, 2026-11-27).
+    ...(components.length === 0
+      ? []
+      : [
+          ...components.flatMap((each) => [component(each), '']),
+          dartClass(
+            'ComponentTokens',
+            'Every component token of one theme, one field per file of tokens/component/.',
+            components.map(({ label, field }): [string, string] => [field, `${label}Tokens`]),
+          ),
+          '',
+          '/// The component tokens per theme.',
+          'abstract final class FoxComponents {',
+          DART_THEMES.map((theme) =>
+            dartInstance(
+              'ComponentTokens',
+              theme,
+              components.map(({ label, field }): [string, string] => [
+                field,
+                `Fox${label}.${theme}`,
+              ]),
+            ),
+          ).join('\n\n'),
+          '}',
+          '',
+        ]),
     constants('FoxSpace', 'The spacing steps of the 4-point grid.', 'double', (t) =>
       number(dimension(t.value)),
     ),
