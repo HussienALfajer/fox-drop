@@ -1,0 +1,20 @@
+# The secret scan of every pull request and every push to main (the `format`
+# CI job, docs/process/development-workflow.md §10): gitleaks' own rules over
+# the commits the change adds. The repository is public, so a secret that
+# reaches a commit is published even if a later commit removes it.
+#
+# Allow a path or a value here only when it can never hold a real secret,
+# with the reason beside it.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Files that hold no secret by design"
+paths = [
+  # Fake values only (root CLAUDE.md, Non-negotiable rules).
+  '''^\.env\.example$''',
+  # Lock files: package integrity hashes, not keys.
+  '''(^|/)pnpm-lock\.yaml$''',
+  '''(^|/)pubspec\.lock$''',
+]
