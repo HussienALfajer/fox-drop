@@ -4,7 +4,7 @@
 
 Every command:
 
-- carries an idempotency key (§4.7)
+- carries an idempotency key (§4.7), except one that only sets a value (owner, 2026-11-27, §2.4)
 - is checked on the server for the user's role, the restaurant's status and the order's state
 - returns the new state
 - records the user, the device and the time

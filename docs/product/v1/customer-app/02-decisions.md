@@ -78,3 +78,9 @@ The owner did not decide these explicitly. They follow from the decisions above 
 | CA C9 Delivery confirmation       | No code from the customer. The captain confirms within 200 m of the pin (§11.8)                         |
 | CA C10 Contact                    | The captain can call or WhatsApp the address's contact phone during the order (§11.7)                   |
 | CA C12 Tips                       | Cash only, outside the app (§1.3)                                                                       |
+
+## 2.4 Calls made while building, approved (owner, 2026-11-27)
+
+- **Emergency stop (§10.6):** only a signed-in customer's attempt to order is counted; a guest has no account to count.
+- **Live tracking (§11):** the captain's position reaches the order directly, at best effort, not through the outbox (architecture §6.2); the last point a captain sent has no age limit, so a phone switched off leaves its last place.
+- **Silence where nothing is asked of the customer:** a collection shortfall charged to the captain, and a free re-delivery that ends rejected, cancelled or failed, send the customer nothing.

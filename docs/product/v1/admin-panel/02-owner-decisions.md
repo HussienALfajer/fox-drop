@@ -41,3 +41,18 @@
 - bulk price change by percentage
 - the daily cash-drawer close
 - compensation caps per role
+
+## Calls made while building, approved (owner, 2026-11-27)
+
+Questions the spec left open, answered by the slice that met them and approved by the owner on 2026-11-27. Each stands as built; the details are in `docs/code/` for the module named.
+
+- **Live map (§9.4):** a captain online who receives no offers shows green, with the state in words in the list and the card; «المتاحون فقط» leaves them out (admin).
+- **Dispatch (§9.3.2):** a manual assignment above a captain's maximum pickup amount is only an offer the captain may decline; a direct assignment is refused (dispatch). After «سحب وإعادة تعيين», «طلب بلا كابتن» counts `dispatch.no_captain_alert_min` from the withdrawal (ordering).
+- **Cash desk (§9.10.3, §9.10.7):** a reimbursement is never above the drawer's cash in its currency; the deposit instalment is taken on the payout day only and a missed Thursday is not caught up; a captain's payout sends no push; an order's or a receipt's journal is never reversed by hand, only corrected by an adjustment (cashdesk).
+- **Terminated restaurants (§9.6.5):** a ticket, a pickup dispute's correction or «تغيير النتيجة» within its days can still post to the account after termination (cashdesk).
+- **Currencies (§9.10.4):** a captain's maximum pickup amount blocks a base-currency change until it is cleared; a code saved in an earlier base is refused as no longer valid; entering a rate equal to the current one is a new version that confirms it (captains, marketing, fx).
+- **Restaurants (§9.6):** at most 5 categories per restaurant; the panel's acceptance rate counts operations' acceptances on the restaurant's behalf (merchants, ordering).
+- **Marketing (§9.11):** «العروض» does not read a code's hours or daily budget; a mass push's audience is fixed at its confirmation, a scheduled one included, and one that reaches an open app counts as delivered without being shown (marketing, notifications).
+- **Reports (§6, §9.10.6, §9.17):** OWN reads every report, OPS all but codes and finance, SUP the customers report, FIN codes and finance; «زبائن جدد» counts every city's new accounts (accounts have no city); a compensation costs when its code is used, not when it is issued (reporting).
+- **Order money (§9.3.3, §9.9):** after the pickup, a lower fee that a free-delivery code covered charges its party only what the customer no longer pays; an outcome on a free re-delivery follows the domain's outcome rule alone; a re-delivery that ends rejected, cancelled or failed leaves its ticket's timer stopped without telling the customer; the reply time a ticket on an active order shows is the first response's (ordering, support).
+- **Domain (AP §8):** see `docs/domain/` 04, 08 and 09 and the late code's value in Appendix A (an amount, or a percentage of the next order's items value with no maximum).

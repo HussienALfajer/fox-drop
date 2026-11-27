@@ -63,3 +63,8 @@ The owner did not decide these explicitly. They follow from the decisions above 
 | D17 Admin price edits     | The restaurant is notified of every change (§9.4)                                            |
 | D18 Max concurrent orders | Decided here: R5 (§7.4)                                                                      |
 | D25 Currencies            | USD, TRY and SYP; pickup currencies per R9 (§12.7)                                           |
+
+## 2.4 Calls made while building, approved (owner, 2026-11-27)
+
+- **Commands that set a value take no idempotency key** (§4.7, §18): the menu's prices, visibility and order, the restaurant's status, the pickup currencies and the like. Sending one twice sets the same value; the app reads the state again after any failure. Every other command keeps its key.
+- **Notifications (§16):** the weekly statement (#30) pushes only when the restaurant owes something; a statement that owes the restaurant waits for the desk. A payout by the platform has its receipt in the app and no push; #31 is for a payment received.

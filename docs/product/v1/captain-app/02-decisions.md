@@ -63,3 +63,10 @@ The owner did not decide these explicitly. They follow from the decisions above 
 | D25 Currencies          | USD, TRY and SYP, with the order's exchange-rate snapshot (§9.7, §10.5)                                   |
 | D26 Pickup payment      | The captain pays the restaurant the full items value at pickup (§9.4)                                     |
 | RA R4                   | The restaurant confirms the pickup with one tap, or it is confirmed automatically after 60 seconds (§9.4) |
+
+## 2.4 Calls made while building, approved (owner, 2026-11-27)
+
+- **Pickup payment lines (§10.5, C8):** the server proposes the whole amount in the base when both sides take it, else in the first currency both take in the display order whose whole amount fits the tolerance, else in the base; a currency whose rounding rule falls past the tolerance is rounded to its nearest unit.
+- **Peak bonus (§12.5):** paid on a normal delivery only (the captain's, or operations' «تسجيل التسليم»), never on an outcome set with «تحديد النتيجة».
+- **Paid waiting (§10.6):** counted from the prep time chosen at acceptance; «تعديل الوقت» never moves it (AP §8.4).
+- **A shortfall charged to the captain** tells the captain only; the customer is not told (AP §8.6).
