@@ -16,18 +16,7 @@ The Flutter design system (architecture §9.5, §9.7, §9.10): the theme from `c
 - **Goldens (R9)** live in `test/golden/`, tagged `golden`, skipped by plain `flutter test`; Linux only, in Docker: `pnpm baselines` updates and compares them (`--check` only compares). They need `.fonts/` (`pnpm fonts:fetch`). Never update a baseline to make a failure pass without looking at `test/golden/failures/`. `--run-skipped` un-skips every test here: never use `skip:`.
 - **Twins (T14)** follow their web component, on its component tokens: one `parityCase('<story id>', …)` per web story drawn (`test/parity/`, tag `parity`); the parity sheet (`pnpm parity <Component>`) is the drawing.
 
-## When an approved screen brings inputs, forms or overlays back
-
-Lessons of D.8 and D.10, whose code D.R1 deleted; they apply again when a screen slice builds these components.
-
-- **Material only through a `MaterialScope`** (D.8 kept it in `lib/src/internal`): `m.TextField` and the pickers import `material_ui` with the prefix `m`, never `package:flutter/material.dart`. Nothing Material is drawn: no ripple, no `InputDecoration` look, no counter. A focused field, a menu or a picker needs an Overlay (a Navigator); a test without one throws.
-- **Name and describe a control once:** entries merge the label and error into the text field's node (`MergeSemantics`); select, date and time pass `namesControl: false`. Check with `tester.getSemantics`.
-- **Strings come in as props**, except the pickers' Syriac months and «ص»/«م» (AP §4.7), loaded synchronously.
-- **Mixed direction is explicit:** the phone pill and code cells sit under `Directionality(ltr)`, the label and error stay RTL; dates and times show LTR.
-- **A control is as small as its content** (`Align` with factors).
-- **The code field's `done` ignores reduced motion** (`FoxDuration.moment`); every other fade respects it.
-- Tests: `test/forms_harness.dart` (`expectNoOverflow`); overlays `test/overlays_harness.dart` (a WidgetsApp: Escape, back). Phone rules: add a row to `packages/core_auth/test/phone-cases.json` first.
-- **Overlays (D.10):** `showFox*` push routes; the panels also render inline (widgetbook, goldens) and close through `Navigator.maybeOf`.
+- **Inputs, forms or overlays:** before building one for an approved screen, read the D.8 and D.10 lessons in `docs/code/packages/core_ui.md` (Material only through a scope, one name per control, explicit mixed direction, the harnesses).
 
 ## More
 

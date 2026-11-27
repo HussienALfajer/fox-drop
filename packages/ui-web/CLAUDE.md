@@ -13,9 +13,7 @@ The web components of FOX DROP (architecture §9.5, §9.6, §9.8): Tailwind 4 an
 - **Stories (R3):** each exported component has `<name>.stories.tsx` with one story per state (default, hover, focus, pressed, disabled, loading, both densities). Stories use Arabic text and skip the JSX-text lint. A component `FooBar` lives in `src/foo-bar/foo-bar.tsx`, exports `STATES` there (not from `src/index.ts`) and, with variants, `VARIANTS`; `test/stories.test.ts` needs a story export ending in each state's PascalCase name (`Hover`), or exactly `<Variant><State>` (`PrimaryHover`) when `VARIANTS` exists. `.storybook/preview.tsx` sets `dir="rtl" lang="ar"` and, from the toolbar, the captain's `data-surface`.
 - **Fonts:** `src/styles.css` declares CoFo from `.fonts/` (`pnpm fonts:fetch`, never committed), served at `/fonts`.
 - **Web first (T14–T16, §9.9):** built here before its Flutter twin, once its screen is approved; its generated board must match the drawing. **CSP:** no inline script or style, no `data:` URL; icons are inline SVG.
-- **Forms (lessons of D.8, for when a screen brings them back):** the theme has named spacing only (`gap-2xs`, `w-2xl`; `min-w-0` makes no CSS, use `min-w-none`). A string or template in a JSX `{}` is text: build it above the `return`. Stack states as `group-hover/row:data-checked:`; the SDK sets `data-checked`, `data-unchecked`, `data-indeterminate`, `data-open`.
-- **Shared classes** go in a `.ts` module the bundle sources. Fields use `@ui-sdk` Field, so give a second control inside one (the phone chip) its own `<Field>`.
-- **Popups (lessons of D.10):** none starts open (a story opens it with `play`); a trigger is the project's button component through the SDK's `render`; the side drawer is the SDK's Dialog (its Drawer is physical).
+- **Forms and popups:** before building one for an approved screen, read the D.8 and D.10 lessons in `docs/code/packages/ui-web.md` (named spacing only, text built above the `return`, stacked state selectors, one `<Field>` per control, popups opened by `play`).
 
 ## Commands
 

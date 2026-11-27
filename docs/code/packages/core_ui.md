@@ -32,6 +32,19 @@ The owner deleted every Flutter component: each `lib/src/<component>/` folder (`
 - The Design System shows the web components only. Every `Fox*` widget is the twin of a web component, built only when a Flutter screen needs it, after its web component, on the same component tokens.
 - A twin's drawing is its parity sheet: one `parityCase` per web story it can draw, compared side by side by `pnpm parity`. A token one side does not draw says `sides: ["web"]` (or `["flutter"]`) in its component file; an open overlay is shot alone, as `ui-web`'s `e2e/parity.spec.ts` frames it; a popup opened from a field lands outside the shot on both sides; Flutter keeps its 48 targets where the web's pointer targets are smaller (R13). The screen goldens (R9) stay the Flutter check.
 
+## Lessons for inputs, forms and overlays (D.8, D.10)
+
+Their code left in D.R1; these apply again when an approved screen brings such a component back (moved here from `packages/core_ui/CLAUDE.md` on 2026-11-27).
+
+- **Material only through a `MaterialScope`** (D.8 kept it in `lib/src/internal`): `m.TextField` and the pickers import `material_ui` with the prefix `m`, never `package:flutter/material.dart`. Nothing Material is drawn: no ripple, no `InputDecoration` look, no counter. A focused field, a menu or a picker needs an Overlay (a Navigator); a test without one throws.
+- **Name and describe a control once:** entries merge the label and error into the text field's node (`MergeSemantics`); select, date and time pass `namesControl: false`. Check with `tester.getSemantics`.
+- **Strings come in as props**, except the pickers' Syriac months and «ص»/«م» (AP §4.7), loaded synchronously.
+- **Mixed direction is explicit:** the phone pill and code cells sit under `Directionality(ltr)`, the label and error stay RTL; dates and times show LTR.
+- **A control is as small as its content** (`Align` with factors).
+- **The code field's `done` ignores reduced motion** (`FoxDuration.moment`); every other fade respects it.
+- Tests: `test/forms_harness.dart` (`expectNoOverflow`); overlays `test/overlays_harness.dart` (a WidgetsApp: Escape, back). Phone rules: add a row to `packages/core_auth/test/phone-cases.json` first.
+- **Overlays (D.10):** `showFox*` push routes; the panels also render inline (widgetbook, goldens) and close through `Navigator.maybeOf`.
+
 ## Left out
 
 Wiring into the apps and bundling CoFo there (each app's screen slice, which also adds the app to `enforcedPackages`); compact density in Flutter; dark mode; Cupertino localizations for the iOS text toolbar (apps provide them); a hosted widgetbook.
