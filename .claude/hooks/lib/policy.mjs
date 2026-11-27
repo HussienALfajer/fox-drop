@@ -21,8 +21,9 @@ export function toRepoPath(filePath, projectDir) {
 }
 
 // Secret files (.env, keys, signing files) are not guarded: the owner allows Claude to read and
-// edit them (docs/process/development-workflow.md §10). `.gitignore` and the CI secret scan
-// still keep them out of git.
+// edit them (docs/process/development-workflow.md §10). `.gitignore` keeps them out of git; the
+// CI secret scan catches a secret only after its push, which in this public repository has
+// already published it.
 
 // Files a generator writes: change the source and re-run the generator instead.
 const GENERATED = [

@@ -4,19 +4,22 @@
 
 ## 10.1 Stack
 
-| Concern           | Choice                                                                                             |
-| ----------------- | -------------------------------------------------------------------------------------------------- |
-| Build             | **Vite**, React (latest stable), TypeScript strict                                                 |
-| Routing           | **TanStack Router** (typed routes and search parameters)                                           |
-| Server state      | **TanStack Query**; real-time events from Centrifugo update the query cache directly               |
-| Tables            | **TanStack Table** with **TanStack Virtual** for long lists (operations room, history, statements) |
-| Forms             | **React Hook Form** with **Zod** schemas shared with the server                                    |
-| Components        | `packages/ui-web` on **Base UI** (§9.2)                                                            |
-| Maps              | **MapLibre GL JS**; **Terra Draw** for drawing zone polygons                                       |
-| Charts            | **Apache ECharts** (RTL, large data sets)                                                          |
-| Dates and numbers | `date-fns` with `date-fns-tz`; `Intl` formatters with Western digits                               |
-| Translations      | `i18next` with Arabic as the only V1 language (AP D21)                                             |
-| API client        | Generated from OpenAPI (§5.3)                                                                      |
+As built (aligned with the code on 2026-11-27, §2 T17). A library named "when needed" is added by the slice that first needs it, as its own decision.
+
+| Concern           | Choice                                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Build             | **Vite**, React (latest stable), TypeScript strict                                                                                                                 |
+| Routing           | **TanStack Router**, routes written in code (`src/router.tsx`), typed routes and search parameters                                                                 |
+| Server state      | **TanStack Query**; real-time events from Centrifugo (`centrifuge`) invalidate what they changed and a full fetch follows every reconnect                          |
+| Tables and lists  | Plain HTML tables, paged by the server; **TanStack Table** and **TanStack Virtual** when a list outgrows them (when needed)                                        |
+| Forms             | Controlled React state in each feature file, validated by the server's answer (the generated types); no form library                                               |
+| Components        | `packages/ui-web` on **UI SDK**, Base UI per component as the fallback (T11, §9.10); none yet (T16)                                                                |
+| Maps              | **MapLibre GL JS** with **PMTiles** from `/maps/`; zones are edited with FOX DROP's own corner editing on MapLibre, no drawing library (owner decision 2026-11-19) |
+| Charts            | Shown as tables until their screens are designed; a chart library is chosen with that screen (when needed)                                                         |
+| Dates and numbers | `Intl` formatters with `ar-u-nu-latn` (Western digits) on the chosen city's time zone (`format.ts`, `clock.ts`)                                                    |
+| Translations      | `i18next` and `react-i18next`, typed keys, Arabic as the only V1 language (AP D21)                                                                                 |
+| API client        | Generated from OpenAPI (`openapi-typescript`, `openapi-fetch` in `packages/api-schema`, §5.3)                                                                      |
+| Other             | `qrcode` (the TOTP enrolment's QR code at setup, AP §5.1)                                                                                                          |
 
 ## 10.2 Why a single-page app
 

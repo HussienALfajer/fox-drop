@@ -44,6 +44,14 @@ Playwright (`playwright.config.ts`, `e2e/`) runs over the built static Storybook
 - `scripts/parity.mjs` (root, `pnpm parity <Component> | --all`) builds the Storybook when `src/` is newer, clears the component's old shots, runs the Flutter cases and this project, and writes `.parity/<Component>.html` (git-ignored): one row per story and surface, web at the start, Flutter at the end, both at their CSS size with the device pixel size under each, «no Flutter case» or «no story» where a pair is missing. A Flutter id built in a loop is read back from the shots the run wrote. Images are inlined, so the page stands alone (publish it as a private artifact to show it elsewhere; never commit it).
 - Left out: `--docker` (both sides in the baseline images); it needs the two Docker scripts changed, and the host is enough for a human review (decision in the slice file).
 
+## Lessons for forms and popups (D.8, D.10)
+
+Their code left in D.R1; these apply again when an approved screen brings such a component back (moved here from `packages/ui-web/CLAUDE.md` on 2026-11-27).
+
+- **Forms (D.8):** the theme has named spacing only (`gap-2xs`, `w-2xl`; `min-w-0` makes no CSS, use `min-w-none`). A string or template in a JSX `{}` is text: build it above the `return`. Stack states as `group-hover/row:data-checked:`; the SDK sets `data-checked`, `data-unchecked`, `data-indeterminate`, `data-open`.
+- **Shared classes** go in a `.ts` module the bundle sources. Fields use `@ui-sdk` Field, so give a second control inside one (the phone chip) its own `<Field>`.
+- **Popups (D.10):** none starts open (a story opens it with `play`); a trigger is the project's button component through the SDK's `render`; the side drawer is the SDK's Dialog (its Drawer is physical).
+
 ## The components canvas (D.C1)
 
 `scripts/components-canvas/` writes the Design canvas "Fox Drop Components" from the code into the ignored `.components-canvas/project/` (`pnpm --filter @fox-drop/ui-web components-canvas --config <file> --current <canvas.json>`), after the Shifa project's canvas (its ADR-0048) with its weak points fixed. One board per component, nothing hand-written per component. Since D.R1 it runs with zero components: the index says no component is approved yet (`test/components-canvas.test.ts`). **Open for the first board:** `playground.ts`'s panel mounts `FoxDrop.Switch`, `Select`, `TextField` and `Button` (the controls, Reset and the scenario buttons), none of which exists now, so the first board needs those components back or the panel redrawn without them.

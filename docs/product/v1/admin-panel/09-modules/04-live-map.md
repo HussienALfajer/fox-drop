@@ -7,7 +7,7 @@
 - Service zones as polygons.
 - Restaurants: green when open, amber when paused, grey when closed or suspended.
 - Captains:
-  - green: available
+  - green: available, or online without receiving offers, with that state in words (owner, 2026-11-27)
   - orange: busy, with an order number tooltip
   - grey: offline, showing the last known position and its time
   - red outline: blocked (unhanded cash or cash limit)

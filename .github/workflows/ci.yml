@@ -61,6 +61,9 @@ jobs:
       - id: paths
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          # A pull request's own last commit, not the merge commit CI checks
+          # out, whose patch is empty without -m.
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         # The classifier that `node scripts/verify.mjs --changed` uses too;
         # with no base commit (a new branch) everything counts as changed.
         run: node scripts/classify-changes.mjs "$BASE" ${{ github.event_name == 'push' && '--push' || '' }} >> "$GITHUB_OUTPUT"
@@ -141,6 +144,44 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The public repository's secret scan (.gitleaks.toml): every commit the
+      # change adds, before anything is installed. gitleaks is pinned by
+      # version and checksum (Renovate does not see this pin: bump both
+      # together from the release's checksums file).
+      - name: Scan the change for secrets
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          # A pull request's own last commit, not the merge commit CI checks
+          # out, whose patch is empty without -m.
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          version=8.30.1
+          sum=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+          archive="$RUNNER_TEMP/gitleaks.tar.gz"
+          curl --fail --silent --show-error --location --retry 3 --output "$archive" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v$version/gitleaks_${version}_linux_x64.tar.gz"
+          echo "$sum  $archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+          # No usable base (a first push, or a base missing from the history):
+          # scan the last commit.
+          if [ -z "$BASE" ] || [ "$BASE" = 0000000000000000000000000000000000000000 ] ||
+            ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            range="-1 $HEAD"
+          else
+            range="$BASE..$HEAD"
+          fi
+          # gitleaks reads this file by itself; findings are allowed only in
+          # .gitleaks.toml, which REVIEW item 12 shows the owner.
+          if [ -e .gitleaksignore ]; then
+            echo "::error::.gitleaksignore is not allowed: allow a finding in .gitleaks.toml"
+            exit 1
+          fi
+          # first-parent: a merge commit's own changes (a conflict resolved
+          # while merging main) are scanned too.
+          "$RUNNER_TEMP/gitleaks" git --config .gitleaks.toml \
+            --log-opts="--diff-merges=first-parent $range" \
+            --redact --verbose --no-banner --exit-code 1 .
+
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
       - uses: actions/setup-node@v7
@@ -153,8 +194,8 @@ jobs:
       - run: node scripts/verify.mjs format
 
       # Proves the fonts secret and the manifest agree. Skipped where the secret
-      # is absent (a pull request from a fork). The builds that bundle the fonts
-      # run this same command first (D.6 and D.7).
+      # is absent (a pull request from a fork). The jobs that need the fonts
+      # (visual, golden) run this same fetch first.
       - name: Trust GitHub's SSH host keys
         if: env.HAS_FONTS_KEY == 'true'
         run: node scripts/github-known-hosts.mjs
@@ -435,8 +476,9 @@ jobs:
   # The check main requires: every part passed, or was skipped for a change
   # of docs only, of no Dart, of nothing native or of nothing a screenshot or
   # golden reads, or, on a pull request, of no TypeScript, nothing the
-  # server's tests read or nothing the contract is built from (ciJobs). A part skipped because `changes` failed still fails here,
-  # through `changes`' own result.
+  # server's tests read or nothing the contract is built from (ciJobs). The
+  # two images count too, so a broken Dockerfile cannot merge. A part skipped
+  # because `changes` failed still fails here, through `changes`' own result.
   verify:
     if: always()
     needs:
@@ -451,6 +493,8 @@ jobs:
         dart,
         flutter,
         golden,
+        server-image,
+        web-image,
         android-release,
         windows-release,
         ios-release,
@@ -554,10 +598,6 @@ jobs:
           SSH_HOST: ${{ vars.STAGING_SSH_HOST }}
           SSH_KNOWN_HOSTS: ${{ vars.STAGING_SSH_KNOWN_HOSTS }}
 
-  # Slice 1.14b (owner decisions 2026-11-07): every merge to main (but one of
-  # docs only) builds the three apps' staging APKs (Android only), signed with each app's staging
-  # key, as artifacts of the run (the deploy skill). The keys are secrets of
-  # the staging environment, which only main may use.
   # The release build of each Android app on every pull request that touches
   # something native (the changes job) or has the native-builds label, so a
   # plugin that breaks it (a compileSdk, an AAR metadata check, R8) fails
@@ -775,7 +815,8 @@ jobs:
           xcodebuild -workspace ios/Runner.xcworkspace -scheme staging \
             -configuration Release-staging -destination generic/platform=iOS \
             -archivePath "$RUNNER_TEMP/app.xcarchive" \
-            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic             FOXDROP_BGGEO_LICENSE="$FOXDROP_BGGEO_LICENSE" \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            FOXDROP_BGGEO_LICENSE="$FOXDROP_BGGEO_LICENSE" \
             "${auth[@]}" archive
           cat > "$RUNNER_TEMP/export.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
@@ -803,6 +844,10 @@ jobs:
           UPDATE_URL: ${{ vars[format('STAGING_{0}_IOS_UPDATE_URL', matrix.key)] }}
           FOXDROP_BGGEO_LICENSE: ${{ secrets[format('STAGING_{0}_BGGEO_LICENSE', matrix.key)] }}
 
+  # Slice 1.14b (owner decisions 2026-11-07): every merge to main (but one of
+  # docs only) builds the three apps' staging APKs (Android only), signed with
+  # each app's staging key, as artifacts of the run (the deploy skill). The
+  # keys are secrets of the staging environment, which only main may use.
   staging-apks:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.build == 'true'
     needs: [changes, verify]

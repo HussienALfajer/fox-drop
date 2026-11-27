@@ -9,7 +9,7 @@ One or two sentences: what the owner or a user can do after this slice.
 
 ## Plan
 
-0. Design checkpoint (components and screens only): the Figma look, then the owner's approval of the sheet or drawing (architecture §9.9).
+0. Design checkpoint (a screen slice only): the screen drawn with only the components it needs, then the owner's and then the designer's approval of the drawing, before any code (T16, architecture §9.9).
 1. Database and server module: tables, migration (expand, then contract), grants, services, timers and outbox events.
 2. Routes, contract and generated clients (`pnpm generate:api`).
 3. Web: `ui-web`, the panel, the portal.

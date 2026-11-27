@@ -1,6 +1,6 @@
 # Installed in /etc/systemd/system by infra/server/provision.sh.
 [Unit]
-Description=FOX DROP %i database backup
+Description=FOX DROP %i backup: the database and the stored files
 After=docker.service
 Requires=docker.service
 

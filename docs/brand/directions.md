@@ -22,12 +22,12 @@ The owner adopted the Figma file "Fox Drop" on 2026-11-23 as FOX DROP's design d
 | Error          | `#BF2929`                                                                                        | `color.danger`                                        |
 | Offset shadow  | `#FD6425`, 7 px down, no blur                                                                    | `elevation.offset`                                    |
 | Radii          | 8 (add-on cards), 10 (components), 15 (cart cards, totals, total bar), 30 (banner), full (pills) | `radius.sm`, `md`, `lg`, `xl`, `full`                 |
-| Controls       | Buttons pills 50 high; icon buttons circles of 50                                                | `size.control`, Button `height` and `radius`          |
-| Category discs | 80                                                                                               | Not a token yet (D.6, D.7)                            |
-| Tags           | Pills 32 high                                                                                    | Not a token yet (D.6, D.7)                            |
-| Bottom bar     | Floating blue bar 301 × 69, circles of 50, the active one orange at 57, ring `#E3DFD8`           | Not a token yet (D.6, D.7)                            |
+| Controls       | Buttons pills 50 high; icon buttons circles of 50                                                | `size.control`, `radius.full`                         |
+| Category discs | 80                                                                                               | Not a token yet (its first screen, T16)               |
+| Tags           | Pills 32 high                                                                                    | Not a token yet (its first screen, T16)               |
+| Bottom bar     | Floating blue bar 301 × 69, circles of 50, the active one orange at 57, ring `#E3DFD8`           | Not a token yet (its first screen, T16)               |
 | Spacing        | 4, 8, 16, 32; screen margins 16 to 18                                                            | `space.*` (4-point grid), margin 16                   |
-| Icons          | Rounded line icons, stroke about 2 at 24                                                         | `packages/design-tokens/icons/`, `size.icon-*` (D.5)  |
+| Icons          | Rounded line icons, stroke about 2 at 24                                                         | Set v4 «Madar», stroke 1.5 (D.5b), `size.icon-*`      |
 | Shapes         | The S-curve tab (banner, dish sheet), cut-out dish photos                                        | Brand expression §2, §5                               |
 
 Where the file's values fail the contrast rule, the tokens move them as little as passes: muted text at 75% (`#416EA4`, 4.59:1; the file's 45% and lighter fail 4.5:1), the control border at 60% (`#6688B2`, 3.20:1; the file's 40% fails 3:1). The brand orange stays as drawn, under the owner's exception (architecture §9.5 R4, brand expression §6).
@@ -38,14 +38,14 @@ Where the file's values fail the contrast rule, the tokens move them as little a
 - **Dish details:** the file unchanged.
 - **Cart:** the file unchanged, except a minus sign before the discount amount.
 - **Everywhere:**
-  - The brand-orange exception covers every app, the captain's included. At first orange was for buttons and headings only; in D.8 the owner allowed it anywhere, numbers and prices included (2026-11-23).
+  - The brand-orange exception covers every app, the captain's included. At first orange was for buttons and headings only; in D.8 the owner allowed it anywhere, numbers and prices included (2026-11-23), except the captain app's text and numbers, which stay blue at 7:1 for the sun (owner, 2026-11-27).
   - Prices keep the «450 ₺» format (AP §4.7), not the file's «TL 450».
   - The radii are the file's exact values.
   - Emad-Diana is not used in the UI; button labels are CoFo 700 (brand expression §7).
 
 ## Findings
 
-- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana. The money component (D.6, D.7) needs a fallback font for it.
+- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana. «Fox Lira» (SIL OFL, `packages/ui-web/fonts/fox-lira/` and `packages/core_ui/assets/fonts/fox-lira/`; owner, 2026-11-24, D.9) draws it as the fallback after CoFo.
 - **The cart's items do not add up** in the file (499.6 against a total of 450); a drawing for approval uses consistent synthetic amounts.
 - **The ± stepper** in the cart is 34 px, below the 48 touch target (R4); its touch area grows to 48 while the drawn circle stays.
 - **The onboarding slide is black,** which is not in the palette; it is not adopted until the onboarding screen is designed.

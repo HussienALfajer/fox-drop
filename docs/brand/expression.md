@@ -1,6 +1,6 @@
 # FOX DROP brand expression
 
-The character of the design system (architecture §9.12), decided item by item by the owner in chat on 2026-11-22 (slice D.1b). Architecture §9.1 to §9.10 govern the system; this brief says what it should feel like. D.2 turns the values into tokens, D.3 draws the design directions and scores each against the principles below, D.5 draws the icons, D.6 and D.7 build the components.
+The character of the design system (architecture §9.12), decided item by item by the owner in chat on 2026-11-22 (slice D.1b). Architecture §9.1 to §9.10 govern the system; this brief says what it should feel like. D.2 turned the values into tokens, D.3 settled the direction, D.5 and D.5b drew the icons; the components are built screen by screen, each approved by the owner and then the designer (T16, architecture §9.9).
 
 On 2026-11-23 (slice D.3) the owner adopted the Figma file "Fox Drop" as the design direction; §2, §3, §5, §6 and §10 say what it changed, and `directions.md` holds its measurements. Values given as candidates are settled by the contrast test in D.2. A machine-checkable rule here becomes a test or a lint rule in the slice named beside it; until then this text is the rule.
 
@@ -95,7 +95,7 @@ The base is Protomaps' style on our own tiles (architecture §7.2), recoloured a
 
 - In the customer, captain and restaurant apps: the fox in simple flat scenes, lines at the icon stroke width, the three brand colours only, inside the drop frame. The fox searches, waits, apologises.
 - In the panel and the restaurant web portal: a large icon in a drop with text, no scenes.
-- First set, about 8 SVG scenes, drawn in D.3 and D.5 and each approved by the owner: empty cart; no search results; outside the delivery zone; offline; general error; restaurant closed; captain with no orders yet; restaurant with no new orders.
+- First set, about 8 SVG scenes, each drawn with the first screen that shows it and approved by the owner and then the designer (T16): empty cart; no search results; outside the delivery zone; offline; general error; restaurant closed; captain with no orders yet; restaurant with no new orders.
 
 **Missing photos:**
 
@@ -126,12 +126,12 @@ Ten steps, 50 to 900, for each colour on one shared scale, plus the in-between s
 
 - **The Figma file's colours (D.3, owner 2026-11-23):**
   - Ground `#FBF2E7`, raised cards `#FEFEFE`.
-  - Text, prices and numbers in the brand blue `#03428E` by default (8.72:1); orange may be used for them too (below). Muted text is the blue at 75% over the ground, `#416EA4` (4.59:1), because the file's lighter blues fail 4.5:1.
+  - Text, prices and numbers in the brand blue `#03428E` by default (8.72:1); orange may be used for them too (below), except in the captain app. Muted text is the blue at 75% over the ground, `#416EA4` (4.59:1), because the file's lighter blues fail 4.5:1.
   - Headings in the brand blue `#03428E`, bold, as the identity package V1.1 sets them (owner, 2026-11-25).
   - Buttons, bars and the active item in the brand orange `#FF6E31`, with ivory labels.
   - Borders in the blue at 16% (decorative) and 60% (control boundary, 3.20:1; the file's 40% fails 3:1).
   - The offset shadow `#FD6425` (§2).
-- **The brand-orange exception (owner 2026-11-23, every app, the captain's included):** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory text, below 4.5:1. The owner accepts this for the orange tokens only (`brand`, `primary`, `primary-hover`, `primary-pressed`); the contrast report marks those pairs «owner exception» and a test keeps the exception from spreading (architecture §9.5 R4). In D.8 the owner allowed orange anywhere, body text, prices, numbers and timers included (2026-11-23); each orange pair a design uses is listed in the contrast report. The accessible orange `#C2410C` of D.2 is retired.
+- **The brand-orange exception (owner 2026-11-23, every app, the captain's included):** `#FF6E31` is 2.52:1 on the ground and 2.68:1 under ivory text, below 4.5:1. The owner accepts this for the orange tokens only (`brand`, `primary`, `primary-hover`, `primary-pressed`); the contrast report marks those pairs «owner exception» and a test keeps the exception from spreading (architecture §9.5 R4). In D.8 the owner allowed orange anywhere, body text, prices, numbers and timers included (2026-11-23), except the captain app's text and numbers (below; owner, 2026-11-27); each orange pair a design uses is listed in the contrast report. The accessible orange `#C2410C` of D.2 is retired.
 - **Status colours, kept apart from the brand orange and always with an icon (R4):**
 
 | Status  | Settled   | On the ground `#FBF2E7` | Note                                                  |
@@ -144,7 +144,7 @@ Ten steps, 50 to 900, for each colour on one shared scale, plus the in-between s
 - **Status in the captain app:** success, warning and danger text darken to `#055A37`, `#6B4500` and `#8C1530` to reach 7:1. **Alerts** (restaurant, panel): `#8C1530`, 8.90:1 on ivory.
 - **Charts (panel):** six categorical colours, blue `#03428E` first, then orange `#EA580C`, teal `#0F766E`, violet `#7C3AED`, olive green `#4D5A12` and pink `#BE185D`, each at 3:1 or more on the surfaces and at CIEDE2000 11 or more from each other (the closest pair, orange and olive under protanopia, is 11.97) under protan, deutan and tritan simulation (D.2). Sequential charts (heat maps, the vote map) use the blue scale only.
 - **Contrast targets:** WCAG 2.2 AA (4.5:1) everywhere (R4), and more on two surfaces:
-  - **Captain app:** text and numbers (amount, address, time) at **7:1** or more, in near-black or blue; buttons in the brand orange with large bold labels, under the exception above. Orange only on buttons and bars, never on numbers.
+  - **Captain app:** text and numbers (amount, address, time) at **7:1** or more, in near-black or blue; buttons in the brand orange with large bold labels, under the exception above. Orange only on buttons and bars, never on text or numbers: they stay blue, read in the sun (owner, confirmed 2026-11-27, over the D.8 «orange anywhere»).
   - **Restaurant app:** alerts at 7:1, because they are read from across the kitchen.
 
 ## 7. Arabic typography
@@ -154,7 +154,7 @@ Ten steps, 50 to 900, for each colour on one shared scale, plus the in-between s
 - **CoFo Sans Pro Arabic alone** in the apps, the restaurant portal and the panel, with its own Latin glyphs (no second Latin typeface).
 - **YR-Speed** for marketing only: store screenshots, social posts, at most one headline on the welcome screen.
 - **Emad-Diana** is not used: one light weight and 323 glyphs. The Figma file sets its button label in it; the apps use CoFo 700 instead (owner, 2026-11-23). Headings are CoFo 700 in the brand blue (owner, 2026-11-25).
-- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana: the money component of D.6 and D.7 must give it a fallback font. Prices keep the «450 ₺» format.
+- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana: «Fox Lira» (SIL OFL, owner 2026-11-24, D.9) draws it as the fallback after CoFo. Prices keep the «450 ₺» format.
 
 **Weights:** 400, 500 and 700 only. No hairline or light weights for text: thin Arabic strokes vanish in the sun and on cheap screens.
 
@@ -210,7 +210,7 @@ Never below 12: Arabic dots disappear.
 
 ## 9. Device budgets
 
-Each budget becomes a CI check in D.6 or D.7 (or the slice that first ships the thing it limits), not a line of prose.
+Each budget becomes a CI check in the slice that first ships the thing it limits, not a line of prose. None is a check yet.
 
 **Reference device:** an Android phone with 2 GB of RAM (Galaxy A03 class), common in northern Syria. Minimum Android 7 (Flutter's default today). A real one is tried in L.9.
 
@@ -224,19 +224,19 @@ Each budget becomes a CI check in D.6 or D.7 (or the slice that first ships the 
 
 The owner confirmed on 2026-11-22 that CoFo's licence allows subsetting the fonts and converting them to WOFF2 for the web.
 
-**Images,** resized by the server; the original never reaches the phone:
+**Images,** resized by the server to imgproxy's four WebP widths, 160, 320, 640 and 1280 px (architecture §5.8); the app picks the width by the slot and the screen density, and the original never reaches the phone:
 
-| Use              | Size         | Budget |
-| ---------------- | ------------ | ------ |
-| Dish thumbnail   | 400 px, WebP | 30 KB  |
-| Dish detail      | 1080 px      | 120 KB |
-| Restaurant cover | 16:9         | 80 KB  |
+| Use              | Width (WebP)                | Budget |
+| ---------------- | --------------------------- | ------ |
+| Dish thumbnail   | 320 px (640 on a dense one) | 30 KB  |
+| Dish detail      | 1280 px                     | 120 KB |
+| Restaurant cover | 640 or 1280 px, 16:9        | 80 KB  |
 
 On a weak connection only thumbnails load. While an image loads, its dominant colour fills the slot, never a fake picture.
 
 **Apps:**
 
-- Download at most 30 MB per app (split per ABI).
+- Download at most 30 MB per app (split per ABI); the customer app aims under 25 MB (architecture §13).
 - Cold start at most 3 seconds on the reference device.
 - 60 frames per second; when frames drop on a weak device, motion falls back to the reduced-motion level by itself.
 - One motion file at most 50 KB; no Lottie or Rive in V1.

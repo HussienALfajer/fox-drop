@@ -193,7 +193,7 @@ The captain record, its vehicle, status and cash limit, its availability and loc
 - **«أقصى مبلغ أحمله» (CA §10.5, C4, K2; slice 2.15a):** `captains.max_pickup_amount` and its currency (null: no limit, the default; a `CHECK` keeps them together and above zero) and `max_pickup_set_at`, when the captain last answered, a limit or none.
   `maxPickup(captainId)` answers the limit, `answered` (the app asks at going online until then, K2) and the city's base;
   `setMaxPickup(captainId, amount | null)` stores an amount in the city's base under `lockCityCurrencies` (`not_in_base_currency` while the city has none; `invalid_max_pickup` at zero or below; `active_order` during an order, CA §15), not audited (the captain's own preference).
-  Registered with `FxService.useCityAmounts` (`captain.max_pickup_amount`), so the base never changes under a limit (on staging, a captain's limit blocks a base change until it is cleared; to confirm with the owner).
+  Registered with `FxService.useCityAmounts` (`captain.max_pickup_amount`), so the base never changes under a limit (on staging, a captain's limit blocks a base change until it is cleared; owner decision 2026-11-27).
   Routes: `GET`/`PUT /v1/captain/settings/max-pickup-amount` (`{ amount }` minor units as a string, or null; no key: it sets a value).
   `candidates(..., pickupPayment)` adds `above_max_pickup` when the order's pickup payment is above the limit (same currency);
   `nearestEligible` and the capacity check ignore it, as AP §9.12.6 says.
@@ -220,7 +220,7 @@ The captain record, its vehicle, status and cash limit, its availability and loc
   Off until the owner first saves it.
   `setPeakBonus` (the city's `peak-bonus:` advisory lock, under `lockCityCurrencies`, the base only: `not_in_base_currency` without one; `invalid_peak_bonus` for a window or a zone not of the city; audited `peak_bonus.set`) takes effect by `takesEffect`: at once unless the new version pays a zone less than a window running now at any minute before that window's end (a lowering, a disabling, a shortened end, a zone dropped), then at the latest end among such windows;
   with no window running, at once.
-  A save that both raises and lowers waits as a whole (AP §9.12.5 lets a raise apply at once; to confirm with the owner).
+  A save that both raises and lowers waits as a whole (AP §9.12.5 lets a raise apply at once; owner decision 2026-11-27).
   The audit keeps the version in force (`versionId`) and the waiting version a save replaces (`replaces`);
   an unknown city is `unknown_city` (`404`).
   `versionInForce` takes the latest version whose start was reached, leaving out one still waiting when a newer one was saved (a newer save replaces a waiting change).

@@ -5,8 +5,8 @@
 # nginx is the only public gateway (architecture §15.5). Every host sends /v1
 # to the API and /media to imgproxy (snippets/foxdrop-${FOXDROP_ENV}-api.conf);
 # the panel's host sends /public-media/incoming/ and /private-docs/incoming/
-# (PUT) and /private-docs/exports/, /tickets/ and /restaurants/ (GET) to the
-# storage, the API's host /public-media/incoming/ and /private-docs/incoming/
+# (PUT) and /private-docs/exports/, /tickets/, /restaurants/ and /captains/
+# (GET) to the storage, the API's host /public-media/incoming/ and /private-docs/incoming/
 # (PUT, the apps' uploads), the portal's host /public-media/incoming/ and
 # /private-docs/incoming/ (PUT, the owners' item and report photos) and
 # /private-docs/exports/ (GET, their Excel files); the panel and the portal

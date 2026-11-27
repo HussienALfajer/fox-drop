@@ -4,6 +4,8 @@ The run book of slice 1.14h (`docs/roadmap.md`): one order through its whole cyc
 
 Operating the server (deploys, secrets, the commands below) is in the `deploy` skill; this page only lists what the run needs.
 
+**Waiting for the sign-in screen (2026-11-27).** D.R1 deleted the apps' sign-in screen (T16), so no staging app signs in until the new sign-in screen ships, the first screen of T16 (`docs/roadmap.md`, 1.14h). Do not build or install staging APKs from `main` for this run before then; steps 2 to 4 need that screen.
+
 ## What the run needs
 
 | What                 | Where                                                                                                                                                                    |
@@ -32,7 +34,7 @@ The short run: place the order from beside the restaurant and deliver there (dis
 2. **The APKs are installed** from that run (uninstall an older staging app first if Android refuses the update).
 3. **The real numbers are set** for the restaurant owner and the captain (once; the `deploy` skill).
 4. **The time:** run the cycle between 10:00 and 02:00 (the restaurant's hours).
-5. **The captain's custody:** custody left from a run becomes due at the next business-day cutoff (06:00, `finance.business_day_cutoff`), and from then the captain cannot go online (AP §8.5.4, `captain.remit_tolerance` 0). The cash desk that takes the hand-in is not built yet (AP §9.10.3). So a run on a later day first raises `captain.remit_tolerance` on staging above the custody held (40 TRY per run below), from the panel's console as OWN, as the `deploy` skill does for `otp.app_check_required`: `await fetch('/v1/admin/settings/captain.remit_tolerance', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cityId: '<Azaz city id>', value: { amountMinor: 100000, currency: 'TRY' }, reason: 'staging run, no cash desk yet' }) }).then((r) => r.json())`. The city's id is in the panel's `GET /v1/admin/cities`. The «عليك تسليم اليوم» amount in step 14 also counts custody left from earlier runs.
+5. **The captain's custody:** custody left from a run becomes due at the next business-day cutoff (06:00, `finance.business_day_cutoff`), and from then the captain cannot go online (AP §8.5.4, `captain.remit_tolerance` 0). Before a run on a later day, hand it in at the panel's «الصندوق» (AP §9.10.3): «فتح الصندوق» with the opening amount, then «تسليم النقد اليومي» for the demo captain, then «إقفال الصندوق». The «عليك تسليم اليوم» amount in step 14 also counts custody not yet handed in.
 
 ## The cycle
 
@@ -84,4 +86,4 @@ Every line must read `ok`. A `MISMATCH` is a finding: keep the script's whole ou
 ## After the run
 
 - Send Claude the findings: the step, what was expected, what showed, the time and the screenshot. Each becomes its own `fix/` pull request with its test first (owner decision 2026-11-07).
-- The custody of 40 TRY stays on the demo captain until the cash desk exists (AP §9.10.3); see «The captain's custody» above before a run on another day.
+- Hand the run's custody of 40 TRY in at «الصندوق» the same day (see «The captain's custody» above), and check the receipt appears in the captain app.

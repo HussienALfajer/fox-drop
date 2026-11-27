@@ -19,6 +19,6 @@ The admin panel and the owner web portal are static single-page apps on one stac
 - **Commands (architecture §5.3):** a command that takes `Idempotency-Key` keeps one key per choice until an answer arrives, so a retry replays instead of acting twice. A command that only sets a value takes none.
 - **Content-Security-Policy:** staging and production serve `default-src 'self'` (`infra/nginx/headers.conf`): no inline script or style, no `data:` image, no third-party origin. Draw generated images as inline SVG. Playwright runs without it: check new resources against it.
 - **Types:** `tsconfig.json` types `src` for the browser; `tsconfig.node.json` types `e2e`, `test` and the config files.
-- **UI:** it comes only from `@fox-drop/ui-web`; a screen is coded only after its drawing is approved (architecture §9.9). Layouts use start and end, never left and right.
+- **UI:** it comes only from `@fox-drop/ui-web`; a screen is coded only after the owner and then the designer approved its drawing (T16, architecture §9.9). Layouts use start and end, never left and right.
 - **Unit tests:** `*.test.ts` next to the code; a test that imports a feature file mocks `./api.js` with `vi.mock`, since the client reads `window`.
 - **Smoke tests (`e2e/`):** Playwright runs the built app (`vite preview`) in Chromium and answers its API calls with `page.route`, so it needs no server. The panel previews on port 4173, the portal on 4174. Look for a page's own controls inside `getByRole('main')` where the top bar or menu has one of the same name.

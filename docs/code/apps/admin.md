@@ -287,7 +287,7 @@ The admin panel «لوحة الإدارة»: a static single-page app (architect
   A click on the map or a list opens the card: a captain's name, state with its blocks, vehicle, current order (linked), «آخر موقع» on the city's clock, the cash-limit usage, «إظهار الرقم للاتصال» for `captains.manage` (`useCaptainPhone`, audited; then a `tel:` link) and, for `operations.manage` (`canAssignFromMap`), «عيّنه لطلب» listing the orders the server marks `assignable` (`ordersToAssign`), each sent by `useAssignFromMap` through the picker's `postAssign` (one key per order until an answer; the picker's refusals and reasons, `assignRefusalKeys`);
   a restaurant's state and active orders.
   It follows both channels: `ops:` (an order event or a restaurant's state reads the map again, `staleQueries`) and `ops_map:` (`useOpsMapChannel`: each publication's captains replace the read's, every (re)subscription reads the map again), and reads every 10 s while either is down (the map channel counts as down after `MAP_SILENT_MS`, 25 s, without a publication: a stopped worker), every 30 s otherwise.
-  `not_receiving_offers` is green (decided by us, to confirm with the owner: AP §9.4 names no colour for an online captain without offers), its state in words in the list and the card, and «المتاحون فقط» leaves it out.
+  `not_receiving_offers` is green (owner decision 2026-11-27: AP §9.4 names no colour for an online captain without offers), its state in words in the list and the card, and «المتاحون فقط» leaves it out.
 - **The emergency stop (AP §7, §9.1.6, slice 2.4c):** the top bar shows `EmergencyStopBar` for the chosen city: «المنصة تعمل», or «إيقاف طارئ» with its minutes by the server's clock and the attempts (`GET /v1/admin/emergency-stop`, read every `ATTEMPTS_POLL_MS`, 30 s, since the attempts have no event, and at once on the ops channel's `platform.emergency_stop`, followed only by a session the channel lets in, `followsOps`);
   its red, flashing look waits for the design.
   A session holding `emergency_stop.toggle` (OWN, OPS) gets the link to `/emergency-stop`: the dialog prefilled from the server's defaults, with a preview of the delay notice and the automatic resume typed on the city's clock (`zonedToUtc`);
@@ -492,8 +492,8 @@ The admin panel «لوحة الإدارة»: a static single-page app (architect
   Draw generated images as inline SVG (the setup page's QR code).
   The Playwright tests run without it, so check a new kind of resource against it.
 - **Types:** `tsconfig.json` types `src` for the browser (DOM and `vite/client`, no Node globals); `tsconfig.node.json` types `e2e`, `test` and the config files for Node.
-- **Design stop:** no styling, design tokens or shared UI package until the owner says the UI/UX and the design system are ready (root `CLAUDE.md`).
-  Layout, when it comes, uses start and end, never left and right.
+- **Screen first (T16):** the pages are unstyled until each is drawn and approved by the owner and then the designer (architecture §9.9); then it is built from `@fox-drop/ui-web` on the tokens (`.claude/rules/web-apps.md`).
+  Layout uses start and end, never left and right.
 - **Smoke test:** `e2e/` runs the built app (`vite preview`) in Chromium and answers its API calls with `page.route`, so it needs no server.
   Each app previews on its own port (admin 4173, portal 4174) because Turborepo runs them together.
 

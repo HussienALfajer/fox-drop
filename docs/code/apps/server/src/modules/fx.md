@@ -51,7 +51,7 @@ Currencies, a city's base and accepted currencies, rate versions, rounding and t
   ordering takes them from the order's snapshot (`journalRates` in `ordering/journal-rates.ts`).
 - **The exchange rates screen (AP §9.10.4; slice 2.20a):** `exchangeRates(cityId, now)` answers every city currency in display order with its name, symbol, decimals, current rate (null for the base and before a first rate), `stale`, rounding unit (null until entered) and mode, with `fx.stale_alert_hours` and `fx.large_change_confirm_pct`.
   `setRate` with the rate the currency already has is a new version all the same: entering it again confirms it (AP §9.1.3 «سعر صرف قديم» is a rate not updated for 24 hours), so its `setAt` moves and the alert closes;
-  to confirm with the owner.
+  owner decision 2026-11-27.
   The edit route sets a value and takes no `Idempotency-Key`.
   The routes live in `cashdesk` (`admin-exchange-rates.controller.ts`), since fx cannot import identity for the editors' names.
 - **Stale rates (AP §8.6; slice 2.20a):** `staleRates(cityId, now)` gives the current rates of the enabled currencies set more than `fx.stale_alert_hours` ago (a disabled currency's rate serves nothing);

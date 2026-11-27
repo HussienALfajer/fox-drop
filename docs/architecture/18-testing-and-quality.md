@@ -11,11 +11,11 @@
 
 ## 18.2 Web
 
-- **Vitest** and Testing Library for components; **Playwright** for end-to-end flows in RTL; **Storybook** with visual regression (Chromatic or Playwright snapshots).
+- **Vitest** and Testing Library for components; **Playwright** for end-to-end flows in RTL; **Storybook** with visual regression by Playwright screenshots in its Docker image (`pnpm baselines`); no Chromatic.
 
 ## 18.3 Apps
 
-- Unit and widget tests; **Patrol** for end-to-end tests that cover native dialogs and permissions.
+- Unit and widget tests against a fake server (`FakeServer`), and golden tests in Docker (`core_ui`); **Patrol** for end-to-end tests that cover native dialogs and permissions comes with slice L.8.
 - **Captain simulator:** a tool that runs hundreds of fake captains (moving along OSRM routes, accepting or ignoring offers) against staging, to test dispatch, offers and the live map before launch.
 - **Real-device lab** before launch: at least one low-cost Android phone of each common brand in Azaz, an Android tablet, a Windows PC and an iPhone, running the ringing and 8-hour idle tests (RA §22 item 3, CA §19).
 

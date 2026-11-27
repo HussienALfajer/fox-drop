@@ -1,8 +1,7 @@
 // "This exact tree already passed verify": a fingerprint of HEAD, origin/main, the status and
 // the diff, shared by scripts/verify.mjs (writes it after a passing run) and the Stop hook
-// (.claude/hooks/stop-verify.mjs skips a tree that matches it). Without the shared record, a
-// passing check by the `checker` was followed by the hook running the same checks on the same
-// tree again. Ported from the owner's Shifa project (2026-11-23).
+// (.claude/hooks/stop-check.mjs reminds once of the full check on a tree that does not match
+// it). Ported from the owner's Shifa project (2026-11-23).
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';

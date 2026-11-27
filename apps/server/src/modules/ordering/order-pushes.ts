@@ -387,7 +387,7 @@ export function orderPushes(
     case 'order.shortfall_resolved':
       // CA §14 #14 «خُصم من مستحقاتك {المبلغ}: {السبب}», the reason the
       // alert's name (slice 2.20b). The customer hears nothing: the dues
-      // show at checkout (to confirm with the owner).
+      // show at checkout (owner decision 2026-11-27).
       return facts.shortfallCharge
         ? captain('captain.charge', { المبلغ: facts.shortfallCharge, السبب: SHORTFALL_REASON })
         : [];

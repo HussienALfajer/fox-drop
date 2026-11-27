@@ -45,7 +45,7 @@ export type ReportKind = (typeof reportKinds)[number];
 
 // AP §6.2 «Reports»: OWN all of them (`reports.all`), OPS the operations
 // reports, SUP the support reports, FIN the financial reports. Which report
-// is whose is decided by us (to confirm with the owner): the customers
+// is whose is an owner decision of 2026-11-27: the customers
 // report is support's and operations'; the codes and finance reports are
 // finance's.
 export const reportPermissions: Record<ReportKind, readonly string[]> = {

@@ -33,8 +33,8 @@ export const FEE_CUT_RETURNED_REASON = 'إلغاء خصم أجرة التوصي�
 export const COMMISSION_RESTORED_REASON = 'إلغاء استرداد العمولة: المطعم مسؤول عن الطلب';
 
 // What the customer paid offsetting the captain's pay when the restaurant is
-// responsible (docs/domain/09 rule 5; slice 2.11b, to confirm with the
-// owner).
+// responsible (docs/domain/09 rule 5; slice 2.11b, owner decision
+// 2026-11-27).
 export const PAY_OFFSET_REASON = 'ما دفعه الزبون يغطّي أجر الكابتن';
 
 // AP §8.9 «تغيير النتيجة» (slice 2.11c): the reason of each reversal of the

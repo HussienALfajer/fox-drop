@@ -9,3 +9,5 @@ Open items are kept in the document they belong to. None of them blocks the buil
 | Captain app      | [CA §18](product/v1/captain-app/18-open-items.md)           |
 | Customer app     | [CU §18](product/v1/customer-app/18-open-items.md)          |
 | Technology stack | [Architecture §22](architecture/22-risks-and-open-items.md) |
+
+Questions that came up while building, outside the specs' own open items, wait in [`backlog.md`](backlog.md) under «Waiting for the owner».

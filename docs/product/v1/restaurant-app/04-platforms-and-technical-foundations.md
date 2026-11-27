@@ -80,7 +80,7 @@ The device check runs at the first sign-in on each device, and can be run again 
 
 ## 4.7 Unstable internet
 
-- **Safe retries:** every command carries a client-generated idempotency key. The app retries with backoff until the server answers. A command repeated with the same key is never applied twice.
+- **Safe retries:** every command carries a client-generated idempotency key, except one that only sets a value, which is safe to send twice (owner, 2026-11-27, §2.4). The app retries with backoff until the server answers. A command repeated with the same key is never applied twice.
 - **Pending state:** while waiting, the button shows «جارٍ الإرسال…» and cannot be pressed again.
 - **State conflicts:** the server checks every command against the current state when it arrives. If the state changed, the server returns the current state and the app explains what happened, for example «قُبل الطلب من جهاز {اسم الجهاز}» or «أُلغي الطلب قبل وصول قبولك».
 - **Lost connection:** a red bar shows on every screen: «لا يوجد اتصال بالإنترنت — لن تصلك الطلبات الجديدة حتى يعود الاتصال». After 30 seconds offline (fixed), the device plays a chime once.

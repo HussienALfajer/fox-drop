@@ -49,7 +49,7 @@ export async function captainPay(
     ? 0
     : waitingMinutes({
         acceptedAt: money.acceptedAt,
-        // docs/domain/04 (slice 2.9, to confirm with the owner): «تعديل الوقت»
+        // docs/domain/04 (slice 2.9; owner decision 2026-11-27): «تعديل الوقت»
         // never shortens the captain's paid waiting; it counts from the prep
         // time chosen at acceptance.
         prepMin: (await acceptedPrepMin(executor, order)) ?? money.prepMin,
