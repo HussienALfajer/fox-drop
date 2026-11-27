@@ -1,6 +1,6 @@
 # Slices
 
-A slice is the unit of work: one session, one pull request, one risk tier (`docs/process/development-workflow.md`). Each slice has one file here, named `<id>-<kebab-title>.md` after its roadmap line (for example `D.8-inputs-and-forms.md`). The file holds that slice's plan, progress and hand-over only, so no shared task file grows without limit.
+A slice is the unit of work: one session, one pull request, one risk tier (`docs/process/development-workflow.md`). Each slice has one file here, named `<id>-<kebab-title>.md` after its roadmap line (for example `D.R1-delete-components-screen-first.md`). The file holds that slice's plan, progress and hand-over only, so no shared task file grows without limit.
 
 Rules:
 
