@@ -4,7 +4,7 @@
 //   node .claude/skills/build-slice/figma-look.mjs <out dir> [node id ...]
 //
 // The token comes from FIGMA_TOKEN or ~/.figma-token, and the file's key from FIGMA_FILE_KEY or
-// ~/.figma-file-key: neither enters the repository (architecture §9.8).
+// ~/.figma-file-key: neither is read from the repository (architecture §9.8).
 // Figma's own render endpoint is rate limited for days on the owner's plan, so this
 // draws the vector paths itself: fills, strokes, masks and image fills, then rasterises
 // the SVG with the Chromium that ui-web's Playwright tests already use.

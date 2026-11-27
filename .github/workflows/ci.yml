@@ -61,6 +61,9 @@ jobs:
       - id: paths
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          # A pull request's own last commit, not the merge commit CI checks
+          # out, whose patch is empty without -m.
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         # The classifier that `node scripts/verify.mjs --changed` uses too;
         # with no base commit (a new branch) everything counts as changed.
         run: node scripts/classify-changes.mjs "$BASE" ${{ github.event_name == 'push' && '--push' || '' }} >> "$GITHUB_OUTPUT"
@@ -148,6 +151,9 @@ jobs:
       - name: Scan the change for secrets
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          # A pull request's own last commit, not the merge commit CI checks
+          # out, whose patch is empty without -m.
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
           version=8.30.1
           sum=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
@@ -156,15 +162,25 @@ jobs:
             "https://github.com/gitleaks/gitleaks/releases/download/v$version/gitleaks_${version}_linux_x64.tar.gz"
           echo "$sum  $archive" | sha256sum --check --strict
           tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
-          # A new branch has no base: scan its last commit.
+          # No usable base (a first push, or a base missing from the history):
+          # scan the last commit.
           if [ -z "$BASE" ] || [ "$BASE" = 0000000000000000000000000000000000000000 ] ||
             ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
-            range="-1 $GITHUB_SHA"
+            range="-1 $HEAD"
           else
-            range="$BASE..$GITHUB_SHA"
+            range="$BASE..$HEAD"
           fi
-          "$RUNNER_TEMP/gitleaks" git --config .gitleaks.toml --log-opts="$range" \
-            --redact --no-banner --exit-code 1 .
+          # gitleaks reads this file by itself; findings are allowed only in
+          # .gitleaks.toml, which REVIEW item 12 shows the owner.
+          if [ -e .gitleaksignore ]; then
+            echo "::error::.gitleaksignore is not allowed: allow a finding in .gitleaks.toml"
+            exit 1
+          fi
+          # first-parent: a merge commit's own changes (a conflict resolved
+          # while merging main) are scanned too.
+          "$RUNNER_TEMP/gitleaks" git --config .gitleaks.toml \
+            --log-opts="--diff-merges=first-parent $range" \
+            --redact --verbose --no-banner --exit-code 1 .
 
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
