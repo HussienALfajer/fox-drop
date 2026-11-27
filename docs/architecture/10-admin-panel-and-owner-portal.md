@@ -11,7 +11,7 @@
 | Server state      | **TanStack Query**; real-time events from Centrifugo update the query cache directly               |
 | Tables            | **TanStack Table** with **TanStack Virtual** for long lists (operations room, history, statements) |
 | Forms             | **React Hook Form** with **Zod** schemas shared with the server                                    |
-| Components        | `packages/ui-web` on **Base UI** (§9.2)                                                            |
+| Components        | `packages/ui-web` on **UI SDK**, Base UI per component as the fallback (T11, §9.10)                |
 | Maps              | **MapLibre GL JS**; **Terra Draw** for drawing zone polygons                                       |
 | Charts            | **Apache ECharts** (RTL, large data sets)                                                          |
 | Dates and numbers | `date-fns` with `date-fns-tz`; `Intl` formatters with Western digits                               |

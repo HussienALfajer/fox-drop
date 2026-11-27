@@ -17,7 +17,7 @@
 | `core_commands`      | The outgoing command queue in SQLite: idempotency keys, retries with exponential backoff and jitter, «جارٍ الإرسال…» state, conflict handling (RA §4.7) |
 | `core_time`          | Server clock offset from `Server-Time`; every countdown uses it                                                                                         |
 | `core_storage`       | **Drift** (SQLite) for caches and queues, `flutter_secure_storage` for tokens                                                                           |
-| `core_ui`            | The design system (§9.3)                                                                                                                                |
+| `core_ui`            | The design system (§9.7)                                                                                                                                |
 | `core_l10n`          | Arabic strings (ARB files), formatters for money, dates, durations and distances (AP §4.7)                                                              |
 | `core_maps`          | The map interface on `maplibre_gl`, tile caching, route drawing                                                                                         |
 | `core_device_check`  | The device-check framework and the per-brand guides with screenshots (RA §4.5, CA §4.5)                                                                 |
