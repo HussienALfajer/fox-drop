@@ -4,7 +4,7 @@ The customer app «تطبيق الزبون» (Android, iOS), a Flutter app in th
 
 ## Rules
 
-- **Feature folders:** `cart/`, `checkout/`, `orders/`, `browsing/`, `account/`, each with its logic in plain files and its screens and sheets beside it.
+- **Feature folders:** `browsing/`, `search/`, `cart/`, `checkout/`, `orders/`, `codes/`, `location/`, `notifications/`, `reports/`, `account/`, `profile/`, each with its logic in plain files and its screens and sheets beside it.
 
 ## More
 
