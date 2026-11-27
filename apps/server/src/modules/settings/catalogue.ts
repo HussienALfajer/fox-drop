@@ -152,8 +152,8 @@ export const catalogue = {
   'order.delivery_late_alert_min': minutes(20),
   'order.delivery_late_compensation_min': minutes(45),
   // An amount, or a percentage of the next order's items value without a
-  // maximum (AP Appendix A; our reading, to confirm with the owner before a
-  // value is set: slice 2.22c).
+  // maximum (AP Appendix A; slice 2.22c; owner decision 2026-11-27; the
+  // value itself is set before launch).
   'order.late_compensation_value': beforeLaunch({
     type: 'money',
     scope: 'city',

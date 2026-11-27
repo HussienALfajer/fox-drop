@@ -135,7 +135,7 @@ So far real-time publishing through Centrifugo, its connection tokens and its su
   `campaignCounts` answers each campaign's recipients, sent (FCM accepted it for a device: `devices > 0`) and delivered (`delivered_at`).
   The app acknowledges a push on arrival with `POST /v1/customer/push-receipts` (`{ messageId }`, the id in the push's data): `@Public()`, since the background handler has no session;
   the random id is its only key, it answers alike for any id, and only the first receipt of a customer's push counts (`acknowledge`).
-  The app sends it on arrival whether the system showed the push or not: a mass push that arrives while the app is open is not shown (core_push's rule) but counts as «وصل» (to confirm with the owner).
+  The app sends it on arrival whether the system showed the push or not: a mass push that arrives while the app is open is not shown (core_push's rule) but counts as «وصل» (owner decision 2026-11-27).
 - **Configuration:** `FCM_SERVICE_ACCOUNT`, the Firebase service account's JSON key in base64, read by the worker only (E7: never in the repository or an app; the `deploy` skill says how the owner sets it on staging).
   Without it push is off: the worker logs it and the pushes wait and expire;
   production refuses to start.

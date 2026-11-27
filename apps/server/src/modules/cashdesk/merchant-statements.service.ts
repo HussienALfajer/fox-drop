@@ -302,7 +302,7 @@ export class MerchantStatementsService {
           ),
         );
       }
-      // RA §16 #30: only when something is due (to confirm with the owner: a
+      // RA §16 #30: only when something is due (owner decision 2026-11-27: a
       // statement that owes the restaurant waits for the desk to pay it).
       if (known && built.totals.totalDue > 0n) {
         const rendered = await this.texts.render(

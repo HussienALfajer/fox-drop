@@ -79,7 +79,7 @@ export function checkLines(
 // The whole pickup payment in one currency, as one line within the
 // tolerance (CA §10.5, C8): the base as it is; another currency rounded by
 // its rule, or by the nearest unit when the rule (up or down) falls past
-// the tolerance (to confirm with the owner); null when even that fails,
+// the tolerance (owner decision 2026-11-27); null when even that fails,
 // such as an amount that rounds to nothing.
 export function wholeIn(
   snapshot: RateSnapshot,
@@ -106,7 +106,7 @@ export function wholeIn(
 // carries (null: the base only, the default). Both with the base: the whole
 // amount in it; else the first common currency in the display order whose
 // whole amount is within the tolerance (wholeIn; a currency it cannot be
-// paid in is passed over, to confirm with the owner); with none, the base.
+// paid in is passed over, owner decision 2026-11-27); with none, the base.
 export function proposeLines(
   snapshot: RateSnapshot,
   accepted: readonly string[],

@@ -840,7 +840,7 @@ export class OrderCommands {
         const captainId = read.facts.captainId!;
         // docs/domain/03, AP §9.1.3: the order needs a captain again; «طلب
         // بلا كابتن» counts dispatch.no_captain_alert_min from the withdrawal,
-        // not from the first search (to confirm with the owner).
+        // not from the first search (owner decision 2026-11-27).
         const searchAlertAt = new Date(
           now.getTime() +
             (await this.settings.get('dispatch.no_captain_alert_min', { cityId: order.cityId })) *

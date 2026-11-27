@@ -288,7 +288,7 @@ export class MerchantSettlementService {
         tx,
       );
       // RA §16 #31 «استلمنا منك»: a payment received; the receipt of a payout
-      // is in the app only (to confirm with the owner).
+      // is in the app only (owner decision 2026-11-27).
       if (collect) {
         const templateKey = 'merchant.settlement_receipt';
         const rendered = await this.texts.render(

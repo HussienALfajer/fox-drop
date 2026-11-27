@@ -68,7 +68,7 @@ const partyOfAccount: Record<string, ManualEntryParty> = {
 // (AP §8.9), and a receipt is the cash that changed hands. A manual reversal
 // of either would leave the order clearing account, a drawer's cash or the
 // outcome's own reversal apart from them, so it is corrected by an
-// adjustment instead (decided by us, to confirm with the owner). These
+// adjustment instead (owner decision 2026-11-27). These
 // accounts are only ever reached by such journals.
 const NOT_REVERSIBLE_ON: readonly AccountPurpose[] = [
   'platform.order_clearing',
