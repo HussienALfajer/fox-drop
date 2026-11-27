@@ -96,7 +96,7 @@ void main() {
       app.server.to('/v1/customer/auth/sign-out-everywhere'),
       hasLength(1),
     );
-    // Signed out: home, with no «حسابي» (its sign-in left in D.R1).
+    // Signed out: home, with no «حسابي» (no sign-in screen yet).
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.byKey(const Key('open-account')), findsNothing);
   });

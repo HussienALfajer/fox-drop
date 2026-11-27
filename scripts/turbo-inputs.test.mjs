@@ -65,10 +65,9 @@ function covered(pkg, task, file) {
   const globs = (config.inputs ?? [])
     .filter((input) => input.startsWith('$TURBO_ROOT$/'))
     .map((input) => input.slice('$TURBO_ROOT$/'.length));
-  const files =
-    trackedSet.has(file) || /^\.fonts\/.+\.\w+$/.test(file)
-      ? [file]
-      : [...tracked.filter((each) => each.startsWith(`${file}/`)), `${file}/any`];
+  const files = trackedSet.has(file)
+    ? [file]
+    : [...tracked.filter((each) => each.startsWith(`${file}/`)), `${file}/any`];
   return files.every((each) => globs.some((glob) => path.posix.matchesGlob(each, glob)));
 }
 

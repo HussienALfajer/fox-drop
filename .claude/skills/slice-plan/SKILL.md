@@ -7,13 +7,13 @@ effort: high
 
 # Plan vertical slices
 
-Input: what to plan, such as "Phase D", "D.9" or a spec section like "RA §9 Menu". Run in a fresh session in plan mode (`docs/process/development-workflow.md` §3).
+Input: what to plan, such as "Phase 2", "2.3" or a spec section like "RA §9 Menu". Run in a fresh session in plan mode (`docs/process/development-workflow.md` §3).
 
 ## 1. Read
 
 - `docs/README.md`, then `docs/roadmap.md` for the phase and what is already done.
 - The spec sections in scope, their definition of done (the last numbered section of each spec), and the domain and architecture sections they cite. A feature with no written spec gets one first with `/spec`.
-- The code that already exists for this scope: grep `docs/code/<folder path>.md`, `docs/backlog.md` and the archive `docs/slice-notes.md` for it.
+- The code that already exists for this scope: grep `docs/code/<folder path>.md` and `docs/backlog.md` for it.
 - Every open item the scope touches (`docs/open-questions.md`). Never guess one: ask the owner.
 
 ## 2. Split
@@ -24,11 +24,11 @@ A slice is one pull request that one session can finish. It:
 - names the spec sections it implements and the definition-of-done items it closes;
 - states how it is verified: the tests and, for screens, what the owner can try;
 - leaves `main` working;
-- fits the size of `docs/process/development-workflow.md` §3.1: at most about 25 hand-written files or two layers, a screen's components' web side and their Flutter twins as separate slices when the screen's slice would pass the limit (and a hand-written sheet, when one is needed).
+- fits the size of `docs/process/development-workflow.md` §3.1: at most about 25 hand-written files or two layers.
 
-Estimate by counting: list in the plan, layer by layer, every file the slice creates or changes by hand (generated files, icons and image baselines apart), and write the count next to the plan. A slice over the limit is split now, before the owner approves it. No two slices in flight on the same hand-written file or dependency (name the files so parallel slices can be checked); a new dependency's version is pinned once, in the slice that adds it.
+Estimate by counting: list in the plan, layer by layer, every file the slice creates or changes by hand (generated files and images apart), and write the count next to the plan. A slice over the limit is split now, before the owner approves it. No two slices in flight on the same hand-written file or dependency (name the files so parallel slices can be checked); a new dependency's version is pinned once, in the slice that adds it.
 
-Order the slices by dependency, then by risk: the money flows, the order state machine, timers and dispatch come before screens that only display data. Schema and API-contract changes are serialised. Screens come first, one screen per slice, the customer app first, after the API the screen uses (architecture §9.9, T16): the slice file holds the screen's inventory, and its checkpoints follow the screen cycle of §9.9: draw the screen with only the components it needs (a new one on the proposals page of "Fox Drop Components"), prototype, analysis, the owner's approval, then the designer's. No component is planned before an approved screen needs it; its web side comes first, then its Flutter twin, checked on its parity sheet, never a second drawing (T14). When a screen and its new components pass the size of workflow §3.1, split them along the build order (the components' web side, their twins, the screen).
+Order the slices by dependency, then by risk: the money flows, the order state machine, timers and dispatch come before screens that only display data. Schema and API-contract changes are serialised. A screen comes after the API it uses.
 
 Give each slice a tier (`docs/process/development-workflow.md` §2): **T0** money, ledger, order states and timers, auth, migrations, secrets, deploy and CI; **T1** domain services, routes, contracts; **T2** UI, docs, tests.
 
@@ -38,7 +38,7 @@ For each slice copy `docs/slices/_template.md` to `docs/slices/<id>-<kebab-title
 
 ## 4. Present and stop
 
-Show the owner, in Arabic: the slices in order (one line each: what it delivers, its tier, its file count, what the owner can try), the open items that need an answer, and the design checkpoints. Wait for approval or changes.
+Show the owner, in Arabic: the slices in order (one line each: what it delivers, its tier, its file count, what the owner can try), and the open items that need an answer. Wait for approval or changes.
 
 For a T0 slice, a second fresh session critiques the plan before it is built (its first message: `راجع خطة الشريحة <id> في docs/slices/... وانقدها قبل البناء`); its findings go into the slice file.
 

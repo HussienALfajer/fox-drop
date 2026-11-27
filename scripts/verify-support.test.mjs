@@ -27,8 +27,6 @@ import {
   hasPassed,
   inputsFingerprint,
   killTree,
-  NO_PLUGINS_PROBE,
-  noPluginsProblem,
   passKey,
   pinnedFlutterBin,
   pinnedSdkPath,
@@ -204,14 +202,14 @@ describe('the output of a run', () => {
     lines[100] = ' FAIL  src/geo.test.ts > the fee';
     lines[300] = 'Tests  0 failed';
     lines[200] = '  ok 27 [chromium] › refuses an image smaller than 1200×500';
-    lines[220] = 'ui-web:test:e2e:   ok 234 [functional] › axe › emptystate--error (774ms)';
+    lines[220] = 'admin:test:e2e:   ok 234 [chromium] › orders › lists the orders (774ms)';
     lines[250] = ' × src/fee.test.ts > rounds down';
     const text = cut(lines.join('\n'), 'run/05.log');
     assert.match(text, /^\[… 97 lines …\]\nline 97\nline 98\nline 99\n FAIL {2}src\/geo\.test\.ts/);
     assert.match(text, /line 112\n\[… /);
     assert.doesNotMatch(text, /Tests {2}0 failed/);
     assert.doesNotMatch(text, /1200×500/);
-    assert.doesNotMatch(text, /emptystate--error/);
+    assert.doesNotMatch(text, /lists the orders/);
     assert.match(text, / × src\/fee\.test\.ts > rounds down/);
     assert.match(text, /line 499\n\[cut from 500 lines; the whole output is in run\/05\.log\]$/);
     assert.equal(cut('short\noutput', 'x'), 'short\noutput');
@@ -240,8 +238,8 @@ describe("the web apps' Chromium", () => {
   it('is installed only when every folder is complete', () => {
     const cache = path.join(scratch, 'ms-playwright');
     const env = { PLAYWRIGHT_BROWSERS_PATH: cache };
-    const ui = path.join(process.cwd(), 'packages', 'ui-web');
-    assert.equal(chromiumInstalled([ui], { env }), false);
+    const admin = path.join(process.cwd(), 'apps', 'admin');
+    assert.equal(chromiumInstalled([admin], { env }), false);
     assert.equal(chromiumInstalled([path.join(scratch, 'no-package')], { env }), false);
   });
 });
@@ -249,92 +247,47 @@ describe("the web apps' Chromium", () => {
 describe('the Dart workspace', () => {
   it("reads a pubspec's dependencies and dev dependencies, not its other sections", () => {
     const pubspec = [
-      'name: core_ui',
+      'name: core_auth',
       'environment:',
       '  sdk: ^3.9.0',
       'dependencies:',
-      '  core_tokens:',
+      '  core_api:',
       '  flutter:',
       '    sdk: flutter',
       'dev_dependencies:',
-      '  fox_lints: any',
+      '  lints: any',
       'flutter:',
       '  uses-material-design: true',
     ].join('\r\n');
-    assert.deepEqual(pubspecDependencies(pubspec), ['core_tokens', 'flutter', 'fox_lints']);
+    assert.deepEqual(pubspecDependencies(pubspec), ['core_api', 'flutter', 'lints']);
   });
 
   it('adds every package that depends on a named one, directly or not', () => {
     const workspace = [
-      { name: 'core_tokens', dependencies: [] },
-      { name: 'core_ui', dependencies: ['core_tokens', 'flutter'] },
-      { name: 'customer', dependencies: ['core_ui'] },
       { name: 'core_api', dependencies: [] },
+      { name: 'core_auth', dependencies: ['core_api', 'flutter'] },
+      { name: 'customer', dependencies: ['core_auth'] },
+      { name: 'core_time', dependencies: [] },
     ];
-    assert.deepEqual([...withDependents(workspace, ['core_tokens'])].sort(), [
-      'core_tokens',
-      'core_ui',
+    assert.deepEqual([...withDependents(workspace, ['core_api'])].sort(), [
+      'core_api',
+      'core_auth',
       'customer',
     ]);
-    assert.deepEqual([...withDependents(workspace, ['core_api'])], ['core_api']);
+    assert.deepEqual([...withDependents(workspace, ['core_time'])], ['core_time']);
   });
 
-  it('counts a change to the design tokens as one to core_tokens', () => {
+  it('finds the packages a changed file is in', () => {
     const workspace = [
-      { name: 'core_tokens', dir: 'packages/core_tokens' },
-      { name: 'core_ui', dir: 'packages/core_ui' },
+      { name: 'core_auth', dir: 'packages/core_auth' },
       { name: 'customer', dir: 'apps/customer' },
     ];
     assert.deepEqual(
-      changedDartPackages(workspace, ['packages/design-tokens/tokens/semantic/light.json']),
-      ['core_tokens'],
-    );
-    assert.deepEqual(
-      changedDartPackages(workspace, [
-        'packages/core_ui/lib/core_ui.dart',
-        'packages/design-tokens/src/generate.ts',
-      ]),
-      ['core_ui'],
+      changedDartPackages(workspace, ['packages/core_auth/lib/core_auth.dart', 'apps/server/a.ts']),
+      ['core_auth'],
     );
     // A folder that only starts with a package's name is not in it.
-    assert.deepEqual(changedDartPackages(workspace, ['packages/core_tokens_x/a.dart']), []);
-  });
-});
-
-describe('the --no-plugins probe', () => {
-  it('passes when dart analyze takes the option', () => {
-    assert.equal(noPluginsProblem({ status: 0, stdout: 'Usage: dart analyze', stderr: '' }), null);
-  });
-
-  it('says what to do when the SDK lacks the option', () => {
-    // What `dart analyze --no-such --help` prints with Dart 3.13 (exit 64).
-    const problem = noPluginsProblem({
-      status: 64,
-      stdout: '',
-      stderr: 'Could not find an option named "--no-plugins".\n\nUsage: dart analyze [arguments]',
-    });
-    assert.match(problem, /has no --no-plugins option/);
-    assert.match(problem, /pubspec\.yaml/);
-    assert.match(problem, /scripts\/verify\.mjs/);
-    assert.match(problem, /Could not find an option/);
-  });
-
-  it('fails with the output for any other failure, and when dart does not start', () => {
-    assert.match(
-      noPluginsProblem({ status: 255, stdout: '', stderr: 'boom' }),
-      /failed \(exit 255\)[\s\S]*boom/,
-    );
-    assert.match(
-      noPluginsProblem({ status: null, error: new Error('spawn dart ENOENT') }),
-      /failed \(exit none\)[\s\S]*ENOENT/,
-    );
-  });
-
-  it('is the option the analyze commands use', () => {
-    assert.match(NO_PLUGINS_PROBE, /^dart analyze --no-plugins /);
-    const melos = readFileSync('pubspec.yaml', 'utf8');
-    assert.match(melos, /run: dart analyze --fatal-infos --no-plugins && /);
-    assert.match(readFileSync(verify, 'utf8'), /dart analyze --fatal-infos --no-plugins/);
+    assert.deepEqual(changedDartPackages(workspace, ['packages/core_auth_x/a.dart']), []);
   });
 });
 
@@ -358,11 +311,10 @@ describe("the Dart part's inputs", () => {
     assert.deepEqual(missing.sort(), []);
   });
 
-  it("cover the design tokens' sources that core_tokens' test reads", () => {
+  it('cover the packages and the root files, not the web apps', () => {
     const inputs = dartInputs(workspace);
-    assert.ok(inputsCover(inputs, 'packages/design-tokens/tokens/primitive/color.json'));
-    assert.ok(!inputsCover(inputs, 'packages/ui-web/src/button/button.tsx'));
-    assert.ok(inputsCover(inputs, '.fonts/cofo-sans-pro-arabic/x.ttf'));
+    assert.ok(inputsCover(inputs, 'packages/core_auth/lib/core_auth.dart'));
+    assert.ok(!inputsCover(inputs, 'apps/admin/src/App.tsx'));
     assert.ok(inputsCover(inputs, 'pubspec.lock'));
   });
 

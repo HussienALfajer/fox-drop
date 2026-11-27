@@ -62,7 +62,7 @@ class _App {
   late final ProviderContainer container;
 
   /// [settle] is false for a signed-out start: the device then waits on the
-  /// starting screen's spinner, since the sign-in screen left in D.R1.
+  /// starting screen's spinner, since there is no sign-in screen yet.
   Future<void> pump(
     WidgetTester tester, {
     Map<String, String> stored = const {},
@@ -176,8 +176,7 @@ void main() {
     },
   );
 
-  // The sign-in itself left with its screen in D.R1 (2026-11-27): the device
-  // starts signed in, not named yet.
+  // No sign-in screen yet: the device starts signed in, not named yet.
   testWidgets('the first sign-in on a device names it (RA §5.2 item 5)', (
     tester,
   ) async {

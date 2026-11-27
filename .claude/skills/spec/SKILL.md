@@ -17,7 +17,7 @@ Input: the party (admin panel AP, restaurant app RA, captain app CA, customer ap
    - edge cases, offline behaviour, timers;
    - money (integer minor units, ledger journals, who pays what), abuse and privacy (scope by city, restaurant, captain and customer; what must never be logged);
    - definition of done: numbered, each item testable, with the test or the staging demonstration that proves it;
-   - screens in words (purpose, every state with its data and actions); they are drawn and approved in the slice that builds them (architecture §9.9);
+   - screens in words (purpose, every state with its data and actions);
    - out of scope; open items (empty before approval, or listed in `docs/open-questions.md`).
 4. Update every section that depends on a new decision in the same change, and `docs/README.md` if a new folder appears.
 5. Ask the owner to approve the spec. Then open the docs pull request with auto-merge (squash) and Auto-fix, and name `/slice-plan` in a fresh session as the next step.

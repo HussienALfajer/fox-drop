@@ -1,10 +1,10 @@
 # apps/merchant
 
-> Moved here from `apps/merchant/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/merchant/CLAUDE.md` on 2026-11-20. In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The restaurant app «تطبيق المطعم» (Android, Windows; architecture §11, §12). It follows the rules of `.claude/rules/flutter-apps.md`.
 
-**D.R1 (2026-11-27):** with every UI component, the owner deleted the sign-in screen (core_auth's `sign_in_screen.dart`, the `/sign-in` route) and the staff screen (`settings/staff_screen.dart`, the `/settings/staff` route, the `open-staff` row and their UI tests); the app no longer depends on `core_ui`. Signed out, every route waits on `/starting` until a new sign-in screen is built. `staff.dart` (`staffProvider`, `devicesProvider`) stays; the shared `confirm`, `Failure`, `lastActiveText` and `platformText` moved to `settings/settings_parts.dart`. History: git before the D.R1 merge (`docs/slices/D.R1-delete-components-screen-first.md`).
+**2026-11-27:** the owner deleted the sign-in screen (core_auth's `sign_in_screen.dart`, the `/sign-in` route) and the staff screen (`settings/staff_screen.dart`, the `/settings/staff` route, the `open-staff` row and their UI tests). Signed out, every route waits on `/starting` until a new sign-in screen is built. `staff.dart` (`staffProvider`, `devicesProvider`) stays; the shared `confirm`, `Failure`, `lastActiveText` and `platformText` moved to `settings/settings_parts.dart`. History: git.
 
 ## The board (slice 1.14e; RA §4.3–4.7, §8.1–8.11)
 
@@ -200,12 +200,12 @@ The restaurant app «تطبيق المطعم» (Android, Windows; architecture �
   A refused change shows «لم يُحفظ التغيير، حاول مرة أخرى» and reads the switches again;
   a read refused with `403` (a cashier, a terminated restaurant) says «هذه الإعدادات لمالكي المطعم فقط.» with no retry, any other failure «تعذّر تحميل الإعدادات، حاول مرة أخرى» with «إعادة المحاولة».
   A change applies to the pickups requested after it.
-- **«الموظفون» and «الأجهزة» (slice 2.33; RA §14.1–14.2; owner decisions 2026-11-19):** the row «الأجهزة» at the top of «الإعدادات» (`open-devices`), shown even when the currencies' read failed (a `403` hides it with the rest), pushes `/settings/devices` (nested, so the terms' wait covers it). The «الموظفون» row and screen were deleted in D.R1 and return with their drawing.
+- **«الموظفون» and «الأجهزة» (slice 2.33; RA §14.1–14.2; owner decisions 2026-11-19):** the row «الأجهزة» at the top of «الإعدادات» (`open-devices`), shown even when the currencies' read failed (a `403` hides it with the rest), pushes `/settings/devices` (nested, so the terms' wait covers it). The «الموظفون» row and screen were deleted on 2026-11-27 and return with their own screen slice.
   `staff.dart` holds `staffProvider` and `devicesProvider` (auto-disposed, read on opening, each command's answer shown at once, any refusal but `phone_taken` reads the list again);
   `devices_screen.dart` only shows them (with `settings_parts.dart`).
   «الأجهزة»: name («هذا الجهاز» on this one), user and role, platform and version, signed in or not, the last activity;
   «إعادة تسمية» and, while signed in, «تسجيل خروج الجهاز» after a confirmation.
-  A removed cashier's device, or one signed out, is signed out at its next call (`401`) and waits on `/starting` until the sign-in screen returns (D.R1).
+  A removed cashier's device, or one signed out, is signed out at its next call (`401`) and waits on `/starting` until the sign-in screen returns.
   No limit on cashiers.
 - **Not yet:** the restaurant's info of RA §14.3. «هذا الجهاز» (slice 2.42) is the first row of «الإعدادات» and a cashier's own button.
 

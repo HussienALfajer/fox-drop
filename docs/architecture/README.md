@@ -28,7 +28,6 @@ Each section of the original document is one file, and a long section is a folde
 | 6. Real time                                 | [06-real-time.md](06-real-time.md)                                                                 |
 | 7. Maps, routing and location                | [07-maps-routing-and-location.md](07-maps-routing-and-location.md)                                 |
 | 8. Notifications and sign-in codes           | [08-notifications-and-sign-in-codes.md](08-notifications-and-sign-in-codes.md)                     |
-| 9. Design system (T2, T10, T11, T14, T16)    | [09-design-system.md](09-design-system.md)                                                         |
 | 10. Admin panel and owner portal (web)       | [10-admin-panel-and-owner-portal.md](10-admin-panel-and-owner-portal.md)                           |
 | 11. Flutter apps: shared foundation (E5)     | [11-flutter-apps-shared-foundation.md](11-flutter-apps-shared-foundation.md)                       |
 | 12. Restaurant app (Android and Windows)     | [12-restaurant-app.md](12-restaurant-app.md)                                                       |

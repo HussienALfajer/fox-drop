@@ -1,13 +1,13 @@
-# D.11a Every country at sign-in, and the fields D.11's screens need
+# D.11a Every country at sign-in, and the fields the sign-in screens need
 
 Status: Done · Tier: T0 (sign-in, a migration) · Branch: `claude/clever-fermi-q9m9ot` (the session's branch, in place of `feat/every-country-sign-in`)
-Spec: CU U3, CU §4.2, §4.7, §5.2; RA §5; CA §5, C13; AP §9.12.1, §9.14, Appendix A (`otp.*`, `app.<app>.*`); architecture §8.3.3 item 2 · Definition of done: the D.11a line of `docs/roadmap.md`; it closes the server items 1 to 4 of D.11's «Code changes recorded for step 8» and the server parts of D.11's «Owner's answers» (b) and (d).
+Spec: CU U3, CU §4.2, §4.7, §5.2; RA §5; CA §5, C13; AP §9.12.1, §9.14, Appendix A (`otp.*`, `app.<app>.*`); architecture §8.3.3 item 2 · Definition of done: the D.11a line of `docs/roadmap.md`; it closes the server items 1 to 4 below and the server parts of the owner's answers (b) and (d).
 
-> **D.R1 (2026-11-27):** D.11's slice file, named here, was deleted with D.12 to D.17's (each customer screen is planned anew), and so were the sign-in screen and the phone field the clients' parts below refer to; all are in git history before the D.R1 merge. The phone rules now live in `packages/core_auth/lib/src/phone_rules.dart`, with `packages/core_auth/test/phone-cases.json`.
+> **2026-11-27:** the sign-in screen and the phone field the clients' parts below refer to were deleted; they are in git history. The phone rules now live in `packages/core_auth/lib/src/phone_rules.dart`, with `packages/core_auth/test/phone-cases.json`.
 
 ## Goal
 
-The three apps' sign-in, a restaurant user added in the panel or the restaurant app, and a customer's number change take a mobile number of any country. `GET platform` answers the platform hours, the minimum version and the maintenance return time; sign-in tells used-up attempts apart from an expired code; the office has a landmark description. D.11's screens then have every field they show.
+The three apps' sign-in, a restaurant user added in the panel or the restaurant app, and a customer's number change take a mobile number of any country. `GET platform` answers the platform hours, the minimum version and the maintenance return time; sign-in tells used-up attempts apart from an expired code; the office has a landmark description. The sign-in screens then have every field they show.
 
 ## Owner decisions (2026-11-24, for this plan)
 
@@ -16,7 +16,7 @@ The three apps' sign-in, a restaurant user added in the panel or the restaurant 
 
 ## Plan
 
-0. No design checkpoint: no component or app screen. The two panel fields join pages that are unstyled until the design (`docs/code/apps/admin.md`).
+0. No component or app screen. The two panel fields join the panel's existing pages (`docs/code/apps/admin.md`).
 
 1. **Every country (server items 1 and 2).**
    - Add `libphonenumber-js` to `apps/server` with an exact pin (`pnpm add --filter @fox-drop/server libphonenumber-js@<version>`; MIT). Record the version in `docs/code/apps/server.md`.
@@ -33,7 +33,7 @@ The three apps' sign-in, a restaurant user added in the panel or the restaurant 
 3. **Used-up attempts (owner's answer (b)).**
    - `SignInCodeRefusedError` gains the refusal `attempts_used`. In `useCodeIn`: the wrong attempt that reaches `otp.max_attempts` answers `attempts_used` (not `wrong_code` with 0 left); a later attempt finds no open code, so before answering `code_expired` it reads the number's latest code for the party and device, and answers `attempts_used` when that code ended `attempts_exhausted`. A new code request opens a new code, so the next wrong attempt is `wrong_code` again. An expired code, a code of another device and a portal-versus-app mismatch stay `code_expired`. The answer is the same whether the number has an account (architecture §8.3.2).
    - The four routes that map the refusal (customer, captain, merchant, merchant portal) and the customer's account deletion (`useCode`) answer `400 attempts_used` with `attemptsLeft: 0`; their API descriptions list it.
-   - The clients keep working until D.11 gives it its own words: `core_auth`'s `sign_in_screen.dart`, the customer's `delete_account_screen.dart` and the portal's `session.ts` read `attempts_used` as they read `code_expired` today (one case each, same message).
+   - The clients keep working until the sign-in screen gives it its own words: `core_auth`'s `sign_in_screen.dart`, the customer's `delete_account_screen.dart` and the portal's `session.ts` read `attempts_used` as they read `code_expired` today (one case each, same message).
 
 4. **`GET platform` (owner's answers (b) and (d)).** `app-platform.controller.ts`, the shared `PlatformDto`:
    - `minVersion` (optional, the `app.<app>.min_version` setting when set), for the update ticket's real version.
@@ -50,11 +50,11 @@ The three apps' sign-in, a restaurant user added in the panel or the restaurant 
 
 6. **Contract and clients.** `pnpm generate:api`; commit `packages/api-schema` and `packages/core_api`. Every change is additive except the `phone` description and pattern and the new refusal value.
 
-7. **Spec text (server item 4)**, in the same pull request: U3 in CU §2 (every country, owner decision 2026-11-24, with its reason); CU §5.2 item 1 (any country's mobile; the picker and the field's rules are D.11's components slice, so the spec names the behaviour of D.11's analysis); CU §4.2 (the update screen's required version) and §4.7 (maintenance's return time; the platform hours read from `GET platform` as well as checkout); RA §5 and CA §5 line 28; AP §9.12.1 (the landmark, shown to captains and customers), §9.14 and Appendix A; architecture §8.3.3 item 2. `customer.phone_default_country` stays SY or TR (the owner rejected a default from the SIM; the picker pins Syria and Turkey). `docs/code/apps/server.md`, `docs/code/apps/admin.md` and the merged slice's notes record what changed.
+7. **Spec text (server item 4)**, in the same pull request: U3 in CU §2 (every country, owner decision 2026-11-24, with its reason); CU §5.2 item 1 (any country's mobile; the picker and the field's rules belong to the clients' phone field, so the spec names the behaviour only); CU §4.2 (the update screen's required version) and §4.7 (maintenance's return time; the platform hours read from `GET platform` as well as checkout); RA §5 and CA §5 line 28; AP §9.12.1 (the landmark, shown to captains and customers), §9.14 and Appendix A; architecture §8.3.3 item 2. `customer.phone_default_country` stays SY or TR (the owner rejected a default from the SIM; the picker pins Syria and Turkey). `docs/code/apps/server.md`, `docs/code/apps/admin.md` and the merged slice's notes record what changed.
 
 Tests written first (locked in the red phase):
 
-- `src/modules/identity/app-phone.test.ts` (new): one case per row: Syrian mobiles `+96393…`, `+96394…`, `+96395…`, `+96396…`, `+96398…`, `+96399…`; a Turkish mobile; a German, British and Iraqi mobile; an American number (fixed or mobile) accepted; a Syrian and a Turkish landline, a number a digit short and a digit long, a national form (`0944…`), `00963…` and a bare `963…` refused; every phone in `placeholder-seed.ts` and the placeholder-phone command accepted; `maskedPhone` for `+963`, `+90`, `+44`, `+1` and `+7`. (D.11's normalisation table is the clients' job, in the components slice: the server takes E.164 only.)
+- `src/modules/identity/app-phone.test.ts` (new): one case per row: Syrian mobiles `+96393…`, `+96394…`, `+96395…`, `+96396…`, `+96398…`, `+96399…`; a Turkish mobile; a German, British and Iraqi mobile; an American number (fixed or mobile) accepted; a Syrian and a Turkish landline, a number a digit short and a digit long, a national form (`0944…`), `00963…` and a bare `963…` refused; every phone in `placeholder-seed.ts` and the placeholder-phone command accepted; `maskedPhone` for `+963`, `+90`, `+44`, `+1` and `+7`. (Normalisation is the clients' job, in their phone field: the server takes E.164 only.)
 - `src/logging/redact.test.ts`: the German, British and American numbers masked in a message, international and with `00`.
 - `app-sign-in.test.ts`, `captain-sign-in.test.ts`, `merchant-sign-in.test.ts`: a German mobile gets a code and signs in (customer, captain and a restaurant user added with it); a landline is `400` at the code request; the abroad limit: a German number's fourth code of the day is `429 number_limit` while a Syrian number's fourth passes, and a changed `otp.number_daily_max_abroad` applies; attempts: wrong, wrong, then the attempt reaching `otp.max_attempts` is `attempts_used`, a further try `attempts_used`, after a new code request `wrong_code` with attempts left again; an expired code and another device's code stay `code_expired`; the customer's account-deletion code answers `attempts_used` the same way.
 - `merchant-staff.test.ts` and the admin restaurant-accounts test: a foreign mobile is added; the masked number shows its own calling code («+44 ••• 123»); the same in `customers` blocks and the captain applications and profile tests that assert a masked number.
@@ -100,10 +100,10 @@ The `geo.offices.landmark` migration (0152, expand only: a nullable column and i
 
 ## To check on staging
 
-- Sign in to the customer app with a Syrian and a Turkish number as today, then (once D.11's components slice lets the field take other countries) with a number of another country; until then, the code request with a foreign number from the API.
+- Sign in to the customer app with a Syrian and a Turkish number as today, then (once the clients' phone field takes other countries) with a number of another country; until then, the code request with a foreign number from the API.
 - In the panel: set an office landmark and a maintenance return time; read them in `GET /v1/customer/account-state` (a customer with dues) and `GET /v1/customer/platform`.
 
 ## Notes for the next session
 
-- Not in this slice: the clients' phone field, picker and normalisation (D.11 items 5 to 13, the components slice), including the panel's account form (`apps/admin/src/restaurant-drafts.ts` `phoneOf`, `accountBody`) and the owner portal's sign-in (`apps/merchant-portal/src/session.ts` `phoneOf`), which still take +963 and +90 only; `attempts_used`'s own words (D.11's code screen).
-- The address's contact number stays Syrian or Turkish (`syrianOrTurkishPhone`, review finding): the owner widened sign-in only. Widening it is the owner's decision (a captain calls it from Syria). D.11b moves the customer's checkout phone to the every-country field: until the owner decides, that field keeps Syria and Turkey there, or the server refuses a foreign contact number with `400`.
+- Not in this slice: the clients' phone field, picker and normalisation, including the panel's account form (`apps/admin/src/restaurant-drafts.ts` `phoneOf`, `accountBody`) and the owner portal's sign-in (`apps/merchant-portal/src/session.ts` `phoneOf`), which still take +963 and +90 only; `attempts_used`'s own words (the sign-in screen's code step).
+- The address's contact number stays Syrian or Turkish (`syrianOrTurkishPhone`, review finding): the owner widened sign-in only. Widening it is the owner's decision (a captain calls it from Syria). The customer's checkout phone field keeps Syria and Turkey, or the server refuses a foreign contact number with `400`.

@@ -20,8 +20,6 @@ import {
   checkEdit,
   checkFvmInWorktree,
   checkPinnedSdk,
-  imageCheckDecision,
-  pullRequestCommand,
   stripPayload,
   toRepoPath,
 } from './lib/policy.mjs';
@@ -58,8 +56,8 @@ describe('toRepoPath', () => {
 
   it('resolves .. and a leading ./', () => {
     assert.equal(
-      toRepoPath('D:\\fox-drop\\apps\\..\\docs\\archive\\x.md', 'D:\\fox-drop'),
-      'docs/archive/x.md',
+      toRepoPath('D:\\fox-drop\\apps\\..\\docs\\slices\\x.md', 'D:\\fox-drop'),
+      'docs/slices/x.md',
     );
     assert.equal(toRepoPath('./apps/admin/a.test.ts', 'D:\\fox-drop'), 'apps/admin/a.test.ts');
   });
@@ -81,8 +79,8 @@ describe('checkEdit', () => {
     assert.equal(checkEdit('packages/core_api/pubspec.yaml', merged), null);
     assert.equal(checkEdit('packages/core_api/test/client_test.dart', merged), null);
     assert.equal(checkEdit('packages/api-schema/src/index.ts', merged), null);
-    assert.equal(checkEdit('packages/design-tokens/tokens/color.json', merged), null);
-    assert.equal(checkEdit('docs/slices/D.8-inputs-and-forms.md', merged), null);
+    assert.equal(checkEdit('packages/core_l10n/lib/src/arb/app_ar.arb', merged), null);
+    assert.equal(checkEdit('docs/slices/1.14-walking-skeleton.md', merged), null);
     assert.equal(checkEdit('docs/backlog.md', merged), null);
   });
 
@@ -92,9 +90,9 @@ describe('checkEdit', () => {
       'packages/core_api/lib/src/model/order.dart',
       'packages/api-schema/openapi.json',
       'packages/api-schema/src/schema.ts',
-      'packages/design-tokens/generated/tokens.css',
+      'apps/server/src/generated/routes.ts',
       'packages/core_l10n/lib/src/generated/app_localizations.dart',
-      'packages/core_tokens/lib/src/tokens.g.dart',
+      'packages/core_api/lib/src/serializers.g.dart',
       'apps/customer/lib/x.freezed.dart',
       'apps/customer/test/x.mocks.dart',
       'pnpm-lock.yaml',
@@ -103,12 +101,6 @@ describe('checkEdit', () => {
       'apps/server/migrations/meta/0150_snapshot.json',
     ])
       assert.match(checkEdit(p, branchOnly) ?? '', /generated/, p);
-  });
-
-  it('refuses the read-only archives in any casing', () => {
-    assert.match(checkEdit('docs/archive/claude-code-workflow.md', branchOnly), /read-only/);
-    assert.match(checkEdit('docs/slice-notes.md', branchOnly), /read-only/);
-    assert.match(checkEdit('Docs/Slice-Notes.md', branchOnly), /read-only/);
   });
 
   it('protects merged migrations but not ones still on the branch', () => {
@@ -134,7 +126,7 @@ describe('stripPayload', () => {
   it('empties message, body and title values', () => {
     assert.equal(stripPayload('git commit -m "move -> apps/admin"'), 'git commit -m ""');
     assert.equal(
-      stripPayload("gh pr create --body '> packages/ui-web' --title 'x'"),
+      stripPayload("gh pr create --body '> apps/admin' --title 'x'"),
       'gh pr create --body "" --title ""',
     );
   });
@@ -143,7 +135,7 @@ describe('stripPayload', () => {
 describe('checkBash', () => {
   const refused = [
     // shell writes into source folders
-    'echo x > packages/core_ui/lib/a.dart',
+    'echo x > packages/core_auth/lib/a.dart',
     'cat <<EOF >> scripts/verify.mjs',
     'printf x | tee apps/server/src/x.ts',
     "sed -i 's/a/b/' packages/core_time/lib/clock.dart",
@@ -208,7 +200,7 @@ describe('checkBash', () => {
     'echo x > D:/fox-drop/.claude/worktrees/w/apps/admin/x.ts',
     'echo x > .claude/settings.json',
     // run-time fetches
-    'npx skills@latest add vercel-labs/ui --skill ui-sdk',
+    'npx skills@latest add vercel-labs/ui --skill react',
     'npx -y skills add x',
     'npx --yes skills@1.2.3 add x',
     'npx shadcn@latest add button',
@@ -232,8 +224,8 @@ describe('checkBash', () => {
     'npm install',
     'npm add react',
     'npm ci',
-    'cd packages/ui-web && npm install left-pad',
-    'npm --prefix packages/ui-web install left-pad',
+    'cd apps/admin && npm install left-pad',
+    'npm --prefix apps/admin install left-pad',
     'npm.cmd install',
     '/usr/bin/npm install',
     'sudo npm install -g x',
@@ -301,7 +293,7 @@ describe('checkBash', () => {
     // payload text is not a command
     'git commit -m "refactor: move helpers -> apps/admin"',
     'git commit -m "docs: explain --no-verify is refused"',
-    "gh pr create --title 'x' --body '> packages/core_ui changed'",
+    "gh pr create --title 'x' --body '> packages/core_auth changed'",
     "cat <<'EOF' > /tmp/notes.md\nwrites go > apps/admin via Edit\nEOF",
     'git commit -m "docs: never run npx skills add or npm install"',
     'grep -rn bypassPermissions .claude/',
@@ -395,12 +387,12 @@ describe('the guard scripts', () => {
       {
         tool_name: 'Write',
         cwd: tree,
-        tool_input: { file_path: path.join(tree, 'docs/archive/x.md') },
+        tool_input: { file_path: path.join(tree, 'packages/core_api/lib/x.dart') },
       },
       { CLAUDE_PROJECT_DIR: main },
     );
     assert.equal(edit.status, 2);
-    assert.match(edit.stderr, /read-only archive/);
+    assert.match(edit.stderr, /is generated/);
   });
 });
 
@@ -486,140 +478,6 @@ describe('the pinned Flutter', () => {
     assert.equal(checkFvmInWorktree('fvm install', 'D:\\fox-drop'), null);
     assert.equal(checkFvmInWorktree('fvm list', tree), null);
     assert.equal(checkFvmInWorktree('fvm install', undefined), null);
-  });
-});
-
-describe('no pull request with unchecked images', () => {
-  it('finds gh pr create and gh pr ready, also after other commands and inside a shell string', () => {
-    for (const [cmd, what] of [
-      ['gh pr create --base main --title "fix: x" --body "y"', 'gh pr create'],
-      ['gh pr create --draft --fill', 'gh pr create'],
-      ['git push -u origin feat/x && gh pr create --fill', 'gh pr create'],
-      ['git push -u origin feat/x; gh.exe pr create --fill', 'gh pr create'],
-      ["gh pr create --title 'x' --body \"$(cat <<'EOF'\n## Summary\nEOF\n)\"", 'gh pr create'],
-      ['gh pr ready 292', 'gh pr ready'],
-      ['bash -c "gh pr create --fill"', 'gh pr create'],
-      ['cd D:/fox-drop; gh pr ready', 'gh pr ready'],
-    ])
-      assert.equal(pullRequestCommand(cmd), what, cmd);
-  });
-
-  it('ignores other gh commands and the text that only names one', () => {
-    for (const cmd of [
-      'gh pr view 292 --json state',
-      'gh pr merge --auto --squash --delete-branch',
-      'gh pr ready 292 --undo',
-      'gh pr create --help',
-      'gh pr list',
-      'git commit -m "docs: then run gh pr create"',
-      "cat <<'EOF' > /tmp/plan.md\nfinally gh pr create --base main\nand gh pr ready\nEOF",
-      'echo "gh pr create comes last"',
-      "grep -rn 'gh pr create' docs",
-      'gh issue create --title "gh pr create fails"',
-    ])
-      assert.equal(pullRequestCommand(cmd), null, cmd);
-  });
-
-  it('refuses on exit 1 with its line, allows on exit 0, warns when the status cannot run', () => {
-    const line =
-      'baselines: the ui-web screenshots of this tree are not checked: run `pnpm baselines`';
-    assert.deepEqual(
-      imageCheckDecision('gh pr create', { status: 0, stdout: 'baselines: ok\n' }),
-      {},
-    );
-    const refused = imageCheckDecision('gh pr create', { status: 1, stdout: `${line}\n` });
-    assert.equal(refused.warn, undefined);
-    assert.ok(refused.block.startsWith(line), refused.block);
-    assert.match(refused.block, /gh pr create waits/);
-    for (const result of [
-      // a crash: exit 1 with a stack and no status line
-      { status: 1, stdout: '', stderr: 'file:///x/baselines.mjs:9\nError: boom\n' },
-      { status: 2, stdout: '', stderr: 'baselines: unknown or mixed arguments\n' },
-      { status: null, error: 'ETIMEDOUT' },
-      { missing: true },
-    ]) {
-      const decision = imageCheckDecision('gh pr ready', result);
-      assert.equal(decision.block, undefined, JSON.stringify(result));
-      assert.match(decision.warn, /^gh pr ready: .*CI checks the images/, JSON.stringify(result));
-    }
-    assert.match(
-      imageCheckDecision('gh pr create', { status: 1, stderr: 'x\nError: boom' }).warn,
-      /could not run \(exit 1: x\)/,
-    );
-    assert.match(imageCheckDecision('gh pr create', { error: 'ETIMEDOUT' }).warn, /ETIMEDOUT/);
-  });
-
-  // A checkout whose scripts/baselines.mjs is a stub: `body` is its code; it records each run.
-  const checkout = (name, body) => {
-    const repo = path.join(scratch, name);
-    mkdirSync(path.join(repo, 'scripts'), { recursive: true });
-    spawnSync('git', ['init', '--quiet'], { cwd: repo });
-    if (body !== undefined)
-      writeFileSync(
-        path.join(repo, 'scripts', 'baselines.mjs'),
-        `import { appendFileSync } from 'node:fs';\nappendFileSync(new URL('../ran.txt', import.meta.url), process.argv.slice(2).join(' ') + '\\n');\n${body}\n`,
-      );
-    const guard = (command, tool = 'Bash') => {
-      const result = runScript(
-        'guard-bash.mjs',
-        { tool_name: tool, cwd: repo, tool_input: { command } },
-        { CLAUDE_PROJECT_DIR: repo },
-      );
-      const warn = result.stdout ? JSON.parse(result.stdout).systemMessage : undefined;
-      return { ...result, warn };
-    };
-    const runs = () =>
-      existsSync(path.join(repo, 'ran.txt'))
-        ? readFileSync(path.join(repo, 'ran.txt'), 'utf8')
-        : '';
-    return { guard, runs };
-  };
-
-  it('the guard allows a checked tree and runs the status only for the two commands', () => {
-    const { guard, runs } = checkout(
-      'images-checked',
-      "console.log('baselines: the ui-web screenshots of this tree are checked'); process.exit(0);",
-    );
-    for (const cmd of ['git status', 'gh pr view 1', "git commit -m 'gh pr create next'"]) {
-      const result = guard(cmd);
-      assert.equal(result.status, 0, result.stderr);
-    }
-    assert.equal(runs(), '');
-    const created = guard('git push -u origin feat/x && gh pr create --fill');
-    assert.equal(created.status, 0, created.stderr);
-    assert.equal(created.warn, undefined);
-    assert.equal(guard('gh pr ready 12', 'PowerShell').status, 0);
-    assert.equal(runs(), '--status\n--status\n');
-  });
-
-  it('the guard refuses an unchecked tree with the status line', () => {
-    const line =
-      'baselines: the ui-web screenshots of this tree are not checked: run `pnpm baselines` (updates and compares them; `--check` only compares)';
-    const { guard } = checkout(
-      'images-unchecked',
-      `console.log(${JSON.stringify(line)}); process.exit(1);`,
-    );
-    for (const [cmd, what] of [
-      ['gh pr create --base main --title "x" --body "y"', 'gh pr create'],
-      ['gh pr ready', 'gh pr ready'],
-    ]) {
-      const result = guard(cmd);
-      assert.equal(result.status, 2, cmd);
-      assert.ok(result.stderr.includes(line), result.stderr);
-      assert.match(result.stderr, new RegExp(`${what} waits`));
-    }
-    assert.equal(guard("cat <<'EOF' > /tmp/x.md\ngh pr create\nEOF").status, 0);
-  });
-
-  it('the guard warns and allows when the status crashes or is missing', () => {
-    const crashed = checkout('images-crash', "throw new Error('boom');").guard(
-      'gh pr create --fill',
-    );
-    assert.equal(crashed.status, 0, crashed.stderr);
-    assert.match(crashed.warn, /could not run \(exit 1: .*\).*CI checks the images/);
-    const missing = checkout('images-missing').guard('gh pr create --fill');
-    assert.equal(missing.status, 0, missing.stderr);
-    assert.match(missing.warn, /no scripts\/baselines\.mjs/);
   });
 });
 
@@ -753,23 +611,23 @@ describe('the light check at the end of a turn', () => {
   });
 
   it('plans Prettier, the pinned dart format and ESLint per package config', () => {
-    const configs = new Set(['', 'apps/server', 'packages/ui-web']);
+    const configs = new Set(['', 'apps/server', 'apps/admin']);
     const plan = planChecks(
       [
         'apps/server/src/a.ts',
         'apps/server/test/b.test.ts',
-        'packages/ui-web/src/c.tsx',
+        'apps/admin/src/c.tsx',
         'scripts/d.mjs',
-        'packages/core_ui/lib/e.dart',
+        'packages/core_auth/lib/e.dart',
         'docs/f.md',
       ],
       (dir) => configs.has(dir),
     );
-    assert.deepEqual(plan.dart, ['packages/core_ui/lib/e.dart']);
+    assert.deepEqual(plan.dart, ['packages/core_auth/lib/e.dart']);
     assert.equal(plan.prettier.length, 5);
     assert.deepEqual(Object.fromEntries(plan.eslint), {
       'apps/server': ['src/a.ts', 'test/b.test.ts'],
-      'packages/ui-web': ['src/c.tsx'],
+      'apps/admin': ['src/c.tsx'],
       '': ['scripts/d.mjs'],
     });
     assert.equal(planChecks(['a.ts'], () => false).eslint.size, 0);

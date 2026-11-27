@@ -30,8 +30,8 @@ void main() {
     expect(validName(' - '), isFalse);
   });
 
-  // The sign-in itself left with its screen in D.R1 (2026-11-27): the
-  // account starts signed in, its details not completed.
+  // No sign-in screen yet: the account starts signed in, its details not
+  // completed.
   testWidgets(
     'a new account completes its details, then returns where it was',
     (tester) async {

@@ -1,9 +1,0 @@
-# The golden tests (R9) are valid only on Linux in Docker, so a plain
-# `flutter test` skips them: run `node scripts/golden-docker.mjs`.
-tags:
-  golden:
-    skip: 'Linux only: node scripts/golden-docker.mjs'
-  # The parity sheet's Flutter side (test/parity/): a review tool that writes
-  # .parity/flutter/, run only by `pnpm parity <Component>`, never by CI.
-  parity:
-    skip: 'A review tool: pnpm parity <Component>'

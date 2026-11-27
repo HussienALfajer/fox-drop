@@ -36,7 +36,6 @@ import {
 import os from 'node:os';
 import path from 'node:path';
 
-import { imageStatus } from './baselines.mjs';
 import { changedFiles, classify, READ_BY_SERVER_TESTS, turboScope } from './classify-changes.mjs';
 import { recordGreen, treeState } from './green-tree.mjs';
 import { serverTestScope } from './server-test-readers.mjs';
@@ -50,8 +49,6 @@ import {
   gitDir,
   hasPassed,
   inputsFingerprint,
-  NO_PLUGINS_PROBE,
-  noPluginsProblem,
   passKey,
   pinnedFlutterBin,
   pinnedSdkPath,
@@ -127,7 +124,7 @@ if (
 
 // ---------------------------------------------------------------- the lock
 
-// One check at a time in a folder (docs/archive/claude-code-workflow.md, phase 6): two
+// One check at a time in a folder: two
 // at once share the Playwright ports and write packages/core_api together.
 // A check waits for the one running (up to LOCK_WAIT_MS); `--no-wait`, or the
 // wait running out, exits 3. A lock whose process is gone is taken over.
@@ -545,7 +542,7 @@ function checkInstructionSizes() {
 const SCRIPT_TESTS = {
   name: 'Claude Code hooks and scripts',
   command:
-    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/fonts.test.mjs scripts/font-metrics.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/baselines.test.mjs scripts/dependency-pins.test.mjs scripts/parity.test.mjs scripts/generate-api.test.mjs',
+    'node --test .claude/hooks/hooks.test.mjs scripts/classify-changes.test.mjs scripts/verify-support.test.mjs scripts/green-tree.test.mjs scripts/server-test-readers.test.mjs scripts/turbo-inputs.test.mjs scripts/dependency-pins.test.mjs scripts/countries.test.mjs scripts/generate-api.test.mjs',
 };
 
 function formatSteps(files) {
@@ -646,12 +643,11 @@ const E2E_TASKS = 'build test:e2e';
 // at a time: two installs at once race on the shared browser cache. Skipped
 // locally when the pinned Chromium is already complete.
 function playwrightStep() {
-  if (!CI && chromiumInstalled(['apps/admin', 'apps/merchant-portal', 'packages/ui-web']))
-    return null;
+  if (!CI && chromiumInstalled(['apps/admin', 'apps/merchant-portal'])) return null;
   return {
     name: 'Playwright browser',
     command:
-      'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal --filter @fox-drop/ui-web exec playwright install chromium',
+      'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium',
   };
 }
 
@@ -891,21 +887,6 @@ async function verifyChanged(since) {
         ? dartChanged(files, touched.dartScope)
         : skipped('Dart', 'no change it can break'),
   ]);
-  imageBaselines(files, since);
-}
-
-// The image baselines take minutes in Docker, so verify does not run them:
-// `pnpm baselines` does, and records the tree it checked. The table says
-// whether this tree's images are checked (CI's `visual` and `golden` jobs are
-// the gate).
-function imageBaselines(files, since) {
-  const status = imageStatus(files, { since });
-  const result = !status.ok
-    ? 'UNCHECKED'
-    : status.line.startsWith('no change')
-      ? 'skipped'
-      : 'checked';
-  report({ name: `Image baselines: ${status.line}`, result });
 }
 
 async function dartChanged(files, dartScope) {
@@ -930,9 +911,7 @@ async function dartChanged(files, dartScope) {
       },
     },
     ...(files.some((file) => file.startsWith('packages/core_l10n/')) ? localizationSteps() : []),
-    NO_PLUGINS_STEP,
     () => scoped.length > 0 && analyzeStep(scoped, workspace, inputs),
-    () => foxLintsStep(inputs),
     () =>
       scoped.length > 0 && {
         name: `Dart format, ${scopeLabel(scoped, workspace)}`,
@@ -961,41 +940,19 @@ const scopeLabel = (scoped, workspace) =>
     ? 'all packages'
     : `${scoped.length} changed or dependent packages`;
 
-// The analyzer without the fox_lints plugin (`--no-plugins`, the editor's:
-// it re-resolves the whole workspace on every run), whose rules the check
-// runs on its own (foxLintsStep). One analyzer process over the changed
-// packages and their dependents: 11 s against 23 s over the workspace for
-// core_ui's six (2026-11-25, warm).
+// One analyzer process over the changed packages and their dependents.
 function analyzeStep(scoped, workspace, inputs) {
   const all = scoped.length === workspace.length;
   return {
     name: `Dart analyze, ${scopeLabel(scoped, workspace)}`,
-    command: `dart analyze --fatal-infos --no-plugins${all ? '' : ` ${scoped.map((each) => each.dir).join(' ')}`}`,
+    command: `dart analyze --fatal-infos${all ? '' : ` ${scoped.map((each) => each.dir).join(' ')}`}`,
     inputs,
     timeoutMs: ANALYZE_LIMIT_MS,
   };
 }
 
-// An SDK whose `dart analyze` lacks the undocumented --no-plugins stops here,
-// with what to do (noPluginsProblem), before any analysis.
-const NO_PLUGINS_STEP = {
-  name: 'Dart analyze takes --no-plugins',
-  check: () => noPluginsProblem(spawnSync(NO_PLUGINS_PROBE, { shell: true, encoding: 'utf8' })),
-};
-
-// The fox_lints rules (architecture §9.5 R2, R5) over the packages they
-// enforce, as the analyzer plugin runs them in the editor
-// (packages/fox_lints/CLAUDE.md): it compiles itself once per change to
-// fox_lints, pubspec.lock or the SDK (35 s), then takes 2.5 s.
-const foxLintsStep = (inputs) => ({
-  name: 'fox_lints rules',
-  command: 'dart packages/fox_lints/tool/check.dart',
-  inputs,
-  timeoutMs: ANALYZE_LIMIT_MS,
-});
-
 // A cold analysis of the workspace took 7 min 13 s on 2026-11-25 in a new
-// worktree, without the plugin too (the analyzer's cache does not follow a new
+// worktree (the analyzer's cache does not follow a new
 // folder); warm, 20 to 36 s. One that runs far longer has stopped answering.
 const ANALYZE_LIMIT_MS = 15 * 60 * 1000;
 
@@ -1051,10 +1008,9 @@ async function verifyParts() {
         ...(parts.has('dart')
           ? [
               ...localizationSteps(),
-              NO_PLUGINS_STEP,
-              // `dart analyze --fatal-infos --no-plugins`, then the fox_lints rules.
+              // `dart analyze --fatal-infos` over the workspace.
               () => ({
-                name: 'Dart analyze and the fox_lints rules',
+                name: 'Dart analyze',
                 command: 'dart run melos run analyze --no-select',
                 inputs: dartInputs(workspace),
                 timeoutMs: ANALYZE_LIMIT_MS,

@@ -1,13 +1,13 @@
 # packages/core_auth
 
-> Moved here from `packages/core_auth/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `packages/core_auth/CLAUDE.md` on 2026-11-20. In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 Phone sign-in and the app session of the three Flutter apps (architecture §11.2, §15.1; CU §5.2–5.4, RA §5.2–5.3, CA §4.9).
 The server side is the identity module (`apps/server/src/modules/identity/CLAUDE.md`).
 
-## D.R1 (2026-11-27): the sign-in screen deleted
+## 2026-11-27: the sign-in screen deleted
 
-With every UI component, the owner deleted the unstyled sign-in screen (`sign_in_screen.dart`, its refusal strings, `signInMessage`, `phoneFieldStrings` and their UI tests, `sign_in_message_test.dart`). No app can sign in until a new sign-in screen is drawn, approved and built. The logic stays: `SignInController`, the session, App Check and the phone rules. core_ui's phone rules moved here as `lib/src/phone_rules.dart` with `test/phone_rules_test.dart` and `test/phone-cases.json` (the web's copy of the rules went). History: git before the D.R1 merge (`docs/slices/D.R1-delete-components-screen-first.md`).
+The owner deleted the unstyled sign-in screen (`sign_in_screen.dart`, its refusal strings, `signInMessage`, `phoneFieldStrings` and their UI tests, `sign_in_message_test.dart`). No app can sign in until a new sign-in screen is built. The logic stays: `SignInController`, the session, App Check and the phone rules, in `lib/src/phone_rules.dart` with `test/phone_rules_test.dart` and `test/phone-cases.json` (the web's copy of the rules went). History: git.
 
 ## Layout
 
@@ -15,9 +15,9 @@ With every UI component, the owner deleted the unstyled sign-in screen (`sign_in
 - `auth_scope.dart`: `AuthScope`, one app's providers (the party, the secure store, the session, the sign-in steps, the support numbers, the link launcher).
   Each app makes one as a top-level `final` in `lib/src/auth.dart`.
 - `session.dart`: `SessionController` (the tokens and the device id in `core_storage`) and `AuthInterceptor`.
-- `sign_in.dart`: `SignInController`, the steps' logic (no screen shows them since D.R1).
+- `sign_in.dart`: `SignInController`, the steps' logic (no screen shows them yet).
 - `phone.dart`: the number rules of CU §5.2 item 1 (`e164Phone`, `westernDigits`), over `phone_rules.dart`.
-- `phone_rules.dart` (from core_ui in D.R1; `phone_numbers_parser` 9.0.29, MIT, pure Dart): `foxReadPhone(input, picked)` gives a `FoxPhoneReading` (country, national digits, `grouped`, `e164` or one `FoxPhoneProblem`, `missing`, `prefix`, `switchedFrom`) on Google's metadata: clean (Western digits, separators and the bidi marks built from code points, a number out of pasted text), `+`/`00` or the bare code (after a 0 too), the picked region first among those sharing a code, the national prefix dropped unless it belongs to a valid number, then mobile, landline, short, long or a wrong prefix. A region whose mobile pattern is empty (Canada) treats its one pattern as mobile. It passes every row of `test/phone-cases.json` (an invisible mark is written `{U+XXXX}` there); a rebuilt web phone field must read the same file.
+- `phone_rules.dart` (`phone_numbers_parser` 9.0.29, MIT, pure Dart): `foxReadPhone(input, picked)` gives a `FoxPhoneReading` (country, national digits, `grouped`, `e164` or one `FoxPhoneProblem`, `missing`, `prefix`, `switchedFrom`) on Google's metadata: clean (Western digits, separators and the bidi marks built from code points, a number out of pasted text), `+`/`00` or the bare code (after a 0 too), the picked region first among those sharing a code, the national prefix dropped unless it belongs to a valid number, then mobile, landline, short, long or a wrong prefix. A region whose mobile pattern is empty (Canada) treats its one pattern as mobile. It passes every row of `test/phone-cases.json` (an invisible mark is written `{U+XXXX}` there); a rebuilt web phone field must read the same file.
 - `app_check.dart`: `startAppCheck`, Firebase and App Check from the build's values, and the token source `AppCheckToken`.
 
 ## Rules

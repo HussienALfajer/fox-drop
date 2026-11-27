@@ -35,10 +35,9 @@ import 'search/suggest_screen.dart';
 import 'starting_screen.dart';
 import 'terms.dart';
 
-/// Where a screen that needs sign-in sends a guest. The sign-in screen was
-/// deleted with the components in D.R1 (2026-11-27) and returns with its
-/// approved drawing, then back to [from] (CU §5.1); until then a guest stays
-/// on home.
+/// Where a screen that needs sign-in sends a guest: the sign-in screen, then
+/// back to [from] (CU §5.1), once it is built; until then a guest stays on
+/// home.
 String signInFrom(String from) => '/';
 
 // Only a path of this app, never another address.

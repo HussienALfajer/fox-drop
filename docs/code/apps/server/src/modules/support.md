@@ -1,6 +1,6 @@
 # support module
 
-> Moved here from `apps/server/src/modules/support/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/support/CLAUDE.md` on 2026-11-20. In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 Tickets «الدعم» (architecture §4.2; AP §9.9).
 Compensation and its approvals live in `marketing`.

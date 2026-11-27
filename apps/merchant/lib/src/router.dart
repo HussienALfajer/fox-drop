@@ -34,8 +34,8 @@ import 'terms.dart';
 import 'windows/pairing_screen.dart';
 import 'windows/registration.dart';
 
-/// Signed out, every route leads to the starting screen (the sign-in screen
-/// returns with its drawing, D.R1); signed in on a device without a
+/// Signed out, every route leads to the starting screen (no sign-in screen
+/// yet); signed in on a device without a
 /// name, to «سمِّ هذا الجهاز» (RA §5.2 item 5); then home. Maintenance or
 /// a required update leads every device to `/blocked` (RA §4.2, §4.10). An
 /// owner with a pending version of the terms reaches only Orders and the
@@ -60,8 +60,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Windows (slice 2.44): once the server refused its signature, the
         // owner's code registers the PC before sign-in.
         if (ref.read(pairingNeededProvider)) return to('/windows-pairing');
-        // The sign-in screen left in D.R1 (2026-11-27): signed out, the
-        // device waits on the starting screen until it returns.
+        // No sign-in screen yet: signed out, the device waits on the
+        // starting screen.
         return to('/starting');
       }
       final user = ref.read(merchantSessionProvider);

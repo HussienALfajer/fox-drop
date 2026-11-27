@@ -4,7 +4,7 @@ The run book of slice 1.14h (`docs/roadmap.md`): one order through its whole cyc
 
 Operating the server (deploys, secrets, the commands below) is in the `deploy` skill; this page only lists what the run needs.
 
-**Waiting for the sign-in screen (2026-11-27).** D.R1 deleted the apps' sign-in screen (T16), so no staging app signs in until the new sign-in screen ships, the first screen of T16 (`docs/roadmap.md`, 1.14h). Do not build or install staging APKs from `main` for this run before then; steps 2 to 4 need that screen.
+**Waiting for the sign-in screen (2026-11-27).** The apps' sign-in screen was deleted, so no staging app signs in until the new sign-in screen ships (`docs/roadmap.md`, 1.14h). Do not build or install staging APKs from `main` for this run before then; steps 2 to 4 need that screen.
 
 ## What the run needs
 

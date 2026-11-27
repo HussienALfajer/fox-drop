@@ -32,8 +32,8 @@ class HeartButton extends ConsumerWidget {
       tooltip: shown ? l10n.customerRemoveFavourite : l10n.customerAddFavourite,
       icon: Icon(shown ? Icons.favorite : Icons.favorite_border),
       onPressed: () async {
-        // A guest's heart does nothing until the sign-in screen returns
-        // (deleted in D.R1); the guest stays where they are.
+        // A guest's heart does nothing until the sign-in screen is built;
+        // the guest stays where they are.
         if (ref.read(customerAuth.session).value is! SignedIn) return;
         final messenger = ScaffoldMessenger.of(context);
         final done = await ref

@@ -14,8 +14,7 @@ bool _full(WidgetTester tester, String id) =>
 // CU §9.6, U18 (slice 2.28b): the heart on cards and pages, a guest signing
 // in first, and «المفضلة» in «حسابي».
 void main() {
-  // Until the sign-in screen returns (deleted in D.R1, 2026-11-27), a guest's
-  // heart saves nothing.
+  // Until the sign-in screen is built, a guest's heart saves nothing.
   testWidgets('a guest who taps a heart saves nothing', (tester) async {
     final app = await browsingApp(tester);
     await tester.tap(_heart(shamId));

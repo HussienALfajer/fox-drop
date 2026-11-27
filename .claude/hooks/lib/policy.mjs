@@ -27,7 +27,7 @@ export function toRepoPath(filePath, projectDir) {
 
 // Files a generator writes: change the source and re-run the generator instead.
 const GENERATED = [
-  // design-tokens/generated, core_l10n/lib/src/generated
+  // core_l10n/lib/src/generated
   /(^|\/)generated\//i,
   // the Dart API client: all of lib/ is replaced by `pnpm generate:api`
   /^packages\/core_api\/lib\//i,
@@ -43,9 +43,6 @@ const GENERATED = [
   /(^|\/)migrations\/meta\/[^/]+\.json$/i,
 ];
 
-// Read-only history: cite it, never edit it.
-const ARCHIVES = [/^docs\/archive\//i, /^docs\/slice-notes\.md$/i];
-
 /**
  * Decides whether Claude may create or change a file.
  * @param {string} repoPath normalised path relative to the repository root
@@ -56,9 +53,6 @@ const ARCHIVES = [/^docs\/archive\//i, /^docs\/slice-notes\.md$/i];
 export function checkEdit(repoPath, { onMain, lockedTests }) {
   if (GENERATED.some((re) => re.test(repoPath))) {
     return `${repoPath} is generated; change its source and re-run the generator instead.`;
-  }
-  if (ARCHIVES.some((re) => re.test(repoPath))) {
-    return `${repoPath} is a read-only archive; write new hand-over notes in the slice file (docs/slices/) and open items in docs/backlog.md.`;
   }
   if (onMain && /(^|\/)migrations\/[^/]+\.sql$/i.test(repoPath)) {
     return `${repoPath} is a merged migration; add a new migration instead (expand, then contract).`;
@@ -380,64 +374,4 @@ export function checkBash(command, depth = 0) {
     }
   }
   return null;
-}
-
-/**
- * Which pull request command the shell line runs: 'gh pr create' (a draft included) or
- * 'gh pr ready' (not `--undo`), else null. Text in messages, heredocs and quoted arguments is
- * not a command; the string a shell is started with is.
- * @param {string} command
- * @returns {string | null}
- */
-export function pullRequestCommand(command, depth = 0) {
-  const cmd = stripPayload(command);
-  for (const { program, args } of commandSegments(cmd)) {
-    if (program !== 'gh' || args.includes('--help') || args.includes('-h')) continue;
-    const pr = args.indexOf('pr');
-    const sub = pr >= 0 ? args[pr + 1] : undefined;
-    if (sub === 'create' || (sub === 'ready' && !args.includes('--undo'))) return `gh pr ${sub}`;
-  }
-  if (depth < 3)
-    for (const inner of innerCommands(cmd)) {
-      const found = pullRequestCommand(inner, depth + 1);
-      if (found) return found;
-    }
-  return null;
-}
-
-/**
- * Whether a pull request may be opened (or marked ready) on this tree, from the result of
- * `node scripts/baselines.mjs --status`: exit 0 when the tree's image baselines are checked or
- * the change cannot alter an image, 1 with one line saying what to run.
- *
- * Exit 1 refuses: a pull request with unchecked images fails CI's `visual` or `golden` job, and
- * its author knew it in advance. Anything else (the script missing on a branch from before it
- * existed, a crash, a timeout) allows the command with a warning: this rule saves a CI run, it
- * guards nothing a mistake could break, and a broken helper must not stop every pull request.
- * CI's image jobs stay the gate. (The guard's own errors still refuse the call: guard-bash.mjs.)
- * @param {string} what the pull request command (`pullRequestCommand`)
- * @param {{ missing?: boolean, status?: number | null, stdout?: string, stderr?: string,
- *   error?: string }} result missing: no scripts/baselines.mjs in the checkout; error: why it
- *   could not run (a spawn error code, ETIMEDOUT)
- * @returns {{ block?: string, warn?: string }}
- */
-export function imageCheckDecision(what, result) {
-  const unchecked = 'CI checks the images instead (the visual and golden jobs).';
-  if (result.missing)
-    return {
-      warn: `${what}: this checkout has no scripts/baselines.mjs, so its image baselines were not checked; ${unchecked}`,
-    };
-  if (!result.error && result.status === 0) return {};
-  const line = (text) => (text ?? '').trim().split(/\r?\n/).find(Boolean);
-  // A crash exits 1 too, with a stack on stderr and no status line.
-  const status = line(result.stdout);
-  if (!result.error && result.status === 1 && status?.startsWith('baselines: '))
-    return {
-      block: `${status}. A pull request with unchecked images fails CI's visual or golden job, so ${what} waits for that run.`,
-    };
-  const why =
-    result.error ?? `exit ${result.status}${line(result.stderr) ? `: ${line(result.stderr)}` : ''}`;
-  return {
-    warn: `${what}: the image check (node scripts/baselines.mjs --status) could not run (${why}), so the command is allowed; ${unchecked} Fix the helper.`,
-  };
 }

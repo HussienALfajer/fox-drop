@@ -19,15 +19,12 @@ As built (aligned with the code on 2026-11-27, §2 T17):
 | `core_commands` | The outgoing command queue, kept in `core_storage` so it survives a restart: idempotency keys, retries with exponential backoff and jitter, «جارٍ الإرسال…», conflicts (RA §4.7) |
 | `core_time`     | Server clock offset from `Server-Time`; every countdown uses it                                                                                                                  |
 | `core_storage`  | `shared_preferences` for small caches and queues (`DeviceStore`), `flutter_secure_storage` for tokens; a database (Drift) when a cache outgrows it (when needed)                 |
-| `core_tokens`   | The design tokens in plain Dart, generated from `packages/design-tokens` (§9.2)                                                                                                  |
-| `core_ui`       | The design system (§9.7): the theme only since D.R1 (T16)                                                                                                                        |
 | `core_l10n`     | Arabic strings (ARB files), formatters for money, dates, durations and distances (AP §4.7), the country list                                                                     |
 | `core_maps`     | The map interface on `maplibre_gl`, the shared style from `/maps/`, route drawing                                                                                                |
 | `core_platform` | The forced update, maintenance, terms and the emergency stop (CU §4.2, §4.7, RA §4.2)                                                                                            |
 | `core_alerts`   | The native ringing layer: alarm audio stream, full-screen intents, foreground services, the device checks' readers, Windows tray and window control (§12, §14)                   |
 | `core_push`     | FCM registration, token refresh, notification channels, the notification permission                                                                                              |
-| `core_auth`     | The phone rules for every country (D.11a), App Check, session handling and the auth interceptor; the sign-in screen returns with its approved drawing (D.R1, T16)                |
-| `fox_lints`     | The analyzer rules R2 and R5 (§9.5) and their compiled check                                                                                                                     |
+| `core_auth`     | The phone rules for every country (D.11a), App Check, session handling and the auth interceptor                                                                                  |
 
 The device-check guides live in each app (`device_check/`, `receiving/`) on `core_alerts`' readers. Error reporting and analytics in the apps come with slice L.6 (§16), in a package of their own then.
 

@@ -92,8 +92,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return at == '/blocked' ? null : '/blocked';
       }
       if (known && at == '/blocked') return '/';
-      // The sign-in and join screens left in D.R1 (2026-11-27); CA §4.9's
-      // «سُجّل دخولك من جهاز آخر» returns with them.
+      // No sign-in or join screen yet; CA §4.9's «سُجّل دخولك من جهاز آخر»
+      // comes with them.
       if (!signedIn) return _signedOutRoutes.contains(at) ? null : '/welcome';
       return _signedOutRoutes.contains(at) ||
               at == '/starting' ||

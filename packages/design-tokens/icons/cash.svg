@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M6.5 8L14.5 8C16.39 8 17.33 8 17.91 8.59C18.5 9.17 18.5 10.11 18.5 12L18.5 15.75C18.5 17.64 18.5 18.58 17.91 19.16C17.33 19.75 16.39 19.75 14.5 19.75L6.5 19.75C4.61 19.75 3.67 19.75 3.09 19.16C2.5 18.58 2.5 17.64 2.5 15.75L2.5 12C2.5 10.11 2.5 9.17 3.09 8.59C3.67 8 4.61 8 6.5 8Z" data-role="body"/>
-  <path d="M5.75 4.75L17.5 4.75C19.39 4.75 20.33 4.75 20.91 5.34C21.5 5.92 21.5 6.86 21.5 8.75L21.5 16.25" data-role="detail" data-knock="out"/>
-  <path d="M8 13.88A2.5 2.5 0 1 1 13 13.88A2.5 2.5 0 1 1 8 13.88Z" data-role="detail" data-knock="in" data-accent="true"/>
-  <path d="M5.75 11.25h.01" data-role="detail" data-knock="in"/>
-  <path d="M15.25 16.5h.01" data-role="detail" data-knock="in"/>
-</svg>

@@ -349,8 +349,8 @@ void main() {
     await app.done(tester);
   });
 
-  // The sign-in screen left in D.R1 (2026-11-27): a guest's «تأكيد الطلب»
-  // stays on checkout, what they typed kept, and orders nothing.
+  // No sign-in screen yet: a guest's «تأكيد الطلب» stays on checkout, what
+  // they typed kept, and orders nothing.
   testWidgets('a guest at «تأكيد الطلب» stays and orders nothing', (
     tester,
   ) async {

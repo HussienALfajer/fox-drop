@@ -1,17 +1,17 @@
-// Writes the phone field's country list (slice D.11b) from the phone metadata
-// and CLDR, with no download: every region `libphonenumber-js` knows (owner,
+// Writes the phone number's country list from the phone metadata and CLDR,
+// with no download: every region `libphonenumber-js` knows (owner,
 // 2026-11-25), its calling code, and its Arabic and English names from
 // Node's ICU (`Intl.DisplayNames`, on the Node pinned in `.node-version`).
 // Output: `packages/core_l10n/lib/src/countries.g.dart` (names are user-facing
 // words, so they live in core_l10n). `node scripts/countries.mjs --check` fails
-// when the committed output differs from a fresh run (ui-web's
-// `test/countries.test.ts` runs it; libphonenumber-js is a ui-web dependency).
+// when the committed output differs from a fresh run (`countries.test.mjs`
+// runs it; libphonenumber-js is a server dependency, pinned there).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
-const require = createRequire(path.join(root, 'packages/ui-web/package.json'));
+const require = createRequire(path.join(root, 'apps/server/package.json'));
 const { getCountries, getCountryCallingCode } = require('libphonenumber-js/max');
 
 const arabic = new Intl.DisplayNames(['ar'], { type: 'region', fallback: 'code' });

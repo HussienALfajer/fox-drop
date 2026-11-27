@@ -1,6 +1,6 @@
 # apps/admin
 
-> Moved here from `apps/admin/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/admin/CLAUDE.md` on 2026-11-20. In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 The admin panel «لوحة الإدارة»: a static single-page app (architecture §10). `apps/merchant-portal` follows the same rules.
 
@@ -492,8 +492,7 @@ The admin panel «لوحة الإدارة»: a static single-page app (architect
   Draw generated images as inline SVG (the setup page's QR code).
   The Playwright tests run without it, so check a new kind of resource against it.
 - **Types:** `tsconfig.json` types `src` for the browser (DOM and `vite/client`, no Node globals); `tsconfig.node.json` types `e2e`, `test` and the config files for Node.
-- **Screen first (T16):** the pages are unstyled until each is drawn and approved by the owner and then the designer (architecture §9.9); then it is built from `@fox-drop/ui-web` on the tokens (`.claude/rules/web-apps.md`).
-  Layout uses start and end, never left and right.
+- **Layout:** the pages are unstyled; layout uses start and end, never left and right (`.claude/rules/web-apps.md`).
 - **Smoke test:** `e2e/` runs the built app (`vite preview`) in Chromium and answers its API calls with `page.route`, so it needs no server.
   Each app previews on its own port (admin 4173, portal 4174) because Turborepo runs them together.
 

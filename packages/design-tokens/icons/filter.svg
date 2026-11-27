@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M2.75 7L12 7" data-role="detail" data-knock="out"/>
-  <path d="M19 7L21.25 7" data-role="detail" data-knock="out"/>
-  <path d="M12.75 7A2.75 2.75 0 1 1 18.25 7A2.75 2.75 0 1 1 12.75 7Z" data-role="body" data-accent="true"/>
-  <path d="M2.75 17L5 17" data-role="detail" data-knock="out"/>
-  <path d="M12 17L21.25 17" data-role="detail" data-knock="out"/>
-  <path d="M5.75 17A2.75 2.75 0 1 1 11.25 17A2.75 2.75 0 1 1 5.75 17Z" data-role="body" data-accent="true"/>
-</svg>

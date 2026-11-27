@@ -12,8 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'fixtures.dart';
 
 void main() {
-  // The sign-in and join screens left in D.R1 (2026-11-27): signed out, the
-  // captain sees the entry screen, right to left.
+  // No sign-in or join screen yet: signed out, the captain sees the entry
+  // screen, right to left.
   testWidgets('signs out to the entry screen, right to left', (tester) async {
     final app = TestApp();
     app.work(availability: [availabilityJson()]);

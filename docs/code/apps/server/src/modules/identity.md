@@ -1,6 +1,6 @@
 # identity module
 
-> Moved here from `apps/server/src/modules/identity/CLAUDE.md` on 2026-11-20 (`docs/archive/claude-code-workflow.md`). In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
+> Moved here from `apps/server/src/modules/identity/CLAUDE.md` on 2026-11-20. In these notes, a folder's `CLAUDE.md` (or "its `CLAUDE.md`") means that folder's file under `docs/code/` when there is one, otherwise the folder's own `CLAUDE.md`; the folder's own `CLAUDE.md` now holds only the rules for working there.
 
 Users of the four products, their sign-in and sessions (architecture §4.2).
 So far: the admin panel's accounts, first sign-in, sign-in, sessions, roles and permissions, the guard on every route and the admin team (AP §5.1–5.3, §6, §9.15; architecture §10.3, §15.2);
@@ -294,9 +294,9 @@ the apps' phone sign-in with a WhatsApp code, tokens and sessions, served to the
 - **Any country's mobile:** `app-phone.ts` holds `isAppMobile` (E.164, then today's Syrian `+9639…` and Turkish `+905…` rule, else `libphonenumber-js/max` says `MOBILE` or `FIXED_LINE_OR_MOBILE`, in its canonical form: `+9630944…` is refused, or one phone would have two hashes) and `appPhone`, the Zod string every app route and the panel's and owners' account forms share (through `app-auth.ts`'s `phone`).
   The address's contact number keeps today's rule (`syrianOrTurkishPhone`, exported): the owner widened sign-in only (U3).
   Today's Syrian and Turkish rule stays because the metadata refuses some numbers it took (`+96391…`, `+96392…`), so nothing taken before is refused.
-  The server takes E.164 only; the apps normalise what is typed (`core_auth`'s `phone_rules.dart`; D.11's slice file was deleted in D.R1).
+  The server takes E.164 only; the apps normalise what is typed (`core_auth`'s `phone_rules.dart`).
 - **The daily limit abroad:** a number outside +963 and +90 (`signsInAbroad`) counts against `otp.number_daily_max_abroad` (3) instead of `otp.number_daily_max`, on the same Valkey key and window, refused as `daily_limit` (architecture §8.3.3 item 2).
 - **`attempts_used`:** the wrong attempt that reaches `otp.max_attempts` answers `attempts_used` (not `wrong_code` with 0 left); later attempts find no open code and read the number's latest code of the party: ended `attempts_exhausted` and asked for by this device, they answer `attempts_used`, else `code_expired` (a used-up emergency code has no device, so it answers `code_expired` to later devices and its end tells no one the number has an account).
   An open code whose attempts reach a lowered `otp.max_attempts` answers `attempts_used` too; a new code request opens a new code with its own attempts.
-  The routes pass the refusal through as `400` with `attemptsLeft: 0`; the clients read it as `code_expired` until the new sign-in screen's code step (D.11's slice file was deleted in D.R1).
+  The routes pass the refusal through as `400` with `attemptsLeft: 0`; the clients read it as `code_expired` until the new sign-in screen's code step.
 - **Masks:** `maskedPhone` (`src/phone/masked-phone.ts`, re-exported here) shows the number's own calling code, such as «+44 ••• 123»; it replaced the four copies that knew only +963 and +90.

@@ -14,7 +14,7 @@ The owner web portal «بوابة المطعم» (architecture §10.4, RA §17):
 - **Uploads and downloads:** photos, report files and Excel exports are signed for the portal's own origin and go through nginx (Vite in development); a download asks its URL at the click.
 - **Terms and terminated restaurants:** until the terms are accepted every screen but «الطلبات» and the terms shows the terms (`AfterTerms` in `router.tsx`); a terminated restaurant's owners see the money section only, read only.
 - **Print:** the browser's print with `data-print="hide"` and the one print rule in `index.html`.
-- **UI:** it comes only from `@fox-drop/ui-web`; a screen is coded only after the owner and then the designer approved its drawing (T16, architecture §9.9). Layouts use start and end, never left and right.
+- **UI:** Layouts use start and end, never left and right.
 
 ## More
 

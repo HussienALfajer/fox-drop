@@ -1,6 +1,5 @@
 // Measures how this project's Claude Code sessions spend tokens, from the
-// transcripts Claude Code keeps under ~/.claude/projects/<project>/
-// (docs/archive/claude-code-workflow.md, Baseline).
+// transcripts Claude Code keeps under ~/.claude/projects/<project>/.
 //
 //   node scripts/claude-audit.mjs [--since=YYYY-MM-DD] [--session=<id>] [--dir=<transcripts>]
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
