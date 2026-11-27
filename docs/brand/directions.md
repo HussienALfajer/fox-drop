@@ -22,12 +22,12 @@ The owner adopted the Figma file "Fox Drop" on 2026-11-23 as FOX DROP's design d
 | Error          | `#BF2929`                                                                                        | `color.danger`                                        |
 | Offset shadow  | `#FD6425`, 7 px down, no blur                                                                    | `elevation.offset`                                    |
 | Radii          | 8 (add-on cards), 10 (components), 15 (cart cards, totals, total bar), 30 (banner), full (pills) | `radius.sm`, `md`, `lg`, `xl`, `full`                 |
-| Controls       | Buttons pills 50 high; icon buttons circles of 50                                                | `size.control`, Button `height` and `radius`          |
+| Controls       | Buttons pills 50 high; icon buttons circles of 50                                                | `size.control`, `radius.full`                         |
 | Category discs | 80                                                                                               | Not a token yet (its first screen, T16)               |
 | Tags           | Pills 32 high                                                                                    | Not a token yet (its first screen, T16)               |
 | Bottom bar     | Floating blue bar 301 × 69, circles of 50, the active one orange at 57, ring `#E3DFD8`           | Not a token yet (its first screen, T16)               |
 | Spacing        | 4, 8, 16, 32; screen margins 16 to 18                                                            | `space.*` (4-point grid), margin 16                   |
-| Icons          | Rounded line icons, stroke about 2 at 24                                                         | `packages/design-tokens/icons/`, `size.icon-*` (D.5)  |
+| Icons          | Rounded line icons, stroke about 2 at 24                                                         | Set v4 «Madar», stroke 1.5 (D.5b), `size.icon-*`      |
 | Shapes         | The S-curve tab (banner, dish sheet), cut-out dish photos                                        | Brand expression §2, §5                               |
 
 Where the file's values fail the contrast rule, the tokens move them as little as passes: muted text at 75% (`#416EA4`, 4.59:1; the file's 45% and lighter fail 4.5:1), the control border at 60% (`#6688B2`, 3.20:1; the file's 40% fails 3:1). The brand orange stays as drawn, under the owner's exception (architecture §9.5 R4, brand expression §6).

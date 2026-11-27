@@ -12,7 +12,7 @@ Since D.R1 (2026-11-27) no UI component exists. The items about the deleted comp
 - **The address's contact number abroad** (D.11a review): it stays Syrian or Turkish (`syrianOrTurkishPhone`); the owner widened sign-in only (U3). Widen it too? A captain calls it from Syria.
 
 - **A discount above the clearing account** (`test/money-properties`, PR 246): what an outcome posts when a restaurant-funded discount exceeds what the clearing account holds (`outcomeEntries` throws today; the property skips that case).
-- **The app icon's variants** (D.1): what the `broken-edges` SVGs and the `variant-b`/`variant-c` icons in `docs/brand/app-icon/` are for. (`FONTS_DEPLOY_KEY`, the other half of this item, is set in the repository's Actions secrets since 2026-11-21.)
+- **The app icon's single-colour versions** (D.1; renamed 2026-11-27): `app-icon-black-fox-on-ivory-*` and `app-icon-ivory-fox-on-black-*` (SVG, iOS and Android) use black, which is not a brand colour. What are they for: a monochrome source (Android's themed icon, iOS's tinted icon), a dark variant in the brand blue, or nothing? The pack's «broken edges» files turned out to be the same three icons with rounded corners.
 - **Choices decided by us, to confirm:** D.3, D.4 and L.1c, each under «Decided by us» in its section of `slice-notes.md`. D.4: open both design artifacts.
 - **Running times in AP §4.7** (D.9 review): the approved sheet shows «4:32» under ten minutes and «12 د» from ten (`formatDuration`, `foxFormatDuration`); AP §4.7 still says «12 د» and «45 ث». The spec's wording waits for the owner.
 - **Two plugins off** (archive `claude-code-workflow.md`, phase 3): the `marketing` and `social-media-skills` plugins, off only in the app's settings (start goal under 45K tokens; was 75.7K).

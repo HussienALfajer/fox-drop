@@ -64,7 +64,7 @@ describe('the change classifier', () => {
     for (const file of [
       'docs/architecture/09-design-system.md',
       'docs/brand/logo/mark/mark-orange.svg',
-      'docs/brand/app-icon/svg/app-icon-08.svg',
+      'docs/brand/app-icon/svg/app-icon-white-fox-on-orange-square.svg',
     ])
       assert.equal(flags([file]), 'code typescript', file);
     assert.equal(flags(['docs/brand/expression.md']), '');
@@ -236,7 +236,7 @@ describe('the change classifier', () => {
       'tsconfig.base.json',
       // The docs the design tokens read: in doubt, a screenshot can follow.
       'docs/architecture/09-design-system.md',
-      'docs/brand/app-icon/svg/app-icon-08.svg',
+      'docs/brand/app-icon/svg/app-icon-white-fox-on-orange-square.svg',
     ])
       assert.equal(images([file]), 'visual', file);
     // Generated Markdown is read; a component's notes are not.

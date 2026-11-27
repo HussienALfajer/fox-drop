@@ -60,12 +60,12 @@ describe("the Design System's files (architecture §9.8)", () => {
     expect([...uploads.keys()].filter((key) => key.startsWith('Logos/'))).toHaveLength(14);
     expect([...uploads.keys()].filter((key) => key.startsWith('App icon/')).sort()).toEqual(
       [
-        'app-icon-08.svg',
-        'app-icon-09.svg',
-        'app-icon-10.svg',
-        'app-icon-broken-edges-1.svg',
-        'app-icon-broken-edges-2.svg',
-        'app-icon-broken-edges-3.svg',
+        'app-icon-black-fox-on-ivory-rounded.svg',
+        'app-icon-black-fox-on-ivory-square.svg',
+        'app-icon-ivory-fox-on-black-rounded.svg',
+        'app-icon-ivory-fox-on-black-square.svg',
+        'app-icon-white-fox-on-orange-rounded.svg',
+        'app-icon-white-fox-on-orange-square.svg',
       ].map((file) => `App icon/${file}`),
     );
     for (const [key, bytes] of uploads) {

@@ -1,6 +1,6 @@
 # FOX DROP brand expression
 
-The character of the design system (architecture §9.12), decided item by item by the owner in chat on 2026-11-22 (slice D.1b). Architecture §9.1 to §9.10 govern the system; this brief says what it should feel like. D.2 turns the values into tokens, D.3 draws the design directions and scores each against the principles below, D.5 draws the icons, D.6 and D.7 build the components.
+The character of the design system (architecture §9.12), decided item by item by the owner in chat on 2026-11-22 (slice D.1b). Architecture §9.1 to §9.10 govern the system; this brief says what it should feel like. D.2 turned the values into tokens, D.3 settled the direction, D.5 and D.5b drew the icons; the components are built screen by screen, each approved by the owner and then the designer (T16, architecture §9.9).
 
 On 2026-11-23 (slice D.3) the owner adopted the Figma file "Fox Drop" as the design direction; §2, §3, §5, §6 and §10 say what it changed, and `directions.md` holds its measurements. Values given as candidates are settled by the contrast test in D.2. A machine-checkable rule here becomes a test or a lint rule in the slice named beside it; until then this text is the rule.
 
@@ -95,7 +95,7 @@ The base is Protomaps' style on our own tiles (architecture §7.2), recoloured a
 
 - In the customer, captain and restaurant apps: the fox in simple flat scenes, lines at the icon stroke width, the three brand colours only, inside the drop frame. The fox searches, waits, apologises.
 - In the panel and the restaurant web portal: a large icon in a drop with text, no scenes.
-- First set, about 8 SVG scenes, drawn in D.3 and D.5 and each approved by the owner: empty cart; no search results; outside the delivery zone; offline; general error; restaurant closed; captain with no orders yet; restaurant with no new orders.
+- First set, about 8 SVG scenes, each drawn with the first screen that shows it and approved by the owner and then the designer (T16): empty cart; no search results; outside the delivery zone; offline; general error; restaurant closed; captain with no orders yet; restaurant with no new orders.
 
 **Missing photos:**
 
@@ -210,7 +210,7 @@ Never below 12: Arabic dots disappear.
 
 ## 9. Device budgets
 
-Each budget becomes a CI check in D.6 or D.7 (or the slice that first ships the thing it limits), not a line of prose.
+Each budget becomes a CI check in the slice that first ships the thing it limits, not a line of prose. None is a check yet.
 
 **Reference device:** an Android phone with 2 GB of RAM (Galaxy A03 class), common in northern Syria. Minimum Android 7 (Flutter's default today). A real one is tried in L.9.
 
@@ -224,19 +224,19 @@ Each budget becomes a CI check in D.6 or D.7 (or the slice that first ships the 
 
 The owner confirmed on 2026-11-22 that CoFo's licence allows subsetting the fonts and converting them to WOFF2 for the web.
 
-**Images,** resized by the server; the original never reaches the phone:
+**Images,** resized by the server to imgproxy's four WebP widths, 160, 320, 640 and 1280 px (architecture §5.8); the app picks the width by the slot and the screen density, and the original never reaches the phone:
 
-| Use              | Size         | Budget |
-| ---------------- | ------------ | ------ |
-| Dish thumbnail   | 400 px, WebP | 30 KB  |
-| Dish detail      | 1080 px      | 120 KB |
-| Restaurant cover | 16:9         | 80 KB  |
+| Use              | Width (WebP)                | Budget |
+| ---------------- | --------------------------- | ------ |
+| Dish thumbnail   | 320 px (640 on a dense one) | 30 KB  |
+| Dish detail      | 1280 px                     | 120 KB |
+| Restaurant cover | 640 or 1280 px, 16:9        | 80 KB  |
 
 On a weak connection only thumbnails load. While an image loads, its dominant colour fills the slot, never a fake picture.
 
 **Apps:**
 
-- Download at most 30 MB per app (split per ABI).
+- Download at most 30 MB per app (split per ABI); the customer app aims under 25 MB (architecture §13).
 - Cold start at most 3 seconds on the reference device.
 - 60 frames per second; when frames drop on a weak device, motion falls back to the reduced-motion level by itself.
 - One motion file at most 50 KB; no Lottie or Rive in V1.

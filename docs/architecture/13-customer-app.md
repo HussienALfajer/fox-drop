@@ -8,4 +8,4 @@
 - **Location** only while using the app (CU §4.4) through `geolocator`; the far-pin check runs on the device (CU §7.5).
 - **Notifications** asked at the first order (CU §4.4).
 - **Deep links:** a push or a banner opens its screen through its `go_router` path; links from outside the app (`app_links`) come when a campaign needs them (when needed).
-- **App size target:** under 25 MB download on Android (split per ABI).
+- **App size target:** under 25 MB download on Android (split per ABI); the budget that fails a build is 30 MB (brand expression §9).
