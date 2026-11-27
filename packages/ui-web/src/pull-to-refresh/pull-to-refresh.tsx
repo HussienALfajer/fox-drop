@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type PointerEvent, type ReactNode } from 'react';
-import { buttonClasses } from '../button/button';
+import { Button } from '../button/button';
 import { DropLoader } from '../drop-loader/drop-loader';
 import { DROP, PIECES, VIEW_BOX } from '../drop-loader/mark';
 import { formTv, keyboardRing } from '../field/styles';
@@ -69,6 +69,10 @@ export interface PullToRefreshProps {
   onRefresh: () => unknown;
   /** The refresh button for screen readers and keyboards: «تحديث». */
   refreshLabel: string;
+  /** Pulled this far (px) from the start, the mark filled to match (the components canvas). */
+  defaultPulled?: number;
+  /** Refreshing from the start, the drop loader shown (the components canvas). */
+  defaultRefreshing?: boolean;
 }
 
 /**
@@ -78,9 +82,10 @@ export interface PullToRefreshProps {
  * (still under reduced motion). A mouse drag does nothing; a button, shown on
  * keyboard focus, refreshes without a gesture.
  */
-export function PullToRefresh({ children, onRefresh, refreshLabel }: PullToRefreshProps) {
-  const [pulled, setPulled] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
+export function PullToRefresh(props: PullToRefreshProps) {
+  const { children, onRefresh, refreshLabel, defaultPulled = 0 } = props;
+  const [pulled, setPulled] = useState(defaultPulled);
+  const [refreshing, setRefreshing] = useState(props.defaultRefreshing ?? false);
   const [atTop, setAtTop] = useState(true);
   const start = useRef<{ id: number; y: number } | null>(null);
   const busy = useRef(false);
@@ -144,13 +149,9 @@ export function PullToRefresh({ children, onRefresh, refreshLabel }: PullToRefre
     <div className="relative size-full">
       {/* Hidden by its wrapper: the button's own position and height would beat sr-only. */}
       <span className={keyboardOnly}>
-        <button
-          type="button"
-          onClick={() => void refresh()}
-          className={buttonClasses('secondary', 'compact')}
-        >
+        <Button variant="secondary" density="compact" onClick={() => void refresh()}>
           {refreshLabel}
-        </button>
+        </Button>
       </span>
       <div
         ref={list}

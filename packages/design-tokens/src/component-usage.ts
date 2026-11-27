@@ -30,6 +30,8 @@ interface Node {
 /** A token's leaf paths and the sides that must read it. */
 function leaves(node: Node, at: string[], out: { path: string[]; sides: Side[] }[]) {
   if ('$value' in node) {
+    // A deprecated token waits out its last release unread (§9.2 governance).
+    if ('$deprecated' in node) return out;
     out.push({ path: at, sides: node.$extensions?.['app.foxdrop']?.sides ?? SIDES });
     return out;
   }

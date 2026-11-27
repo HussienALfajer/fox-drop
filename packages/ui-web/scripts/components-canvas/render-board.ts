@@ -19,103 +19,122 @@ export async function renderBoard({
   props,
   state,
   measureHeight,
+  live = false,
 }: {
   src: string;
   props: Record<string, unknown>;
   state: Record<string, unknown>;
   measureHeight: boolean;
+  /** Play: `setState` merges the state and draws the board again, as the canvas does. */
+  live?: boolean;
 }): Promise<BoardResult> {
+  let repaint = (): void => undefined;
   class DCLogic {
     props: Record<string, unknown> = props;
     state: Record<string, unknown> = state;
-    setState(): void {
-      // A check renders the board once, as its Tweaks and state set it.
+    setState(next: Record<string, unknown>): void {
+      // Without `live` a check renders the board once, as its Tweaks and state set it.
+      if (!live) return;
+      this.state = { ...this.state, ...next };
+      setTimeout(repaint, 0);
     }
   }
   (globalThis as unknown as { DCLogic: typeof DCLogic }).DCLogic = DCLogic;
   const Logic = (0, eval)(
     `(${src.replace('class Component extends DCLogic', 'class extends DCLogic')})`,
   ) as new () => { renderVals: () => Record<string, unknown> };
-  const vals = new Logic().renderVals();
+  const logic = new Logic();
   const missing: string[] = [];
-  const HOLE = /\{\{\s*([\w.$]+)\s*\}\}/g;
-  const get = (path: string): unknown => {
-    let at: unknown = vals;
-    for (const part of path.split('.')) {
-      if (at === null || typeof at !== 'object' || !(part in at)) {
-        missing.push(path);
-        return undefined;
-      }
-      at = (at as Record<string, unknown>)[part];
-    }
-    return at;
-  };
-  const whole = (value: string) => /^\{\{\s*([\w.$]+)\s*\}\}$/.exec(value)?.[1];
-  const asText = (value: unknown): string =>
-    typeof value === 'string' ? value : value === undefined ? '' : JSON.stringify(value);
   const root = document.getElementById('root');
   if (!root) throw new Error('no #root');
-  root.append((document.getElementById('t') as HTMLTemplateElement).content.cloneNode(true));
-  for (const branch of [...root.querySelectorAll('sc-if')]) {
-    if (!branch.isConnected) continue;
-    const path = whole(branch.getAttribute('value') ?? '');
-    if (path !== undefined && get(path)) branch.replaceWith(...branch.childNodes);
-    else branch.remove();
-  }
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
-    if (n.nodeValue?.includes('{{')) {
-      n.nodeValue = n.nodeValue.replace(HOLE, (_, p: string) => asText(get(p)));
-    }
-  }
-  for (const el of root.querySelectorAll('*')) {
-    if (el.tagName === 'X-IMPORT') continue;
-    for (const a of [...el.attributes]) {
-      if (a.value.includes('{{')) {
-        el.setAttribute(
-          a.name,
-          a.value.replace(HOLE, (_, p: string) => asText(get(p))),
-        );
-      }
-    }
-  }
-  const camel = (k: string) =>
-    k.startsWith('aria-') || k.startsWith('data-')
-      ? k
-      : k.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
   type Host = { createElement: (type: unknown, props: unknown) => unknown };
-  type HostDom = { createRoot: (el: Element) => { render: (node: unknown) => void } };
+  type Mounted = { render: (node: unknown) => void; unmount: () => void };
+  type HostDom = { createRoot: (el: Element) => Mounted };
   const page = globalThis as unknown as {
     React: Host;
     ReactDOM: HostDom;
     FoxDrop: Record<string, unknown>;
   };
-  for (const el of [...root.querySelectorAll('x-import')]) {
-    const name = (el.getAttribute('component-from-global-scope') ?? '').replace('FoxDrop.', '');
-    const mounted: Record<string, unknown> = {};
-    for (const a of el.attributes) {
-      if (a.name === 'component-from-global-scope' || a.name === 'style') continue;
-      const path = whole(a.value);
-      mounted[camel(a.name)] = path === undefined ? a.value : get(path);
+  let roots: Mounted[] = [];
+  const paint = (): void => {
+    for (const r of roots) r.unmount();
+    roots = [];
+    root.replaceChildren();
+    const vals = logic.renderVals();
+    const HOLE = /\{\{\s*([\w.$]+)\s*\}\}/g;
+    const get = (path: string): unknown => {
+      let at: unknown = vals;
+      for (const part of path.split('.')) {
+        if (at === null || typeof at !== 'object' || !(part in at)) {
+          missing.push(path);
+          return undefined;
+        }
+        at = (at as Record<string, unknown>)[part];
+      }
+      return at;
+    };
+    const whole = (value: string) => /^\{\{\s*([\w.$]+)\s*\}\}$/.exec(value)?.[1];
+    const asText = (value: unknown): string =>
+      typeof value === 'string' ? value : value === undefined ? '' : JSON.stringify(value);
+    root.append((document.getElementById('t') as HTMLTemplateElement).content.cloneNode(true));
+    for (const branch of [...root.querySelectorAll('sc-if')]) {
+      if (!branch.isConnected) continue;
+      const path = whole(branch.getAttribute('value') ?? '');
+      if (path !== undefined && get(path)) branch.replaceWith(...branch.childNodes);
+      else branch.remove();
     }
-    // As the canvas runtime: text written inside an x-import never reaches the component.
-    if ((el.textContent ?? '').trim())
-      missing.push(`text inside ${name} (use the children attribute)`);
-    const span = document.createElement('span');
-    span.style.display = 'contents';
-    el.replaceWith(span);
-    const type = name
-      .split('.')
-      .reduce<unknown>(
-        (at, part) => (at as Record<string, unknown> | undefined)?.[part],
-        page.FoxDrop,
-      );
-    if (!type) {
-      missing.push(`component ${name}`);
-      continue;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (n.nodeValue?.includes('{{')) {
+        n.nodeValue = n.nodeValue.replace(HOLE, (_, p: string) => asText(get(p)));
+      }
     }
-    page.ReactDOM.createRoot(span).render(page.React.createElement(type, mounted));
-  }
+    for (const el of root.querySelectorAll('*')) {
+      if (el.tagName === 'X-IMPORT') continue;
+      for (const a of [...el.attributes]) {
+        if (a.value.includes('{{')) {
+          el.setAttribute(
+            a.name,
+            a.value.replace(HOLE, (_, p: string) => asText(get(p))),
+          );
+        }
+      }
+    }
+    const camel = (k: string) =>
+      k.startsWith('aria-') || k.startsWith('data-')
+        ? k
+        : k.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+    for (const el of [...root.querySelectorAll('x-import')]) {
+      const name = (el.getAttribute('component-from-global-scope') ?? '').replace('FoxDrop.', '');
+      const mounted: Record<string, unknown> = {};
+      for (const a of el.attributes) {
+        if (a.name === 'component-from-global-scope' || a.name === 'style') continue;
+        const path = whole(a.value);
+        mounted[camel(a.name)] = path === undefined ? a.value : get(path);
+      }
+      // As the canvas runtime: text written inside an x-import never reaches the component.
+      if ((el.textContent ?? '').trim())
+        missing.push(`text inside ${name} (use the children attribute)`);
+      const span = document.createElement('span');
+      span.style.display = 'contents';
+      el.replaceWith(span);
+      const type = name
+        .split('.')
+        .reduce<unknown>(
+          (at, part) => (at as Record<string, unknown> | undefined)?.[part],
+          page.FoxDrop,
+        );
+      if (!type) {
+        missing.push(`component ${name}`);
+        continue;
+      }
+      const mount = page.ReactDOM.createRoot(span);
+      mount.render(page.React.createElement(type, mounted));
+      roots.push(mount);
+    }
+  };
+  repaint = paint;
+  paint();
   await new Promise((r) => setTimeout(r, 1200));
   const frame = root.firstElementChild as HTMLElement;
   const top = frame.getBoundingClientRect().top;

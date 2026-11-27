@@ -37,6 +37,8 @@ interface ButtonBase {
   /** Shown beside the loader while loading, and the button's name then. */
   loadingLabel?: string;
   disabled?: boolean;
+  /** Looks disabled and says so (aria-disabled) yet takes presses, so a form can say what is missing. */
+  softDisabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
   onClick?: (event: unknown) => void;
 }
@@ -388,6 +390,10 @@ interface PullToRefreshProps {
   onRefresh: () => unknown;
   /** The refresh button for screen readers and keyboards: «تحديث». */
   refreshLabel: string;
+  /** Pulled this far (px) from the start, the mark filled to match (the components canvas). */
+  defaultPulled?: number;
+  /** Refreshing from the start, the drop loader shown (the components canvas). */
+  defaultRefreshing?: boolean;
 }
 
 type SelectItem = Record<'value' | 'label', string>;
@@ -742,6 +748,8 @@ interface BannerStackProps {
   moreLabel: (hidden: number) => string;
   lessLabel: string;
   density?: Density;
+  /** Opened from the start (the components canvas). */
+  defaultOpen?: boolean;
 }
 
 interface BlockingBannerProps {
@@ -773,6 +781,8 @@ interface DialogProps {
   density?: Density;
   /** Open, it stays in its frame with its scrim instead of over the page (the components canvas). */
   inline?: boolean;
+  /** Drawn as if its command runs: the confirm button's loader (the components canvas). */
+  pending?: boolean;
 }
 
 interface ConfirmDialogProps {
@@ -796,6 +806,8 @@ interface ConfirmDialogProps {
   onConfirm: (reason: string) => unknown;
   /** Open, it stays in its frame with its scrim instead of over the page (the components canvas). */
   inline?: boolean;
+  /** Drawn as if its command runs: the confirm button's loader (the components canvas). */
+  pending?: boolean;
 }
 
 interface DrawerProps {

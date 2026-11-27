@@ -4,12 +4,14 @@
 // role and name, takes no focus, and leaves the page around it usable.
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { BlockingBanner } from '../blocking-banner/blocking-banner';
+import { Button } from '../button/button';
 import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
 import { CountrySheet } from '../country-sheet/country-sheet';
 import { DateField } from '../date-field/date-field';
+import { Dialog } from '../dialog/dialog';
 import { Drawer } from '../drawer/drawer';
 import { Menu } from '../menu/menu';
 import { PhoneField } from '../phone-field/phone-field';
@@ -280,5 +282,83 @@ describe('a popup drawn inline', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// The components canvas audit (2026-11-27): in Play the owner opens an inline
+// copy by its trigger; it then takes focus, as it does off the canvas, so the
+// keyboard reaches it and Escape closes it. Only a copy drawn open from the
+// start (controlled `open`) keeps its hands off the focus.
+describe('an inline popup opened by its trigger', () => {
+  const opener = <Button>افتح</Button>;
+  it.each([
+    [
+      'Dialog',
+      <Dialog
+        key="d"
+        inline
+        trigger={opener}
+        title="حذف العنوان"
+        confirmLabel="حذف"
+        cancelLabel="إلغاء"
+        closeLabel="إغلاق"
+      />,
+    ],
+    [
+      'ConfirmDialog',
+      <ConfirmDialog
+        key="c"
+        inline
+        trigger={opener}
+        title="إلغاء الطلب"
+        reasonLabel="السبب"
+        reasonError="اكتب السبب"
+        notifyTitle="سيُبلَّغ"
+        notified={['الزبون']}
+        confirmLabel="إلغاء الطلب"
+        cancelLabel="رجوع"
+        closeLabel="إغلاق"
+        onConfirm={() => undefined}
+      />,
+    ],
+    [
+      'Drawer',
+      <Drawer key="r" inline trigger={opener} title="القائمة" closeLabel="إغلاق">
+        <p>المحتوى</p>
+      </Drawer>,
+    ],
+  ])('%s takes focus and closes on Escape', async (_, popup) => {
+    render(popup);
+    await userEvent.click(screen.getByRole('button', { name: 'افتح' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement | null);
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+describe('an inline popup whose open state is held outside', () => {
+  it('takes focus when opened, since onOpenChange says it is not drawn open', async () => {
+    function Held() {
+      const [open, setOpen] = useState(false);
+      return (
+        <Dialog
+          inline
+          open={open}
+          onOpenChange={setOpen}
+          trigger={<Button>افتح</Button>}
+          title="حذف العنوان"
+          confirmLabel="حذف"
+          cancelLabel="إلغاء"
+          closeLabel="إغلاق"
+        />
+      );
+    }
+    render(<Held />);
+    await userEvent.click(screen.getByRole('button', { name: 'افتح' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement | null);
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

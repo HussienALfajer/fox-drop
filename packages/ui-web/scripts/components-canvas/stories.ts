@@ -106,6 +106,11 @@ export interface StoryInfo {
 export interface CanvasParameters {
   open?: boolean;
   gesture?: boolean;
+  /**
+   * On the meta: the popup has no opener of its own (an app opens it from
+   * outside: Sidebar's drawer, BlockingBanner), so the panel gets an `open` switch.
+   */
+  openSwitch?: boolean;
 }
 
 /** The story opens its popup (`play`), unless its parameters say otherwise. */
@@ -120,6 +125,8 @@ export interface ComponentStories {
   /** The story of each `<Variant><State>` (with variants) or `<State>` (without). */
   cells: Record<string, string>;
   stories: Record<string, StoryInfo>;
+  /** The meta's `parameters.canvas.openSwitch`. */
+  openSwitch?: true;
 }
 
 /** The blocking heads share one folder, as their Flutter file (test/stories.test.ts). */
@@ -397,7 +404,15 @@ export async function readStories(
         cells[key] = story;
       }
     }
-    out.push({ name, folder, states, variants, cells, stories });
+    out.push({
+      name,
+      folder,
+      states,
+      variants,
+      cells,
+      stories,
+      ...(meta.parameters?.canvas?.openSwitch && { openSwitch: true as const }),
+    });
   }
   return out;
 }

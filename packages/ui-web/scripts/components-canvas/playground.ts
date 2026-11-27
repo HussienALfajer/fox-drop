@@ -108,7 +108,14 @@ export function playgroundOf(c: ComponentStories, types = parseTypes()): Playgro
   const members = membersOf(mounted.split('.').at(-1) ?? mounted, types);
   // A story that only a gesture reaches (`play`) loads nothing new, unless it opens a popup in place.
   const reachable = (s: string) => !c.stories[s]?.play || members.some((m) => m.name === 'inline');
+  // A popup with no opener of its own (Sidebar's drawer, BlockingBanner) opens from
+  // outside in an app: its stories' meta asks for the panel's `open` switch to stand in.
+  const opener = c.openSwitch === true;
   for (const m of members) {
+    if (opener && m.name === 'open' && m.type === 'boolean') {
+      controls.push({ prop: 'open', editor: 'boolean', default: start.open ?? false });
+      continue;
+    }
     if (RESERVED.has(m.name) || m.type.includes('=>')) continue;
     const value = start[m.name];
     const choices = literals(m.type, types.aliases);

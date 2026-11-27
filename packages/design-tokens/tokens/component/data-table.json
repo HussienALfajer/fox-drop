@@ -33,12 +33,13 @@
     "inner-radius": {
       "$type": "dimension",
       "$value": "{radius.xs}",
-      "$description": "The sort button's focus corner and a loading line's.",
+      "$description": "The sort button's focus corner.",
       "$extensions": { "app.foxdrop": { "sides": ["web"] } }
     },
     "loading-line-height": {
       "$type": "dimension",
       "$value": "{space.sm}",
+      "$deprecated": "skeleton.line-height: a loading cell draws the Skeleton block",
       "$extensions": { "app.foxdrop": { "sides": ["web"] } }
     },
     "color": {
@@ -74,6 +75,7 @@
       },
       "loading": {
         "$value": "{color.neutral-subtle}",
+        "$deprecated": "skeleton.background: a loading cell draws the Skeleton block",
         "$extensions": { "app.foxdrop": { "sides": ["web"] } }
       }
     }

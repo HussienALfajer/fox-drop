@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { formTv, keyboardRing } from '../field/styles';
 import { Icon } from '../icon/icon';
+import { SkeletonBlock } from '../skeleton/skeleton';
 
 /** The states the stories show (R3). */
 export const STATES = ['default', 'sorted', 'hover', 'selected', 'loading', 'empty'] as const;
@@ -170,10 +171,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
                 <tr key={i}>
                   {Array.from({ length: span }, (_, j) => (
                     <td key={j} className={cell({ numeric: false })}>
-                      <span
-                        aria-hidden="true"
-                        className="block h-(--fd-data-table-loading-line-height) w-full rounded-(--fd-data-table-inner-radius) bg-(--fd-data-table-color-loading) motion-safe:animate-skeleton"
-                      />
+                      <SkeletonBlock />
                     </td>
                   ))}
                 </tr>

@@ -78,6 +78,14 @@ describe('the component tokens are read where they are declared', () => {
       expect(result.problems).toEqual([]);
     });
 
+    it('lets a deprecated token go unread, for its last release (§9.2)', () => {
+      const result = write('deprecated', {
+        ...height,
+        gap: { $type: 'dimension', $value: '{space.xs}', $deprecated: 'the skeleton block' },
+      });
+      expect(result.problems).toEqual([]);
+    });
+
     it('fails a declared folder that does not exist', () => {
       const result = write('missing', height, { web: ['chip', 'gone'], flutter: ['chip'] });
       expect(result.problems).toEqual([expect.stringMatching(/web folder gone.*does not exist/)]);

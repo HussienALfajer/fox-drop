@@ -38,3 +38,5 @@ export const Primary: Story = {
   play: open,
 };
 export const Compact: Story = { args: { density: 'compact' }, play: open };
+// Its command runs: the confirm button shows Button's loader (the components canvas audit).
+export const Pending: Story = { args: { pending: true }, play: open };

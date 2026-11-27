@@ -10,7 +10,6 @@ For slices before 2026-11-23, what each left (before deploying, to check on stag
 - **Codes abroad while App Check is off** (D.11a security review): `otp.number_daily_max_abroad` limits one number, not a script that sends one code to each of many foreign numbers (held only by `otp.ip_hourly_max` and a client-chosen device id) while `otp.app_check_required` is off. Options: refuse numbers abroad until App Check is on, or a global daily cap on codes sent abroad. The apps offer foreign numbers only from D.11's components slice.
 - **The address's contact number abroad** (D.11a review): it stays Syrian or Turkish (`syrianOrTurkishPhone`); the owner widened sign-in only (U3). Widen it too? A captain calls it from Syria.
 
-- **Gesture-only states on the components canvas** (D.C2): BannerStack opened and PullToRefresh pulling and refreshing are drawn at rest with a caption that says so («بالإيماءة في Play»). Options: a display prop on each (no use outside the canvas), or keep the caption.
 - **A hover on a whole table** (D.C2): DataTable's forced hover reaches every row at once (`data-pseudo-outer` picks the outermost elements with a hover rule, the rows). A frame for one row (`data-pseudo-nth`) would draw it as a pointer does.
 
 - **A discount above the clearing account** (`test/money-properties`, PR 246): what an outcome posts when a restaurant-funded discount exceeds what the clearing account holds (`outcomeEntries` throws today; the property skips that case).
