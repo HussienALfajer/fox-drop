@@ -1,6 +1,6 @@
 # D.R1 Every component deleted; screens first, one at a time
 
-Status: In progress · Tier: T2 · Branch: `chore/delete-components`
+Status: Done · Tier: T2 · Branch: `chore/delete-components`
 Spec: architecture §9.6–§9.9, workflow §1.7, §3.1, §4 · Definition of done: none closed (a reset before the customer screens)
 
 ## Goal
