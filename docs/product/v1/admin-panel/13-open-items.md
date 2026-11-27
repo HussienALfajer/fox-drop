@@ -15,7 +15,7 @@
    - the fake-order dues rule (proposed: delivery fee + merchant net)
    - rounding units
    - minimum order
-6. **Data retention after account closure (D19).** App store rules expect personal data to be deleted when a user deletes their account, unless retention is needed for fraud prevention, security or legal and financial records. Before submitting to the stores, check that keeping all data is acceptable. If not, keep only what fraud prevention and financial records need (phone, device, orders, ledgers, blocks), and say so in the privacy policy.
+6. **Data retention after account closure (D19).** _Decided_ (owner, 2026-11-28): only what fraud prevention and financial records need is kept (phone, device, orders, ledgers, blocks); the rest of the personal data is erased at closure (§8.8, `docs/domain/08`), and the privacy policy says so (CU §18 item 4).
 7. **Document validity.** _Decided_ (captain-app spec C18): the criminal record certificate is valid for 12 months from its issue date, with the usual 30-day expiry task.
 8. **Distance service.** _Decided_ (technology-stack §7.1, 2026-11-04): self-hosted OSRM with OpenStreetMap data for Syria. The straight-line fallback stays for when OSRM does not answer.
 9. **Tax.** V1 has no tax line. If local rules require one, it will be added to the order money (§8.4) as its own line.

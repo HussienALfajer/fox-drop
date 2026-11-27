@@ -133,7 +133,7 @@ It reads other modules through their public services and owns only `reporting.ex
 
 - The profile's «العهدة» entries list and hand-in status, «المستحقات» entries and weekly statements in the panel (the panel has no labels for the journal types yet; «أرصدة الكباتن» and the settlement page show them to FIN), the complaints (tickets) beside the ratings (AP §9.7.4; to confirm with the owner: with 2.36b or the reports).
 - A failed export stays pending while pg-boss retries it (`QUEUE_OPTIONS`); the panel gives up after 10 minutes. No `failed` state yet.
-- An order with no commission and no restaurant-funded discount in the period (a restaurant at 0%, a test order) has no line and no items value, as on the weekly statement: the lines come from the restaurant's account, not from the pickups (to confirm with the owner).
+- An order with no commission and no restaurant-funded discount in the period (a restaurant at 0%, a test order) has no line and no items value, as on the weekly statement: the lines come from the restaurant's account, not from the pickups. The owner decided on 2026-11-28 that every delivered order gets a line, at 0 (backlog «A zero line on the restaurant's statement»); test orders stay out.
 - `private-docs` is not encrypted at rest (Garage offers only SSE-C, which a signed browser download cannot carry). The exports live 24 hours; the captain documents (2.34) decide the encryption.
 - A personal code used on an order placed before slice 2.22b was booked to `platform.discount_cost`, so it shows among the discounts by code (staging only).
   The cost report's reads are not one snapshot.
@@ -141,7 +141,7 @@ It reads other modules through their public services and owns only `reporting.ex
   it has no end-to-end test with real orders (the split is tested pure, each module's read against its database, the route with entries no order stands behind);
   the restaurant's part of a code's discount and the codes issued but not used are not in it.
   AP §9.10.6 says «printable» only of the statements, so the report has no print layout.
-- The reports: the captains' cash hand-in punctuality and the restaurants' minutes in busy mode or at the limit (nothing records them yet; to confirm with the owner how to count punctuality), the orders the capacity check refused (ordering's «Not yet»).
+- The reports: the captains' cash hand-in punctuality and the restaurants' minutes in busy mode or at the limit (nothing records them yet; punctuality, decided 2026-11-28, is the business days with cash still due from a closed day out of the days worked: backlog «A captain's cash hand-in punctuality»), the orders the capacity check refused (ordering's «Not yet»).
   A report reads every order of its period at each call, and the finance report the daily figures of every day of it (fine for Azaz; weeks or months beyond a month when it grows).
   Owner decision 2026-11-27: the panel's restaurant acceptance counts operations' acceptances against every answer (as «المطاعم»), the owners' RA §11's (their own against what was asked of them), so the two differ;
   «Orders by hour» counts the delivered orders by the hour they were placed;

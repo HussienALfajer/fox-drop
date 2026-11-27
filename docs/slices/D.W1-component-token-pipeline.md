@@ -61,7 +61,7 @@ Tests written first (locked in the red phase):
 - `packages/core_ui/test/theme_test.dart`: `FoxTheme.of(context).components.button` equals `FoxComponents.<theme>.button` in the phone and captain themes.
 - Proof of no look change: `pnpm baselines --check` finds no moved image.
 
-## Decisions taken overnight (pending the owner)
+## Decisions taken overnight (approved by the owner, 2026-11-28)
 
 The owner was asleep and delegated decisions to the supervising session (2026-11-26); each took the recommended option.
 

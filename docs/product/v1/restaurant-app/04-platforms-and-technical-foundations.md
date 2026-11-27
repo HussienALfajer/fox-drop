@@ -89,7 +89,7 @@ The device check runs at the first sign-in on each device, and can be run again 
 
 ## 4.8 Formatting
 
-As in AP §4.7: Arabic, right to left, Western digits, money with its currency symbol (`400 ₺`), dates as `dd/mm/yyyy`, 12-hour times with «ص/م», durations as «12 د» and «45 ث». Order numbers as `#10423`, receipts as `AZ-2026-000123`, tickets as `T-5521` (AP §4.8).
+As in AP §4.7: Arabic, right to left, Western digits, money with its currency symbol (`400 ₺`), dates as `dd/mm/yyyy`, 12-hour times with «ص/م», durations as «12 د», a running time under ten minutes as «4:32» (AP §4.7). Order numbers as `#10423`, receipts as `AZ-2026-000123`, tickets as `T-5521` (AP §4.8).
 
 The app SHOULD stay usable with the system font enlarged up to 130%.
 

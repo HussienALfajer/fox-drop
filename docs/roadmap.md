@@ -19,7 +19,7 @@ The technical growth path is [architecture §20](architecture/20-growth-path-v1-
 
 Markers: `[ ]` not started, `[~]` in progress, `[x]` done.
 
-**Now (2026-11-27):** every slice of Phases 1 and 2 is merged but 1.14h, the whole cycle on staging, which waits for the sign-in screen. The screens are unstyled and no app signs in since D.R1, so the next work is the sign-in screen, the first screen of T16, then the customer screens one at a time (Phase 0, design system); launch readiness (L.2 to L.11) follows. A phase is done once its definition of done is shown on staging.
+**Now (2026-11-27):** every slice of Phases 1 and 2 is merged but 1.14h, the whole cycle on staging, which waits for the sign-in screen. The screens are unstyled and no app signs in since D.R1, so the next work is the sign-in screen, the first screen of T16, then the customer screens one at a time (Phase 0, design system); launch readiness (L.2 to L.11) follows. A phase is done once its definition of done is shown on staging. The owner's waiting decisions were settled on 2026-11-28 (AP §2, «Open items decided»); the six follow-ups they left are in the backlog.
 
 - `[x]` Specs: admin panel, restaurant app, captain app, customer app, technology stack.
 - `[x]` Repository and documentation layout.
