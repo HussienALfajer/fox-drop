@@ -154,7 +154,7 @@ Ten steps, 50 to 900, for each colour on one shared scale, plus the in-between s
 - **CoFo Sans Pro Arabic alone** in the apps, the restaurant portal and the panel, with its own Latin glyphs (no second Latin typeface).
 - **YR-Speed** for marketing only: store screenshots, social posts, at most one headline on the welcome screen.
 - **Emad-Diana** is not used: one light weight and 323 glyphs. The Figma file sets its button label in it; the apps use CoFo 700 instead (owner, 2026-11-23). Headings are CoFo 700 in the brand blue (owner, 2026-11-25).
-- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana: the money component of D.6 and D.7 must give it a fallback font. Prices keep the «450 ₺» format.
+- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana: «Fox Lira» (SIL OFL, owner 2026-11-24, D.9) draws it as the fallback after CoFo. Prices keep the «450 ₺» format.
 
 **Weights:** 400, 500 and 700 only. No hairline or light weights for text: thin Arabic strokes vanish in the sun and on cheap screens.
 

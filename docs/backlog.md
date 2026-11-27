@@ -15,7 +15,7 @@ Since D.R1 (2026-11-27) no UI component exists: an item below that names one app
 - **A hover on a whole table** (D.C2): DataTable's forced hover reaches every row at once (`data-pseudo-outer` picks the outermost elements with a hover rule, the rows). A frame for one row (`data-pseudo-nth`) would draw it as a pointer does.
 
 - **A discount above the clearing account** (`test/money-properties`, PR 246): what an outcome posts when a restaurant-funded discount exceeds what the clearing account holds (`outcomeEntries` throws today; the property skips that case).
-- **`FONTS_DEPLOY_KEY`** (D.1): the private half of a read-only deploy key on `fox-drop-fonts`, no expiry, in the repository's Actions secrets (commands in the D.1 pull request thread); the `visual` (D.6) and `golden` (D.7) CI jobs fail without it. Also the meaning of the `broken-edges` icon SVGs and of the `variant-b/c` icons.
+- **The app icon's variants** (D.1): what the `broken-edges` SVGs and the `variant-b`/`variant-c` icons in `docs/brand/app-icon/` are for. (`FONTS_DEPLOY_KEY`, the other half of this item, is set in the repository's Actions secrets since 2026-11-21.)
 - **Choices decided by us, to confirm:** D.3, D.4, D.6, D.7 and L.1c, each under «Decided by us» in its section of `slice-notes.md`; D.8 under «Notes for the next session» in [`slices/D.8-inputs-and-forms.md`](slices/D.8-inputs-and-forms.md). D.4: open both design artifacts. D.7: run widgetbook.
 - **The icons' orange accent layer** (D.5, «Left from D.5»).
 - **Running times in AP §4.7** (D.9 review): the approved sheet shows «4:32» under ten minutes and «12 د» from ten (`formatDuration`, `foxFormatDuration`); AP §4.7 still says «12 د» and «45 ث». The spec's wording waits for the owner.

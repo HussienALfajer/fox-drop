@@ -23,9 +23,9 @@ The owner adopted the Figma file "Fox Drop" on 2026-11-23 as FOX DROP's design d
 | Offset shadow  | `#FD6425`, 7 px down, no blur                                                                    | `elevation.offset`                                    |
 | Radii          | 8 (add-on cards), 10 (components), 15 (cart cards, totals, total bar), 30 (banner), full (pills) | `radius.sm`, `md`, `lg`, `xl`, `full`                 |
 | Controls       | Buttons pills 50 high; icon buttons circles of 50                                                | `size.control`, Button `height` and `radius`          |
-| Category discs | 80                                                                                               | Not a token yet (D.6, D.7)                            |
-| Tags           | Pills 32 high                                                                                    | Not a token yet (D.6, D.7)                            |
-| Bottom bar     | Floating blue bar 301 × 69, circles of 50, the active one orange at 57, ring `#E3DFD8`           | Not a token yet (D.6, D.7)                            |
+| Category discs | 80                                                                                               | Not a token yet (its first screen, T16)               |
+| Tags           | Pills 32 high                                                                                    | Not a token yet (its first screen, T16)               |
+| Bottom bar     | Floating blue bar 301 × 69, circles of 50, the active one orange at 57, ring `#E3DFD8`           | Not a token yet (its first screen, T16)               |
 | Spacing        | 4, 8, 16, 32; screen margins 16 to 18                                                            | `space.*` (4-point grid), margin 16                   |
 | Icons          | Rounded line icons, stroke about 2 at 24                                                         | `packages/design-tokens/icons/`, `size.icon-*` (D.5)  |
 | Shapes         | The S-curve tab (banner, dish sheet), cut-out dish photos                                        | Brand expression §2, §5                               |
@@ -45,7 +45,7 @@ Where the file's values fail the contrast rule, the tokens move them as little a
 
 ## Findings
 
-- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana. The money component (D.6, D.7) needs a fallback font for it.
+- **The ₺ glyph** (U+20BA) is in neither CoFo nor Emad-Diana. «Fox Lira» (SIL OFL, `packages/ui-web/fonts/fox-lira/` and `packages/core_ui/assets/fonts/fox-lira/`; owner, 2026-11-24, D.9) draws it as the fallback after CoFo.
 - **The cart's items do not add up** in the file (499.6 against a total of 450); a drawing for approval uses consistent synthetic amounts.
 - **The ± stepper** in the cart is 34 px, below the 48 touch target (R4); its touch area grows to 48 while the drawn circle stays.
 - **The onboarding slide is black,** which is not in the palette; it is not adopted until the onboarding screen is designed.
