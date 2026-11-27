@@ -2,7 +2,7 @@
 
 Every item of the four V1 definitions of done (AP §14, RA §22, CA §19, CU §19), what proves it, and its state. Audited on 2026-11-21 from `main` at `9efb0adf`: the test titles first, then the bodies of every test the title search left as a gap (nothing was run for this audit; `pnpm verify` runs every test cited here). Update a row when its gap closes, and mark it «shown on staging» when the staging rehearsal (L.10) shows it.
 
-Rechecked on 2026-11-27 (repository inventory): every test file cited exists and every cited title matches its test, after four rows were brought up to date below. D.R1 (2026-11-27, T16) deleted the apps' sign-in screen and the restaurant's staff screen, so CU-1 and RA-25 are gaps again until those screens return.
+Rechecked on 2026-11-27 (repository inventory): every test file cited exists and every cited title matches its test, after four rows were brought up to date below. D.R1 (2026-11-27, T16) deleted the apps' sign-in screen, so CU-1 is a gap again until that screen returns. It also deleted the restaurant app's staff screen; owners still add and remove cashiers in the portal's «الموظفون» (2.45c), so RA-25 stays covered.
 
 ## How to read it
 
@@ -16,10 +16,10 @@ Rechecked on 2026-11-27 (repository inventory): every test file cited exists and
 | Spec  | Rows | Covered | Demo only | Gap (build) | Gap (test) |
 | ----- | ---- | ------- | --------- | ----------- | ---------- |
 | AP    | 56   | 54      | 2         | 0           | 0          |
-| RA    | 36   | 33      | 2         | 1           | 0          |
+| RA    | 36   | 34      | 2         | 0           | 0          |
 | CA    | 32   | 30      | 2         | 0           | 0          |
 | CU    | 28   | 25      | 2         | 1           | 0          |
-| Total | 152  | 142     | 8         | 2           | 0          |
+| Total | 152  | 143     | 8         | 1           | 0          |
 
 A row is an item, or one bullet of an item that has bullets (AP-31 to AP-33, RA-11, CA-18).
 
@@ -30,7 +30,6 @@ A row is an item, or one bullet of an item that has bullets (AP-31 to AP-33, RA-
 L.1c (`feat/dod-offline-browsing`) built CU-28's cached browsing offline and the address save's `Idempotency-Key`. Since D.R1 (2026-11-27):
 
 - **CU-1:** the sign-in at «تأكيد الطلب»; it returns with the sign-in screen, the first screen of T16 (`docs/roadmap.md`, customer screens).
-- **RA-25:** adding and removing cashiers in the restaurant app; the logic (`merchant/lib/src/settings/staff.dart`) and the server stay, the screen returns with its own screen slice.
 
 ### Built, test missing (test)
 
@@ -137,7 +136,7 @@ Shown on the Android phone, an Android tablet if the owner has one, the Windows 
 - **RA-22** (covered): Account: today's pickups, weekly balance, Saturday statement, receipts, partials, overdue. `server/ordering/merchant-money.test.ts` › "shows the owner the balance, today’s pickup and the week after a delivery"; `server/cashdesk/merchant-statements.test.ts` › "closes at the business-day cutoff …"; `server/cashdesk/merchant-settlement.test.ts` › "records a partial payment, …"; `merchant/test/board_screen_test.dart` › "an owner with an overdue statement sees the banner and the line".
 - **RA-23** (covered): Commission hidden from cashiers; delivery fee and customer total hidden from all. `server/ordering/merchant-money.test.ts` › "gives owners the commission and the net, and a cashier neither"; `server/ordering/place-order.test.ts` › "answers the restaurant's board, oldest first, without the customer's total or address"; `server/ordering/merchant-reads.test.ts` › "leaves them out of the board, the order, the history and the reports, for owners and cashiers"; `merchant/test/board_screen_test.dart` › "the order detail shows no delivery fee and no customer total", with the same in `history_screen_test.dart` and `reports_screen_test.dart`; `portal/e2e/smoke.spec.ts` › "opens every owner page of the portal and shows its key content" (board, order, history and reports steps).
 - **RA-24** (covered): Ratings without customer names and without a reply option. `server/ordering/restaurant-ratings.test.ts` › "shows its owners the ratings without the customer or the order"; `merchant/test/ratings_screen_test.dart` › "a rating shows no customer name and has no reply action"; `portal/e2e/smoke.spec.ts` › "opens every owner page of the portal …" step "ratings, without a customer name or a reply".
-- **RA-25** (gap: build, since D.R1): Owners add and remove cashiers, rename and sign out devices; removal signs out at once. The staff screen left in D.R1; the devices screen and the server stay. `server/identity/merchant-staff.test.ts` › "adds a cashier who signs in, …, and removes them at once", › "renames a device and signs it out, leaving its cashier".
+- **RA-25** (covered): Owners add and remove cashiers, rename and sign out devices; removal signs out at once. Since D.R1 owners do it in the portal's «الموظفون» and «الأجهزة» (2.45c; the app keeps «الأجهزة»). `portal/e2e/smoke.spec.ts` › "opens every owner page of the portal …" step "team: staff and devices"; `server/identity/merchant-staff.test.ts` › "adds a cashier who signs in, …, and removes them at once", › "renames a device and signs it out, leaving its cashier".
 - **RA-26** (covered): Support: call, WhatsApp, report with types and photo, «بلاغاتي» with resolutions. `server/support/merchant-reports.test.ts` › "takes a type with a photo at most"; `server/ordering/merchant-report-rules.test.ts` › "shows an owner every ticket of the restaurant and a cashier their own". `merchant/test/board_screen_test.dart` › "the support call and WhatsApp tiles open the team’s phone and WhatsApp links" and › "the order problem sheet’s WhatsApp tile names the order"; `portal/e2e/smoke.spec.ts` › "opens every owner page of the portal …" step "support, with the call and WhatsApp links to the team".
 - **RA-27** (covered): Unstable internet: no double effects, conflicts, red bar, offline chime, wrong clock. `merchant/test/board_screen_test.dart` › "a lost answer is sent again with the same key", › "a command a restart interrupted goes again with its key"; `merchant/test/board_test.dart` › "30 seconds offline chime once"; `merchant/test/board_screen_test.dart` › "the auto-cancel and prep countdowns ignore a device clock 5 hours off", › "… -48 hours off".
 - **RA-28** (demo only): Windows: auto-start, tray, quit confirmation, front on a ring, notifications, update. `merchant/test/windows_update_test.dart` › "restarts only signed out, or with an empty board that rings nothing"; `merchant/test/windows_check_test.dart` › "passes a PC that rings: notifications, startup, sound, no sleep". Owner, the Windows PC. A test of the tray and quit-confirmation logic would help.
