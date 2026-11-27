@@ -29,7 +29,7 @@
       "groupName": "Dart and native minor and patch updates"
     },
     {
-      "description": "Every GitHub Actions update, majors included, in one weekly pull request: each one runs the whole CI (docs/archive/claude-code-workflow.md, phase 5).",
+      "description": "Every GitHub Actions update, majors included, in one weekly pull request: a change to .github/workflows/ci.yml runs every CI job (scripts/classify-changes.mjs, CHECK_ENGINE), so one run covers them all.",
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions",
       "separateMajorMinor": false

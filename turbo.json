@@ -95,8 +95,6 @@
         "$TURBO_ROOT$/packages/core_ui/lib/src/**",
         "$TURBO_ROOT$/packages/ui-web/src/**",
         "$TURBO_ROOT$/packages/ui-web/scripts/bundle.ts",
-        "$TURBO_ROOT$/packages/ui-web/design-system/**",
-        "$TURBO_ROOT$/packages/core_ui/test/phone_harness.dart",
         "$TURBO_ROOT$/.fonts/**"
       ],
       "outputs": [],

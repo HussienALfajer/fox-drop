@@ -41,7 +41,6 @@ GoogleService-Info.plist
 .components-canvas/
 
 # Tests
-.verify/
 # The parity sheets and their shots (`pnpm parity <Component>`), a local review
 .parity/
 coverage/

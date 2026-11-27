@@ -14,7 +14,7 @@
     "baselines": "node scripts/baselines.mjs",
     "parity": "node scripts/parity.mjs",
     "format": "prettier --write .",
-    "lint:root": "eslint --ignore-pattern \"apps/**\" --ignore-pattern \"packages/**\" --ignore-pattern \"tools/**\" ."
+    "lint:root": "eslint --ignore-pattern \"apps/**\" --ignore-pattern \"packages/**\" ."
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
