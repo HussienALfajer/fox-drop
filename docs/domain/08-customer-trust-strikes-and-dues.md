@@ -31,7 +31,7 @@
   - Closure happens from the customer app's own delete-account button, or from the panel on the customer's request. Both lead to the same result (app stores require deletion to be possible inside the app).
   - Closure is refused while the customer has an active order, in the app and in the panel.
   - Status becomes «مغلق»: the customer cannot sign in and drops out of active-customer lists.
-  - All data is kept.
+  - Only what fraud prevention and financial records need is kept: the phone number, the devices, the orders, the ledger entries, the blocks, strikes, dues and promo history. The rest of the personal data (name, gender, birthday, saved addresses, favourites) is erased at closure; an order keeps the delivery address it was delivered to. Owner decision 2026-11-28 (AP §13 item 6), replacing "all data is kept".
   - If the same phone number registers again, a new account is created and linked internally to the closed one. Blocks, unpaid dues, strikes, trust state and promo history carry over, so the new account is **not** a "new user" for promo codes.
 - **Owner decisions 2026-11-17 (slice 2.25):**
   - A block «حتى دفع مستحق» from the panel posts a `dues.charge` of its amount, so the desk's payment lifts it by itself.

@@ -66,7 +66,7 @@ Every write action and every sensitive view (such as revealing a customer phone 
 - Layout and text direction: Arabic, right to left. Numbers use Western digits (0–9).
 - Money shows its currency symbol or code, for example `410 ₺` or `10.00 $`.
 - Dates show as `dd/mm/yyyy`. Times use the 12-hour clock with «ص/م» in the UI. Exports use ISO 8601.
-- Durations show as «12 د» for minutes and «45 ث» for seconds.
+- Durations show as «12 د» for minutes. A running time under ten minutes shows minutes and seconds, «4:32», and from ten minutes whole minutes, «12 د» (owner decision 2026-11-28).
 
 ## 4.8 Identifiers
 
