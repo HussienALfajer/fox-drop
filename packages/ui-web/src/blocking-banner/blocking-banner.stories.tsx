@@ -11,6 +11,8 @@ const meta = {
     actionLabel: 'تفعيل الصوت',
     onEnable: () => undefined,
   },
+  // An app opens it (no opener of its own): the canvas's panel gets an open switch.
+  parameters: { canvas: { openSwitch: true } },
   // The page it blocks: the banner itself sits in the top layer.
   decorators: [
     (Story) => (

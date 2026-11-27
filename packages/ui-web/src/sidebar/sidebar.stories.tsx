@@ -56,7 +56,13 @@ const base = {
 const frame = (children: ReactNode) => <div className="flex h-dvh">{children}</div>;
 
 // The props are a union (the drawer form needs its ×), so each story renders.
-const meta = { title: 'Sidebar', component: Sidebar } satisfies Meta<typeof Sidebar>;
+// The drawer form has no opener of its own (the top bar's menu opens it): the
+// canvas's panel gets an open switch.
+const meta = {
+  title: 'Sidebar',
+  component: Sidebar,
+  parameters: { canvas: { openSwitch: true } },
+} satisfies Meta<typeof Sidebar>;
 export default meta;
 type Story = StoryObj;
 

@@ -306,8 +306,10 @@ describe('the components canvas', () => {
     for (const name of ['Sidebar', 'BlockingBanner']) {
       expect(board(name), name).toMatch(/data-props='[^']*"open":\{"editor":"boolean"/);
     }
-    // Dialog opens from its trigger: no switch.
-    expect(board('Dialog')).not.toMatch(/data-props='[^']*"open":\{/);
+    // Dialog opens from its trigger, Select and Tooltip from their own: no switch.
+    for (const name of ['Dialog', 'Select', 'Tooltip']) {
+      expect(board(name), name).not.toMatch(/data-props='[^']*"open":\{/);
+    }
   });
 
   it('draws the states a gesture reaches from their props (the audit, 2026-11-27)', () => {
