@@ -153,8 +153,8 @@ jobs:
       - run: node scripts/verify.mjs format
 
       # Proves the fonts secret and the manifest agree. Skipped where the secret
-      # is absent (a pull request from a fork). The builds that bundle the fonts
-      # run this same command first (D.6 and D.7).
+      # is absent (a pull request from a fork). The jobs that need the fonts
+      # (visual, golden) run this same fetch first.
       - name: Trust GitHub's SSH host keys
         if: env.HAS_FONTS_KEY == 'true'
         run: node scripts/github-known-hosts.mjs
@@ -435,8 +435,9 @@ jobs:
   # The check main requires: every part passed, or was skipped for a change
   # of docs only, of no Dart, of nothing native or of nothing a screenshot or
   # golden reads, or, on a pull request, of no TypeScript, nothing the
-  # server's tests read or nothing the contract is built from (ciJobs). A part skipped because `changes` failed still fails here,
-  # through `changes`' own result.
+  # server's tests read or nothing the contract is built from (ciJobs). The
+  # two images count too, so a broken Dockerfile cannot merge. A part skipped
+  # because `changes` failed still fails here, through `changes`' own result.
   verify:
     if: always()
     needs:
@@ -451,6 +452,8 @@ jobs:
         dart,
         flutter,
         golden,
+        server-image,
+        web-image,
         android-release,
         windows-release,
         ios-release,
@@ -554,10 +557,6 @@ jobs:
           SSH_HOST: ${{ vars.STAGING_SSH_HOST }}
           SSH_KNOWN_HOSTS: ${{ vars.STAGING_SSH_KNOWN_HOSTS }}
 
-  # Slice 1.14b (owner decisions 2026-11-07): every merge to main (but one of
-  # docs only) builds the three apps' staging APKs (Android only), signed with each app's staging
-  # key, as artifacts of the run (the deploy skill). The keys are secrets of
-  # the staging environment, which only main may use.
   # The release build of each Android app on every pull request that touches
   # something native (the changes job) or has the native-builds label, so a
   # plugin that breaks it (a compileSdk, an AAR metadata check, R8) fails
@@ -775,7 +774,8 @@ jobs:
           xcodebuild -workspace ios/Runner.xcworkspace -scheme staging \
             -configuration Release-staging -destination generic/platform=iOS \
             -archivePath "$RUNNER_TEMP/app.xcarchive" \
-            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic             FOXDROP_BGGEO_LICENSE="$FOXDROP_BGGEO_LICENSE" \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            FOXDROP_BGGEO_LICENSE="$FOXDROP_BGGEO_LICENSE" \
             "${auth[@]}" archive
           cat > "$RUNNER_TEMP/export.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
@@ -803,6 +803,10 @@ jobs:
           UPDATE_URL: ${{ vars[format('STAGING_{0}_IOS_UPDATE_URL', matrix.key)] }}
           FOXDROP_BGGEO_LICENSE: ${{ secrets[format('STAGING_{0}_BGGEO_LICENSE', matrix.key)] }}
 
+  # Slice 1.14b (owner decisions 2026-11-07): every merge to main (but one of
+  # docs only) builds the three apps' staging APKs (Android only), signed with
+  # each app's staging key, as artifacts of the run (the deploy skill). The
+  # keys are secrets of the staging environment, which only main may use.
   staging-apks:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.build == 'true'
     needs: [changes, verify]
