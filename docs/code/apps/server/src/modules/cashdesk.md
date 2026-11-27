@@ -199,7 +199,7 @@ The money itself moves only through the ledger.
   The dues block lifts by itself once the dues reach zero (ordering's quote and the app's account state read the balance).
   Audited `cash_desk.receipt`.
   A payment that brings the dues to zero queues the customer's push `customer.dues_paid` «تم استلام {المبلغ}. حسابك فعّال من جديد» (CU §14 #21; the cash lines joined with « + », data `target: home`, source `cashdesk:receipt:<id>`);
-  a part paid sends none (to confirm with the owner).
+  a part paid sends none (owner decision 2026-11-17, docs/domain/08).
   Ordering's `dues.charge`, «تغيير النتيجة»'s reversals and the panel's dues block do not take `lockCustomerDues`, so one committed after the payment read the dues can leave a credit, which stays (owner decision 2026-11-17).
   Routes (`cash_desk.record`: OWN, FIN): `POST /v1/admin/cash-desk/customer-dues/preview` (a read, no key), `POST …/customer-dues`, `GET …/customer-receipts/{receiptId}` (`404 unknown_receipt`) and `GET …/customers/{customerId}/receipts` (the latest 20, newest first).
   A credit left on the dues (a «تغيير النتيجة» after the payment) stays and covers later dues;
