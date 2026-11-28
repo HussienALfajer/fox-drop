@@ -5,6 +5,7 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 ## Where things are
 
 - `docs/README.md`: the map of all documentation, the citation codes (AP, RA, CA, CU) and the decision ID prefixes. Start there, then read only the sections a task needs.
+- `docs/design/`: the design system (rules, component registry, surfaces, the Figma audit). Read its `rules.md` and `registry.md` before any design work in Figma.
 - `docs/product/v1/<party>/`: the specs, one file per section. `docs/domain/`: the shared rules (AP §8). `docs/architecture/`: the stack and its rules. The specs are the source of truth; never guess an open item (`docs/open-questions.md`): ask the owner.
 - How we work (risk tiers, slice loop, definition of done): `docs/process/development-workflow.md`. A slice's plan and hand-over: its file in `docs/slices/`. Open items: `docs/backlog.md`.
 - Folder `CLAUDE.md` files and the path-scoped `.claude/rules/*.md` hold the rules for working in a folder and load by themselves; `docs/code/<folder path>.md` holds what each feature there does, what was decided and why. Grep it for your feature; never read it whole.
