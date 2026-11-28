@@ -21,10 +21,24 @@ Team «Fox Drop» on the Professional plan.
 
 | File                     | Holds                                                                                                                                                                                                                                                        | Key                      |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
-| FOX DROP — Design System | The library (v0.1): Cover, Read me, Changelog, «🎨 Foundations» (variables and text styles), «🏷️ Brand» (the identity's lockups, marks and app icons as `Core/Brand/…` components) and «🧩 Components» (Core, Mobile and Web components, added flow by flow) | `ITmxeo3ipw0UH5OiV0880s` |
+| FOX DROP — Design System | The library (v0.2): Cover, Read me, Changelog, «🎨 Foundations» (variables and text styles), «🏷️ Brand» (the identity's lockups, marks and app icons as `Core/Brand/…` components) and «🧩 Components» (Core, Mobile and Web components, added flow by flow) | `ITmxeo3ipw0UH5OiV0880s` |
 | FOX DROP — Customer app  | The customer app's own components and its screens                                                                                                                                                                                                            | `FhvOwKGrGEv6p3JnIBHOof` |
 
 Folders: `00 Design System`, `01 Customer`, `02 Restaurant`, `03 Captain`, `04 Web`, `90 Explorations` (work that belongs to no app yet), `99 Archive`. One file per surface joins as each surface starts (customer first). A surface file has the pages «Cover», «Read me», «🧩 <App> components» (its own components), «🧪 Explorations», and one page per flow; it uses the library and never copies a library component.
+
+## Foundations
+
+The library's variables, in five collections, each with WEB code syntax `var(--fd-…)`, a scope and a description ([`rules.md`](rules.md), Tokens and colour):
+
+| Collection | Holds                                                                                                                                        | Modes                                            |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Primitives | The ramps: orange, blue, sand (0 to 900 with 450), green, red, amber (50 to 900), and `alpha/blue-900-45`. Hidden from publishing            | «Value»                                          |
+| Color      | The semantic tokens: `bg/*`, `text/*`, `border/*`, `icon/*`, a full set per state (success, error, warning, info), disabled and `bg/overlay` | Themes: «Light» now, Dark with the captain V2    |
+| Spacing    | `space/*` and `size/*`                                                                                                                       | Density per surface, added when a surface starts |
+| Shape      | `radius/*` and `border-width/*`                                                                                                              | «Value»                                          |
+| Typography | `font/family/base`, `font/size/*`, `font/line-height/*`, bound by the 14 text styles                                                         | «Value»                                          |
+
+Shadows, motion, grids and semantic spacing are not in the library yet: each arrives, with its description, in the batch of the first flow that needs it. The «🎨 Foundations» page shows every token with its use and contrast, a contrast matrix, the ramps, the type scale, spacing, shape and sizes.
 
 ## How design work runs
 
