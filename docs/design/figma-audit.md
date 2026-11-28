@@ -44,7 +44,7 @@ Every count must be zero before the next batch; there are no tolerated findings.
 
 **Limits:** the contrast check reads the nearest ancestor with an opaque solid fill, so text over images or overlapping siblings is checked by eye. Layout direction cannot be checked (Figma's Plugin API has no text or layout direction). The registry match is made by comparing the script's `components` list (library only) with `registry.md`. `STATES` is filled from the registry's «States or variants» column in the batch that builds each interactive component.
 
-**Results:** each run's result is recorded where it applies: in the flow file for a flow page, and in the library's «Changelog» page for the library. Latest, 2026-11-28 (v0.5, published): the library's «🧩 Components» page at 0 with its 54 components (the customer sign-in's Core and Mobile parts); the foundations audit at 0 after the scrim's primitive became `alpha/blue-900-32`.
+**Results:** each run's result is recorded where it applies: in the flow file for a flow page, and in the library's «Changelog» page for the library. Latest, 2026-11-28 (v0.5, published): the library's «🧩 Components» page at 0 with its 54 components (the customer sign-in's Core and Mobile parts); the foundations audit at 0 after the scrim's primitive became `alpha/blue-900-32`. Customer file, 2026-11-28: «🧩 Customer components» at 0 with `Customer/Sign-in reason` and `Customer/Sign-in country list`, and the customer sign-in's flow page «🔐 Sign-in» at 0 with its 39 frames.
 
 ## Script
 
