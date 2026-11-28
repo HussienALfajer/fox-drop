@@ -1,6 +1,6 @@
 # Customer: sign-in
 
-Step: 5 Polish, 2026-11-28: batch 1, the shared Core and Mobile components, built in the library with every state and audited to 0, v0.5 prepared for the owner to publish (Polish, below); next, batch 2, `Customer/Sign-in reason` on the customer file's components page, then the screens
+Step: 5 Polish, 2026-11-28: batch 1, the shared Core and Mobile components, built in the library with every state and audited to 0, v0.5 published by Claude at the owner's request and accepted in the customer file (Polish, below); next, batch 2, `Customer/Sign-in reason` on the customer file's components page, then the screens
 
 The phone sign-in of `core_auth`, designed once here for the three apps (rules.md, Components and screens; surfaces.md). The restaurant and captain files link to these screens and add only what differs: «لديّ رمز من العمليات», the captain's «انضم ككابتن», the restaurant's Windows pairing and their own refusals. This file covers the customer's flow: from the moment sign-in is asked for to the customer being back where they were, «أكمل بياناتك» included.
 
