@@ -32,7 +32,7 @@ The library's variables, in five collections, each with WEB code syntax `var(--f
 
 | Collection | Holds                                                                                                                                        | Modes                                          |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Primitives | The ramps: orange, blue, sand (0 to 900 with 450), green, red, amber (50 to 900), and `alpha/blue-900-45`. Hidden from publishing            | «Value»                                        |
+| Primitives | The ramps: orange, blue, sand (0 to 900 with 450), green, red, amber (50 to 900), and `alpha/blue-900-32`. Hidden from publishing            | «Value»                                        |
 | Color      | The semantic tokens: `bg/*`, `text/*`, `border/*`, `icon/*`, a full set per state (success, error, warning, info), disabled and `bg/overlay` | Themes: «Light» now, Dark with the captain V2  |
 | Spacing    | `space/*` and `size/*`                                                                                                                       | «Base» now; density per surface when it starts |
 | Shape      | `radius/*` and `border-width/*`                                                                                                              | «Value»                                        |

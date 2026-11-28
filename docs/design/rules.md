@@ -26,6 +26,8 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 - **Orange icons and the focus ring use `orange/600` (`icon/brand`, `border/focus`), not `orange/500`.** `orange/500` is 2.68:1 on ivory, under the 3:1 a focus indicator and a meaningful icon need; `orange/600` is 3.41:1. 2026-11-28.
 - **Fields and selectable controls use `border/input` (3:1 or more); `border/default` is for dividers and cards only.** WCAG 1.4.11; the earlier borders were 1.3:1 and hard to see outdoors. 2026-11-28.
 - **Orange text on light backgrounds uses `orange/700`, not `orange/500`.** `orange/500` is 2.7:1 on ivory; `orange/700` is 4.97:1. 2026-11-28.
+- **Text buttons are blue (`text/accent`, icons `icon/primary`, pressed on `bg/accent-soft`); orange stays for the one primary action.** Orange text competes with the main action and is weaker at 14 to 16. Owner, customer sign-in, 2026-11-28.
+- **The scrim behind sheets and dialogs is `blue/900` at 32% (`alpha/blue-900-32`).** At 45% the screen behind turned too blue (owner, 2026-11-28); 32% is Material's scrim strength. 2026-11-28.
 - **Exception: the primary button is `#FF6E31` with white text (2.8:1), bold and 16 or larger.** The owner's choice (direction A). It fails even WCAG's 3:1 large-text threshold, so the owner judges it again on a phone outdoors at the first flow's approval, before it is coded; the audit exempts it by name. 2026-11-28.
 
 ## Typography
@@ -52,6 +54,8 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 - **Component first: a screen holds component instances, auto-layout containers bound to variables, and plain text with a text style and a colour variable; every shape is an instance.** A raw shape cannot change with the system; a heading as a component adds no safety. 2026-11-28.
 - **Screens live in their surface file, never in the library; the library holds foundations and components only.** The library is published to every surface; screens in it would ship as noise. 2026-11-28.
 - **A screen shared by several apps (the sign-in of `core_auth`) is designed once, in the file of the first app that needs it, and the other apps' files link to it.** One source per screen, as with components. 2026-11-28.
+- **A trailing mark or action in a field sits at the field's end edge, 16 from the border (a 48 button 4 from it).** A mark floating mid-field reads as part of the value (owner, 2026-11-28). 2026-11-28.
+- **The status bar and the home indicator follow the ground: Blue content (`text/primary`) on light screens, Ivory (`bg/canvas`) on blue grounds and under the scrim; every screen draws the home indicator at its foot.** The phone's own bars change with the ground (owner, 2026-11-28). 2026-11-28.
 - **Decoration is a component too, named under its layer: `Mobile/Decor/…`.** Decoration repeats across screens and must change in one place. 2026-11-28.
 - **Illustrations are shared decoration: `Core/Decor/Illustration/<topic>`, named by subject, not by screen; one 72 grid, flat with soft depth, colours from the semantic Color collection only.** Every surface needs the same subjects (orders, notifications, places) for empty states and invitations; one source keeps one style and follows the themes. Owner, customer sign-in, 2026-11-28.
 - **Brand components (`Core/Brand/…`) keep the identity's literal colours and are never restyled, recoloured or bound to variables.** The logo must look the same in every theme and match the owner's pack; the audit exempts them from variable binding like decoration. 2026-11-28.
