@@ -16,7 +16,7 @@ The owner's visual identity pack (V1.1, 2026-11-21): the logo, the app icon and 
 From the owner's pack (V1.1, 2026-11-21); its boards are the reference.
 
 - **Colours:** ivory `#FFFAED` 60% (backgrounds), coral orange `#FF6E31` 30% (the identity and primary buttons), royal blue `#03428E` 10% (headings).
-- **Typeface:** CoFo Sans Pro is the primary UI typeface. Its files are licensed and never enter this repository.
+- **Typeface:** CoFo Sans Pro is the primary UI typeface; the apps use its Arabic edition, CoFo Sans Pro Arabic. Its files are licensed and never enter this repository.
 - **Logo use:** the four lockups are used unchanged, with their clear space and at least 24 px for the mark and 120 px wide for the horizontal lockup; never rotated, stretched or given effects.
 - **App icon:** the official one is the white fox on orange.
 
