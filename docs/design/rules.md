@@ -40,6 +40,14 @@ One rule per line: the rule, then why, then the date it was set. A correction ma
 - **A change wanted on one screen is first asked as: one-off, or the component?** If the component, the main component changes or gains a property or state. 2026-11-28.
 - **Interactive components carry Default, Pressed and Disabled; fields add Focused and Error; async actions add Loading.** Every screen needs them, and prototypes need them to feel real. 2026-11-28.
 
+## Explorations
+
+- **Each app file has a «🧪 Explorations» page with one section per flow; only directions the owner approved in writing are drawn there.** Drawing costs more than discussing; ideas are filtered in text first. 2026-11-28.
+- **New elements in an exploration are drawn on the screen and named `Draft/…`; they enter the library only once their direction is chosen.** Unchosen ideas must not leave components behind. 2026-11-28.
+- **The Explorations page is exempt from the audit; a chosen direction is rebuilt to the full standard before it leaves the page.** Explorations trade rigour for speed; the flow's page does not. 2026-11-28.
+- **Ideas are never deleted: each carries «Chosen» or «Not chosen» and one line of reason.** The designer sees what was tried and why it was set aside. 2026-11-28.
+- **Two or three directions per flow.** More scatters the discussion and costs without improving the choice. 2026-11-28.
+
 ## Layers and naming
 
 - **Four layers: Core (any surface), Mobile and Web (by form factor), and the surface layer (Customer, Restaurant, Captain, Admin, Portal).** One look across surfaces without forcing one component to fit all. 2026-11-28.
