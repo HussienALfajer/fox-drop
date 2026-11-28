@@ -12,54 +12,38 @@ Every component in the design system, one line each. Search here before making a
 | Stable     | Its coded widget is merged and named in «Code»                                                        | Claude, in the pull request of the code |
 | Deprecated | Replaced: the line names the replacement; deleted once no file uses it                                | The owner's approval                    |
 
-**Provisional** marks a component made for one direction of a flow that is not chosen yet; it is removed if that direction loses (rules.md, Explorations).
-
 ## Layers
 
-**Core** any surface · **Mobile** the three apps · **Web** the panel and the portal · **Customer**, **Restaurant**, **Captain**, **Admin**, **Portal** one surface. Decoration is named under its layer (`Mobile/Decor/…`).
+**Core** any surface · **Mobile** the three apps · **Web** the panel and the portal · **Customer**, **Restaurant**, **Captain**, **Admin**, **Portal** one surface. Decoration is named under its layer (`Mobile/Decor/…`); the identity's assets are `Core/Brand/…`.
 
 ## Components
 
 Figma ids are in the library file (`ITmxeo3ipw0UH5OiV0880s`). «Code» names the widget or component file once coded.
 
-| Name                      | Layer  | Used by  | Status                                 | States or variants                                                            | Figma    | Code | Not to confuse with                 |
-| ------------------------- | ------ | -------- | -------------------------------------- | ----------------------------------------------------------------------------- | -------- | ---- | ----------------------------------- |
-| Core/Button               | Core   | Customer | Proposed                               | Style: Primary, Secondary, Ghost × State: Default, Pressed, Loading, Disabled | `3:65`   |      | Core/Icon button, Core/Chip         |
-| Core/Icon button          | Core   | Customer | Proposed                               | State: Default, Pressed, Disabled; 48                                         | `51:94`  |      | Core/Button                         |
-| Core/Text field           | Core   | Customer | Proposed                               | State: Default, Filled, Focused, Error, Disabled                              | `5:70`   |      | Core/Phone field, Core/Search field |
-| Core/Phone field          | Core   | Customer | Proposed                               | State: Default, Focused, Valid, Error, Disabled                               | `5:46`   |      | Core/Text field                     |
-| Core/Search field         | Core   | Customer | Proposed                               | State: Default, Focused                                                       | `55:58`  |      | Core/Text field                     |
-| Core/OTP cell             | Core   | Customer | Proposed                               | State: Empty, Active, Filled, Error, Success                                  | `5:58`   |      |                                     |
-| Core/Checkbox             | Core   | Customer | Proposed                               | Checked: No, Yes × State: Default, Error, Disabled                            | `3:77`   |      | Core/Choice                         |
-| Core/Choice               | Core   | Customer | Proposed                               | Selected: No, Yes × State: Default, Disabled                                  | `3:85`   |      | Core/Checkbox                       |
-| Core/Country row          | Core   | Customer | Proposed                               | Selected: No, Yes                                                             | `5:86`   |      |                                     |
-| Core/Section label        | Core   | Customer | Proposed                               |                                                                               | `55:62`  |      |                                     |
-| Core/Inline message       | Core   | Customer | Proposed                               | Tone: Error, Info, Success                                                    | `5:100`  |      | Core/Hint                           |
-| Core/Hint                 | Core   | Customer | Proposed                               | Tone: Neutral, Brand                                                          | `55:91`  |      | Core/Inline message                 |
-| Core/Chip                 | Core   | Customer | Proposed                               | 48 high                                                                       | `55:67`  |      | Core/Button                         |
-| Core/Icon tile            | Core   | Customer | Proposed, provisional (sign-in Idea A) |                                                                               | `55:95`  |      | Core/Icon button                    |
-| Core/Logo mark ivory      | Core   | Customer | Proposed                               |                                                                               | `7:11`   |      |                                     |
-| Core/Icon/arrow-back      | Core   | Customer | Proposed                               | Solar Linear; points right (back in RTL)                                      | `3:8`    |      |                                     |
-| Core/Icon/close           | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:11`   |      |                                     |
-| Core/Icon/chevron-down    | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:14`   |      |                                     |
-| Core/Icon/check           | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:17`   |      |                                     |
-| Core/Icon/search          | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:21`   |      |                                     |
-| Core/Icon/paste           | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:25`   |      |                                     |
-| Core/Icon/chat            | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:29`   |      |                                     |
-| Core/Icon/alert           | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:33`   |      |                                     |
-| Core/Icon/calendar        | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:37`   |      |                                     |
-| Core/Icon/shield          | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:41`   |      |                                     |
-| Core/Icon/clock           | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:45`   |      |                                     |
-| Core/Icon/phone           | Core   | Customer | Proposed                               | Solar Linear                                                                  | `3:49`   |      |                                     |
-| Mobile/Status bar         | Mobile | Customer | Proposed                               | Tone: Dark, Light; mock-ups only                                              | `54:53`  |      |                                     |
-| Mobile/Home indicator     | Mobile | Customer | Proposed                               | Mock-ups only                                                                 | `54:57`  |      |                                     |
-| Mobile/Top bar            | Mobile | Customer | Proposed                               | Show title: yes, no                                                           | `54:62`  |      | Mobile/Sheet header                 |
-| Mobile/Sheet header       | Mobile | Customer | Proposed                               |                                                                               | `54:70`  |      | Mobile/Top bar                      |
-| Mobile/Scrim              | Mobile | Customer | Proposed                               |                                                                               | `54:83`  |      |                                     |
-| Mobile/Decor/Sign-in hero | Mobile | Customer | Proposed, provisional (sign-in Idea A) |                                                                               | `55:107` |      | Mobile/Decor/Brand corner           |
-| Mobile/Decor/Brand corner | Mobile | Customer | Proposed, provisional (sign-in Idea A) |                                                                               | `55:123` |      | Mobile/Decor/Sign-in hero           |
+The brand components are the identity pack's SVGs on the library's «🏷️ Brand» page ([`../brand/README.md`](../brand/README.md)); they keep the identity's literal colours (rules.md, Components and screens). No other component exists yet: components are added flow by flow at the polish step ([`README.md`](README.md), How design work runs).
 
-A bottom sheet is not a component: it is an auto-layout frame on `bg/canvas` with `radius/2xl` top corners, holding a Mobile/Sheet header and its rows.
+| Name                                            | Layer | Used by | Status   | States or variants | Figma   | Code | Not to confuse with     |
+| ----------------------------------------------- | ----- | ------- | -------- | ------------------ | ------- | ---- | ----------------------- |
+| Core/Brand/Lockup/Horizontal Arabic             | Core  | All     | Proposed |                    | `76:2`  |      | The other three lockups |
+| Core/Brand/Lockup/Horizontal Latin              | Core  | All     | Proposed |                    | `76:5`  |      | The other three lockups |
+| Core/Brand/Lockup/Vertical Arabic               | Core  | All     | Proposed |                    | `76:8`  |      | The other three lockups |
+| Core/Brand/Lockup/Vertical Latin                | Core  | All     | Proposed |                    | `76:11` |      | The other three lockups |
+| Core/Brand/Mark/Orange                          | Core  | All     | Proposed |                    | `76:14` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Blue                            | Core  | All     | Proposed |                    | `76:17` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Ivory                           | Core  | All     | Proposed |                    | `76:20` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Orange on ivory square          | Core  | All     | Proposed |                    | `76:23` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Orange on ivory drop            | Core  | All     | Proposed |                    | `76:26` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Blue on ivory square            | Core  | All     | Proposed |                    | `76:29` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Blue on ivory drop              | Core  | All     | Proposed |                    | `76:32` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Ivory on orange square          | Core  | All     | Proposed |                    | `76:35` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Ivory on blue square            | Core  | All     | Proposed |                    | `76:38` |      | Core/Brand/App icon/*   |
+| Core/Brand/Mark/Ivory on blue drop              | Core  | All     | Proposed |                    | `76:41` |      | Core/Brand/App icon/*   |
+| Core/Brand/App icon/White fox on orange/Square  | Core  | All     | Proposed |                    | `76:44` |      | Core/Brand/Mark/*       |
+| Core/Brand/App icon/White fox on orange/Rounded | Core  | All     | Proposed |                    | `76:47` |      | Core/Brand/Mark/*       |
+| Core/Brand/App icon/Black fox on ivory/Square   | Core  | All     | Proposed |                    | `76:50` |      | Core/Brand/Mark/*       |
+| Core/Brand/App icon/Black fox on ivory/Rounded  | Core  | All     | Proposed |                    | `76:53` |      | Core/Brand/Mark/*       |
+| Core/Brand/App icon/Ivory fox on black/Square   | Core  | All     | Proposed |                    | `76:56` |      | Core/Brand/Mark/*       |
+| Core/Brand/App icon/Ivory fox on black/Rounded  | Core  | All     | Proposed |                    | `76:59` |      | Core/Brand/Mark/*       |
 
 ## Surface components
 

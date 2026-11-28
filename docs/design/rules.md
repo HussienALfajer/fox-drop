@@ -13,12 +13,12 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 
 - **Every colour, spacing, radius, size and border width is a variable; no raw value in a screen or component.** One change then reaches every screen and the code. 2026-11-28.
 - **Primitives are hidden; screens and components use the semantic Color collection only.** A screen says «text/primary», not «blue/800», so the identity can change without touching screens. 2026-11-28.
-- **Identity colours: ivory `#FFFAED` 60%, coral orange `#FF6E31` 30%, royal blue `#03428E` 10%.** The identity pack V1.1. 2026-11-21.
+- **Identity colours and their proportions come from [`../brand/README.md`](../brand/README.md); the Primitives hold them.** The identity pack V1.1 is the source. 2026-11-21.
 - **A bound colour carries its resolved value as the paint's base colour.** Figma stores a fallback when a variable is bound; a black fallback looks right in screenshots and wrong in the file. 2026-11-28.
 - **Text meets 4.5:1 on canvas, surface and subtle backgrounds, except disabled text.** WCAG 1.4.3; `sand/500` was darkened to `#766C58` for `text/tertiary`. 2026-11-28.
 - **Fields and selectable controls use `border/input` (3:1 or more); `border/default` is for dividers and cards only.** WCAG 1.4.11; the earlier borders were 1.3:1 and hard to see outdoors. 2026-11-28.
 - **Orange text on light backgrounds uses `orange/700`, not `orange/500`.** `orange/500` is 2.7:1 on ivory; `orange/700` is 4.97:1. 2026-11-28.
-- **Exception: the primary button is `#FF6E31` with white text (2.8:1), bold and 16 or larger.** The owner's choice (direction A). It fails even WCAG's 3:1 large-text threshold, so the owner judges it again on a phone outdoors at the sign-in flow's approval, before it is coded; the audit exempts it by name. 2026-11-28.
+- **Exception: the primary button is `#FF6E31` with white text (2.8:1), bold and 16 or larger.** The owner's choice (direction A). It fails even WCAG's 3:1 large-text threshold, so the owner judges it again on a phone outdoors at the first flow's approval, before it is coded; the audit exempts it by name. 2026-11-28.
 
 ## Typography
 
@@ -42,7 +42,8 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 - **Component first: a screen holds component instances, auto-layout containers bound to variables, and plain text with a text style and a colour variable; every shape is an instance.** A raw shape cannot change with the system; a heading as a component adds no safety. 2026-11-28.
 - **Screens live in their surface file, never in the library; the library holds foundations and components only.** The library is published to every surface; screens in it would ship as noise. 2026-11-28.
 - **A screen shared by several apps (the sign-in of `core_auth`) is designed once, in the file of the first app that needs it, and the other apps' files link to it.** One source per screen, as with components. 2026-11-28.
-- **Decoration is a component too, named under its layer: `Mobile/Decor/…`.** The sign-in hero and brand corner repeat across screens. 2026-11-28.
+- **Decoration is a component too, named under its layer: `Mobile/Decor/…`.** Decoration repeats across screens and must change in one place. 2026-11-28.
+- **Brand components (`Core/Brand/…`) keep the identity's literal colours and are never restyled, recoloured or bound to variables.** The logo must look the same in every theme and match the owner's pack; the audit exempts them from variable binding like decoration. 2026-11-28.
 - **Instances are never detached; overrides go through component properties only.** A detached or restyled instance stops following its component. 2026-11-28.
 - **A change wanted on one screen is first asked as: one-off, or the component?** If the component, the main component changes or gains a property or state. 2026-11-28.
 - **Interactive components carry Default, Pressed and Disabled; fields add Focused and Error; async actions add Loading.** Every screen needs them, and prototypes need them to feel real. 2026-11-28.
@@ -53,7 +54,7 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 - **New elements in an exploration are drawn on the screen and named `Draft/…`; they enter the library only once their direction is chosen.** Unchosen ideas must not leave components behind. 2026-11-28.
 - **The Explorations page is exempt from the audit; a chosen direction is rebuilt to the full standard before it leaves the page.** Explorations trade rigour for speed; the flow's page does not. 2026-11-28.
 - **Ideas are never deleted: each carries «Chosen» or «Not chosen» and one line of reason.** The designer sees what was tried and why it was set aside. 2026-11-28.
-- **When a direction loses, the library components made only for it are deleted, or marked `Deprecated` if anything uses them, in the same batch.** The sign-in's first drawing («Idea A») put `Mobile/Decor/Sign-in hero`, `Mobile/Decor/Brand corner` and `Core/Icon tile` in the library before the method existed; they are provisional. 2026-11-28.
+- **When a direction loses, the library components made only for it are deleted, or marked `Deprecated` if anything uses them, in the same batch.** Unchosen ideas must not leave components behind. 2026-11-28.
 - **Two or three directions per flow.** More scatters the discussion and costs without improving the choice. 2026-11-28.
 
 ## Layers and naming

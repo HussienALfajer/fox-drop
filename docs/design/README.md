@@ -19,12 +19,12 @@ The repository is the source of truth for the rules, the registry and the audit.
 
 Team «Fox Drop» on the Professional plan.
 
-| File                     | Holds                                                              | Key                      |
-| ------------------------ | ------------------------------------------------------------------ | ------------------------ |
-| FOX DROP — Design System | The library: foundations, Core, Mobile and Web components; Read me | `ITmxeo3ipw0UH5OiV0880s` |
-| FOX DROP — Customer app  | The customer app's own components and its screens                  | `FhvOwKGrGEv6p3JnIBHOof` |
+| File                     | Holds                                                                                                                                                                                                                                                        | Key                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
+| FOX DROP — Design System | The library (v0.1): Cover, Read me, Changelog, «🎨 Foundations» (variables and text styles), «🏷️ Brand» (the identity's lockups, marks and app icons as `Core/Brand/…` components) and «🧩 Components» (Core, Mobile and Web components, added flow by flow) | `ITmxeo3ipw0UH5OiV0880s` |
+| FOX DROP — Customer app  | The customer app's own components and its screens                                                                                                                                                                                                            | `FhvOwKGrGEv6p3JnIBHOof` |
 
-Folders: `00 Design System`, `01 Customer`, `02 Restaurant`, `03 Captain`, `04 Web`, `90 Explorations` (work that belongs to no app yet), `99 Archive`. One file per surface joins as each surface starts (customer first). A surface file has the pages «Cover», «Read me», «🧩 <App> components» (its own components), «🧪 Explorations», one page per flow, and «Archive»; it uses the library and never copies a library component.
+Folders: `00 Design System`, `01 Customer`, `02 Restaurant`, `03 Captain`, `04 Web`, `90 Explorations` (work that belongs to no app yet), `99 Archive`. One file per surface joins as each surface starts (customer first). A surface file has the pages «Cover», «Read me», «🧩 <App> components» (its own components), «🧪 Explorations», and one page per flow; it uses the library and never copies a library component.
 
 ## How design work runs
 
@@ -43,7 +43,7 @@ Corrections become rules: a correction from the owner or the designer is fixed o
 
 - **The owner** reviews in Figma or on a phone with the prototype, and answers in the chat; each decision is written into the flow file with its date.
 - **The designer** has a View seat and comments in Figma. Claude reads the comments, applies each fix on every screen it touches, turns it into a rule when it is one, and resolves the comment with a reply saying what changed. The designer's approval is written into the flow file with their name and date.
-- **Each approval** gets a named checkpoint in the file's version history («Sign-in approved, 2026-…»), and the flow file cites it.
+- **Each approval** gets a named checkpoint in the file's version history («<Flow> approved, 2026-…»), and the flow file cites it.
 
 ## «Ready for dev»
 
