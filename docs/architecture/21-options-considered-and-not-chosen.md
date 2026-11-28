@@ -14,7 +14,6 @@
 | React Native                                    | Weak on Windows for the restaurant app; one framework for all three apps is worth more                                           |
 | Flutter Web for the panel or portal             | Weaker for large tables, long Arabic text and accessibility                                                                      |
 | Next.js for the panel                           | Server rendering and SEO are not needed behind a sign-in                                                                         |
-| Radix and shadcn/ui                             | Replaced by UI SDK, with Base UI as the fallback, under FOX DROP's own components (T2, T11)                                      |
 | Google Maps everywhere                          | Per-use billing; MapLibre with OSM covers V1, with Google Maps kept as a display fallback (§7.2)                                 |
 | Relying on push alone for rings                 | Forbidden by the specs (RA §4.3)                                                                                                 |
 | Cloudflare (DNS, CDN, WAF, R2, Access)          | Blocked in Syria; replaced by nginx, Let's Encrypt and self-hosted storage on the server (T9)                                    |

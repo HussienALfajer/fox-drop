@@ -30,10 +30,7 @@ jobs:
   # native project, the lock file, a package with native code or the pinned
   # Flutter (`native`), or with the native-builds label, which a change to
   # the native jobs below takes. Main builds Android only (staging-apks).
-  # The screenshot jobs run only for what can change their images: `visual`
-  # for ui-web, the design tokens and what its Storybook and Playwright read,
-  # `golden` for core_ui, its tokens and the Dart workspace; both for this
-  # workflow and the classifier. On a pull request the TypeScript jobs (`lint`,
+  # On a pull request the TypeScript jobs (`lint`,
   # `e2e`), the server's tests and the contract run only for a change they can
   # break (`typescript`, `server`, `contract`: ciJobs in the classifier), and
   # Turborepo checks only the packages the change affects (`--affected`); on
@@ -48,8 +45,6 @@ jobs:
       dart: ${{ steps.paths.outputs.dart }}
       native: ${{ steps.paths.outputs.native }}
       build: ${{ steps.paths.outputs.build }}
-      visual: ${{ steps.paths.outputs.visual }}
-      golden: ${{ steps.paths.outputs.golden }}
       typescript: ${{ steps.paths.outputs.typescript }}
       server: ${{ steps.paths.outputs.server }}
       contract: ${{ steps.paths.outputs.contract }}
@@ -132,14 +127,8 @@ jobs:
   format:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      # Only whether the secret exists (false on a pull request from a fork:
-      # the fonts steps below then skip); the secret itself goes to the fetch
-      # step alone, so no install script can read it.
-      HAS_FONTS_KEY: ${{ secrets.FONTS_DEPLOY_KEY != '' }}
     steps:
-      # The whole history: the fonts guard scans every commit of a pull request
-      # for a font file (scripts/fonts.test.mjs), not only the tip.
+      # The whole history: the secret scan reads every commit of the change.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
@@ -193,21 +182,6 @@ jobs:
 
       - run: node scripts/verify.mjs format
 
-      # Proves the fonts secret and the manifest agree. Skipped where the secret
-      # is absent (a pull request from a fork). The jobs that need the fonts
-      # (visual, golden) run this same fetch first.
-      - name: Trust GitHub's SSH host keys
-        if: env.HAS_FONTS_KEY == 'true'
-        run: node scripts/github-known-hosts.mjs
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Fetch the licensed fonts
-        if: env.HAS_FONTS_KEY == 'true'
-        run: pnpm fonts:fetch
-        env:
-          FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
-
   # The TypeScript part (`verify.mjs typescript`) in parallel jobs: `lint`
   # (the root lint, lint, type check and the unit tests other than the
   # server's) and `e2e`, one job per package with a build or smoke tests;
@@ -245,7 +219,7 @@ jobs:
       fail-fast: false
       matrix:
         # The server has a build and no smoke tests.
-        package: [admin, merchant-portal, server, ui-web]
+        package: [admin, merchant-portal, server]
     steps:
       # The whole history: Turborepo compares the pull request with its base.
       - uses: actions/checkout@v7
@@ -279,65 +253,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: playwright-results-${{ matrix.package }}
-          # Not ui-web's: its Storybook serves the licensed fonts (no trace there either).
           path: apps/*/test-results/
-          if-no-files-found: ignore
-
-  # The Storybook screenshots (architecture §9.5 R9) are valid only from the
-  # Playwright image, so this job runs in it. It needs the licensed fonts: with
-  # no FONTS_DEPLOY_KEY it fails on purpose, never skips (owner, 2026-11-23).
-  # It runs only for a change that can alter a screenshot (`visual`).
-  visual:
-    needs: changes
-    if: needs.changes.outputs.visual == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    container: mcr.microsoft.com/playwright:v1.64.1-noble
-    env:
-      FD_VISUAL: '1'
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      # fonts:fetch clones over SSH: it needs git and ssh, which the image may
-      # lack, and GitHub's host keys (checked strictly).
-      - name: Install git and ssh if missing
-        run: |
-          if ! command -v git >/dev/null || ! command -v ssh >/dev/null; then
-            apt-get update
-            apt-get install --yes --no-install-recommends git openssh-client ca-certificates
-          fi
-
-      # System-wide: in a container ssh reads /root, not the $HOME Node sees.
-      - name: Trust GitHub's SSH host keys
-        run: node scripts/github-known-hosts.mjs /etc/ssh/ssh_known_hosts
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Fetch the licensed fonts
-        run: pnpm fonts:fetch
-        env:
-          FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
-
-      - run: pnpm --filter @fox-drop/ui-web build
-
-      - run: pnpm --filter @fox-drop/ui-web exec playwright test --project=visual
-
-      # The expected, actual and diff images of a failed comparison.
-      - if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: visual-diff
-          # Images only: no trace or other file that could carry the fonts.
-          path: packages/ui-web/test-results/**/*.png
           if-no-files-found: ignore
 
   # The server's tests start PostGIS and Valkey with Testcontainers, in four
@@ -392,14 +308,6 @@ jobs:
 
       - run: dart pub get --enforce-lockfile
 
-      # The fox_lints check compiles itself into .dart_tool/fox_lints once per
-      # change to its sources, the lock file or the SDK (packages/fox_lints/CLAUDE.md),
-      # with the summaries of what the enforced packages import beside it.
-      - uses: actions/cache@v5
-        with:
-          path: .dart_tool/fox_lints
-          key: fox-lints-${{ runner.os }}-${{ steps.flutter.outputs.version }}-${{ hashFiles('packages/fox_lints/bin/**', 'packages/fox_lints/lib/**', 'pubspec.lock') }}
-
       - run: node scripts/verify.mjs dart
 
   # The Flutter packages' tests in three shards, balanced by verify.mjs
@@ -437,45 +345,8 @@ jobs:
 
       - run: node scripts/verify.mjs flutter --shard=${{ matrix.shard }}/3
 
-  # The core_ui goldens (R9, D.7), valid only from the Linux image that
-  # scripts/golden-docker.mjs builds (the pinned Ubuntu and .fvmrc Flutter),
-  # the same command as locally. Fails, never skips, without the fonts. It
-  # runs only for a change that can alter a golden (`golden`).
-  golden:
-    needs: changes
-    if: needs.changes.outputs.golden == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-
-      - name: Trust GitHub's SSH host keys
-        run: node scripts/github-known-hosts.mjs
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Fetch the licensed fonts
-        run: node scripts/fonts-fetch.mjs
-        env:
-          FONTS_DEPLOY_KEY: ${{ secrets.FONTS_DEPLOY_KEY }}
-
-      - run: node scripts/golden-docker.mjs
-
-      # The expected, actual and diff images of a failed comparison.
-      - if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: golden-diff
-          path: packages/core_ui/test/golden/failures/*.png
-          if-no-files-found: ignore
-
   # The check main requires: every part passed, or was skipped for a change
-  # of docs only, of no Dart, of nothing native or of nothing a screenshot or
-  # golden reads, or, on a pull request, of no TypeScript, nothing the
+  # of docs only, of no Dart or of nothing native, or, on a pull request, of no TypeScript, nothing the
   # server's tests read or nothing the contract is built from (ciJobs). The
   # two images count too, so a broken Dockerfile cannot merge. A part skipped
   # because `changes` failed still fails here, through `changes`' own result.
@@ -488,11 +359,9 @@ jobs:
         format,
         lint,
         e2e,
-        visual,
         server,
         dart,
         flutter,
-        golden,
         server-image,
         web-image,
         android-release,

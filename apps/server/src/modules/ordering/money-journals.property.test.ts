@@ -25,8 +25,7 @@ import { commissionOn, ticketMoneyEntries } from './ticket-money.js';
 // docs/domain/, AP §8.4–§8.9: every journal the order's money rules build
 // balances in each currency, and the order clearing account comes back to
 // zero once the order is settled, for any order, edits and choices, not only
-// the worked examples beside each rule. Phase 7 item 2 of
-// docs/archive/claude-code-workflow.md.
+// the worked examples beside each rule.
 
 const restaurantId = '0190f3a0-0000-7000-8000-0000000000b1';
 const captainId = '0190f3a0-0000-7000-8000-0000000000b2';

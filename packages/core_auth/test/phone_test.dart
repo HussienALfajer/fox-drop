@@ -3,7 +3,7 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // The number's rules are `phone_rules.dart`, tested against the table in
-// `test/phone-cases.json` (D.11b, moved here in D.R1).
+// `test/phone-cases.json` (D.11b).
 void main() {
   test('reads any country through the shared rules', () {
     expect(e164Phone('SY', '0944 123 456'), '+963944123456');

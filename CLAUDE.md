@@ -6,7 +6,7 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 
 - `docs/README.md`: the map of all documentation, the citation codes (AP, RA, CA, CU) and the decision ID prefixes. Start there, then read only the sections a task needs.
 - `docs/product/v1/<party>/`: the specs, one file per section. `docs/domain/`: the shared rules (AP §8). `docs/architecture/`: the stack and its rules. The specs are the source of truth; never guess an open item (`docs/open-questions.md`): ask the owner.
-- How we work (risk tiers, slice loop, definition of done): `docs/process/development-workflow.md`. A slice's plan and hand-over: its file in `docs/slices/`. Open items: `docs/backlog.md`. Slices before 2026-11-23: the read-only archive `docs/slice-notes.md`.
+- How we work (risk tiers, slice loop, definition of done): `docs/process/development-workflow.md`. A slice's plan and hand-over: its file in `docs/slices/`. Open items: `docs/backlog.md`.
 - Folder `CLAUDE.md` files and the path-scoped `.claude/rules/*.md` hold the rules for working in a folder and load by themselves; `docs/code/<folder path>.md` holds what each feature there does, what was decided and why. Grep it for your feature; never read it whole.
 - `apps/server/`: the server; its `CLAUDE.md` has the module, route, validation and logging rules. The web apps (`apps/admin/`, `apps/merchant-portal/`) share `.claude/rules/web-apps.md`; the Flutter apps (`apps/customer/`, `apps/captain/`, `apps/merchant/`) share `.claude/rules/flutter-apps.md`, and `packages/core_l10n/CLAUDE.md` has the strings' rules.
 
@@ -30,7 +30,6 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 - **Transactions:** a state change and its timers are written in one transaction, and events leave through the outbox (E3, E4).
 - **Clients:** API clients are generated from the OpenAPI document, never written by hand (E6). No secret ships inside an app or a web bundle (E7).
 - **Arabic, right to left:** every user-facing string lives in translation files; layouts use start and end, never left and right; Western digits (AP §4.7).
-- **Screen first (T16, §9.9):** one screen at a time, drawn with only its components, approved by the owner then the designer; then its components (web, Flutter) and code. Semantic tokens, `core_ui`/`ui-web` only (§9.5).
 - **Public repository:** no secrets, keys, signing files, `google-services.json`, `GoogleService-Info.plist` or real personal data. `.env.example` holds fake values only.
 - **Private research:** the BeeOrder research stays outside this repository.
 - A rule a machine can check belongs in a test, a lint rule or a hook, not in prose.
@@ -57,10 +56,9 @@ Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes
 ## Enforced by hooks (`.claude/hooks/`)
 
 - Secret files (`.env*`, keys) are readable and editable; never commit them.
-- Edits are refused for generated files (`packages/core_api/lib/`, the OpenAPI document and its TypeScript types, `generated/` folders, `*.g.dart`, lockfiles, Drizzle's `migrations/meta/`), the read-only archives (`docs/archive/`, `docs/slice-notes.md`), migrations merged to `main` (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
+- Edits are refused for generated files (`packages/core_api/lib/`, the OpenAPI document and its TypeScript types, `generated/` folders, `*.g.dart`, lockfiles, Drizzle's `migrations/meta/`), migrations merged to `main` (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
 - Shell writes into `apps/`, `packages/`, `scripts/`, `infra/` and `.claude/` are refused: use Edit or Write so the format hook runs. It reads only the command text: no `cd apps && echo > x`, `cp` or `node -e` writes.
 - `--no-verify`, force pushes, pushes to `main`, permission bypasses, run-time package fetches (`npx -y`, `dlx`, `bunx`), installs outside pnpm and removing a worktree before its SDK link are refused.
-- `gh pr create` and `gh pr ready` are refused while `node scripts/baselines.mjs --status` finds unchecked images (allowed, with a warning, when it cannot run).
 - On stop, the files the session edited must pass Prettier, `dart format` and ESLint (never tests), unless `.claude/state/red-phase` exists.
 - At session end, uncommitted work is reported.
 

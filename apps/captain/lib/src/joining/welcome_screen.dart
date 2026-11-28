@@ -2,8 +2,7 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 
 /// CA §5.1: the entry screen of a person not signed in. Unstyled until the
-/// design. Its «انضم ككابتن» and «تسجيل الدخول» left with the sign-in screen
-/// in D.R1 (2026-11-27) and return with its approved drawing.
+/// design. Its «انضم ككابتن» and «تسجيل الدخول» come with the sign-in screen.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 

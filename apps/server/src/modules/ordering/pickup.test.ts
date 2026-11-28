@@ -837,7 +837,7 @@ describe('who may answer, keys and races (architecture §5.3)', () => {
   });
 });
 
-// Phase 7 item 2 of docs/archive/claude-code-workflow.md (architecture §5.3, §5.5):
+// Architecture §5.3, §5.5:
 // whatever confirms a pickup, at once or again with the same key, the
 // restaurant, operations or the automatic confirmation's job, the order is
 // picked up once and its money posted once.

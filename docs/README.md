@@ -4,25 +4,23 @@ Start here. This page says where each kind of information lives. Each rule has e
 
 ## Map
 
-| Folder or file                                                       | What it holds                                                                                                                                                     |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`product/v1/admin-panel/`](product/v1/admin-panel/README.md)        | Admin panel V1 spec (AP)                                                                                                                                          |
-| [`product/v1/restaurant-app/`](product/v1/restaurant-app/README.md)  | Restaurant app and owner web portal V1 spec (RA)                                                                                                                  |
-| [`product/v1/captain-app/`](product/v1/captain-app/README.md)        | Captain app V1 spec (CA)                                                                                                                                          |
-| [`product/v1/customer-app/`](product/v1/customer-app/README.md)      | Customer app V1 spec (CU)                                                                                                                                         |
-| [`domain/`](domain/README.md)                                        | Shared domain rules (AP §8): order statuses, timers, order money, custody and earnings, currencies, restaurant account, trust, outcomes                           |
-| [`architecture/`](architecture/README.md)                            | Technology stack and architecture                                                                                                                                 |
-| [`brand/`](brand/README.md)                                          | The brand pack and its rules; [`brand/expression.md`](brand/expression.md), the brand's character (principles, motion, map, palette, type, voice, budgets, icons) |
-| [`runbooks/`](runbooks/staging-cycle.md)                             | Run books: [the whole order cycle on staging](runbooks/staging-cycle.md) on real phones, and [building and publishing the map](runbooks/maps.md)                  |
-| [`launch/dod-checklist.md`](launch/dod-checklist.md)                 | Every item of the four definitions of done, the test or staging demonstration that proves it, and its state                                                       |
-| [`code/`](code/)                                                     | What the features of each code folder do and why, one file per folder (`code/<folder path>.md`); grep it, never read it whole                                     |
-| [`process/development-workflow.md`](process/development-workflow.md) | How the project is built with Claude Code: risk tiers, the slice loop, definition of done, verification, pull requests, hooks                                     |
-| [`slices/`](slices/README.md)                                        | One file per slice since 2026-11-23: its plan, progress, evidence and hand-over (those whose code D.R1 deleted are in git history)                                |
-| [`backlog.md`](backlog.md)                                           | Open items that outlive a slice: decisions waiting for the owner, non-blocking review findings, follow-ups                                                        |
-| [`slice-notes.md`](slice-notes.md)                                   | Archive, read-only: what each slice built before 2026-11-23 left (before deploying, to check on staging, decisions pending the owner, not yet)                    |
-| [`archive/`](archive/claude-code-workflow.md)                        | Read-only history: the earlier Claude Code workflow plan and its measurements                                                                                     |
-| [`roadmap.md`](roadmap.md)                                           | Versions V1–V6 and the V1 build phases, and the status of every slice                                                                                             |
-| [`open-questions.md`](open-questions.md)                             | Where every open item lives                                                                                                                                       |
+| Folder or file                                                       | What it holds                                                                                                                                    |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`product/v1/admin-panel/`](product/v1/admin-panel/README.md)        | Admin panel V1 spec (AP)                                                                                                                         |
+| [`product/v1/restaurant-app/`](product/v1/restaurant-app/README.md)  | Restaurant app and owner web portal V1 spec (RA)                                                                                                 |
+| [`product/v1/captain-app/`](product/v1/captain-app/README.md)        | Captain app V1 spec (CA)                                                                                                                         |
+| [`product/v1/customer-app/`](product/v1/customer-app/README.md)      | Customer app V1 spec (CU)                                                                                                                        |
+| [`domain/`](domain/README.md)                                        | Shared domain rules (AP §8): order statuses, timers, order money, custody and earnings, currencies, restaurant account, trust, outcomes          |
+| [`architecture/`](architecture/README.md)                            | Technology stack and architecture                                                                                                                |
+| [`brand/`](brand/README.md)                                          | The brand files: logo, app icon and the identity pack's boards                                                                                   |
+| [`runbooks/`](runbooks/staging-cycle.md)                             | Run books: [the whole order cycle on staging](runbooks/staging-cycle.md) on real phones, and [building and publishing the map](runbooks/maps.md) |
+| [`launch/dod-checklist.md`](launch/dod-checklist.md)                 | Every item of the four definitions of done, the test or staging demonstration that proves it, and its state                                      |
+| [`code/`](code/)                                                     | What the features of each code folder do and why, one file per folder (`code/<folder path>.md`); grep it, never read it whole                    |
+| [`process/development-workflow.md`](process/development-workflow.md) | How the project is built with Claude Code: risk tiers, the slice loop, definition of done, verification, pull requests, hooks                    |
+| [`slices/`](slices/README.md)                                        | One file per slice since 2026-11-23: its plan, progress, evidence and hand-over                                                                  |
+| [`backlog.md`](backlog.md)                                           | Open items that outlive a slice: decisions waiting for the owner, non-blocking review findings, follow-ups                                       |
+| [`roadmap.md`](roadmap.md)                                           | Versions V1–V6 and the V1 build phases, and the status of every slice                                                                            |
+| [`open-questions.md`](open-questions.md)                             | Where every open item lives                                                                                                                      |
 
 ## Citations
 

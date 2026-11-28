@@ -17,8 +17,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_riverpod: 3.4.3
-  # Every country's phone rules (D.11b), MIT; the same metadata as the web's
-  # libphonenumber-js. Moved from core_ui with them in D.R1.
+  # Every country's phone rules (D.11b), MIT; the same metadata as the
+  # server's libphonenumber-js.
   phone_numbers_parser: 9.0.29
   url_launcher: 6.3.3
 

@@ -13,7 +13,6 @@ As built (aligned with the code on 2026-11-27, §2 T17). A library named "when n
 | Server state      | **TanStack Query**; real-time events from Centrifugo (`centrifuge`) invalidate what they changed and a full fetch follows every reconnect                          |
 | Tables and lists  | Plain HTML tables, paged by the server; **TanStack Table** and **TanStack Virtual** when a list outgrows them (when needed)                                        |
 | Forms             | Controlled React state in each feature file, validated by the server's answer (the generated types); no form library                                               |
-| Components        | `packages/ui-web` on **UI SDK**, Base UI per component as the fallback (T11, §9.10); none yet (T16)                                                                |
 | Maps              | **MapLibre GL JS** with **PMTiles** from `/maps/`; zones are edited with FOX DROP's own corner editing on MapLibre, no drawing library (owner decision 2026-11-19) |
 | Charts            | Shown as tables until their screens are designed; a chart library is chosen with that screen (when needed)                                                         |
 | Dates and numbers | `Intl` formatters with `ar-u-nu-latn` (Western digits) on the chosen city's time zone (`format.ts`, `clock.ts`)                                                    |

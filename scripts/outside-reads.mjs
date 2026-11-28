@@ -21,11 +21,7 @@ const trackedDirs = new Set(
       .map((_, i, all) => all.slice(0, i + 1).join('/')),
   ),
 );
-// The licensed fonts are git-ignored and fetched only where they are needed:
-// a path under .fonts/ counts as existing everywhere, so a test is the same
-// with and without them.
-export const exists = (file) =>
-  trackedSet.has(file) || trackedDirs.has(file) || /^\.fonts(\/|$)/.test(file);
+export const exists = (file) => trackedSet.has(file) || trackedDirs.has(file);
 
 // A quoted string, a comment, and a code file (TypeScript, JavaScript, Dart).
 const LITERAL = /'([^'\\\n]+)'|"([^"\\\n]+)"|`([^`\\\n]+)`/g;

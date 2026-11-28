@@ -117,7 +117,7 @@ describe('the dependency pins', () => {
       'a/pubspec.yaml': [
         'name: a',
         'dependencies:',
-        '  core_ui: any',
+        '  core_auth: any',
         '  dio: 5.11.1',
         '  flutter:',
         '    sdk: flutter',
@@ -143,7 +143,7 @@ describe('the dependency pins', () => {
         '  test: 1.31.1',
       ].join('\r\n'),
     };
-    const pins = dartPins(Object.keys(files), new Set(['core_ui']), (file) => files[file]);
+    const pins = dartPins(Object.keys(files), new Set(['core_auth']), (file) => files[file]);
     assert.deepEqual([...pins.keys()].sort(), ['dio', 'hosted_one', 'test']);
     assert.deepEqual(conflicts(pins), ['dio: 5.11.1 in a/pubspec.yaml, 5.11.2 in b/pubspec.yaml']);
   });

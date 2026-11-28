@@ -32,17 +32,14 @@ build/
 *.keystore
 google-services.json
 GoogleService-Info.plist
-
-# The licensed fonts, fetched by `pnpm fonts:fetch` (architecture §9.3); never committed
-.fonts/
-# The Design System and Guide artifact files, built by packages/design-tokens (they carry the fonts)
-.design-system/
-# The Fox Drop Components canvas, written by packages/ui-web (components-canvas)
-.components-canvas/
+# Font files: licensed fonts never enter this public repository
+*.ttf
+*.otf
+*.ttc
+*.woff
+*.woff2
 
 # Tests
-# The parity sheets and their shots (`pnpm parity <Component>`), a local review
-.parity/
 coverage/
 playwright-report/
 test-results/

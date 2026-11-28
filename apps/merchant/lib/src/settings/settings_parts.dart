@@ -3,8 +3,8 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-// The parts the owners' settings screens share (RA §14), kept from the staff
-// screen when it was deleted in D.R1 (2026-11-27). Unstyled until the design.
+// The parts the owners' settings screens share (RA §14). Unstyled until the
+// design.
 
 /// «آخر نشاط: …» on the city's clock, or «لم يسجّل الدخول بعد».
 String lastActiveText(AppLocalizations l10n, DateTime? at) => at == null

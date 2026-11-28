@@ -22,7 +22,7 @@ Read `infra/CLAUDE.md` for the layout and rules, and the `vertex-server` skill b
 
 ## Deploy
 
-What each merged slice needs before or after its deploy (a migration, a new variable, a provisioning run, what to check) is under «Before deploying» and «To check on staging» in its slice file (`docs/slices/<id>-<name>.md`), or, for slices before 2026-11-23, in its section of the archive `docs/slice-notes.md`: grep them for the slices since the last deploy.
+What each merged slice needs before or after its deploy (a migration, a new variable, a provisioning run, what to check) is under «Before deploying» and «To check on staging» in its slice file (`docs/slices/<id>-<name>.md`): grep them for the slices since the last deploy.
 
 Every merge to `main` that changes more than Markdown and `docs/` deploys staging: the `deploy-staging` job in `.github/workflows/ci.yml` builds and pushes both images tagged with the commit, then runs `ssh foxdrop-deploy@<host> "staging <commit>"`. The key (the `staging` GitHub environment, `main` only) can run nothing but `infra/server/deploy-ssh.sh`, which calls `foxdrop-deploy` through sudo.
 

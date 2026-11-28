@@ -11,9 +11,6 @@ export default tseslint.config(
       '**/coverage/',
       '**/.turbo/',
       '**/.dart_tool/',
-      // The Design System's files, built for publishing (ui-web's bundle.js).
-      '**/.design-system/',
-      '**/.components-canvas/',
       // Playwright's output, which a parallel test:e2e creates and deletes
       // while lint scans the folder.
       '**/test-results/',

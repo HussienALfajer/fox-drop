@@ -40,13 +40,8 @@
       "minimumReleaseAge": "1 day"
     },
     {
-      "description": "The Playwright container of the visual job carries the browsers of one @playwright/test version: they move together, or the job finds no browser.",
-      "matchPackageNames": [
-        "mcr.microsoft.com/playwright",
-        "@playwright/test",
-        "playwright",
-        "playwright-core"
-      ],
+      "description": "The Playwright packages move together: the smoke tests run the browsers of one @playwright/test version.",
+      "matchPackageNames": ["@playwright/test", "playwright", "playwright-core"],
       "groupName": "Playwright",
       "separateMajorMinor": false
     },

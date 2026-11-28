@@ -105,7 +105,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Future<void> _confirm(Quote quote, Cart cart, PointChecked point) async {
     final session = ref.read(customerAuth.session).value;
     // CU §10.7 item 2: a guest signs in here and comes back. Until the
-    // sign-in screen returns (deleted in D.R1) the guest stays on checkout.
+    // sign-in screen is built the guest stays on checkout.
     if (session is! SignedIn) return;
     // «أكمل بياناتك» comes before the first order (CU §5.3): the terms are
     // accepted there, and the server does not check them yet.

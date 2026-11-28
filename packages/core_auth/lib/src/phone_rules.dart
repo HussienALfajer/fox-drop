@@ -12,10 +12,8 @@ enum FoxPhoneProblem {
   unknownCode,
 }
 
-/// The phone field's reading of what was typed or pasted (slice D.11b), the
-/// moved here from core_ui in D.R1: it passes every row of
-/// `packages/core_auth/test/phone-cases.json`, which the web's phone field
-/// reads too once it is rebuilt.
+/// The phone field's reading of what was typed or pasted (slice D.11b),
+/// passing every row of `packages/core_auth/test/phone-cases.json`.
 final class FoxPhoneReading {
   const FoxPhoneReading({
     required this.country,

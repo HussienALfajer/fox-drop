@@ -9,29 +9,25 @@ Progress is tracked in [`docs/roadmap.md`](docs/roadmap.md). The map of all docu
 
 ## Repository layout
 
-| Path                     | What it is                                                                |
-| ------------------------ | ------------------------------------------------------------------------- |
-| `apps/server`            | The API, workers and jobs: a NestJS modular monolith on PostgreSQL        |
-| `apps/customer`          | Customer app, Flutter (Android, iOS)                                      |
-| `apps/merchant`          | Restaurant app, Flutter (Android, Windows)                                |
-| `apps/captain`           | Captain app, Flutter (Android, iOS)                                       |
-| `apps/admin`             | Owner's admin panel, React                                                |
-| `apps/merchant-portal`   | Restaurant owner's web portal, React                                      |
-| `apps/widgetbook`        | Catalogue of the Flutter components                                       |
-| `packages/api-schema`    | The OpenAPI contract and the generated TypeScript client                  |
-| `packages/core_*`        | Shared Flutter packages: API client, sign-in, real time, maps, strings, … |
-| `packages/design-tokens` | The design tokens, generated for the web and for Dart                     |
-| `packages/ui-web`        | Web components on the design tokens                                       |
-| `packages/fox_lints`     | Dart lint rules for the design system                                     |
-| `infra`                  | Deployment: Compose files, nginx, maps, routing and backups               |
-| `scripts`                | The single check (`pnpm verify`) and its helpers                          |
-| `docs`                   | Specs, domain rules, architecture, process and slice plans                |
+| Path                   | What it is                                                                |
+| ---------------------- | ------------------------------------------------------------------------- |
+| `apps/server`          | The API, workers and jobs: a NestJS modular monolith on PostgreSQL        |
+| `apps/customer`        | Customer app, Flutter (Android, iOS)                                      |
+| `apps/merchant`        | Restaurant app, Flutter (Android, Windows)                                |
+| `apps/captain`         | Captain app, Flutter (Android, iOS)                                       |
+| `apps/admin`           | Owner's admin panel, React                                                |
+| `apps/merchant-portal` | Restaurant owner's web portal, React                                      |
+| `packages/api-schema`  | The OpenAPI contract and the generated TypeScript client                  |
+| `packages/core_*`      | Shared Flutter packages: API client, sign-in, real time, maps, strings, … |
+| `infra`                | Deployment: Compose files, nginx, maps, routing and backups               |
+| `scripts`              | The single check (`pnpm verify`) and its helpers                          |
+| `docs`                 | Specs, domain rules, architecture, process and slice plans                |
 
 ## Technology
 
 - **Server:** Node.js and TypeScript, NestJS on Fastify, PostgreSQL with PostGIS, pg-boss,
   Valkey, Centrifugo for real time, REST with OpenAPI 3.1.
-- **Apps:** Flutter for the mobile and Windows apps; React, Vite and Tailwind CSS for the web.
+- **Apps:** Flutter for the mobile and Windows apps; React and Vite for the web.
 - **Maps and routing:** MapLibre with OpenStreetMap tiles, self-hosted OSRM.
 - **Hosting:** Docker containers behind nginx, deployed from GitHub Actions.
 

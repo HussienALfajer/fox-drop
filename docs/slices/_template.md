@@ -9,14 +9,13 @@ One or two sentences: what the owner or a user can do after this slice.
 
 ## Plan
 
-0. Design checkpoint (a screen slice only): the screen drawn with only the components it needs, then the owner's and then the designer's approval of the drawing, before any code (T16, architecture §9.9).
 1. Database and server module: tables, migration (expand, then contract), grants, services, timers and outbox events.
 2. Routes, contract and generated clients (`pnpm generate:api`).
-3. Web: `ui-web`, the panel, the portal.
-4. Flutter: `core_ui`, the apps.
+3. Web: the panel, the portal.
+4. Flutter: the apps.
 5. End-to-end: the journey, and what the owner tries on staging.
 
-Files (hand-written count): <every file the slice creates or changes by hand, by layer, and their number; at most about 25 or two layers (workflow §3.1); generated files, icons and image baselines apart>.
+Files (hand-written count): <every file the slice creates or changes by hand, by layer, and their number; at most about 25 or two layers (workflow §3.1); generated files and images apart>.
 
 Tests written first (locked in the red phase): <test files and what each proves, mapped to the definition of done>.
 

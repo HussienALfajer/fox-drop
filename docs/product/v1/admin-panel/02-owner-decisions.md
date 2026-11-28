@@ -55,7 +55,7 @@ Questions the spec left open, answered by the slice that met them and approved b
 - **Marketing (§9.11):** «العروض» does not read a code's hours or daily budget; a mass push's audience is fixed at its confirmation, a scheduled one included, and one that reaches an open app counts as delivered without being shown (marketing, notifications).
 - **Reports (§6, §9.10.6, §9.17):** OWN reads every report, OPS all but codes and finance, SUP the customers report, FIN codes and finance; «زبائن جدد» counts every city's new accounts (accounts have no city); a compensation costs when its code is used, not when it is issued (reporting).
 - **Order money (§9.3.3, §9.9):** after the pickup, a lower fee that a free-delivery code covered charges its party only what the customer no longer pays; an outcome on a free re-delivery follows the domain's outcome rule alone; a re-delivery that ends rejected, cancelled or failed leaves its ticket's timer stopped without telling the customer; the reply time a ticket on an active order shows is the first response's (ordering, support).
-- **Earlier slices' own calls:** every choice recorded under «Decided by us» in the archive `docs/slice-notes.md` is approved as built (owner, 2026-11-28), as are D.3's, D.4's and L.1c's and D.W1's «Decisions taken overnight».
+- **Earlier slices' own calls:** every choice the earlier slices recorded as «Decided by us» is approved as built (owner, 2026-11-28), as are L.1c's «Decisions taken overnight».
 - **Domain (AP §8):** see `docs/domain/` 04, 08 and 09 and the late code's value in Appendix A (an amount, or a percentage of the next order's items value with no maximum).
 
 ## Open items decided (owner, 2026-11-28)
@@ -72,5 +72,5 @@ Questions from `docs/backlog.md` and the specs' open items, settled in one sitti
 - **Data retention after closure (D19, §13 item 6):** only what fraud prevention and financial records need is kept.
 - **Lending devices (RA §21 item 3):** not at launch.
 - **Captain accidents (CA §18 item 5):** the captain covers their own vehicle and insurance; operations follow a written procedure.
-- **Design choices:** D.3's colours (muted text `#416EA4`, control border `#6688B2`, blue focus ring, `primary-pressed` orange 500, danger `#BF2929`, the captain's 7:1 rule), D.4's Design System and Guide choices, L.1c's offline browsing choices and D.W1's token rules are approved as built.
+- **Offline browsing:** L.1c's offline browsing choices are approved as built.
 - **Claude Code plugins:** `marketing` and `social-media-skills` stay off until marketing work near launch.

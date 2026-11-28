@@ -81,64 +81,6 @@
         "DOCKER_CONTEXT",
         "TESTCONTAINERS_*"
       ]
-    },
-    "@fox-drop/design-tokens#test": {
-      "dependsOn": ["^transit"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/docs/architecture/09-design-system.md",
-        "$TURBO_ROOT$/docs/brand/fonts-manifest.json",
-        "$TURBO_ROOT$/docs/brand/logo/**",
-        "$TURBO_ROOT$/docs/brand/app-icon/**",
-        "$TURBO_ROOT$/packages/core_tokens/lib/src/icons.g.dart",
-        "$TURBO_ROOT$/packages/core_tokens/lib/src/tokens.g.dart",
-        "$TURBO_ROOT$/packages/core_ui/lib/src/**",
-        "$TURBO_ROOT$/packages/ui-web/src/**",
-        "$TURBO_ROOT$/packages/ui-web/scripts/bundle.ts",
-        "$TURBO_ROOT$/.fonts/**"
-      ],
-      "outputs": [],
-      "passThroughEnv": [
-        "DOCKER_HOST",
-        "DOCKER_TLS_VERIFY",
-        "DOCKER_CERT_PATH",
-        "DOCKER_CONTEXT",
-        "TESTCONTAINERS_*"
-      ]
-    },
-    "@fox-drop/ui-web#test": {
-      "dependsOn": ["^transit"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/docs/brand/logo/mark/mark-orange-on-ivory-drop.svg",
-        "$TURBO_ROOT$/scripts/countries.mjs",
-        "$TURBO_ROOT$/packages/core_l10n/lib/src/countries.g.dart",
-        "$TURBO_ROOT$/.fonts/**"
-      ],
-      "outputs": [],
-      "passThroughEnv": [
-        "DOCKER_HOST",
-        "DOCKER_TLS_VERIFY",
-        "DOCKER_CERT_PATH",
-        "DOCKER_CONTEXT",
-        "TESTCONTAINERS_*"
-      ]
-    },
-    "@fox-drop/ui-web#build": {
-      "dependsOn": ["^transit"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.fonts/**"],
-      "outputs": ["dist/**"]
-    },
-    "@fox-drop/ui-web#test:e2e": {
-      "dependsOn": ["build", "^transit"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/docs/brand/logo/mark/mark-orange-on-ivory-drop.svg",
-        "$TURBO_ROOT$/scripts/countries.mjs",
-        "$TURBO_ROOT$/packages/core_l10n/lib/src/countries.g.dart",
-        "$TURBO_ROOT$/.fonts/**"
-      ],
-      "outputs": []
     }
   }
 }

@@ -13,7 +13,7 @@
 //   - when this session edited no file since its last pass: format.mjs records each Edit or
 //     Write, this session's or its subagents', so another session's work, an untracked file or a
 //     change made through Bash or a generator never starts anything.
-// History: docs/archive/claude-code-workflow.md, phases 4 and 6; until 2026-11-25 it ran the
+// History: until 2026-11-25 it ran the
 // whole `verify --changed` (stop-verify.mjs) and was killed at its 600 s timeout nine times in
 // three days.
 import { spawn } from 'node:child_process';
