@@ -10,37 +10,37 @@ Paste the script into the Figma MCP `use_figma` tool. Set `PAGE_ID` to the page 
 
 Every count must be zero before the next batch; there are no tolerated findings. Each finding names the layer path and its node id, so a fix script can target it.
 
-| Check                          | Fails on                                                                                                                                                  |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `unboundPaints`                | A visible solid fill or stroke not bound to a variable                                                                                                    |
-| `fallbackMismatch`             | A bound paint whose stored colour differs from the variable's value (the fallback trap)                                                                   |
-| `nonTokenPaints`               | A gradient or image paint on a screen, outside components                                                                                                 |
-| `unboundSpacing`               | Auto-layout gap, wrap gap or padding above 0 and not bound                                                                                                |
-| `unboundRadius`                | A corner radius above 0 and not bound                                                                                                                     |
-| `unboundStrokeWeight`          | A visible stroke whose weight is not bound to `border-width/*`                                                                                            |
-| `textWithoutStyle`             | A text without a text style                                                                                                                               |
-| `foreignFonts`, `missingFonts` | A family other than `ALLOWED_FONTS`, or a font Figma cannot load                                                                                          |
-| `rawNodes`                     | A shape on a screen outside a component or an instance, or a text with a raw colour                                                                       |
-| `detached`                     | A frame detached from a component                                                                                                                         |
-| `rawStyleOverrides`            | An instance override of a paint, spacing, radius, stroke weight or type size with an unbound value                                                        |
-| `smallTargets`                 | Any interactive instance, nested ones included, smaller than 48 in either direction                                                                       |
-| `unprefixedComponents`         | A component or set whose name does not start with its layer                                                                                               |
-| `missingDescription`           | A component or set without a description                                                                                                                  |
-| `missingStates`                | A component set missing a state its kind requires (`STATES`)                                                                                              |
-| `defaultNames`                 | A layer still named «Frame 12», «Rectangle», «Text» and so on (icon and decoration internals exempt)                                                      |
-| `hiddenLayers`, `emptyFrames`  | Leftovers on a screen                                                                                                                                     |
-| `noAutoLayout`                 | A container with several children and no auto layout, below the screen frame                                                                              |
-| `arabicAlignedLeft`            | Arabic text aligned left                                                                                                                                  |
-| `arabicIndicDigits`            | Arabic-Indic digits (the product uses Western digits)                                                                                                     |
-| `lowContrast`                  | Text below 4.5:1 (3:1 at 24 or 18.66 bold) against its nearest filled ancestor; the declared exceptions are the primary button and the status bar mock-up |
-| `draftOutsideExplorations`     | A `Draft/…` layer outside the Explorations page                                                                                                           |
-| `libraryCopies`                | In a surface file, a Core, Mobile or Web component defined locally or used from a local copy                                                              |
+| Check                          | Fails on                                                                                                                     |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `unboundPaints`                | A visible solid fill or stroke not bound to a variable                                                                       |
+| `fallbackMismatch`             | A bound paint whose stored colour differs from the variable's value (the fallback trap)                                      |
+| `nonTokenPaints`               | A gradient or image paint on a screen, outside components                                                                    |
+| `unboundSpacing`               | Auto-layout gap, wrap gap or padding above 0 and not bound                                                                   |
+| `unboundRadius`                | A corner radius above 0 and not bound                                                                                        |
+| `unboundStrokeWeight`          | A visible stroke whose weight is not bound to `border-width/*`                                                               |
+| `textWithoutStyle`             | A text without a text style                                                                                                  |
+| `foreignFonts`, `missingFonts` | A family other than `ALLOWED_FONTS`, or a font Figma cannot load                                                             |
+| `rawNodes`                     | A shape on a screen outside a component or an instance, or a text with a raw colour                                          |
+| `detached`                     | A frame detached from a component                                                                                            |
+| `rawStyleOverrides`            | An instance override of a paint, spacing, radius, stroke weight or type size with an unbound value                           |
+| `smallTargets`                 | Any interactive instance, nested ones included, smaller than 48 in either direction                                          |
+| `unprefixedComponents`         | A component or set whose name does not start with its layer                                                                  |
+| `missingDescription`           | A component or set without a description                                                                                     |
+| `missingStates`                | A component set missing a state its kind requires (`STATES`)                                                                 |
+| `defaultNames`                 | A layer still named «Frame 12», «Rectangle», «Text» and so on (icon and decoration internals exempt)                         |
+| `hiddenLayers`, `emptyFrames`  | Leftovers on a screen; a frame with an image fill is not empty                                                               |
+| `noAutoLayout`                 | A container with several children and no auto layout, below the screen frame                                                 |
+| `arabicAlignedLeft`            | Arabic text aligned left                                                                                                     |
+| `arabicIndicDigits`            | Arabic-Indic digits (the product uses Western digits)                                                                        |
+| `lowContrast`                  | Text below 4.5:1 (3:1 at 24 or 18.66 bold) against its nearest filled ancestor; the declared exception is the primary button |
+| `draftOutsideExplorations`     | A `Draft/…` layer outside the Explorations page                                                                              |
+| `libraryCopies`                | In a surface file, a Core, Mobile or Web component defined locally or used from a local copy                                 |
 
-**Exempt:** the «🧪 Explorations» page; inside the library, the documentation frames around the components; decoration under `…/Decor/…` for paints, radii and raw shapes.
+**Exempt:** the «🧪 Explorations» page; inside the library, the documentation frames around the components; decoration under `…/Decor/…` and the identity's assets under `…/Brand/…` for paints, radii, raw shapes and layer names (rules.md, Components and screens).
 
 **Limits:** the contrast check reads the nearest ancestor with an opaque solid fill, so text over images or overlapping siblings is checked by eye. Layout direction cannot be checked (Figma has no right-to-left flag). The registry match is made by comparing the script's `components` list (library only) with `registry.md`.
 
-**Results:** each run's result is recorded where it applies: in the flow file for a flow page, and in the library's «Changelog» page for the library. Latest, 2026-11-28: the library's components page and the customer «🔑 Sign-in» page at 0.
+**Results:** each run's result is recorded where it applies: in the flow file for a flow page, and in the library's «Changelog» page for the library. Latest, 2026-11-28: the library's «🧩 Components» and «🏷️ Brand» pages at 0.
 
 ## Script
 
@@ -72,7 +72,7 @@ const STATES = {
   'Core/Choice': ['Default', 'Disabled'],
   'Core/Search field': ['Default', 'Focused'],
 };
-const CONTRAST_EXCEPTIONS = [/Core\/Button.*Style=Primary/, /Mobile\/Status bar/]; // rules.md: the primary button; the status bar mocks system UI
+const CONTRAST_EXCEPTIONS = [/Core\/Button.*Style=Primary/]; // rules.md: the primary button
 const SPACING = ['itemSpacing', 'paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom'];
 const RADII = ['topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius'];
 const NUMERIC_OVERRIDES = [
@@ -169,7 +169,7 @@ async function visit(n, ctx) {
   const decor =
     ctx.decor ||
     ((n.type === 'COMPONENT' || n.type === 'INSTANCE' || n.type === 'COMPONENT_SET') &&
-      n.name.includes('/Decor/'));
+      /\/(Decor|Brand)\//.test(n.name)); // decoration and the identity's literal colours
   const owned = !ctx.inInstance; // nodes this file owns, not an instance's insides
   const docs = isLibrary && !ctx.inComponent && !isComp; // a library page's documentation frames around the components
   const hidden = n.visible === false;
@@ -245,7 +245,7 @@ async function visit(n, ctx) {
       n.type === 'FRAME' &&
       n.children.length === 0 &&
       !ctx.inComponent &&
-      !visibleSolids(n, 'fills').length
+      !n.fills.some((p) => p.visible !== false)
     )
       F.emptyFrames.push(where(n, path));
     if (
