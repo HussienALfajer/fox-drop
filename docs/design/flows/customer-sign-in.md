@@ -1,6 +1,6 @@
 # Customer: sign-in
 
-Step: 3 Explorations, 2026-11-28 (analysis and six directions discussed with the owner the same day; nothing drawn yet)
+Step: 3 Explorations, 2026-11-28: the six directions are drawn on the customer file's «🧪 Explorations» page (Figma, below); the owner chooses one at step 4
 
 The phone sign-in of `core_auth`, designed once here for the three apps (rules.md, Components and screens; surfaces.md). The restaurant and captain files link to these screens and add only what differs: «لديّ رمز من العمليات», the captain's «انضم ككابتن», the restaurant's Windows pairing and their own refusals. This file covers the customer's flow: from the moment sign-in is asked for to the customer being back where they were, «أكمل بياناتك» included.
 
@@ -91,6 +91,19 @@ Not for the customer: `signInOperationsCode`, `signInOperationsCodeHint`, `signI
 | `new:customerProfilePrivacyLink`     | «سياسة الخصوصية»                                                                  | Same                                                                                                                                                                  |
 | `new:signInAppCheckFailed`           | «تعذّر التحقق من هذا التطبيق. حدّثه من المتجر وحاول مرة أخرى، أو تواصل مع الدعم.» | `app_check_failed`; it can also hit a genuine phone (an old or rooted Android, App Check from Syria, architecture §22 item 9), so it blames nobody and offers support |
 
+Proposed while drawing the directions (2026-11-28), not approved yet: each is used only by its direction and is approved with the choice at step 4, or dropped with its direction.
+
+| Proposed key                | Proposed text                     | Direction | Why                                                               |
+| --------------------------- | --------------------------------- | --------- | ----------------------------------------------------------------- |
+| `new:signInWelcome`         | «أهلاً بك في FOX DROP»            | B         | The welcome line in the blue band                                 |
+| `new:signInWelcomeLine`     | «أشهى مطاعم أعزاز، تصلك إلى بابك» | B         | The band's second line                                            |
+| `new:signInReasonCheckout`  | «طلبك جاهز، بقي تأكيد رقمك»       | D         | The checkout header; the text is the direction's own (Directions) |
+| `new:signInReasonItems`     | «{count} أصناف · السلة»           | D         | The item count on the order card (plural forms in the ARB)        |
+| `new:signInReasonTrack`     | «تتبّع التوصيل»                   | D         | A tile of the «طلباتي» header                                     |
+| `new:signInReasonReorder`   | «أعد الطلب»                       | D         | A tile of the «طلباتي» header                                     |
+| `new:signInWhatsappPreview` | «رمز الدخول إلى FOX DROP: ••••••» | F         | The preview of the WhatsApp message, code hidden                  |
+| `new:signInOpenWhatsapp`    | «فتح واتساب»                      | F         | The button; needs the spec change in Open points, item 3          |
+
 ### States to design
 
 - **Phone:** empty; typing; valid; each phone problem; country sheet open, searching, no result; sending (up to 10 s); each refusal of the code request; offline.
@@ -127,7 +140,18 @@ Not started (step 4).
 
 ## Figma
 
-Nothing drawn yet. Customer file `FhvOwKGrGEv6p3JnIBHOof`.
+Customer file `FhvOwKGrGEv6p3JnIBHOof`, page «🧪 Explorations» (`7:16`), drawn 2026-11-28 with the library v0.4 (its variables, text styles and `Core/Brand/…` components; Almarai). One section per direction, each labelled «Not chosen yet» with one line on its idea; frames are 390 × 844, right to left, with the phone number and the code left to right. Every frame has a note under it for the behaviour a still cannot show (the shake, the timings, reduced motion). Every new element is drawn on the screen and named `Draft/…` (button, phone field, country chip, code input, inline message, top bar, the system keyboard, and each direction's own parts); nothing new entered the library. Icons are drawn in Solar Linear's style (24 grid, 1.5 stroke) as stand-ins, the chat-round icon standing in for WhatsApp's mark; the polish step replaces them with the Solar set. The amount on D's order card (`Draft/Sample amount`) and the restaurant name are sample data.
+
+| Direction              | Section  | Frames                                                                                                                                                        |
+| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A «هادئ ومباشر»        | `28:121` | A1 phone `28:129`, A2 code `28:226`, A3 wrong code `28:297`, A4 success `28:376`                                                                              |
+| B «الهوية في الواجهة»  | `29:136` | B1 phone at rest `29:144`, B2 phone with the keyboard `29:191`, B3 code `29:266`, B4 wrong code `29:346`, B5 success `29:434`                                 |
+| C «شاشة واحدة متصلة»   | `30:172` | C1 step 1 open `30:180`, C2 code open `30:257`, C3 wrong code `30:345`, C4 success `30:444`                                                                   |
+| D «حسب سبب الدخول»     | `31:172` | Checkout header: D1 phone `31:180`, D2 code `31:263`, D3 wrong code `31:350`, D4 success `31:445`; header variants: D5 «حسابي» `31:498`, D6 «طلباتي» `31:550` |
+| E «رحلة الدراجة»       | `32:155` | E1 phone `32:163`, E2 code `32:247`, E3 wrong code `32:341`, E4 success `32:447`, E5 the bike's five key frames `32:503`                                      |
+| F «المحادثة مع واتساب» | `33:164` | F1 phone `33:172`, F2 code with the preview and «فتح واتساب» `33:244`, F3 back with «لصق الرمز» `33:308`, F4 wrong code `33:396`, F5 success `33:486`         |
+
+The ids are node ids of this page and do not survive a rebuild; the chosen direction is rebuilt on the flow's own page at the polish step.
 
 ## Reviews
 
