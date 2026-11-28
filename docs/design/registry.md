@@ -102,7 +102,9 @@ The brand components are the identity pack's SVGs on the library's «🏷️ Bra
 
 ## Surface components
 
-Built on each surface file's components page («🧩 Customer components» in `FhvOwKGrGEv6p3JnIBHOof`). None yet.
+Built on each surface file's components page («🧩 Customer components» in `FhvOwKGrGEv6p3JnIBHOof`). Figma ids are in that file.
 
-| Name | Layer | Status | States or variants | Figma | Key | Code | Not to confuse with |
-| ---- | ----- | ------ | ------------------ | ----- | --- | ---- | ------------------- |
+| Name                          | Layer    | Status   | States or variants                                                                                                                                                   | Figma    | Key                                        | Code | Not to confuse with                               |
+| ----------------------------- | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------ | ---- | ------------------------------------------------- |
+| Customer/Sign-in reason       | Customer | Proposed | Layout: Header, Tab, Compact × Reason: Orders, Account, Addresses, Codes, Notifications, Favourite, Banner code, Price report; State: Default, Success (Header only) | `47:825` | `539a034120954b390c45fbd7f8d0640fc5a9697b` |      | The checkout header (step line and waiting order) |
+| Customer/Sign-in country list | Customer | Proposed | State: Default, Searching, Empty; the country sheet's Content swap                                                                                                   | `51:407` | `c06987cca5b4af6ac18aa4e99e1dd0c21ca83a75` |      | Core/List row (its rows)                          |

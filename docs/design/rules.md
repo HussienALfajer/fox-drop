@@ -8,6 +8,7 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 - **Tokens: Figma variables now; a DTCG file in the repository from the first coded screen, generating the Flutter theme and the CSS variables.** The Figma Variables REST API is Enterprise-only, so the repository holds the copy code reads. 2026-11-28.
 - **Specs and translation files win over the design.** The design shows the product the specs describe. 2026-11-28.
 - **On a flow page, every text layer is named after its `core_l10n` key (`signInCodeSent`); copy not in the translation files yet is named `new:` plus a proposed key, and the flow file lists it for the owner.** The handoff then maps every string, and proposals cannot slip into code unapproved. 2026-11-28.
+- **Sample data on a flow page (a restaurant's name, an amount, a phone number) is named `sample` plus what it is (`sampleOrderTotal`), never a key.** It comes from the server, so the handoff must not look for it in the translation files. 2026-11-28.
 
 ## Tokens and colour
 
@@ -91,6 +92,7 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 ## Right to left and content
 
 - **Layouts run right to left; numbers are Western digits; phone numbers and codes run left to right.** AP §4.7, CU §5.2. 2026-11-28.
+- **In Figma, a phone number or code inside an Arabic sentence is drawn as its own text layer.** Figma's text engine ignores the direction marks and draws `+963 944 123 456` as `963 944 123 456+` inside an Arabic line (customer sign-in, 2026-11-28). 2026-11-28.
 - **Icons that show direction (arrows, back, forward, send) are mirrored; icons of objects (clock, search, calendar) and media controls are not; a vehicle faces the direction of travel on its screen.** Material's bidirectionality guidance (m3.material.io, «Bidirectionality and RTL»). 2026-11-28.
 
 ## Working in Figma with the agent
