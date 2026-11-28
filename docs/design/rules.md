@@ -65,7 +65,7 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 - **The Explorations page is exempt from the audit; a chosen direction is rebuilt to the full standard before it leaves the page.** Explorations trade rigour for speed; the flow's page does not. 2026-11-28.
 - **Ideas are never deleted: each carries «Chosen» or «Not chosen» and one line of reason.** The designer sees what was tried and why it was set aside. 2026-11-28.
 - **When a direction loses, the library components made only for it are deleted, or marked `Deprecated` if anything uses them, in the same batch.** Unchosen ideas must not leave components behind. 2026-11-28.
-- **Two or three directions per flow.** More scatters the discussion and costs without improving the choice. 2026-11-28.
+- **No fixed number of directions per flow: the owner decides how many are drawn, and each drawn direction is a complete design of its own, not a variant of another.** The owner wants to see every idea worth seeing; the cost of each drawn direction is said in the discussion so the choice is informed. 2026-11-28, replacing «two or three» of the same day.
 
 ## Layers and naming
 
