@@ -1,0 +1,22 @@
+# Surfaces
+
+What each of the five surfaces needs from the design system, from the specs, so that components built for the customer app first still fit the others. Read this before starting a surface.
+
+## The five surfaces
+
+| Surface               | Devices                                                                                           | Navigation                                                                                                  | Density and contrast                                                                     | Specific needs                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Customer (CU)         | Android and iPhone, portrait; must not break on a tablet (CU §4.1)                                | Bottom bar «الرئيسية» «البحث» «طلباتي» «حسابي», floating cart, active-order bar (CU §6.1)                   | Relaxed, brand-forward; usable with system text at 130% (CU §4)                          | Browsing as a guest, maps, cart and checkout, live order                                            |
+| Restaurant (RA)       | Android phone, Android tablet, Windows desktop; layout by width: four columns at 840 dp (RA §4.1) | Phone: bottom navigation «الطلبات» «القائمة» «الحالة» «المزيد»; 840 dp and wider: rail on the right (RA §6) | Dense order board; light theme with high-contrast status colours (RA §6); keep screen on | Ringing alerts and full-screen prompts; mouse and keyboard on Windows, so hover and focus states    |
+| Captain (CA)          | Android and iPhone, phones only; must not break on a tablet (CA §4.1)                             | Bottom navigation «الرئيسية» «أرباحي» «عهدتي» «المزيد» (CA §6)                                              | High contrast, readable in sunlight; dark theme in V2 (CA §6)                            | Full-screen offer with a countdown over the lock screen, emergency button, navigation, cash custody |
+| Admin panel (AP)      | Desktop and laptop first; tablet should work; phone for monitoring and simple actions (AP §7.5)   | Side menu by role and a top bar (AP §7)                                                                     | Data-dense: tables, filters, maps, charts                                                | Alert sounds after a click, browser notifications (AP §7), live map, approvals                      |
+| Owner portal (RA §17) | Desktop and laptop, usable on a phone (RA §17)                                                    | Web layout like the panel                                                                                   | Reports and statements                                                                   | Phone sign-in like the apps, exports                                                                |
+
+## What this means for the system
+
+- **Variable modes per surface.** The semantic and size collections get one mode per surface when its work starts (Professional allows 10 modes per collection): Customer is the base; Captain raises contrast; Restaurant tightens spacing for the board; Web sets desktop sizes. A component reads the same variable names in every mode.
+- **States beyond touch.** Restaurant on Windows and both web surfaces need Hover and Focus on every interactive Core component; they are added when those surfaces start, not before.
+- **Shared by nature from the start** (Core): status pill for order states, money amount with currency, address line, order summary rows, phone sign-in (one screen for the three apps, `core_auth`).
+- **Shared by form factor:** Mobile/Bottom navigation, Mobile/Bottom sheet, Mobile/Top bar for the three apps; Web/Side menu, Web/Data table, Web/Dialog for the two web surfaces.
+- **Frames to design at:** phones 360 × 800, 390 × 844 and 430 × 932; Restaurant tablet at 840 dp wide and Windows at 1366 × 768; web at 1280 × 800 and 1440 × 900.
+- **Order of work:** Customer, then Restaurant, then Captain, then the web surfaces (owner, 2026-11-28). Each surface starts by reading this file and the registry.
