@@ -84,6 +84,7 @@ const STATES = {
   'Core/Checkbox': ['Default', 'Pressed', 'Error', 'Disabled'],
   'Core/Choice tile': ['Default', 'Pressed', 'Selected', 'Error', 'Disabled'],
   'Core/List row': ['Default', 'Pressed', 'Selected', 'Disabled'],
+  'Core/Loader': ['Faint', 'Fill 1', 'Fill 2', 'Full'],
   'Mobile/Top bar': ['Default', 'Scrolled'],
   'Mobile/Progress steps/Step': ['Done', 'Current', 'Upcoming'],
   'Mobile/Paste offer': ['Default', 'Pressed'],
