@@ -190,13 +190,14 @@ Direction D, revised, approved by the owner on 2026-11-28 with this list; that a
 
 ## Polish
 
-Batch 1, 2026-11-28 (the owner approved the analysis and its four recommendations in the chat the same day): every Core and Mobile part of Choice was built in the library (`ITmxeo3ipw0UH5OiV0880s`, page «🧩 Components», one section per family), with its states, its registry line as `Proposed` and its key, and its description starting `[Proposed]`. The page audit is at 0 for all 53 components; no variable or text style was added, so the foundations audit stands at 0.
+Batch 1, 2026-11-28 (the owner approved the analysis and its four recommendations in the chat the same day): every Core and Mobile part of Choice was built in the library (`ITmxeo3ipw0UH5OiV0880s`, page «🧩 Components», one section per family), with its states, its registry line as `Proposed` and its key, and its description starting `[Proposed]`. The page audit is at 0 for all 54 components; the only foundation change is the scrim's primitive (`alpha/blue-900-32`), and the foundations audit is at 0.
 
 - **Analysis outcome.** Each part was compared with Material 3, Apple's HIG and product systems (Polaris, Atlassian, Base): labels sit above fields, never floating inside them (Arabic and «Text 130%»); every state differs by shape or words as well as colour; the code cells are one field for the screen reader and for paste; the choice tiles are one radio group; the sheet has no shadow, since its scrim already sets it apart.
 - **States added to Choice:** Checking and Disabled for `Core/Code input`, Pressed for `Core/Choice tile` and the Picker type of `Core/Text field`, Scrolled for `Mobile/Top bar`, Today limit for `Mobile/Date picker`; `Core/Button` also has the Medium size (48) for actions inside messages.
 - **Not added:** `border/brand` (`border/focus` already covers the selected control) and a sheet shadow.
 - **Icons:** downloaded from the official `@iconify-json/solar` package 1.2.17 (CC BY 4.0) with the owner's approval and imported as vectors; their strokes bind `icon/*` and `border-width/default` (1.5).
 - **Illustrations:** redrawn by hand as vectors on one 72 grid (no Figma AI), colours bound to semantic Color variables only.
+- **Owner's corrections** (2026-11-28, after the screenshots): the Text button turned blue; the phone field's valid mark moved to the field's end edge (a spacer had pushed it inward, fixed in the search field too); the scrim lightened from 45% to 32%; a new `Mobile/Decor/Home indicator` sits under the keyboard and the sheet; the status bar and the indicator gained Blue and Ivory content by ground. Each became a rule in `rules.md`.
 - **Audit script changes** (`figma-audit.md`): the new kinds in `TARGETS`, every set's states in `STATES`, a labelled field's `Box` height or a row's minimum height counts as its control size, and a layer named `Disabled` (the date picker's future rows) is exempt from contrast.
 
 ## Figma
