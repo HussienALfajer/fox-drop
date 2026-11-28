@@ -1,52 +1,57 @@
 # Figma audit
 
-The script run in Figma after every batch ([`rules.md`](rules.md), Working in Figma with the agent). It changes nothing in the design; it only switches the current page to the one it checks.
+Two read-only scripts run in Figma after every batch ([`rules.md`](rules.md), Working in Figma with the agent): the page audit on each page the batch touched, and the foundations audit after any change to variables or text styles. They change nothing in the design; the page audit only switches the current page to the one it checks. They live here until the Figma skill moves them into its `scripts/` folder (backlog).
 
 ## How to run it
 
-Paste the script into the Figma MCP `use_figma` tool. Set `PAGE_ID` to the page and `ROOT_IDS` to the sections or frames to check, or `'ALL'` for every top-level node of the page; an id that does not exist stops the run with an error instead of passing. One page per call; the script tells the library from a surface file by the library's «Foundations» page. The «🧪 Explorations» page is exempt and the script skips it; a direction is audited once it moves to its flow's page.
+Paste the script into the Figma MCP `use_figma` tool. Set `PAGE_ID` to the page and `ROOT_IDS` to the sections or frames to check, or `'ALL'` for every top-level node of the page; an id that does not exist stops the run with an error instead of passing. One page per call, and the calls for several pages may run in parallel; the script tells the library from a surface file by `figma.fileKey`. The «🧪 Explorations» page is exempt and the script skips it; a direction is audited once it moves to its flow's page. A surface file's flow page holds only screens, inside sections: every top-level frame there is checked as a screen.
 
 ## Checks
 
 Every count must be zero before the next batch; there are no tolerated findings. Each finding names the layer path and its node id, so a fix script can target it.
 
-| Check                          | Fails on                                                                                                                     |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `unboundPaints`                | A visible solid fill or stroke not bound to a variable                                                                       |
-| `fallbackMismatch`             | A bound paint whose stored colour differs from the variable's value (the fallback trap)                                      |
-| `nonTokenPaints`               | A gradient or image paint on a screen, outside components                                                                    |
-| `unboundSpacing`               | Auto-layout gap, wrap gap or padding above 0 and not bound                                                                   |
-| `unboundRadius`                | A corner radius above 0 and not bound                                                                                        |
-| `unboundStrokeWeight`          | A visible stroke whose weight is not bound to `border-width/*`                                                               |
-| `textWithoutStyle`             | A text without a text style                                                                                                  |
-| `foreignFonts`, `missingFonts` | A family other than `ALLOWED_FONTS`, or a font Figma cannot load                                                             |
-| `rawNodes`                     | A shape on a screen outside a component or an instance, or a text with a raw colour                                          |
-| `detached`                     | A frame detached from a component                                                                                            |
-| `rawStyleOverrides`            | An instance override of a paint, spacing, radius, stroke weight or type size with an unbound value                           |
-| `smallTargets`                 | Any interactive instance, nested ones included, smaller than 48 in either direction                                          |
-| `unprefixedComponents`         | A component or set whose name does not start with its layer                                                                  |
-| `missingDescription`           | A component or set without a description                                                                                     |
-| `missingStates`                | A component set missing a state its kind requires (`STATES`)                                                                 |
-| `defaultNames`                 | A layer still named «Frame 12», «Rectangle», «Text» and so on (icon and decoration internals exempt)                         |
-| `hiddenLayers`, `emptyFrames`  | Leftovers on a screen; a frame with an image fill is not empty                                                               |
-| `noAutoLayout`                 | A container with several children and no auto layout, below the screen frame                                                 |
-| `arabicAlignedLeft`            | Arabic text aligned left                                                                                                     |
-| `arabicIndicDigits`            | Arabic-Indic digits (the product uses Western digits)                                                                        |
-| `lowContrast`                  | Text below 4.5:1 (3:1 at 24 or 18.66 bold) against its nearest filled ancestor; the declared exception is the primary button |
-| `draftOutsideExplorations`     | A `Draft/…` layer outside the Explorations page                                                                              |
-| `libraryCopies`                | In a surface file, a Core, Mobile or Web component defined locally or used from a local copy                                 |
+| Check                          | Fails on                                                                                                                      |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `unboundPaints`                | A visible solid fill or stroke not bound to a variable                                                                        |
+| `fallbackMismatch`             | A bound paint whose stored colour differs from the variable's value (the fallback trap)                                       |
+| `nonTokenPaints`               | A gradient or image paint on a screen, outside components                                                                     |
+| `unboundSpacing`               | Auto-layout gap, wrap gap or padding above 0 and not bound                                                                    |
+| `unboundRadius`                | A corner radius above 0 and not bound                                                                                         |
+| `unboundStrokeWeight`          | A visible stroke whose weight is not bound to `border-width/*`                                                                |
+| `textWithoutStyle`             | A text without a text style                                                                                                   |
+| `foreignFonts`, `missingFonts` | A family other than `ALLOWED_FONTS`, or a font Figma cannot load                                                              |
+| `rawNodes`                     | A shape on a screen outside a component or an instance, or a text with a raw colour                                           |
+| `detached`                     | A frame detached from a component                                                                                             |
+| `rawStyleOverrides`            | An instance override of a paint, spacing, radius, stroke weight or type size with an unbound value                            |
+| `smallTargets`                 | Any interactive instance, nested ones included, smaller than 48 in either direction                                           |
+| `unprefixedComponents`         | A component or set whose name does not start with its layer                                                                   |
+| `missingDescription`           | A component or set without a description                                                                                      |
+| `missingStates`                | A component set missing a state its kind requires (`STATES`)                                                                  |
+| `defaultNames`                 | A layer still named «Frame 12», «Rectangle», «Text» and so on (icon and decoration internals exempt)                          |
+| `hiddenLayers`, `emptyFrames`  | Leftovers on a screen; a frame with an image fill is not empty                                                                |
+| `noAutoLayout`                 | A container with several children and no auto layout, below the screen frame                                                  |
+| `arabicAlignedLeft`            | Arabic text aligned left                                                                                                      |
+| `arabicIndicDigits`            | Arabic-Indic digits (the product uses Western digits)                                                                         |
+| `lowContrast`                  | Text below 4.5:1 (3:1 at 24 or 18.66 bold) against its nearest filled ancestor; the declared exception is the primary button  |
+| `draftOutsideExplorations`     | A `Draft/…` layer outside the Explorations page                                                                               |
+| `libraryCopies`                | In a surface file, a Core, Mobile or Web component defined locally or used from a local copy                                  |
+| `unkeyedText`                  | On a flow page, a text in a screen not named after its `core_l10n` key or `new:` plus a proposed key (rules.md)               |
+| `screenSize`                   | On a flow page, a screen frame not 390 × 844, 360 × 800 or 430 × 932 (surfaces.md; other surfaces add theirs when they start) |
+| `iconStroke`                   | A vector inside a `…/Icon/…` component whose stroke is not 1.5 (rules.md, Icons)                                              |
+| `unboundControlSize`           | An interactive component (`TARGETS`) whose height is not bound to `size/*` (rules.md, Size and touch)                         |
 
-**Exempt:** the «🧪 Explorations» page; inside the library, the documentation frames around the components; decoration under `…/Decor/…` and the identity's assets under `…/Brand/…` for paints, radii, raw shapes and layer names (rules.md, Components and screens).
+**Exempt:** the «🧪 Explorations» page; inside the library, the documentation frames around the components, except that their bound colours must still match their variables (`fallbackMismatch`); text named `Expected fail` (the contrast matrix's forbidden pairs, shown on purpose); decoration under `…/Decor/…` and the identity's assets under `…/Brand/…` for paints, radii, raw shapes and layer names (rules.md, Components and screens).
 
-**Limits:** the contrast check reads the nearest ancestor with an opaque solid fill, so text over images or overlapping siblings is checked by eye. Layout direction cannot be checked (Figma has no right-to-left flag). The registry match is made by comparing the script's `components` list (library only) with `registry.md`.
+**Limits:** the contrast check reads the nearest ancestor with an opaque solid fill, so text over images or overlapping siblings is checked by eye. Layout direction cannot be checked (Figma's Plugin API has no text or layout direction). The registry match is made by comparing the script's `components` list (library only) with `registry.md`. `STATES` is filled from the registry's «States or variants» column in the batch that builds each interactive component.
 
-**Results:** each run's result is recorded where it applies: in the flow file for a flow page, and in the library's «Changelog» page for the library. Latest, 2026-11-28: the library's «🧩 Components» and «🏷️ Brand» pages at 0.
+**Results:** each run's result is recorded where it applies: in the flow file for a flow page, and in the library's «Changelog» page for the library. Latest, 2026-11-28 (v0.4): the library's «🎨 Foundations», «🏷️ Brand» and «🧩 Components» pages and the foundations audit at 0.
 
 ## Script
 
 ```js
 const PAGE_ID = '1:5';
 const ROOT_IDS = 'ALL';
+const LIBRARY_KEY = 'ITmxeo3ipw0UH5OiV0880s'; // the library file; every other file is a surface file
 const ALLOWED_FONTS = new Set(['Almarai']);
 const MIN_TARGET = 48;
 const LAYER = /^(Core|Mobile|Web|Customer|Restaurant|Captain|Admin|Portal)\//;
@@ -59,20 +64,20 @@ const SHAPES = new Set([
   'STAR',
   'BOOLEAN_OPERATION',
 ]);
-const TARGETS =
-  /(\/Button|\/Icon button|\/Chip|\/Choice|\/Checkbox|\/Country row|\/Text field|\/Phone field|\/Search field|\/OTP cell)$/;
+// Kinds of interactive component, by the end of their name; a new kind joins in the batch that builds it.
+const TARGETS = /(\/Button|\/Icon button|\/Chip|\/Choice|\/Checkbox|\/Text field|\/Search field)$/;
 const DEFAULT_NAME =
   /^(Frame|Group|Rectangle|Ellipse|Vector|Line|Polygon|Star|Text|Component|Instance)( \d+)?$/;
-const STATES = {
-  'Core/Button': ['Default', 'Pressed', 'Loading', 'Disabled'],
-  'Core/Icon button': ['Default', 'Pressed', 'Disabled'],
-  'Core/Text field': ['Default', 'Focused', 'Error', 'Disabled'],
-  'Core/Phone field': ['Default', 'Focused', 'Error', 'Disabled'],
-  'Core/Checkbox': ['Default', 'Error', 'Disabled'],
-  'Core/Choice': ['Default', 'Disabled'],
-  'Core/Search field': ['Default', 'Focused'],
-};
-const CONTRAST_EXCEPTIONS = [/Core\/Button.*Style=Primary/]; // rules.md: the primary button
+// One line per interactive component set, copied from its registry.md «States or variants» cell
+// in the batch that builds it, e.g. 'Core/Button': ['Default', 'Pressed', 'Loading', 'Disabled'].
+const STATES = {};
+const CONTRAST_EXCEPTIONS = [
+  /Core\/Button.*Style=Primary/, // rules.md: the primary button
+  /Expected fail/, // the Foundations contrast matrix shows the forbidden pairs on purpose
+];
+const L10N_NAME = /^(new:)?[a-z][A-Za-z0-9]*$/; // a core_l10n key, or new: plus a proposed key
+const SCREEN_SIZES = new Set(['390×844', '360×800', '430×932']); // surfaces.md, Frames
+const ICON_STROKE = 1.5; // rules.md, Icons
 const SPACING = ['itemSpacing', 'paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom'];
 const RADII = ['topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius'];
 const NUMERIC_OVERRIDES = [
@@ -100,7 +105,8 @@ if (ROOT_IDS !== 'ALL') {
   const bad = ROOT_IDS.filter((id, i) => !roots[i]);
   if (bad.length) return { error: `root ids not found: ${bad.join(', ')}` };
 }
-const isLibrary = figma.root.children.some((p) => p.name.includes('Foundations')); // the library has a Foundations page
+const isLibrary = figma.fileKey === LIBRARY_KEY;
+const flowPage = !isLibrary && !/components/i.test(page.name); // a surface file's flow page holds screens
 const F = {};
 for (const k of [
   'unboundPaints',
@@ -128,6 +134,10 @@ for (const k of [
   'lowContrast',
   'draftOutsideExplorations',
   'libraryCopies',
+  'unkeyedText',
+  'screenSize',
+  'iconStroke',
+  'unboundControlSize',
 ])
   F[k] = [];
 const components = [];
@@ -180,12 +190,13 @@ async function visit(n, ctx) {
   if (owned) {
     if (DEFAULT_NAME.test(n.name) && !decor && !ctx.names.some((x) => x.includes('/Icon/')))
       F.defaultNames.push(where(n, path));
-    if (!decor && !docs && n.type !== 'COMPONENT_SET')
+    if (!decor && n.type !== 'COMPONENT_SET')
       for (const prop of ['fills', 'strokes']) {
-        if (prop === 'strokes' && !(n.strokeWeight > 0)) continue;
+        if (prop === 'strokes' && !(n.strokeWeight === figma.mixed || n.strokeWeight > 0)) continue; // mixed: weights per side
         for (const p of visibleSolids(n, prop)) {
-          if (!p.boundVariables?.color) F.unboundPaints.push(`${where(n, path)} ${prop}`);
-          else {
+          if (!p.boundVariables?.color) {
+            if (!docs) F.unboundPaints.push(`${where(n, path)} ${prop}`);
+          } else {
             const v = await variable(p.boundVariables.color.id);
             const c = v?.resolveForConsumer(n).value;
             if (
@@ -200,7 +211,8 @@ async function visit(n, ctx) {
           prop in n &&
           Array.isArray(n[prop]) &&
           n[prop].some((p) => p.visible !== false && p.type !== 'SOLID') &&
-          !ctx.inComponent
+          !ctx.inComponent &&
+          !docs
         )
           F.nonTokenPaints.push(`${where(n, path)} ${prop}`);
       }
@@ -241,6 +253,26 @@ async function visit(n, ctx) {
       F.rawNodes.push(`${where(n, path)} (${n.type})`);
     if (n.type === 'FRAME' && 'detachedInfo' in n && n.detachedInfo)
       F.detached.push(where(n, path));
+    if (
+      flowPage &&
+      ctx.topLevel &&
+      n.type === 'FRAME' &&
+      !SCREEN_SIZES.has(`${Math.round(n.width)}×${Math.round(n.height)}`)
+    )
+      F.screenSize.push(`${where(n, path)} ${Math.round(n.width)}×${Math.round(n.height)}`);
+    if (
+      n.type === 'VECTOR' &&
+      ctx.names.some((x) => x.includes('/Icon/')) &&
+      visibleSolids(n, 'strokes').length &&
+      n.strokeWeight !== ICON_STROKE
+    )
+      F.iconStroke.push(`${where(n, path)} ${String(n.strokeWeight)}`);
+    if (
+      n.type === 'COMPONENT' &&
+      TARGETS.test(n.parent?.type === 'COMPONENT_SET' ? n.parent.name : n.name) &&
+      !n.boundVariables?.height
+    )
+      F.unboundControlSize.push(`${where(n, path)} height=${Math.round(n.height)}`);
     if (
       n.type === 'FRAME' &&
       n.children.length === 0 &&
@@ -291,6 +323,8 @@ async function visit(n, ctx) {
           F.rawNodes.push(`${where(n, path)} (TEXT with a raw colour)`);
           break;
         }
+    if (flowPage && owned && !ctx.inComponent && !L10N_NAME.test(n.name))
+      F.unkeyedText.push(`${where(n, path)} «${n.characters.slice(0, 30)}»`);
     if (owned && /[؀-ۿ]/.test(n.characters) && n.textAlignHorizontal === 'LEFT')
       F.arabicAlignedLeft.push(where(n, path));
     if (/[٠-٩۰-۹]/.test(n.characters)) F.arabicIndicDigits.push(where(n, path));
@@ -391,7 +425,7 @@ for (const root of roots)
   });
 const counts = Object.fromEntries(Object.entries(F).map(([k, v]) => [k, v.length]));
 return {
-  file: figma.root.name,
+  file: figma.fileKey,
   page: page.name,
   pass: Object.values(counts).every((c) => c === 0),
   counts,
@@ -401,5 +435,114 @@ return {
       .map(([k, v]) => [k, v.slice(0, 6)]),
   ),
   components: isLibrary ? components : undefined,
+};
+```
+
+## Foundations audit
+
+Run on the library file, from any page, after a batch that changes variables or text styles, and before every publish. It checks what the page audit cannot see:
+
+| Check                | Fails on                                                                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `missingDescription` | A variable or a text style without a description                                                                                              |
+| `colourWithoutLimit` | A Color variable whose description does not say where not to use it (no «not», «never», «instead» or «only»)                                  |
+| `allScopes`          | A variable left with `ALL_SCOPES`                                                                                                             |
+| `primitiveVisible`   | A primitive with a scope, or the Primitives collection not hidden from publishing                                                             |
+| `codeSyntax`         | WEB code syntax other than `var(--fd-` + the name with `/` as `-` (Color adds `color-`)                                                       |
+| `brokenAlias`        | An alias to a variable that no longer exists, in any mode                                                                                     |
+| `lowContrast`        | `text/*` under 4.5:1, or `icon/*` and `border/*` under 3:1, on canvas, surface, subtle and the state's own soft background; inverse on accent |
+| `textStyleUnbound`   | A text style whose size, line height or family is not bound to a Typography variable                                                          |
+| `tightLineHeight`    | A text style whose line height is under 1.4 times its size                                                                                    |
+
+Exempt from contrast: the disabled tokens, `border/default` and `border/strong` (dividers, not control boundaries), and `text/inverse` on `bg/brand` (the declared primary-button exception).
+
+```js
+const BACKGROUNDS = ['bg/canvas', 'bg/surface', 'bg/subtle'];
+const LIMIT = /\b(not|never|instead|only)\b/i;
+const NO_CONTRAST = new Set(['border/default', 'border/strong']);
+const code = (collection, name) =>
+  `var(--fd-${collection === 'Color' ? 'color-' : ''}${name.replace(/\//g, '-')})`;
+
+const cols = await figma.variables.getLocalVariableCollectionsAsync();
+const vars = await figma.variables.getLocalVariablesAsync();
+const byId = new Map(vars.map((v) => [v.id, v]));
+const byName = new Map(vars.map((v) => [v.name, v]));
+const colOf = new Map(cols.map((c) => [c.id, c]));
+const F = {};
+for (const k of [
+  'missingDescription',
+  'colourWithoutLimit',
+  'allScopes',
+  'primitiveVisible',
+  'codeSyntax',
+  'brokenAlias',
+  'lowContrast',
+  'textStyleUnbound',
+  'tightLineHeight',
+])
+  F[k] = [];
+const resolve = (v, depth = 0) => {
+  const val = v.valuesByMode[colOf.get(v.variableCollectionId).modes[0].modeId];
+  if (val?.type !== 'VARIABLE_ALIAS') return val;
+  const t = byId.get(val.id);
+  return t && depth < 5 ? resolve(t, depth + 1) : null;
+};
+const lum = ({ r, g, b }) => {
+  const f = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+};
+const ratio = (a, b) => {
+  const x = lum(a),
+    y = lum(b);
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+};
+const check = (fg, bg, need) => {
+  const a = byName.get(fg) && resolve(byName.get(fg));
+  const b = byName.get(bg) && resolve(byName.get(bg));
+  if (!a || !b) return;
+  const r = ratio(a, b);
+  if (r + 0.005 < need) F.lowContrast.push(`${fg} on ${bg} ${r.toFixed(2)} < ${need}`);
+};
+
+for (const c of cols)
+  if (c.name === 'Primitives' && !c.hiddenFromPublishing) F.primitiveVisible.push('collection');
+for (const v of vars) {
+  const c = colOf.get(v.variableCollectionId);
+  if (!v.description.trim()) F.missingDescription.push(v.name);
+  if (c.name === 'Color' && !LIMIT.test(v.description)) F.colourWithoutLimit.push(v.name);
+  if (v.scopes.includes('ALL_SCOPES')) F.allScopes.push(v.name);
+  if (c.name === 'Primitives' && v.scopes.length) F.primitiveVisible.push(v.name);
+  if (v.codeSyntax?.WEB !== code(c.name, v.name))
+    F.codeSyntax.push(`${v.name} ${v.codeSyntax?.WEB ?? 'none'}`);
+  for (const m of c.modes) {
+    const val = v.valuesByMode[m.modeId];
+    if (val?.type === 'VARIABLE_ALIAS' && !byId.get(val.id))
+      F.brokenAlias.push(`${v.name} (${m.name})`);
+  }
+  const [kind, state] = v.name.split('/');
+  if (c.name !== 'Color' || !['text', 'icon', 'border'].includes(kind)) continue;
+  if (/disabled/.test(state) || NO_CONTRAST.has(v.name)) continue;
+  const need = kind === 'text' ? 4.5 : 3;
+  if (state === 'inverse') {
+    check(v.name, 'bg/accent', need);
+    continue;
+  }
+  for (const bg of BACKGROUNDS) check(v.name, bg, need);
+  if (byName.has(`bg/${state}-soft`)) check(v.name, `bg/${state}-soft`, need);
+}
+for (const s of await figma.getLocalTextStylesAsync()) {
+  if (!s.description.trim()) F.missingDescription.push(`style ${s.name}`);
+  const bound = s.boundVariables ?? {};
+  if (!bound.fontSize || !bound.lineHeight || !bound.fontFamily) F.textStyleUnbound.push(s.name);
+  if (s.lineHeight.unit !== 'PIXELS' || s.lineHeight.value < s.fontSize * 1.4)
+    F.tightLineHeight.push(`${s.name} ${s.fontSize}/${s.lineHeight.value ?? 'auto'}`);
+}
+const counts = Object.fromEntries(Object.entries(F).map(([k, v]) => [k, v.length]));
+return {
+  file: figma.fileKey,
+  variables: vars.length,
+  pass: Object.values(counts).every((c) => c === 0),
+  counts,
+  findings: Object.fromEntries(Object.entries(F).filter(([, v]) => v.length)),
 };
 ```

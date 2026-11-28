@@ -67,7 +67,7 @@ Measured on 2026-11-25: slices of 115 to 320 files took 250 to 440 requests in o
 ## 6. Pull requests
 
 - Branch from `main` as `feat/`, `fix/`, `docs/`, `chore/`, `refactor/` or `test/` plus a topic. Conventional Commits; the body says what and why.
-- The body has `## Summary` and `## Test plan`, and `## Checks changed` when the change touches `ci.yml`, `scripts/verify.mjs` or `REVIEW.md`.
+- The body has `## Summary` and `## Test plan`, and `## Checks changed` when the change touches `ci.yml`, `scripts/verify.mjs` or `REVIEW.md`. A design pull request (one that records Figma work) puts in its test plan the result of the audits in `docs/design/figma-audit.md` on every page the batch touched, since no reviewer sees the Figma file.
 - **Draft until complete.** A pull request opened before its slice is complete is a draft (`gh pr create --draft`) without auto-merge. When the slice is complete and reviewed: `gh pr ready`, then auto-merge with squash (`gh pr merge --auto --squash --delete-branch`) and Auto-fix. The branch is deleted on merge (`git branch -D` locally, since a squash merge is not an ancestor).
 - **Nothing pushed that is known to fail** (§5). One push per green checkpoint: everything the checkpoint holds is committed first, then pushed once; never two pushes in a row, since each starts CI.
 - **Honest records.** The slice file, the roadmap and the pull request state only what has happened: "merged" or "on `main`" is written after the merge, never ahead of it.
