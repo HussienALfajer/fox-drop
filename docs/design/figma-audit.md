@@ -4,7 +4,7 @@ The script run in Figma after every batch ([`rules.md`](rules.md), Working in Fi
 
 ## How to run it
 
-Paste the script into the Figma MCP `use_figma` tool. Set `PAGE_ID` to the page and `ROOT_IDS` to the sections or frames to check, or `'ALL'` for every top-level node of the page. One page per call.
+Paste the script into the Figma MCP `use_figma` tool. Set `PAGE_ID` to the page and `ROOT_IDS` to the sections or frames to check, or `'ALL'` for every top-level node of the page. One page per call. The «🧪 Explorations» page is exempt and the script skips it; a direction is audited once it moves to its flow's page.
 
 ## Checks
 
@@ -70,6 +70,8 @@ const STYLE_FIELDS = [
 
 const page = await figma.getNodeByIdAsync(PAGE_ID);
 if (!page || page.type !== 'PAGE') return { error: `page ${PAGE_ID} not found` };
+if (page.name.includes('Explorations'))
+  return { page: page.name, skipped: 'Explorations pages are exempt (rules.md)' };
 await figma.setCurrentPageAsync(page);
 const roots =
   ROOT_IDS === 'ALL'
