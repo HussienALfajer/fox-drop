@@ -12,10 +12,16 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 ## Tokens and colour
 
 - **Every colour, spacing, radius, size and border width is a variable; no raw value in a screen or component.** One change then reaches every screen and the code. 2026-11-28.
-- **Primitives are hidden; screens and components use the semantic Color collection only.** A screen says «text/primary», not «blue/800», so the identity can change without touching screens. 2026-11-28.
+- **Primitives are hidden; screens and components use the semantic Color collection only.** A screen says «text/primary», not «blue/800», so the identity can change without touching screens. The «Primitives» collection is hidden from publishing (`hiddenFromPublishing`), so surface files cannot bind it; the semantic aliases still resolve. 2026-11-28.
+- **Five collections, one axis each: Primitives (hidden, mode «Value»), Color (theme modes: Light now), Spacing (`space/*` and `size/*`, density modes per surface later), Shape (`radius/*` and `border-width/*`, mode «Value») and Typography (mode «Value»).** Spacing will change per surface and the shape will not; keeping them apart lets a density mode touch only what should change. 2026-11-28.
+- **A new variable is added in the batch of the flow that needs it, with its description; it appears on the Foundations page and in the changelog.** Foundations grow with use, never by guess; shadows, motion, grids and semantic spacing arrive this way. 2026-11-28.
+- **Every variable and text style has a one-line description: what it is for and, for colours, where not to use it.** The description is what a designer and the agent see when picking a token. 2026-11-28.
+- **Every state has a full set: `bg/<state>-soft`, `text/<state>`, `icon/<state>`, `border/<state>` for success, error, warning and info; disabled has `bg/`, `text/`, `border/` and `icon/disabled`; `bg/overlay` is the scrim behind sheets and dialogs.** A component never invents a state colour. 2026-11-28.
 - **Identity colours and their proportions come from [`../brand/README.md`](../brand/README.md); the Primitives hold them.** The identity pack V1.1 is the source. 2026-11-21.
 - **A bound colour carries its resolved value as the paint's base colour.** Figma stores a fallback when a variable is bound; a black fallback looks right in screenshots and wrong in the file. 2026-11-28.
 - **Text meets 4.5:1 on canvas, surface and subtle backgrounds, except disabled text.** WCAG 1.4.3; `sand/500` was darkened to `#766C58` for `text/tertiary`. 2026-11-28.
+- **State text and icons also pass on their own soft background (4.5:1 text, 3:1 icons), and icons pass 3:1 on canvas, surface and subtle; disabled tokens are exempt.** WCAG 1.4.3 and 1.4.11; the Foundations page shows every ratio and the contrast matrix. 2026-11-28.
+- **Orange icons and the focus ring use `orange/600` (`icon/brand`, `border/focus`), not `orange/500`.** `orange/500` is 2.68:1 on ivory, under the 3:1 a focus indicator and a meaningful icon need; `orange/600` is 3.41:1. 2026-11-28.
 - **Fields and selectable controls use `border/input` (3:1 or more); `border/default` is for dividers and cards only.** WCAG 1.4.11; the earlier borders were 1.3:1 and hard to see outdoors. 2026-11-28.
 - **Orange text on light backgrounds uses `orange/700`, not `orange/500`.** `orange/500` is 2.7:1 on ivory; `orange/700` is 4.97:1. 2026-11-28.
 - **Exception: the primary button is `#FF6E31` with white text (2.8:1), bold and 16 or larger.** The owner's choice (direction A). It fails even WCAG's 3:1 large-text threshold, so the owner judges it again on a phone outdoors at the first flow's approval, before it is coded; the audit exempts it by name. 2026-11-28.
@@ -24,6 +30,8 @@ One rule per line: the rule, then why, then the date it was set. Every correctio
 
 - **In Figma, text uses Almarai; the apps use CoFo Sans Pro Arabic. Never set main frames to CoFo.** The Figma agent runs in Figma's cloud and cannot load local fonts; CoFo text becomes locked to it. Almarai is the closest in shape and width. 2026-11-28.
 - **Every text uses a text style.** Sizes stay consistent and change in one place. 2026-11-28.
+- **Every text style's line height is at least 1.4 times its size (`Label/S` 12/18, `Display/L` 34/48, `Numeric/L` 28/40).** Arabic needs room above and below for dots and marks. 2026-11-28.
+- **Numbers alone use `Numeric/L` (code cells, totals) and `Numeric/M` (phone numbers, prices in fields), named by size, not by use.** A name by use (OTP, Phone) breaks as soon as a second use appears. 2026-11-28.
 - **CoFo font files never enter the public repository.** They are licensed files; builds take them from private storage. 2026-11-28.
 
 ## Size and touch
