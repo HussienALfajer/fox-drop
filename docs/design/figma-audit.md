@@ -15,7 +15,7 @@ Paste the script into the Figma MCP `use_figma` tool. Set `PAGE_ID` to the page 
 | `textWithoutStyle`       | A text without a text style                                                                                      |
 | `foreignFonts`           | A text in a family other than `ALLOWED_FONTS`                                                                    |
 | `missingFonts`           | A text whose font Figma cannot load                                                                              |
-| `rawNodes`               | A text or shape in a screen that is not inside a component or an instance                                        |
+| `rawNodes`               | A shape in a screen outside a component or an instance, or a text without a text style and a colour variable     |
 | `detached`               | A frame detached from a component                                                                                |
 | `rawStyleOverrides`      | An instance override of a style field (fill, stroke, radius, spacing, type) with a value not bound to a variable |
 | `smallTargets`           | A button, icon button, choice, checkbox or country row smaller than 44 in either direction                       |
@@ -24,6 +24,8 @@ Paste the script into the Figma MCP `use_figma` tool. Set `PAGE_ID` to the page 
 ## Baseline
 
 First run, 2026-11-28, page «📱 Customer · Sign-in» (six screens): `textWithoutStyle`, `unboundPaints`, `foreignFonts`, `missingFonts`, `detached` and `smallTargets` at 0; `rawNodes` 87 (status bar, hero, brand corner, sheet, search, labels drawn raw), `unboundSpacing` 117 (screen containers and raw parts), `rawStyleOverrides` 3 (link buttons resized and repadded). Phase 1 turns the raw parts into components and binds the containers, to bring every count to 0.
+
+After phase 1, 2026-11-28: the library's components and the six sign-in screens rebuilt in «FOX DROP — Customer app» pass with every count at 0.
 
 The registry match itself (every component has a line in [`registry.md`](registry.md)) is checked by comparing the names this script returns with the registry.
 
@@ -137,7 +139,13 @@ for (const root of roots) {
           found.foreignFonts.push(`${where(n)} ${s.fontName.family}`);
       if (n.hasMissingFont) found.missingFonts.push(where(n));
     }
-    if (RAW.has(n.type) && !inInstance && !inComponent && !decor)
+    const styledText =
+      n.type === 'TEXT' &&
+      n.textStyleId &&
+      n.textStyleId !== figma.mixed &&
+      !solidUnbound(n, 'fills');
+    const sectionLabel = n.type === 'TEXT' && n.parent?.type === 'SECTION';
+    if (RAW.has(n.type) && !inInstance && !inComponent && !decor && !styledText && !sectionLabel)
       found.rawNodes.push(`${where(n)} (${n.type})`);
     if ('detachedInfo' in n && n.detachedInfo) found.detached.push(where(n));
     if (n.type === 'INSTANCE' && !inInstance) {

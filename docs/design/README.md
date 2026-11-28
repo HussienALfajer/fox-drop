@@ -21,8 +21,9 @@ Team «Fox Drop» on the Professional plan.
 | File                     | Holds                                                              | Key                      |
 | ------------------------ | ------------------------------------------------------------------ | ------------------------ |
 | FOX DROP — Design System | The library: foundations, Core, Mobile and Web components; Read me | `ITmxeo3ipw0UH5OiV0880s` |
+| FOX DROP — Customer app  | The customer app's own components and its screens                  | `FhvOwKGrGEv6p3JnIBHOof` |
 
-One file per surface joins it as each surface starts (customer first). A surface file holds its own components and its screens, and uses the library; it never copies a library component.
+Folders: `00 Design System`, `01 Customer`, `02 Restaurant`, `03 Captain`, `04 Web`, `90 Explorations`, `99 Archive`. The library is published to the team; each publish gets a version and a description, and the library's «Changelog» page lists them. One file per surface joins as each surface starts (customer first). A surface file holds its own components and its screens, and uses the library; it never copies a library component.
 
 ## How design work runs
 
