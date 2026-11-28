@@ -33,6 +33,8 @@ One rule per line: the rule, then why, then the date it was set. A correction ma
 ## Components and screens
 
 - **Component first: a screen holds only component instances inside auto-layout containers bound to variables.** A raw shape or text in a screen cannot change with the system. 2026-11-28.
+- **Headings and body copy in a screen may be plain text, but only with a text style and a colour variable; every shape is a component instance.** Text varies per screen; making each heading a component adds no safety. 2026-11-28.
+- **Screens live in their surface file, never in the library; the library holds foundations and components only.** The library is published to every surface; screens in it would ship as noise. 2026-11-28.
 - **Decoration is a component too (`Decor/…`).** The sign-in hero and brand corner repeat across screens. 2026-11-28.
 - **Instances are never detached; overrides go through component properties only.** A detached or restyled instance stops following its component. 2026-11-28.
 - **A change wanted on one screen is first asked as: one-off, or the component?** If the component, the main component changes or gains a property or state. 2026-11-28.
@@ -45,6 +47,11 @@ One rule per line: the rule, then why, then the date it was set. A correction ma
 - **A component name starts with its layer: `Core/Button`, `Mobile/Bottom sheet`, `Customer/Restaurant card`.** The name says where it lives and who may use it. 2026-11-28.
 - **No new component before searching the registry; one that covers 70% of the need gains a property or state instead.** Duplicates are the main way libraries rot. 2026-11-28.
 - **A new Core, Mobile or Web component needs the owner's approval; a surface component does not.** Shared parts affect every surface. 2026-11-28.
+
+## Icons
+
+- **Icons are Solar Linear for now (480 Design, CC BY 4.0): 24 grid, 1.5 stroke, colour from `icon/*`; food and delivery icons of our own come later in the same grid.** The owner's interim choice; Solar's style is soft and rounded like the mark. 2026-11-28.
+- **The apps credit «Solar Icons by 480 Design» on their about or licences screen.** CC BY 4.0 requires attribution. 2026-11-28.
 
 ## Right to left and content
 
