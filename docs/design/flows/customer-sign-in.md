@@ -1,6 +1,6 @@
 # Customer: sign-in
 
-Step: 4 Choice and layers, 2026-11-28: the owner chose D, had it revised and approved the revision and the list of its parts (Choice, below); next, step 5 (polish), starting with the shared components in the library
+Step: 5 Polish, 2026-11-28: batch 1, the shared Core and Mobile components, built in the library with every state and audited to 0, v0.5 prepared for the owner to publish (Polish, below); next, batch 2, `Customer/Sign-in reason` on the customer file's components page, then the screens
 
 The phone sign-in of `core_auth`, designed once here for the three apps (rules.md, Components and screens; surfaces.md). The restaurant and captain files link to these screens and add only what differs: «لديّ رمز من العمليات», the captain's «انضم ككابتن», the restaurant's Windows pairing and their own refusals. This file covers the customer's flow: from the moment sign-in is asked for to the customer being back where they were, «أكمل بياناتك» included.
 
@@ -173,6 +173,8 @@ Direction D, revised, approved by the owner on 2026-11-28 with this list; that a
 | Progress steps                                              | New `Mobile/Progress steps`: no business meaning                                                                             | None           | Mobile   | 2026-11-28 |
 | Paste offer                                                 | New `Mobile/Paste offer`: with the code (Android), without it (iOS)                                                          | None           | Mobile   | 2026-11-28 |
 | Status bar, system keyboard                                 | New `Mobile/Decor/Status bar` and `Mobile/Decor/Keyboard`: shown in Figma only, never coded                                  | None           | Mobile   | 2026-11-28 |
+| Country sheet's search and rows (not drawn in D)            | New `Core/Search field` (Default, Focused, Filled, Disabled) and `Core/List row` (Default, Pressed, Selected, Disabled)      | None           | Core     | 2026-11-28 |
+| The Solar stand-in icons                                    | New `Core/Icon/<name>`: 24 Solar Linear icons and a spinner, as instance-swap targets                                        | None           | Core     | 2026-11-28 |
 | Sign-in reason (header, tab invitation, compact invitation) | New `Customer/Sign-in reason`: three layouts × eight reasons; one part for the sign-in header and the tabs' guest invitation | None           | Customer | 2026-11-28 |
 | Order waiting (checkout), restaurant logo, item thumbs      | Stays a drawing: waits for the order card of the cart and orders screens (owner, 2026-11-28)                                 | —              | —        | 2026-11-28 |
 | Tab bar, app bar                                            | Stay drawings: designed in the navigation flow                                                                               | —              | —        | 2026-11-28 |
@@ -185,6 +187,17 @@ Direction D, revised, approved by the owner on 2026-11-28 with this list; that a
 - **«أكمل بياناتك»:** empty, focused with the keyboard, errors, saving, the date sheet, save failed.
 - **Reasons:** the two tab invitations, sign-in from checkout, from «طلباتي» and from the heart, and the sheet of the eight reasons.
 - Then the «Text 130%», 360 and 430 copies, the prototype and the annotations («Ready for dev»).
+
+## Polish
+
+Batch 1, 2026-11-28 (the owner approved the analysis and its four recommendations in the chat the same day): every Core and Mobile part of Choice was built in the library (`ITmxeo3ipw0UH5OiV0880s`, page «🧩 Components», one section per family), with its states, its registry line as `Proposed` and its key, and its description starting `[Proposed]`. The page audit is at 0 for all 53 components; no variable or text style was added, so the foundations audit stands at 0.
+
+- **Analysis outcome.** Each part was compared with Material 3, Apple's HIG and product systems (Polaris, Atlassian, Base): labels sit above fields, never floating inside them (Arabic and «Text 130%»); every state differs by shape or words as well as colour; the code cells are one field for the screen reader and for paste; the choice tiles are one radio group; the sheet has no shadow, since its scrim already sets it apart.
+- **States added to Choice:** Checking and Disabled for `Core/Code input`, Pressed for `Core/Choice tile` and the Picker type of `Core/Text field`, Scrolled for `Mobile/Top bar`, Today limit for `Mobile/Date picker`; `Core/Button` also has the Medium size (48) for actions inside messages.
+- **Not added:** `border/brand` (`border/focus` already covers the selected control) and a sheet shadow.
+- **Icons:** downloaded from the official `@iconify-json/solar` package 1.2.17 (CC BY 4.0) with the owner's approval and imported as vectors; their strokes bind `icon/*` and `border-width/default` (1.5).
+- **Illustrations:** redrawn by hand as vectors on one 72 grid (no Figma AI), colours bound to semantic Color variables only.
+- **Audit script changes** (`figma-audit.md`): the new kinds in `TARGETS`, every set's states in `STATES`, a labelled field's `Box` height or a row's minimum height counts as its control size, and a layer named `Disabled` (the date picker's future rows) is exempt from contrast.
 
 ## Figma
 
