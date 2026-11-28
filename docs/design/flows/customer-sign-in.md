@@ -2,7 +2,7 @@
 
 The customer app's sign-in: the phone number, the WhatsApp code and, for a new account, «أكمل بياناتك». Spec: CU §5.1–5.5. Code: `packages/core_auth` (one sign-in for the three apps), `apps/server/src/modules/identity`. Figma: «FOX DROP — Customer app», page «🔑 Sign-in».
 
-**Step:** 1, analysis done (2026-11-28). The six screens drawn on 2026-11-28 become «Idea A» on the Explorations page when the directions are drawn.
+**Step:** 2, directions to discuss (analysis done 2026-11-28). The six screens drawn on 2026-11-28 become «Idea A» on the Explorations page when the directions are drawn.
 
 ## Analysis
 
@@ -93,10 +93,29 @@ Not discussed yet. «Idea A» is the drawing of 2026-11-28: an orange hero with 
 
 ## Choice
 
-Not made yet.
+Not made yet. When it is, this section lists the chosen direction and every `Draft/…` element in it:
+
+| Element | Decision | Layer | Registry line |
+| ------- | -------- | ----- | ------------- |
+
+«Decision» is one of: reuses an existing component; extends one (with the property, state or variant added); new component. The owner approves the table with the choice (README, How design work runs, step 4).
+
+## Figma
+
+- Explorations: «🧪 Explorations» page, section «Sign-in», when the directions are drawn.
+- Flow page: «🔑 Sign-in», section «Sign-in · v0.2 · 2026-11-28» (Idea A for now).
+- Audit: 0 on «🔑 Sign-in» (2026-11-28).
+
+## Reviews
+
+| Date | Who | Decision | Version-history checkpoint |
+| ---- | --- | -------- | -------------------------- |
 
 ## Open points
 
+- The limits, timings and attempts quoted above are the defaults of AP Appendix A on 2026-11-28; the settings keys named beside them are the source.
+- Idea A's text layers are not yet named after their `core_l10n` keys; that is done at the polish step («Ready for dev», item 3).
+- Idea A's provisional library components (`Mobile/Decor/Sign-in hero`, `Mobile/Decor/Brand corner`, `Core/Icon tile`) are removed if another direction wins.
 - `app_check_failed` has no customer-facing string yet.
 - The API contract documents only the 200 answers of these routes; the error bodies are mapped by hand in `core_auth` (backlog).
 - The proposed copy not in the translation files waits for the owner: «أهلاً بك في فوكس دروب», «سجّل برقم هاتفك لتتابع طلبك وتحفظ عناوينك.», «نرسل رمز التحقق عبر واتساب، لا عبر الرسائل النصية», «رمز التحقق», «خطوة أخيرة ونكمل طلبك.», «حفظ ومتابعة».

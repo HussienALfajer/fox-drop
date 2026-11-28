@@ -14,9 +14,10 @@ What each of the five surfaces needs from the design system, from the specs, so 
 
 ## What this means for the system
 
-- **Variable modes per surface.** The semantic and size collections get one mode per surface when its work starts (Professional allows 10 modes per collection): Customer is the base; Captain raises contrast; Restaurant tightens spacing for the board; Web sets desktop sizes. A component reads the same variable names in every mode.
+- **Modes on separate axes.** The Color collection's modes are themes: Light now, Dark when the captain app gets it (V2), and a Captain high-contrast theme if outdoor tests ask for it. Density is a separate collection with one mode per surface, added when the surface starts: Customer is the base, Restaurant tightens spacing for the board, Web sets desktop sizes. Keeping theme and density apart lets any surface use any theme. A component reads the same variable names in every mode. Professional limits the number of modes per collection (help.figma.com, «Modes for variables»), enough for these axes.
 - **States beyond touch.** Restaurant on Windows and both web surfaces need Hover and Focus on every interactive Core component; they are added when those surfaces start, not before.
-- **Shared by nature from the start** (Core): status pill for order states, money amount with currency, address line, order summary rows, phone sign-in (one screen for the three apps, `core_auth`).
-- **Shared by form factor:** Mobile/Bottom navigation, Mobile/Bottom sheet, Mobile/Top bar for the three apps; Web/Side menu, Web/Data table, Web/Dialog for the two web surfaces.
-- **Frames to design at:** phones 360 × 800, 390 × 844 and 430 × 932; Restaurant tablet at 840 dp wide and Windows at 1366 × 768; web at 1280 × 800 and 1440 × 900.
+- **Business parts the specs already place in several surfaces** go to Core when first built (rules.md, Layers and naming): the order status pill (every app and the panel), a money amount with its currency, an address line, order summary rows.
+- **A screen shared by apps** is not a component: the phone sign-in (`core_auth`, the three apps) is designed in the customer file's «🔑 Sign-in» page, and the restaurant and captain files link to it, adding only what differs (the captain's «انضم ككابتن», the restaurant's device pairing).
+- **Shared by form factor:** Mobile/Bottom navigation, Mobile/Top bar, Mobile/Sheet header for the three apps; Web/Side menu, Web/Data table, Web/Dialog for the two web surfaces.
+- **Frames:** screens are drawn at 390 × 844 and checked at 360 × 800 and 430 × 932 before «Ready for dev»; Restaurant tablet at 840 dp wide and Windows at 1366 × 768; web at 1280 × 800 and 1440 × 900.
 - **Order of work:** Customer, then Restaurant, then Captain, then the web surfaces (owner, 2026-11-28). Each surface starts by reading this file and the registry.
